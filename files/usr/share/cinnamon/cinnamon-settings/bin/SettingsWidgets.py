@@ -508,16 +508,27 @@ class Keybinding(SettingsWidget):
 
         for x in range(self.num_bind):
             string = self.buttons[x].get_accel_string()
-            bindings.append(string)
+            if string != '':
+                bindings.append(string)
 
-        self.set_value("::".join(bindings))
+        if isinstance(self, PXGSettingsBackend):
+            self.set_value(bindings)
+        else:
+            self.set_value("::".join(bindings))
 
     def on_setting_changed(self, *args):
         value = self.get_value()
-        bindings = value.split("::")
 
-        for x in range(min(len(bindings), self.num_bind)):
-            self.buttons[x].set_accel_string(bindings[x])
+        if isinstance(self, PXGSettingsBackend):
+            bindings = value
+        else:
+            bindings = value.split("::")
+
+        for x in range(0, self.num_bind):
+            try:
+                self.buttons[x].set_accel_string(bindings[x])
+            except IndexError:
+                self.buttons[x].set_accel_string("")
 
     def connect_widget_handlers(self, *args):
         pass
@@ -527,7 +538,7 @@ def g_settings_factory(subclass):
         def __init__(self, label, schema, key, *args, **kwargs):
             self.key = key
             if schema not in settings_objects:
-                settings_objects[schema] = Gio.Settings.new(schema)
+                settings_objects[schema] = Gio.Settings(schema_id=schema)
             self.settings = settings_objects[schema]
 
             if "map_get" in kwargs:

@@ -278,16 +278,18 @@ LayoutManager.prototype = {
         this.hotCornerManager = null;
         this.edgeRight = null;
         this.edgeLeft = null;
-        this.hideIdleId = 0;
         this._chrome = new Chrome(this);
 
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
-        this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
-                                              reactive: true,
-                                              track_hover: true });
+        this.keyboardBox = new St.Widget({ name: 'keyboardBox',
+                                           layout_manager: new Clutter.BinLayout(),
+                                           important: true,
+                                           reactive: true,
+                                           track_hover: true });
         this.keyboardBox.hide();
+        this._keyboardIndex = -1;
 
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true, affectsStruts: false });
 
@@ -356,11 +358,14 @@ LayoutManager.prototype = {
         if (this.hotCornerManager)
             this.hotCornerManager.update();
         this._chrome._queueUpdateRegions();
+
+        this.keyboardIndex = this.primaryIndex;
     },
 
     _monitorsChanged: function() {
         this._updateMonitors();
         this._updateBoxes();
+        this._updateKeyboardBox()
         this.emit('monitors-changed');
     },
 
@@ -419,53 +424,76 @@ LayoutManager.prototype = {
         Main.setRunState(Main.RunState.RUNNING);
     },
 
-    showKeyboard: function () {
-        if (this.hideIdleId > 0) {
-            Mainloop.source_remove(this.hideIdleId);
-            this.hideIdleId = 0;
+    _updateKeyboardBox: function() {
+        if (Main.panelManager == null || Main.virtualKeyboardManager == null) {
+            return;
         }
 
-        if (!this.keyboardBox.visible) {
-            this.keyboardBox.show();
+        let size = Main.virtualKeyboardManager.getKeyboardSize();
+        let top = Main.virtualKeyboardManager.getKeyboardPosition() == "top";
+        let panels = Main.panelManager.getPanelsInMonitor(this.keyboardIndex);
+
+        let kb_height = this.keyboardMonitor.height / size;
+
+        let kb_x = this.keyboardMonitor.x;
+        let kb_y = top ? 0 : this.keyboardMonitor.y + this.keyboardMonitor.height - kb_height;
+        let kb_width = this.keyboardMonitor.width;
+        for (let panel of panels) {
+            if (panel.isHideable()) {
+                continue;
+            }
+
+            switch (panel.panelPosition) {
+                case Panel.PanelLoc.top:
+                    if (top) {
+                        kb_height -= panel.actor.height;
+                        kb_y += panel.actor.height;
+                    }
+                    break;
+                case Panel.PanelLoc.bottom:
+                    if (!top) {
+                        kb_height -= panel.actor.height;
+                    }
+                    break;
+                case Panel.PanelLoc.left:
+                    kb_x += panel.actor.width;
+                    kb_width -= panel.actor.width;
+                    break;
+                case Panel.PanelLoc.right:
+                    kb_width -= panel.actor.width;
+                    break;
+            }
         }
 
-        // this.keyboardBox.raise_top();
-        Main.panelManager.lowerActorBelowPanels(this.keyboardBox);
+        this.keyboardBox.set_position(kb_x, kb_y);
+        this.keyboardBox.set_size(kb_width, kb_height);
+    },
 
-        // Poke Chrome to update the input shape; it doesn't notice
-        // anchor point changes
+    get keyboardMonitor() {
+        return this.monitors[this.keyboardIndex];
+    },
+
+    set keyboardIndex(v) {
+        this._keyboardIndex = v;
+        this._updateKeyboardBox();
+    },
+
+    get keyboardIndex() {
+        return this._keyboardIndex;
+    },
+
+    showKeyboard: function() {
+        this.keyboardBox.show();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
         this._chrome.updateRegions();
-
-        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
-            if (this.keyboardBox.y != 0) {
-                this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
-            }
-        }));
-
+        this.emit('keyboard-visible-changed', true);
     },
 
-    queueHideKeyboard: function() {
-        if (this.hideIdleId != 0) {
-            Mainloop.source_remove(this.hideIdleId);
-            this.hideIdleId = 0;
-        }
-
-        if (this._keyboardHeightNotifyId) {
-            this.keyboardBox.disconnect(this._keyboardHeightNotifyId);
-            this._keyboardHeightNotifyId = 0;
-        }
-
-        this.hideIdleId = Mainloop.idle_add(Lang.bind(this, this.hideKeyboard));
-    },
-
-    hideKeyboard: function (immediate) {
+    hideKeyboard: function(immediate) {
         this.keyboardBox.hide();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this._chrome.updateRegions();
-
-        this.hideIdleId = 0;
-        return false;
+        this.emit('keyboard-visible-changed', false);
     },
 
     /**
@@ -981,7 +1009,9 @@ Chrome.prototype = {
                 if (x1 <= monitor.x && x2 >= monitor.x + monitor.width) {
                     if (y1 <= monitor.y)
                         side = Meta.Side.TOP;
-                    else if (y2 >= monitor.y + monitor.height)
+                    // Hack to let the keyboardBox be considered struts even though it's off the edge of the monitor
+                    // by some panel height amount.
+                    else if (y2 >= monitor.y + monitor.height - (actorData.actor.name === "keyboardBox" ? 100 : 0))
                         side = Meta.Side.BOTTOM;
                     else
                         continue;

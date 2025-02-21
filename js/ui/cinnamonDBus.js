@@ -6,6 +6,7 @@ const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
 const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
+const KeyboardManager = imports.ui.keyboardManager;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
@@ -135,6 +136,16 @@ const CinnamonIface =
                 <arg type="i" direction="in" name="mode"/> \
             </method> \
             <method name="CloseEndSessionDialog"/> \
+            <method name="GetInputSources"> \
+                <arg type="a(ssisssssssib)" direction="out" name="layouts"/> \
+            </method> \
+            <method name="ActivateInputSourceIndex"> \
+                <arg type="i" direction="in" name="index"/> \
+            </method> \
+            <signal name="CurrentInputSourceChanged"> \
+                <arg type="s" direction="out" /> \
+            </signal> \
+            <signal name="InputSourcesChanged"/> \
         </interface> \
     </node>';
 
@@ -435,7 +446,7 @@ CinnamonDBus.prototype = {
     },
 
     ToggleKeyboard: function() {
-        Main.virtualKeyboard.toggle();
+        Main.virtualKeyboardManager.manualToggle();
     },
 
     GetMonitors: function() {
@@ -528,6 +539,45 @@ CinnamonDBus.prototype = {
 
     CloseEndSessionDialog() {
         Main.closeEndSessionDialog();
+    },
+
+    GetInputSources() {
+        const is_mgr = KeyboardManager.getInputSourceManager();
+        const sources = is_mgr._inputSources;
+        let ret = []
+
+        for (let idx in sources) {
+            const source = sources[idx];
+            // global.log(source.preferences);
+            ret.push([
+                source.type,
+                source.id,
+                source.index,
+                source.displayName,
+                source._shortName,
+                source.flagName,
+                source.xkbId,
+                source.xkbLayout,
+                source.variant,
+                source.preferences,
+                source.dupeId,
+                source === is_mgr.currentSource
+            ]);
+        }
+        return ret;
+    },
+
+    ActivateInputSourceIndex(index) {
+        const is_mgr = KeyboardManager.getInputSourceManager();
+        is_mgr.activateInputSourceIndex(index);
+    },
+
+    EmitCurrentInputSourceChanged: function(id) {
+        this._dbusImpl.emit_signal('CurrentInputSourceChanged', GLib.Variant.new('(s)', [id]));
+    },
+
+    EmitInputSourcesChanged: function() {
+        this._dbusImpl.emit_signal('InputSourcesChanged', null);
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION

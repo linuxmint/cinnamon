@@ -56,6 +56,8 @@
  * @systrayManager (Systray.SystrayManager): The systray manager
  * @gesturesManager (GesturesManager.GesturesManager): Gesture support  from ToucheEgg.
  *
+ * @keyboardManager (KeyboardManager.KeyboardManager): Handle keyboard layouts.
+ * 
  * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
  * keys.
  * @tracker (Cinnamon.WindowTracker): The window tracker
@@ -132,6 +134,7 @@ const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
+const {KeyboardManager} = imports.ui.keyboardManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -167,7 +170,8 @@ var magnifier = null;
 var locatePointer = null;
 var xdndHandler = null;
 var statusIconDispatcher = null;
-var virtualKeyboard = null;
+var virtualKeyboardManager = null;
+var inputMethod = null;
 var layoutManager = null;
 var networkAgent = null;
 var monitorLabeler = null;
@@ -184,6 +188,7 @@ var systrayManager = null;
 var wmSettings = null;
 var pointerSwitcher = null;
 var gesturesManager = null;
+var keyboardManager = null;
 var workspace_names = [];
 
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
@@ -254,6 +259,12 @@ function _initUserSession() {
     });
 }
 
+function _loadOskLayouts() {
+    _oskResource = Gio.Resource.load('%s/cinnamon-osk-layouts.gresource'.format(global.datadir));
+    _oskResource._register();
+    St.TextureCache.get_default().get_icon_theme().add_resource_path('/org/cinnamon/osk-layouts');
+}
+
 function do_shutdown_sequence() {
     panelManager.panels.forEach(function (panel) {
         panel.actor.hide();
@@ -315,7 +326,7 @@ function start() {
 
     GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
     new CinnamonPortalHandler();
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
@@ -424,7 +435,6 @@ function start() {
 
     wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
-    virtualKeyboard = new VirtualKeyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
@@ -460,7 +470,6 @@ function start() {
     locatePointer = new LocatePointer.locatePointer();
 
     layoutManager.init();
-    virtualKeyboard.init();
     overview.init();
     expo.init();
 
@@ -499,6 +508,18 @@ function start() {
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         Meta.register_with_session();
         return GLib.SOURCE_REMOVE;
+    });
+
+    _loadOskLayouts();
+    keyboardManager = new KeyboardManager();
+    inputMethod = new InputMethod.InputMethod();
+    Clutter.get_default_backend().set_input_method(inputMethod);
+    virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
+    virtualKeyboardManager.connect("enabled-changed", () => {
+        if (runDialog !== null) {
+            runDialog.destroy();
+            runDialog = null;
+        }
     });
 
     Promise.all([
@@ -549,6 +570,8 @@ function start() {
         global.connect('shutdown', do_shutdown_sequence);
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+    }).catch(error => {
+        global.logError(`promise failed: ${error}`);
     });
 }
 

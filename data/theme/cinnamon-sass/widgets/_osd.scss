@@ -94,3 +94,43 @@ $ws_dot_inactive: $ws_indicator_height / 6;
 
   padding: $base_padding * 2;
 }
+
+// Input Source Switcher
+.input-source-switcher-symbol {
+  font-size: 34pt;
+  width: 96px;
+  height: 96px;
+
+  .input-source-switcher-flag-icon {
+    height: 64px;
+  }
+}
+
+.input-switcher-popup {
+  padding: 8px;
+  spacing: $base_padding * 4;
+}
+
+.input-switcher-list {
+  @extend %osd_base;
+
+  .item-box {
+    padding: 8px;
+    border-radius: $base_border_radius + 1px;
+    border: 1px solid transparent;
+
+    &:outlined {
+      background-color: transparentize($fg_color, 0.7);
+    }
+
+    &:selected {
+      background-color: transparentize($fg_color, 0.7);
+      color: $fg_color;
+    }
+  }
+
+  .input-switcher-list-item-container {
+    spacing: $base_padding * 2;
+  }
+}
+
