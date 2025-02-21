@@ -56,6 +56,8 @@
  * @systrayManager (Systray.SystrayManager): The systray manager
  * @gesturesManager (GesturesManager.GesturesManager): Gesture support  from ToucheEgg.
  *
+ * @keyboardManager (KeyboardManager.KeyboardManager): Handle keyboard layouts.
+ * 
  * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
  * keys.
  * @tracker (Cinnamon.WindowTracker): The window tracker
@@ -132,6 +134,7 @@ const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
+const {KeyboardManager} = imports.ui.keyboardManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -184,6 +187,7 @@ var systrayManager = null;
 var wmSettings = null;
 var pointerSwitcher = null;
 var gesturesManager = null;
+var keyboardManager = null;
 var workspace_names = [];
 
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
@@ -315,7 +319,7 @@ function start() {
 
     GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
     new CinnamonPortalHandler();
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
@@ -548,7 +552,12 @@ function start() {
 
         global.connect('shutdown', do_shutdown_sequence);
 
+        keyboardManager = new KeyboardManager();
+        Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+    }).catch(error => {
+        global.logError(`promise failed: ${error}`);
     });
 }
 
