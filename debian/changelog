@@ -1,3 +1,13 @@
+cinnamon (6.4.8) xia; urgency=medium
+
+  [ JosephMcc ]
+  * gestures: Show the OSD when using gestures to change volume (#12731)
+
+  [ Timothy Feierabend ]
+  * Bugfix for Cinnamon issue 12707 (#12734)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 24 Feb 2025 15:24:47 +0000
+
 cinnamon (6.4.7) xia; urgency=medium
 
   [ Michael Webster ]
