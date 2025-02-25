@@ -95,6 +95,13 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   padding: $base_padding * 2;
 }
 
+// Input Source Switcher
+.input-source-switcher-symbol {
+  font-size: 34pt;
+  width: 96px;
+  height: 96px;
+}
+
 .input-switcher-popup {
   padding: 8px;
   spacing: $base_padding * 4;
@@ -133,7 +140,7 @@ $ws_dot_inactive: $ws_indicator_height / 6;
     background: $borders_color;
   }
 
-  .switcher-list-item-container {
+  .input-switcher-list-item-container {
     spacing: $base_padding * 2;
   }
 }
