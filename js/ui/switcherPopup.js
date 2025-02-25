@@ -35,6 +35,7 @@ var SwitcherPopup = GObject.registerClass({
     _init(items) {
         super._init({ style_class: 'input-switcher-popup',
                       reactive: true,
+                      important: true,
                       visible: false });
 
         this._switcherList = null;
@@ -357,6 +358,7 @@ var SwitcherButton = GObject.registerClass(
 class SwitcherButton extends St.Button {
     _init(square) {
         super._init({ style_class: 'item-box',
+                      important: true,
                       reactive: true });
 
         this._square = square;
@@ -376,10 +378,13 @@ var SwitcherList = GObject.registerClass({
                'item-removed': { param_types: [GObject.TYPE_INT] } },
 }, class SwitcherList extends St.Widget {
     _init(squareItems) {
-        super._init({ style_class: 'input-switcher-list' });
+        super._init({ style_class: 'input-switcher-list',
+                      important: true,
+        });
 
-        this._list = new St.BoxLayout({ style_class: 'switcher-list-item-container',
+        this._list = new St.BoxLayout({ style_class: 'input-switcher-list-item-container',
                                         vertical: false,
+                                        important: true,
                                         x_expand: true,
                                         y_expand: true });
 
