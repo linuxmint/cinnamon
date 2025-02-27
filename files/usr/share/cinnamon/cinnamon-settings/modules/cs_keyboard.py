@@ -13,8 +13,9 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, Gtk
 
 from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
-from SettingsWidgets import SidePage
+from SettingsWidgets import SidePage, Keybinding
 from bin import util
+from bin import InputSources
 from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
@@ -41,6 +42,8 @@ CATEGORIES = [
     #(child)Label                       id                  parent
 
     [_("General"),          "general",          None,       "preferences-desktop-keyboard-shortcuts"],
+    [_("Keyboard"),             "keyboard",         "general",      None],
+    [_("Pointer"),              "pointer",          "general",      None],
     [_("Troubleshooting"),      "trouble",          "general",      None],
     [_("Windows"),          "windows",          None,       "preferences-system-windows"],
     [_("Positioning"),          "win-position",     "windows",      None],
@@ -57,8 +60,7 @@ CATEGORIES = [
     [_("Quiet Keys"),           "media-quiet",      "media",        None],
     [_("Universal Access"), "accessibility",    None,       "preferences-desktop-accessibility"],
     [_("Custom Shortcuts"), "custom",           None,       "cinnamon-panel-launcher"],
-    [_("Pointer"),          "pointer",          "general",  None],
-    [_("Spices"),          "spices",          None,  "cinnamon"]
+    [_("Spices"),           "spices",           None,       "cinnamon"]
 ]
 
 KEYBINDINGS = [
@@ -216,7 +218,10 @@ KEYBINDINGS = [
     [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", "accessibility"],
     [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", "accessibility"],
     [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", "accessibility"],
-    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"]
+    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"],
+    # Keyboard layout switching
+    [_("Switch to next layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source", "keyboard"],
+    [_("Switch to previous layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-backward", "keyboard"],
 ]
 
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
@@ -616,23 +621,8 @@ class Module:
 
             vbox.pack_start(headingbox, True, True, 0)
 
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            vbox.set_border_width(6)
-            vbox.set_spacing(6)
-
-            if util.get_session_type() != "wayland":
-                self.sidePage.stack.add_titled(vbox, "layouts", _("Layouts"))
-                try:
-                    widget = self.sidePage.content_box.c_manager.get_c_widget("region")
-                except:
-                    widget = None
-
-                if widget:
-                    cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-                    cheat_box.pack_start(widget, True, True, 2)
-                    cheat_box.set_vexpand(False)
-                    widget.show()
-                    vbox.pack_start(cheat_box, True, True, 0)
+            page = InputSources.InputSourceSettingsPage()
+            self.sidePage.stack.add_titled(page, "layouts", _("Layouts"))
 
             self.kb_search_entry.grab_focus()
 

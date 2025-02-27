@@ -6,6 +6,7 @@ const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
 const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
+const KeyboardManager = imports.ui.keyboardManager;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
@@ -135,6 +136,13 @@ const CinnamonIface =
                 <arg type="i" direction="in" name="mode"/> \
             </method> \
             <method name="CloseEndSessionDialog"/> \
+            <method name="GetInputSources"> \
+                <arg type="a(sssssb)" direction="out" name="layouts"/> \
+            </method> \
+            <method name="ActivateInputSourceIndex"> \
+                <arg type="d" direction="in" name="index"/> \
+            </method> \
+            <signal name="InputSourcesChanged"/> \
         </interface> \
     </node>';
 
@@ -528,6 +536,36 @@ CinnamonDBus.prototype = {
 
     CloseEndSessionDialog() {
         Main.closeEndSessionDialog();
+    },
+
+    GetInputSources() {
+        const is_mgr = KeyboardManager.getInputSourceManager();
+        const sources = is_mgr._inputSources;
+        let ret = []
+
+        for (let idx in sources) {
+            const source = sources[idx];
+
+            ret.push([
+                source.type,
+                source.id,
+                source.displayName,
+                source._shortName,
+                source.xkbId,
+                source === is_mgr._mruSources[0]
+            ]);
+        }
+
+        return ret;
+    },
+
+    ActivateInputSourceIndex(index) {
+        const is_mgr = KeyboardManager.getInputSourceManager();
+        is_mgr.activateInputSourceIndex(index);
+    },
+
+    EmitInputSourcesChanged: function() {
+        this._dbusImpl.emit_signal('InputSourcesChanged', null);
     },
 
     CinnamonVersion: Config.PACKAGE_VERSION
