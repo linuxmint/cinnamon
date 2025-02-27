@@ -533,6 +533,17 @@ var InputSourceManager = class {
         this._changePerWindowSource();
     }
 
+    activateInputSourceIndex(index) {
+        // Dbus helper for cinnamon-settings
+
+        try {
+            let is = this._inputSources[index];
+            this.activateInputSource(is, false);
+        } catch (e) {
+            global.logError(`Could not activate input source index: ${index}`);
+        }
+    }
+
     activateInputSource(is, interactive) {
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
@@ -696,6 +707,7 @@ var InputSourceManager = class {
         // All ibus engines are preloaded here to reduce the launching time
         // when users switch the input sources.
         this._ibusManager.preloadEngines(Object.keys(this._ibusSources));
+        Main.cinnamonDBusService.EmitInputSourcesChanged();
     }
 
     _makeEngineShortName(engineDesc) {
