@@ -259,16 +259,16 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
             for (let i = 0; (indexLabel = lookupTable.get_label(i)); ++i)
                 indexes.push(indexLabel.get_text());
 
-            Main.keyboard.resetSuggestions();
+            // Main.keyboard.resetSuggestions();
 
             let candidates = [];
             for (let i = startIndex; i < endIndex; ++i) {
                 candidates.push(lookupTable.get_candidate(i).get_text());
-
-                Main.keyboard.addSuggestion(lookupTable.get_candidate(i).get_text(), () => {
-                    let index = i;
-                    this._panelService.candidate_clicked(index, 1, 0);
-                });
+                global.log(candidates);
+                // Main.keyboard.addSuggestion(lookupTable.get_candidate(i).get_text(), () => {
+                //     let index = i;
+                //     this._panelService.candidate_clicked(index, 1, 0);
+                // });
             }
 
             this._candidateArea.setCandidates(indexes,
@@ -288,7 +288,7 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
         });
         panelService.connect('focus-out', () => {
             this.close(BoxPointer.PopupAnimation.NONE);
-            Main.keyboard.resetSuggestions();
+            // Main.keyboard.resetSuggestions();
         });
     }
 
@@ -301,18 +301,18 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
     }
 
     _updateVisibility() {
-        let isVisible = !Main.keyboard.visible &&
-                         (this._preeditText.visible ||
-                          this._auxText.visible ||
-                          this._candidateArea.visible);
+        // let isVisible = !Main.keyboard.visible &&
+        //                  (this._preeditText.visible ||
+        //                   this._auxText.visible ||
+        //                   this._candidateArea.visible);
 
-        if (isVisible) {
-            this.setPosition(this._dummyCursor, 0);
-            this.open(BoxPointer.PopupAnimation.NONE);
-            this.get_parent().set_child_above_sibling(this, null);
-        } else {
-            this.close(BoxPointer.PopupAnimation.NONE);
-        }
+        // if (isVisible) {
+        //     this.setPosition(this._dummyCursor, 0);
+        //     this.open(BoxPointer.PopupAnimation.NONE);
+        //     this.get_parent().set_child_above_sibling(this, null);
+        // } else {
+        //     this.close(BoxPointer.PopupAnimation.NONE);
+        // }
     }
 
     _setTextAttributes(clutterText, ibusAttrList) {
