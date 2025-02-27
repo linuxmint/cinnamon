@@ -2,7 +2,7 @@
 /* exported InputMethod */
 const { Clutter, GLib, Gio, GObject, IBus } = imports.gi;
 
-const Keyboard = imports.ui.keyboardManager;
+const KeyboardManager = imports.ui.keyboardManager;
 
 var HIDE_PANEL_TIME = 50;
 
@@ -22,7 +22,7 @@ class InputMethod extends Clutter.InputMethod {
         this._ibus.connect('disconnected', this._clear.bind(this));
         this.connect('notify::can-show-preedit', this._updateCapabilities.bind(this));
 
-        this._inputSourceManager = Keyboard.getInputSourceManager();
+        this._inputSourceManager = KeyboardManager.getInputSourceManager();
         this._inputSourceManager.reload();
         this._sourceChangedId = this._inputSourceManager.connect('current-source-changed',
                                                                  this._onSourceChanged.bind(this));
