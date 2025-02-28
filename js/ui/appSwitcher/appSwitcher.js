@@ -64,6 +64,13 @@ function getWindowsForBinding(binding) {
 
     windows = windows.filter(Main.isInteresting);
 
+    //Switch between windows on the current monitor only
+    let showCurrentMonitorOnly = global.settings.get_boolean("alttab-switcher-show-current-monitor");
+
+    if (showCurrentMonitorOnly) {
+        windows = windows.filter(w => w.get_monitor() === global.screen.get_current_monitor())
+    }
+
     switch (binding.get_name()) {
         case 'switch-panels':
         case 'switch-panels-backward':
