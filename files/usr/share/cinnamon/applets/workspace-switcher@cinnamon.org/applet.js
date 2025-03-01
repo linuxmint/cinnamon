@@ -15,6 +15,8 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
+const DEFAULT_ICON_SIZES = [8, 12, 16, 18, 22, 24, 32];
+
 
 function removeWorkspaceAtIndex(index) {
     if (global.workspace_manager.n_workspaces <= 1 ||
@@ -148,9 +150,9 @@ class WindowGraph {
         this.metaWindow = metaWindow;
         this.tracker = tracker;
         this.iconEnabled = iconEnabled;
-        this.iconSize = iconSize;
-        this.iconScaledSize = iconSize * global.ui_scale;
-        this.halvedIconScaledSize = this.iconScaledSize * 0.5;
+        this._iconSize = iconSize;
+        this._iconScaledSize = this._iconSize * global.ui_scale;
+        this._halvedIconScaledSize = this._iconScaledSize * 0.5;
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
@@ -172,8 +174,8 @@ class WindowGraph {
     }
 
     calcIconPos(rect) {
-        const x = Math.round(rect.x + rect.width / 2 - this.halvedIconScaledSize);
-        const y = Math.round(rect.y + rect.height / 2 - this.halvedIconScaledSize);
+        const x = Math.round(rect.x + rect.width / 2 - this._halvedIconScaledSize);
+        const y = Math.round(rect.y + rect.height / 2 - this._halvedIconScaledSize);
         return [x, y];
     }
 
@@ -184,7 +186,7 @@ class WindowGraph {
             this.icon.set_x(x);
             this.icon.set_y(y);
 
-            if (rect.width < this.iconScaledSize || rect.height < this.iconScaledSize) {
+            if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
                 this.icon.hide();
             } else {
                 this.icon.show();
@@ -273,7 +275,7 @@ class WindowGraph {
 
         if (app) {
             iconActor = app.create_icon_texture_for_window(
-                this.iconSize,
+                this._iconSize,
                 this.metaWindow,
             );
         }
@@ -282,7 +284,7 @@ class WindowGraph {
             iconActor = new St.Icon({
                 icon_name: 'applications-other',
                 icon_type: St.IconType.FULLCOLOR,
-                icon_size: this.iconSize,
+                icon_size: this._iconSize,
             });
         }
 
@@ -352,6 +354,18 @@ class WorkspaceGraph extends WorkspaceButton {
         }
     }
 
+    getIdealIconSize() {
+        const maxAllowed = (Math.min(this.width, this.height) * 0.55) / global.ui_scale;
+
+        for (let i = DEFAULT_ICON_SIZES.length - 1; i >= 0; i--) {
+            if (DEFAULT_ICON_SIZES[i] <= maxAllowed) {
+                return DEFAULT_ICON_SIZES[i];
+            }
+        }
+
+        return DEFAULT_ICON_SIZES[0];
+    }
+
     setGraphSize() {
         this.workspace_size = this.workspace.get_work_area_all_monitors();
 
@@ -404,7 +418,7 @@ class WorkspaceGraph extends WorkspaceButton {
         this.windowsGraphs = [];
 
         const iconEnabled = this.applet.show_window_icons;
-        const iconSize = this.applet.window_icon_size;
+        const iconSize = this.applet.window_icon_size == -1 ? this.getIdealIconSize() : this.applet.window_icon_size;
         const tracker = Cinnamon.WindowTracker.get_default();
 
         this.focusGraph = null;
@@ -458,7 +472,6 @@ class WorkspaceGraph extends WorkspaceButton {
 class CinnamonWorkspaceSwitcher extends Applet.Applet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
-
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.orientation = orientation;
