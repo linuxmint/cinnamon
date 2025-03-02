@@ -33,7 +33,7 @@
         "menu-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["category-hover", "enable-autoscroll", "search-filesystem"]
+            "keys" : ["category-hover", "search-filesystem"]
         }
     },
  "overlay-key" : {
@@ -149,12 +149,6 @@
     "default" : true,
     "description": "Change categories on hover",
     "tooltip": "Choose whether or not to change categories by hovering."
- },
-"enable-autoscroll" : {
-    "type" : "switch",
-    "default" : true,
-    "description": "Enable autoscrolling in application list",
-    "tooltip": "Choose whether or not to enable smooth autoscrolling in the application list."
  },
 "search-filesystem" : {
     "type" : "switch",

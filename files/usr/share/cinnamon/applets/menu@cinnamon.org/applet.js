@@ -2981,9 +2981,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.a11y_mag_settings.connect("changed::mag-factor", this._updateVFade.bind(this));
         this._updateVFade();
 
-        this.settings.bind("enable-autoscroll", "autoscroll_enabled", this._update_autoscroll);
-        this._update_autoscroll();
-
         this._bottomBoxToggle();
         this._sidebarToggle();
     }
@@ -3000,12 +2997,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesScrollBox.style_class = "vfade menu-applications-scrollbox";
             this.sidebarAppsScrollBox.style_class = "vfade menu-favorites-scrollbox";
         }
-    }
-
-    _update_autoscroll() {
-        this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
-        this.categoriesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
-        this.sidebarAppsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
     }
 
     _hideAllAppActors() {
