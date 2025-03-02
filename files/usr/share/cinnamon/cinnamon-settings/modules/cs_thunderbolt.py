@@ -302,7 +302,7 @@ class Module:
 
         show_disabled = False
         if not thunderbolt_present:
-            text = _("Thunderbolt or USB4 is not supported on your system.")
+            text = _("Thunderbolt or USB4 is not detected on your system.")
             self.disabled_retry_button.set_visible(False)
             show_disabled = True
         elif not bolt_installed:
