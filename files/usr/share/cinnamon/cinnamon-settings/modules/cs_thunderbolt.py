@@ -240,11 +240,11 @@ class BoltSection(SettingsSection):
 class Module:
     name = "thunderbolt"
     category = "hardware"
-    comment = _("Manage Thunderbolt™ and USB4 devices")
+    comment = _("Manage Thunderbolt and USB4 devices")
 
     def __init__(self, content_box):
         keywords = _("thunderbolt, usb, docking, station, hub, dock")
-        sidePage = SidePage("Thunderbolt™", "cs-thunderbolt", keywords, content_box,
+        sidePage = SidePage("Thunderbolt", "cs-thunderbolt", keywords, content_box,
                             module=self)
         self.sidePage = sidePage
         self.bolt_manager = None
@@ -292,7 +292,7 @@ class Module:
             page.set_spacing(10)
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, valign=Gtk.Align.START, margin_top=150)
             page.pack_start(box, True, True, 0)
-            label = Gtk.Label(label=_("No Thunderbolt™ or USB4 devices found."))
+            label = Gtk.Label(label=_("No Thunderbolt or USB4 devices found."))
             box.pack_start(label, False, False, 0)
 
             # Init the settings page
@@ -302,11 +302,11 @@ class Module:
 
         show_disabled = False
         if not thunderbolt_present:
-            text = _("Thunderbolt™ or USB4 is not supported on your system.")
+            text = _("Thunderbolt or USB4 is not supported on your system.")
             self.disabled_retry_button.set_visible(False)
             show_disabled = True
         elif not bolt_installed:
-            text = _("The 'bolt' package must be installed to manage Thunderbolt™ and USB4 devices.")
+            text = _("The 'bolt' package must be installed to manage Thunderbolt and USB4 devices.")
             self.disabled_retry_button.set_visible(True)
             self.disabled_retry_button.set_sensitive(True)
             show_disabled = True
