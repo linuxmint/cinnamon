@@ -453,10 +453,9 @@ var BoxPointer = GObject.registerClass({
         let alignment = this._arrowAlignment;
 
         let monitor = Main.layoutManager.findMonitorForActor(sourceActor);
+        this._workArea = {x: monitor.x, y: monitor.y, width: monitor.width, height: monitor.height};
 
         this._sourceAllocation = Cinnamon.util_get_transformed_allocation(sourceActor);
-        this._workArea = monitor.workArea;
-
         // Position correctly relative to the sourceActor
         let sourceNode = sourceActor.get_theme_node();
         let sourceContentBox = sourceNode.get_content_box(sourceActor.get_allocation_box());
