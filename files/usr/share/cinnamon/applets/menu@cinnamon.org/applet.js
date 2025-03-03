@@ -2353,7 +2353,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
      */
 
     static DEBUG_VMASK = false;
-    static POLL_INTERVAL = 20;
+    static POLL_INTERVAL = 30;
     static MIN_MOVEMENT = 2; // Movement smaller than this disables the mask.
 
     _getNewVectorInfo() {
