@@ -78,17 +78,17 @@ Key.prototype = {
                                                            y_fill: true,
                                                            x_align: St.Align.START });
             // Adds style to existing keyboard style to avoid repetition
-            this._boxPointer.actor.add_style_class_name('keyboard-subkeys');
+            this._boxPointer.add_style_class_name('keyboard-subkeys');
             this._getExtendedKeys();
             this.actor._extended_keys = this._extended_keyboard;
-            this._boxPointer.actor.hide();
-            Main.layoutManager.addChrome(this._boxPointer.actor, { visibleInFullscreen: true });
+            this._boxPointer.hide();
+            Main.layoutManager.addChrome(this._boxPointer, { visibleInFullscreen: true });
         }
     },
 
     _onDestroy: function() {
         if (this._boxPointer) {
-            this._boxPointer.actor.destroy();
+            this._boxPointer.destroy();
             this._boxPointer = null;
         }
     },
@@ -127,7 +127,7 @@ Key.prototype = {
             key.connect('button-release-event', Lang.bind(this, function () { extended_key.release(); }));
             this._extended_keyboard.add(key);
         }
-        this._boxPointer.bin.add_actor(this._extended_keyboard);
+        this._boxPointer.add_actor(this._extended_keyboard);
     },
 
     _onEventCapture: function (actor, event) {
@@ -142,7 +142,7 @@ Key.prototype = {
             return false;
         }
         if (type == Clutter.EventType.BUTTON_PRESS) {
-            this._boxPointer.actor.hide();
+            this._boxPointer.hide();
             this._ungrab();
             return true;
         }
@@ -159,9 +159,9 @@ Key.prototype = {
     _onShowSubkeysChanged: function () {
         if (this._key.show_subkeys) {
             this.actor.fake_release();
-            this._boxPointer.actor.raise_top();
+            this._boxPointer.raise_top();
             this._boxPointer.setPosition(this.actor, 0.5);
-            this._boxPointer.show(true);
+            this._boxPointer.show();
             this.actor.set_hover(false);
             if (!this._grabbed) {
                  Main.pushModal(this.actor);
