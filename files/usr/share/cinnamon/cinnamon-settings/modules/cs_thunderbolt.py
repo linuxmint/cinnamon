@@ -339,7 +339,6 @@ class Module:
             self.bolt_device_removed(obj_path, False)
 
     def setup(self):
-        page = self.sidePage.stack.get_child_by_name("settings")
         if not self.bolt_manager:
             self.bolt_manager = BoltManagerProxy()
             self.bolt_manager.on_device_added = self.bolt_device_added
