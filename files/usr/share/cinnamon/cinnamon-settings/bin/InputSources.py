@@ -3,10 +3,13 @@
 import gettext
 import os
 import subprocess
+from collections import OrderedDict
 
 import gi
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk, GLib, Gio, Gtk, GObject
+gi.require_version("Gdk", "3.0")
+gi.require_version("CinnamonDesktop", "3.0")
+from gi.repository import Gdk, GLib, Gio, Gtk, GObject, CinnamonDesktop
 
 from SettingsWidgets import SidePage, Keybinding
 from xapp.SettingsWidgets import SettingsPage
@@ -18,19 +21,19 @@ class InputSourceSettingsPage(SettingsPage):
     def __init__(self):
         super().__init__()
 
-        self.input_sources_list = Gtk.ListBox(visible=True)
-        self.source_activate_handler = self.input_sources_list.connect("row-activated", self.on_input_source_activated)
-        self.input_sources_model = InputSourceModel()
-        self.input_sources_model.connect("items-changed", self.on_model_updated)
-        self.input_sources_list.bind_model(self.input_sources_model, self.input_sources_model.create_row)
-        self.input_sources_list.set_header_func(self.input_source_row_header_func)
-
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
         builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
 
         box = builder.get_object("input_sources_list_box")
-        builder.get_object("input-sources-placeholder").add(self.input_sources_list)
+        self.pack_start(box, False, False, 0)
+
+        self.input_sources_list = builder.get_object("input_sources_list")
+        self.source_activate_handler = self.input_sources_list.connect("row-activated", self.on_input_source_activated)
+        self.current_input_sources_model = CurrentInputSourcesModel()
+        self.current_input_sources_model.connect("items-changed", self.on_model_updated)
+        self.input_sources_list.bind_model(self.current_input_sources_model, self.current_input_sources_model.create_row)
+        self.input_sources_list.set_header_func(self.row_separator_func)
 
         self.test_layout_button = builder.get_object("test_layout")
         self.test_layout_button.connect("clicked", self.on_test_layout_clicked)
@@ -49,8 +52,6 @@ class InputSourceSettingsPage(SettingsPage):
         self.move_layout_down_button.connect("clicked", self.on_move_layout_down_clicked)
 
         self.update_widgets()
-
-        self.pack_start(box, False, False, 0)
 
         section = self.add_section(_("Options"))
         widget = GSettingsSwitch(
@@ -91,7 +92,7 @@ class InputSourceSettingsPage(SettingsPage):
         )
         section.add_row(widget)
 
-    def input_source_row_header_func(self, row, before, data=None):
+    def row_separator_func(self, row, before, data=None):
         if before is None:
             row.set_header(None)
             return
@@ -107,7 +108,6 @@ class InputSourceSettingsPage(SettingsPage):
 
         for row in self.input_sources_list.get_children():
             source = row.get_child().input_source
-            print(source.active)
             if source.active:
                 self.input_sources_list.select_row(row)
 
@@ -118,7 +118,7 @@ class InputSourceSettingsPage(SettingsPage):
 
     def on_input_source_activated(self, listbox, row):
         source = row.get_child().input_source
-        self.input_sources_model.activate(source)
+        self.current_input_sources_model.activate(source)
 
         self.update_widgets()
 
@@ -129,22 +129,22 @@ class InputSourceSettingsPage(SettingsPage):
         return source
 
     def on_add_layout_clicked(self, button, data=None):
-        pass
+        self.current_input_sources_model.show_add_layout_dialog()
 
     def on_remove_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
-            self.input_sources_model.remove_layout(source)
+            self.current_input_sources_model.remove_layout(source)
 
     def on_move_layout_up_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
-            self.input_sources_model.move_layout_up(source)
+            self.current_input_sources_model.move_layout_up(source)
 
     def on_move_layout_down_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
-            self.input_sources_model.move_layout_down(source)
+            self.current_input_sources_model.move_layout_down(source)
 
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
@@ -154,16 +154,174 @@ class InputSourceSettingsPage(SettingsPage):
 
     def update_widgets(self):
         # Don't allow removal of last remaining layout
-        n_items = self.input_sources_model.get_n_items()
+        n_items = self.current_input_sources_model.get_n_items()
         self.remove_layout_button.set_sensitive(n_items > 1)
         self.add_layout_button.set_sensitive(n_items < MAX_LAYOUTS_PER_GROUP)
 
         rows = self.input_sources_list.get_selected_rows()
         if len(rows) > 0:
             source = rows[0].get_child().input_source
-            index = self.input_sources_model.get_item_index(source)
+            index = self.current_input_sources_model.get_item_index(source)
             self.move_layout_up_button.set_sensitive(index > 0)
-            self.move_layout_down_button.set_sensitive(index < self.input_sources_model.get_n_items() - 1)
+            self.move_layout_down_button.set_sensitive(index < self.current_input_sources_model.get_n_items() - 1)
+
+class AddLayoutDialog():
+    def __init__(self, used_ids):
+        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+        self.used_ids = used_ids
+
+        builder = Gtk.Builder()
+        builder.set_translation_domain('cinnamon')
+        builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
+
+        self.dialog = builder.get_object("add_layout_dialog")
+        self.add_button = builder.get_object("add_button")
+        self.add_button.connect("clicked", self._on_add_button_clicked)
+        self.cancel_button = builder.get_object("cancel_button")
+        self.cancel_button.connect("clicked", self._on_cancel_button_clicked)
+        self.preview_button = builder.get_object("preview_button")
+        self.preview_button.connect("clicked", self._on_preview_button_clicked)
+        self.search_entry = builder.get_object("search_entry")
+        self.search_entry.connect("search-changed", self._on_search_entry_changed)
+        self.layouts_listbox = builder.get_object("layouts_listbox")
+        self.layouts_listbox.connect("row-activated", self._on_row_activated)
+        self.layouts_listbox.connect("selected-rows-changed", self._on_row_selected)
+
+        self.layouts_listbox.set_header_func(self.row_separator_func)
+        self.layouts_listbox.set_sort_func(self.row_sort_func)
+        self.layouts_listbox.set_filter_func(self.row_filter_func)
+
+        self._locales_by_language = {}
+        self._locales = {}
+        self._row_items = []
+
+        self.response_id = None
+
+        self.xkb_info = CinnamonDesktop.XkbInfo()
+
+        self._load_layouts()
+        self._update_widgets()
+
+    def _on_row_activated(self, listbox, row, data=None):
+        self._on_add_button_clicked(None)
+
+    def _on_row_selected(self, listbox, data=None):
+        self._update_widgets()
+
+    def _on_search_entry_changed(self, entry, data=None):
+        self.layouts_listbox.invalidate_filter()
+
+    def _on_preview_button_clicked(self, button, data=None):
+        selection = self.layouts_listbox.get_selected_rows()
+        if len(selection) > 0:
+            row = selection[0]
+            if GLib.find_program_in_path("gkbd-keyboard-display"):
+                subprocess.Popen(["gkbd-keyboard-display", "-l", row.layout_id])
+
+    def _on_cancel_button_clicked(self, button, data=None):
+        self.dialog.response(Gtk.ResponseType.CANCEL)
+
+    def _on_add_button_clicked(self, button, data=None):
+        selection = self.layouts_listbox.get_selected_rows()
+        if len(selection) > 0:
+            row = selection[0]
+            self.response = row.layout_id
+            print("Response:", self.response)
+            self.dialog.response(Gtk.ResponseType.OK)
+
+    def row_separator_func(self, row, before, data=None):
+        if before is None:
+            row.set_header(None)
+            return
+
+        row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
+    def row_sort_func(self, row1, row2):
+        return GLib.utf8_collate(row1.unaccented_name, row2.unaccented_name)
+
+    def row_filter_func(self, row, data=None):
+        search_entry_text = self.search_entry.get_text()
+        normalized = GLib.utf8_normalize(search_entry_text, -1, GLib.NormalizeMode.DEFAULT)
+        search_text = GLib.utf8_casefold(normalized, -1)
+
+        return search_text in row.unaccented_name
+
+    def _update_widgets(self):
+        selection = self.layouts_listbox.get_selected_rows()
+        self.preview_button.set_sensitive(len(selection) > 0)
+        self.add_button.set_sensitive(len(selection) > 0)
+
+    def _load_layouts(self):
+        layouts_with_locale = set()
+
+        locales = CinnamonDesktop.get_all_locales()
+
+        for locale in locales:
+            parsed, lang, country, codeset, mod = CinnamonDesktop.parse_locale(locale)
+            if not parsed:
+                continue
+
+            if country is not None:
+                simple_locale = f"{lang}_{country}.UTF-8"
+            else:
+                simple_locale = f"{lang}.UTF-8"
+
+            if simple_locale in self._locales:
+                continue
+
+            info = LocaleInfo(simple_locale)
+            self._locales[simple_locale] = info
+
+            language = CinnamonDesktop.get_language_from_code(lang, None)
+            try:
+                self._locales_by_language[language][info] = info
+            except KeyError:
+                self._locales_by_language[language] = { info: info }
+
+            got, type_, id_ = CinnamonDesktop.get_input_source_from_locale(simple_locale)
+            if got and type_ == "xkb":
+                if id_ not in layouts_with_locale:
+                    layouts_with_locale.add(id_)
+
+            language_layouts = self.xkb_info.get_layouts_for_language(lang)
+            for layout in language_layouts:
+                if layout in layouts_with_locale:
+                    continue
+                layouts_with_locale.add(layout)
+                self.add_row(info, layout)
+
+        # FIXME: This is probably all we need for xkb...
+        for layout in self.xkb_info.get_all_layouts():
+            if layout in layouts_with_locale:
+                continue
+            self.add_row(None, layout)
+
+    def add_row(self, lang_info, layout_id):
+        if layout_id in self.used_ids:
+            return
+
+        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
+        if got:
+            row = LayoutRow(lang_info, layout_id, display_name, short_name, layout, variant)
+            self.layouts_listbox.insert(row, -1)
+
+class LayoutRow(Gtk.ListBoxRow):
+    def __init__(self, info, layout_id, display_name, short_name, layout, variant):
+        super().__init__()
+        self.display_name = display_name
+        self.layout_id = layout_id #  us+dvorak ... 
+
+        normalized = GLib.utf8_normalize(self.display_name, -1, GLib.NormalizeMode.DEFAULT)
+        self.unaccented_name = GLib.utf8_casefold(normalized, -1)
+        self.short_name = short_name
+        self.layout = layout
+        self.variant = variant
+        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+        self.label = Gtk.Label(label=self.display_name, xalign=0.0, use_markup=True, margin_start=4)
+
+        self.box.pack_start(self.label, True, True, 0)
+        self.add(self.box)
+        self.show_all()
 
 class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
     def __init__(self, label, num_bind, schema, key, *args, **kwargs):
@@ -174,15 +332,15 @@ class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
         PXGSettingsBackend.__init__(self, *args, **kwargs)
         self.bind_settings()
 
-class InputSource(GObject.GObject):
-    __gtype_name__ = "InputSource"
+class CurrentInputSource(GObject.GObject):
+    __gtype_name__ = "CurrentInputSource"
     def __init__(self, item):
         super().__init__()
         print(item)
         self.type, self.id, self.display_name, self.short_name, self.xkbid, self.active = item
 
-class InputSourceModel(GObject.Object, Gio.ListModel):
-    __gtype_name__ = 'InputSourceModel'
+class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
+    __gtype_name__ = 'CurrentInputSourcesModel'
 
     def __init__(self):
         super().__init__()
@@ -216,11 +374,19 @@ class InputSourceModel(GObject.Object, Gio.ListModel):
         new_layouts = []
 
         for layout in remote_layouts:
-            new_layouts.append(InputSource(layout))
+            new_layouts.append(CurrentInputSource(layout))
 
         self._sources = new_layouts
-        print("ITEMS")
         self.items_changed(0, len(old_layouts), len(new_layouts))
+
+    def show_add_layout_dialog(self):
+        used_ids = [source.xkbid for source in self._sources]
+        add_dialog = AddLayoutDialog(used_ids)
+        add_dialog.dialog.show_all()
+        ret = add_dialog.dialog.run()
+        if ret == Gtk.ResponseType.OK:
+            self.add_layout(add_dialog.response)
+        add_dialog.dialog.destroy()
 
     def create_row(self, source, data=None):
         row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
@@ -235,7 +401,7 @@ class InputSourceModel(GObject.Object, Gio.ListModel):
             print(flag_file)
             if os.path.exists(flag_file):
                 flag = Gio.FileIcon(file=Gio.File.new_for_path(flag_file))
-                flag = Gtk.Image.new_from_gicon(flag, Gtk.IconSize.DIALOG)
+                flag = Gtk.Image.new_from_gicon(flag, Gtk.IconSize.DND)
                 row.pack_start(flag, False, False, 0)
                 indicator_done = True
 
@@ -257,7 +423,7 @@ class InputSourceModel(GObject.Object, Gio.ListModel):
         return self._sources[position]
 
     def do_get_item_type(self):
-        return InputSource
+        return CurrentInputSource
 
     def do_get_n_items(self):
         return len(self._sources)
@@ -272,6 +438,17 @@ class InputSourceModel(GObject.Object, Gio.ListModel):
             return
         idx = self._sources.index(source)
         self._proxy.ActivateInputSourceIndex("(d)", idx)
+
+    def add_layout(self, layout_id):
+        raw_sources = self.input_source_settings.get_value("sources")
+        new_sources = []
+
+        # raw_sources is a variant, not a list.
+        for source_info in raw_sources:
+            new_sources.append(source_info)
+
+        new_sources.append(("xkb", layout_id))
+        self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
 
     def remove_layout(self, source):
         raw_sources = self.input_source_settings.get_value("sources")
@@ -328,3 +505,15 @@ class InputSourceModel(GObject.Object, Gio.ListModel):
         except Exception as e:
             print("Could not move layout", e)
 
+class LocaleInfo:
+    def __init__(self, simple_locale):
+        self.id = simple_locale
+        self.name = CinnamonDesktop.get_language_from_locale(simple_locale, None)
+        normalized = GLib.utf8_normalize(self.name, -1, GLib.NormalizeMode.DEFAULT)
+        self.unaccented_name = GLib.utf8_casefold(normalized, -1)
+        tmp = CinnamonDesktop.get_language_from_locale(simple_locale, "C")
+        normalized = GLib.utf8_normalize(tmp, -1, GLib.NormalizeMode.DEFAULT)
+        self.untranslated_name = GLib.utf8_casefold(normalized, -1)
+
+        self.layout_rows_by_id = {}
+        self.engine_rows_by_id = {}
