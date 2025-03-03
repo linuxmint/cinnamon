@@ -1,0 +1,7 @@
+{
+    "uuid": "icon-menu@cinnamon.org",
+    "name": "Icon Menu",
+    "description": "A grid layout applications menu.",
+    "icon": "applications-other",
+    "max-instances": -1
+}
