@@ -128,7 +128,7 @@ class UserWidget extends St.BoxLayout {
 
         this._avatar = new Avatar(user);
         this._avatar.x_align = Clutter.ActorAlign.CENTER;
-        this.add_child(this._avatar);
+        this.add(this._avatar, { x_fill: false });
 
         this._label = new St.Label({ style_class: 'user-widget-label' });
         this._label.y_align = Clutter.ActorAlign.CENTER;
