@@ -83,9 +83,10 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
         });
 
         this._dialogProxy.init(null);
+        this._proxy_signal_id = this._dialogProxy.connect("g-signal", this._proxySignalReceived.bind(this));
 
-        this._dialogProxy.connect("g-signal", this._proxySignalReceived.bind(this));
-        this._dialogProxy.GetCapabilitiesRemote(this._getCapabilities.bind(this));
+        this._capabilities_cancellable = new Gio.Cancellable();
+        this._dialogProxy.GetCapabilitiesRemote(this._getCapabilities.bind(this), this._capabilities_cancellable);
     }
 
     _proxySignalReceived(proxy, sender, signal, params) {
@@ -114,7 +115,10 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
 
     _getCapabilities(result, error) {
         if (error) {
-            global.logError('Error getting capabilities: ' + error.message);
+            if (!error.matches(Gio.io_error_quark(), Gio.IOErrorEnum.CANCELLED)) {
+                global.logError('Error getting capabilities: ' + error.message);
+            }
+
             return;
         }
 
@@ -311,9 +315,15 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
     }
 
     close() {
-        super.close();
+        if (this._proxy_signal_id > 0) {
+            this._capabilities_cancellable.cancel(); 
+            this._dialogProxy.disconnect(this._proxy_signal_id);
+            this._proxy_signal_id = 0;
+        }
 
         this._removeDelayTimer();
         this._dialogProxy = null;
+
+        super.close();
     }
 });

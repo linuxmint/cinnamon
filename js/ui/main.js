@@ -1609,6 +1609,7 @@ function showEndSessionDialog(mode) {
 
     endSessionDialog = new EndSessionDialog(mode);
     if (!endSessionDialog.open()) {
+        endSessionDialog.close();
         endSessionDialog = null;
         global.logWarning("Failed to open end session dialog");
     }
