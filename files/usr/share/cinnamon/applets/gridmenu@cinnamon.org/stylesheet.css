@@ -1,4 +1,4 @@
-/*css selectors used by Cinnamenu
+/*css selectors used by gridmenu
 ┌──.menu-background .gridmenu .gridmenu-sidebar-top .gridmenu-sidebar-bottom .gridmenu-sidebar-left .gridmenu-sidebar-right──────
 │┌──.menu-applications-outer-box .menu-applications-box──────────────────────────────────────────────────────────────────────────
 ││┌──.gridmenu-middle-pane───────────────────────────────────────────────────────────────────────────────────────────
@@ -25,7 +25,8 @@
 }
 
 .gridmenu .menu-applications-inner-box {
-  padding: 0px;
+  padding-left: 0px;
+  padding-right: 0px;
 }
 
 .menu-applications-grid-box .menu-application-button,
@@ -34,7 +35,8 @@
 }
 
 .gridmenu .menu-categories-box {
-  padding: 0px 6px;
+  padding-left: 6px;
+  padding-right: 6px;
 }
 
 

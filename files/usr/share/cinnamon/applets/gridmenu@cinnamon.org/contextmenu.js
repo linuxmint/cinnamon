@@ -8,7 +8,6 @@ const {getUserDesktopDir, changeModeGFile} = imports.misc.fileUtils;
 const {SignalManager} = imports.misc.signalManager;
 const {spawnCommandLine} = imports.misc.util;
 
-const {_} = require('./utils');
 const {MODABLE, MODED} = require('./emoji');
 
 class ContextMenuItem extends PopupBaseMenuItem {
@@ -240,7 +239,7 @@ class ContextMenu {
                         file.copy( destFile, 0, null, null);
                         changeModeGFile(destFile, 755);
                     } catch(e) {
-                        global.logError('Cinnamenu: Error creating desktop file', e);
+                        global.logError('gridmenu: Error creating desktop file', e);
                     }
                     this.close();
                 }

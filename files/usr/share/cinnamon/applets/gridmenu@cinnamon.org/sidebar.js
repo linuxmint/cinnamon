@@ -9,7 +9,6 @@ const {SignalManager} = imports.misc.signalManager;
 const {DragMotionResult, makeDraggable} = imports.ui.dnd;
 
 const {
-    _,
     wordWrap,
     getThumbnail_gicon,
     showTooltip,

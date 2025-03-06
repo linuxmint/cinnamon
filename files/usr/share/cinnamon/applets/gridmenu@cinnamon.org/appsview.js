@@ -9,38 +9,14 @@ const {SignalManager} = imports.misc.signalManager;
 const {EllipsizeMode} = imports.gi.Pango;
 const {DragMotionResult, makeDraggable} = imports.ui.dnd;
 
-const { _,
-        wordWrap,
-        getThumbnail_gicon,
-        showTooltip,
-        hideTooltipIfVisible,
-        scrollToButton} = require('./utils');
+const {
+    wordWrap,
+    getThumbnail_gicon,
+    showTooltip,
+    hideTooltipIfVisible,
+    scrollToButton
+} = require('./utils');
 const DescriptionPlacement = Object.freeze({TOOLTIP: 0, UNDER: 1, NONE: 2});
-
-function listp(obj, indent = 0) {
-    if (typeof obj !== "object" || !obj) {
-        return obj;
-    }
-
-    let out = " ".repeat(indent) + "{\n";
-    for (let key in obj) {
-        if (!Object.hasOwn(obj, key)) {
-            out += ">";
-        }
-        try {
-            if (typeof obj[key] === "object") {
-                out += listp(obj[key], indent + 2); 
-            } else {
-                out += " ".repeat(indent + 2)
-                out += key + ": " + obj[key] + "\n";
-            }
-        } catch {
-            out += "[error]\n";
-        }
-    }
-    out += " ".repeat(indent) + "}\n";
-    return out;
-}
 
 class AppButton {
     constructor(appThis, app) {
@@ -457,7 +433,6 @@ class AppsView {
                 appButton = new AppButton(this.appThis, app);
                 this.buttonStore.push(appButton);
             }
-            const gridLayout = this.applicationsGridLayout.layout_manager;
             appButton.setGridButtonWidth();// In case menu has been resized.
             gridLayout.attach(appButton.actor, this.column, this.rownum, 1, 1);
             appButton.actor.layout_column = this.column;//used for key navigation

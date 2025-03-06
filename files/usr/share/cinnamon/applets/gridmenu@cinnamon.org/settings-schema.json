@@ -308,7 +308,7 @@
         "description":"Panel icon",
         "dependency":"menu-icon-custom",
         "default_icon" : "cinnamon-symbolic",
-        "tooltip":"Panel icon"
+        "tooltip":"Select an icon to show in the panel."
     },
     "menu-icon-size-custom":{
         "type":"checkbox",

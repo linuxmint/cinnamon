@@ -1,20 +1,10 @@
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const Gettext = imports.gettext;
 const Mainloop = imports.mainloop;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const ByteArray = imports.byteArray;
 const {addTween} = imports.ui.tweener;
-Gettext.bindtextdomain('Cinnamenu@json', GLib.get_home_dir() + '/.local/share/locale');
-
-function _(str) {
-    let cinnamonTranslation = Gettext.gettext(str);
-    if (cinnamonTranslation !== str) {
-        return cinnamonTranslation;
-    }
-    return Gettext.dgettext('Cinnamenu@json', str);
-}
 
 const wordWrap = text => text.match( /.{1,80}(\s|$|-|=|\+|_|&|\\)|\S+?(\s|$|-|=|\+|_|&|\\)/g ).join('\n');
 
@@ -74,7 +64,7 @@ const getThumbnail_gicon = (uri, mimeType) => {
 let onlyOneTooltip = null;
 const showTooltip = (actor, xpos, ypos, center_on_xpos, text) => {
     if (onlyOneTooltip) {
-        global.logWarning("Cinnamenu: Previous tooltip still exists...removing...");
+        global.logWarning("gridmenu: Previous tooltip still exists...removing...");
         onlyOneTooltip.destroy();
         onlyOneTooltip = null;
     }
@@ -212,7 +202,7 @@ var scrollToButton = (button, enableAnimation) => {
     while (!(scrollBox instanceof St.ScrollView)) {
         i++;
         if (i > 10 || !scrollBox) {
-            global.logWarning('Cinnamenu: Unable to find scrollbox for' + button.actor.toString());
+            global.logWarning('gridmenu: Unable to find scrollbox for' + button.actor.toString());
             return false;
         }
         scrollBox = scrollBox.get_parent();
@@ -254,7 +244,6 @@ var scrollToButton = (button, enableAnimation) => {
 }
 
 module.exports = {
-    _,
     wordWrap,
     graphemeBaseChars,
     getThumbnail_gicon,

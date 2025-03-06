@@ -8,7 +8,7 @@ const St = imports.gi.St;
 const {SignalManager} = imports.misc.signalManager;
 const {DragMotionResult, makeDraggable} = imports.ui.dnd;
 
-const {_, scrollToButton} = require('./utils');
+const {scrollToButton} = require('./utils');
 
 let buttonTimeoutId = null;
 function clearButtonTimeout() {
@@ -321,6 +321,7 @@ class CategoriesView {
 
         //Add folder categories
         const folderCategories = this.appThis.settings.folderCategories.slice();
+        let folderCategoriesChanged = false;
         folderCategories.forEach((folder, index) => {
             let button = this.buttons.find(button => button.id === folder);
             if (button) {
@@ -337,13 +338,14 @@ class CategoriesView {
                     button = new CategoryButton(this.appThis, folder, displayName, null, gicon);
                     newButtons.push(button);
                 } catch(e) {
-                    log("Cinnamenu:Error creating folder category: " + folder + " ...skipping.");
+                    log("gridmenu:Error creating folder category: " + folder + " ...skipping.");
                     //remove this error causing element from the array.
                     folderCategories.splice(index, 1);
+                    folderCategoriesChanged = true;
                 }
             }
         });
-        this.appThis.settings.folderCategories = folderCategories;
+        if (folderCategoriesChanged) this.appThis.settings.folderCategories = folderCategories;
 
         //set user category order to default if none already
         if (this.appThis.settings.categories.length === 0) {
@@ -367,7 +369,9 @@ class CategoriesView {
         });
 
         //replace user button order to remove unused ids.
-        this.appThis.settings.categories = this.buttons.map(button => button.id);
+        if (this.appThis.settings.categories.length > this.buttons.length) {
+            this.appThis.settings.categories = this.buttons.map(button => button.id);
+        }
 
         //populate categoriesBox with buttons
         this.categoriesBox.remove_all_children();

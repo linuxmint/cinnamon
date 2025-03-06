@@ -20,7 +20,7 @@ const {launch_all} = imports.ui.searchProviderManager;
 const {AppletSettings} = imports.ui.settings;
 const Mainloop = imports.mainloop;
 
-const {_, graphemeBaseChars, searchStr} = require('./utils');
+const {graphemeBaseChars, searchStr} = require('./utils');
 const {Display} = require('./display');
 const {EMOJI} = require('./emoji');
 const EMOJI_CODE = 0, EMOJI_NAME = 1, EMOJI_KEYWORDS = 2;
@@ -1186,7 +1186,7 @@ class CinnamenuApplet extends TextIconApplet {
                     try {
                         enumerator = source.enumerate_children_finish(result);
                     } catch(e) {
-                        global.logWarning('Cinnamenu file search:' + e.message);
+                        global.logWarning('gridmenu file search:' + e.message);
                     }
                     if (!this.searchActive || thisSearchId !== this.currentSearchId) {
                         if (enumerator) {

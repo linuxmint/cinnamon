@@ -1,4 +1,3 @@
-const {_} = require('./utils');
 //This list is taken from https://unicode.org/emoji/charts/emoji-list.html
 //Emoji List, v15.1
 
