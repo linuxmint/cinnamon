@@ -307,7 +307,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
-            {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
@@ -582,12 +581,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                 appGroup => appGroup.setActorAttributes(iconSize)
             );
         });
-    }
-
-    updateWindowNumberState() {
-        this.workspaces.forEach(
-            workspace => workspace.calcAllWindowNumbers()
-        );
     }
 
     updateAttentionState(display, window) {
