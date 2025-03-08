@@ -137,10 +137,10 @@ const CinnamonIface =
             </method> \
             <method name="CloseEndSessionDialog"/> \
             <method name="GetInputSources"> \
-                <arg type="a(sssssb)" direction="out" name="layouts"/> \
+                <arg type="a(ssissssib)" direction="out" name="layouts"/> \
             </method> \
             <method name="ActivateInputSourceIndex"> \
-                <arg type="d" direction="in" name="index"/> \
+                <arg type="i" direction="in" name="index"/> \
             </method> \
             <signal name="InputSourcesChanged"/> \
         </interface> \
@@ -549,9 +549,12 @@ CinnamonDBus.prototype = {
             ret.push([
                 source.type,
                 source.id,
+                source.index,
                 source.displayName,
                 source._shortName,
+                source.flagName,
                 source.xkbId,
+                source.dupeId,
                 source === is_mgr._mruSources[0]
             ]);
         }

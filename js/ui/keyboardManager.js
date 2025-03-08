@@ -186,12 +186,14 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 });
 */
 var InputSource = class {
-    constructor(type, id, displayName, shortName, index) {
+    constructor(type, id, displayName, shortName, flagName, index) {
         this.type = type;
         this.id = id;
         this.displayName = displayName;
         this._shortName = shortName;
         this.index = index;
+        this.dupeId = 0;
+        this.flagName = flagName;
 
         this.properties = null;
 
@@ -272,6 +274,7 @@ class InputSourceSwitcher extends SwitcherPopup.SwitcherList {
         let bin = new St.Bin({ style_class: 'input-source-switcher-symbol',
                                important: true
         });
+        global.log(item.shortName);
         let symbol = new St.Label({
             text: item.shortName,
             x_align: Clutter.ActorAlign.CENTER,
@@ -397,6 +400,7 @@ var InputSourceManager = class {
         this._mruSources = [];
         this._mruSourcesBackup = null;
         this._kb_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.keybindings.wm" });
+        this._interface_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
 
         this._keybindingAction = global.display.add_keybinding(
             'switch-input-source',
@@ -413,6 +417,7 @@ var InputSourceManager = class {
         this._settings = new InputSourceSessionSettings();
         this._settings.connect('input-sources-changed', this._inputSourcesChanged.bind(this));
         this._settings.connect('keyboard-options-changed', this._keyboardOptionsChanged.bind(this));
+        this._interface_settings.connect("changed", this._interfaceSettingsChanged.bind(this));
 
         this._xkbInfo = getXkbInfo();
         this._keyboardManager = getKeyboardManager();
@@ -496,6 +501,12 @@ var InputSourceManager = class {
     _keyboardOptionsChanged() {
         this._keyboardManager.setKeyboardOptions(this._settings.keyboardOptions);
         this._keyboardManager.reapply();
+    }
+
+    _interfaceSettingsChanged(settings, key) {
+        if (key.startsWith("keyboard-layout-")) {
+            this.reload();
+        }
     }
 
     _updateMruSettings() {
@@ -628,6 +639,9 @@ var InputSourceManager = class {
         let sources = this._settings.inputSources;
         let nSources = sources.length;
 
+        let use_group_names = this._interface_settings.get_boolean("keyboard-layout-prefer-variant-names");
+        let use_upper = this._interface_settings.get_boolean("keyboard-layout-use-upper");
+
         this._currentSource = null;
         this._inputSources = {};
         this._ibusSources = {};
@@ -636,13 +650,21 @@ var InputSourceManager = class {
         for (let i = 0; i < nSources; i++) {
             let displayName;
             let shortName;
+            let flagName;
+            let xkb_layout;
             let type = sources[i].type;
             let id = sources[i].id;
             let exists = false;
 
             if (type == INPUT_SOURCE_TYPE_XKB) {
-                [exists, displayName, shortName] =
+                [exists, displayName, shortName, xkb_layout] =
                     this._xkbInfo.get_layout_info(id);
+                flagName = xkb_layout;
+                if (!use_group_names) {
+                    shortName = xkb_layout;
+                }
+
+                // global.log(exists, displayName, shortName);
             } else if (type == INPUT_SOURCE_TYPE_IBUS) {
                 if (this._disableIBus)
                     continue;
@@ -656,18 +678,29 @@ var InputSourceManager = class {
                     exists = true;
                     displayName = '%s (%s)'.format(language, longName);
                     shortName = this._makeEngineShortName(engineDesc);
+                    flagName = shortName;  // TODO
                 }
             }
 
-            if (exists)
-                infosList.push({ type, id, displayName, shortName });
+            if (exists) {
+                if (use_upper) {
+                    shortName = shortName.toUpperCase();
+                }
+
+                infosList.push({ type, id, displayName, shortName, flagName });
+            }
         }
 
         if (infosList.length == 0) {
             let type = INPUT_SOURCE_TYPE_XKB;
             let id = DEFAULT_LAYOUT;
             let [, displayName, shortName] = this._xkbInfo.get_layout_info(id);
-            infosList.push({ type, id, displayName, shortName });
+            let flagName = xkb_layout;
+            if (!use_group_names) {
+                shortName = xkb_layout;
+            }
+
+            infosList.push({ type, id, displayName, shortName, flagName });
         }
 
         let inputSourcesByShortName = {};
@@ -676,6 +709,7 @@ var InputSourceManager = class {
                                      infosList[i].id,
                                      infosList[i].displayName,
                                      infosList[i].shortName,
+                                     infosList[i].flagName,
                                      i);
             is.connect('activate', this.activateInputSource.bind(this));
 
@@ -692,8 +726,7 @@ var InputSourceManager = class {
         for (let i in this._inputSources) {
             let is = this._inputSources[i];
             if (inputSourcesByShortName[is.shortName].length > 1) {
-                let sub = inputSourcesByShortName[is.shortName].indexOf(is) + 1;
-                is.shortName += String.fromCharCode(0x2080 + sub);
+                is.dupeId = inputSourcesByShortName[is.shortName].indexOf(is);
             }
         }
 
@@ -862,6 +895,14 @@ var InputSourceManager = class {
 
     get inputSources() {
         return this._inputSources;
+    }
+
+    get numInputSources() {
+        return Object.keys(this._inputSources).length;
+    }
+
+    get multipleSources() {
+        return this.numInputSources > 1;
     }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);
