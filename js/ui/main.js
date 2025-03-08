@@ -504,6 +504,9 @@ function start() {
         return GLib.SOURCE_REMOVE;
     });
 
+    keyboardManager = new KeyboardManager();
+    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+
     Promise.all([
         AppletManager.init(),
         ExtensionSystem.init(),
@@ -551,8 +554,8 @@ function start() {
 
         global.connect('shutdown', do_shutdown_sequence);
 
-        keyboardManager = new KeyboardManager();
-        Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+        // keyboardManager = new KeyboardManager();
+        // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
     }).catch(error => {

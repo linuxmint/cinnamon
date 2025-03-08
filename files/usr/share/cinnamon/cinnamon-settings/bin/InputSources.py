@@ -72,7 +72,7 @@ class InputSourceSettingsPage(SettingsPage):
         section.add_row(widget)
         widget = GSettingsSwitch(
             _("Use upper-case when using text to represent a layout"),
-            "org.cinnamon.desktop.interface", "keyboard-layout-prefer-variant-names"
+            "org.cinnamon.desktop.interface", "keyboard-layout-use-upper"
         )
         section.add_row(widget)
 
@@ -150,7 +150,7 @@ class InputSourceSettingsPage(SettingsPage):
         source = self._get_selected_source()
 
         if GLib.find_program_in_path("gkbd-keyboard-display"):
-            subprocess.Popen(["gkbd-keyboard-display", "-l", source.xkbid])
+            subprocess.Popen(["gkbd-keyboard-display", "-g", str(source.index + 1)])
 
     def update_widgets(self):
         # Don't allow removal of last remaining layout
@@ -337,7 +337,7 @@ class CurrentInputSource(GObject.GObject):
     def __init__(self, item):
         super().__init__()
         print(item)
-        self.type, self.id, self.display_name, self.short_name, self.xkbid, self.active = item
+        self.type, self.id, self.index, self.display_name, self.short_name, self.flag_name, self.xkbid, self.dupe_id, self.active = item
 
 class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
     __gtype_name__ = 'CurrentInputSourcesModel'
@@ -347,6 +347,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         self._proxy = None
         self._sources = []
         self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
+        self.interface_settings.connect("changed", self.on_interface_settings_changed)
         self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
 
         try:
@@ -366,6 +367,10 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
 
     def _on_proxy_signal(self, proxy, sender_name, signal_name, parameters):
         if signal_name == "InputSourcesChanged":
+            self.refresh_input_source_list()
+
+    def on_interface_settings_changed(self, settings, key, data=None):
+        if key.startswith("keyboard-layout-"):
             self.refresh_input_source_list()
 
     def refresh_input_source_list(self):
@@ -397,7 +402,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         indicator_done = False
 
         if self.interface_settings.get_boolean("keyboard-layout-show-flags"):
-            flag_file = f"/usr/share/iso-flag-png/{source.id}.png"
+            flag_file = f"/usr/share/iso-flag-png/{source.flag_name}.png"
             print(flag_file)
             if os.path.exists(flag_file):
                 flag = Gio.FileIcon(file=Gio.File.new_for_path(flag_file))
@@ -406,13 +411,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
                 indicator_done = True
 
         if not indicator_done:
-            use_caps = self.interface_settings.get_boolean("keyboard-layout-prefer-variant-names")
-
-            if self.interface_settings.get_boolean("keyboard-layout-prefer-variant-names"):
-                label = Gtk.Label(label=source.short_name.upper() if use_caps else source.short_name)
-            else:
-                label = Gtk.Label(label=source.id.upper() if use_caps else source.id)
-
+            label = Gtk.Label(label=source.short_name)
             row.pack_end(label, False, False, 0)
 
         row.show_all()
@@ -437,7 +436,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         if self._proxy is None:
             return
         idx = self._sources.index(source)
-        self._proxy.ActivateInputSourceIndex("(d)", idx)
+        self._proxy.ActivateInputSourceIndex("(i)", idx)
 
     def add_layout(self, layout_id):
         raw_sources = self.input_source_settings.get_value("sources")
