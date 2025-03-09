@@ -475,7 +475,7 @@ NotificationDaemon.prototype = {
                 let image_path = hints['image-path'];
                 // Convert filepaths to file URIs but leave file URIs untouched
                 if (image_path.substr(0, 7) != 'file://') {
-                    image_path = GLib.filename_to_uri(image_path);
+                    image_path = GLib.filename_to_uri(image_path, null);
                 }
                 image = St.TextureCache.get_default().load_uri_async(image_path,
                                                                      notification.IMAGE_SIZE,
