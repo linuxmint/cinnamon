@@ -477,7 +477,7 @@ NotificationDaemon.prototype = {
                 if (image_path.substr(0, 7) != 'file://') {
                     image_path = GLib.filename_to_uri(image_path);
                 }
-                image = St.TextureCache.get_default().load_uri_async(image_path, null),
+                image = St.TextureCache.get_default().load_uri_async(image_path,
                                                                      notification.IMAGE_SIZE,
                                                                      notification.IMAGE_SIZE);
             }
