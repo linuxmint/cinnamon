@@ -156,6 +156,17 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             } catch (e) {
                 this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
             }
+
+            // Change the format string if the mouse is over the calender to account for the tooltip.
+            this._is_entered = false;
+            this.actor.connect('enter-event', Lang.bind(this, function (menu, event) {
+                this._is_entered = true;
+                this._updateFormatString();
+            }))
+            this.actor.connect('leave-event', Lang.bind(this, function (menu, event) {
+                this._is_entered = false;
+                this._updateFormatString();
+            }))
         }
         catch (e) {
             global.logError(e);
@@ -198,7 +209,17 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         let in_vertical_panel = (this.orientation == St.Side.LEFT || this.orientation == St.Side.RIGHT);
 
         if (this.use_custom_format) {
-            if (!this.clock.set_format_string(this.custom_format)) {
+            let custom_format = this.custom_format;
+
+            /* The frequency that the clock updates is based on the format string.
+             * Thus, when the tooltip is displayed, we join the regular custom format string
+             * with the custom tooltip format. That way, the format string is guaranteed
+             * to contain whatever has the finest resolution between them. */
+            if (this._is_entered) {
+                custom_format += this.custom_tooltip_format;
+            }
+
+            if (!this.clock.set_format_string(custom_format)) {
                 global.logError("Calendar applet: bad time format string - check your string.");
                 this.clock.set_format_string("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
@@ -238,6 +259,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         if (!this.use_custom_format) {
             label_string = label_string.capitalize();
+        }
+        else if (this._is_entered) {
+            label_string = this.clock.get_clock_for_format(this.custom_format);
         }
 
         this.go_home_button.reactive = !this._calendar.todaySelected();
