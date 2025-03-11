@@ -100,6 +100,11 @@ $ws_dot_inactive: $ws_indicator_height / 6;
   font-size: 34pt;
   width: 96px;
   height: 96px;
+
+  .input-source-switcher-flag-icon {
+    width: 64px;
+    height: 64px;
+  }
 }
 
 .input-switcher-popup {
@@ -123,21 +128,6 @@ $ws_dot_inactive: $ws_indicator_height / 6;
       background-color: transparentize($fg_color, 0.7);
       color: $fg_color;
     }
-  }
-
-  // window thumbnails
-  .thumbnail-box {
-    padding: 2px;
-    spacing: $base_padding;
-  }
-
-  .thumbnail {
-    width: 256px;
-  }
-
-  .separator {
-    width: 1px;
-    background: $borders_color;
   }
 
   .input-switcher-list-item-container {

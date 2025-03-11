@@ -132,6 +132,15 @@ CoglTexture     *st_texture_cache_load_gfile_to_cogl_texture (StTextureCache *ca
 CoglTexture *st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
                                                          const gchar    *file_path);
 
+cairo_surface_t *st_texture_cache_load_file_sync_to_cairo_surface (StTextureCache        *cache,
+                                                                   StTextureCachePolicy   policy,
+                                                                   GFile                 *file,
+                                                                   int                    available_width,
+                                                                   int                    available_height,
+                                                                   int                    paint_scale,
+                                                                   gfloat                 resource_scale,
+                                                                   GError               **error);
+
 cairo_surface_t *st_texture_cache_load_gfile_to_cairo_surface (StTextureCache *cache,
                                                               GFile          *file,
                                                               gint            paint_scale,

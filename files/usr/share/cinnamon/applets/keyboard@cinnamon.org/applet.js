@@ -1,11 +1,9 @@
 const Applet = imports.ui.applet;
-const XApp = imports.gi.XApp;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const Gio = imports.gi.Gio;
-const Cairo = imports.cairo;
 const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
 
@@ -13,88 +11,6 @@ const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
 const POPUP_MENU_ICON_STYLE_CLASS = "popup-menu-icon";
 const APPLET_ICON_STYLE_CLASS = "applet-icon";
-
-const getFlagFileName = name => `/usr/share/iso-flag-png/${name}.png`;
-
-class EmblemedIcon {
-    constructor(file_path, layout_dupe_id, style_class) {
-        this.layout_dupe_id = layout_dupe_id;
-
-        this.img = { surface: St.TextureCache.get_default().load_file_to_cairo_surface(file_path) };
-        this.img.width = this.img.surface.getWidth();
-        this.img.height = this.img.surface.getHeight();
-        this.img.sizes = [this.img.width, this.img.height];
-        const aspect = this.img.width / this.img.height;
-
-        this.HORIZONTAL_SCALE = aspect;
-        this.STYLE_CLASS_SCALE = (style_class == POPUP_MENU_ICON_STYLE_CLASS) ? aspect : 1;  
-
-        this.actor = new St.DrawingArea({ style_class });
-        this.actor.connect("style-changed", () => this._style_changed());
-        this.actor.connect("repaint", (...args) => this._repaint(...args));
-    }
-
-    _calc_natural_sizes(base_size) {
-        const height = base_size * this.STYLE_CLASS_SCALE;
-        const width = height * this.HORIZONTAL_SCALE;
-        return [width, height];
-    }
-
-    _style_changed() {
-        const base_size = Math.round(this.actor.get_theme_node().get_length("icon-size"));
-        [this.actor.natural_width, this.actor.natural_height] = this._calc_natural_sizes(base_size);
-    }
-
-    _repaint(actor) {
-        const cr = actor.get_context();
-        const [w, h] = actor.get_surface_size();
-
-        cr.save();
-
-        const factor = Math.min(w / this.img.width, h / this.img.height);
-
-        const img_offset_x = ((w / factor) - this.img.width) / 2;
-        const img_offset_y = ((h / factor) - this.img.height) / 2;
-
-        const render_sizes = this.img.sizes.map(x => x * factor);
-
-        const render_offset_x = (w - render_sizes[0]) / 2;
-        const render_offset_y = (h - render_sizes[1]) / 2;
-
-        cr.scale(factor, factor);
-        cr.setSourceSurface(this.img.surface, img_offset_x, img_offset_y);
-        cr.getSource().setFilter(Cairo.Filter.BEST);
-        cr.setOperator(Cairo.Operator.SOURCE);
-
-        cr.paint();
-        cr.restore();
-
-        const [render_center_x, render_center_y] = render_sizes.map(x => x / 2);
-
-        XApp.KbdLayoutController.render_cairo_subscript(
-            cr,
-            render_offset_x + render_center_x, render_offset_y + render_center_y,
-            render_center_x,                   render_center_y,
-            this.layout_dupe_id
-        );
-
-        cr.$dispose();
-    }
-
-    /* Monkey patch St.Icon functions used in js/ui/applet.js IconApplet so
-       we can use its _setStyle() function for figuring out how big we should
-       be
-     */
-    get_icon_type() {
-        return St.IconType.FULLCOLOR;
-    }
-
-    set_icon_size(size) {
-        [this.actor.width, this.actor.height] = this._calc_natural_sizes(size * global.ui_scale);
-    }
-
-    set_style_class_name(name) { }
-}
 
 class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
     constructor(layout_setter, indicator, long_name) {
@@ -113,14 +29,27 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
     }
 }
 
-class CinnamonKeyboardApplet extends Applet.TextIconApplet {
+class CinnamonKeyboardApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
+
+        this._panel_icon_box = new St.Bin(); // https://developer.gnome.org/st/stable/StBin.htm
+
+        this._panel_icon_box.set_fill(true,true);
+        this._panel_icon_box.set_alignment(St.Align.MIDDLE, St.Align.MIDDLE);
+
+        this.actor.add(this._panel_icon_box, {
+            y_align: St.Align.MIDDLE,
+            y_fill: false
+        });
 
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this._layoutItems = new Map();
         this._layoutIcons = new Map();
+
+        this._selectedLayout = null;
+        this._menuItems = new Map();
 
         this._maxSeenWidth = this._maxSeenHeight = 0;
         this.show_flags = this.use_upper = this.use_variants = false;
@@ -140,13 +69,11 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
             const _syncConfig = () => this._syncConfig();
 
-            this.desktop_settings.connect("changed::keyboard-layout-show-flags", _syncConfig);
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._onPanelEditModeChanged());
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), () => {
                 Main.overview.hide();
-                global.log
                 Util.spawn(['gkbd-keyboard-display', '-g', String(this._manager.currentSource.index + 1)]);
             });
             this.menu.addAction(_("Show Character Table"), () => {
@@ -159,6 +86,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._manager.connect("sources-changed", this._onSourcesChanged.bind(this));
             this._manager.connect("current-source-changed", this._onCurrentSourceChanged.bind(this));
             this._syncConfig();
+            this._syncGroup();
         }
         catch (e) {
             global.logError(e);
@@ -235,28 +163,22 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
         this._layoutIcons = icons || new Map();
     }
 
-    _createIcon(source, actorClass) {
-        let isFlagIcon = false;
-        let iconActor = null;
-        let iconInstance = null;
+    _createFlagIcon(source, actorClass, size) {
+        let actor = null;
         let name = source.flagName;
 
-        if (this.show_flags) {
-            const file = Gio.file_new_for_path(getFlagFileName(name));
-            if (file.query_exists(null)) {
-                iconInstance = new EmblemedIcon(file.get_path(), source.dupeId, actorClass);
-                iconActor = iconInstance.actor;
-                isFlagIcon = true;
-            }
+        const file = Gio.file_new_for_path(KeyboardManager.getFlagFileName(name));
+        if (file.query_exists(null)) {
+            actor = new KeyboardManager.SubscriptableFlagIcon({
+                style_class: actorClass,
+                file: file,
+                subscript: source.dupeId > 0 ? String(source.dupeId) : null,
+                width: size,
+                height: size,
+            });
         }
 
-        if (!isFlagIcon) {
-
-            name = source.shortName;
-            iconActor = new St.Label({ text: name });
-        }
-
-        return {name, iconInstance, iconActor, isFlagIcon};
+        return actor;
     }
 
     _setMargin(actor, left, right) {
@@ -266,42 +188,42 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
     _syncConfig() {
         this._maxSeenWidth = this._maxSeenHeight = 0;
 
+        this._menuItems.forEach((v, k, m) => v.destroy());
+        this._menuItems = new Map()
+
+        this._selectedLayout = null;
+
         if (!this._manager.multipleSources) {
-            this._setLayoutItems([]);
             this.menu.close();
             this.actor.hide();
             return;
         }
 
-        const layoutItems = new Map();
-        const layoutIcons = new Map();
-
         this.show_flags = this.desktop_settings.get_boolean("keyboard-layout-show-flags");
-
-        if (this.show_flags) {
-            this._maxSeenWidth = this._maxSeenHeight = 0;
-        }
-
         this.actor.show();
 
         for (const sourceId of Object.keys(this._manager.inputSources)) {
             const source = this._manager.inputSources[sourceId];
 
-            const popupIconInfo = this._createIcon(source, POPUP_MENU_ICON_STYLE_CLASS);
+            let actor = null;
+            const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
+
+            if (this.show_flags) {
+                actor = this._createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, iconSize);
+            }
+
+            if (actor == null) {
+                actor = new St.Label({ text: source.shortName, style_class: "applet-label" });
+            }
+
             const menuItem = new LayoutMenuItem(
                 () => source.activate(),
-                popupIconInfo.iconActor, source.displayName
+                actor, source.displayName
             );
-            layoutItems.set(source, menuItem);
+
+            this._menuItems.set(source, menuItem);
             this.menu.addMenuItem(menuItem);
-            const appletIconInfo = this._createIcon(source, APPLET_ICON_STYLE_CLASS);
-            layoutIcons.set(source, appletIconInfo);
         }
-
-        this._setLayoutItems(layoutItems);
-        this._setLayoutIcons(layoutIcons);
-
-        this._syncGroup();
     }
 
     _syncGroup() {
@@ -317,46 +239,62 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this._selectedLayout = null;
         }
 
-        const item = this._layoutItems.get(selected);
+        const item = this._menuItems.get(selected);
         item.setShowDot(true);
 
         this._selectedLayout = item;
         this.set_applet_tooltip(selected.displayName);
 
-        const _applet_label_box = this._applet_label.get_parent();
-        this._setMargin(_applet_label_box, 0, 0);
-        this._setMargin(this._applet_icon_box, 0, 0);
+        let actor = null;
+        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
 
-        const {name, iconActor, iconInstance, isFlagIcon} = this._layoutIcons.get(selected);
-        if (isFlagIcon) {
-            this._applet_icon = iconInstance;
-            this._applet_icon_box.set_child(iconActor);
-            this._applet_icon_box.show();
-            this._setStyle();
-            this.set_applet_label("");
-        } else {
-            this.set_applet_label(name);
-            this._applet_icon_box.hide();
+        if (this.show_flags) {
+            actor = this._createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
         }
 
-        const box = isFlagIcon ? this._applet_icon_box : _applet_label_box;
-        const width = this.actor.get_width();
-        const height = this.actor.get_height();
-        if (width >= this._maxSeenWidth) {
-            this._maxSeenWidth = width;
+        if (actor == null) {
+            actor = new St.Label({
+                text: selected.shortName,
+                style_class: "applet-label"
+            });
         }
-        if (height >= this._maxSeenHeight) {
-            this._maxSeenHeight = height;
-        } else {
-            this.actor.set_height(this._maxSeenHeight);
-        }
-        const addedWidth = this._maxSeenWidth - width;
-        const leftOffset = parseInt(addedWidth / 2);
-        const rightOffset = addedWidth - leftOffset; 
-        this._setMargin(box, leftOffset, rightOffset);
-        if (isFlagIcon) {
-            this._setStyle();
-        }
+
+        this._panel_icon_box.set_child(actor);
+
+        // const _applet_label_box = this._applet_label.get_parent();
+        // this._setMargin(_applet_label_box, 0, 0);
+        // this._setMargin(this._applet_icon_box, 0, 0);
+
+        // const {name, actor, isFlagIcon} = this._layoutIcons.get(selected);
+        // if (isFlagIcon) {
+        //     this._applet_icon = actor;
+        //     this._applet_icon_box.set_child(actor);
+        //     this._applet_icon_box.show();
+        //     this._setStyle();
+        //     this.set_applet_label("");
+        // } else {
+        //     this.set_applet_label(name);
+        //     this._applet_icon_box.hide();
+        // }
+
+        // const box = isFlagIcon ? this._applet_icon_box : _applet_label_box;
+        // const width = this.actor.get_width();
+        // const height = this.actor.get_height();
+        // if (width >= this._maxSeenWidth) {
+        //     this._maxSeenWidth = width;
+        // }
+        // if (height >= this._maxSeenHeight) {
+        //     this._maxSeenHeight = height;
+        // } else {
+        //     this.actor.set_height(this._maxSeenHeight);
+        // }
+        // const addedWidth = this._maxSeenWidth - width;
+        // const leftOffset = parseInt(addedWidth / 2);
+        // const rightOffset = addedWidth - leftOffset; 
+        // this._setMargin(box, leftOffset, rightOffset);
+        // if (isFlagIcon) {
+        //     this._setStyle();
+        // }
     }
 
     on_applet_removed_from_panel() {
