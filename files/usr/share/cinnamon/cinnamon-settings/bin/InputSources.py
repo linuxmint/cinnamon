@@ -5,6 +5,7 @@ import os
 import subprocess
 from collections import OrderedDict
 
+import cairo
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
@@ -164,6 +165,50 @@ class InputSourceSettingsPage(SettingsPage):
             index = self.current_input_sources_model.get_item_index(source)
             self.move_layout_up_button.set_sensitive(index > 0)
             self.move_layout_down_button.set_sensitive(index < self.current_input_sources_model.get_n_items() - 1)
+
+class LayoutIcon(Gtk.Overlay):
+    def __init__(self, file, dupe_id):
+        Gtk.Overlay.__init__(self)
+        self.file = file
+        self.dupe_id = dupe_id
+
+        fi = Gio.FileIcon(file=file)
+        flag = Gtk.Image.new_from_gicon(fi, Gtk.IconSize.DIALOG)
+        self.add(flag)
+        print(self.dupe_id)
+        self.drawing = Gtk.DrawingArea(halign=Gtk.Align.FILL, valign=Gtk.Align.FILL)
+        self.drawing.connect('draw', self.draw_subscript)
+        self.add_overlay(self.drawing)
+
+    def draw_subscript(self, area, cr, data=None):
+        if self.dupe_id < 1:
+            return
+
+        alloc = area.get_allocation()
+        ax, ay, awidth, aheight = (alloc.x, alloc.y, alloc.width, alloc.height)
+
+        x = width = awidth / 2
+        y = height = aheight / 2
+
+        cr.set_source_rgba(0, 0, 0, 0.5)
+        cr.rectangle(x, y, width, height)
+        cr.fill()
+
+        cr.set_source_rgba(1.0, 1.0, 1.0, 0.8)
+        cr.rectangle(x + 1, y + 1, width - 2, height - 2)
+        cr.fill()
+
+        cr.set_source_rgba(0.0, 0.0, 0.0, 1.0)
+        cr.select_font_face("sans", cairo.FontSlant.NORMAL, cairo.FontWeight.BOLD)
+        cr.set_font_size(height - 2.0)
+
+        dupe_str = str(self.dupe_id)
+
+        ext = cr.text_extents(dupe_str)
+        cr.move_to((x + (width / 2.0) - (ext.width / 2.0)),
+                   (y + (height / 2.0) + (ext.height / 2.0)))
+        cr.show_text(dupe_str)
+
 
 class AddLayoutDialog():
     def __init__(self, used_ids):
@@ -405,8 +450,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
             flag_file = f"/usr/share/iso-flag-png/{source.flag_name}.png"
             print(flag_file)
             if os.path.exists(flag_file):
-                flag = Gio.FileIcon(file=Gio.File.new_for_path(flag_file))
-                flag = Gtk.Image.new_from_gicon(flag, Gtk.IconSize.DND)
+                file = Gio.File.new_for_path(flag_file)
+                flag = LayoutIcon(file, source.dupe_id)
+                # flag = Gtk.Image.new_from_gicon(flag, Gtk.IconSize.DND)
                 row.pack_start(flag, False, False, 0)
                 indicator_done = True
 
