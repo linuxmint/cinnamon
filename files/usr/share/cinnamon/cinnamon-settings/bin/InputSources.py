@@ -173,9 +173,8 @@ class LayoutIcon(Gtk.Overlay):
         self.dupe_id = dupe_id
 
         fi = Gio.FileIcon(file=file)
-        flag = Gtk.Image.new_from_gicon(fi, Gtk.IconSize.DIALOG)
+        flag = Gtk.Image.new_from_gicon(fi, Gtk.IconSize.DND)
         self.add(flag)
-        print(self.dupe_id)
         self.drawing = Gtk.DrawingArea(halign=Gtk.Align.FILL, valign=Gtk.Align.FILL)
         self.drawing.connect('draw', self.draw_subscript)
         self.add_overlay(self.drawing)
@@ -427,6 +426,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
             new_layouts.append(CurrentInputSource(layout))
 
         self._sources = new_layouts
+        self.column_size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.BOTH)
         self.items_changed(0, len(old_layouts), len(new_layouts))
 
     def show_add_layout_dialog(self):
@@ -448,16 +448,18 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
 
         if self.interface_settings.get_boolean("keyboard-layout-show-flags"):
             flag_file = f"/usr/share/iso-flag-png/{source.flag_name}.png"
-            print(flag_file)
             if os.path.exists(flag_file):
                 file = Gio.File.new_for_path(flag_file)
                 flag = LayoutIcon(file, source.dupe_id)
-                # flag = Gtk.Image.new_from_gicon(flag, Gtk.IconSize.DND)
+
+                self.column_size_group.add_widget(flag)
                 row.pack_start(flag, False, False, 0)
                 indicator_done = True
 
         if not indicator_done:
-            label = Gtk.Label(label=source.short_name)
+            markup = f"<span size='x-large' weight='bold'>{source.short_name}</span>"
+            label = Gtk.Label(xalign=0.0, label=markup, use_markup=True)
+            self.column_size_group.add_widget(label)
             row.pack_end(label, False, False, 0)
 
         row.show_all()
