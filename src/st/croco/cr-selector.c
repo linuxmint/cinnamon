@@ -50,20 +50,6 @@ cr_selector_new (CRSimpleSel * a_simple_sel)
         return result;
 }
 
-CRSelector *
-cr_selector_parse_from_buf (const guchar * a_char_buf, enum CREncoding a_enc)
-{
-        CRParser *parser = NULL;
-
-        g_return_val_if_fail (a_char_buf, NULL);
-
-        parser = cr_parser_new_from_buf ((guchar*)a_char_buf, strlen ((const char *) a_char_buf),
-                                         a_enc, FALSE);
-        g_return_val_if_fail (parser, NULL);
-
-        return NULL;
-}
-
 /**
  * cr_selector_append:
  *

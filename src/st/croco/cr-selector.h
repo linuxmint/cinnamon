@@ -70,9 +70,6 @@ struct _CRSelector
 
 CRSelector* cr_selector_new (CRSimpleSel *a_sel_expr) ;
 
-CRSelector * cr_selector_parse_from_buf (const guchar * a_char_buf,
-					 enum CREncoding a_enc) ;
-
 CRSelector* cr_selector_append (CRSelector *a_this, CRSelector *a_new) ;
 
 CRSelector* cr_selector_append_simple_sel (CRSelector *a_this,
