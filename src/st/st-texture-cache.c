@@ -1961,7 +1961,7 @@ out:
   return texdata;
 }
 
-cairo_surface_t *
+static cairo_surface_t *
 st_texture_cache_load_file_sync_to_cairo_surface (StTextureCache        *cache,
                                                   StTextureCachePolicy   policy,
                                                   GFile                 *file,
