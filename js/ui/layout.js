@@ -443,9 +443,10 @@ LayoutManager.prototype = {
             }
         }));
 
+        this.emit('keyboard-visible-changed', true);
     },
 
-    queueHideKeyboard: function() {
+    hideKeyboard: function() {
         if (this.hideIdleId != 0) {
             Mainloop.source_remove(this.hideIdleId);
             this.hideIdleId = 0;
@@ -456,10 +457,11 @@ LayoutManager.prototype = {
             this._keyboardHeightNotifyId = 0;
         }
 
-        this.hideIdleId = Mainloop.idle_add(Lang.bind(this, this.hideKeyboard));
+        this.hideIdleId = Mainloop.idle_add(Lang.bind(this, this.hideKeyboardComplete));
+        this.emit('keyboard-visible-changed', false);
     },
 
-    hideKeyboard: function (immediate) {
+    hideKeyboardComplete: function (immediate) {
         this.keyboardBox.hide();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this._chrome.updateRegions();
