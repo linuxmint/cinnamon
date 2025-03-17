@@ -289,19 +289,22 @@ var SubscriptableFlagIcon = GObject.registerClass({
         }
 
         try {
-            this._image = St.TextureCache.get_default().load_file_async(
-                this._file,
+            St.TextureCache.get_default().load_image_from_file_async(
+                this._file.get_path(),
                 -1, this.get_height(),
-                global.ui_scale, 1.0
+                (cache, handle, actor) => {
+                    this._image = actor;
+                    let constraint = new Clutter.BindConstraint({
+                        source: actor,
+                        coordinate: Clutter.BindCoordinate.ALL
+                    })
+                    global.log(actor.width, actor.height);
+
+                    this._drawingArea.add_constraint(constraint);
+                    this._imageBin.set_child(actor);
+                }
             );
 
-            let constraint = new Clutter.BindConstraint({
-                source: this._image,
-                coordinate: Clutter.BindCoordinate.ALL
-            })
-            this._drawingArea.add_constraint(constraint);
-
-            this._imageBin.set_child(this._image);
         } catch (e) {
             global.logError(e);
         }

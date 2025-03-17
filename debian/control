@@ -53,7 +53,6 @@ Depends:
  cjs (>= 4.8),
  cups-pk-helper,
  gir1.2-accountsservice-1.0,
- gir1.2-caribou-1.0,
  gir1.2-cinnamondesktop-3.0 (>= 5.3),
  gir1.2-cmenu-3.0 (>= 4.8),
  gir1.2-cvc-1.0,

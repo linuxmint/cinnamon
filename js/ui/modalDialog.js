@@ -72,9 +72,9 @@ var ModalDialog = GObject.registerClass({
             y: 0,
             accessible_role: Atk.Role.DIALOG,
         });
-
+        global.log("REACT", Main.virtualKeyboardManager.visible);
         params = Params.parse(params, {
-            cinnamonReactive: Main.virtualKeyboard.enabled,
+            cinnamonReactive: Main.virtualKeyboardManager.visible,
             styleClass: null,
             destroyOnClose: true,
         });
