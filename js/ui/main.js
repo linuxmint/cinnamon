@@ -169,7 +169,8 @@ var magnifier = null;
 var locatePointer = null;
 var xdndHandler = null;
 var statusIconDispatcher = null;
-var virtualKeyboard = null;
+var virtualKeyboardManager = null;
+var inputMethod = null;
 var layoutManager = null;
 var networkAgent = null;
 var monitorLabeler = null;
@@ -255,6 +256,12 @@ function _initUserSession() {
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
         getRunDialog().open();
     });
+}
+
+function _loadOskLayouts() {
+    _oskResource = Gio.Resource.load('%s/cinnamon-osk-layouts.gresource'.format(global.datadir));
+    _oskResource._register();
+    St.TextureCache.get_default().get_icon_theme().add_resource_path('/org/cinnamon/osk-layouts');
 }
 
 function do_shutdown_sequence() {
@@ -427,7 +434,6 @@ function start() {
 
     wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
-    virtualKeyboard = new VirtualKeyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
@@ -463,7 +469,6 @@ function start() {
     locatePointer = new LocatePointer.locatePointer();
 
     layoutManager.init();
-    virtualKeyboard.init();
     overview.init();
     expo.init();
 
@@ -504,8 +509,11 @@ function start() {
         return GLib.SOURCE_REMOVE;
     });
 
+    _loadOskLayouts();
     keyboardManager = new KeyboardManager();
-    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    inputMethod = new InputMethod.InputMethod();
+    Clutter.get_default_backend().set_input_method(inputMethod);
+    virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
 
     Promise.all([
         AppletManager.init(),
