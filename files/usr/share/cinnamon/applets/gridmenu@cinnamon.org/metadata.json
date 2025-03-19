@@ -1,7 +1,0 @@
-{
-    "uuid": "gridmenu@cinnamon.org",
-    "name": "Gridmenu",
-    "description": "A grid menu with file browser and emoji search.",
-    "icon": "applications-other",
-    "max-instances": -1
-}
