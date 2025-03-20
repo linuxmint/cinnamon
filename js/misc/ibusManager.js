@@ -55,7 +55,7 @@ var IBusManager = class {
         this._ibus.set_watch_ibus_signal(true);
         this._ibus.connect('global-engine-changed', this._engineChanged.bind(this));
 
-        // this._spawn(Meta.is_wayland_compositor() ? [] : ['--xim']);
+        this._spawn(Meta.is_wayland_compositor() ? [] : ['--xim']);
     }
 
     _spawn(extraArgs = []) {
