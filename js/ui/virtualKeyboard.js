@@ -193,7 +193,7 @@ class Suggestions extends St.BoxLayout {
         this.show();
     }
 
-    add(word, callback) {
+    addNew(word, callback) {
         let button = new St.Button({ label: word });
         button.connect('clicked', callback);
         this.add(button);
@@ -276,7 +276,7 @@ var Key = GObject.registerClass({
     },
 }, class Key extends St.BoxLayout {
     _init(key, extendedKeys, icon = null) {
-        super._init({ style_class: 'key-layout' });
+        super._init({ style_class: 'key-container' });
 
         this.key = key || "";
         this.keyButton = this._makeKey(this.key, icon);
@@ -1250,7 +1250,6 @@ class Keyboard extends St.BoxLayout {
 
         this._keyboardVisible = false;
         this._connectSignal(Main.layoutManager, 'keyboard-visible-changed', (_lm, visible) => {
-            global.log("KEYBOARD VISIBLE CHANGED", visible);
             this._keyboardVisible = visible;
         });
         this._keyboardRequested = false;
@@ -1787,7 +1786,8 @@ class Keyboard extends St.BoxLayout {
     addSuggestion(text, callback) {
         if (!this._suggestions)
             return;
-        this._suggestions.add(text, callback);
+
+        this._suggestions.addNew(text, callback);
         this._suggestions.show();
     }
 

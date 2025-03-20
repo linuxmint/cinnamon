@@ -288,6 +288,7 @@ LayoutManager.prototype = {
                                               reactive: true,
                                               track_hover: true });
         this.keyboardBox.hide();
+        this._keyboardIndex = -1;
 
         this.addChrome(this.keyboardBox, { visibleInFullscreen: true, affectsStruts: false });
 
@@ -356,11 +357,14 @@ LayoutManager.prototype = {
         if (this.hotCornerManager)
             this.hotCornerManager.update();
         this._chrome._queueUpdateRegions();
+
+        this.keyboardIndex = this.primaryIndex;
     },
 
     _monitorsChanged: function() {
         this._updateMonitors();
         this._updateBoxes();
+        this._updateKeyboardBox()
         this.emit('monitors-changed');
     },
 
@@ -417,6 +421,27 @@ LayoutManager.prototype = {
         this._chrome.thawUpdateRegions();
 
         Main.setRunState(Main.RunState.RUNNING);
+    },
+
+    _updateKeyboardBox: function() {
+        // return;
+        global.log(this.keyboardMonitor);
+        this.keyboardBox.set_position(this.keyboardMonitor.x,
+                                      this.keyboardMonitor.y + this.keyboardMonitor.height);
+        this.keyboardBox.set_size(this.keyboardMonitor.width, -1);
+    },
+
+    get keyboardMonitor() {
+        return this.monitors[this.keyboardIndex];
+    },
+
+    set keyboardIndex(v) {
+        this._keyboardIndex = v;
+        this._updateKeyboardBox();
+    },
+
+    get keyboardIndex() {
+        return this._keyboardIndex;
     },
 
     showKeyboard: function () {

@@ -1,35 +1,156 @@
-// on screen keyboard
+// // on screen keyboard
 
-#keyboard { background-color: $bg_color; }
+// #keyboard { background-color: $bg_color; }
 
-.keyboard {
- &-layout {
+// .keyboard {
+//  &-layout {
+//     padding: $base_padding;
+//     spacing: $base_padding;
+//   }
+
+//   &-row { spacing: $base_padding; }
+
+//   &-key {
+//     @extend %button;
+
+//     min-height: 2em;
+//     min-width: 2em;
+//     padding: 0;
+//     font-size: 1.2em;
+//     font-weight: bold;
+
+//     border-width: 5px;
+//     border-style: solid;
+//     border-radius: 3px + $base_border_radius;
+
+//     &:grayed { @include button(insensitive); }
+//     StIcon { icon-size: 1.125em; }
+//   }
+
+//   &-subkeys {
+//     padding: $base_padding;
+//     -arrow-background-color: $bg_color;
+//     -arrow-border-width: 1px;
+//     -arrow-border-radius: $base_border_radius;
+//     -arrow-border-color: lighten($borders_color, 10%);
+//     -arrow-base: 20px;
+//     -arrow-rise: 10px;
+//     -boxpointer-gap: 0;
+//   }
+// }
+
+/* On-screen Keyboard */
+
+$key_size: 1.2em;
+$key_border_radius: $base_border_radius + 3px;
+$key_bg_color:  $bg_color;
+// $default_key_bg_color: darken($key_bg_color, 4%);
+$default_key_bg_color: darken($base_color, 11%);
+
+
+// draw keys using button function
+#keyboard {
+  background-color: transparentize(darken($bg_color, 5%), 0.1);
+  box-shadow: inset 0 1px 0 0 $borders_color;
+
+  .page-indicator {
     padding: $base_padding;
-    spacing: $base_padding;
+
+    .page-indicator-icon {
+      width: 8px;
+      height: 8px;
+    }
+  }
+}
+
+// the container for individual keys
+.key-container {
+  padding: $base_margin;
+  spacing: $base_margin;
+}
+
+// the keys
+.keyboard-key {
+
+  @include button(normal, $c:$key_bg_color);
+
+  &:focus { @include button(focus);}
+  &:hover, &:checked { @include button(hover, $c: $key_bg_color);}
+  &:active { @include button(active, $c: $key_bg_color); }
+
+  @include fontsize(20px);
+  min-height: $key_size;
+  min-width: $key_size;
+  border-width: 1px;
+  border-style: solid;
+  border-radius: $key_border_radius;
+
+  &:grayed { //FIXMEy
+    background-color: darken($bg_color, 3%);
+    color: $fg_color;
+    border-color: $borders_color;
   }
 
-  &-row { spacing: $base_padding; }
-
-  &-key {
-    @extend %button;
-
-    min-height: 2em;
-    min-width: 2em;
-    padding: 0;
-    font-size: 1.2em;
-    font-weight: bold;
-
-    &:grayed { @include button(insensitive); }
+  // non-character keys
+  &.default-key {
+    @include button(normal, $c:$default_key_bg_color);
+    &:hover, &:checked {@include button(hover, $c: $default_key_bg_color);}
+    &:active { @include button(active, $c: $default_key_bg_color);}
   }
 
-  &-subkeys {
-    padding: $base_padding;
-    -arrow-background-color: $bg_color;
-    -arrow-border-width: 1px;
-    -arrow-border-radius: $base_border_radius;
-    -arrow-border-color: lighten($borders_color, 10%);
-    -arrow-base: 20px;
-    -arrow-rise: 10px;
-    -boxpointer-gap: 0;
+  // enter key is suggested-action
+  &.enter-key {
+    @include button(normal, $c:$light_bg_color, $tc:$fg_color);
+    &:hover, &:checked { @include button(hover, $c: lighten($light_bg_color, 3%));}
+    &:active {@include button(active, $c: darken($light_bg_color, 2%));}
   }
+
+  &.shilllft-key-uppercase { color: $light_bg_color }
+
+  StIcon { icon-size: 1.125em; }
+}
+
+// long press on a key popup
+.keyboard-subkeys {
+  color: $fg_color;
+  -arrow-border-radius: $base_border_radius;
+  -arrow-background-color: $bg_color;
+  -arrow-border-width: 1px;
+  -arrow-border-color: lighten($bg_color, 9%);
+  -arrow-base: 20px;
+  -arrow-rise: 10px;
+  -boxpointer-gap: $base_padding;
+
+  .keyboard-key {
+    @include button(normal, $c:$key_bg_color);
+
+    &:focus { @include button(focus);}
+    &:hover, &:checked { @include button(hover, $c: $key_bg_color);}
+    &:active { @include button(active, $c: $key_bg_color); }
+
+    border-radius:$base_border_radius;
+  }
+}
+
+// emoji
+.emoji-page {
+  .keyboard-key {
+    background-color: transparent;
+    border: none;
+    color: initial;
+  }
+}
+
+.emoji-panel {
+  .keyboard-key:latched {
+    border-color: lighten($light_bg_color, 5%);
+    background-color: $light_bg_color;
+  }
+}
+
+// suggestions
+.word-suggestions {
+  @include fontsize(18px);
+  spacing: 12px;
+  min-height: 20pt;
 }

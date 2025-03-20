@@ -10,7 +10,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("Gdk", "3.0")
 gi.require_version("CinnamonDesktop", "3.0")
-from gi.repository import Gdk, GLib, Gio, Gtk, GObject, CinnamonDesktop
+gi.require_version('IBus', '1.0')
+from gi.repository import Gdk, GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus, Pango
 
 from SettingsWidgets import SidePage, Keybinding
 from xapp.SettingsWidgets import SettingsPage
@@ -213,6 +214,7 @@ class AddLayoutDialog():
     def __init__(self, used_ids):
         self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
         self.used_ids = used_ids
+        self.loaded_ids = set()
 
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
@@ -246,6 +248,37 @@ class AddLayoutDialog():
         self._load_layouts()
         self._update_widgets()
 
+        self._ibus = IBus.Bus.new_async()
+        if not self._ibus.is_connected():
+            print("Connecting to IBus")
+            self._ibus.connect("connected", self._on_ibus_connected)
+        else:
+            print("IBus already connected")
+            self._on_ibus_connected(self._ibus)
+
+    def _on_ibus_connected(self, ibus, data=None):
+        # return
+        ibus.list_engines_async(5000, None, self._list_ibus_engines_completed)
+
+    def _list_ibus_engines_completed(self, ibus, res, data=None):
+        try:
+            engines = ibus.list_engines_async_finish(res)
+        except GLib.Error as e:
+            print("Error getting list of ibus engines: %s" % e.message)
+            return
+
+        batch = []
+        for engine in engines:
+            batch.append(engine)
+            if len(batch) == 10:
+                GLib.timeout_add(100, self._add_ibus_engine_batch, batch)
+                batch = []
+
+    def _add_ibus_engine_batch(self, batch):
+        for engine in batch:
+            self.add_ibus_row(engine)
+        self._update_widgets()
+
     def _on_row_activated(self, listbox, row, data=None):
         self._on_add_button_clicked(None)
 
@@ -269,7 +302,7 @@ class AddLayoutDialog():
         selection = self.layouts_listbox.get_selected_rows()
         if len(selection) > 0:
             row = selection[0]
-            self.response = row.layout_id
+            self.response = (row.type, row.layout_id)
             print("Response:", self.response)
             self.dialog.response(Gtk.ResponseType.OK)
 
@@ -288,11 +321,13 @@ class AddLayoutDialog():
         normalized = GLib.utf8_normalize(search_entry_text, -1, GLib.NormalizeMode.DEFAULT)
         search_text = GLib.utf8_casefold(normalized, -1)
 
-        return search_text in row.unaccented_name
+        return search_text in row.unaccented_name or search_text in row.type
 
     def _update_widgets(self):
         selection = self.layouts_listbox.get_selected_rows()
-        self.preview_button.set_sensitive(len(selection) > 0)
+        if selection is None:
+            return
+        self.preview_button.set_sensitive(len(selection) > 0 and selection[0].type == "xkb")
         self.add_button.set_sensitive(len(selection) > 0)
 
     def _load_layouts(self):
@@ -332,26 +367,49 @@ class AddLayoutDialog():
                 if layout in layouts_with_locale:
                     continue
                 layouts_with_locale.add(layout)
-                self.add_row(info, layout)
+                self.add_xkb_row(info, layout)
 
         # FIXME: This is probably all we need for xkb...
         for layout in self.xkb_info.get_all_layouts():
             if layout in layouts_with_locale:
                 continue
-            self.add_row(None, layout)
+            self.add_xkb_row(None, layout)
 
-    def add_row(self, lang_info, layout_id):
-        if layout_id in self.used_ids:
+    def add_xkb_row(self, lang_info, layout_id):
+        if layout_id in (self.used_ids, self.loaded_ids):
             return
 
         got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
         if got:
-            row = LayoutRow(lang_info, layout_id, display_name, short_name, layout, variant)
+            row = LayoutRow(lang_info, "xkb", layout_id, display_name, short_name, layout, variant)
+            self.loaded_ids.add(layout_id)
             self.layouts_listbox.insert(row, -1)
 
+    def add_ibus_row(self, ibus_info):
+        layout_id = ibus_info.get_name()
+
+        if layout_id.startswith("xkb:"):
+            return
+        if layout_id in self.loaded_ids:
+            return
+
+        self.loaded_ids.add(layout_id)
+
+        name = ibus_info.get_longname()
+        language_code = ibus_info.get_language()
+        language = IBus.get_language_name(language_code)
+        textdomain = ibus_info.get_textdomain()
+        if textdomain != "" and name != "":
+            name = gettext.dgettext(textdomain, name)
+        display_name = f"{language} ({name})"
+
+        row = LayoutRow(ibus_info, "ibus", layout_id, display_name, ibus_info.get_name(), ibus_info.get_layout(), ibus_info.get_layout_variant())
+        self.layouts_listbox.insert(row, -1)
+
 class LayoutRow(Gtk.ListBoxRow):
-    def __init__(self, info, layout_id, display_name, short_name, layout, variant):
+    def __init__(self, info, type, layout_id, display_name, short_name, layout, variant):
         super().__init__()
+        self.type = type
         self.display_name = display_name
         self.layout_id = layout_id #  us+dvorak ... 
 
@@ -361,9 +419,26 @@ class LayoutRow(Gtk.ListBoxRow):
         self.layout = layout
         self.variant = variant
         self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.label = Gtk.Label(label=self.display_name, xalign=0.0, use_markup=True, margin_start=4)
+        self.label = Gtk.Label(
+            label=self.display_name,
+            ellipsize=Pango.EllipsizeMode.MIDDLE,
+            margin_start=4,
+            xalign=0.0,
+            halign=Gtk.Align.START
+        )
 
         self.box.pack_start(self.label, True, True, 0)
+
+        if type == "ibus":
+            ibus_icon = Gtk.Image(
+                icon_name="ibus-engine",
+                icon_size=Gtk.IconSize.MENU,
+                margin_end=4,
+                halign=Gtk.Align.END,
+                tooltip_text=_("IBus")
+            )
+            self.box.pack_end(ibus_icon, True, True, 0)
+
         self.add(self.box)
         self.show_all()
 
@@ -435,7 +510,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         add_dialog.dialog.show_all()
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
-            self.add_layout(add_dialog.response)
+            self.add_layout(*add_dialog.response)
         add_dialog.dialog.destroy()
 
     def create_row(self, source, data=None):
@@ -486,7 +561,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         idx = self._sources.index(source)
         self._proxy.ActivateInputSourceIndex("(i)", idx)
 
-    def add_layout(self, layout_id):
+    def add_layout(self, type_, layout_id):
         raw_sources = self.input_source_settings.get_value("sources")
         new_sources = []
 
@@ -494,7 +569,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         for source_info in raw_sources:
             new_sources.append(source_info)
 
-        new_sources.append(("xkb", layout_id))
+        new_sources.append((type_, layout_id))
         self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
 
     def remove_layout(self, source):

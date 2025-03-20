@@ -1,0 +1,43 @@
+// IBus Candidate Popup
+
+$popover_arrow_height: 12px;
+
+.candidate-popup-boxpointer {
+  -arrow-border-radius: $base_border_radius+4;
+  -arrow-background-color: $bg_color;
+  -arrow-border-width: 1px;
+  -arrow-border-color: $borders_color;
+  -arrow-base: $popover_arrow_height * 2;
+  -arrow-rise: $popover_arrow_height;
+  -arrow-box-shadow: 0 1px 3px rgba(0,0,0,0.5); // dreaming bugzilla #689995
+}
+
+.candidate-popup-content {
+  padding: 0.5em;
+  spacing: 0.3em;
+}
+
+.candidate-index {
+  padding: 0 0.5em 0 0;
+  color: darken($fg_color,10%);
+}
+
+.candidate-box {
+  padding: 0.3em 0.5em 0.3em 0.5em;
+  border-radius: $base_border_radius;
+  &:selected,&:hover { background-color: $lighter_bg_color; color: $fg_color; }
+}
+
+.candidate-page-button-box {
+  height: 2em;
+  .vertical & { padding-top: 0.5em; }
+  .horizontal & { padding-left: 0.5em; }
+}
+
+.candidate-page-button {
+  padding: 4px;
+}
+
+.candidate-page-button-previous { border-radius: $base_border_radius 0px 0px $base_border_radius; border-right-width: 0; }
+.candidate-page-button-next { border-radius: 0px $base_border_radius $base_border_radius 0px;  }
+.candidate-page-button-icon { icon-size: 1em; }
