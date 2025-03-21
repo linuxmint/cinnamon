@@ -1,0 +1,33 @@
+Gnome-shell OSK layouts are extracted from CLDR layout definitions:
+https://www.unicode.org/cldr/charts/latest/keyboards/layouts/index.html
+
+Updating these involves several steps:
+
+1) Downloading and unzipping the tarball found at:
+   http://www.unicode.org/Public/cldr/latest/keyboards.zip
+
+   This file contains XML files describing the keyboard layouts.
+
+2) Cloning the cldr2json script at:
+   git://repo.or.cz/cldr2json.git
+
+   It will be used to convert the XML files into JSON that can be
+   directly consumed by gnome-shell.
+
+3) Running the script to produce the files:
+   ./cldr2json <input-directory> <output-directory>
+
+   We shall usually use the "android" folder, since that's most
+   complete, and similar to our UI and target sizes. And the target
+   directory must be data/osk-layouts in this repository.
+
+4) Modify gnome-shell-osk-layouts.gresource.xml to include the files
+
+5) Do git add on the updated/new files, and git commit.
+
+
+Or alternatively:
+
+1) Run update-osk-layouts.sh
+
+2) Do git add and git commit
