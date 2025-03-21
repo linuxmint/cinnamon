@@ -24,6 +24,7 @@
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="no-show-all">True</property>
               </object>
               <packing>
                 <property name="expand">True</property>
@@ -97,10 +98,17 @@
                     <property name="label-xalign">0</property>
                     <property name="shadow-type">none</property>
                     <child>
-                      <object class="GtkListBox" id="layouts_listbox">
+                      <object class="GtkTreeView" id="layouts_view">
                         <property name="visible">True</property>
-                        <property name="can-focus">False</property>
-                        <property name="activate-on-single-click">False</property>
+                        <property name="can-focus">True</property>
+                        <property name="border-width">4</property>
+                        <property name="headers-visible">False</property>
+                        <property name="enable-search">False</property>
+                        <property name="show-expanders">False</property>
+                        <property name="enable-grid-lines">horizontal</property>
+                        <child internal-child="selection">
+                          <object class="GtkTreeSelection"/>
+                        </child>
                       </object>
                     </child>
                     <child type="label_item">
