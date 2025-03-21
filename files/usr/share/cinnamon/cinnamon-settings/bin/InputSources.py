@@ -3,21 +3,26 @@
 import gettext
 import os
 import subprocess
-from collections import OrderedDict
 
 import cairo
 import gi
 gi.require_version("Gtk", "3.0")
-gi.require_version("Gdk", "3.0")
 gi.require_version("CinnamonDesktop", "3.0")
 gi.require_version('IBus', '1.0')
-from gi.repository import Gdk, GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus, Pango
+gi.require_version('Pango', '1.0')
+from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus, Pango
 
-from SettingsWidgets import SidePage, Keybinding
+from SettingsWidgets import Keybinding
 from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
 MAX_LAYOUTS_PER_GROUP = 4
+
+def make_gkbd_keyboard_args(layout, variant):
+    if variant:
+        return ["gkbd-keyboard-display", "-l", f"{layout}\t{variant}"]
+    else:
+        return ["gkbd-keyboard-display", "-l", layout]
 
 class InputSourceSettingsPage(SettingsPage):
     def __init__(self):
@@ -42,7 +47,7 @@ class InputSourceSettingsPage(SettingsPage):
         # TODO: maybe use tecla as an alternative for wayland, if we don't roll something ourselves.
         # btw there's no plan for tecla to support different keyboard geometries than a standard pc105.
         if not GLib.find_program_in_path("gkbd-keyboard-display"):
-            self.test_layout_button.set_sensitive(False)
+            self.test_layout_button.set_visible(False)
 
         self.add_layout_button = builder.get_object("add_layout")
         self.add_layout_button.connect("clicked", self.on_add_layout_clicked)
@@ -125,6 +130,7 @@ class InputSourceSettingsPage(SettingsPage):
         self.update_widgets()
 
     def _get_selected_source(self):
+        source = None
         rows = self.input_sources_list.get_selected_rows()
         if len(rows) > 0:
             source = rows[0].get_child().input_source
@@ -151,8 +157,8 @@ class InputSourceSettingsPage(SettingsPage):
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
 
-        if GLib.find_program_in_path("gkbd-keyboard-display"):
-            subprocess.Popen(["gkbd-keyboard-display", "-g", str(source.index + 1)])
+        args = make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
+        subprocess.Popen(args)
 
     def update_widgets(self):
         # Don't allow removal of last remaining layout
@@ -160,9 +166,9 @@ class InputSourceSettingsPage(SettingsPage):
         self.remove_layout_button.set_sensitive(n_items > 1)
         self.add_layout_button.set_sensitive(n_items < MAX_LAYOUTS_PER_GROUP)
 
-        rows = self.input_sources_list.get_selected_rows()
-        if len(rows) > 0:
-            source = rows[0].get_child().input_source
+        source = self._get_selected_source()
+        if source is not None:
+            self.test_layout_button.set_sensitive(source.type == "xkb")
             index = self.current_input_sources_model.get_item_index(source)
             self.move_layout_up_button.set_sensitive(index > 0)
             self.move_layout_down_button.set_sensitive(index < self.current_input_sources_model.get_n_items() - 1)
@@ -209,6 +215,11 @@ class LayoutIcon(Gtk.Overlay):
                    (y + (height / 2.0) + (ext.height / 2.0)))
         cr.show_text(dupe_str)
 
+LAYOUT_ID_COLUMN = 0
+LAYOUT_DISPLAY_NAME_COLUMN = 1
+LAYOUT_TYPE_COLUMN = 2
+LAYOUT_LAYOUT_COLUMN = 3
+LAYOUT_VARIANT_COLUMN = 4
 
 class AddLayoutDialog():
     def __init__(self, used_ids):
@@ -229,19 +240,35 @@ class AddLayoutDialog():
         self.preview_button.connect("clicked", self._on_preview_button_clicked)
         self.search_entry = builder.get_object("search_entry")
         self.search_entry.connect("search-changed", self._on_search_entry_changed)
-        self.layouts_listbox = builder.get_object("layouts_listbox")
-        self.layouts_listbox.connect("row-activated", self._on_row_activated)
-        self.layouts_listbox.connect("selected-rows-changed", self._on_row_selected)
+        self.layouts_view = builder.get_object("layouts_view")
+        self.layouts_view.connect("row-activated", self._on_row_activated)
+        self.layouts_view.get_selection().connect("changed", self._on_row_selected)
 
-        self.layouts_listbox.set_header_func(self.row_separator_func)
-        self.layouts_listbox.set_sort_func(self.row_sort_func)
-        self.layouts_listbox.set_filter_func(self.row_filter_func)
+        #                                 (layout_id, layout_display_name, layout_type, layout_layout, layout_variant)
+        self.layouts_store = Gtk.ListStore(str,       str,                 str,         str,           str)
+        self.layouts_store.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN, Gtk.SortType.ASCENDING)
+        self.layouts_filter_store = Gtk.TreeModelFilter(child_model=self.layouts_store)
+        self.layouts_filter_store.set_visible_func(self.search_filter_func)
+        self.layouts_view.set_model(self.layouts_filter_store)
+
+        column = Gtk.TreeViewColumn()
+        self.layouts_view.append_column(column)
+        cell = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.MIDDLE)
+        column.pack_start(cell, True)
+        column.add_attribute(cell, "text", LAYOUT_DISPLAY_NAME_COLUMN)
+
+        cell = Gtk.CellRendererPixbuf(xpad=10)
+        column.pack_start(cell, False)
+        column.set_cell_data_func(cell, self.layout_icon_data_func)
 
         self._locales_by_language = {}
         self._locales = {}
         self._row_items = []
 
         self.response_id = None
+
+        if not GLib.find_program_in_path("gkbd-keyboard-display"):
+            self.preview_button.set_visible(False)
 
         self.xkb_info = CinnamonDesktop.XkbInfo()
 
@@ -257,7 +284,6 @@ class AddLayoutDialog():
             self._on_ibus_connected(self._ibus)
 
     def _on_ibus_connected(self, ibus, data=None):
-        # return
         ibus.list_engines_async(5000, None, self._list_ibus_engines_completed)
 
     def _list_ibus_engines_completed(self, ibus, res, data=None):
@@ -267,68 +293,83 @@ class AddLayoutDialog():
             print("Error getting list of ibus engines: %s" % e.message)
             return
 
-        batch = []
         for engine in engines:
-            batch.append(engine)
-            if len(batch) == 10:
-                GLib.timeout_add(100, self._add_ibus_engine_batch, batch)
-                batch = []
-
-    def _add_ibus_engine_batch(self, batch):
-        for engine in batch:
             self.add_ibus_row(engine)
-        self._update_widgets()
 
-    def _on_row_activated(self, listbox, row, data=None):
+    def get_selected_iter(self):
+        model, paths = self.layouts_view.get_selection().get_selected_rows()
+        if paths is not None and len(paths) > 0:
+            path = paths[0]
+            return model.get_iter(path)
+
+        return None
+
+    def _on_row_activated(self, view, path, column, data=None):
         self._on_add_button_clicked(None)
 
-    def _on_row_selected(self, listbox, data=None):
+    def _on_row_selected(self, selection, data=None):
         self._update_widgets()
 
     def _on_search_entry_changed(self, entry, data=None):
-        self.layouts_listbox.invalidate_filter()
+        self.layouts_filter_store.refilter()
 
     def _on_preview_button_clicked(self, button, data=None):
-        selection = self.layouts_listbox.get_selected_rows()
-        if len(selection) > 0:
-            row = selection[0]
-            if GLib.find_program_in_path("gkbd-keyboard-display"):
-                subprocess.Popen(["gkbd-keyboard-display", "-l", row.layout_id])
+        iter = self.get_selected_iter()
+        assert iter is not None
+
+        display_name = self.layouts_filter_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
+        layout_layout = self.layouts_filter_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
+        layout_variant = self.layouts_filter_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
+        args = make_gkbd_keyboard_args(layout_layout, layout_variant)
+        subprocess.Popen(args)
 
     def _on_cancel_button_clicked(self, button, data=None):
         self.dialog.response(Gtk.ResponseType.CANCEL)
 
     def _on_add_button_clicked(self, button, data=None):
-        selection = self.layouts_listbox.get_selected_rows()
-        if len(selection) > 0:
-            row = selection[0]
-            self.response = (row.type, row.layout_id)
-            print("Response:", self.response)
-            self.dialog.response(Gtk.ResponseType.OK)
+        iter = self.get_selected_iter()
 
-    def row_separator_func(self, row, before, data=None):
-        if before is None:
-            row.set_header(None)
-            return
+        assert iter is not None
 
-        row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+        layout_type = self.layouts_filter_store.get_value(iter, LAYOUT_TYPE_COLUMN)
+        layout_id = self.layouts_filter_store.get_value(iter, LAYOUT_ID_COLUMN)
+        self.response = (layout_type, layout_id)
+        print("Response:", self.response)
+        self.dialog.response(Gtk.ResponseType.OK)
 
-    def row_sort_func(self, row1, row2):
-        return GLib.utf8_collate(row1.unaccented_name, row2.unaccented_name)
-
-    def row_filter_func(self, row, data=None):
+    def search_filter_func(self, model, tree_iter, data=None):
         search_entry_text = self.search_entry.get_text()
+
+        if search_entry_text == "":
+            return True
+
+        display_name = model.get_value(tree_iter, LAYOUT_DISPLAY_NAME_COLUMN)
+        layout_type = model.get_value(tree_iter, LAYOUT_TYPE_COLUMN)
+        normalized = GLib.utf8_normalize(display_name, -1, GLib.NormalizeMode.DEFAULT)
+        row_text = GLib.utf8_casefold(normalized, -1)
+
         normalized = GLib.utf8_normalize(search_entry_text, -1, GLib.NormalizeMode.DEFAULT)
         search_text = GLib.utf8_casefold(normalized, -1)
 
-        return search_text in row.unaccented_name or search_text in row.type
+        return search_text in row_text or search_text in layout_type
 
     def _update_widgets(self):
-        selection = self.layouts_listbox.get_selected_rows()
-        if selection is None:
-            return
-        self.preview_button.set_sensitive(len(selection) > 0 and selection[0].type == "xkb")
-        self.add_button.set_sensitive(len(selection) > 0)
+        iter = self.get_selected_iter()
+
+        if iter is not None:
+            self.add_button.set_sensitive(True)
+            type_ = self.layouts_filter_store.get_value(iter, LAYOUT_TYPE_COLUMN)
+            self.preview_button.set_sensitive(type_ == "xkb")
+        else:
+            self.add_button.set_sensitive(False)
+            self.preview_button.set_sensitive(False)
+
+    def layout_icon_data_func(self, column, cell, model, iter, data=None):
+        type_ = model.get_value(iter, LAYOUT_TYPE_COLUMN)
+        if type_ == "ibus":
+            cell.set_property("icon-name", "ibus-engine")
+        else:
+            cell.set_property("icon-name", None)
 
     def _load_layouts(self):
         layouts_with_locale = set()
@@ -381,9 +422,7 @@ class AddLayoutDialog():
 
         got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
         if got:
-            row = LayoutRow(lang_info, "xkb", layout_id, display_name, short_name, layout, variant)
-            self.loaded_ids.add(layout_id)
-            self.layouts_listbox.insert(row, -1)
+            self.layouts_store.append((layout_id, display_name, "xkb", layout, variant))
 
     def add_ibus_row(self, ibus_info):
         layout_id = ibus_info.get_name()
@@ -402,45 +441,7 @@ class AddLayoutDialog():
         if textdomain != "" and name != "":
             name = gettext.dgettext(textdomain, name)
         display_name = f"{language} ({name})"
-
-        row = LayoutRow(ibus_info, "ibus", layout_id, display_name, ibus_info.get_name(), ibus_info.get_layout(), ibus_info.get_layout_variant())
-        self.layouts_listbox.insert(row, -1)
-
-class LayoutRow(Gtk.ListBoxRow):
-    def __init__(self, info, type, layout_id, display_name, short_name, layout, variant):
-        super().__init__()
-        self.type = type
-        self.display_name = display_name
-        self.layout_id = layout_id #  us+dvorak ... 
-
-        normalized = GLib.utf8_normalize(self.display_name, -1, GLib.NormalizeMode.DEFAULT)
-        self.unaccented_name = GLib.utf8_casefold(normalized, -1)
-        self.short_name = short_name
-        self.layout = layout
-        self.variant = variant
-        self.box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        self.label = Gtk.Label(
-            label=self.display_name,
-            ellipsize=Pango.EllipsizeMode.MIDDLE,
-            margin_start=4,
-            xalign=0.0,
-            halign=Gtk.Align.START
-        )
-
-        self.box.pack_start(self.label, True, True, 0)
-
-        if type == "ibus":
-            ibus_icon = Gtk.Image(
-                icon_name="ibus-engine",
-                icon_size=Gtk.IconSize.MENU,
-                margin_end=4,
-                halign=Gtk.Align.END,
-                tooltip_text=_("IBus")
-            )
-            self.box.pack_end(ibus_icon, True, True, 0)
-
-        self.add(self.box)
-        self.show_all()
+        self.layouts_store.append((layout_id, display_name, "ibus", ibus_info.get_layout(), ibus_info.get_layout_variant()))
 
 class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
     def __init__(self, label, num_bind, schema, key, *args, **kwargs):
@@ -455,8 +456,12 @@ class CurrentInputSource(GObject.GObject):
     __gtype_name__ = "CurrentInputSource"
     def __init__(self, item):
         super().__init__()
-        print(item)
-        self.type, self.id, self.index, self.display_name, self.short_name, self.flag_name, self.xkbid, self.dupe_id, self.active = item
+        self.type, self.id, self.index,         \
+            self.display_name, self.short_name, \
+            self.flag_name, self.xkbid,         \
+            self.xkb_layout, self.xkb_variant,  \
+            self.dupe_id, self.active           \
+                 = item
 
 class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
     __gtype_name__ = 'CurrentInputSourcesModel'

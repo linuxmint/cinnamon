@@ -187,7 +187,7 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 });
 */
 var InputSource = class {
-    constructor(type, id, displayName, shortName, flagName, index) {
+    constructor(type, id, displayName, shortName, flagName, xkbLayout, variant, index) {
         this.type = type;
         this.id = id;
         this.displayName = displayName;
@@ -195,6 +195,8 @@ var InputSource = class {
         this.index = index;
         this.dupeId = 0;  // 0 is unused.  Any duplicates will all be 1-based.
         this.flagName = flagName;
+        this.xkbLayout = xkbLayout;
+        this.variant = variant;
 
         this.properties = null;
 
@@ -298,7 +300,6 @@ var SubscriptableFlagIcon = GObject.registerClass({
                         source: actor,
                         coordinate: Clutter.BindCoordinate.ALL
                     })
-                    global.log(actor.width, actor.height);
 
                     this._drawingArea.add_constraint(constraint);
                     this._imageBin.set_child(actor);
@@ -810,20 +811,20 @@ var InputSourceManager = class {
             let displayName;
             let shortName;
             let flagName;
-            let xkb_layout;
+            let xkbLayout;
+            let variant;
             let type = sources[i].type;
             let id = sources[i].id;
             let exists = false;
 
             if (type == INPUT_SOURCE_TYPE_XKB) {
-                [exists, displayName, shortName, xkb_layout] =
+                [exists, displayName, shortName, xkbLayout, variant] =
                     this._xkbInfo.get_layout_info(id);
-                flagName = xkb_layout;
+                flagName = xkbLayout;
                 if (!use_group_names) {
-                    shortName = xkb_layout;
+                    shortName = xkbLayout;
                 }
 
-                // global.log(exists, displayName, shortName);
             } else if (type == INPUT_SOURCE_TYPE_IBUS) {
                 if (this._disableIBus)
                     continue;
@@ -838,6 +839,8 @@ var InputSourceManager = class {
                     displayName = '%s (%s)'.format(language, longName);
                     shortName = this._makeEngineShortName(engineDesc);
                     flagName = shortName;  // TODO
+                    xkbLayout = engineDesc.get_layout();
+                    variant = engineDesc.get_layout_variant();
                 }
             }
 
@@ -846,20 +849,20 @@ var InputSourceManager = class {
                     shortName = shortName.toUpperCase();
                 }
 
-                infosList.push({ type, id, displayName, shortName, flagName });
+                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant });
             }
         }
 
         if (infosList.length == 0) {
             let type = INPUT_SOURCE_TYPE_XKB;
             let id = DEFAULT_LAYOUT;
-            let [, displayName, shortName] = this._xkbInfo.get_layout_info(id);
-            let flagName = xkb_layout;
+            let [, displayName, shortName, xkbLayout, variant] = this._xkbInfo.get_layout_info(id);
+            let flagName = xkbLayout;
             if (!use_group_names) {
-                shortName = xkb_layout;
+                shortName = xkbLayout;
             }
 
-            infosList.push({ type, id, displayName, shortName, flagName });
+            infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant });
         }
 
         let inputSourcesDupeTracker = {};
@@ -870,6 +873,8 @@ var InputSourceManager = class {
                                      infosList[i].displayName,
                                      infosList[i].shortName,
                                      infosList[i].flagName,
+                                     infosList[i].xkbLayout,
+                                     infosList[i].variant,
                                      i);
             is.connect('activate', this.activateInputSource.bind(this));
 
@@ -933,6 +938,7 @@ var InputSourceManager = class {
             return;
 
         source.properties = props;
+        global.log(source.properties);
 
         if (source == this._currentSource)
             this.emit('current-source-changed', null);
