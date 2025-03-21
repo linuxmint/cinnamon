@@ -107,10 +107,6 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
   font-size: 110%;
 }
 
-.menu-applications-grid-box {
-  left-padding: 8px;
-}
-
 .menu-applications-subheading {
   font-weight: bold;
   font-size: 100%;
@@ -119,9 +115,17 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
   //text-align: center; - known bug: causes label to jump about when resizing menu.
 }
 
-.menu-applications-grid-box .menu-application-button,
-.menu-applications-grid-box .menu-application-button-selected {
-  padding: 10px 2px;
+.menu-applications-grid-box {
+  left-padding: 8px;
+
+  .menu-application-button,
+  .menu-application-button-selected {
+    padding: 10px 2px;
+  }
+
+  .menu-application-button-label {
+    text-align: center;
+  }
 }
 
 .gridmenu-sidebar-box {
@@ -130,29 +134,29 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
 
 .gridmenu {
   .menu-applications-inner-box {
-    padding: 0;
+    padding: 0px;
   }
 
   .menu-categories-box {
-    padding: 0 6px;
+    padding: 0px 6px;
   }
 
   .menu-search-box,
   .menu-search-box:ltr,
   .menu-search-box:rtl {
     min-width: 160px;
-    padding: 0 8px;
+    padding: 0px 8px;
   }
 
   &.sidebar-left {
     .gridmenu-sidebar-box {
-      padding-right: 24px;
+      padding-right: 16px;
     }
   }
 
   &.sidebar-right {
     .gridmenu-sidebar-box {
-      padding-left: 16px;
+      padding-left: 8px;
     }
   }
 

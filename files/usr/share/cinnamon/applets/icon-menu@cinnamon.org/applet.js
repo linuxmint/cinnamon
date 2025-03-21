@@ -12,7 +12,7 @@ const Util = imports.misc.util;
 const GnomeSession = imports.misc.gnomeSession;
 const AppletManager = imports.ui.appletManager;
 const {ScreenSaverProxy} = imports.misc.screenSaver;
-const {PopupMenuManager, PopupIconMenuItem} = imports.ui.popupMenu;
+const {PopupMenuManager} = imports.ui.popupMenu;
 const {getAppFavorites} = imports.ui.appFavorites;
 const {TextIconApplet, AllowedLayout, AppletPopupMenu, PopupResizeHandler} = imports.ui.applet;
 const {SignalManager} = imports.misc.signalManager;
@@ -1050,22 +1050,11 @@ class CinnamenuApplet extends TextIconApplet {
         //=======search providers==========
         //---calculator---
         let calculatorResult = null;
-        const replacefn = (match) => {//Replace eg. "sqrt" with "Math.sqrt"
-            if (['E','LN10','LN2','LOG10E','LOG2E','PI','SQRT1_2','SQRT2','PI','abs',
-                'acos','acosh','asin','asinh','atan','atanh','cbrt','ceil','clz32','cos',
-                'cosh','exp','expm1','floor','fround','hypot','imul','log','log10','log1p',
-                'log2','max','min','pow','random','round','sign','sin','sinh','sqrt',
-                'tan','tanh','trunc'].includes(match)) {
-                return 'Math.' + match;
-            } else {
-                return match;
-            }
-        };
         let ans = null;
-        const exp = pattern_raw.replace(/([a-zA-Z0-9_]+)/g, replacefn);
+        const exp = pattern_raw.replace(/([a-zA-Z][a-zA-Z0-9_]*)/g, (match) => `Math.${match}`);
         
         try {
-            ans = eval(exp);
+            ans = eval?.(`"use strict"; ${exp}`);
         } catch(e) {
             const r = /[\(\)\+=/\*\.;,]/
             const probablyMath = r.test(exp);
@@ -1196,80 +1185,85 @@ class CinnamenuApplet extends TextIconApplet {
                     }
 
                     //find matching files and folders in directory
-                    let next;
                     if (enumerator) {
-                        next = enumerator.next_file(null);
-                    }
-
-                    let searchTimeLimit = Date.now() + 2000; // allow max 2 seconds to search each folder
-                    while (next && Date.now() < searchTimeLimit) {
-                        const filename = next.get_name();
-                        if (filename.startsWith(".")) {
-                            next = enumerator.next_file(null);
-                            continue; // skip hidden files
-                        }
-                        const isDirectory = next.get_file_type() === Gio.FileType.DIRECTORY;
-                        const filePath = folder + (folder === '/' ? '' : '/') + filename;
-                        let matchScore = searchStr(fpattern, filename, true, true);
-                        if (matchScore > 1) { //any word boundary match
-                            const file = Gio.file_new_for_path(filePath);
-                            const fileInfo = file.query_info('standard::icon,standard::content-type',
-                                                                Gio.FileQueryInfoFlags.NONE, null);
-                            matchScore -= 0.01;
-                            //if file then treat as isFolderviewFile and if directory then treat as isPlace
-                            const foundFile = {
-                                        name: filename,
-                                        score: matchScore * (fpattern.length > 2 ? 1 : 0.9),
-                                        gicon: fileInfo.get_icon(),
-                                        uri: file.get_uri(),
-                                        mimeType: fileInfo.get_content_type(),
-                                        description: filePath,
-                                        isPlace: isDirectory,
-                                        isDirectory: isDirectory,
-                                        isFolderviewFile: !isDirectory,
-                                        deleteAfterUse: true };
-                            if (isDirectory) {
-                                const defaultInfo =
-                                            Gio.AppInfo.get_default_for_type('inode/directory', false);
-                                if (defaultInfo) {
-                                    foundFile.activate = () => { defaultInfo.launch([file], null); };
-                                }
+                        enumerator.next_files_async(1000, GLib.PRIORITY_DEFAULT, null, (source, result) => {
+                            let fileInfos;
+                            try {
+                                fileInfos = source.next_files_finish(result);
+                            } catch(e) {
+                                global.logWarning('Cinnamenu file search:' + e.message);
                             }
-                            results.push(foundFile);
-                        }
+                            if (!this.searchActive || thisSearchId !== this.currentSearchId) return;
+                            if (fileInfos) {
+                                fileInfos.forEach((fileInfo) => {
+                                    const filename = fileInfo.get_name();
+                                    if (filename.startsWith(".")) {
+                                        return; // skip hidden files
+                                    }
+                                    const isDirectory = fileInfo.get_file_type() === Gio.FileType.DIRECTORY;
+                                    const filePath = folder + (folder === '/' ? '' : '/') + filename;
+                                    let matchScore = searchStr(fpattern, filename, true, true);
+                                    if (matchScore > 1) { //any word boundary match
+                                        const file = Gio.file_new_for_path(filePath);
+                                        const extraFileInfo = file.query_info('standard::icon,standard::content-type',
+                                                                            Gio.FileQueryInfoFlags.NONE, null);
+                                        matchScore -= 0.01;
+                                        //if file then treat as isFolderviewFile and if directory then treat as isPlace
+                                        const foundFile = {
+                                            name: filename,
+                                            score: matchScore * (fpattern.length > 2 ? 1 : 0.9),
+                                            gicon: extraFileInfo.get_icon(),
+                                            uri: file.get_uri(),
+                                            mimeType: extraFileInfo.get_content_type(),
+                                            description: filePath,
+                                            isPlace: isDirectory,
+                                            isDirectory: isDirectory,
+                                            isFolderviewFile: !isDirectory,
+                                            deleteAfterUse: true
+                                        };
+                                        if (isDirectory) {
+                                            const defaultInfo =
+                                                        Gio.AppInfo.get_default_for_type('inode/directory', false);
+                                            if (defaultInfo) {
+                                                foundFile.activate = () => { defaultInfo.launch([file], null); };
+                                            }
+                                        }
+                                        results.push(foundFile);
+                                    }
 
-                        //Add subdirectories to foldersToDo[]
-                        if (isDirectory && (!next.get_is_symlink() || FOLLOW_SYMLINKS) &&
-                                                    foldersSearched < MAX_FOLDERS_TO_SEARCH) {
-                            foldersToDo.push(filePath);
-                        }
-                        
-                        next = enumerator.next_file(null);
-                    }//end while
+                                    //Add subdirectories to foldersToDo[]
+                                    if (isDirectory && (!fileInfo.get_is_symlink() || FOLLOW_SYMLINKS) &&
+                                                                foldersSearched < MAX_FOLDERS_TO_SEARCH) {
+                                        foldersToDo.push(filePath);
+                                    }
+                                });//end forEach
+                            }//end if
 
-                    if (enumerator) {
-                        enumerator.close(null);
-                    }
-                    if (FILE_SEARCH_DEBUG) {
-                        log ("todo: " + foldersToDo.length + " done: " + foldersSearched + " time: " + (Date.now() - timer) + " : total " + (Date.now() - total_timer));
-                    }
-                    //update display of results at intervals or when search completed
-                    if (foldersToDo.length === 0 || Date.now() - lastUpdateTime > updateInterval) {
-                        if (results.length > 0 && this.searchActive &&
-                                                                thisSearchId === this.currentSearchId) {
-                            fileResults = fileResults.concat(results);
-                            showResults();
-                            results.length = 0;
-                        }
-                        lastUpdateTime = Date.now();
-                        updateInterval *= 2;//progressively longer update intervals
-                    }
-
-                    //continue search if not completed
-                    if (foldersToDo.length > 0) {
-                        foldersSearched++;
-                        Meta.later_add(Meta.LaterType.IDLE, () => { searchNextDir(thisSearchId); });
-                    }
+                            if (FILE_SEARCH_DEBUG) {
+                                log ("todo: " + foldersToDo.length + " done: " + foldersSearched + " time: " + (Date.now() - timer) + " : total " + (Date.now() - total_timer));
+                            }
+                            //update display of results at intervals or when search completed
+                            if (foldersToDo.length === 0 || Date.now() - lastUpdateTime > updateInterval) {
+                                if (results.length > 0 && this.searchActive &&
+                                                                        thisSearchId === this.currentSearchId) {
+                                    fileResults = fileResults.concat(results);
+                                    showResults();
+                                    results.length = 0;
+                                }
+                                lastUpdateTime = Date.now();
+                                updateInterval *= 2;//progressively longer update intervals
+                            }
+        
+                            //continue search if not completed
+                            if (foldersToDo.length > 0) {
+                                foldersSearched++;
+                                Meta.later_add(Meta.LaterType.IDLE, () => { searchNextDir(thisSearchId); });
+                            }
+                            if (enumerator) {
+                                enumerator.close(null);
+                            }
+                        }); //end of next_files_async
+                    }//end if
                 });//end of enumerate_children_async
             };// end searchNextDir()
 

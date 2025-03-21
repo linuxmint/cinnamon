@@ -281,13 +281,13 @@
 
     "enable-emoji-search":{
         "type":"checkbox",
-        "default":true,
+        "default":false,
         "description":"Emoji search",
         "tooltip":"Show emojis in search results"
     },
     "enable-home-folder-search":{
         "type":"checkbox",
-        "default":true,
+        "default":false,
         "description":"Search home folder",
         "tooltip":"When searching, also search my home folder for files"
     },

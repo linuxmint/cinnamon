@@ -165,8 +165,11 @@ class Display {
         const dy = Math.abs(y - this.mTrack[0].y);
 
         const tan = dx / dy;
-        this.badAngle = tan > 0.3;//if tan = +infinity, badAngle is true.
-                                    //if tan = -infinity or NaN, badAngle is false.
+        if (this.mainBox.get_direction() === St.TextDirection.LTR) {
+            this.badAngle = isFinite(tan) && tan > 0.3;
+        } else {
+            this.badAngle = isFinite(tan) && tan < -0.3;
+        }
     }
 
     clearFocusedActors() {

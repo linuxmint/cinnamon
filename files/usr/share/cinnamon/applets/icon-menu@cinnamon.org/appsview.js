@@ -386,7 +386,6 @@ class AppsView {
     }
 
     populate_init(headerText = null) {
-        this.applicationsGridBox.hide();//hide while populating for performance.
         this.clearApps();
         this.applicationsScrollBox.vscroll.adjustment.set_value(0);//scroll to top
 
@@ -448,8 +447,6 @@ class AppsView {
     }
 
     populate_finish() {
-        this.applicationsGridBox.show();
-
         this.currentGridViewColumnCount = this.getGridValues().columns;
     }
 

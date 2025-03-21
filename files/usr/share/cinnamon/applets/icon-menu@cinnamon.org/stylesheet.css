@@ -1,5 +1,5 @@
 /*css selectors used by gridmenu (icon-menu)
-┌──.menu-background .gridmenu .gridmenu-sidebar-top .gridmenu-sidebar-bottom .gridmenu-sidebar-left .gridmenu-sidebar-right──────
+┌──.menu-background .gridmenu .sidebar-top .sidebar-bottom .sidebar-left .sidebar-right──────
 │┌──.menu-applications-outer-box .menu-applications-box──────────────────────────────────────────────────────────────────────────
 ││┌──.gridmenu-middle-pane───────────────────────────────────────────────────────────────────────────────────────────
 │││┌──.gridmenu-sidebar-box─────────────────┐┌──.menu-categories-scrollbox .vfade──┐┌──.menu-applications-scrollbox .vfade───────
@@ -34,11 +34,14 @@
   padding: 10px 2px;
 }
 
+.menu-applications-grid-box .menu-application-button-label {
+  text-align: center;
+}
+
 .gridmenu .menu-categories-box {
   padding-left: 6px;
   padding-right: 6px;
 }
-
 
 .gridmenu .menu-search-box, .gridmenu .menu-search-box:ltr, .gridmenu .menu-search-box:rtl {
   min-width: 160px;
