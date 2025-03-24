@@ -187,7 +187,7 @@ class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
 });
 */
 var InputSource = class {
-    constructor(type, id, displayName, shortName, flagName, xkbLayout, variant, index) {
+    constructor(type, id, displayName, shortName, flagName, xkbLayout, variant, prefs, index) {
         this.type = type;
         this.id = id;
         this.displayName = displayName;
@@ -197,6 +197,7 @@ var InputSource = class {
         this.flagName = flagName;
         this.xkbLayout = xkbLayout;
         this.variant = variant;
+        this.preferences = prefs;
 
         this.properties = null;
 
@@ -813,6 +814,7 @@ var InputSourceManager = class {
             let flagName;
             let xkbLayout;
             let variant;
+            let prefs = '';
             let type = sources[i].type;
             let id = sources[i].id;
             let exists = false;
@@ -841,6 +843,7 @@ var InputSourceManager = class {
                     flagName = shortName;  // TODO
                     xkbLayout = engineDesc.get_layout();
                     variant = engineDesc.get_layout_variant();
+                    prefs = engineDesc.get_setup() || '';
                 }
             }
 
@@ -849,7 +852,7 @@ var InputSourceManager = class {
                     shortName = shortName.toUpperCase();
                 }
 
-                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant });
+                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs });
             }
         }
 
@@ -862,7 +865,7 @@ var InputSourceManager = class {
                 shortName = xkbLayout;
             }
 
-            infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant });
+            infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs });
         }
 
         let inputSourcesDupeTracker = {};
@@ -875,6 +878,7 @@ var InputSourceManager = class {
                                      infosList[i].flagName,
                                      infosList[i].xkbLayout,
                                      infosList[i].variant,
+                                     infosList[i].prefs,
                                      i);
             is.connect('activate', this.activateInputSource.bind(this));
 

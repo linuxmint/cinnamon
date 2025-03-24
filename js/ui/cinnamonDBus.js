@@ -137,7 +137,7 @@ const CinnamonIface =
             </method> \
             <method name="CloseEndSessionDialog"/> \
             <method name="GetInputSources"> \
-                <arg type="a(ssissssssib)" direction="out" name="layouts"/> \
+                <arg type="a(ssisssssssib)" direction="out" name="layouts"/> \
             </method> \
             <method name="ActivateInputSourceIndex"> \
                 <arg type="i" direction="in" name="index"/> \
@@ -545,7 +545,7 @@ CinnamonDBus.prototype = {
 
         for (let idx in sources) {
             const source = sources[idx];
-
+            global.log(source.preferences);
             ret.push([
                 source.type,
                 source.id,
@@ -556,10 +556,12 @@ CinnamonDBus.prototype = {
                 source.xkbId,
                 source.xkbLayout,
                 source.variant,
+                source.preferences,
                 source.dupeId,
-                source === is_mgr._mruSources[0]
+                source === is_mgr.currentSource
             ]);
         }
+        global.log(ret);
         return ret;
     },
 
