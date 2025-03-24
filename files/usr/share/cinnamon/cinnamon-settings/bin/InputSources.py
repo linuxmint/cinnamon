@@ -1,6 +1,5 @@
 #!/usr/bin/python3
 
-import gettext
 import os
 import subprocess
 
@@ -9,20 +8,15 @@ import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("CinnamonDesktop", "3.0")
 gi.require_version('IBus', '1.0')
-gi.require_version('Pango', '1.0')
-from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus, Pango
+from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus
 
 from SettingsWidgets import Keybinding
 from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
-MAX_LAYOUTS_PER_GROUP = 4
+import AddKeyboardLayout
 
-def make_gkbd_keyboard_args(layout, variant):
-    if variant:
-        return ["gkbd-keyboard-display", "-l", f"{layout}\t{variant}"]
-    else:
-        return ["gkbd-keyboard-display", "-l", layout]
+MAX_LAYOUTS_PER_GROUP = 4
 
 class InputSourceSettingsPage(SettingsPage):
     def __init__(self):
@@ -49,6 +43,8 @@ class InputSourceSettingsPage(SettingsPage):
         if not GLib.find_program_in_path("gkbd-keyboard-display"):
             self.test_layout_button.set_visible(False)
 
+        self.engine_config_button = builder.get_object("engine_config_button")
+        self.engine_config_button.connect("clicked", self.on_engine_config_clicked)
         self.add_layout_button = builder.get_object("add_layout")
         self.add_layout_button.connect("clicked", self.on_add_layout_clicked)
         self.remove_layout_button = builder.get_object("remove_layout")
@@ -157,21 +153,33 @@ class InputSourceSettingsPage(SettingsPage):
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
 
-        args = make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
+        args = AddKeyboardLayout.make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
         subprocess.Popen(args)
+
+    def on_engine_config_clicked(self, button, data=None):
+        source = self._get_selected_source()
+
+        subprocess.Popen([source.preferences], shell=True)
 
     def update_widgets(self):
         # Don't allow removal of last remaining layout
         n_items = self.current_input_sources_model.get_n_items()
-        self.remove_layout_button.set_sensitive(n_items > 1)
         self.add_layout_button.set_sensitive(n_items < MAX_LAYOUTS_PER_GROUP)
 
         source = self._get_selected_source()
         if source is not None:
             self.test_layout_button.set_sensitive(source.type == "xkb")
+            self.engine_config_button.set_sensitive(source.type == "ibus" and source.preferences != '')
             index = self.current_input_sources_model.get_item_index(source)
             self.move_layout_up_button.set_sensitive(index > 0)
             self.move_layout_down_button.set_sensitive(index < self.current_input_sources_model.get_n_items() - 1)
+            self.remove_layout_button.set_sensitive(n_items > 1)
+        else:
+            self.test_layout_button.set_sensitive(False)
+            self.engine_config_button.set_sensitive(False)
+            self.move_layout_up_button.set_sensitive(False)
+            self.move_layout_down_button.set_sensitive(False)
+            self.remove_layout_button.set_sensitive(False)
 
 class LayoutIcon(Gtk.Overlay):
     def __init__(self, file, dupe_id):
@@ -215,234 +223,6 @@ class LayoutIcon(Gtk.Overlay):
                    (y + (height / 2.0) + (ext.height / 2.0)))
         cr.show_text(dupe_str)
 
-LAYOUT_ID_COLUMN = 0
-LAYOUT_DISPLAY_NAME_COLUMN = 1
-LAYOUT_TYPE_COLUMN = 2
-LAYOUT_LAYOUT_COLUMN = 3
-LAYOUT_VARIANT_COLUMN = 4
-
-class AddLayoutDialog():
-    def __init__(self, used_ids):
-        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
-        self.used_ids = used_ids
-        self.loaded_ids = set()
-
-        builder = Gtk.Builder()
-        builder.set_translation_domain('cinnamon')
-        builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
-
-        self.dialog = builder.get_object("add_layout_dialog")
-        self.add_button = builder.get_object("add_button")
-        self.add_button.connect("clicked", self._on_add_button_clicked)
-        self.cancel_button = builder.get_object("cancel_button")
-        self.cancel_button.connect("clicked", self._on_cancel_button_clicked)
-        self.preview_button = builder.get_object("preview_button")
-        self.preview_button.connect("clicked", self._on_preview_button_clicked)
-        self.search_entry = builder.get_object("search_entry")
-        self.search_entry.connect("search-changed", self._on_search_entry_changed)
-        self.layouts_view = builder.get_object("layouts_view")
-        self.layouts_view.connect("row-activated", self._on_row_activated)
-        self.layouts_view.get_selection().connect("changed", self._on_row_selected)
-
-        #                                 (layout_id, layout_display_name, layout_type, layout_layout, layout_variant)
-        self.layouts_store = Gtk.ListStore(str,       str,                 str,         str,           str)
-        self.layouts_store.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN, Gtk.SortType.ASCENDING)
-        self.layouts_filter_store = Gtk.TreeModelFilter(child_model=self.layouts_store)
-        self.layouts_filter_store.set_visible_func(self.search_filter_func)
-        self.layouts_view.set_model(self.layouts_filter_store)
-
-        column = Gtk.TreeViewColumn()
-        self.layouts_view.append_column(column)
-        cell = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.MIDDLE)
-        column.pack_start(cell, True)
-        column.add_attribute(cell, "text", LAYOUT_DISPLAY_NAME_COLUMN)
-
-        cell = Gtk.CellRendererPixbuf(xpad=10)
-        column.pack_start(cell, False)
-        column.set_cell_data_func(cell, self.layout_icon_data_func)
-
-        self._locales_by_language = {}
-        self._locales = {}
-        self._row_items = []
-
-        self.response_id = None
-
-        if not GLib.find_program_in_path("gkbd-keyboard-display"):
-            self.preview_button.set_visible(False)
-
-        self.xkb_info = CinnamonDesktop.XkbInfo()
-
-        self._load_layouts()
-        self._update_widgets()
-
-        self._ibus = IBus.Bus.new_async()
-        if not self._ibus.is_connected():
-            print("Connecting to IBus")
-            self._ibus.connect("connected", self._on_ibus_connected)
-        else:
-            print("IBus already connected")
-            self._on_ibus_connected(self._ibus)
-
-    def _on_ibus_connected(self, ibus, data=None):
-        ibus.list_engines_async(5000, None, self._list_ibus_engines_completed)
-
-    def _list_ibus_engines_completed(self, ibus, res, data=None):
-        try:
-            engines = ibus.list_engines_async_finish(res)
-        except GLib.Error as e:
-            print("Error getting list of ibus engines: %s" % e.message)
-            return
-
-        for engine in engines:
-            self.add_ibus_row(engine)
-
-    def get_selected_iter(self):
-        model, paths = self.layouts_view.get_selection().get_selected_rows()
-        if paths is not None and len(paths) > 0:
-            path = paths[0]
-            return model.get_iter(path)
-
-        return None
-
-    def _on_row_activated(self, view, path, column, data=None):
-        self._on_add_button_clicked(None)
-
-    def _on_row_selected(self, selection, data=None):
-        self._update_widgets()
-
-    def _on_search_entry_changed(self, entry, data=None):
-        self.layouts_filter_store.refilter()
-
-    def _on_preview_button_clicked(self, button, data=None):
-        iter = self.get_selected_iter()
-        assert iter is not None
-
-        display_name = self.layouts_filter_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
-        layout_layout = self.layouts_filter_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
-        layout_variant = self.layouts_filter_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
-        args = make_gkbd_keyboard_args(layout_layout, layout_variant)
-        subprocess.Popen(args)
-
-    def _on_cancel_button_clicked(self, button, data=None):
-        self.dialog.response(Gtk.ResponseType.CANCEL)
-
-    def _on_add_button_clicked(self, button, data=None):
-        iter = self.get_selected_iter()
-
-        assert iter is not None
-
-        layout_type = self.layouts_filter_store.get_value(iter, LAYOUT_TYPE_COLUMN)
-        layout_id = self.layouts_filter_store.get_value(iter, LAYOUT_ID_COLUMN)
-        self.response = (layout_type, layout_id)
-        print("Response:", self.response)
-        self.dialog.response(Gtk.ResponseType.OK)
-
-    def search_filter_func(self, model, tree_iter, data=None):
-        search_entry_text = self.search_entry.get_text()
-
-        if search_entry_text == "":
-            return True
-
-        display_name = model.get_value(tree_iter, LAYOUT_DISPLAY_NAME_COLUMN)
-        layout_type = model.get_value(tree_iter, LAYOUT_TYPE_COLUMN)
-        normalized = GLib.utf8_normalize(display_name, -1, GLib.NormalizeMode.DEFAULT)
-        row_text = GLib.utf8_casefold(normalized, -1)
-
-        normalized = GLib.utf8_normalize(search_entry_text, -1, GLib.NormalizeMode.DEFAULT)
-        search_text = GLib.utf8_casefold(normalized, -1)
-
-        return search_text in row_text or search_text in layout_type
-
-    def _update_widgets(self):
-        iter = self.get_selected_iter()
-
-        if iter is not None:
-            self.add_button.set_sensitive(True)
-            type_ = self.layouts_filter_store.get_value(iter, LAYOUT_TYPE_COLUMN)
-            self.preview_button.set_sensitive(type_ == "xkb")
-        else:
-            self.add_button.set_sensitive(False)
-            self.preview_button.set_sensitive(False)
-
-    def layout_icon_data_func(self, column, cell, model, iter, data=None):
-        type_ = model.get_value(iter, LAYOUT_TYPE_COLUMN)
-        if type_ == "ibus":
-            cell.set_property("icon-name", "ibus-engine")
-        else:
-            cell.set_property("icon-name", None)
-
-    def _load_layouts(self):
-        layouts_with_locale = set()
-
-        locales = CinnamonDesktop.get_all_locales()
-
-        for locale in locales:
-            parsed, lang, country, codeset, mod = CinnamonDesktop.parse_locale(locale)
-            if not parsed:
-                continue
-
-            if country is not None:
-                simple_locale = f"{lang}_{country}.UTF-8"
-            else:
-                simple_locale = f"{lang}.UTF-8"
-
-            if simple_locale in self._locales:
-                continue
-
-            info = LocaleInfo(simple_locale)
-            self._locales[simple_locale] = info
-
-            language = CinnamonDesktop.get_language_from_code(lang, None)
-            try:
-                self._locales_by_language[language][info] = info
-            except KeyError:
-                self._locales_by_language[language] = { info: info }
-
-            got, type_, id_ = CinnamonDesktop.get_input_source_from_locale(simple_locale)
-            if got and type_ == "xkb":
-                if id_ not in layouts_with_locale:
-                    layouts_with_locale.add(id_)
-
-            language_layouts = self.xkb_info.get_layouts_for_language(lang)
-            for layout in language_layouts:
-                if layout in layouts_with_locale:
-                    continue
-                layouts_with_locale.add(layout)
-                self.add_xkb_row(info, layout)
-
-        # FIXME: This is probably all we need for xkb...
-        for layout in self.xkb_info.get_all_layouts():
-            if layout in layouts_with_locale:
-                continue
-            self.add_xkb_row(None, layout)
-
-    def add_xkb_row(self, lang_info, layout_id):
-        if layout_id in (self.used_ids, self.loaded_ids):
-            return
-
-        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
-        if got:
-            self.layouts_store.append((layout_id, display_name, "xkb", layout, variant))
-
-    def add_ibus_row(self, ibus_info):
-        layout_id = ibus_info.get_name()
-
-        if layout_id.startswith("xkb:"):
-            return
-        if layout_id in self.loaded_ids:
-            return
-
-        self.loaded_ids.add(layout_id)
-
-        name = ibus_info.get_longname()
-        language_code = ibus_info.get_language()
-        language = IBus.get_language_name(language_code)
-        textdomain = ibus_info.get_textdomain()
-        if textdomain != "" and name != "":
-            name = gettext.dgettext(textdomain, name)
-        display_name = f"{language} ({name})"
-        self.layouts_store.append((layout_id, display_name, "ibus", ibus_info.get_layout(), ibus_info.get_layout_variant()))
-
 class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
     def __init__(self, label, num_bind, schema, key, *args, **kwargs):
         self.key = key
@@ -460,8 +240,11 @@ class CurrentInputSource(GObject.GObject):
             self.display_name, self.short_name, \
             self.flag_name, self.xkbid,         \
             self.xkb_layout, self.xkb_variant,  \
+            self.preferences,                   \
             self.dupe_id, self.active           \
                  = item
+        if self.preferences is None:
+            self.preferences = ''
 
 class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
     __gtype_name__ = 'CurrentInputSourcesModel'
@@ -481,10 +264,33 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
             print(e.message)
             self._proxy = None
 
+        self.xkb_info = CinnamonDesktop.XkbInfo()
+
+        self._ibus = IBus.Bus.new()
+        if not self._ibus.is_connected():
+            print("Connecting to IBus")
+            self._ibus.connect("connected", self._on_ibus_connected)
+        else:
+            print("IBus already connected")
+            self._on_ibus_connected(self._ibus)
+
+    @property
+    def live(self):
+        if self._proxy is None:
+            return False
+        if self._proxy.get_name_owner() is None:
+            return False
+        return True
+
+    def _on_ibus_connected(self, ibus, data=None):
+        if self._proxy is None:
+            self.refresh_input_source_list()
+
     def _on_proxy_ready(self, obj, result, data=None):
         try:
             self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
             self._proxy.connect("g-signal", self._on_proxy_signal)
+            self._proxy.connect("notify::g-name-owner", self._on_cinnamon_state_changed)
             self.refresh_input_source_list()
         except GLib.Error as e:
             print(f"Keyboard module could not establish proxy for org.Cinnamon: {e}")
@@ -493,16 +299,56 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         if signal_name == "InputSourcesChanged":
             self.refresh_input_source_list()
 
+    def _on_cinnamon_state_changed(self, proxy, pspec, data=None):
+        # If Cinnamon crashes, this will happen, reload our sources using xkb and ibus.
+        # This isn't reliable to detect Cinnamon restarting, as it will regain a name-owner
+        # before org.Cinnamon is exported, causing GetInputSources to fail.
+        #
+        # Fortunately, InputSourcesChanged will fire at startup, which is perfect to re-sync
+        # with Cinnamon.
+        if proxy.get_name_owner() is None:
+            self.refresh_input_source_list()
+
     def on_interface_settings_changed(self, settings, key, data=None):
         if key.startswith("keyboard-layout-"):
             self.refresh_input_source_list()
 
     def refresh_input_source_list(self):
-        remote_layouts = self._proxy.GetInputSources()
+        if self.live:
+            layouts = self._proxy.GetInputSources()
+        else:
+            sources = self.input_source_settings.get_value("sources")
+            layouts = []
+            index = 0
+
+            for type_, id_ in sources:
+                if type_ == "xkb":
+                    got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(id_)
+                    if got:
+                        layouts.append(
+                            (type_, id_, index, display_name,
+                             None, None, id_,
+                             layout, variant, None,
+                             0, False)
+                        )
+                else:
+                    engines = self._ibus.get_engines_by_names([id_])
+                    if len(engines) > 0:
+                        engine = engines[0]
+                        display_name = AddKeyboardLayout.make_ibus_display_name(engine)
+                        layouts.append(
+                            (type_, id_, index, display_name,
+                             None, None, id_,
+                             engine.get_layout(), engine.get_layout_variant(), engine.get_setup(),
+                             0, False)
+                        )
+
+                index += 1
+
         old_layouts = self._sources
         new_layouts = []
 
-        for layout in remote_layouts:
+        for layout in layouts:
             new_layouts.append(CurrentInputSource(layout))
 
         self._sources = new_layouts
@@ -511,7 +357,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
 
     def show_add_layout_dialog(self):
         used_ids = [source.xkbid for source in self._sources]
-        add_dialog = AddLayoutDialog(used_ids)
+        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog(used_ids)
         add_dialog.dialog.show_all()
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
@@ -524,21 +370,27 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         label = Gtk.Label(label=markup, xalign=0.0, use_markup=True, margin_start=4)
         row.pack_start(label, True, True, 0)
 
-        indicator_done = False
+        if self.live:
+            indicator_done = False
 
-        if self.interface_settings.get_boolean("keyboard-layout-show-flags"):
-            flag_file = f"/usr/share/iso-flag-png/{source.flag_name}.png"
-            if os.path.exists(flag_file):
-                file = Gio.File.new_for_path(flag_file)
-                flag = LayoutIcon(file, source.dupe_id)
+            if self.interface_settings.get_boolean("keyboard-layout-show-flags"):
+                flag_file = f"/usr/share/iso-flag-png/{source.flag_name}.png"
+                if os.path.exists(flag_file):
+                    file = Gio.File.new_for_path(flag_file)
+                    flag = LayoutIcon(file, source.dupe_id)
 
-                self.column_size_group.add_widget(flag)
-                row.pack_start(flag, False, False, 0)
-                indicator_done = True
+                    self.column_size_group.add_widget(flag)
+                    row.pack_start(flag, False, False, 0)
+                    indicator_done = True
 
-        if not indicator_done:
-            markup = f"<span size='x-large' weight='bold'>{source.short_name}</span>"
-            label = Gtk.Label(xalign=0.0, label=markup, use_markup=True)
+            if not indicator_done:
+                markup = f"<span size='x-large' weight='bold'>{source.short_name}</span>"
+                label = Gtk.Label(xalign=0.0, label=markup, use_markup=True)
+                self.column_size_group.add_widget(label)
+                row.pack_end(label, False, False, 0)
+        else:
+            dummy_markup = "<span size='x-large' weight='bold'> </span>"
+            label = Gtk.Label(xalign=0.0, label=dummy_markup, use_markup=True)
             self.column_size_group.add_widget(label)
             row.pack_end(label, False, False, 0)
 
@@ -561,8 +413,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         return self._sources.index(item)
 
     def activate(self, source):
-        if self._proxy is None:
+        if not self.live:
             return
+
         idx = self._sources.index(source)
         self._proxy.ActivateInputSourceIndex("(i)", idx)
 
@@ -631,16 +484,3 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
             self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
         except Exception as e:
             print("Could not move layout", e)
-
-class LocaleInfo:
-    def __init__(self, simple_locale):
-        self.id = simple_locale
-        self.name = CinnamonDesktop.get_language_from_locale(simple_locale, None)
-        normalized = GLib.utf8_normalize(self.name, -1, GLib.NormalizeMode.DEFAULT)
-        self.unaccented_name = GLib.utf8_casefold(normalized, -1)
-        tmp = CinnamonDesktop.get_language_from_locale(simple_locale, "C")
-        normalized = GLib.utf8_normalize(tmp, -1, GLib.NormalizeMode.DEFAULT)
-        self.untranslated_name = GLib.utf8_casefold(normalized, -1)
-
-        self.layout_rows_by_id = {}
-        self.engine_rows_by_id = {}
