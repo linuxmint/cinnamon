@@ -6,6 +6,8 @@ const Util = imports.misc.util;
 const Gio = imports.gi.Gio;
 const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
+const IBus = imports.gi.IBus;
+const IBusManager = imports.misc.ibusManager;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
@@ -49,7 +51,7 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
         this._layoutIcons = new Map();
 
         this._selectedLayout = null;
-        this._menuItems = new Map();
+        this._layoutItems = new Map();
 
         this._maxSeenWidth = this._maxSeenHeight = 0;
         this.show_flags = this.use_upper = this.use_variants = false;
@@ -71,6 +73,12 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
 
             global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._onPanelEditModeChanged());
 
+            this._layoutSection = new PopupMenu.PopupMenuSection();
+            this.menu.addMenuItem(this._layoutSection);
+            this._propSeparator = new PopupMenu.PopupSeparatorMenuItem();
+            this.menu.addMenuItem(this._propSeparator);
+            this._propSection = new PopupMenu.PopupMenuSection();
+            this.menu.addMenuItem(this._propSection);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), () => {
                 Main.overview.hide();
@@ -188,8 +196,10 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
     _syncConfig() {
         this._maxSeenWidth = this._maxSeenHeight = 0;
 
-        this._menuItems.forEach((v, k, m) => v.destroy());
-        this._menuItems = new Map()
+        this._layoutItems.forEach((v, k, m) => v.destroy());
+        // this.menu.removeAll();
+
+        this._layoutItems = new Map()
 
         this._selectedLayout = null;
 
@@ -221,8 +231,8 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
                 actor, source.displayName
             );
 
-            this._menuItems.set(source, menuItem);
-            this.menu.addMenuItem(menuItem);
+            this._layoutItems.set(source, menuItem);
+            this._layoutSection.addMenuItem(menuItem);
         }
     }
 
@@ -239,7 +249,7 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
             this._selectedLayout = null;
         }
 
-        const item = this._menuItems.get(selected);
+        const item = this._layoutItems.get(selected);
         item.setShowDot(true);
 
         this._selectedLayout = item;
@@ -261,6 +271,7 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
 
         this._panel_icon_box.set_child(actor);
 
+        this._updatePropertySection(selected.properties);
         // const _applet_label_box = this._applet_label.get_parent();
         // this._setMargin(_applet_label_box, 0, 0);
         // this._setMargin(this._applet_icon_box, 0, 0);
@@ -296,6 +307,119 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
         //     this._setStyle();
         // }
     }
+
+    _updatePropertySection(properties) {
+        // this._propSeparator.hide();
+        this._propSection.actor.hide();
+        this._propSection.removeAll();
+
+        this._buildPropSubMenu(this._propSection, properties);
+    }
+
+    _buildPropSubMenu(menu, props) {
+        if (!props)
+            return;
+
+        this._propSection.actor.show();
+        let ibusManager = IBusManager.getIBusManager();
+        let radioGroup = [];
+        let p;
+        for (let i = 0; (p = props.get(i)) != null; ++i) {
+            let prop = p;
+
+            if (!prop.get_visible())
+                continue;
+
+            if (prop.get_key() == 'InputMode') {
+                let text;
+                if (prop.get_symbol)
+                    text = prop.get_symbol().get_text();
+                else
+                    text = prop.get_label().get_text();
+
+                let currentSource = this._manager.currentSource;
+                if (currentSource) {
+                    let indicatorLabel = this._layoutItems.get(currentSource);
+                    if (text && text.length > 0 && text.length < 3)
+                        indicatorLabel.label.set_text(text);
+                }
+            }
+
+            let item;
+            let type = prop.get_prop_type();
+            switch (type) {
+            case IBus.PropType.MENU:
+                item = new PopupMenu.PopupSubMenuMenuItem(prop.get_label().get_text());
+                this._buildPropSubMenu(item.menu, prop.get_sub_props());
+                break;
+
+            case IBus.PropType.RADIO:
+                item = new PopupMenu.PopupMenuItem(prop.get_label().get_text());
+                item.prop = prop;
+                radioGroup.push(item);
+                item.radioGroup = radioGroup;
+
+                item.setOrnament(PopupMenu.OrnamentType.DOT, prop.get_state() == IBus.PropState.CHECKED);
+                item.connect('activate', () => {
+                    if (item.prop.get_state() == IBus.PropState.CHECKED)
+                        return;
+
+                    let group = item.radioGroup;
+                    for (let j = 0; j < group.length; ++j) {
+                        if (group[j] == item) {
+                            item.setOrnament(PopupMenu.OrnamentType.DOT, true);
+                            item.prop.set_state(IBus.PropState.CHECKED);
+                            ibusManager.activateProperty(item.prop.get_key(),
+                                                         IBus.PropState.CHECKED);
+                        } else {
+                            group[j].setOrnament(PopupMenu.OrnamentType.DOT, false);
+                            group[j].prop.set_state(IBus.PropState.UNCHECKED);
+                            ibusManager.activateProperty(group[j].prop.get_key(),
+                                                         IBus.PropState.UNCHECKED);
+                        }
+                    }
+                });
+                break;
+
+            case IBus.PropType.TOGGLE:
+                item = new PopupMenu.PopupSwitchMenuItem(prop.get_label().get_text(), prop.get_state() == IBus.PropState.CHECKED);
+                item.prop = prop;
+                item.connect('toggled', () => {
+                    if (item.state) {
+                        item.prop.set_state(IBus.PropState.CHECKED);
+                        ibusManager.activateProperty(item.prop.get_key(),
+                                                     IBus.PropState.CHECKED);
+                    } else {
+                        item.prop.set_state(IBus.PropState.UNCHECKED);
+                        ibusManager.activateProperty(item.prop.get_key(),
+                                                     IBus.PropState.UNCHECKED);
+                    }
+                });
+                break;
+
+            case IBus.PropType.NORMAL:
+                item = new PopupMenu.PopupMenuItem(prop.get_label().get_text());
+                item.prop = prop;
+                item.connect('activate', () => {
+                    ibusManager.activateProperty(item.prop.get_key(),
+                                                 item.prop.get_state());
+                });
+                break;
+
+            case IBus.PropType.SEPARATOR:
+                item = new PopupMenu.PopupSeparatorMenuItem();
+                break;
+
+            default:
+                log('IBus property %s has invalid type %d'.format(prop.get_key(), type));
+                continue;
+            }
+
+            item.setSensitive(prop.get_sensitive());
+            menu.addMenuItem(item);
+        }
+    }
+
 
     on_applet_removed_from_panel() {
         if (this._bus_watch_id > 0) {

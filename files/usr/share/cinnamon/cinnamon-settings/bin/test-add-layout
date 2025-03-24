@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-import InputSources
+import AddKeyboardLayout
 
 if __name__ == "__main__":
-    add_dialog = InputSources.AddLayoutDialog([])
+    add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([])
     add_dialog.dialog.show_all()
     add_dialog.dialog.run()
     add_dialog.dialog.destroy()
