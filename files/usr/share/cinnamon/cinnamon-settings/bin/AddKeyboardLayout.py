@@ -43,8 +43,7 @@ LAYOUT_VARIANT_COLUMN = 4
 class AddKeyboardLayoutDialog():
     def __init__(self, used_ids):
         self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
-        self.used_ids = used_ids
-        self.loaded_ids = set()
+        self.used_ids = set(used_ids)
 
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
@@ -195,10 +194,10 @@ class AddKeyboardLayoutDialog():
             self.add_xkb_row(None, layout)
 
     def add_xkb_row(self, lang_info, layout_id):
-        if layout_id in (self.used_ids, self.loaded_ids):
+        if layout_id in self.used_ids:
             return
 
-        self.loaded_ids.add(layout_id)
+        self.used_ids.add(layout_id)
 
         got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
         if got:
@@ -209,10 +208,10 @@ class AddKeyboardLayoutDialog():
 
         if layout_id.startswith("xkb:"):
             return
-        if layout_id in self.loaded_ids:
+        if layout_id in self.used_ids:
             return
 
-        self.loaded_ids.add(layout_id)
+        self.used_ids.add(layout_id)
 
         display_name = make_ibus_display_name(ibus_info)
         self.layouts_store.append((layout_id, display_name, "ibus", ibus_info.get_layout(), ibus_info.get_layout_variant()))

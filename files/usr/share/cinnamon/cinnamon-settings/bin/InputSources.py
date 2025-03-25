@@ -298,6 +298,11 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
     def _on_proxy_signal(self, proxy, sender_name, signal_name, parameters):
         if signal_name == "InputSourcesChanged":
             self.refresh_input_source_list()
+        elif signal_name == "CurrentInputSourceChanged":
+            new_active = parameters[0]
+            for source in self._sources:
+                source.active = new_active == source.id
+            self.items_changed(0, len(self._sources), len(self._sources))
 
     def _on_cinnamon_state_changed(self, proxy, pspec, data=None):
         # If Cinnamon crashes, this will happen, reload our sources using xkb and ibus.
@@ -356,7 +361,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         self.items_changed(0, len(old_layouts), len(new_layouts))
 
     def show_add_layout_dialog(self):
-        used_ids = [source.xkbid for source in self._sources]
+        used_ids = [source.id for source in self._sources]
         add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog(used_ids)
         add_dialog.dialog.show_all()
         ret = add_dialog.dialog.run()
