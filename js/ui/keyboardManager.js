@@ -419,7 +419,6 @@ class InputSourceSwitcher extends SwitcherPopup.SwitcherList {
 
         if (this.show_flags) {
             const file = Gio.file_new_for_path(getFlagFileName(name));
-            global.log(file.get_path());
             if (file.query_exists(null)) {
                 const icon = new SubscriptableFlagIcon({
                     style_class: 'input-source-switcher-flag-icon',
@@ -693,6 +692,7 @@ var InputSourceManager = class {
         [oldSource, this._currentSource] = [this._currentSource, newSource];
 
         this.emit('current-source-changed', oldSource);
+        Main.cinnamonDBusService.EmitCurrentInputSourceChanged(newSource.id);
 
         for (let i = 1; i < this._mruSources.length; ++i) {
             if (this._mruSources[i] == newSource) {
@@ -709,7 +709,7 @@ var InputSourceManager = class {
 
         try {
             let is = this._inputSources[index];
-            this.activateInputSource(is, false);
+            this.activateInputSource(is, true);
         } catch (e) {
             global.logError(`Could not activate input source index: ${index}`);
         }
@@ -942,7 +942,6 @@ var InputSourceManager = class {
             return;
 
         source.properties = props;
-        global.log(source.properties);
 
         if (source == this._currentSource)
             this.emit('current-source-changed', null);

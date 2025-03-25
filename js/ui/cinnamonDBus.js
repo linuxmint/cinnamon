@@ -142,6 +142,9 @@ const CinnamonIface =
             <method name="ActivateInputSourceIndex"> \
                 <arg type="i" direction="in" name="index"/> \
             </method> \
+            <signal name="CurrentInputSourceChanged"> \
+                <arg type="s" direction="out" /> \
+            </signal> \
             <signal name="InputSourcesChanged"/> \
         </interface> \
     </node>';
@@ -568,6 +571,10 @@ CinnamonDBus.prototype = {
     ActivateInputSourceIndex(index) {
         const is_mgr = KeyboardManager.getInputSourceManager();
         is_mgr.activateInputSourceIndex(index);
+    },
+
+    EmitCurrentInputSourceChanged: function(id) {
+        this._dbusImpl.emit_signal('CurrentInputSourceChanged', GLib.Variant.new('(s)', [id]));
     },
 
     EmitInputSourcesChanged: function() {

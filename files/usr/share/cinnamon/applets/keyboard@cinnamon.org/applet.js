@@ -227,7 +227,7 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
             }
 
             const menuItem = new LayoutMenuItem(
-                () => source.activate(),
+                () => source.activate(true),
                 actor, source.displayName
             );
 
@@ -308,6 +308,15 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
         // }
     }
 
+    _setPanelIBusLabel(label) {
+        let actor = new St.Label({
+            text: label,
+            style_class: "applet-label"
+        });
+
+        this._panel_icon_box.set_child(actor);
+    }
+
     _updatePropertySection(properties) {
         // this._propSeparator.hide();
         this._propSection.actor.hide();
@@ -336,12 +345,11 @@ class CinnamonKeyboardApplet extends Applet.IconApplet {
                     text = prop.get_symbol().get_text();
                 else
                     text = prop.get_label().get_text();
-
                 let currentSource = this._manager.currentSource;
                 if (currentSource) {
                     let indicatorLabel = this._layoutItems.get(currentSource);
                     if (text && text.length > 0 && text.length < 3)
-                        indicatorLabel.label.set_text(text);
+                        this._setPanelIBusLabel(text)
                 }
             }
 
