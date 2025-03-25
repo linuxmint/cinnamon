@@ -1085,6 +1085,10 @@ var InputSourceManager = class {
     get multipleSources() {
         return this.numInputSources > 1;
     }
+
+    get showFlags() {
+        return this._interface_settings.get_boolean("keyboard-layout-show-flags");
+    }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);
 
