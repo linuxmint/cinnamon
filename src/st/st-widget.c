@@ -35,6 +35,7 @@
 #include "st-widget.h"
 
 #include "st-background-effect.h"
+#include "st-debug.h"
 #include "st-label.h"
 #include "st-private.h"
 #include "st-texture-cache.h"
@@ -583,6 +584,7 @@ st_widget_get_theme_node (StWidget *widget)
         {
           g_critical ("st_widget_get_theme_node called on the widget %s which is not in the stage.",
                     st_describe_actor (CLUTTER_ACTOR (widget)));
+          st_dump_js_stack ();
           return g_object_new (ST_TYPE_THEME_NODE, NULL);
         }
 

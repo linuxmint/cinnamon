@@ -91,6 +91,7 @@ st_private_headers = [
     'croco/libcroco-config.h',
     'croco/libcroco.h',
     'st-background-effect.h',
+    'st-debug.h',
     'st-private.h',
     'st-table-private.h',
     'st-theme-private.h',
@@ -107,6 +108,7 @@ st_gir_sources = [
     'st-box-layout-child.c',
     'st-button.c',
     'st-clipboard.c',
+    'st-debug.c',
     'st-drawing-area.c',
     'st-entry.c',
     'st-focus-manager.c',
@@ -174,6 +176,7 @@ st_h = configure_file(
 )
 
 libst_deps = [
+    cjs,
     clutter,
     cogl,
     cogl_path,

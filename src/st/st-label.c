@@ -40,6 +40,7 @@
 
 #include <clutter/clutter.h>
 
+#include "st-debug.h"
 #include "st-label.h"
 #include "st-private.h"
 #include "st-widget.h"
@@ -330,6 +331,7 @@ st_label_get_text (StLabel *label)
   if (ctext == NULL) {
     g_printerr ("Cinnamon WARNING: Possible orphan label being accessed via st_label_get_text().  Check your timers and handlers!\n"
                 "Address: %p\n", (void *) label);
+    st_dump_js_stack ();
     priv->orphan = TRUE;
     return NULL;
   }
