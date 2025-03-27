@@ -62,9 +62,9 @@ class Module:
             settings.add_row(slider)
 
             accel_profiles = [
-                [CDesktopEnums.PointerAccelProfile.DEFAULT.value_nick, _("Device default")],
-                [CDesktopEnums.PointerAccelProfile.FLAT.value_nick, _("Constant")],
-                [CDesktopEnums.PointerAccelProfile.ADAPTIVE.value_nick, _("Adaptive")]
+                ["default", _("Device default")],
+                ["flat", _("Constant")],
+                ["adaptive", _("Adaptive")]
             ]
 
             combo = GSettingsComboBox(_("Acceleration"), "org.cinnamon.desktop.peripherals.mouse", "accel-profile", accel_profiles, valtype=str)
@@ -110,10 +110,10 @@ class Module:
             settings.add_row(switch)
 
             clickpad_list = [
-                [CDesktopEnums.TouchpadClickMethod.DEFAULT.value_nick, _("Default device behavior")],
-                [CDesktopEnums.TouchpadClickMethod.NONE.value_nick, _("Disabled")],
-                [CDesktopEnums.TouchpadClickMethod.AREAS.value_nick, _("Virtual button areas along bottom of touchpad")],
-                [CDesktopEnums.TouchpadClickMethod.FINGERS.value_nick, _("Use multiple fingers for right and middle click")]
+                ["default", _("Default device behavior")],
+                ["none", _("Disabled")],
+                ["areas", _("Virtual button areas along bottom of touchpad")],
+                ["fingers", _("Use multiple fingers for right and middle click")]
             ]
 
             combo = GSettingsComboBox(_("Click actions"), "org.cinnamon.desktop.peripherals.touchpad", "click-method", clickpad_list, valtype=str)
