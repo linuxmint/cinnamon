@@ -266,8 +266,8 @@ class SimpleButton extends WorkspaceButton {
         }
         else {
             this.actor.remove_style_pseudo_class('outlined');
-            this.update();
         }
+        this.update();
     }
 
     shade(used) {
