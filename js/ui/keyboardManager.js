@@ -857,6 +857,7 @@ var InputSourceManager = class {
         }
 
         if (infosList.length == 0) {
+            let prefs = '';
             let type = INPUT_SOURCE_TYPE_XKB;
             let id = DEFAULT_LAYOUT;
             let [, displayName, shortName, xkbLayout, variant] = this._xkbInfo.get_layout_info(id);
