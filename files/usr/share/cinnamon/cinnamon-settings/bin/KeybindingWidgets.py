@@ -192,6 +192,9 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 text = Gtk.accelerator_get_label_with_keycode(None, key, codes[0], mods)
             if restore_atab:
                 text = text.replace("`", "AboveTab")
+            # ??? This doesn't parse for some reason
+            if valid == "XF86Keyboard":
+                text = _("Keyboard")
 
         self.set_property("text", text)
 

@@ -514,11 +514,7 @@ class Keybinding(SettingsWidget):
 
     def on_setting_changed(self, *args):
         value = self.get_value()
-
-        try:
-            bindings = value.split("::")
-        except AttributeError:
-            bindings = value
+        bindings = value.split("::")
 
         for x in range(min(len(bindings), self.num_bind)):
             self.buttons[x].set_accel_string(bindings[x])
