@@ -120,9 +120,6 @@ class InputSourceSettingsPage(SettingsPage):
         return GLib.SOURCE_REMOVE
 
     def on_input_source_activated(self, listbox, row):
-        source = row.get_child().input_source
-        self.current_input_sources_model.activate(source)
-
         self.update_widgets()
 
     def _get_selected_source(self):
@@ -223,6 +220,13 @@ class LayoutIcon(Gtk.Overlay):
                    (y + (height / 2.0) + (ext.height / 2.0)))
         cr.show_text(dupe_str)
 
+# PXGSettingsBackend is in python-xapp. This is the only place we need
+# a gsettings backend for a widget - the other use of keybindings is for xlets (json
+# and the keyboard shortcuts tab, which has its own implementation. So this is a bit
+# hacky. Otherwise we'd need to move a bunch of stuff to python-xapp that's never
+# used outside of cinnamon.
+#
+# So we just override what we need here instead.
 class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
     def __init__(self, label, num_bind, schema, key, *args, **kwargs):
         self.key = key
@@ -231,6 +235,21 @@ class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
         Keybinding.__init__(self, label, num_bind, *args, **kwargs)
         PXGSettingsBackend.__init__(self, *args, **kwargs)
         self.bind_settings()
+
+    def on_kb_changed(self, *args):
+        bindings = []
+
+        for x in range(self.num_bind):
+            string = self.buttons[x].get_accel_string()
+            if string != '':
+                bindings.append(string)
+
+        self.set_value(bindings)
+
+    def on_setting_changed(self, *args):
+        bindings = self.get_value()
+        for x in range(min(len(bindings), self.num_bind)):
+            self.buttons[x].set_accel_string(bindings[x])
 
 class CurrentInputSource(GObject.GObject):
     __gtype_name__ = "CurrentInputSource"
@@ -298,11 +317,6 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
     def _on_proxy_signal(self, proxy, sender_name, signal_name, parameters):
         if signal_name == "InputSourcesChanged":
             self.refresh_input_source_list()
-        elif signal_name == "CurrentInputSourceChanged":
-            new_active = parameters[0]
-            for source in self._sources:
-                source.active = new_active == source.id
-            self.items_changed(0, len(self._sources), len(self._sources))
 
     def _on_cinnamon_state_changed(self, proxy, pspec, data=None):
         # If Cinnamon crashes, this will happen, reload our sources using xkb and ibus.
@@ -416,13 +430,6 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         if item not in self._sources:
             return -1
         return self._sources.index(item)
-
-    def activate(self, source):
-        if not self.live:
-            return
-
-        idx = self._sources.index(source)
-        self._proxy.ActivateInputSourceIndex("(i)", idx)
 
     def add_layout(self, type_, layout_id):
         raw_sources = self.input_source_settings.get_value("sources")

@@ -103,7 +103,6 @@
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="border-width">4</property>
-                        <property name="headers-visible">False</property>
                         <property name="enable-search">False</property>
                         <property name="show-expanders">False</property>
                         <property name="enable-grid-lines">horizontal</property>

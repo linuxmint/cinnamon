@@ -191,7 +191,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             }
 
             const menuItem = new LayoutMenuItem(
-                () => source.activate(true),
+                () => source.activate(),
                 actor, source.displayName
             );
 
