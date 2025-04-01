@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
 import AddKeyboardLayout
+import gettext
 
 if __name__ == "__main__":
+    gettext.install("cinnamon", "/usr/share/locale")
     add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([])
     add_dialog.dialog.show_all()
     add_dialog.dialog.run()

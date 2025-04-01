@@ -4,6 +4,7 @@ const { Clutter, Gio, GLib, GObject, IBus, Meta, Cinnamon, St, CinnamonDesktop }
 
 const Gettext = imports.gettext;
 const Signals = imports.signals;
+const ByteArray = imports.byteArray;
 
 const IBusManager = imports.misc.ibusManager;
 const Main = imports.ui.main;
@@ -169,23 +170,7 @@ var KeyboardManager = class {
         return options;
     }
 };
-/*
-var LayoutMenuItem = GObject.registerClass(
-class LayoutMenuItem extends PopupMenu.PopupBaseMenuItem {
-    _init(displayName, shortName) {
-        super._init();
 
-        this.label = new St.Label({
-            text: displayName,
-            x_expand: true,
-        });
-        this.indicator = new St.Label({ text: shortName });
-        this.add_child(this.label);
-        this.add(this.indicator);
-        this.label_actor = this.label;
-    }
-});
-*/
 var InputSource = class {
     constructor(type, id, displayName, shortName, flagName, xkbLayout, variant, prefs, index) {
         this.type = type;
@@ -362,95 +347,6 @@ var SubscriptableFlagIcon = GObject.registerClass({
     }
 });
 
-var InputSourcePopup = GObject.registerClass(
-class InputSourcePopup extends SwitcherPopup.SwitcherPopup {
-    _init(items, action, actionBackward, show_flags) {
-        super._init(items);
-
-        this._action = action;
-        this._actionBackward = actionBackward;
-
-        this._switcherList = new InputSourceSwitcher(this._items, show_flags);
-    }
-
-    _keyPressHandler(keysym, action) {
-        if (action == this._action)
-            this._select(this._next());
-        else if (action == this._actionBackward)
-            this._select(this._previous());
-        else if (keysym == Clutter.KEY_Left)
-            this._select(this._previous());
-        else if (keysym == Clutter.KEY_Right)
-            this._select(this._next());
-        else
-            return Clutter.EVENT_PROPAGATE;
-
-        return Clutter.EVENT_STOP;
-    }
-
-    _finish() {
-        super._finish();
-
-        this._items[this._selectedIndex].activate(true);
-    }
-});
-
-var InputSourceSwitcher = GObject.registerClass(
-class InputSourceSwitcher extends SwitcherPopup.SwitcherList {
-    _init(items, show_flags) {
-        super._init(true);
-        this.show_flags = show_flags;
-
-        for (let i = 0; i < items.length; i++)
-            this._addIcon(items[i]);
-    }
-
-    _addIcon(item) {
-        let box = new St.BoxLayout({ vertical: true });
-
-        let bin = new St.Bin({ style_class: 'input-source-switcher-symbol',
-                               important: true,
-                               x_align: St.Align.MIDDLE,
-                               y_align: St.Align.MIDDLE
-        });
-
-        let isFlagIcon = false;
-        let name = item.flagName;
-
-        if (this.show_flags) {
-            const file = Gio.file_new_for_path(getFlagFileName(name));
-            if (file.query_exists(null)) {
-                const icon = new SubscriptableFlagIcon({
-                    style_class: 'input-source-switcher-flag-icon',
-                    file: file,
-                    subscript: item.dupeId > 0 ? String(item.dupeId) : null });
-                bin.set_child(icon);
-
-                isFlagIcon = true;
-            }
-        }
-
-        if (!isFlagIcon) {
-            let symbol = new St.Label({
-                text: item.shortName,
-                x_align: Clutter.ActorAlign.CENTER,
-                y_align: Clutter.ActorAlign.CENTER,
-            });
-            bin.set_child(symbol);
-        }
-
-        box.add_child(bin);
-
-        let text = new St.Label({
-            text: item.displayName,
-            x_align: Clutter.ActorAlign.CENTER,
-        });
-        box.add_child(text);
-
-        this.addItem(box, text);
-    }
-});
-
 var InputSourceSettings = class {
     constructor() {
         if (this.constructor === InputSourceSettings)
@@ -473,14 +369,6 @@ var InputSourceSettings = class {
         return [];
     }
 
-    get mruSources() {
-        return [];
-    }
-
-    set mruSources(sourcesList) {
-        // do nothing
-    }
-
     get keyboardOptions() {
         return [];
     }
@@ -497,14 +385,73 @@ var InputSourceSessionSettings = class extends InputSourceSettings {
 
         this._DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
         this._KEY_INPUT_SOURCES = 'sources';
-        this._KEY_MRU_SOURCES = 'mru-sources';
         this._KEY_KEYBOARD_OPTIONS = 'xkb-options';
         this._KEY_PER_WINDOW = 'per-window';
 
         this._settings = new Gio.Settings({ schema_id: this._DESKTOP_INPUT_SOURCES_SCHEMA });
+        this._populateDefaultLayout();
+
         this._settings.connect('changed::%s'.format(this._KEY_INPUT_SOURCES), this._emitInputSourcesChanged.bind(this));
         this._settings.connect('changed::%s'.format(this._KEY_KEYBOARD_OPTIONS), this._emitKeyboardOptionsChanged.bind(this));
         this._settings.connect('changed::%s'.format(this._KEY_PER_WINDOW), this._emitPerWindowChanged.bind(this));
+    }
+
+    _populateDefaultLayout() {
+        // If 'sources' is empty, check /etc/default/keyboard for the user layout, and add it to our settings.
+        // If that fails, add the us layout as a fallback.
+        let sources = this._settings.get_value(this._KEY_INPUT_SOURCES);
+        if (sources.n_children() > 0) {
+            return;
+        }
+
+        let done = false;
+
+        global.log("No keyboard layout defined - populating a default.");
+
+        let default_file = Gio.File.new_for_path("/etc/default/keyboard");
+        try {
+            let [success, bytes] = default_file.load_contents(null);
+            if (success) {
+                let contents = ByteArray.toString(bytes);
+                let lines = contents.toString().split('\n');
+                let layout = null;
+                let variant = null;
+                let options = [];
+                for (let i = 0; i < lines.length; i++) {
+                    let line = lines[i];
+                    if (line.startsWith("XKBLAYOUT=")) {
+                        layout = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '');
+                    } else if (line.startsWith("XKBVARIANT=")) {
+                        variant = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '');
+                    } else if (line.startsWith("XKBOPTIONS=")) {
+                        options = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(',');
+                    }
+                }
+
+                if (layout && layout !== '') {
+                    if (variant && variant !== '') {
+                        layout = '%s+%s'.format(layout, variant);
+                    }
+                    let sources = GLib.Variant.new('a(ss)', [[INPUT_SOURCE_TYPE_XKB, layout]]);
+                    this._settings.set_value(this._KEY_INPUT_SOURCES, sources);
+
+                    if (options.length > 0 && options[0] !== '') {
+                        this._settings.set_strv(this._KEY_KEYBOARD_OPTIONS, options);
+                    }
+
+                    done = true;
+                }
+            }
+        } catch (e) {
+            global.logError("Failed to read /etc/default/keyboard: %s".format(e.message));
+        }
+
+        // If all else fails, set 'en' layout - there needs to be *something* in the sources setting
+        // or else things break down.
+        if (!done) {
+            let sources = GLib.Variant.new('a(ss)', [[INPUT_SOURCE_TYPE_XKB, DEFAULT_LAYOUT]]);
+            this._settings.set_value(this._KEY_INPUT_SOURCES, sources);
+        }
     }
 
     _getSourcesList(key) {
@@ -521,15 +468,6 @@ var InputSourceSessionSettings = class extends InputSourceSettings {
 
     get inputSources() {
         return this._getSourcesList(this._KEY_INPUT_SOURCES);
-    }
-
-    get mruSources() {
-        return this._getSourcesList(this._KEY_MRU_SOURCES);
-    }
-
-    set mruSources(sourcesList) {
-        let sources = GLib.Variant.new('a(ss)', sourcesList);
-        this._settings.set_value(this._KEY_MRU_SOURCES, sources);
     }
 
     get keyboardOptions() {
@@ -553,10 +491,6 @@ var InputSourceManager = class {
 
         this._currentSource = null;
 
-        // All valid input sources currently in the gsettings
-        // KEY_INPUT_SOURCES list ordered by most recently used
-        this._mruSources = [];
-        this._mruSourcesBackup = null;
         this._kb_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.keybindings.wm" });
         this._interface_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
 
@@ -572,6 +506,7 @@ var InputSourceManager = class {
             Meta.KeyBindingFlags.NONE,
             this._switchInputSource.bind(this)
         );
+
         this._settings = new InputSourceSessionSettings();
         this._settings.connect('input-sources-changed', this._inputSourcesChanged.bind(this));
         this._settings.connect('keyboard-options-changed', this._keyboardOptionsChanged.bind(this));
@@ -611,50 +546,47 @@ var InputSourceManager = class {
             return;
 
         this._ibusReady = ready;
-        this._mruSources = [];
         this._inputSourcesChanged();
     }
 
-    _modifiersSwitcher() {
+    _modifiersSwitcher(reverse=false) {
         let sourceIndexes = Object.keys(this._inputSources);
         if (sourceIndexes.length == 0) {
             releaseKeyboard();
             return true;
         }
 
+        if (sourceIndexes.length == 1) {
+            return;
+        }
+
         let is = this._currentSource;
         if (!is)
             is = this._inputSources[sourceIndexes[0]];
 
-        let nextIndex = is.index + 1;
-        if (nextIndex > sourceIndexes[sourceIndexes.length - 1])
-            nextIndex = 0;
+        const currentIndex = is.index;
+        let nextIndex = currentIndex;
 
-        while (!(is = this._inputSources[nextIndex]))
-            nextIndex += 1;
+        if (reverse) {
+            nextIndex = is.index - 1;
+            if (nextIndex < 0) {
+                nextIndex = sourceIndexes[sourceIndexes.length - 1];
+            }
+        } else {
+            nextIndex = is.index + 1;
+            if (nextIndex > sourceIndexes[sourceIndexes.length - 1]) {
+                nextIndex = 0;
+            }
+        }
 
+        is = this._inputSources[nextIndex];
         is.activate(true);
         return true;
     }
 
-    _switchInputSource(display, window, binding) {
-        if (this._mruSources.length < 2)
-            return;
-
-        // HACK: Fall back on simple input source switching since we
-        // can't show a popup switcher while a GrabHelper grab is in
-        // effect without considerable work to consolidate the usage
-        // of pushModal/popModal and grabHelper. See
-        // https://bugzilla.gnome.org/show_bug.cgi?id=695143 .
-        // if (Main.actionMode == Shell.ActionMode.POPUP) {
-        //     this._modifiersSwitcher();
-        //     return;
-        // }
-        let show_flags = this._interface_settings.get_boolean("keyboard-layout-show-flags");
-
-        let popup = new InputSourcePopup(this._mruSources, this._keybindingAction, this._keybindingActionBackward, show_flags);
-        if (!popup.show(binding.is_reversed(), binding.get_name(), binding.get_mask()))
-            popup.fadeAndDestroy();
+    _switchInputSource(display, window, binding, action) {
+        const reversed = binding.get_name() === "switch-input-source-backward";
+        this._modifiersSwitcher(reversed);
     }
 
     _keyboardOptionsChanged() {
@@ -668,39 +600,12 @@ var InputSourceManager = class {
         }
     }
 
-    _updateMruSettings() {
-        // If IBus is not ready we don't have a full picture of all
-        // the available sources, so don't update the setting
-        if (!this._ibusReady)
-            return;
-
-        // If IBus is temporarily disabled, don't update the setting
-        if (this._disableIBus)
-            return;
-
-        let sourcesList = [];
-        for (let i = 0; i < this._mruSources.length; ++i) {
-            let source = this._mruSources[i];
-            sourcesList.push([source.type, source.id]);
-        }
-
-        this._settings.mruSources = sourcesList;
-    }
-
     _currentInputSourceChanged(newSource) {
         let oldSource;
         [oldSource, this._currentSource] = [this._currentSource, newSource];
 
         this.emit('current-source-changed', oldSource);
         Main.cinnamonDBusService.EmitCurrentInputSourceChanged(newSource.id);
-
-        for (let i = 1; i < this._mruSources.length; ++i) {
-            if (this._mruSources[i] == newSource) {
-                let currentSource = this._mruSources.splice(i, 1);
-                this._mruSources = currentSource.concat(this._mruSources);
-                break;
-            }
-        }
         this._changePerWindowSource();
     }
 
@@ -709,13 +614,13 @@ var InputSourceManager = class {
 
         try {
             let is = this._inputSources[index];
-            this.activateInputSource(is, true);
+            this.activateInputSource(is);
         } catch (e) {
             global.logError(`Could not activate input source index: ${index}`);
         }
     }
 
-    activateInputSource(is, interactive) {
+    activateInputSource(is) {
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
@@ -744,55 +649,6 @@ var InputSourceManager = class {
         else
             this._ibusManager.setEngine(engine);
         this._currentInputSourceChanged(is);
-
-        if (interactive)
-            this._updateMruSettings();
-    }
-
-    _updateMruSources() {
-        let sourcesList = [];
-        for (let i in this._inputSources)
-            sourcesList.push(this._inputSources[i]);
-
-        this._keyboardManager.setUserLayouts(sourcesList.map(x => x.xkbId));
-
-        if (!this._disableIBus && this._mruSourcesBackup) {
-            this._mruSources = this._mruSourcesBackup;
-            this._mruSourcesBackup = null;
-        }
-
-        // Initialize from settings when we have no MRU sources list
-        if (this._mruSources.length == 0) {
-            let mruSettings = this._settings.mruSources;
-            for (let i = 0; i < mruSettings.length; i++) {
-                let mruSettingSource = mruSettings[i];
-                let mruSource = null;
-
-                for (let j = 0; j < sourcesList.length; j++) {
-                    let source = sourcesList[j];
-                    if (source.type == mruSettingSource.type &&
-                        source.id == mruSettingSource.id) {
-                        mruSource = source;
-                        break;
-                    }
-                }
-
-                if (mruSource)
-                    this._mruSources.push(mruSource);
-            }
-        }
-
-        let mruSources = [];
-        for (let i = 0; i < this._mruSources.length; i++) {
-            for (let j = 0; j < sourcesList.length; j++) {
-                if (this._mruSources[i].type == sourcesList[j].type &&
-                    this._mruSources[i].id == sourcesList[j].id) {
-                    mruSources = mruSources.concat(sourcesList.splice(j, 1));
-                    break;
-                }
-            }
-        }
-        this._mruSources = mruSources.concat(sourcesList);
     }
 
     _inputSourcesChanged() {
@@ -857,16 +713,13 @@ var InputSourceManager = class {
         }
 
         if (infosList.length == 0) {
-            let prefs = '';
-            let type = INPUT_SOURCE_TYPE_XKB;
-            let id = DEFAULT_LAYOUT;
-            let [, displayName, shortName, xkbLayout, variant] = this._xkbInfo.get_layout_info(id);
-            let flagName = xkbLayout;
-            if (!use_group_names) {
-                shortName = xkbLayout;
-            }
+            // We hit this *only* if the user reset/removed all layout entries from the 'sources' key.
+            // Exit here and do our first-run setup again.
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                this._settings._populateDefaultLayout();
+            });
 
-            infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs });
+            return;
         }
 
         let inputSourcesDupeTracker = {};
@@ -914,10 +767,7 @@ var InputSourceManager = class {
 
         this.emit('sources-changed');
 
-        this._updateMruSources();
-
-        if (this._mruSources.length > 0)
-            this._mruSources[0].activate(false);
+        this._inputSources[0].activate(false);
 
         // All ibus engines are preloaded here to reduce the launching time
         // when users switch the input sources.
@@ -983,7 +833,6 @@ var InputSourceManager = class {
             if (this._disableIBus)
                 return;
             this._disableIBus = true;
-            this._mruSourcesBackup = this._mruSources.slice();
         } else {
             if (!this._disableIBus)
                 return;

@@ -548,7 +548,7 @@ CinnamonDBus.prototype = {
 
         for (let idx in sources) {
             const source = sources[idx];
-            global.log(source.preferences);
+            // global.log(source.preferences);
             ret.push([
                 source.type,
                 source.id,

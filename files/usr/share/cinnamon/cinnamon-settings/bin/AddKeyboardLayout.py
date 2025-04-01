@@ -69,15 +69,18 @@ class AddKeyboardLayoutDialog():
         self.layouts_filter_store.set_visible_func(self.search_filter_func)
         self.layouts_view.set_model(self.layouts_filter_store)
 
-        column = Gtk.TreeViewColumn()
+        column = Gtk.TreeViewColumn(title=_("Name"))
+        column.set_expand(True)
         self.layouts_view.append_column(column)
         cell = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.MIDDLE)
         column.pack_start(cell, True)
         column.add_attribute(cell, "text", LAYOUT_DISPLAY_NAME_COLUMN)
 
-        cell = Gtk.CellRendererPixbuf(xpad=10)
+        column = Gtk.TreeViewColumn(title=_("Type"))
+        self.layouts_view.append_column(column)
+        cell = Gtk.CellRendererText(xpad=10)
         column.pack_start(cell, False)
-        column.set_cell_data_func(cell, self.layout_icon_data_func)
+        column.set_cell_data_func(cell, self.layout_type_data_func)
 
         self._locales_by_language = {}
         self._locales = {}
@@ -182,12 +185,12 @@ class AddKeyboardLayoutDialog():
             self.add_button.set_sensitive(False)
             self.preview_button.set_sensitive(False)
 
-    def layout_icon_data_func(self, column, cell, model, iter, data=None):
+    def layout_type_data_func(self, column, cell, model, iter, data=None):
         type_ = model.get_value(iter, LAYOUT_TYPE_COLUMN)
         if type_ == "ibus":
-            cell.set_property("icon-name", "ibus-engine")
+            cell.set_property("text", _("IBus"))
         else:
-            cell.set_property("icon-name", None)
+            cell.set_property("text", _("Xkb"))
 
     def _load_layouts(self):
         for layout in self.xkb_info.get_all_layouts():
