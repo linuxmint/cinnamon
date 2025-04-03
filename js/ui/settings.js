@@ -584,8 +584,7 @@ XletSettingsBase.prototype = {
         try {
             this.settingsData = this._loadFromFile();
         } catch(e) {
-            // looks like we're getting a premature signal from the file monitor
-            // we should get another when the file is finished writing
+            global.logError(e);
             return;
         }
 
@@ -704,8 +703,6 @@ XletSettingsBase.prototype = {
         else 
             this.file = configFile;
 
-        this.monitor = this.file.monitor_file(Gio.FileMonitorFlags.NONE, null);
-
         // If the settings have already been installed previously we need to check if the schema
         // has changed and if so, do an upgrade
         if (this.file.query_exists(null)) {
@@ -751,8 +748,6 @@ XletSettingsBase.prototype = {
 
             this._saveToFile();
         }
-
-        if (!this.monitorId) this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
 
         return true;
     },
@@ -842,17 +837,15 @@ XletSettingsBase.prototype = {
     },
 
     _saveToFile: function() {
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         let rawData = JSON.stringify(this.settingsData, null, 4);
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);
         out_file.close(null);
-        this.monitorId = this.monitor.connect("changed", Lang.bind(this, this._checkSettings));
     },
 
-    // called by cinnamonDBus.js to when the setting is changed remotely. This is to expedite the
-    // update due to settings changes, as the file monitor has a significant delay.
+    // Called by cinnamonDBus.js when a setting is changed remotely in order to trigger
+    // setting callbacks.
     remoteUpdate: function(key, payload) {
         this._checkSettings();
     },
@@ -868,7 +861,6 @@ XletSettingsBase.prototype = {
         for (let key in this.bindings) {
             this.unbindAll(key);
         }
-        if (this.monitorId) this.monitor.disconnect(this.monitorId);
         this.disconnectAll();
     }
 }
