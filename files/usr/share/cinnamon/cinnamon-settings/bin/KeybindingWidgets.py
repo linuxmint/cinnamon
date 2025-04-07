@@ -182,19 +182,28 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         text = _("unassigned") if self.default_value else self.text_string
         if self.accel_string:
             restore_atab = False
+            restore_keyboard = False
+
             valid = self.accel_string
             if "Above_Tab" in valid:
                 restore_atab = True
                 valid = valid.replace("Above_Tab", "grave")
-
+            # XF86Keyboard isn't recognized by accelerator_parse(), nor does Gdk.KEY_Keyboard
+            # return a useful label by accelerator_get_label() (it returns the hex value of
+            # that constant as a string - '0x1008ffb3').
+            #
+            # Parse some other key instead so we can at least get the modifiers right,
+            # then restore 'Keyboard'.
+            if "XF86Keyboard" in valid:
+                restore_keyboard = True
+                valid = valid.replace("XF86Keyboard", "End")
             key, codes, mods = Gtk.accelerator_parse_with_keycode(valid)
             if codes is not None and len(codes) > 0:
                 text = Gtk.accelerator_get_label_with_keycode(None, key, codes[0], mods)
             if restore_atab:
                 text = text.replace("`", "AboveTab")
-            # ??? This doesn't parse for some reason
-            if valid == "XF86Keyboard":
-                text = _("Keyboard")
+            elif restore_keyboard:
+                text = text.replace("End", "Keyboard")
 
         self.set_property("text", text)
 

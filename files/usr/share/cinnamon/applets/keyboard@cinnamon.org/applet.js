@@ -76,10 +76,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._propSection = new PopupMenu.PopupMenuSection();
             this.menu.addMenuItem(this._propSection);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addAction(_("Show Keyboard Layout"), () => {
-                Main.overview.hide();
-                Util.spawn(['gkbd-keyboard-display', '-g', String(this._inputSourcesManager.currentSource.index + 1)]);
-            });
+            this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
             this.menu.addAction(_("Show Character Table"), () => {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
@@ -95,6 +92,18 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         catch (e) {
             global.logError(e);
         }
+    }
+
+    _showActiveLayout() {
+        Main.overview.hide();
+
+        let source = this._inputSourcesManager.currentSource;
+
+        let description = source.xkbLayout;
+        if (source.variant.length > 0)
+            description = '%s\t%s'.format(description, source.variant);
+
+        Util.spawn(['gkbd-keyboard-display', '-l', description]);
     }
 
     _onCurrentSourceChanged() {
