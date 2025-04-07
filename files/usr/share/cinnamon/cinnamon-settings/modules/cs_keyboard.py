@@ -591,7 +591,9 @@ class Module:
                         elem = None
                         if len(binding) > 4:
                             elem = binding[4]
-                        category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3], elem))
+                        kb = KeyBinding(binding[0], binding[1], binding[2], binding[3], elem)
+                        kb.connect("changed", self.on_kb_changed)
+                        category.add(kb)
 
             cat_iters = {}
             longest_cat_label = " "
@@ -625,6 +627,9 @@ class Module:
             self.sidePage.stack.add_titled(page, "layouts", _("Layouts"))
 
             self.kb_search_entry.grab_focus()
+
+    def on_kb_changed(self, kb):
+        self.onKeyBindingChanged(self.kb_tree)
 
     def stack_page_changed(self, stack, pspec, data=None):
         if stack.get_visible_child_name() == "shortcuts":
@@ -1143,20 +1148,65 @@ class KeyBindingCategory:
         del self.keybindings[:]
 
 
-class KeyBinding:
+class KeyBinding(GObject.Object):
+    __gsignals__ = {
+        'changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
     def __init__(self, label, schema, key, category, properties=None):
+        super().__init__()
         self.key = key
         self.category = category
         self.label = label
         self.schema = schema
         self.entries = []
-        self.settings = Gio.Settings.new(schema) if "/" not in schema else schema
         self.properties = properties
-        self.loadSettings()
+        self.json_timeout_id = 0
+        self.json_monitor_id = 0
+        self.initial_load = True
+        if "/" not in schema:
+            self.settings = Gio.Settings(schema_id=schema)
+            self.load_gsettings()
+            self.settings.connect(f"changed::{self.key}", self.load_gsettings)
+        else:
+            self.settings = schema
+            self.load_json_settings()
+            self.settings_file = Gio.File.new_for_path(self.settings)
+            self.settings_monitor = self.settings_file.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+            self.resume_json_monitor()
 
-    def loadSettings(self):
+    def emit_changed(self):
+        # Skip initial emission, while the UI is loaded
+        if self.initial_load:
+            self.initial_load = False
+            return
+        self.emit("changed")
+
+    def pause_json_monitor(self):
+        if self.json_timeout_id > 0:
+            GLib.source_remove(self.json_timeout_id)
+            self.json_timeout_id = 0
+        if self.json_monitor_id > 0:
+            self.settings_monitor.disconnect(self.json_monitor_id)
+            self.json_monitor_id = 0
+
+    def resume_json_monitor(self):
+        self.json_monitor_id = self.settings_monitor.connect("changed", self.json_settings_changed)
+
+    def json_settings_changed(self, *args):
+        if self.json_timeout_id > 0:
+            GLib.source_remove(self.json_timeout_id)
+        self.json_timeout_id = GLib.timeout_add(2000, self.load_json_settings)
+
+    def load_gsettings(self, *args):
         del self.entries[:]
-        self.entries = self.get_array(self.settings.get_strv(self.key)) if "/" not in self.settings else self.getConfigSettings()
+        self.entries = self.get_array(self.settings.get_strv(self.key))
+        self.emit_changed()
+
+    def load_json_settings(self, *args):
+        del self.entries[:]
+        self.entries = self.getConfigSettings()
+        self.json_timeout_id = 0
+        self.emit_changed()
 
     def getConfigSettings(self):
         with open(self.schema, encoding="utf-8") as config_file:
@@ -1190,6 +1240,7 @@ class KeyBinding:
         if "/" not in self.schema:
             self.settings.set_strv(self.key, array)
         else:
+            self.pause_json_monitor()
             with open(self.schema, encoding="utf-8") as config_file:
                 config = json.load(config_file)
 
@@ -1197,11 +1248,15 @@ class KeyBinding:
 
             with open(self.schema, "w", encoding="utf-8") as config_file:
                 config_file.write(json.dumps(config, indent=4))
+                config_file.flush()
+            self.resume_json_monitor()
 
     def resetDefaults(self):
         if "/" not in self.schema:
             self.settings.reset(self.key)
+            self.load_gsettings()
         else:
+            self.pause_json_monitor()
             with open(self.schema, encoding="utf-8") as config_file:
                 config = json.load(config_file)
 
@@ -1209,8 +1264,9 @@ class KeyBinding:
 
             with open(self.schema, "w", encoding="utf-8") as config_file:
                 config_file.write(json.dumps(config, indent=4))
-
-        self.loadSettings()
+                config_file.flush()
+            self.resume_json_monitor()
+            self.json_settings_changed()
 
 
 class CustomKeyBinding:

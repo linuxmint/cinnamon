@@ -64,19 +64,22 @@ class AddKeyboardLayoutDialog():
 
         #                                 (layout_id, layout_display_name, layout_type, layout_layout, layout_variant)
         self.layouts_store = Gtk.ListStore(str,       str,                 str,         str,           str)
-        self.layouts_store.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN, Gtk.SortType.ASCENDING)
         self.layouts_filter_store = Gtk.TreeModelFilter(child_model=self.layouts_store)
         self.layouts_filter_store.set_visible_func(self.search_filter_func)
-        self.layouts_view.set_model(self.layouts_filter_store)
+        self.layouts_sort_store = Gtk.TreeModelSort(model=self.layouts_filter_store)
+        self.layouts_sort_store.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN, Gtk.SortType.ASCENDING)
+        self.layouts_view.set_model(self.layouts_sort_store)
 
         column = Gtk.TreeViewColumn(title=_("Name"))
         column.set_expand(True)
+        column.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN)
         self.layouts_view.append_column(column)
         cell = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.MIDDLE)
         column.pack_start(cell, True)
         column.add_attribute(cell, "text", LAYOUT_DISPLAY_NAME_COLUMN)
 
-        column = Gtk.TreeViewColumn(title=_("Type"))
+        column = Gtk.TreeViewColumn(title=_("Input method"))
+        column.set_sort_column_id(LAYOUT_TYPE_COLUMN)
         self.layouts_view.append_column(column)
         cell = Gtk.CellRendererText(xpad=10)
         column.pack_start(cell, False)
@@ -138,9 +141,9 @@ class AddKeyboardLayoutDialog():
         iter = self.get_selected_iter()
         assert iter is not None
 
-        display_name = self.layouts_filter_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
-        layout_layout = self.layouts_filter_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
-        layout_variant = self.layouts_filter_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
+        display_name = self.layouts_sort_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
+        layout_layout = self.layouts_sort_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
+        layout_variant = self.layouts_sort_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
         args = make_gkbd_keyboard_args(layout_layout, layout_variant)
         subprocess.Popen(args)
 
@@ -152,8 +155,8 @@ class AddKeyboardLayoutDialog():
 
         assert iter is not None
 
-        layout_type = self.layouts_filter_store.get_value(iter, LAYOUT_TYPE_COLUMN)
-        layout_id = self.layouts_filter_store.get_value(iter, LAYOUT_ID_COLUMN)
+        layout_type = self.layouts_sort_store.get_value(iter, LAYOUT_TYPE_COLUMN)
+        layout_id = self.layouts_sort_store.get_value(iter, LAYOUT_ID_COLUMN)
         self.response = (layout_type, layout_id)
         print("Response:", self.response)
         self.dialog.response(Gtk.ResponseType.OK)
@@ -179,7 +182,7 @@ class AddKeyboardLayoutDialog():
 
         if iter is not None:
             self.add_button.set_sensitive(True)
-            type_ = self.layouts_filter_store.get_value(iter, LAYOUT_TYPE_COLUMN)
+            type_ = self.layouts_sort_store.get_value(iter, LAYOUT_TYPE_COLUMN)
             self.preview_button.set_sensitive(type_ == "xkb")
         else:
             self.add_button.set_sensitive(False)
@@ -190,7 +193,7 @@ class AddKeyboardLayoutDialog():
         if type_ == "ibus":
             cell.set_property("text", _("IBus"))
         else:
-            cell.set_property("text", _("Xkb"))
+            cell.set_property("text", "")
 
     def _load_layouts(self):
         for layout in self.xkb_info.get_all_layouts():

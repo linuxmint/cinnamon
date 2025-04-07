@@ -10,7 +10,7 @@ gi.require_version("CinnamonDesktop", "3.0")
 gi.require_version('IBus', '1.0')
 from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus
 
-from SettingsWidgets import Keybinding
+from SettingsWidgets import GSettingsKeybinding
 from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
@@ -82,14 +82,12 @@ class InputSourceSettingsPage(SettingsPage):
         section = self.add_section(_("Shortcuts"))
         widget = GSettingsKeybinding(
             _("Switch to next layout"),
-            2,
             "org.cinnamon.desktop.keybindings.wm",
-            "switch-input-source"
+            "switch-input-source",
         )
         section.add_row(widget)
         widget = GSettingsKeybinding(
             _("Switch to previous layout"),
-            2,
             "org.cinnamon.desktop.keybindings.wm",
             "switch-input-source-backward"
         )
@@ -219,37 +217,6 @@ class LayoutIcon(Gtk.Overlay):
         cr.move_to((x + (width / 2.0) - (ext.width / 2.0)),
                    (y + (height / 2.0) + (ext.height / 2.0)))
         cr.show_text(dupe_str)
-
-# PXGSettingsBackend is in python-xapp. This is the only place we need
-# a gsettings backend for a widget - the other use of keybindings is for xlets (json
-# and the keyboard shortcuts tab, which has its own implementation. So this is a bit
-# hacky. Otherwise we'd need to move a bunch of stuff to python-xapp that's never
-# used outside of cinnamon.
-#
-# So we just override what we need here instead.
-class GSettingsKeybinding(Keybinding, PXGSettingsBackend):
-    def __init__(self, label, num_bind, schema, key, *args, **kwargs):
-        self.key = key
-        self.settings = Gio.Settings.new(schema_id=schema)
-
-        Keybinding.__init__(self, label, num_bind, *args, **kwargs)
-        PXGSettingsBackend.__init__(self, *args, **kwargs)
-        self.bind_settings()
-
-    def on_kb_changed(self, *args):
-        bindings = []
-
-        for x in range(self.num_bind):
-            string = self.buttons[x].get_accel_string()
-            if string != '':
-                bindings.append(string)
-
-        self.set_value(bindings)
-
-    def on_setting_changed(self, *args):
-        bindings = self.get_value()
-        for x in range(min(len(bindings), self.num_bind)):
-            self.buttons[x].set_accel_string(bindings[x])
 
 class CurrentInputSource(GObject.GObject):
     __gtype_name__ = "CurrentInputSource"
