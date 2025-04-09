@@ -85,10 +85,45 @@ class TimeSpinButton(Gtk.SpinButton):
         self.props.width_chars = 10
         self.props.update_policy=Gtk.SpinButtonUpdatePolicy.IF_VALID
 
-        interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
-        self.locale_format = "%R" if interface_settings.get_boolean("clock-use-24h") else "%I:%M %p"
+        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
+        self.locale_format = "%R" if self.interface_settings.get_boolean("clock-use-24h") else "%I:%M %p"
 
+        self.connect("focus-out-event", self.label_to_value)
         self.formatter_handle = self.connect("output", self.value_to_label)
+
+    def label_to_value(self, spinbutton, data=None):
+        text = self.get_text()
+        if ":" in text:
+            adjustment = self.get_adjustment()
+            input_hours, input_minutes = self.input_to_frac(text)
+            if input_hours is not None and input_minutes is not None:
+                adjustment.set_value(float(input_hours + input_minutes/60))
+                t = GLib.DateTime.new_local(2000, 1, 1, input_hours, input_minutes, 0)
+                self.set_text(t.format(self.locale_format))
+        return 0 # Prevents setting night light to minimum value
+
+    def input_to_frac(self, value):
+        pm = False
+        if self.interface_settings.get_boolean("clock-use-24h"):
+            hours, minutes = value.split(":")
+        else:
+            if " AM" in value or " PM" in value:
+                h_m, meridian = value.split(" ")
+                pm = True if "PM" in meridian else False
+                hours, minutes = h_m.split(":")
+            else:
+                hours, minutes = value.split(":")
+        if hours.isnumeric() and minutes.isnumeric():
+            hours, minutes = abs(int(hours)), abs(int(minutes))
+            if pm:
+                hours += 12
+            if hours > 23:
+                remainder = hours % 24
+                hours = remainder
+            remainder = minutes % 60
+            minutes = remainder if minutes % 15 == 0 else 0
+            return hours, minutes
+        return None, None
 
     def value_to_label(self, spinbutton, data=None):
         adjustment = self.get_adjustment()
