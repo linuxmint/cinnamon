@@ -614,13 +614,13 @@ var InputSourceManager = class {
 
         try {
             let is = this._inputSources[index];
-            this.activateInputSource(is);
+            this.activateInputSource(is, true);
         } catch (e) {
             global.logError(`Could not activate input source index: ${index}`);
         }
     }
 
-    activateInputSource(is) {
+    activateInputSource(is, interactive) {
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
@@ -649,6 +649,15 @@ var InputSourceManager = class {
         else
             this._ibusManager.setEngine(engine);
         this._currentInputSourceChanged(is);
+
+        if (interactive) {
+            global.log("INTERACTIVE");
+            let sourcesList = [];
+            for (let i in this._inputSources)
+                sourcesList.push(this._inputSources[i]);
+
+            this._keyboardManager.setUserLayouts(sourcesList.map(x => x.xkbId));
+        }
     }
 
     _inputSourcesChanged() {
