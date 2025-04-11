@@ -27,7 +27,7 @@ class InputMethod extends Clutter.InputMethod {
         this._sourceChangedId = this._inputSourceManager.connect('current-source-changed',
                                                                  this._onSourceChanged.bind(this));
         this._currentSource = this._inputSourceManager.currentSource;
-
+        this._currentSource.activate(true);
         if (this._ibus.is_connected())
             this._onConnected();
     }
