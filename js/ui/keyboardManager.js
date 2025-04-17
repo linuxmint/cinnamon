@@ -414,25 +414,34 @@ var InputSourceSessionSettings = class extends InputSourceSettings {
             if (success) {
                 let contents = ByteArray.toString(bytes);
                 let lines = contents.toString().split('\n');
-                let layout = null;
-                let variant = null;
+                let layouts = [];
+                let variants = [];
                 let options = [];
                 for (let i = 0; i < lines.length; i++) {
                     let line = lines[i];
                     if (line.startsWith("XKBLAYOUT=")) {
-                        layout = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '');
+                        layouts = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(",");
                     } else if (line.startsWith("XKBVARIANT=")) {
-                        variant = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '');
+                        variants = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(",");
                     } else if (line.startsWith("XKBOPTIONS=")) {
-                        options = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(',');
+                        options = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(",");
                     }
                 }
 
-                if (layout && layout !== '') {
-                    if (variant && variant !== '') {
-                        layout = '%s+%s'.format(layout, variant);
+                if (layouts.length > 0 && layouts[0] !== '') {
+                    global.log(layouts);
+                    let new_list = [];
+                    for (let i in layouts) {
+                        let layout = layouts[i];
+                        const variant = variants[i];
+                        if (variant !== undefined && variant !== '') {
+                            layout = '%s+%s'.format(layout, variant);
+                        }
+
+                        new_list.push([INPUT_SOURCE_TYPE_XKB, layout]);
                     }
-                    let sources = GLib.Variant.new('a(ss)', [[INPUT_SOURCE_TYPE_XKB, layout]]);
+
+                    let sources = GLib.Variant.new('a(ss)', new_list);
                     this._settings.set_value(this._KEY_INPUT_SOURCES, sources);
 
                     if (options.length > 0 && options[0] !== '') {
