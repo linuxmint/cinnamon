@@ -2,8 +2,8 @@
 from bin import util
 util.strip_syspath_locals()
 
+import argparse
 from functools import cmp_to_key
-import getopt
 import gettext
 import glob
 import locale
@@ -15,18 +15,24 @@ import traceback
 import typing
 import unicodedata
 import urllib.request as urllib
+from pathlib import Path
 
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 from gi.repository import Gio, Gtk, Pango, Gdk, XApp
 
-import config
-sys.path.append(os.path.join(config.currentPath, "bin"))
-sys.path.append(os.path.join(config.currentPath, "modules"))
+CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
+MODULE_PATH = os.path.join(CURRENT_PATH, "modules")
+MODULE_GLOB = os.path.join(MODULE_PATH, "cs_*.py")
+MODULES = [Path(file).stem for file in glob.glob(MODULE_GLOB)]
+BIN_PATH = os.path.join(CURRENT_PATH, "bin")
+sys.path.append(MODULE_PATH)
+sys.path.append(BIN_PATH)
 from bin import capi
 from bin import proxygsettings
 from bin import SettingsWidgets
+import config
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
@@ -104,53 +110,46 @@ TABS = {
     # KEY (cs_KEY.py) : {"tab_name": tab_number, ... }
     "accessibility":    {"visual": 0, "keyboard": 1, "typing": 2, "mouse": 3},
     "applets":          {"installed": 0, "more": 1, "download": 1},
+    "actions":          {"installed": 0, "more": 1, "download": 1, "layout": 2},
     "backgrounds":      {"images": 0, "settings": 1},
     "default":          {"preferred": 0, "removable": 1},
     "desklets":         {"installed": 0, "more": 1, "download": 1, "general": 2},
     "display":          {"layout": 0, "settings": 1},
-    "effects":          {"effects": 0, "customize": 1},
+    "effects":          {"default": 0},
     "extensions":       {"installed": 0, "more": 1, "download": 1},
+    "gestures":         {"swipe": 0, "pinch": 1, "tap": 2, "settings": 3},
     "keyboard":         {"typing": 0, "shortcuts": 1, "layouts": 2},
     "mouse":            {"mouse": 0, "touchpad": 1},
     "power":            {"power": 0, "batteries": 1, "brightness": 2},
     "screensaver":      {"settings": 0, "customize": 1},
-    "sound":            {"output": 0, "input": 1, "sounds": 2, "applications": 3, "settings": 4},
-    "themes":           {"themes": 0, "download": 1, "options": 2},
+    "sound":            {"output": 0, "input": 1, "sounds": 2, "applications": 3},
+    "themes":           {"simplified": 0, "themes": 1, "download": 2, "options": 3},
     "windows":          {"titlebar": 0, "behavior": 1, "alttab": 2},
     "workspaces":       {"osd": 0, "settings": 1}
 }
 
-ARG_REWRITE = {
+CS_MODULE_ALIASES = {
     'universal-access': 'accessibility',
     'screen':           'display',
     'screens':          'display',
-    'bluetooth':        'blueberry',
     'hotcorners':       'hotcorner',
-    'accounts':         'online-accounts',
     'colors':           'color',
     'me':               'user',
-    'lightdm-settings': 'pkexec lightdm-settings',
-    'login-screen':     'pkexec lightdm-settings',
     'window':           'windows',
     'background':       'backgrounds',
-    'driver-manager':   'cinnamon-driver-manager',
-    'drivers':          'cinnamon-driver-manager',
-    'printers':         'system-config-printer',
-    'printer':          'system-config-printer',
     'infos':            'info',
-    'locale':           'mintlocale',
-    'language':         'mintlocale',
-    'input-method':     'mintlocale-im',
-    'nvidia':           'nvidia-settings',
-    'firewall':         'gufw',
     'networks':         'network',
-    'sources':          'pkexec mintsources',
-    'mintsources':      'pkexec mintsources',
     'panels':           'panel',
     'tablet':           'wacom',
-    'users':            'cinnamon-settings-users'
 }
 
+SORT_CHOICES = {
+    "name":         "0",
+    "score":        "1",
+    "date":         "2",
+    "installed":    "3",
+    "update":       "4"
+}
 
 def print_timing(func):
     # decorate functions with @print_timing to output how long they take to run.
@@ -198,10 +197,9 @@ class MainWindow(Gio.Application):
                 if self.tab in range(len(l)):
                     sidePage.stack.set_visible_child(l[self.tab])
                     visible_child = sidePage.stack.get_visible_child()
-                    if self.tab == 1 \
-                            and hasattr(visible_child, 'sort_combo') \
+                    if hasattr(visible_child, 'spices_sort_combo') \
                             and self.sort in range(5):
-                        visible_child.sort_combo.set_active(self.sort)
+                        visible_child.spices_sort_combo.set_active(self.sort)
                         visible_child.sort_changed()
                 else:
                     sidePage.stack.set_visible_child(l[0])
@@ -259,13 +257,13 @@ class MainWindow(Gio.Application):
                 self.side_view[key].unselect_all()
 
     # Create the UI
-    def __init__(self):
+    def __init__(self, parsed_args):
         Gio.Application.__init__(self,
                                  application_id="org.cinnamon.Settings_%d" % os.getpid(),
                                  flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
-        self.builder.add_from_file(os.path.join(config.currentPath, "cinnamon-settings.ui"))
+        self.builder.add_from_file(os.path.join(CURRENT_PATH, "cinnamon-settings.ui"))
         self.window = XApp.GtkWindow(window_position=Gtk.WindowPosition.CENTER,
                                      default_width=800, default_height=600)
 
@@ -312,7 +310,7 @@ class MainWindow(Gio.Application):
         self.content_box.c_manager = self.c_manager
         self.bar_heights = 0
 
-        self.tab = 0  # open 'manage' tab by default
+        self.tab = -1  # open 'manage' tab by default
         self.sort = 1  # sorted by 'score' by default
 
         self.store_by_cat: typing.Dict[str, Gtk.ListStore] = {}
@@ -326,8 +324,8 @@ class MainWindow(Gio.Application):
             self.load_standalone_modules(ALTERNATE_MODULES)
 
         # if a certain sidepage is given via arguments, try to load only it
-        if len(sys.argv) > 1:
-            if self.load_sidepage_as_standalone():
+        if parsed_args.module != None:
+            if self.load_sidepage_as_standalone(parsed_args):
                 return
 
         self.init_settings_overview()
@@ -394,73 +392,30 @@ class MainWindow(Gio.Application):
 
         self.window.show()
 
-    def load_sidepage_as_standalone(self) -> bool:
-        """
-        When an explicit sidepage is given as an argument,
-        try load only this module to save much startup time.
+    def load_sidepage_as_standalone(self, args) -> bool:
+        self.load_python_modules(only_module=args.module)
 
-        Analyses arguments to know the tab to open
-        and the sort to apply if the tab is the 'more' one.
+        if args.tab is not None:
+            module_tabs = TABS.get(args.module, {"default": 0})
+            if args.tab.isdecimal():
+                self.tab = int(args.tab)
+            elif args.tab in module_tabs.keys():
+                self.tab = module_tabs[args.tab]
 
-        Examples:
-        ```
-          cinnamon-settings.py applets --tab=more --sort=date
-          cinnamon-settings.py applets --tab=1 --sort=2
-          cinnamon-settings.py applets --tab=more --sort=date
-          cinnamon-settings.py applets --tab=1 -s 2
-          cinnamon-settings.py applets -t 1 -s installed
-          cinnamon-settings.py desklets -t 2
-        ```
-        Please note that useless or wrong arguments are ignored.
-
-        :return: True if sidepage was loaded successfully, False otherwise
-        """
-        if sys.argv == 1:
-            return False
-
-        # (1) get the settings sidepage name and rewrite it if necessary
-        sidepage_name = ARG_REWRITE.get(sys.argv[1], sys.argv[1])
-        # pop the arg once we consume it so we don't pass it go Gio.application.run
-        sys.argv.pop(1)
-
-        # (2) Try to load a matching python module.
-        # Note: the requested module could also be a CCC or SA module (which are always loaded by __init__())
-        self.load_python_modules(only_module=sidepage_name)
-
-        # (3) set tab to show and/or spices sorting if specified via args
-        if len(sys.argv) > 1:
-            opts = []
-            sorts_literal = {"name":0, "score":1, "date":2, "installed":3, "update":4}
-            tabs_literal = TABS.get(sidepage_name, {"default": 0})
-
-            try:
-                opts = getopt.getopt(sys.argv[1:], "t:s:", ["tab=", "sort="])[0]
-            except getopt.GetoptError:
-                pass  # ignore unknown args
-
-            for opt, arg in opts:
-                if opt in ("-t", "--tab"):
-                    if arg.isdecimal():
-                        self.tab = int(arg)
-                    elif arg in tabs_literal.keys():
-                        self.tab = tabs_literal[arg]
-                if opt in ("-s", "--sort"):
-                    if arg.isdecimal():
-                        self.sort = int(arg)
-                    elif arg in sorts_literal.keys():
-                        self.sort = sorts_literal[arg]
-                # remove the args we consume
-                sys.argv.remove(opt)
-                sys.argv.remove(arg)
+        if args.sort is not None:
+            if args.sort.isdecimal():
+                self.sort = int(args.sort)
+            elif args.sort in SORT_CHOICES.keys():
+                self.sort = int(SORT_CHOICES[args.sort])
 
         # (4) set the WM class so GWL can consider it as a standalone app and give it its own group.
-        wm_class = f"cinnamon-settings {sidepage_name}"
+        wm_class = f"cinnamon-settings {args.module}"
         self.window.set_wmclass(wm_class, wm_class)
         self.button_back.hide()
 
         # (5) find and show it
         for sp_data in self.sidePages:
-            if sp_data.name == sidepage_name:
+            if sp_data.name == args.module:
                 self.go_to_sidepage(sp_data.sp, user_action=False)
                 if sp_data.sp.is_standalone:
                     # These modules do not need to leave the System Settings window open,
@@ -469,7 +424,6 @@ class MainWindow(Gio.Application):
                 else:
                     self.window.show()
                 return True
-        print(f"warning: settings module {sidepage_name} not found.")
         return False
 
     def load_ccc_modules(self):
@@ -499,15 +453,11 @@ class MainWindow(Gio.Application):
         :return: True if successful, False otherwise
         """
         # Standard setting pages... this can be expanded to include applet dirs maybe?
-        mod_files = glob.glob(os.path.join(config.currentPath, 'modules', 'cs_*.py'))
-        if len(mod_files) == 0:
-            print("warning: no python settings modules found!!", file=sys.stderr)
-            return False
-
-        to_import = [os.path.splitext(os.path.basename(x))[0] for x in mod_files]
 
         if only_module is not None:
-            to_import = filter(lambda mod: only_module.replace("-", "_") in mod, to_import)
+            to_import = [f"cs_{only_module}"]
+        else:
+            to_import = MODULES
 
         for module in map(__import__, to_import):
             try:
@@ -798,6 +748,60 @@ class MainWindow(Gio.Application):
         self.quit()
 
 if __name__ == "__main__":
+    formatted_mods = ""
+    i = 0
+    for mod in MODULES:
+        formatted_mods += mod.replace("cs_", "") + ", "
+        i += 1
+        if i == 8:
+            formatted_mods += "\n    "
+            i = 0
+    EPILOG = """
+Available modules:
+    %s
+
+To see a list of available tabs for a specific module, use `cinnamon-settings MODULE --tab help`
+
+SORT_TYPE can be specified by number or name as follows:
+    0 | name:       Sort by name
+    1 | score:      Sort by score
+    2 | date:       Sort by date
+    3 | installed:  Show installed first
+    4 | update:     Show upgradable first, then sort by date
+    """ % formatted_mods
+    sort_options = list(SORT_CHOICES.keys()) + list(SORT_CHOICES.values())
+
+    parser = argparse.ArgumentParser(
+        description="cinnamon-settings - Configuration tool for Cinnamon",
+        epilog=EPILOG,
+        formatter_class=argparse.RawDescriptionHelpFormatter
+    )
+    parser.add_argument("module", type=str, nargs="?", help='Open a specific settings module.')
+    parser.add_argument('-t', '--tab', type=str, help='Open a specific tab in the settings module. You can specify name or index.')
+    parser.add_argument('-s', '--sort', type=str, choices=sort_options, metavar="SORT_TYPE", help="If opening an xlet module, sort the items by a specific criteria.")
+    parser.add_argument('-p', '--panel', type=str, metavar="PANEL_ID", help="If opening the panel or applets module, specify a starting panel by its id")
+    args = parser.parse_args()
+
+    if args.module is not None and f"cs_{args.module}" not in MODULES:
+        new_mod = CS_MODULE_ALIASES.get(args.module, None)
+        if new_mod is None:
+            print(f"warning: settings module {args.module} not found.")
+        args.module = new_mod
+
+    if args.tab == "help":
+        if args.module in TABS:
+            print("Available tabs for '%s':" % args.module)
+            for key in TABS[args.module]:
+                print("    %s" % key)
+        else:
+            print("Module '%s' does not have any tabs." % args.module)
+        exit(0)
+
+    if args.panel is not None and args.module not in ("applets", "panel"):
+        print("Warning: --panel option is only supported when opening the applets or panel module.")
+
+    config.PARSED_ARGS = args
+
     setproctitle("cinnamon-settings")
     import signal
 
@@ -808,6 +812,6 @@ if __name__ == "__main__":
         proxy = urllib.ProxyHandler()
     urllib.install_opener(urllib.build_opener(proxy))
 
-    window = MainWindow()
+    window = MainWindow(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
-    window.run(sys.argv)
+    window.run()

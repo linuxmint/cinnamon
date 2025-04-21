@@ -1714,7 +1714,7 @@ PanelContextMenu.prototype = {
         let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel " + panelId, "emblem-system");
         this.addMenuItem(moreSettingsMenuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets panel" + panelId, "application-x-addon");
+        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets --panel " + panelId, "application-x-addon");
         this.addMenuItem(applet_settings_item);
 
         let menu = this;

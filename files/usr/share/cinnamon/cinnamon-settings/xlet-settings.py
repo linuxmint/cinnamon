@@ -1,5 +1,4 @@
 #!/usr/bin/python3
-import getopt
 
 from bin import util
 util.strip_syspath_locals()
@@ -11,10 +10,10 @@ gi.require_version('XApp', '1.0')
 import os
 import sys
 from setproctitle import setproctitle
-import config
-sys.path.append(config.currentPath + "/bin")
+sys.path.append(os.path.join(os.path.dirname(os.path.abspath(__file__)), "bin"))
 import gettext
 import json
+import argparse
 import importlib.util
 import traceback
 from pathlib import Path
@@ -92,56 +91,14 @@ def translate(uuid, string):
     return _(string)
 
 class MainWindow(object):
-    def __init__(self, xlet_type, uuid, *instance_id):
-        ## Respecting preview implementation, add the possibility to open a specific tab (if there
-        ## are multiple layouts) and/or a specific instance settings (if there are multiple
-        ## instances of a xlet).
-        ## To do this, two new arguments:
-        ##   -t <n> or --tab=<n>, where <n> is the tab index (starting at 0).
-        ##   -i <id> or --id=<id>, where <id> is the id of the instance.
-        ## Examples, supposing there are two instances of Cinnamenu@json applet, with ids '210' and
-        ## '235' (uncomment line 144 containing print("self.instance_info =", self.instance_info)
-        ## to know all instances ids):
-        ## (Please note that cinnamon-settings is the one offered in #8333)
-        ## cinnamon-settings applets Cinnamenu@json         # opens first tab in first instance
-        ## cinnamon-settings applets Cinnamenu@json '235'   # opens first tab in '235' instance
-        ## cinnamon-settings applets Cinnamenu@json 235     # idem
-        ## cinnamon-settings applets Cinnamenu@json -t 1 -i 235  # opens 2nd tab in '235' instance
-        ## cinnamon-settings applets Cinnamenu@json --tab=1 --id=235  # idem
-        ## cinnamon-settings applets Cinnamenu@json --tab=1 # opens 2nd tab in first instance
-        ## (Also works with 'xlet-settings applet' instead of 'cinnamon-settings applets'.)
-
-        #print("instance_id =", instance_id)
+    def __init__(self, args):
+        self.type = args.type
+        self.uuid = args.uuid
         self.tab = 0
-        opts = []
-        try:
-            instance_id = int(instance_id[0])
-        except (TypeError, ValueError, IndexError):
-            instance_id = None
-            try:
-                if len(sys.argv) > 3:
-                    opts = getopt.getopt(sys.argv[3:], "t:i:", ["tab=", "id="])[0]
-            except getopt.GetoptError:
-                pass
-            if len(sys.argv) > 4:
-                try:
-                    instance_id = int(sys.argv[4])
-                except ValueError:
-                    instance_id = None
-        #print("opts =", opts)
-        for opt, arg in opts:
-            if opt in ("-t", "--tab"):
-                if arg.isdecimal():
-                    self.tab = int(arg)
-            elif opt in ("-i", "--id"):
-                if arg.isdecimal():
-                    instance_id = int(arg)
-        if instance_id:
-            instance_id = str(instance_id)
-        #print("self.tab =", self.tab)
-        #print("instance_id =", instance_id)
-        self.type = xlet_type
-        self.uuid = uuid
+        self.instance_id = str(args.id)
+        if args.tab is not None and args.tab.isdecimal():
+            self.tab = int(args.tab)
+
         self.selected_instance = None
         self.gsettings = Gio.Settings.new("org.cinnamon")
         self.custom_modules = {}
@@ -149,11 +106,10 @@ class MainWindow(object):
         self.load_xlet_data()
         self.build_window()
         self.load_instances()
-        #print("self.instance_info =", self.instance_info)
         self.window.show_all()
-        if instance_id and len(self.instance_info) > 1:
+        if self.instance_id and len(self.instance_info) > 1:
             for info in self.instance_info:
-                if info["id"] == instance_id:
+                if info["id"] == self.instance_id:
                     self.set_instance(info)
                     break
         else:
@@ -316,8 +272,8 @@ class MainWindow(object):
 
                 instance_exists = False
                 enabled = self.gsettings.get_strv('enabled-%ss' % self.type)
-                for deninition in enabled:
-                    if uuid in deninition and instance_id in deninition.split(':'):
+                for definition in enabled:
+                    if self.uuid in definition and instance_id in definition.split(':'):
                         instance_exists = True
                         break
 
@@ -583,14 +539,17 @@ class MainWindow(object):
 if __name__ == "__main__":
     setproctitle("xlet-settings")
     import signal
-    if len(sys.argv) < 3:
-        print("Error: requires type and uuid")
-        quit()
-    xlet_type = sys.argv[1]
-    if xlet_type not in ["applet", "desklet", "extension"]:
-        print("Error: Invalid xlet type %s", sys.argv[1])
-        quit()
-    uuid = sys.argv[2]
-    window = MainWindow(xlet_type, uuid, *sys.argv[3:])
+
+    parser = argparse.ArgumentParser(
+        description="xlet-settings - Configuration tool for Cinnamon xlets",
+    )
+    parser.add_argument("type", type=str, metavar="type", choices=("applet", "desklet", "extension"), help='The type of xlet to configure - applet, extension or desklet.')
+    parser.add_argument("uuid", type=str, help="The UUID of the xlet")
+    parser.add_argument("-i", "--id", type=int, default=None, metavar="instance_id", help="If a UUID is provided, this is the instance id.")
+    parser.add_argument("-t", "--tab", type=int, default=None, metavar="tab_number", help="Tab index to open.")
+
+    args = parser.parse_args()
+
+    window = MainWindow(args)
     signal.signal(signal.SIGINT, window.quit)
     Gtk.main()

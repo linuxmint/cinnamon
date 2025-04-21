@@ -839,21 +839,21 @@ class DownloadSpicesPage(SettingsPage):
         sort_label.set_text(_("Sort by"))
         self.top_box.pack_start(sort_label, False, False, 4)
 
-        self.sort_combo = Gtk.ComboBox()
+        self.spices_sort_combo = Gtk.ComboBox()
         sort_types = Gtk.ListStore(str, str)
-        self.sort_combo.set_model(sort_types)
+        self.spices_sort_combo.set_model(sort_types)
         renderer_text = Gtk.CellRendererText()
-        self.sort_combo.pack_start(renderer_text, True)
-        self.sort_combo.add_attribute(renderer_text, "text", 1)
-        self.sort_combo.set_id_column(0)
+        self.spices_sort_combo.pack_start(renderer_text, True)
+        self.spices_sort_combo.add_attribute(renderer_text, "text", 1)
+        self.spices_sort_combo.set_id_column(0)
         sort_types.append(['name', _("Name")])
         sort_types.append(['score', _("Popularity")])
         sort_types.append(['date', _("Date")])
         sort_types.append(['installed', _("Installed")])
         sort_types.append(['update', _("Upgradable")])
-        self.sort_combo.set_active(1)  # Rating
-        self.sort_combo.connect('changed', self.sort_changed)
-        self.top_box.pack_start(self.sort_combo, False, False, 4)
+        self.spices_sort_combo.set_active(1)  # Rating
+        self.spices_sort_combo.connect('changed', self.sort_changed)
+        self.top_box.pack_start(self.spices_sort_combo, False, False, 4)
 
         self.search_entry = Gtk.Entry()
         self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'edit-find-symbolic')
@@ -986,7 +986,7 @@ class DownloadSpicesPage(SettingsPage):
                 return -1
             return 1
 
-        sort_type = self.sort_combo.get_active_id()
+        sort_type = self.spices_sort_combo.get_active_id()
         if sort_type == 'name':
             self.list_box.set_sort_func(sort_name)
         elif sort_type == 'score':
