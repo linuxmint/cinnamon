@@ -96,7 +96,7 @@ class MainWindow(object):
         self.uuid = args.uuid
         self.tab = 0
         self.instance_id = str(args.id)
-        if args.tab is not None and args.tab.isdecimal():
+        if args.tab is not None:
             self.tab = int(args.tab)
 
         self.selected_instance = None

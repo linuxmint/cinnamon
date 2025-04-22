@@ -785,10 +785,10 @@ SORT_TYPE can be specified by number or name as follows:
     if args.module is not None and f"cs_{args.module}" not in MODULES:
         new_mod = CS_MODULE_ALIASES.get(args.module, None)
         if new_mod is None:
-            print(f"warning: settings module {args.module} not found.")
+            print(f"warning: settings module {args.module} not found. Ignoring any remaining arguments.")
         args.module = new_mod
 
-    if args.tab == "help":
+    if args.module is not None and args.tab == "help":
         if args.module in TABS:
             print("Available tabs for '%s':" % args.module)
             for key in TABS[args.module]:
