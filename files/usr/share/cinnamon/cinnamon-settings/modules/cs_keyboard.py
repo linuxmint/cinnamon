@@ -527,20 +527,19 @@ class Module:
 
                 properties = {spice: spice_properties[spice]}
                 _type = spice_properties[spice]["type"]
-                if "@cinnamon.org" in name:
-                    with open(f"/usr/share/cinnamon/{_type}/{name}/metadata.json", encoding="utf-8") as metadata:
+                local_metadata_path = Path.home() / '.local/share/cinnamon' / _type / name / 'metadata.json'
+                if local_metadata_path.exists():
+                    gettext.bindtextdomain(name, str(Path.home() / '.local/share/locale'))
+                    gettext.textdomain(name)
+                    with open(local_metadata_path, encoding="utf-8") as metadata:
                         json_data = json.load(metadata)
                         category_label = _(json_data["name"])
                 else:
-                    home = os.path.expanduser("~")
-                    gettext.bindtextdomain(name, f"{home}/.local/share/locale")
-                    gettext.textdomain(name)
-                    try:
-                        with open(f"{home}/.local/share/cinnamon/{_type}/{name}/metadata.json", encoding="utf-8") as metadata:
+                    system_metadata_path = Path("/usr/share/cinnamon") / _type / name / "metadata.json"
+                    if system_metadata_path.exists():
+                        with open(system_metadata_path, encoding="utf-8") as metadata:
                             json_data = json.load(metadata)
-                            category_label = gettext.gettext(_(json_data["name"]))
-                    except FileNotFoundError:
-                        continue
+                            category_label = _(json_data["name"])
                 if not _id:
                     cat_label = category_label if category_label else name
                     CATEGORIES.append([cat_label, name, "spices", None, properties])
