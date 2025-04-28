@@ -44,6 +44,22 @@ const Util = imports.misc.util;
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
 
+var RootUser = class {
+    constructor() {
+        this.userName = "root";
+        this.realName = _("Superuser");
+
+        this.avatar = new St.Icon({
+            icon_name: 'avatar-default-symbolic',
+            icon_type: St.IconType.SYMBOLIC,
+            icon_size: DIALOG_ICON_SIZE,
+            style_class: 'user-icon'
+        });
+        this.avatar.x_align = Clutter.ActorAlign.CENTER;
+    }
+    destroy() {}
+};
+
 var AdminUser = class {
     constructor(user) {
         this._user = user;
@@ -148,7 +164,12 @@ var AuthenticationDialog = GObject.registerClass({
         menuManager.addMenu(this._menu);
 
         // Collect all available users and populate the menu
+        let have_admin = false;
         for (const name of userNames) {
+            if (name === "root") {
+                // root won't be in AccountsService, save it as a fallback only.
+                continue;
+            }
             let adminUser = new AdminUser(this._accountsService.get_user(name));
             this._adminUsers.push(adminUser);
 
@@ -166,6 +187,24 @@ var AuthenticationDialog = GObject.registerClass({
                 });
                 this._menu.addMenuItem(item);
             }
+
+            have_admin = true;
+        }
+
+        if (!have_admin && userNames.includes("root")) {
+            let rootUser = new RootUser();
+            this._adminUsers.push(rootUser);
+
+            userBox.add(rootUser.avatar, { x_fill: false });
+
+            const item = new PopupMenu.PopupMenuItem('Root');
+            item.connect('activate', () => {
+                this._user = rootUser;
+                this._updateUser();
+                this._wasDismissed = true;
+                this.performAuthentication();
+            })
+            this._menu.addMenuItem(item);
         }
 
         // If the current user is an admin, set the current user
