@@ -1,3 +1,10 @@
+cinnamon (6.4.10) xia; urgency=medium
+
+  [ Michael Webster ]
+  * polkitAuthenticationAgent.js: Allow root authentication if there (#12849) are no admin users
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 29 Apr 2025 11:38:18 +0100
+
 cinnamon (6.4.9) xia; urgency=medium
 
   [ Michael Webster ]
