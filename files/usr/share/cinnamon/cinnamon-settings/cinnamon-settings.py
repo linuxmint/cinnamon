@@ -189,6 +189,8 @@ class MainWindow(Gio.Application):
         if not user_action:
             self.window.set_title(sidePage.name)
             self.window.set_icon_name(sidePage.icon)
+        else:
+            self.window.set_title(_("System Settings") + " > " + sidePage.name)
 
         if sidePage.stack:
             self.stack_switcher.set_stack(sidePage.stack)
