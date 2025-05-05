@@ -81,7 +81,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
             });
-            this.menu.addSettingsAction(_("Keyboard Settings"), 'keyboard');
+            this.menu.addSettingsAction(_("Keyboard layouts"), 'keyboard', "layouts");
 
             this._inputSourcesManager = KeyboardManager.getInputSourceManager();
             this._signalManager.connect(this._inputSourcesManager, "sources-changed", this._onSourcesChanged.bind(this));
