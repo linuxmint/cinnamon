@@ -206,7 +206,7 @@ class Suggestions extends St.BoxLayout {
 
 var LanguageSelectionPopup = class extends PopupMenu.PopupMenu {
     constructor(actor) {
-        super(actor, 0.5, St.Side.BOTTOM);
+        super(actor, St.Side.TOP);
 
         let inputSourceManager = KeyboardManager.getInputSourceManager();
         let inputSources = inputSourceManager.inputSources;
@@ -222,7 +222,7 @@ var LanguageSelectionPopup = class extends PopupMenu.PopupMenu {
         }
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        item = this.addSettingsAction(_("Region & Language Settings"), 'gnome-region-panel.desktop');
+        item = this.addSettingsAction(_("Keyboard Settings"), 'keyboard');
         item.can_focus = false;
 
         this._capturedEventId = 0;

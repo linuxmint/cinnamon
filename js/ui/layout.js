@@ -23,6 +23,8 @@ const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
 const StartupAnimation = imports.ui.startupAnimation;
 
+var KEYBOARD_ANIMATION_TIME = 150;
+
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
@@ -278,7 +280,6 @@ LayoutManager.prototype = {
         this.hotCornerManager = null;
         this.edgeRight = null;
         this.edgeLeft = null;
-        this.hideIdleId = 0;
         this._chrome = new Chrome(this);
 
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
@@ -425,10 +426,39 @@ LayoutManager.prototype = {
 
     _updateKeyboardBox: function() {
         // return;
-        global.log(this.keyboardMonitor);
-        this.keyboardBox.set_position(this.keyboardMonitor.x,
-                                      this.keyboardMonitor.y + this.keyboardMonitor.height);
-        this.keyboardBox.set_size(this.keyboardMonitor.width, -1);
+        if (Main.panelManager == null) {
+            return;
+        }
+
+        let panels = Main.panelManager.getPanelsInMonitor(this.keyboardIndex);
+
+        let kb_x = this.keyboardMonitor.x;
+        let kb_y = this.keyboardMonitor.y + this.keyboardMonitor.height;
+        let kb_width = this.keyboardMonitor.width;
+
+        for (let panel of panels) {
+            if (panel.isHideable()) {
+                continue;
+            }
+
+            switch (panel.panelPosition) {
+                case Panel.PanelLoc.top:
+                    break;
+                case Panel.PanelLoc.bottom:
+                    kb_y -= panel.actor.height;
+                    break;
+                case Panel.PanelLoc.left:
+                    kb_x += panel.actor.width;
+                    kb_width -= panel.actor.width;
+                    break;
+                case Panel.PanelLoc.right:
+                    kb_width -= panel.actor.width;
+                    break;
+            }
+        }
+
+        this.keyboardBox.set_position(kb_x, kb_y);
+        this.keyboardBox.set_size(kb_width, -1);
     },
 
     get keyboardMonitor() {
@@ -444,55 +474,53 @@ LayoutManager.prototype = {
         return this._keyboardIndex;
     },
 
-    showKeyboard: function () {
-        if (this.hideIdleId > 0) {
-            Mainloop.source_remove(this.hideIdleId);
-            this.hideIdleId = 0;
-        }
+    showKeyboard: function() {
+        this.keyboardBox.show();
+        this.keyboardBox.ease({
+            translation_y: -this.keyboardBox.height,
+            opacity: 255,
+            duration: KEYBOARD_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._showKeyboardComplete();
+            },
+        });
+        this.emit('keyboard-visible-changed', true);
+    },
 
-        if (!this.keyboardBox.visible) {
-            this.keyboardBox.show();
-        }
-
-        // this.keyboardBox.raise_top();
-        Main.panelManager.lowerActorBelowPanels(this.keyboardBox);
-
+    _showKeyboardComplete: function() {
         // Poke Chrome to update the input shape; it doesn't notice
         // anchor point changes
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
         this._chrome.updateRegions();
 
-        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', Lang.bind(this, function () {
-            if (this.keyboardBox.y != 0) {
-                this.keyboardBox.y = this.focusMonitor.y + this.focusMonitor.height - this.keyboardBox.height;
-            }
-        }));
-
-        this.emit('keyboard-visible-changed', true);
+        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', () => {
+            this.keyboardBox.translation_y = -this.keyboardBox.height;
+        });
     },
 
-    hideKeyboard: function() {
-        if (this.hideIdleId != 0) {
-            Mainloop.source_remove(this.hideIdleId);
-            this.hideIdleId = 0;
-        }
-
+    hideKeyboard: function(immediate) {
         if (this._keyboardHeightNotifyId) {
             this.keyboardBox.disconnect(this._keyboardHeightNotifyId);
             this._keyboardHeightNotifyId = 0;
         }
+        this.keyboardBox.ease({
+            translation_y: 0,
+            opacity: 0,
+            duration: immediate ? 0 : KEYBOARD_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_IN_QUAD,
+            onComplete: () => {
+                this._hideKeyboardComplete();
+            },
+        });
 
-        this.hideIdleId = Mainloop.idle_add(Lang.bind(this, this.hideKeyboardComplete));
         this.emit('keyboard-visible-changed', false);
     },
 
-    hideKeyboardComplete: function (immediate) {
-        this.keyboardBox.hide();
+    _hideKeyboardComplete: function() {
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
+        this.keyboardBox.hide();
         this._chrome.updateRegions();
-
-        this.hideIdleId = 0;
-        return false;
     },
 
     /**
@@ -1008,7 +1036,9 @@ Chrome.prototype = {
                 if (x1 <= monitor.x && x2 >= monitor.x + monitor.width) {
                     if (y1 <= monitor.y)
                         side = Meta.Side.TOP;
-                    else if (y2 >= monitor.y + monitor.height)
+                    // Hack to let the keyboardBox be considered struts even though it's off the edge of the monitor
+                    // by some panel height amount.
+                    else if (y2 >= monitor.y + monitor.height - (actorData.actor.name === "keyboardBox" ? 100 : 0))
                         side = Meta.Side.BOTTOM;
                     else
                         continue;

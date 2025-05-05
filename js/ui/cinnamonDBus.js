@@ -564,7 +564,6 @@ CinnamonDBus.prototype = {
                 source === is_mgr.currentSource
             ]);
         }
-        global.log(ret);
         return ret;
     },
 
