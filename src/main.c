@@ -146,11 +146,6 @@ cinnamon_dbus_init (gboolean  replace,
   /* ...and the org.gnome.Magnifier service. */
                             MAGNIFIER_DBUS_SERVICE, FALSE,
                             NULL);
-  /* ...and the on-screen keyboard service */
-  cinnamon_dbus_acquire_name (bus,
-                           DBUS_NAME_FLAG_REPLACE_EXISTING,
-                           &request_name_result,
-                           "org.gnome.Caribou.Keyboard", FALSE);
 
   /* At login, cinnamon.desktop requests that cinnamon-session start cinnamon
    * during CSM_MANAGER_PHASE_WINDOW_MANAGER.  This call should return FALSE.
