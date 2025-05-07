@@ -31,6 +31,7 @@ class Workspace {
                 this.actor.remove_child(actor);
             },
             updateFocusState: (focusedAppId) => {
+                this.state.notifications.removeAllNotifications(focusedAppId);
                 this.appGroups.forEach( appGroup => {
                     if (focusedAppId === appGroup.groupState.appId) return;
                     appGroup.onFocusChange(false);
