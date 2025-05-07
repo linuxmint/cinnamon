@@ -44,6 +44,8 @@ const Util = imports.misc.util;
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
 
+const MAX_MODAL_RETRIES = 2;
+
 var RootUser = class {
     constructor(name) {
         this.userName = name;
@@ -123,6 +125,8 @@ var AuthenticationDialog = GObject.registerClass({
         this._user = null;
         this._visibleAvatar = null;
         this._adminUsers = [];
+
+        this._modalRetryCount = 0;
 
         this._sessionCompletedId = 0;
         this._sessionRequestId = 0;
@@ -349,25 +353,29 @@ var AuthenticationDialog = GObject.registerClass({
         this._session.initiate();
     }
 
-    _ensureOpen() {
+    _ensureOpen(focusEntry=false) {
         // NOTE: ModalDialog.open() is safe to call if the dialog is
         // already open - it just returns true without side-effects
         if (!this.open(global.get_current_time())) {
-            // This can fail if e.g. unable to get input grab
-            //
-            // In an ideal world this wouldn't happen (because the
-            // Cinnamon is in complete control of the session) but that's
-            // just not how things work right now.
-            //
-            // One way to make this happen is by running 'sleep 3;
-            // pkexec bash' and then opening a popup menu.
-            //
-            // We could add retrying if this turns out to be a problem
+            // This can fail if e.g. unable to get input grab (double-click admin:// folder in nemo).
+            if (this._modalRetryCount < MAX_MODAL_RETRIES) {
+                this._modalRetryCount++;
+                GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+                    this._ensureOpen(focusEntry);
+                    return GLib.SOURCE_REMOVE;
+                });
+
+                return;
+            }
 
             log('polkitAuthenticationAgent: Failed to show modal dialog.' +
                 ' Dismissing authentication request for action-id ' + this.actionId +
                 ' cookie ' + this._cookie);
             this._emitDone(true);
+        } else {
+            if (focusEntry) {
+                this._passwordEntry.grab_key_focus();
+            }
         }
     }
 
@@ -452,8 +460,7 @@ var AuthenticationDialog = GObject.registerClass({
         this._passwordEntry.reactive  = true;
         this._okButton.reactive = false;
 
-        this._ensureOpen();
-        this._passwordEntry.grab_key_focus();
+        this._ensureOpen(true);
     }
 
     _onSessionShowError(session, text) {
