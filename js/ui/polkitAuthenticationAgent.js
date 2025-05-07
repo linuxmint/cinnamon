@@ -45,9 +45,9 @@ const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
 
 var RootUser = class {
-    constructor() {
-        this.userName = "root";
-        this.realName = _("Superuser");
+    constructor(name) {
+        this.userName = name;
+        this.realName = _("Superuser (%s)").format(name);
 
         this.avatar = new St.Icon({
             icon_name: 'avatar-default-symbolic',
@@ -164,13 +164,18 @@ var AuthenticationDialog = GObject.registerClass({
         menuManager.addMenu(this._menu);
 
         // Collect all available users and populate the menu
+        let nonASAdmins = []
         let have_admin = false;
         for (const name of userNames) {
-            if (name === "root") {
-                // root won't be in AccountsService, save it as a fallback only.
-                continue;
+            let userAcct = this._accountsService.get_user(name);
+            if (!userAcct.is_loaded) {
+                if (name === "root" || userAcct.is_system_account()) {
+                    nonASAdmins.push(name);
+                }
+                continue
             }
-            let adminUser = new AdminUser(this._accountsService.get_user(name));
+
+            let adminUser = new AdminUser(userAcct);
             this._adminUsers.push(adminUser);
 
             userBox.add(adminUser.avatar, { x_fill: false });
@@ -191,20 +196,22 @@ var AuthenticationDialog = GObject.registerClass({
             have_admin = true;
         }
 
-        if (!have_admin && userNames.includes("root")) {
-            let rootUser = new RootUser();
-            this._adminUsers.push(rootUser);
+        if (!have_admin && nonASAdmins.length > 0) {
+            for (const name of nonASAdmins) {
+                let rootUser = new RootUser(name);
+                this._adminUsers.push(rootUser);
 
-            userBox.add(rootUser.avatar, { x_fill: false });
+                userBox.add(rootUser.avatar, { x_fill: false });
 
-            const item = new PopupMenu.PopupMenuItem('Root');
-            item.connect('activate', () => {
-                this._user = rootUser;
-                this._updateUser();
-                this._wasDismissed = true;
-                this.performAuthentication();
-            })
-            this._menu.addMenuItem(item);
+                const item = new PopupMenu.PopupMenuItem(name);
+                item.connect('activate', () => {
+                    this._user = rootUser;
+                    this._updateUser();
+                    this._wasDismissed = true;
+                    this.performAuthentication();
+                })
+                this._menu.addMenuItem(item);
+            }
         }
 
         // If the current user is an admin, set the current user
