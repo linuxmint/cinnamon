@@ -44,10 +44,12 @@ const Util = imports.misc.util;
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
 
+const MAX_MODAL_RETRIES = 2;
+
 var RootUser = class {
-    constructor() {
-        this.userName = "root";
-        this.realName = _("Superuser");
+    constructor(name) {
+        this.userName = name;
+        this.realName = _("Superuser (%s)").format(name);
 
         this.avatar = new St.Icon({
             icon_name: 'avatar-default-symbolic',
@@ -124,6 +126,8 @@ var AuthenticationDialog = GObject.registerClass({
         this._visibleAvatar = null;
         this._adminUsers = [];
 
+        this._modalRetryCount = 0;
+
         this._sessionCompletedId = 0;
         this._sessionRequestId = 0;
         this._sessionShowErrorId = 0;
@@ -164,13 +168,18 @@ var AuthenticationDialog = GObject.registerClass({
         menuManager.addMenu(this._menu);
 
         // Collect all available users and populate the menu
+        let nonASAdmins = []
         let have_admin = false;
         for (const name of userNames) {
-            if (name === "root") {
-                // root won't be in AccountsService, save it as a fallback only.
-                continue;
+            let userAcct = this._accountsService.get_user(name);
+            if (!userAcct.is_loaded) {
+                if (name === "root" || userAcct.is_system_account()) {
+                    nonASAdmins.push(name);
+                }
+                continue
             }
-            let adminUser = new AdminUser(this._accountsService.get_user(name));
+
+            let adminUser = new AdminUser(userAcct);
             this._adminUsers.push(adminUser);
 
             userBox.add(adminUser.avatar, { x_fill: false });
@@ -191,20 +200,22 @@ var AuthenticationDialog = GObject.registerClass({
             have_admin = true;
         }
 
-        if (!have_admin && userNames.includes("root")) {
-            let rootUser = new RootUser();
-            this._adminUsers.push(rootUser);
+        if (!have_admin && nonASAdmins.length > 0) {
+            for (const name of nonASAdmins) {
+                let rootUser = new RootUser(name);
+                this._adminUsers.push(rootUser);
 
-            userBox.add(rootUser.avatar, { x_fill: false });
+                userBox.add(rootUser.avatar, { x_fill: false });
 
-            const item = new PopupMenu.PopupMenuItem('Root');
-            item.connect('activate', () => {
-                this._user = rootUser;
-                this._updateUser();
-                this._wasDismissed = true;
-                this.performAuthentication();
-            })
-            this._menu.addMenuItem(item);
+                const item = new PopupMenu.PopupMenuItem(name);
+                item.connect('activate', () => {
+                    this._user = rootUser;
+                    this._updateUser();
+                    this._wasDismissed = true;
+                    this.performAuthentication();
+                })
+                this._menu.addMenuItem(item);
+            }
         }
 
         // If the current user is an admin, set the current user
@@ -342,25 +353,29 @@ var AuthenticationDialog = GObject.registerClass({
         this._session.initiate();
     }
 
-    _ensureOpen() {
+    _ensureOpen(focusEntry=false) {
         // NOTE: ModalDialog.open() is safe to call if the dialog is
         // already open - it just returns true without side-effects
         if (!this.open(global.get_current_time())) {
-            // This can fail if e.g. unable to get input grab
-            //
-            // In an ideal world this wouldn't happen (because the
-            // Cinnamon is in complete control of the session) but that's
-            // just not how things work right now.
-            //
-            // One way to make this happen is by running 'sleep 3;
-            // pkexec bash' and then opening a popup menu.
-            //
-            // We could add retrying if this turns out to be a problem
+            // This can fail if e.g. unable to get input grab (double-click admin:// folder in nemo).
+            if (this._modalRetryCount < MAX_MODAL_RETRIES) {
+                this._modalRetryCount++;
+                GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
+                    this._ensureOpen(focusEntry);
+                    return GLib.SOURCE_REMOVE;
+                });
+
+                return;
+            }
 
             log('polkitAuthenticationAgent: Failed to show modal dialog.' +
                 ' Dismissing authentication request for action-id ' + this.actionId +
                 ' cookie ' + this._cookie);
             this._emitDone(true);
+        } else {
+            if (focusEntry) {
+                this._passwordEntry.grab_key_focus();
+            }
         }
     }
 
@@ -445,8 +460,7 @@ var AuthenticationDialog = GObject.registerClass({
         this._passwordEntry.reactive  = true;
         this._okButton.reactive = false;
 
-        this._ensureOpen();
-        this._passwordEntry.grab_key_focus();
+        this._ensureOpen(true);
     }
 
     _onSessionShowError(session, text) {
