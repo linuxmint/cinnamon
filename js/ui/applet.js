@@ -608,7 +608,7 @@ var Applet = class Applet {
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
                         "system-run",
                         St.IconType.SYMBOLIC);
-                this.context_menu_item_configure.connect('activate', Lang.bind(this, this.configureApplet));
+                this.context_menu_item_configure.connect('activate', () => this.configureApplet());
             }
             if (items.indexOf(this.context_menu_item_configure) == -1) {
                 this._applet_context_menu.addMenuItem(this.context_menu_item_configure);
