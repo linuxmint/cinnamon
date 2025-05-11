@@ -148,6 +148,13 @@ class Module:
             widget.add_mark(10, Gtk.PositionType.TOP, None)
             settings.add_row(widget)
 
+            # Tiling
+            settings = page.add_section(_("Window Tiling and Snapping"))
+            switch = GSettingsSwitch(_("Enable Window Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling")
+            settings.add_row(switch)
+            switch = GSettingsSwitch(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize")
+            settings.add_reveal_row(switch, "org.cinnamon.muffin", "edge-tiling")
+
             # Alt Tab
 
             page = SettingsPage()
