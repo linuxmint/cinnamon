@@ -6,121 +6,22 @@ cinnamon-settings \- Configuration panel for cinnamon
 .br
 \fBcinnamon-settings\fP MODULE [\fB-t\fP TAB]
 .br
-\fBcinnamon-settings\fP \fBapplets\fP PANEL
+\fBcinnamon-settings\fP \fBapplets\fP|\fBpanel\fP [\fB-p\fP PANEL]
 .br
-\fBcinnamon-settings\fP \fBapplets\fP|\fBdesklets\fP|\fBextensions\fP [UUID [\fB-i\fP INSTANCE]] [\fB-t\fP TAB_INDEX]
+\fBcinnamon-settings\fP \fBapplets\fP|\fBdesklets\fP|\fBextensions\fP|\fBthemes\fP|\fBactions\fP [\fB-t\fP TAB]
 .br
-\fBcinnamon-settings\fP \fBapplets\fP|\fBdesklets\fP|\fBextensions\fP UUID INSTANCE
-.br
-\fBcinnamon-settings\fP \fBapplets\fP|\fBdesklets\fP|\fBextensions\fP|\fBthemes\fP [\fB-t\fP TAB]
-.br
-\fBcinnamon-settings\fP \fBapplets\fP|\fBdesklets\fP|\fBextensions\fP|\fBthemes -t download\fP [\fB-s\fP SORT]
+\fBcinnamon-settings\fP \fBapplets\fP|\fBdesklets\fP|\fBextensions\fP|\fBthemes\fP|\fBactions\fP -t download\fP [\fB-s\fP SORT]
 .SH DESCRIPTION
 .LP
-\fBcinnamon-settings\fP runs the graphical user interface allowing to configure Cinnamon.
-
-It can also be used to run the graphical user interface allowing to configure a specific module, add applets to a panel, and manage \fIxlets\fP.
-.SH MODULE
-Specifying a module allows to configure it directly.
-.br
-The following modules are available. You can use name or synonym.
-.br
-The modules with \fB*\fP have a configuration interface with tabs. Each tab can be directly opened (see TAB section below).
-.br
-The modules with \fB**\fP need root rights to open their configuration interface. So the only tab that will always be open is the first one.
-
-    \fBNAME                      SYNONYMS\fP
-    applets\fB*\fP
-    backgrounds\fB*\fP              background
-    blueberry                 bluetooth
-    calendar
-    cinnamon-settings-users** users
-    color                     colors
-    default\fB*\fP
-    desklets\fB*\fP
-    desktop
-    display                   screen, screens
-    driver-manager\fB**\fP          drivers
-    effects\fB*\fP
-    extensions\fB*\fP
-    fonts
-    general
-    gufw**                    firewall
-    hotcorner                 hotcorners
-    info                      infos
-    keyboard\fB*\fP
-    lightdm-settings\fB**\fP        login-screen
-    mintlocale                language, locale
-    mintlocale-im             input-method
-    mintsources\fB**\fP             sources
-    mouse\fB*\fP
-    network                   networks
-    notifications
-    nvidia-settings           nvidia
-    online-accounts           accounts
-    panel                     panels
-    power\fB*\fP
-    privacy
-    screensaver\fB*\fP
-    sound\fB*\fP
-    startup
-    system-config-printer     printer, printers
-    themes\fB*\fP
-    tiling
-    universal-access\fB*\fP         accessibility
-    user                      me
-    wacom                     tablet
-    windows\fB*\fP                  window
-    workspaces\fB*\fP
-
-.SH "TAB and TAB_INDEX"
-Here the modules whose configuration interface contains tabs. Specifying its name or index by the \fB-t\fP option allows to open directly this tab in the configuration interface.
+\fBcinnamon-settings\fP runs the graphical user interface allowing to configure Cinnamon. Command line arguments can be used to open a specific module and even a tab within that module.
 .br
 
-    \fBNAME\fP              \fBTAB_NAME: TAB_INDEX, ...\fP
-    universal-access  visual: 0, keyboard: 1, typing: 2, mouse: 3
-    applets           installed: 0, more: 1, download: 1
-    backgrounds       images: 0, settings: 1
-    default           preferred: 0, removable: 1
-    desklets          installed: 0, more: 1, download: 1, general: 2
-    effects           effects: 0, customize: 1,
-    extensions        installed: 0, more: 1, download: 1
-    keyboard          typing: 0, shortcuts: 1, layouts: 2
-    mouse             mouse: 0, touchpad: 1,
-    power             power: 0, batteries: 1, brightness: 2
-    screensaver       settings: 0, customize: 1
-    sound             output: 0, input: 1, sounds: 2,
-                      applications: 3, settings: 4
-    themes            themes: 0, download: 1, options: 2
-    windows           titlebar: 0, behavior: 1, alttab: 2
-    workspaces        osd: 0, settings: 1
+Run \fBcinnamon-settings --help\fP to see a list of modules.
+.br
+Run \fBcinnamon-settings MODULE --tab help\fP to see the available tabs for a particular module.
 
 .SH PANEL
-PANEL is the panel on which the user want install some \fBapplets\fP.
-User desktop can have up to four panels.
-.br
-\fBpanel1\fP is the first panel (panel by default).
-.br
-\fBpanel2\fP, \fBpanel3\fP and \fBpanel4\fP exist only if the user has created them.
-
-.SH "UUID and INSTANCE"
-The applets, desklets, extensions and themes are the \fIxlets\fP.
-.br
-
-Each xlet has an UUID (Universal Unique IDentifier). The structure of an UUID is xlet_name@author, except for themes.
-.br
-
-There are two kinds of xlets: System and Spices.
-.br
-
-System xlets are in \fB/usr/share/cinnamon/applets/\fP, \fB/usr/share/cinnamon/desklets/\fP and \fB/usr/share/themes/\fP; their UUID ends with '@cinnamon.org' except for themes. There is no system extension.
-.br
-
-Spices are xlets offered by developers to the Cinnamon team, which evaluates and validates them. Complete description of these Spices can be found at https://cinnamon-spices.linuxmint.com/.
-.br
-The Spices installed by user are in \fB~/.local/share/cinnamon\fP (for applets, desklets and extensions) and in \fB~/.themes\fP.
-
-INSTANCE argument is reserved to developers. When an applet or desklet has multiple instances, the configuration interface of each of them can be directly opened by this INSTANCE argument. Users have neither the possibility nor the need to know the value of INSTANCE.
+When the \fBapplets\fP or \fBpanel\fP module are specified, PANEL can specify the id of a specific panel operate on.
 
 .SH SORT
 .TP
@@ -143,12 +44,14 @@ The following options are supported:
 Print a help text describing the supported command-line options, and then exit.
 .TP
 \fB-s\fP SORT, \fB--sort=\fPSORT
-Specific to the 'download' tab (see below) for \fBapplets\fP, \fBdesklets\fP, \fBextensions\fP and \fBthemes\fP modules.
+Specific to the 'download' tab (see below) for \fBapplets\fP, \fBdesklets\fP, \fBextensions\fP, \fBthemes\fP and \fBactions\fP modules.
 .TP
 \fB-t\fP TAB, \fB--tab=\fPTAB
-Select the tab to open in the settings. Possible choices are:
- - A number from 0 to \fIn\fP-1, where \fIn\fP is the number of available tabs.
- - The name of the tab (see list below).
+Select the tab to switch to in the module. Specifying \fB--tab=help\fP will print a module's available tab names then exit. Not all modules have multiple tabs.
+.TP
+\fB-p\fP PANEL, \fB--panel=\fPPANEL
+Select the panel ID to operate on. Only valid with the applets and panel modules.
+
 
 .SH EXAMPLES
 .TP
@@ -156,26 +59,10 @@ To open System Settings:
 $ \fBcinnamon-settings\fP
 
 .TP
-To open the printer settings:
-.br
-$ \fBcinnamon-settings printers\fP
-
+To add some applets on the second panel (if it exists):
+$ \fBcinnamon-settings applets --panel 2\fP
 .TP
-To open the settings of an installed applet, desklet or extension:
-$ \fBcinnamon-settings\fP TYPE UUID
-.br
-Examples:
-.br
-$ \fBcinnamon-settings applets SpicesUpdate@claudiux\fP
-.br
-$ \fBcinnamon-settings desklets photoframe@cinnamon.org\fP
-.br
-$ \fBcinnamon-settings extensions watermark@germanfr\fP
-.TP
-To add some applets on the second panel (if exists):
-$ \fBcinnamon-settings applets panel2\fP
-.TP
-To open the download tab of the applets settings:
+To open the download tab of the applets module:
 $ \fBcinnamon-settings applets --tab=download\fP
 .br
 or
@@ -183,21 +70,14 @@ or
 $ \fBcinnamon-settings applets -t 1\fP
 
 .TP
-To open the download tab of a type of Spices (applets, desklets, extensions, themes), sorting them by 'name', 'score', 'date', 'installed' or 'update', use the '--sort=' or '-s' argument:
+To open the applets download tab and sort by 'name':
 .br
-$ \fBcinnamon-settings TYPE --tab=download --sort=SORT\fP
+$ \fBcinnamon-settings applets --tab=download --sort=name\fP
 .br
 or
 .br
-$ \fBcinnamon-settings TYPE -t 1 -s SORT\fP
+$ \fBcinnamon-settings applets -t 1 -s 0\fP
 .br
-where TYPE can be \fBapplets\fP, \fBdesklets\fP, \fBextensions\fP or \fBthemes\fP
-.br
-and SORT can be \fBname\fP (or \fB0\fP), \fBscore\fP (or \fB1\fP), \fBdate\fP (or \fB2\fP), \fBinstalled\fP (or \fB3\fP), \fBupdate\fP (or \fB4\fP)
-
-Example:
-.br
-$ \fBcinnamon-settings applets -t 1 -s date\fP
 
 .SH "SEE ALSO"
 .BR cinnamon-menu-editor (1)

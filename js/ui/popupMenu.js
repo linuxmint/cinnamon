@@ -1776,6 +1776,7 @@ var PopupMenuBase = class PopupMenuBase {
      * addSettingsAction:
      * @title (string): the text to display on the item
      * @module (string): the module to launch
+     * @tab (string): the tab to launch
      *
      * Adds a #PopupMenuItem with label @title to the menu. When the item is
      * clicked, Cinnamon Settings will be launched with the module @module
@@ -1783,10 +1784,15 @@ var PopupMenuBase = class PopupMenuBase {
      *
      * Returns (PopupMenu.PopupMenuItem): the menu item created.
      */
-    addSettingsAction(title, module) {
+    addSettingsAction(title, module, tab) {
         let menuItem = this.addAction(title, function() {
-                           Util.spawnCommandLine("cinnamon-settings " + module);
-                       });
+            let cmd = "cinnamon-settings " + module;
+            if (tab) {
+                cmd += " -t " + tab;
+            }
+            Util.spawnCommandLine(cmd);
+        });
+
         return menuItem;
     }
 

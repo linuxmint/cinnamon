@@ -8,6 +8,7 @@ from gi.repository import Gtk, Gdk
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
+import config
 
 
 class Monitor:
@@ -167,8 +168,8 @@ class Module:
             self.settings = Gio.Settings.new("org.cinnamon")
 
             try:
-                if len(sys.argv) > 1:
-                    self.panel_id = sys.argv[1]
+                if config.PARSED_ARGS.panel is not None:
+                    self.panel_id = config.PARSED_ARGS.panel
                 else:
                     self.panel_id = self.settings.get_strv("panels-enabled")[0].split(":")[0]
             except:

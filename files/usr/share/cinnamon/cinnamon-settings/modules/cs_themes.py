@@ -14,6 +14,7 @@ from ExtensionCore import DownloadSpicesPage
 from Spices import Spice_Harvester
 
 from pathlib import Path
+import config
 
 ICON_SIZE = 48
 
@@ -34,7 +35,7 @@ THEME_FOLDERS = [
 THEMES_BLACKLIST = [
     "gnome", # not meant to be used as a theme. Provides icons to inheriting themes.
     "hicolor", # same
-    "adwaita", "adwaita-dark", # incomplete outside of GNOME, doesn't support Cinnamon.
+    "adwaita", "adwaita-dark", "adwaitalegacy", # incomplete outside of GNOME, doesn't support Cinnamon.
     "highcontrast", # same. Also, available via a11y as a global setting.
     "epapirus", "epapirus-dark", # specifically designed for Pantheon
     "ubuntu-mono", "ubuntu-mono-dark", "ubuntu-mono-light", "loginicons", # ubuntu-mono icons (non-removable in Ubuntu 24.04)
@@ -343,7 +344,8 @@ class Module:
                         print(e)
 
             self.refresh_choosers()
-            GLib.idle_add(self.set_mode, "simplified" if self.active_variant is not None else "themes", True)
+            if config.PARSED_ARGS.module == "themes" and config.PARSED_ARGS.tab is None:
+                GLib.idle_add(self.set_mode, "simplified" if self.active_variant is not None else "themes", True)
             return
 
         GLib.idle_add(self.set_mode, self.sidePage.stack.get_visible_child_name())

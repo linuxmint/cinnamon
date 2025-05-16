@@ -6,6 +6,7 @@ from SettingsWidgets import SidePage
 from xapp.SettingsWidgets import SettingsStack
 from Spices import Spice_Harvester
 from gi.repository import GLib, Gtk, Gdk
+import config
 
 class Module:
     name = "applets"
@@ -61,8 +62,9 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.panels = []
         self.current_panel_index = 0
-        if len(sys.argv) > 1 and sys.argv[1][0:5] == "panel":
-            self.panel_id = int(sys.argv[1][5:])
+        print("in applets", config.PARSED_ARGS)
+        if config.PARSED_ARGS.panel is not None and config.PARSED_ARGS.panel.isdecimal():
+            self.panel_id = int(config.PARSED_ARGS.panel)
         else:
             self.panel_id = int(self.spices.settings.get_strv("panels-enabled")[0].split(":")[0])
 

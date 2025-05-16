@@ -1,9 +1,2 @@
-#!/usr/bin/python3
-
-import os
-import sys
-
-if len(sys.argv) < 3:
-    print("usage:\n    xlet-settings <xlet_type> <uuid>\nor\n    xlet-settings <xlet_type> <uuid> <instance_id>")
-else:
-    os.execvp("/usr/share/cinnamon/cinnamon-settings/xlet-settings.py", (" ",) + tuple(sys.argv[1:]))
+#!/bin/sh
+exec /usr/share/cinnamon/cinnamon-settings/xlet-settings.py "$@"
