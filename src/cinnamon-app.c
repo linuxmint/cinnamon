@@ -1212,7 +1212,7 @@ real_app_launch (CinnamonApp   *app,
   global = app->global;
   workspace_manager = global->workspace_manager;
 
-  context = cinnamon_global_create_app_launch_context (global);
+  context = cinnamon_global_create_app_launch_context (global, timestamp, workspace);
 
   if (workspace >= 0)
     {
@@ -1269,6 +1269,199 @@ real_app_launch (CinnamonApp   *app,
 
   return ret;
 }
+
+static gchar *
+object_path_from_app_id (const gchar *app_id)
+{
+  gchar *app_id_path, *iter;
+
+  app_id_path = g_strconcat ("/", app_id, NULL);
+  for (iter = app_id_path; *iter; iter++)
+  {
+    if (*iter == '.')
+      *iter = '/';
+
+    if (*iter == '-')
+      *iter = '_';
+  }
+
+  return app_id_path;
+}
+
+static GVariant *
+get_platform_data (CinnamonApp *app,
+                   guint     timestamp,
+                   int       workspace)
+{
+  GVariantBuilder builder;
+  CinnamonGlobal *global;
+  g_autoptr (GAppLaunchContext) context = NULL;
+  gchar *startup_id;
+
+  g_variant_builder_init (&builder, G_VARIANT_TYPE_VARDICT);
+  if (!app->info)
+    return g_variant_builder_end (&builder);
+
+  global = cinnamon_global_get ();
+  context = cinnamon_global_create_app_launch_context (global, timestamp, workspace);
+
+  if (!context)
+    return g_variant_builder_end (&builder);
+
+  startup_id = g_app_launch_context_get_startup_notify_id (context, G_APP_INFO (app->info), NULL);
+
+  if (!startup_id)
+    return g_variant_builder_end (&builder);
+
+
+  g_variant_builder_add (&builder, "{sv}",
+                         "desktop-startup-id", g_variant_new_string (startup_id));
+  g_variant_builder_add (&builder, "{sv}",
+
+
+                         "activation-token", g_variant_new_take_string (g_steal_pointer (&startup_id)));
+
+  return g_variant_builder_end (&builder);
+}
+
+static void
+on_activate_action_cb (GObject      *source,
+                       GAsyncResult *res,
+                       gpointer      user_data)
+{
+  GTask *task = G_TASK (user_data);
+  g_autoptr (GVariant) value = NULL;
+  g_autoptr (GError) error = NULL;
+
+  value = g_dbus_connection_call_finish (G_DBUS_CONNECTION (source),
+                                         res, &error);
+
+  if (error)
+    g_task_return_error (task, g_steal_pointer (&error));
+  else
+    g_task_return_boolean (task, TRUE);
+}
+
+static void
+activate_action_get_bus_cb (GObject      *object,
+                            GAsyncResult *result,
+                            gpointer      user_data)
+{
+  GTask *task = G_TASK (user_data);
+  CinnamonApp *app = NULL;
+  g_autoptr (GDBusConnection) session_bus = NULL;
+  g_autoptr (GError) error = NULL;
+  g_autofree gchar *object_path = NULL;
+  g_autofree gchar *app_id = NULL;
+  gchar *last_dot;
+
+  session_bus = g_bus_get_finish (result, &error);
+
+  if (error)
+  {
+    g_task_return_error (task, g_steal_pointer (&error));
+    return;
+  }
+
+  app = CINNAMON_APP (g_task_get_source_object (task));
+
+  app_id = g_strdup (g_app_info_get_id (G_APP_INFO (app->info)));
+  last_dot = strrchr (app_id, '.');
+  if (last_dot && g_str_equal (last_dot, ".desktop"))
+    *last_dot = '\0';
+
+  object_path = object_path_from_app_id (app_id);
+
+  g_dbus_connection_call (session_bus,
+                          app_id, object_path,
+                          "org.freedesktop.Application", "ActivateAction",
+                          g_task_get_task_data (task),
+                          NULL, G_DBUS_CALL_FLAGS_NONE, -1,
+                          g_task_get_cancellable (task),
+                          on_activate_action_cb, task);
+}
+
+
+/**
+ * cinnamon_app_activate_action
+ * @app: the #ShellApp
+ * @action_name: the name of an action to activate
+ * @parameter: (nullable): the parameter to the activation
+ * @timestamp: Event timestamp, or 0 for current event timestamp
+ * @workspace: Start on this workspace, or -1 for default
+ * @cancellable: (nullable): a #GCancellable or %NULL
+ * @callback: (scope async): A #GAsyncReadyCallback to call when the request is satisfied.
+ * @user_data: (nullable): User data to pass to @callback
+ *
+ * This activates an action using 'org.freedesktop.Application' DBus interface.
+ *
+ * This function will fail if this #ShellApp doesn't have a valid #GDesktopAppInfo
+ * with a valid id.
+ */
+void
+cinnamon_app_activate_action (CinnamonApp                 *app,
+                           const char          *action_name,
+                           GVariant            *parameter,
+                           guint                timestamp,
+                           int                  workspace,
+                           GCancellable        *cancellable,
+                           GAsyncReadyCallback  callback,
+                           gpointer             user_data)
+{
+  g_autoptr (GTask) task = NULL;
+  g_autoptr (GVariant) task_data = NULL;
+
+  g_return_if_fail (CINNAMON_IS_APP (app));
+  g_return_if_fail (G_IS_DESKTOP_APP_INFO (app->info));
+  g_return_if_fail (g_application_id_is_valid (g_app_info_get_id (G_APP_INFO (app->info))));
+  g_return_if_fail (action_name != NULL && action_name[0] != '\0');
+  g_return_if_fail (parameter == NULL || g_variant_is_of_type (parameter,  G_VARIANT_TYPE ("av")));
+  g_return_if_fail (timestamp >= 0);
+  g_return_if_fail (workspace >= -1);
+  g_return_if_fail (cancellable == NULL || G_IS_CANCELLABLE (cancellable));
+
+  task = g_task_new (app, cancellable, callback, user_data);
+  g_task_set_source_tag (task, cinnamon_app_activate_action);
+
+  if (!parameter)
+    parameter = g_variant_new("av", NULL);
+
+  task_data = g_variant_ref_sink (g_variant_new ("(s@av@a{sv})", action_name, parameter,
+                                                 get_platform_data (app, timestamp, workspace)));
+
+  g_task_set_task_data (task, g_steal_pointer (&task_data), (GDestroyNotify) g_variant_unref);
+
+  g_bus_get (G_BUS_TYPE_SESSION, cancellable, activate_action_get_bus_cb, g_steal_pointer (&task));
+}
+
+/**
+ * cinnamon_app_activate_action_finish:
+ * @app: the #CinnamonApp
+ * @error: #GError for error reporting
+ *
+ * Finish the asynchronous operation started by cinnamon_app_activate_action()
+ * and obtain its result.
+ *
+ * Returns: whether the operation was successful
+ *
+ */
+gboolean
+cinnamon_app_activate_action_finish (CinnamonApp      *app,
+                                     GAsyncResult  *result,
+                                     GError       **error)
+{
+  g_return_val_if_fail (CINNAMON_IS_APP (app), FALSE);
+  g_return_val_if_fail (G_IS_TASK (result), FALSE);
+  g_return_val_if_fail (g_async_result_is_tagged (result,
+                                                  cinnamon_app_activate_action),
+                        FALSE);
+
+  if (!g_task_propagate_boolean (G_TASK (result), error))
+    return FALSE;
+
+  return TRUE;
+}
+
 
 /**
  * cinnamon_app_launch:

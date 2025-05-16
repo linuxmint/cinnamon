@@ -1427,7 +1427,9 @@ cinnamon_global_app_launched_cb (GAppLaunchContext *context,
  * Return value: (transfer full): A new #GAppLaunchContext
  */
 GAppLaunchContext *
-cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
+cinnamon_global_create_app_launch_context (CinnamonGlobal *global,
+                                           guint32      timestamp,
+                                           int          workspace)
 {
   MetaWorkspaceManager *workspace_manager = global->workspace_manager;
   MetaStartupNotification *sn;
@@ -1437,10 +1439,15 @@ cinnamon_global_create_app_launch_context (CinnamonGlobal *global)
   sn = meta_display_get_startup_notification (global->meta_display);
   context = meta_startup_notification_create_launcher (sn);
 
-  meta_launch_context_set_timestamp (context, cinnamon_global_get_current_time (global));
+  if (timestamp == 0)
+    timestamp = cinnamon_global_get_current_time (global);
+  meta_launch_context_set_timestamp (context, timestamp);
 
-  ws = meta_workspace_manager_get_active_workspace (workspace_manager);
-  meta_launch_context_set_workspace (context, ws);
+  if (workspace > -1)
+    {
+      ws = meta_workspace_manager_get_workspace_by_index (workspace_manager, workspace);
+      meta_launch_context_set_workspace (context, ws);
+    }
 
   g_signal_connect (context,
                     "launched",

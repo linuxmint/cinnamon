@@ -85,6 +85,19 @@ gboolean cinnamon_app_launch (CinnamonApp     *app,
                            char        **startup_id,
                            GError      **error);
 
+void cinnamon_app_activate_action (CinnamonApp            *app,
+                                const char          *action_name,
+                                GVariant            *parameter,
+                                guint                timestamp,
+                                int                  workspace,
+                                GCancellable        *cancellable,
+                                GAsyncReadyCallback  callback,
+                                gpointer             user_data);
+gboolean
+cinnamon_app_activate_action_finish (CinnamonApp      *app,
+                                  GAsyncResult  *result,
+                                  GError       **error);
+
 gboolean cinnamon_app_launch_offloaded (CinnamonApp     *app,
                            guint         timestamp,
                            GList        *uris,
