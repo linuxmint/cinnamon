@@ -32,6 +32,8 @@ const GLib = imports.gi.GLib;
 const Mainloop = imports.mainloop;
 const Polkit = imports.gi.Polkit;
 const PolkitAgent = imports.gi.PolkitAgent;
+const GnomeSession = imports.misc.gnomeSession;
+const Meta = imports.gi.Meta;
 
 const Dialog = imports.ui.dialog;
 const Main = imports.ui.main;
@@ -537,9 +539,20 @@ var AuthenticationAgent = class {
         this._native.connect('cancel', this._onCancel.bind(this));
         // TODO - maybe register probably should wait until later, especially at first login?
         try {
-            this._native.register();
+            const session = new GnomeSession.SessionManager();
+            const csSessionId = session.SessionId;
+
+            let procSessionId = this._native.register();
+            if (!Meta.is_wayland_compositor() && procSessionId !== csSessionId) {
+                global.logWarning('Unable to register as the polkit agent for this session. Restarting Cinnamon in 5 seconds.');
+                this._native.unregister();
+                this._native = null;
+
+                GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => session.RestartCinnamonLauncherRemote())
+                return;
+            }
         } catch(e) {
-            global.logWarning('Failed to register Polkit Agent');
+            global.log('Failed to register Polkit Agent', e);
         }
         this._currentDialog = null;
     }

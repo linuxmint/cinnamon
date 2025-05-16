@@ -87,12 +87,14 @@ cinnamon_polkit_authentication_agent_init (CinnamonPolkitAuthenticationAgent *ag
 {
 }
 
-void
+gchar *
 cinnamon_polkit_authentication_agent_register (CinnamonPolkitAuthenticationAgent *agent,
                                             GError                        **error_out)
 {
   GError *error = NULL;
   PolkitSubject *subject;
+  gchar *session_id = NULL;
+
   subject = polkit_unix_session_new_for_process_sync (getpid (),
                                                       NULL, /* GCancellable* */
                                                       &error);
@@ -104,6 +106,7 @@ cinnamon_polkit_authentication_agent_register (CinnamonPolkitAuthenticationAgent
       goto out;
     }
 
+  session_id = g_strdup (polkit_unix_session_get_session_id (POLKIT_UNIX_SESSION (subject)));
   agent->handle = polkit_agent_listener_register (POLKIT_AGENT_LISTENER (agent),
                                                   POLKIT_AGENT_REGISTER_FLAGS_NONE,
                                                   subject,
@@ -117,6 +120,8 @@ cinnamon_polkit_authentication_agent_register (CinnamonPolkitAuthenticationAgent
 
   if (subject != NULL)
     g_object_unref (subject);
+
+  return session_id;
 }
 
 static void

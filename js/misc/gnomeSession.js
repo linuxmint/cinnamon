@@ -75,6 +75,7 @@ var SessionManagerIface = '\
        <method name="GetInhibitors"> \
            <arg type="ao" name="inhibitors" direction="out"/> \
        </method> \
+       <method name="RestartCinnamonLauncher" /> \
        <signal name="InhibitorAdded"> \
            <arg type="o" name="id" direction="out"/> \
        </signal> \
@@ -82,6 +83,7 @@ var SessionManagerIface = '\
            <arg type="o" name="id" direction="out"/> \
        </signal> \
        <property name="InhibitedActions" type="u" access="read"/> \
+       <property name="SessionId" type="s" access="read"/> \
     </interface> \
 </node>';
 

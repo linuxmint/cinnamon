@@ -27,7 +27,7 @@ CinnamonPolkitAuthenticationAgent *cinnamon_polkit_authentication_agent_new (voi
 
 void                            cinnamon_polkit_authentication_agent_complete (CinnamonPolkitAuthenticationAgent *agent,
                                                                             gboolean                        dismissed);
-void                            cinnamon_polkit_authentication_agent_register (CinnamonPolkitAuthenticationAgent *agent,
+gchar *                         cinnamon_polkit_authentication_agent_register (CinnamonPolkitAuthenticationAgent *agent,
                                                                             GError                        **error_out);
 void                            cinnamon_polkit_authentication_agent_unregister (CinnamonPolkitAuthenticationAgent *agent);
 
