@@ -1,0 +1,369 @@
+{
+    "layout":{
+        "type":"layout",
+        "pages":[
+            "layout",
+            "behaviour",
+            "search",
+            "appearance"
+        ],
+        "layout":{
+            "type":"page",
+            "title":"Layout",
+            "sections":[
+                "menu-layout",
+                "menu-content"
+            ]
+        },
+        "behaviour":{
+            "type":"page",
+            "title":"Behavior",
+            "sections":[
+                "panel-behave",
+                "menu-behave"
+            ]
+        },
+        "search":{
+            "type":"page",
+            "title":"Search",
+            "sections":[
+                "search-search"
+            ]
+        },
+        "appearance":{
+            "type":"page",
+            "title":"Appearance",
+            "sections":[
+                "panel-appear",
+                "menu-icons"
+            ]
+        },
+        "menu-layout":{
+            "type":"section",
+            "title":"Layout",
+            "keys":[
+                "show-sidebar",
+                "sidebar-placement",
+                "sidebar-favorites",
+                "description-placement"
+            ]
+        },
+        "menu-content":{
+            "type":"section",
+            "title":"Content",
+            "keys":[
+                "show-categories",
+                "show-places-category",
+                "show-recents-category",
+                "show-favorite-apps-category",
+                "show-home-folder-category",
+                "menu-editor-button"
+            ]
+        },
+        "panel-behave":{
+            "type":"section",
+            "title":"Panel",
+            "keys":[
+                "overlay-key",
+                "activate-on-hover",
+                "hover-delay",
+                "enable-animation"
+            ]
+        },
+        "menu-behave":{
+            "type":"section",
+            "title":"Menu",
+            "keys":[
+                "category-click",
+                "open-on-category",
+                "enable-autoscroll",
+                "show-hidden-files"
+            ]
+        },
+        "search-search":{
+            "type":"section",
+            "title":"Search",
+            "keys":[
+                "enable-emoji-search",
+                "enable-home-folder-search",
+                "search-help"
+            ]
+        },
+        "panel-appear":{
+            "type":"section",
+            "title":"Panel",
+            "keys":[
+                "menu-icon-custom",
+                "menu-icon",
+                "menu-icon-size-custom",
+                "menu-icon-size",
+                "menu-label"
+            ]
+        },
+        "menu-icons":{
+            "type":"section",
+            "title":"Menu",
+            "keys":[
+                "category-icon-size",
+                "apps-grid-icon-size",
+                "sidebar-icon-size"
+            ]
+        }
+    },
+
+    "categories":{
+        "type":"generic",
+        "default":[]
+    },
+    "custom-menu-width":{
+        "type":"generic",
+        "default":800
+    },
+    "custom-menu-height":{
+        "type":"generic",
+        "default":530
+    },
+    "recent-apps":{
+        "type":"generic",
+        "default":[]
+    },
+    "folder-categories":{
+        "type":"generic",
+        "default":[]
+    },
+
+    "show-sidebar":{
+        "type":"switch",
+        "default":true,
+        "description":"Show sidebar",
+        "tooltip":"Show the sidebar in the menu"
+    },
+    "sidebar-placement":{
+        "dependency":"show-sidebar",
+        "type":"combobox",
+        "default":1,
+        "description":"Sidebar location",
+        "options":{
+            "Top":0,
+            "Bottom":1,
+            "Left":2,
+            "Right":3
+        },
+        "tooltip":"Choose where to show the sidebar"
+    },
+    "sidebar-favorites":{
+        "dependency":"show-sidebar",
+        "type":"combobox",
+        "default":3,
+        "description":"Show favorites on sidebar",
+        "options":{
+            "None":0,
+            "Apps only":1,
+            "Files only":2,
+            "Apps and files":3
+        },
+        "tooltip":"Show your favorite apps and file icons on the sidebar"
+    },
+    "description-placement":{
+        "type":"combobox",
+        "default":0,
+        "description":"Application description placement",
+        "options":{
+            "Tooltips":0,
+            "Under titles":1,
+            "None":2
+        },
+        "tooltip":"Choose where to show application descriptions"
+    },
+
+    "show-categories":{
+        "type":"switch",
+        "default":true,
+        "description":"Show categories",
+        "tooltip":"Show list of application categories"
+    },
+    "show-places-category":{
+        "dependency":"show-categories",
+        "type":"switch",
+        "default":true,
+        "description":"Show bookmarks and places",
+        "tooltip":"Show bookmarks and places category in the menu"
+    },
+    "show-recents-category":{
+        "dependency":"show-categories",
+        "type":"switch",
+        "default":true,
+        "description":"Show recent items",
+        "tooltip":"Show recent items category in the menu"
+    },
+    "show-favorite-apps-category":{
+        "dependency":"show-categories",
+        "type":"switch",
+        "default":false,
+        "description":"Show favorite apps category",
+        "tooltip":"Show your favorite apps category in the menu"
+    },
+    "show-home-folder-category":{
+        "dependency":"show-categories",
+        "type":"checkbox",
+        "default":true,
+        "description":"Show home folder",
+        "tooltip":"Show home folder category in the menu"
+    },
+    "menu-editor-button":{
+        "type":"button",
+        "description":"Open the menu editor",
+        "callback":"launchEditor"
+    },
+
+    "overlay-key":{
+        "type":"keybinding",
+        "description":"Keyboard shortcut to open and close the menu",
+        "default":"Super_L::Super_R"
+    },
+    "activate-on-hover":{
+        "type":"checkbox",
+        "default":false,
+        "description":"Open menu on hover",
+        "tooltip":"Open the menu when I move my mouse over the panel icon"
+    },
+    "hover-delay":{
+        "dependency":"activate-on-hover",
+        "type":"spinbutton",
+        "default":50,
+        "min":0,
+        "max":1000,
+        "step":50,
+        "units":"milliseconds",
+        "description":"Menu hover delay"
+    },
+    "enable-animation":{
+        "type":"checkbox",
+        "default":false,
+        "description":"Use menu animations",
+        "tooltip":"Animate the menu on open and close"
+    },
+
+    "category-click":{
+        "dependency":"show-categories",
+        "type":"checkbox",
+        "default":true,
+        "description":"Activate categories on click",
+        "tooltip":"Activate categories on click instead of on hover"
+    },
+    "open-on-category":{
+        "dependency":"show-categories",
+        "type":"combobox",
+        "default":0,
+        "description":"Open menu on category:",
+        "tooltip":"Always open the menu with this category selected",
+        "options":{
+            "Last used category":0,
+            "Favorite apps":1,
+            "Recent":2,
+            "Places":3,
+            "All applications":4
+        }
+    },
+    "enable-autoscroll":{
+        "type":"checkbox",
+        "default":true,
+        "description":"Enable autoscrolling",
+        "tooltip":"Autoscroll the application list on mouse hover"
+    },
+    "show-hidden-files":{
+        "dependency":"show-categories",
+        "type":"checkbox",
+        "default":false,
+        "description":"Show hidden files",
+        "tooltip":"Show hidden files in folder view"
+    },
+
+    "enable-emoji-search":{
+        "type":"checkbox",
+        "default":false,
+        "description":"Emoji search",
+        "tooltip":"Show emojis in search results"
+    },
+    "enable-home-folder-search":{
+        "type":"checkbox",
+        "default":false,
+        "description":"Search home folder",
+        "tooltip":"When searching, also search my home folder for files"
+    },
+    "search-help":{
+        "type":"label",
+        "description":"\nNote: Search options can still be used if you have not enabled them here by prefixing your search term.\nFor example: to search for an emoji, type 'e heart' and use prefix 'f ' for file search.\n"
+    },
+
+    "menu-icon-custom":{
+        "type":"checkbox",
+        "default":false,
+        "description":"Use a custom icon",
+        "tooltip":"Use a custom icon in the panel"
+    },
+    "menu-icon":{
+        "type":"iconfilechooser",
+        "default":"cinnamon-symbolic",
+        "description":"Panel icon",
+        "dependency":"menu-icon-custom",
+        "default_icon" : "cinnamon-symbolic",
+        "tooltip":"Select an icon to show in the panel."
+    },
+    "menu-icon-size-custom":{
+        "type":"checkbox",
+        "default":false,
+        "description":"Use a custom icon size",
+        "tooltip":"Use a custom size for the panel icon"
+    },
+    "menu-icon-size":{
+        "type":"spinbutton",
+        "default":24,
+        "min":0,
+        "max":60,
+        "step":1,
+        "units":"",
+        "description":"Panel icon size (pixels)",
+        "dependency":"menu-icon-size-custom",
+        "tooltip":"Choose a custom size for the panel icon"
+    },
+    "menu-label":{
+        "type":"entry",
+        "default":"Menu",
+        "description":"Panel text",
+        "tooltip":"Text to show beside the panel icon"
+    },
+
+    "category-icon-size":{
+        "dependency":"show-categories",
+        "type":"spinbutton",
+        "default":24,
+        "min":0,
+        "max":64,
+        "step":1,
+        "units":"",
+        "description":"Category icon size (pixels)",
+        "tooltip":"Category icon size (pixels)"
+    },
+    "apps-grid-icon-size":{
+        "type":"spinbutton",
+        "default":64,
+        "min":0,
+        "max":128,
+        "step":1,
+        "units":"",
+        "description":"Applications grid icon size (pixels)",
+        "tooltip":"Applications grid icon size (pixels)"
+    },
+    "sidebar-icon-size":{
+        "dependency":"show-sidebar",
+        "type":"spinbutton",
+        "default":32,
+        "min":6,
+        "max":64,
+        "step":1,
+        "units":"",
+        "description":"Sidebar icon size (pixels)",
+        "tooltip":"Sidebar icon size (pixels)"
+    }
+}
