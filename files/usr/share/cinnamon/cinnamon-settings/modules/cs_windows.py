@@ -15,7 +15,7 @@ class Module:
     comment = _("Manage window preferences")
 
     def __init__(self, content_box):
-        keywords = _("windows, titlebar, edge, switcher, window list, attention, focus")
+        keywords = _("windows, titlebar, edge, switcher, window list, attention, focus, tile, tiling, snap, snapping")
         sidePage = SidePage(_("Windows"), "cs-windows", keywords, content_box, module=self)
         self.sidePage = sidePage
 
@@ -148,13 +148,6 @@ class Module:
             widget.add_mark(10, Gtk.PositionType.TOP, None)
             settings.add_row(widget)
 
-            # Tiling
-            settings = page.add_section(_("Window Tiling and Snapping"))
-            switch = GSettingsSwitch(_("Enable Window Tiling and Snapping"), "org.cinnamon.muffin", "edge-tiling")
-            settings.add_row(switch)
-            switch = GSettingsSwitch(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize")
-            settings.add_reveal_row(switch, "org.cinnamon.muffin", "edge-tiling")
-
             # Alt Tab
 
             page = SettingsPage()
@@ -188,3 +181,13 @@ class Module:
 
             widget = GSettingsSwitch(_("Warp mouse pointer to the new focused window"), "org.cinnamon", "alttab-switcher-warp-mouse-pointer")
             settings.add_row(widget)
+
+            # Tiling
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "tiling", _("Tiling"))
+
+            settings = page.add_section(_("Tiling Preferences"))
+            switch = GSettingsSwitch(_("Enable window tiling"), "org.cinnamon.muffin", "edge-tiling")
+            settings.add_row(switch)
+            switch = GSettingsSwitch(_("Maximize, instead of tile, when dragging a window to the top edge"), "org.cinnamon.muffin", "tile-maximize")
+            settings.add_reveal_row(switch, "org.cinnamon.muffin", "edge-tiling")

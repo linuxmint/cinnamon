@@ -124,7 +124,7 @@ TABS = {
     "screensaver":      {"settings": 0, "customize": 1},
     "sound":            {"output": 0, "input": 1, "sounds": 2, "applications": 3},
     "themes":           {"simplified": 0, "themes": 1, "download": 2, "options": 3},
-    "windows":          {"titlebar": 0, "behavior": 1, "alttab": 2},
+    "windows":          {"titlebar": 0, "behavior": 1, "alttab": 2, "tiling": 3},
     "workspaces":       {"osd": 0, "settings": 1}
 }
 
