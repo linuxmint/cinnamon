@@ -47,12 +47,22 @@ X11 = dependency('x11')
 xml = dependency('libxml-2.0')
 
 nm_deps = []
-build_nm_agent = get_option('build_nm_agent')
-if build_nm_agent
+internal_nm_agent = false
+session_conf = configuration_data()
+session_conf.set('REQUIRED', '')
+
+nm_option = get_option('nm_agent')
+if nm_option == 'internal'
+    internal_nm_agent = true
     nm_deps += dependency('libnm', version: '>= 1.10.4')
     nm_deps += dependency('libsecret-1', version: '>= 0.18')
+    message('Building internal NetworkManager agent.')
+elif nm_option == 'external'
+    session_conf.set('REQUIRED', 'nm-applet;')
+    message('Requiring external NetworkManager agent.')
+else
+    message('Building without any NetworkManager support.')
 endif
-message('Building NetworkManager agent: @0@'.format(build_nm_agent))
 
 if get_option('build_recorder')
 	gstreamer = dependency('gstreamer-1.0')
@@ -75,7 +85,7 @@ python = find_program('python3')
 cinnamon_conf = configuration_data()
 cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
-cinnamon_conf.set('BUILT_NM_AGENT', build_nm_agent)
+cinnamon_conf.set('BUILT_NM_AGENT', internal_nm_agent)
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
@@ -150,7 +160,7 @@ install_subdir(
 config_js_conf = configuration_data()
 config_js_conf.set('PACKAGE_NAME', meson.project_name().to_lower())
 config_js_conf.set('PACKAGE_VERSION', version)
-config_js_conf.set10('BUILT_NM_AGENT', build_nm_agent)
+config_js_conf.set10('BUILT_NM_AGENT', internal_nm_agent)
 
 configure_file(
     input: 'js/misc/config.js.in',
@@ -164,15 +174,6 @@ install_subdir(
     install_dir: '/',
     strip_directory: true,
 )
-
-session_conf = configuration_data()
-# If cinnamon is configured to use its internal NetworkManager agent, do *not* require nm-applet
-# by the session manager.
-if build_nm_agent
-    session_conf.set('REQUIRED', '')
-else
-    session_conf.set('REQUIRED', 'nm-applet;')
-endif
 
 session_files = ['cinnamon.session', 'cinnamon2d.session']
 if get_option('wayland')

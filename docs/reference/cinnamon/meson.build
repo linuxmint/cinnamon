@@ -7,7 +7,7 @@ ignore = [
     sniffer_headers,
 ]
 
-if not build_nm_agent
+if not internal_nm_agent
     ignore += 'cinnamon-network-agent.h'
 endif
 

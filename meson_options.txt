@@ -13,10 +13,11 @@ option('build_recorder',
     value: true,
     description: 'Build the cinnamon recorder into source'
 )
-option('build_nm_agent',
-    type: 'boolean',
-    value: true,
-    description: 'Enable internal networkmanager agent'
+option('nm_agent',
+    type: 'combo',
+    choices: ['internal', 'external', 'disabled'],
+    value: 'disabled',
+    description: 'Which network agent to use - internal: use built-in, external: require nm-applet in the session, disabled: not using NetworkManager'
 )
 option('py3modules_dir',
     type : 'string',
