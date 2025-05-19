@@ -1009,19 +1009,10 @@ MessageTray.prototype = {
             let getBottomPositionY = () => {
                 return this._monitor.y + this._monitor.height - this._notificationBin.height - bottomGap;
             };
-            let shouldReturn = false;
-            let initialY = getBottomPositionY();
             // For multi-line notifications, the correct height will not be known until the notification is done animating,
-            // so this will set _notificationBin.y when queue-redraw is emitted, and return early if the  height decreases
-            // to prevent unnecessary property setting.
+            // so this will set _notificationBin.y when queue-redraw is emitted.
             this.bottomPositionSignal = this._notificationBin.connect('queue-redraw', () => {
-                if (shouldReturn) {
-                    return;
-                }
                 this._notificationBin.y = getBottomPositionY();
-                if (initialY > this._notificationBin.y) {
-                    shouldReturn = true;
-                }
             });
         }
 
