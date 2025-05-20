@@ -276,6 +276,9 @@ class Module:
             widget.set_tooltip_text(_("This setting only affects applications which support dark mode"))
             settings.add_row(widget)
 
+            widget = AccentColorChooser()
+            settings.add_row(widget)
+
             widget = GSettingsSwitch(_("Show icons in menus"), "org.cinnamon.settings-daemon.plugins.xsettings", "menus-have-icons")
             settings.add_row(widget)
 
@@ -843,3 +846,18 @@ class Module:
 
         with open(index_path, "w") as f:
             f.write(contents)
+
+class AccentColorChooser(GSettingsColorChooser):
+    def __init__(self):
+        super().__init__(_("Accent color"), "org.x.apps.portal", "accent-rgb")
+        self.gtk_settings = Gtk.Settings.get_default()
+        self.gtk_settings.connect("notify::gtk-theme-name", self.update_sensitive)
+        self.update_sensitive(self.gtk_settings, None)
+
+    def update_sensitive(self, settings, pspec, data=None):
+        theme = settings.props.gtk_theme_name
+        ctx = Gtk.StyleContext.new()
+        provider = Gtk.CssProvider.get_named(theme)
+        ctx.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_THEME)
+        found, color = ctx.lookup_color("accent_color")
+        self.set_sensitive(not found)
