@@ -344,7 +344,7 @@ class Module:
                         print(e)
 
             self.refresh_choosers()
-            if config.PARSED_ARGS.module == "themes" and config.PARSED_ARGS.tab is None:
+            if config.PARSED_ARGS.module is None or (config.PARSED_ARGS.module == "themes" and config.PARSED_ARGS.tab is None):
                 GLib.idle_add(self.set_mode, "simplified" if self.active_variant is not None else "themes", True)
             return
 
