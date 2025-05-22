@@ -25,6 +25,7 @@ $popover_arrow_height: 12px;
 .candidate-box {
   padding: 0.3em 0.5em 0.3em 0.5em;
   border-radius: $base_border_radius;
+  color: darken($fg_color,50%);
   &:selected,&:hover { background-color: $lighter_bg_color; color: $fg_color; }
 }
 
