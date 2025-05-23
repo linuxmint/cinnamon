@@ -157,22 +157,13 @@ class Module:
 
             settings.add_row(switch)
 
-            keyboard_type_options = [["tablet",     _("Tablet")],
-                                     ["touch",     _("Touch")],
-                                     ["fullscale", _("Full scale")],
-                                     ["scan",      _("Scanning")]]
-
-            widget = GSettingsComboBox(_("Keyboard layout"), "org.cinnamon.keyboard", "keyboard-type", keyboard_type_options)
-            settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
-
             keyboard_position_options = [["bottom",     _("At the bottom of the screen")],
                                          ["top",     _("At the top of the screen")]]
             widget = GSettingsComboBox(_("Keyboard position"), "org.cinnamon.keyboard", "keyboard-position", keyboard_position_options)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
 
             keyboard_size_options = [[4,     _("A quarter of the screen")],
-                                     [3,     _("A third of the screen")],
-                                     [2, _("Half of the screen")]]
+                                     [3,     _("A third of the screen")]]
 
             widget = GSettingsComboBox(_("Keyboard size"), "org.cinnamon.keyboard", "keyboard-size", keyboard_size_options)
             settings.add_reveal_row(widget, "org.cinnamon.desktop.a11y.applications", "screen-keyboard-enabled")
