@@ -285,9 +285,11 @@ LayoutManager.prototype = {
         this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
         this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
-        this.keyboardBox = new St.BoxLayout({ name: 'keyboardBox',
-                                              reactive: true,
-                                              track_hover: true });
+        this.keyboardBox = new St.Widget({ name: 'keyboardBox',
+                                           layout_manager: new Clutter.BinLayout(),
+                                           important: true,
+                                           reactive: true,
+                                           track_hover: true });
         this.keyboardBox.hide();
         this._keyboardIndex = -1;
 
@@ -425,15 +427,18 @@ LayoutManager.prototype = {
     },
 
     _updateKeyboardBox: function() {
-        // return;
-        if (Main.panelManager == null) {
+        if (Main.panelManager == null || Main.virtualKeyboardManager == null) {
             return;
         }
 
+        let size = Main.virtualKeyboardManager.getKeyboardSize();
+        let top = Main.virtualKeyboardManager.getKeyboardPosition() == "top";
         let panels = Main.panelManager.getPanelsInMonitor(this.keyboardIndex);
 
+        let kb_height = this.keyboardMonitor.height / size;
+
         let kb_x = this.keyboardMonitor.x;
-        let kb_y = this.keyboardMonitor.y + this.keyboardMonitor.height;
+        let kb_y = top ? -kb_height : this.keyboardMonitor.y + this.keyboardMonitor.height;
         let kb_width = this.keyboardMonitor.width;
 
         for (let panel of panels) {
@@ -443,9 +448,16 @@ LayoutManager.prototype = {
 
             switch (panel.panelPosition) {
                 case Panel.PanelLoc.top:
+                    if (top) {
+                        kb_height -= panel.actor.height;
+                        kb_y = (-kb_height) + panel.actor.height;
+                    }
                     break;
                 case Panel.PanelLoc.bottom:
-                    kb_y -= panel.actor.height;
+                    if (!top) {
+                        kb_height -= panel.actor.height;
+                        kb_y = this.keyboardMonitor.y + this.keyboardMonitor.height - panel.actor.height;
+                    }
                     break;
                 case Panel.PanelLoc.left:
                     kb_x += panel.actor.width;
@@ -458,7 +470,7 @@ LayoutManager.prototype = {
         }
 
         this.keyboardBox.set_position(kb_x, kb_y);
-        this.keyboardBox.set_size(kb_width, -1);
+        this.keyboardBox.set_size(kb_width, kb_height);
     },
 
     get keyboardMonitor() {
@@ -476,8 +488,10 @@ LayoutManager.prototype = {
 
     showKeyboard: function() {
         this.keyboardBox.show();
+
+        let top = Main.virtualKeyboardManager.getKeyboardPosition() == "top";
         this.keyboardBox.ease({
-            translation_y: -this.keyboardBox.height,
+            translation_y: top ? this.keyboardBox.height : -this.keyboardBox.height,
             opacity: 255,
             duration: KEYBOARD_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,

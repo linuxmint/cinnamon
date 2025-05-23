@@ -58,8 +58,6 @@
     <file>emoji.json</file>
     <file>keyboard-caps-lock-filled-symbolic.svg</file>
     <file>keyboard-enter-symbolic.svg</file>
-    <file>keyboard-hide-symbolic.svg</file>
-    <file>keyboard-layout-filled-symbolic.svg</file>
     <file>keyboard-shift-filled-symbolic.svg</file>
   </gresource>
 </gresources>
