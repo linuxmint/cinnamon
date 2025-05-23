@@ -18,35 +18,48 @@ var PANEL_SWITCH_ANIMATION_TIME = 500;
 var PANEL_SWITCH_RELATIVE_DISTANCE = 1 / 3; /* A third of the actor width */
 
 const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
-const SHOW_KEYBOARD = 'screen-keyboard-enabled';
+const SHOW_KEYBOARD_KEY = 'screen-keyboard-enabled';
+
+const OSK_SETTINGS = 'org.cinnamon.keyboard';
+const ACTIVATION_MODE_KEY = 'activation-mode';
+const KEYBOARD_SIZE_KEY = 'keyboard-size';
+const KEYBOARD_POSITION_KEY = 'keyboard-position';
 
 /* KeyContainer puts keys in a grid where a 1:1 key takes this size */
 const KEY_SIZE = 2;
 
 const defaultKeysPre = [
-    [[], [], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [{ label: '?123', width: 1.5, level: 2 }]],
-    [[], [], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [{ label: '?123', width: 1.5, level: 2 }]],
-    [[], [], [{ label: '=/<', width: 1.5, level: 3 }], [{ label: 'ABC', width: 1.5, level: 0 }]],
-    [[], [], [{ label: '?123', width: 1.5, level: 2 }], [{ label: 'ABC', width: 1.5, level: 0 }]],
+    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [{ label: '?123', width: 1.5, level: 2 }]],
+    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [{ label: '?123', width: 1.5, level: 2 }]],
+    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ label: '=/<', width: 1.5, level: 3 }], [{ label: 'ABC', width: 1.5, level: 0 }]],
+    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ label: '?123', width: 1.5, level: 2 }], [{ label: 'ABC', width: 1.5, level: 0 }]],
 ];
 
 const defaultKeysPost = [
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }],
+    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
      [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
-     [{ width: 3, level: 1, right: true, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' }, { action: 'languageMenu', extraClassName: 'layout-key', icon: 'keyboard-layout-filled-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'go-down-symbolic' }]],
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }],
+     [{ width: 1.5, level: 1, right: true, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }],
+     [{ action: 'emoji', icon: 'face-smile-symbolic' },
+         { keyval: Clutter.KEY_Left, action: 'left', label: '←'}, { keyval: Clutter.KEY_Up, label: '↑' },
+         { keyval: Clutter.KEY_Down, action: 'left', label: '↓'}, { keyval: Clutter.KEY_Right, label: '→'}]],
+    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
      [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
-     [{ width: 3, level: 0, right: true, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' }, { action: 'languageMenu', extraClassName: 'layout-key', icon: 'keyboard-layout-filled-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'go-down-symbolic' }]],
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }],
+     [{ width: 1.5, level: 0, right: true, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }],
+     [{ action: 'emoji', icon: 'face-smile-symbolic' },
+         { keyval: Clutter.KEY_Left, action: 'left', label: '←'}, { keyval: Clutter.KEY_Up, label: '↑' },
+         { keyval: Clutter.KEY_Down, action: 'left', label: '↓'}, { keyval: Clutter.KEY_Right, label: '→'}]],
+    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
      [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
      [{ label: '=/<', width: 3, level: 3, right: true }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' }, { action: 'languageMenu', extraClassName: 'layout-key', icon: 'keyboard-layout-filled-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'go-down-symbolic' }]],
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }],
+     [{ action: 'emoji', icon: 'face-smile-symbolic' },
+         { keyval: Clutter.KEY_Left, action: 'left', label: '←' }, { keyval: Clutter.KEY_Up, label: '↑' },
+         { keyval: Clutter.KEY_Down, action: 'left', label: '↓' }, { keyval: Clutter.KEY_Right, label: '→' }]],
+    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
      [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
      [{ label: '?123', width: 3, level: 2, right: true }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' }, { action: 'languageMenu', extraClassName: 'layout-key', icon: 'keyboard-layout-filled-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'go-down-symbolic' }]],
+     [{ action: 'emoji', icon: 'face-smile-symbolic' },
+         { keyval: Clutter.KEY_Left, action: 'left', label: '←' }, { keyval: Clutter.KEY_Up, label: '↑' },
+         { keyval: Clutter.KEY_Down, action: 'left', label: '↓' }, { keyval: Clutter.KEY_Right, label: '→' }]],
 ];
 
 var AspectContainer = GObject.registerClass(
@@ -1133,6 +1146,9 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
         this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
         this._a11yApplicationsSettings.connect('changed', this._syncEnabled.bind(this));
 
+        this._keyboardSettings = new Gio.Settings({ schema_id: OSK_SETTINGS });
+        this._keyboardSettings.connect('changed', this._keyboardSettingsChanged.bind(this));
+
         this._seat = Clutter.get_default_backend().get_default_seat();
         this._seat.connect('notify::touch-mode', this._syncEnabled.bind(this));
 
@@ -1155,8 +1171,14 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
         return deviceType == Clutter.InputDeviceType.TOUCHSCREEN_DEVICE;
     }
 
+    _keyboardSettingsChanged() {
+        this._destroyKeyboard();
+
+        this._syncEnabled();
+    }
+
     _syncEnabled() {
-        let enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD);
+        let enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD_KEY);
         let autoEnabled = this._seat.get_touch_mode() && this._lastDeviceIsTouchscreen();
         let enabled = enableKeyboard || autoEnabled;
 
@@ -1164,13 +1186,28 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
             return;
 
         if (enabled && !this._keyboard) {
-            this._keyboard = new Keyboard();
+            this._keyboard = new Keyboard(this._keyboardSettings);
         } else if (!enabled && this._keyboard) {
-            this._keyboard.setCursorLocation(null);
-            this._keyboard.destroy();
-            this._keyboard = null;
-            Main.layoutManager.hideKeyboard(true);
+            this._destroyKeyboard();
         }
+    }
+
+    _destroyKeyboard() {
+        if (this._keyboard == null) {
+            return;
+        }
+        this._keyboard.setCursorLocation(null);
+        this._keyboard.destroy();
+        this._keyboard = null;
+        Main.layoutManager.hideKeyboard(true);
+    }
+
+    getKeyboardSize() {
+        return this._keyboardSettings.get_int(KEYBOARD_SIZE_KEY);
+    }
+
+    getKeyboardPosition() {
+        return this._keyboardSettings.get_string(KEYBOARD_POSITION_KEY);
     }
 
     get keyboardActor() {
@@ -1179,6 +1216,19 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
 
     get visible() {
         return this._keyboard && this._keyboard.visible;
+    }
+
+    get enabled() {
+        return !!this._keyboard;
+    }
+
+    manualToggle() {
+        if (this.visible) {
+            this.close();
+        } else {
+            this._a11yApplicationsSettings.set_boolean(SHOW_KEYBOARD_KEY, true);
+            this.open(Main.layoutManager.focusIndex);
+        }
     }
 
     open(monitor) {
@@ -1213,7 +1263,7 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
 
 var Keyboard = GObject.registerClass(
 class Keyboard extends St.BoxLayout {
-    _init() {
+    _init(kbSettings) {
         super._init({ name: 'keyboard', vertical: true });
         this._focusInExtendedKeys = false;
         this._emojiActive = false;
@@ -1228,22 +1278,24 @@ class Keyboard extends St.BoxLayout {
         this._suggestions = null;
         this._emojiKeyVisible = Meta.is_wayland_compositor();
 
-        this._focusTracker = new FocusTracker();
-        this._connectSignal(this._focusTracker, 'position-changed',
-            this._onFocusPositionChanged.bind(this));
-        this._connectSignal(this._focusTracker, 'reset', () => {
-            this._delayedAnimFocusWindow = null;
-            this._animFocusedWindow = null;
-            this._oskFocusWindow = null;
-        });
-        // Valid only for X11
-        if (!Meta.is_wayland_compositor()) {
-            this._connectSignal(this._focusTracker, 'focus-changed', (_tracker, focused) => {
-                if (focused)
-                    this.open(Main.layoutManager.focusIndex);
-                else
-                    this.close();
+        if (kbSettings.get_string(ACTIVATION_MODE_KEY) === "accessible") {
+            this._focusTracker = new FocusTracker();
+            this._connectSignal(this._focusTracker, 'position-changed',
+                this._onFocusPositionChanged.bind(this));
+            this._connectSignal(this._focusTracker, 'reset', () => {
+                this._delayedAnimFocusWindow = null;
+                this._animFocusedWindow = null;
+                this._oskFocusWindow = null;
             });
+            // Valid only for X11
+            if (!Meta.is_wayland_compositor()) {
+                this._connectSignal(this._focusTracker, 'focus-changed', (_tracker, focused) => {
+                    if (focused)
+                        this.open(Main.layoutManager.focusIndex);
+                    else
+                        this.close();
+                });
+            }
         }
 
         this._showIdleId = 0;
@@ -1311,8 +1363,10 @@ class Keyboard extends St.BoxLayout {
         this._groups = {};
         this._currentPage = null;
 
-        this._suggestions = new Suggestions();
-        this.add_child(this._suggestions);
+        if (this._keyboardController.getIbusInputActive()) {
+            this._suggestions = new Suggestions();
+            this.add_child(this._suggestions);
+        }
 
         this._aspectContainer = new AspectContainer({
             layout_manager: new Clutter.BinLayout(),
@@ -1429,7 +1483,7 @@ class Keyboard extends St.BoxLayout {
 
             /* Space key gets special width, dependent on the number of surrounding keys */
             if (button.key == ' ')
-                button.setWidth(keys.length <= 3 ? 5 : 3);
+                button.setWidth(keys.length <= 3 ? 6 : 5);
 
             button.connect('pressed', (actor, keyval, str) => {
                 if (!Main.inputMethod.currentFocus ||
@@ -1942,6 +1996,10 @@ var KeyboardController = class {
 
     getCurrentGroup() {
         return this._currentSource.xkbId;
+    }
+
+    getIbusInputActive() {
+        return this._currentSource.type === "ibus";
     }
 
     commitString(string, fromKey) {
