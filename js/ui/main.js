@@ -514,6 +514,12 @@ function start() {
     inputMethod = new InputMethod.InputMethod();
     Clutter.get_default_backend().set_input_method(inputMethod);
     virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
+    virtualKeyboardManager.connect("enabled-changed", () => {
+        if (runDialog !== null) {
+            runDialog.destroy();
+            runDialog = null;
+        }
+    });
 
     Promise.all([
         AppletManager.init(),
