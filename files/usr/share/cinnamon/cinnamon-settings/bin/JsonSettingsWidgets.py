@@ -44,19 +44,36 @@ class JSONSettingsHandler(object):
     def __init__(self, filepath, notify_callback=None):
         super(JSONSettingsHandler, self).__init__()
 
-        self.resume_timeout = None
         self.notify_callback = notify_callback
 
         self.filepath = filepath
         self.file_obj = Gio.File.new_for_path(self.filepath)
-        self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
-        self.file_monitor.connect("changed", self.check_settings)
+        self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
 
         self.bindings = {}
         self.listeners = {}
         self.deps = {}
 
+        self.timeout_id = 0
+        self.file_monitor_id = 0
         self.settings = self.get_settings()
+        self.resume_monitor()
+
+    def pause_monitor(self):
+        if self.timeout_id > 0:
+            GLib.source_remove(self.timeout_id)
+            self.timeout_id = 0
+        if self.file_monitor_id > 0:
+            self.file_monitor.disconnect(self.file_monitor_id)
+            self.file_monitor_id = 0
+
+    def resume_monitor(self):
+        self.file_monitor_id = self.file_monitor.connect("changed", self.on_file_changed)
+
+    def on_file_changed(self, *args):
+        if self.timeout_id > 0:
+            GLib.source_remove(self.timeout_id)
+        self.timeout_id = GLib.timeout_add(2000, self.check_settings)
 
     def bind(self, key, obj, prop, direction, map_get=None, map_set=None):
         if direction & (Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET) == 0:
@@ -132,6 +149,7 @@ class JSONSettingsHandler(object):
                 info["obj"].set_property(info["prop"], value)
 
     def check_settings(self, *args):
+        self.timeout_id = 0
         old_settings = self.settings
         self.settings = self.get_settings()
 
@@ -146,6 +164,7 @@ class JSONSettingsHandler(object):
             if new_value != old_settings[key]["value"]:
                 for callback in callback_list:
                     callback(key, new_value)
+        return GLib.SOURCE_REMOVE
 
     def get_settings(self):
         file = open(self.filepath)
@@ -162,25 +181,10 @@ class JSONSettingsHandler(object):
         if os.path.exists(self.filepath):
             os.remove(self.filepath)
         raw_data = json.dumps(self.settings, indent=4, ensure_ascii=False)
-        new_file = open(self.filepath, 'w+')
-        new_file.write(raw_data)
-        new_file.close()
+        with open(self.filepath, 'w+') as new_file:
+            new_file.write(raw_data)
+            new_file.flush()
         self.resume_monitor()
-
-    def pause_monitor(self):
-        self.file_monitor.cancel()
-        self.handler = None
-
-    def resume_monitor(self):
-        if self.resume_timeout:
-            GLib.source_remove(self.resume_timeout)
-        self.resume_timeout = GLib.timeout_add(2000, self.do_resume)
-
-    def do_resume(self):
-        self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
-        self.handler = self.file_monitor.connect("changed", self.check_settings)
-        self.resume_timeout = None
-        return False
 
     def reset_to_defaults(self):
         for key in self.settings:
