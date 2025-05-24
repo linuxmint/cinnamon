@@ -217,69 +217,6 @@ class Suggestions extends St.BoxLayout {
     }
 });
 
-var LanguageSelectionPopup = class extends PopupMenu.PopupMenu {
-    constructor(actor) {
-        super(actor, St.Side.TOP);
-
-        let inputSourceManager = KeyboardManager.getInputSourceManager();
-        let inputSources = inputSourceManager.inputSources;
-
-        let item;
-        for (let i in inputSources) {
-            let is = inputSources[i];
-
-            item = this.addAction(is.displayName, () => {
-                inputSourceManager.activateInputSource(is, true);
-            });
-            item.can_focus = false;
-        }
-
-        this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-        item = this.addSettingsAction(_("Keyboard Settings"), 'keyboard');
-        item.can_focus = false;
-
-        this._capturedEventId = 0;
-
-        this._unmapId = actor.connect('notify::mapped', () => {
-            if (!actor.is_mapped())
-                this.close(true);
-        });
-    }
-
-    _onCapturedEvent(actor, event) {
-        if (event.get_source() == this.actor ||
-            this.actor.contains(event.get_source()))
-            return Clutter.EVENT_PROPAGATE;
-
-        if (event.type() == Clutter.EventType.BUTTON_RELEASE || event.type() == Clutter.EventType.TOUCH_END)
-            this.close(true);
-
-        return Clutter.EVENT_STOP;
-    }
-
-    open(animate) {
-        super.open(animate);
-        this._capturedEventId = global.stage.connect('captured-event',
-                                                     this._onCapturedEvent.bind(this));
-    }
-
-    close(animate) {
-        super.close(animate);
-        if (this._capturedEventId != 0) {
-            global.stage.disconnect(this._capturedEventId);
-            this._capturedEventId = 0;
-        }
-    }
-
-    destroy() {
-        if (this._capturedEventId != 0)
-            global.stage.disconnect(this._capturedEventId);
-        if (this._unmapId != 0)
-            this.sourceActor.disconnect(this._unmapId);
-        super.destroy();
-    }
-};
-
 var Key = GObject.registerClass({
     Signals: {
         'activated': {},
@@ -1140,11 +1077,14 @@ var Keypad = GObject.registerClass({
     }
 });
 
-var VirtualKeyboardManager = class VirtualKeyBoardManager {
+var VirtualKeyboardManager = GObject.registerClass({
+    Signals: { 'enabled-changed': {} }
+}, class VirtualKeyboardManager extends GObject.Object {
     constructor() {
+        super();
         this._keyboard = null;
         this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
-        this._a11yApplicationsSettings.connect('changed', this._syncEnabled.bind(this));
+        this._a11yApplicationsSettings.connect('changed::screen-keyboard-enabled', this._keyboardEnabledChanged.bind(this));
 
         this._keyboardSettings = new Gio.Settings({ schema_id: OSK_SETTINGS });
         this._keyboardSettings.connect('changed', this._keyboardSettingsChanged.bind(this));
@@ -1171,22 +1111,29 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
         return deviceType == Clutter.InputDeviceType.TOUCHSCREEN_DEVICE;
     }
 
+    _keyboardEnabledChanged() {
+        this._syncEnabled();
+        this.emit('enabled-changed');
+    }
+
     _keyboardSettingsChanged() {
         this._destroyKeyboard();
-
         this._syncEnabled();
     }
 
-    _syncEnabled() {
+    _shouldEnable() {
         let enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD_KEY);
         let autoEnabled = this._seat.get_touch_mode() && this._lastDeviceIsTouchscreen();
-        let enabled = enableKeyboard || autoEnabled;
+        return enableKeyboard || autoEnabled;
+    }
 
+    _syncEnabled() {
+        let enabled = this._shouldEnable();
         if (!enabled && !this._keyboard)
             return;
 
         if (enabled && !this._keyboard) {
-            this._keyboard = new Keyboard(this._keyboardSettings);
+            this._keyboard = new Keyboard(this._keyboardSettings.get_string(ACTIVATION_MODE_KEY) === "on-demand");
         } else if (!enabled && this._keyboard) {
             this._destroyKeyboard();
         }
@@ -1219,7 +1166,7 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
     }
 
     get enabled() {
-        return !!this._keyboard;
+        return this._shouldEnable();
     }
 
     manualToggle() {
@@ -1259,14 +1206,15 @@ var VirtualKeyboardManager = class VirtualKeyBoardManager {
         return Main.layoutManager.keyboardBox.contains(actor) ||
                !!actor._extendedKeys || !!actor.extendedKey;
     }
-};
+});
 
 var Keyboard = GObject.registerClass(
 class Keyboard extends St.BoxLayout {
-    _init(kbSettings) {
+    _init(onDemand) {
         super._init({ name: 'keyboard', vertical: true });
         this._focusInExtendedKeys = false;
         this._emojiActive = false;
+        this._onDemand = onDemand;
 
         this._languagePopup = null;
         this._currentFocusWindow = null;
@@ -1278,7 +1226,7 @@ class Keyboard extends St.BoxLayout {
         this._suggestions = null;
         this._emojiKeyVisible = Meta.is_wayland_compositor();
 
-        if (kbSettings.get_string(ACTIVATION_MODE_KEY) === "accessible") {
+        if (!this._onDemand) {
             this._focusTracker = new FocusTracker();
             this._connectSignal(this._focusTracker, 'position-changed',
                 this._onFocusPositionChanged.bind(this));
@@ -1409,9 +1357,10 @@ class Keyboard extends St.BoxLayout {
             this._onKeyboardStateChanged.bind(this));
         this._connectSignal(this._keyboardController, 'keypad-visible',
             this._onKeypadVisible.bind(this));
-        this._connectSignal(global.stage, 'notify::key-focus',
-            this._onKeyFocusChanged.bind(this));
-
+        if (!this._onDemand) {
+            this._connectSignal(global.stage, 'notify::key-focus',
+                this._onKeyFocusChanged.bind(this));
+        }
         if (Meta.is_wayland_compositor()) {
             this._connectSignal(this._keyboardController, 'emoji-visible',
                 this._onEmojiKeyVisible.bind(this));
@@ -1509,15 +1458,6 @@ class Keyboard extends St.BoxLayout {
         }
     }
 
-    _popupLanguageMenu(keyActor) {
-        if (this._languagePopup)
-            this._languagePopup.destroy();
-
-        this._languagePopup = new LanguageSelectionPopup(keyActor);
-        Main.layoutManager.addChrome(this._languagePopup.actor);
-        this._languagePopup.open(true);
-    }
-
     _loadDefaultKeys(keys, layout, numLevels, numKeys) {
         let extraButton;
         for (let i = 0; i < keys.length; i++) {
@@ -1555,8 +1495,6 @@ class Keyboard extends St.BoxLayout {
                     this._keyboardController.keyvalRelease(keyval);
                 else if (action == 'hide')
                     this.close();
-                else if (action == 'languageMenu')
-                    this._popupLanguageMenu(actor);
                 else if (action == 'emoji')
                     this._toggleEmoji();
             });
