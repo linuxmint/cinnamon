@@ -14,6 +14,7 @@ Build-Depends:
  libcinnamon-desktop-dev (>= 5.3),
  libcinnamon-menu-3-dev (>= 4.8),
  libcjs-dev (>= 4.8),
+ libdbus-1-dev,
  libgcr-3-dev,
  libgirepository1.0-dev (>= 1.29.15),
  libgl1-mesa-dev,
