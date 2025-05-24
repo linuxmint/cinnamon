@@ -1,12 +1,12 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio, GLib
-import dbus, dbus.service, dbus.glib
-from dbus.mainloop.glib import DBusGMainLoop
 import random
+import signal
 import os, locale
 from xml.etree import ElementTree
 from setproctitle import setproctitle
+
+from gi.repository import Gio, GLib
 
 SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
 SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
@@ -14,10 +14,23 @@ SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
 
-class CinnamonSlideshow(dbus.service.Object):
+# D-Bus interface XML definition
+DBUS_INTERFACE_XML = '''
+<node>
+    <interface name="org.Cinnamon.Slideshow">
+        <method name="begin" />
+        <method name="end" />
+        <method name="getNextImage" />
+    </interface>
+</node>
+'''
+
+class CinnamonSlideshowApplication(Gio.Application):
     def __init__(self):
-        bus_name = dbus.service.BusName(SLIDESHOW_DBUS_NAME, bus=dbus.SessionBus())
-        dbus.service.Object.__init__(self, bus_name, SLIDESHOW_DBUS_PATH)
+        super().__init__(
+            application_id=SLIDESHOW_DBUS_NAME,
+            flags=Gio.ApplicationFlags.IS_SERVICE
+        )
 
         self.slideshow_settings = Gio.Settings(schema="org.cinnamon.desktop.background.slideshow")
         self.background_settings = Gio.Settings(schema="org.cinnamon.desktop.background")
@@ -37,20 +50,77 @@ class CinnamonSlideshow(dbus.service.Object):
         self.folder_monitor = None
         self.folder_monitor_id = 0
 
-    @dbus.service.method(SLIDESHOW_DBUS_NAME, in_signature='', out_signature='')
+        self.connection = None
+        self.registration_id = 0
+        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end)
+
+    def do_startup(self):
+        Gio.Application.do_startup(self)
+        self.hold()
+
+    def do_dbus_register(self, connection, object_path):
+        try:
+            self.connection = connection
+            iface_info = Gio.DBusNodeInfo.new_for_xml(DBUS_INTERFACE_XML)
+            self.registration_id = connection.register_object(
+                SLIDESHOW_DBUS_PATH,
+                iface_info.interfaces[0],
+                self.handle_method_call,
+                None,  # get_property
+                None   # set_property
+            )
+        except Exception as e:
+            print(f"Failed to export slideshow service: {e}")
+            return False
+
+        return Gio.Application.do_dbus_register(self, connection, object_path)
+
+    def do_dbus_unregister(self, connection, path):
+        if self.registration_id > 0:
+            connection.unregister_object(self.registration_id)
+            self.registration_id = 0
+
+        Gio.Application.do_dbus_unregister(self, connection, path)
+
+    def do_activate(self):
+        self.setup_slideshow()
+
+    def handle_method_call(self, connection, sender, object_path, interface_name, method_name, parameters, invocation):
+        try:
+            if method_name == "begin":
+                self.begin()
+                invocation.return_value(None)
+            elif method_name == "end":
+                self.end()
+                invocation.return_value(None)
+            elif method_name == "getNextImage":
+                self.get_next_image()
+                invocation.return_value(None)
+            else:
+                invocation.return_error_literal(
+                    Gio.dbus_error_quark(),
+                    Gio.DBusError.UNKNOWN_METHOD,
+                    f"Unknown method: {method_name}"
+                )
+        except Exception as e:
+            invocation.return_error_literal(
+                Gio.dbus_error_quark(),
+                Gio.DBusError.FAILED,
+                str(e)
+            )
+
     def begin(self):
         self.setup_slideshow()
 
-    @dbus.service.method(SLIDESHOW_DBUS_NAME, in_signature='', out_signature='')
     def end(self):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
 
-        ml.quit()
+        self.disconnect_folder_monitor()
+        self.quit()
 
-    @dbus.service.method(SLIDESHOW_DBUS_NAME, in_signature='', out_signature='')
-    def getNextImage(self):
+    def get_next_image(self):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
@@ -278,7 +348,6 @@ class CinnamonSlideshow(dbus.service.Object):
             locAttrName = "{http://www.w3.org/XML/1998/namespace}lang"
             loc = self.splitLocaleCode(locale.getlocale()[0])
             res = []
-            subLocaleFound = False
             f = open(filename)
             rootNode = ElementTree.fromstring(f.read())
             f.close()
@@ -306,19 +375,9 @@ class CinnamonSlideshow(dbus.service.Object):
         except Exception as detail:
             print(detail)
             return []
-###############
 
 if __name__ == "__main__":
     setproctitle("cinnamon-slideshow")
-    DBusGMainLoop(set_as_default=True)
 
-    sessionBus = dbus.SessionBus ()
-    request = sessionBus.request_name(SLIDESHOW_DBUS_NAME, dbus.bus.NAME_FLAG_DO_NOT_QUEUE)
-    if request != dbus.bus.REQUEST_NAME_REPLY_EXISTS:
-        slideshow = CinnamonSlideshow()
-    else:
-        print("cinnamon-slideshow already running.")
-        quit()
-
-    ml = GLib.MainLoop.new(None, True)
-    ml.run()
+    app = CinnamonSlideshowApplication()
+    app.run()
