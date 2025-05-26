@@ -431,6 +431,11 @@
       <summary>Enforce displaying the alt-tab switcher on the primary monitor instead of the active one</summary>
     </key>
 
+    <key type="b" name="alttab-switcher-show-current-monitor">
+      <default>false</default>
+      <summary>Show windows from current monitor only</summary>
+    </key>  
+
     <key type="b" name="alttab-minimized-aware">
     <default>true</default>
       <summary>Move minimized windows to the end of the appSwitcher</summary>
