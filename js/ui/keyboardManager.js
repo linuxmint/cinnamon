@@ -13,6 +13,11 @@ const Cairo = imports.cairo;
 const SwitcherPopup = imports.ui.switcherPopup;
 const Util = imports.misc.util;
 
+DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
+KEY_INPUT_SOURCES = 'sources';
+KEY_KEYBOARD_OPTIONS = 'xkb-options';
+KEY_PER_WINDOW = 'per-window';
+
 var INPUT_SOURCE_TYPE_XKB = 'xkb';
 var INPUT_SOURCE_TYPE_IBUS = 'ibus';
 
@@ -347,10 +352,93 @@ var SubscriptableFlagIcon = GObject.registerClass({
     }
 });
 
+var Locale1Settings = class {
+    constructor() {
+        this._BUS_NAME = 'org.freedesktop.locale1';
+        this._BUS_PATH = '/org/freedesktop/locale1';
+        this._BUS_IFACE = 'org.freedesktop.locale1';
+        this._BUS_PROPS_IFACE = 'org.freedesktop.DBus.Properties';
+
+        this._layouts = '';
+        this._variants = '';
+        this._options = '';
+    }
+
+    populateLayouts() {
+        Gio.DBus.system.call(this._BUS_NAME,
+                             this._BUS_PATH,
+                             this._BUS_PROPS_IFACE,
+                             'GetAll',
+                             new GLib.Variant('(s)', [this._BUS_IFACE]),
+                             null, Gio.DBusCallFlags.NONE, -1, null,
+                             (conn, result) => {
+                                let props;
+                                try {
+                                    props = conn.call_finish(result).deep_unpack()[0];
+                                } catch (e) {
+                                    log('Could not get properties from %s'.format(this._BUS_NAME));
+                                    return;
+                                }
+
+                                let _layouts = props['X11Layout'].unpack();
+                                let _variants = props['X11Variant'].unpack();
+                                let _options = props['X11Options'].unpack();
+
+                                let sourcesList = [];
+                                let layouts = _layouts.split(',');
+                                let variants = _variants.split(',');
+
+                                for (let i = 0; i < layouts.length && !!layouts[i]; i++) {
+                                    let id = layouts[i];
+                                    if (variants[i])
+                                        id += '+%s'.format(variants[i]);
+                                    sourcesList.push([INPUT_SOURCE_TYPE_XKB, id]);
+                                }
+
+                                const settings = new Gio.Settings({ schema_id: DESKTOP_INPUT_SOURCES_SCHEMA });
+
+                                if (sourcesList.length > 0) {
+                                    let sources = GLib.Variant.new('a(ss)', sourcesList);
+                                    settings.set_value(KEY_INPUT_SOURCES, sources);
+                                }
+                            });
+    }
+};
+
 var InputSourceSettings = class {
     constructor() {
-        if (this.constructor === InputSourceSettings)
-            throw new TypeError('Cannot instantiate abstract class %s'.format(this.constructor.name));
+        this._settings = new Gio.Settings({ schema_id: DESKTOP_INPUT_SOURCES_SCHEMA });
+
+        this._settings.connect('changed::%s'.format(KEY_INPUT_SOURCES), this._emitInputSourcesChanged.bind(this));
+        this._settings.connect('changed::%s'.format(KEY_KEYBOARD_OPTIONS), this._emitKeyboardOptionsChanged.bind(this));
+        this._settings.connect('changed::%s'.format(KEY_PER_WINDOW), this._emitPerWindowChanged.bind(this));
+
+        let sources = this._settings.get_value(KEY_INPUT_SOURCES);
+        if (sources.n_children() == 0) {
+            this.loadSystemLayouts();
+        }
+    }
+
+    loadSystemLayouts() {
+        global.log("No input sources defined, loading system defaults.")
+        // Set a usable default then queue loading from locale1 (/etc/default/keyboard)
+        let sources = GLib.Variant.new('a(ss)', [[INPUT_SOURCE_TYPE_XKB, DEFAULT_LAYOUT]]);
+        this._settings.set_value(KEY_INPUT_SOURCES, sources);
+
+        let locale1 = new Locale1Settings();
+        locale1.populateLayouts();
+    }
+
+    _getSourcesList(key) {
+        let sourcesList = [];
+        let sources = this._settings.get_value(key);
+        let nSources = sources.n_children();
+
+        for (let i = 0; i < nSources; i++) {
+            let [type, id] = sources.get_child_value(i).deep_unpack();
+            sourcesList.push({ type, id });
+        }
+        return sourcesList;
     }
 
     _emitInputSourcesChanged() {
@@ -366,127 +454,18 @@ var InputSourceSettings = class {
     }
 
     get inputSources() {
-        return [];
+        return this._getSourcesList(KEY_INPUT_SOURCES);
     }
 
     get keyboardOptions() {
-        return [];
+        return this._settings.get_strv(KEY_KEYBOARD_OPTIONS);
     }
 
     get perWindow() {
-        return false;
+        return this._settings.get_boolean(KEY_PER_WINDOW);
     }
 };
 Signals.addSignalMethods(InputSourceSettings.prototype);
-
-var InputSourceSessionSettings = class extends InputSourceSettings {
-    constructor() {
-        super();
-
-        this._DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
-        this._KEY_INPUT_SOURCES = 'sources';
-        this._KEY_KEYBOARD_OPTIONS = 'xkb-options';
-        this._KEY_PER_WINDOW = 'per-window';
-
-        this._settings = new Gio.Settings({ schema_id: this._DESKTOP_INPUT_SOURCES_SCHEMA });
-        this._populateDefaultLayout();
-
-        this._settings.connect('changed::%s'.format(this._KEY_INPUT_SOURCES), this._emitInputSourcesChanged.bind(this));
-        this._settings.connect('changed::%s'.format(this._KEY_KEYBOARD_OPTIONS), this._emitKeyboardOptionsChanged.bind(this));
-        this._settings.connect('changed::%s'.format(this._KEY_PER_WINDOW), this._emitPerWindowChanged.bind(this));
-    }
-
-    _populateDefaultLayout() {
-        // If 'sources' is empty, check /etc/default/keyboard for the user layout, and add it to our settings.
-        // If that fails, add the us layout as a fallback.
-        let sources = this._settings.get_value(this._KEY_INPUT_SOURCES);
-        if (sources.n_children() > 0) {
-            return;
-        }
-
-        let done = false;
-
-        global.log("No keyboard layout defined - populating a default.");
-
-        let default_file = Gio.File.new_for_path("/etc/default/keyboard");
-        try {
-            let [success, bytes] = default_file.load_contents(null);
-            if (success) {
-                let contents = ByteArray.toString(bytes);
-                let lines = contents.toString().split('\n');
-                let layouts = [];
-                let variants = [];
-                let options = [];
-                for (let i = 0; i < lines.length; i++) {
-                    let line = lines[i];
-                    if (line.startsWith("XKBLAYOUT=")) {
-                        layouts = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(",");
-                    } else if (line.startsWith("XKBVARIANT=")) {
-                        variants = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(",");
-                    } else if (line.startsWith("XKBOPTIONS=")) {
-                        options = line.split('=')[1].replace(/^"|"$|^\'|\'$/g, '').split(",");
-                    }
-                }
-
-                if (layouts.length > 0 && layouts[0] !== '') {
-                    global.log(layouts);
-                    let new_list = [];
-                    for (let i in layouts) {
-                        let layout = layouts[i];
-                        const variant = variants[i];
-                        if (variant !== undefined && variant !== '') {
-                            layout = '%s+%s'.format(layout, variant);
-                        }
-
-                        new_list.push([INPUT_SOURCE_TYPE_XKB, layout]);
-                    }
-
-                    let sources = GLib.Variant.new('a(ss)', new_list);
-                    this._settings.set_value(this._KEY_INPUT_SOURCES, sources);
-
-                    if (options.length > 0 && options[0] !== '') {
-                        this._settings.set_strv(this._KEY_KEYBOARD_OPTIONS, options);
-                    }
-
-                    done = true;
-                }
-            }
-        } catch (e) {
-            global.logError("Failed to read /etc/default/keyboard: %s".format(e.message));
-        }
-
-        // If all else fails, set 'en' layout - there needs to be *something* in the sources setting
-        // or else things break down.
-        if (!done) {
-            let sources = GLib.Variant.new('a(ss)', [[INPUT_SOURCE_TYPE_XKB, DEFAULT_LAYOUT]]);
-            this._settings.set_value(this._KEY_INPUT_SOURCES, sources);
-        }
-    }
-
-    _getSourcesList(key) {
-        let sourcesList = [];
-        let sources = this._settings.get_value(key);
-        let nSources = sources.n_children();
-
-        for (let i = 0; i < nSources; i++) {
-            let [type, id] = sources.get_child_value(i).deep_unpack();
-            sourcesList.push({ type, id });
-        }
-        return sourcesList;
-    }
-
-    get inputSources() {
-        return this._getSourcesList(this._KEY_INPUT_SOURCES);
-    }
-
-    get keyboardOptions() {
-        return this._settings.get_strv(this._KEY_KEYBOARD_OPTIONS);
-    }
-
-    get perWindow() {
-        return this._settings.get_boolean(this._KEY_PER_WINDOW);
-    }
-};
 
 var InputSourceManager = class {
     constructor() {
@@ -516,7 +495,7 @@ var InputSourceManager = class {
             this._switchInputSource.bind(this)
         );
 
-        this._settings = new InputSourceSessionSettings();
+        this._settings = new InputSourceSettings();
         this._settings.connect('input-sources-changed', this._inputSourcesChanged.bind(this));
         this._settings.connect('keyboard-options-changed', this._keyboardOptionsChanged.bind(this));
         this._interface_settings.connect("changed", this._interfaceSettingsChanged.bind(this));
@@ -734,7 +713,7 @@ var InputSourceManager = class {
             // We hit this *only* if the user reset/removed all layout entries from the 'sources' key.
             // Exit here and do our first-run setup again.
             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this._settings._populateDefaultLayout();
+                this._settings.loadSystemLayouts();
             });
 
             return;
