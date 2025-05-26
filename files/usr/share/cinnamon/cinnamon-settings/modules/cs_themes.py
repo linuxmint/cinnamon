@@ -525,7 +525,7 @@ class Module:
             self.style_combo.set_active(len(self.styles.keys()))
         self.ui_ready = True
 
-    def on_customize_button_clicked(self, button):
+    def on_customize_button_clicked(self, widget):
         self.set_button_chooser(self.icon_chooser, self.settings.get_string("icon-theme"), 'icons', 'icons', ICON_SIZE)
         self.set_button_chooser(self.cursor_chooser, self.settings.get_string("cursor-theme"), 'icons', 'cursors', 32)
         self.set_button_chooser(self.theme_chooser, self.settings.get_string("gtk-theme"), 'themes', 'gtk-3.0', 35)
@@ -640,6 +640,53 @@ class Module:
             self.refresh_chooser(chooser, path_suffix, themes, callback)
         self.refreshing = False
 
+    def get_theme_category(self, theme_name, theme_type):
+        parts = theme_name.split('-')
+        
+        if theme_type == 'cursor':
+            # For cursors - first part of the name
+            return (parts[0], "Light")
+            
+        elif theme_type in ['gtk', 'icon']:
+            # Basic category is always the first part of the name
+            base_category = parts[0]
+            
+            # Exception: if the second part is a single letter, it's part of the category (e.g., Mint-X, Mint-Y)
+            if len(parts) >= 2 and len(parts[1]) == 1:
+                base_category = f"{parts[0]}-{parts[1]}"
+                
+            # Determine variant (light/dark/darker)
+            theme_lower = theme_name.lower()
+            if 'darker' in theme_lower:
+                variant = "Darker"
+            elif 'dark' in theme_lower:
+                variant = "Dark"
+            else:
+                variant = "Light"
+                
+            return (base_category, variant)
+                
+        elif theme_type == 'cinnamon':
+            # For desktop - basic category is the first part of the name
+            base_category = parts[0]
+            
+            # Exception: if the second part is a single letter, it's part of the category
+            if len(parts) >= 2 and len(parts[1]) == 1:
+                base_category = f"{parts[0]}-{parts[1]}"
+            
+            # Determine variant
+            theme_lower = theme_name.lower()
+            if 'darker' in theme_lower:
+                variant = "Darker"
+            elif 'dark' in theme_lower:
+                variant = "Dark"
+            else:
+                variant = "Light"
+                
+            return (base_category, variant)
+        
+        return ("Other", "Light")
+
     def refresh_chooser(self, chooser, path_suffix, themes, callback):
         inc = 1.0
         if len(themes) > 0:
@@ -662,9 +709,38 @@ class Module:
                     icon_paths[theme_name] = icon_path
 
             dump = False
+            current_category = None
+            current_variant = None
+            
+            # Sort themes by category and variant
+            sorted_themes = []
             for theme in themes:
-                theme_path = None
+                category, variant = self.get_theme_category(theme, 'icon')
+                sorted_themes.append((category, variant, theme))
+            
+            sorted_themes.sort(key=lambda x: (x[0], x[1], x[2]))
 
+            # Reset column position at the start
+            chooser.col = 0
+            chooser.row = 0
+
+            for category, variant, theme in sorted_themes:
+                if current_category != category:
+                    if current_category is not None:
+                        # Add a blank separator between categories
+                        chooser.add_separator()
+                    current_category = category
+                    current_variant = None
+                    
+                    # Add category name in separator
+                    chooser.add_separator(category)
+
+                if current_variant != variant:
+                    current_variant = variant
+                    # Add a blank separator between variants
+                    chooser.add_separator()
+
+                theme_path = None
                 if theme in icon_paths:
                     # loop through all possible locations until we find a match
                     # (user folders should override system ones)
@@ -710,9 +786,41 @@ class Module:
             if path_suffix in ["gtk-3.0", "cinnamon"]:
                 themes = sorted(themes, key=lambda t: (not t[1].startswith(GLib.get_home_dir())))
 
+            current_category = None
+            current_variant = None
+            # Sort themes by category and variant
+            sorted_themes = []
             for theme in themes:
                 theme_name = theme[0]
+                theme_type = 'gtk' if path_suffix == 'gtk-3.0' else 'cinnamon'
+                category, variant = self.get_theme_category(theme_name, theme_type)
+                sorted_themes.append((category, variant, theme))
+            
+            sorted_themes.sort(key=lambda x: (x[0], x[1], x[2][0]))
+
+            # Reset column position at the start
+            chooser.col = 0
+            chooser.row = 0
+
+            for category, variant, theme in sorted_themes:
+                theme_name = theme[0]
                 theme_path = theme[1]
+                
+                if current_category != category:
+                    if current_category is not None:
+                        # Add a blank separator between categories
+                        chooser.add_separator()
+                    current_category = category
+                    current_variant = None
+                    
+                    # Add category name in separator
+                    chooser.add_separator(category)
+
+                if current_variant != variant:
+                    current_variant = variant
+                    # Add a blank separator between variants
+                    chooser.add_separator()
+
                 try:
                     for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix),
                                  "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
