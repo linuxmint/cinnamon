@@ -692,6 +692,8 @@ class Module:
         if len(themes) > 0:
             inc = 1.0 / len(themes)
 
+        variant_sort_order = {"Light": 0, "Darker": 1, "Dark": 2}
+
         if path_suffix == 'icons':
             cache_folder = GLib.get_user_cache_dir() + '/cs_themes/'
             icon_cache_path = os.path.join(cache_folder, 'icons')
@@ -709,36 +711,93 @@ class Module:
                     icon_paths[theme_name] = icon_path
 
             dump = False
-            current_category = None
-            current_variant = None
             
-            # Sort themes by category and variant
-            sorted_themes = []
+            # Collect all themes with their categories and variants
+            categorized_themes = []
             for theme in themes:
                 category, variant = self.get_theme_category(theme, 'icon')
-                sorted_themes.append((category, variant, theme))
+                categorized_themes.append({'name': theme, 'category': category, 'variant': variant})
             
-            sorted_themes.sort(key=lambda x: (x[0], x[1], x[2]))
+            # Count themes per category
+            category_counts = {}
+            for theme_info in categorized_themes:
+                category_counts[theme_info['category']] = category_counts.get(theme_info['category'], 0) + 1
+
+            # Separate single-item categories
+            single_item_category_themes = []
+            multi_item_category_themes = []
+
+            for theme_info in categorized_themes:
+                if category_counts[theme_info['category']] == 1:
+                    single_item_category_themes.append(theme_info)
+                else:
+                    multi_item_category_themes.append(theme_info)
+            
+            # Sort both lists
+            single_item_category_themes.sort(key=lambda x: (variant_sort_order.get(x['variant'], 3), x['name']))
+            multi_item_category_themes.sort(key=lambda x: (x['category'], variant_sort_order.get(x['variant'], 3), x['name']))
 
             # Reset column position at the start
             chooser.col = 0
             chooser.row = 0
+            
+            # Display single-item category themes first, under an "Other Themes" label
+            if single_item_category_themes:
+                chooser.add_separator(_("Other Themes"))
+                # Add an additional blank separator after the category label
+                chooser.add_separator()
+                for theme_info in single_item_category_themes:
+                    theme = theme_info['name']
+                    theme_path = None
+                    if theme in icon_paths:
+                        for theme_folder in ICON_FOLDERS:
+                            possible_path = os.path.join(theme_folder, icon_paths[theme])
+                            if os.path.exists(possible_path):
+                                theme_path = possible_path
+                                break
+                    
+                    if theme_path is None:
+                        icon_theme = Gtk.IconTheme()
+                        icon_theme.set_custom_theme(theme)
+                        folder = icon_theme.lookup_icon('folder', ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
+                        if folder:
+                            theme_path = folder.get_filename()
+                            for theme_folder in ICON_FOLDERS:
+                                if os.path.commonpath([theme_folder, theme_path]) == theme_folder:
+                                    icon_paths[theme] = os.path.relpath(theme_path, start=theme_folder)
+                                    break
+                            dump = True
 
-            for category, variant, theme in sorted_themes:
+                    if theme_path is None:
+                        continue
+
+                    if os.path.exists(theme_path):
+                        chooser.add_picture(theme_path, callback, title=theme, id=theme)
+                    GLib.timeout_add(5, self.increment_progress, (chooser, inc))
+
+            # Add a blank separator if both single and multi-item categories exist
+            if single_item_category_themes and multi_item_category_themes:
+                chooser.add_separator()
+
+            current_category = None
+            current_variant = None
+            # Display multi-item category themes
+            for theme_info in multi_item_category_themes:
+                category = theme_info['category']
+                variant = theme_info['variant']
+                theme = theme_info['name']
+
                 if current_category != category:
                     if current_category is not None:
-                        # Add a blank separator between categories
-                        chooser.add_separator()
+                        chooser.add_separator() # Blank separator between categories
                     current_category = category
-                    current_variant = None
-                    
-                    # Add category name in separator
-                    chooser.add_separator(category)
-
-                if current_variant != variant:
-                    current_variant = variant
-                    # Add a blank separator between variants
+                    current_variant = None # Reset variant when category changes
+                    chooser.add_separator(category) # Category name separator
+                    # Add an additional blank separator after the category label
                     chooser.add_separator()
+
+                # Update current_variant, no separator here if it's just a variant change
+                current_variant = variant
 
                 theme_path = None
                 if theme in icon_paths:
@@ -756,14 +815,12 @@ class Module:
                     folder = icon_theme.lookup_icon('folder', ICON_SIZE, Gtk.IconLookupFlags.FORCE_SVG)
                     if folder:
                         theme_path = folder.get_filename()
-
                         # we need to get the relative path for storage
                         for theme_folder in ICON_FOLDERS:
                             if os.path.commonpath([theme_folder, theme_path]) == theme_folder:
                                 icon_paths[theme] = os.path.relpath(theme_path, start=theme_folder)
                                 break
-
-                    dump = True
+                        dump = True
 
                 if theme_path is None:
                     continue
@@ -777,56 +834,98 @@ class Module:
                     os.mkdir(cache_folder)
 
                 with open(icon_cache_path, 'w') as cache_file:
-                    for theme_name, icon_path in icon_paths.items():
-                        cache_file.write('%s:%s\n' % (theme_name, icon_path))
+                    for theme_name, icon_path_val in icon_paths.items(): # Renamed icon_path to avoid conflict
+                        cache_file.write('%s:%s\\n' % (theme_name, icon_path_val))
 
         else:
             if path_suffix == "cinnamon":
                 chooser.add_picture("/usr/share/cinnamon/theme/thumbnail.png", callback, title="cinnamon", id="cinnamon")
             if path_suffix in ["gtk-3.0", "cinnamon"]:
-                themes = sorted(themes, key=lambda t: (not t[1].startswith(GLib.get_home_dir())))
+                # Sort themes by user-installed first, then alphabetically
+                themes = sorted(themes, key=lambda t: (not t[1].startswith(GLib.get_home_dir()), t[0].lower()))
 
-            current_category = None
-            current_variant = None
-            # Sort themes by category and variant
-            sorted_themes = []
-            for theme in themes:
-                theme_name = theme[0]
+
+            # Collect all themes with their categories and variants
+            categorized_themes = []
+            for theme_data in themes: # theme_data is a tuple (name, path)
+                name = theme_data[0]
+                path = theme_data[1]
                 theme_type = 'gtk' if path_suffix == 'gtk-3.0' else 'cinnamon'
-                category, variant = self.get_theme_category(theme_name, theme_type)
-                sorted_themes.append((category, variant, theme))
-            
-            sorted_themes.sort(key=lambda x: (x[0], x[1], x[2][0]))
+                category, variant = self.get_theme_category(name, theme_type)
+                categorized_themes.append({'name': name, 'path': path, 'category': category, 'variant': variant, 'original_tuple': theme_data})
 
+            # Count themes per category
+            category_counts = {}
+            for theme_info in categorized_themes:
+                category_counts[theme_info['category']] = category_counts.get(theme_info['category'], 0) + 1
+            
+            single_item_category_themes = []
+            multi_item_category_themes = []
+
+            for theme_info in categorized_themes:
+                if category_counts[theme_info['category']] == 1:
+                    single_item_category_themes.append(theme_info)
+                else:
+                    multi_item_category_themes.append(theme_info)
+
+            # Sort both lists
+            single_item_category_themes.sort(key=lambda x: (variant_sort_order.get(x['variant'], 3), x['name'].lower()))
+            multi_item_category_themes.sort(key=lambda x: (x['category'].lower(), variant_sort_order.get(x['variant'], 3), x['name'].lower()))
+            
             # Reset column position at the start
             chooser.col = 0
             chooser.row = 0
 
-            for category, variant, theme in sorted_themes:
-                theme_name = theme[0]
-                theme_path = theme[1]
+            # Display single-item category themes first, under an "Other Themes" label
+            if single_item_category_themes:
+                chooser.add_separator(_("Other Themes"))
+                # Add an additional blank separator after the category label
+                chooser.add_separator()
+                for theme_info in single_item_category_themes:
+                    theme_name = theme_info['name']
+                    theme_path_val = theme_info['path'] # Renamed theme_path to avoid conflict
+                    try:
+                        for path_option in ["%s/%s/%s/thumbnail.png" % (theme_path_val, theme_name, path_suffix),
+                                     "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
+                                     "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                            if os.path.exists(path_option):
+                                chooser.add_picture(path_option, callback, title=theme_name, id=theme_name)
+                                break
+                    except:
+                        chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
+                    GLib.timeout_add(5, self.increment_progress, (chooser, inc))
+
+            # Add a blank separator if both single and multi-item categories exist
+            if single_item_category_themes and multi_item_category_themes:
+                chooser.add_separator()
+
+            current_category = None
+            current_variant = None
+            # Display multi-item category themes
+            for theme_info in multi_item_category_themes:
+                category = theme_info['category']
+                variant = theme_info['variant']
+                theme_name = theme_info['name']
+                theme_path_val = theme_info['path'] # Renamed theme_path to avoid conflict
                 
                 if current_category != category:
                     if current_category is not None:
-                        # Add a blank separator between categories
-                        chooser.add_separator()
+                        chooser.add_separator() # Blank separator between categories
                     current_category = category
-                    current_variant = None
-                    
-                    # Add category name in separator
-                    chooser.add_separator(category)
-
-                if current_variant != variant:
-                    current_variant = variant
-                    # Add a blank separator between variants
+                    current_variant = None # Reset variant when category changes
+                    chooser.add_separator(category) # Category name separator
+                    # Add an additional blank separator after the category label
                     chooser.add_separator()
 
+                # Update current_variant, no separator here if it's just a variant change
+                current_variant = variant
+
                 try:
-                    for path in ["%s/%s/%s/thumbnail.png" % (theme_path, theme_name, path_suffix),
+                    for path_option in ["%s/%s/%s/thumbnail.png" % (theme_path_val, theme_name, path_suffix),
                                  "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
                                  "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
-                        if os.path.exists(path):
-                            chooser.add_picture(path, callback, title=theme_name, id=theme_name)
+                        if os.path.exists(path_option):
+                            chooser.add_picture(path_option, callback, title=theme_name, id=theme_name)
                             break
                 except:
                     chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
