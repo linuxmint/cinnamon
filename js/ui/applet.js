@@ -1068,8 +1068,8 @@ var PopupResizeHandler = class PopupResizeHandler {
         let [stageX, stageY] = event.get_coords();
         this._drag_start_position = {x: stageX, y: stageY};
         this._drag_start_size = {width: this.actor.width, height: this.actor.height};
-        this._init_user_width = this._get_user_width();
-        this._init_user_height = this._get_user_height();
+        this._init_user_width = this._new_user_width = this._get_user_width();
+        this._init_user_height = this._new_user_height = this._get_user_height();
 
         return true;
     }
