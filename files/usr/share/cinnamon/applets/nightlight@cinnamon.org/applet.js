@@ -35,9 +35,9 @@ class NightLightSwitch extends Applet.IconApplet {
   set_icon() {
     this.nightLightEnabled = this.gsettings.get_boolean("night-light-enabled");
     if (this.nightLightEnabled) {
-      this.set_applet_icon_symbolic_name("night-light-2");
+      this.set_applet_icon_symbolic_name("nightlight-symbolic");
     } else {
-      this.set_applet_icon_symbolic_name("night-light-disabled-2");
+      this.set_applet_icon_symbolic_name("nightlight-disabled-symbolic");
     }
   }
 
