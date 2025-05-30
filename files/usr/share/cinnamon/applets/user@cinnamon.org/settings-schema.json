@@ -8,5 +8,14 @@
     "type" : "switch",
     "default" : false,
     "description": "Display the user image on the panel"
- }
+  },
+   "avatar-size": {
+      "type": "spinbutton",
+      "default": 64,
+      "min": 32,
+      "max": 128,
+      "step": 1,
+      "units": "pixels",
+      "description": "Avatar size"
+   }
 }
