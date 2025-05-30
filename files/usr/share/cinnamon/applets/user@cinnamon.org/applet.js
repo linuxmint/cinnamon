@@ -11,7 +11,6 @@ const ScreenSaver = imports.misc.screenSaver;
 const Settings = imports.ui.settings;
 const UserWidget = imports.ui.userWidget;
 
-const DIALOG_ICON_SIZE = 64;
 const USER_DEFAULT_IMG_PATH = "/usr/share/cinnamon/faces/user-generic.png";
 
 class CinnamonUserApplet extends Applet.TextApplet {
@@ -40,24 +39,37 @@ class CinnamonUserApplet extends Applet.TextApplet {
         this._userLoadedId = this._user.connect('notify::is-loaded', Lang.bind(this, this._onUserChanged));
         this._userChangedId = this._user.connect('changed', Lang.bind(this, this._onUserChanged));
 
-        let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
-
-        this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
-
         this.settings.bind("display-name", "disp_name", this._updateLabel);
         this.settings.bind("display-image", "display_image", this._updatePanelIcon);
+        this.settings.bind("avatar-size", "avatarSize", this._updateAvatarSize);
+        this.avatarSize = this.settings.getValue("avatar-size");
+        
+        let userBox = new St.BoxLayout({ 
+            style_class: 'user-box', 
+            reactive: true, 
+            vertical: false
+        });
+
+        this._avatarBin = new St.Bin({
+            style_class: 'user-icon',
+            style: `width: ${this.avatarSize}px; height: ${this.avatarSize}px;`
+        });
+
+        // Initial avatar creation
+        this._userIcon = new UserWidget.Avatar(this._user, { iconSize: this.avatarSize });
+        this._avatarBin.set_child(this._userIcon);
 
         userBox.connect('button-press-event', Lang.bind(this, function() {
             this.menu.toggle();
             Util.spawnCommandLine("cinnamon-settings user");
         }));
 
-        this._userIcon.hide();
-        userBox.add(this._userIcon,
+        userBox.add(this._avatarBin,
                     { x_fill:  true,
                       y_fill:  false,
                       x_align: St.Align.END,
                       y_align: St.Align.START });
+        
         this.userLabel = new St.Label(({ style_class: 'user-label'}));
         userBox.add(this.userLabel,
                     { x_fill:  true,
@@ -66,7 +78,6 @@ class CinnamonUserApplet extends Applet.TextApplet {
                       y_align: St.Align.MIDDLE });
 
         this.menu.addActor(userBox);
-
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         let item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
@@ -140,6 +151,10 @@ class CinnamonUserApplet extends Applet.TextApplet {
         this.menu.addMenuItem(item);
 
         this._onUserChanged();
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this._updateAvatarSize();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     on_applet_clicked(event) {
@@ -160,13 +175,37 @@ class CinnamonUserApplet extends Applet.TextApplet {
         if (this._user && this._user.is_loaded) {
             this.set_applet_tooltip(this._user.get_real_name());
             this.userLabel.set_text (this._user.get_real_name());
-            if (this._userIcon) {
-                this._userIcon.update();
-                this._userIcon.show();
+            if (this._avatarBin) {
+                if (this._userIcon) {
+                    this._userIcon.destroy();
+                    this._userIcon = null;
+                }
+
+                this._userIcon = new UserWidget.Avatar(this._user, { iconSize: this.avatarSize });
+                this._avatarBin.set_child(this._userIcon);
+
+                GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                    if (this._userIcon) { 
+                        if (this._user.is_loaded) { 
+                           this._userIcon.update(); 
+                        }
+                        this._userIcon.show();
+                    }
+                    return GLib.SOURCE_REMOVE;
+                });
             }
 
             this._updatePanelIcon();
             this._updateLabel();
+
+        } else if (this._user && !this._user.is_loaded) {
+            if (this._avatarBin && !this._userIcon) {
+                this._userIcon = new UserWidget.Avatar(this._user, { iconSize: this.avatarSize });
+                this._avatarBin.set_child(this._userIcon);
+                this._userIcon.show(); 
+            } else if (this._userIcon) {
+                 this._userIcon.show();
+            }
         }
     }
 
@@ -187,6 +226,31 @@ class CinnamonUserApplet extends Applet.TextApplet {
                 icon_size: this.getPanelIconSize(St.IconType.SYMBOLIC),
             });
             this._panel_icon_box.set_child(this._panel_icon);
+        }
+    }
+
+    _updateAvatarSize() {
+        if (this._avatarBin && this._user) { 
+            this.avatarSize = this.settings.getValue("avatar-size"); 
+            
+            // Update container size
+            this._avatarBin.set_style(`width: ${this.avatarSize}px; height: ${this.avatarSize}px;`);
+            
+            // Destroy old avatar
+            if (this._userIcon) {
+                this._userIcon.destroy();
+                this._userIcon = null;
+            }
+            
+            // Create new avatar with new size
+            this._userIcon = new UserWidget.Avatar(this._user, { iconSize: this.avatarSize });
+            this._avatarBin.set_child(this._userIcon);
+            
+            // Ensure avatar is updated and visible
+            if (this._user.is_loaded) {
+                this._userIcon.update();
+            }
+            this._userIcon.show();            
         }
     }
 
