@@ -1669,6 +1669,9 @@ class Keyboard extends St.BoxLayout {
         else
             return;
 
+        if (this._onDemand)
+            return;
+
         if (enabled)
             this.open(Main.layoutManager.focusIndex);
         else
