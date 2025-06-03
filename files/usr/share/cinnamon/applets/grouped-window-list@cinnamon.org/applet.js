@@ -235,12 +235,10 @@ class Notifications {
         this._appGroupList.forEach(appGroup => {
             if (!appGroup.groupState || appGroup.groupState.willUnmount) return;
             if (appId === appGroup.groupState.appId) {
-                let i = 0;
-                while (appGroup.notifications[i]) {
-                    if (!appGroup.notifications[i]._destroyed) {
+                // iterate backwards due to in place array modification
+                for (let i = appGroup.notifications.length - 1; i >= 0; i--) {
+                    if (appGroup.notifications[i] && !appGroup.notifications[i]._destroyed) {
                         appGroup.notifications[i].destroy(NotificationDestroyedReason.DISMISSED);
-                    } else {
-                        i++;
                     }
                 }
                 appGroup.notifications = [];
