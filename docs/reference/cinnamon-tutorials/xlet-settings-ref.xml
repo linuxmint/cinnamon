@@ -155,7 +155,7 @@
       <title>datechooser</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>datechooser</code></listitem>
-        <listitem><code>default</code>: default date - should be of the form <code>{d: '1', m: '1', y: '2000'}</code></listitem>
+        <listitem><code>default</code>: default date - should be of the form <code>{'d': 1, 'm': 1, 'y': 2025}</code></listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
       </itemizedlist>
 
@@ -167,7 +167,7 @@
       <title>timechooser</title>
       <itemizedlist>
         <listitem><code>type</code>: should be <code>timechooser</code></listitem>
-        <listitem><code>default</code>: default time - should be of the form <code>{h: '12', m: '0', s: '0'}</code></listitem>
+        <listitem><code>default</code>: default time - should be of the form <code>{'h': 12, 'm': 0, 's': 0}</code></listitem>
         <listitem><code>description</code>: String describing the setting</listitem>
       </itemizedlist>
 
@@ -226,7 +226,8 @@
       <para>Here is an example of what a layout object might look like:</para>
       <informalexample>
         <programlisting>
-"layout" : {
+"customLayout" : {
+  "type" : "layout",
   "pages" : ["page1", "page2"],
   "page1" : {
     "type" : "page",
@@ -260,6 +261,25 @@
   }
 }</programlisting>
       </informalexample>
+
+      <para>All settings (here "setting1" to "setting8") must be defined after the layout definition.</para>
+      <informalexample>
+        <programlisting>
+{
+  "customLayout" : {
+    "type" : "layout",
+    [...]
+  },
+  "setting1" : {
+    [...]
+  },
+  [...]
+  "setting8" : {
+    [...]
+  }
+}</programlisting>
+      </informalexample>
+
       <para>New in Cinnamon 3.2</para>
 
     </sect3>
@@ -465,7 +485,7 @@ xlet-settings &lt;type&gt; &lt;uuid&gt; &lt;instanceid&gt;</programlisting>
 xlet-settings &lt;type&gt; &lt;uuid&gt; -i &lt;instanceid&gt; -t &lt;tabnumber&gt;</programlisting>
     </informalexample>
     <para>
-      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional. The <code>tabnumber</code> is optional and designates the tab (or page) you want to access; the tabs are numbered from <code>0</code> to <code>number of tabs - 1</code>. 
+      Where <code>type</code> is <code>applet</code>, <code>desklet</code> or <code>extension</code> depending on what type it is. The <code>instanceid</code> is optional. The <code>tabnumber</code> is optional and designates the tab (or page) you want to access; the tabs are numbered from <code>0</code> to <code>number of tabs - 1</code>.
     </para>
     <para>
       The second command is new in Cinnamon 4.2.
