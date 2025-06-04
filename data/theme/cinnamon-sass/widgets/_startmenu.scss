@@ -94,3 +94,83 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
 .menu-search-entry-icon {
   icon-size: $scalable_icon_size;
 }
+
+// gridmenu (icon-menu)
+
+.menu-category-button:highlighted, // Used to highlight category containing newly installed apps.
+.menu-category-button-selected:highlighted {
+  font-weight: bold;
+}
+
+.menu-applications-header-text { // shows folder name, "no recent files", error messages etc.
+  font-weight: bold;
+  font-size: 110%;
+}
+
+.menu-applications-subheading {
+  font-weight: bold;
+  font-size: 100%;
+  padding-top: 0.3em;
+  padding-left: 0.3em;
+  //text-align: center; - known bug: causes label to jump about when resizing menu.
+}
+
+.menu-applications-grid-box {
+  left-padding: 8px;
+
+  .menu-application-button,
+  .menu-application-button-selected {
+    padding: 10px 2px;
+  }
+
+  .menu-application-button-label {
+    text-align: center;
+  }
+}
+
+.gridmenu-sidebar-box {
+  padding: 0px 6px;
+}
+
+.gridmenu {
+  .menu-applications-inner-box {
+    padding: 0px;
+  }
+
+  .menu-categories-box {
+    padding: 0px 6px;
+  }
+
+  .menu-search-box,
+  .menu-search-box:ltr,
+  .menu-search-box:rtl {
+    min-width: 160px;
+    padding: 0px 8px;
+  }
+
+  &.sidebar-left {
+    .gridmenu-sidebar-box {
+      padding-right: 16px;
+    }
+  }
+
+  &.sidebar-right {
+    .gridmenu-sidebar-box {
+      padding-left: 8px;
+    }
+  }
+
+  &.sidebar-left,
+  &.sidebar-right,
+  &.sidebar-bottom {
+    .gridmenu-middle-pane {
+      padding-bottom: 12px;
+    }
+  }
+
+  &.sidebar-top .gridmenu-middle-pane {
+    padding-top: 12px;
+  }
+}
+
+
