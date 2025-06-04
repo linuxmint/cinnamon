@@ -1,0 +1,23 @@
+/* Basic styling for the Date and Time Display Applet */
+
+.applet-box {
+    /* padding: 2px 5px; */ /* Example padding */
+    /* color: #ffffff; */ /* Example text color, assuming a dark panel */
+    /* font-weight: bold; */
+}
+
+.applet-icon {
+    /* margin-right: 5px; */ /* Space between icon and text */
+    /* icon-size: 1em; */   /* Adjust icon size relative to font */
+}
+
+.applet-label {
+    /* Specific styling for the text part of the applet */
+    /* font-size: 0.9em; */
+}
+
+/* Add more specific styles as needed */
+/* For example, if you add a calendar popup: */
+/* .calendar-popup { ... } */
+/* .calendar-day { ... } */
+/* .calendar-day-today { ... } */

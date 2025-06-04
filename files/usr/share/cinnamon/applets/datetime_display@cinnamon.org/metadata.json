@@ -1,0 +1,17 @@
+{
+  "uuid": "datetime_display@cinnamon.org",
+  "name": "Date and Time Display",
+  "description": "A simple applet to display the current date and time with customizable format.",
+  "icon": "datetime_display_icon",
+  "version": "1.0.0",
+  "cinnamon-version": [ "5.0" ],
+  "multiversion": false,
+  "developer": "Jules",
+  "developer_url": "",
+  "website": "",
+  "max-instances": -1,
+  "orientation": "horizontal",
+  "prevent-decorations": false,
+  "default_width": 200,
+  "default_height": 30
+}

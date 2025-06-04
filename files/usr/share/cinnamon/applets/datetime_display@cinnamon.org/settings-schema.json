@@ -1,0 +1,14 @@
+{
+  "dateFormat": {
+    "type": "string",
+    "default": "%Y-%m-%d",
+    "description": "Date Format",
+    "tooltip": "Enter the date format string (e.g., %Y-%m-%d, %A %B %e, %x)"
+  },
+  "timeFormat": {
+    "type": "string",
+    "default": "%H:%M:%S",
+    "description": "Time Format",
+    "tooltip": "Enter the time format string (e.g., %H:%M:%S, %I:%M %p, %X)"
+  }
+}
