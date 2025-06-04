@@ -230,10 +230,6 @@ class Sidebar {
         this.sidebarScrollBox.set_mouse_scrolling(true);
         this.sidebarOuterBox = new St.BoxLayout({style_class: 'gridmenu-sidebar-box'});
         this.sidebarOuterBox.add(this.sidebarScrollBox, { });
-        if (!this.appThis.settings.showSidebar) {
-            this.sidebarScrollBox.width = 0;
-            this.sidebarScrollBox.height = 0;
-        }
     }
 
     populate () {

@@ -42,7 +42,8 @@ class Display {
             (...args) => this.appThis._onMenuKeyPress(...args)
         );
         this.bottomPane = new St.BoxLayout({});
-        if (sidebarPlacement === SidebarPlacement.TOP || sidebarPlacement === SidebarPlacement.BOTTOM) {
+        if (this.appThis.settings.showSidebar && (sidebarPlacement === SidebarPlacement.TOP ||
+                                                sidebarPlacement === SidebarPlacement.BOTTOM)) {
             this.bottomPane.add(this.sidebar.sidebarOuterBox, {
                 expand: false,
                 x_fill: false,
@@ -63,7 +64,7 @@ class Display {
         this.appsView = new AppsView(this.appThis);
         this.categoriesView = new CategoriesView(this.appThis);
         this.middlePane = new St.BoxLayout({style_class: 'gridmenu-middle-pane'});
-        if (sidebarPlacement === SidebarPlacement.LEFT) {
+        if (this.appThis.settings.showSidebar && sidebarPlacement === SidebarPlacement.LEFT) {
             this.middlePane.add(this.sidebar.sidebarOuterBox, {
                 expand: false,
                 x_fill: false,
@@ -85,7 +86,7 @@ class Display {
             y_align: St.Align.START,
             expand: false
         });
-        if (sidebarPlacement === SidebarPlacement.RIGHT) {
+        if (this.appThis.settings.showSidebar && sidebarPlacement === SidebarPlacement.RIGHT) {
             this.middlePane.add(this.sidebar.sidebarOuterBox, {
                 expand: false,
                 x_fill: false,
@@ -225,8 +226,8 @@ class Display {
 
         //find minimum width for categoriesView + sidebar (if present)
         let leftSideWidth = this.categoriesView.groupCategoriesWorkspacesScrollBox.width;
-        if (this.appThis.settings.sidebarPlacement === SidebarPlacement.LEFT ||
-                                this.appThis.settings.sidebarPlacement === SidebarPlacement.RIGHT) {
+        if (this.appThis.settings.showSidebar && (this.appThis.settings.sidebarPlacement === SidebarPlacement.LEFT ||
+                                                this.appThis.settings.sidebarPlacement === SidebarPlacement.RIGHT)) {
             leftSideWidth += this.sidebar.sidebarOuterBox.width;
         }
 

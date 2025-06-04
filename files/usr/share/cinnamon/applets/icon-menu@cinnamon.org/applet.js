@@ -409,10 +409,10 @@ class CinnamenuApplet extends TextIconApplet {
 
     _onOpenStateToggled(menu, open) {
         if (global.settings.get_boolean('panel-edit-mode')) {
-            return false;
+            return;
         }
         if (!open) {
-            return true; // this._onMenuClosed() is called on 'menu-animated-closed' signal to handle closing.
+            return; // this._onMenuClosed() is called on 'menu-animated-closed' signal to handle closing.
         }
 
         if (this.openMenuTimeoutId) {
@@ -421,8 +421,10 @@ class CinnamenuApplet extends TextIconApplet {
         }
 
         this.display.categoriesView.update();//in case menu editor or enabled category changes.
-        this.display.sidebar.populate();//in case fav files changed
-        this.display.sidebar.scrollToQuitButton();//ensure quit button is visible
+        if (this.settings.showSidebar) {
+            this.display.sidebar.populate();//in case fav files changed
+            this.display.sidebar.scrollToQuitButton();//ensure quit button is visible
+        }
 
         global.stage.set_key_focus(this.display.searchView.searchEntry);
         if (this.currentCategory === 'places' && !this.settings.showPlaces ||
@@ -463,7 +465,7 @@ class CinnamenuApplet extends TextIconApplet {
             this.display.appsView.focusFirstItem();
         }
 
-        return true;
+        return;
     }
 
     _onMenuClosed() {
