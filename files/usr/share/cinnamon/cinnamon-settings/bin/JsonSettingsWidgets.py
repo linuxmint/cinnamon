@@ -44,9 +44,7 @@ class JSONSettingsHandler(object):
     def __init__(self, filepath, notify_callback=None):
         super(JSONSettingsHandler, self).__init__()
 
-        self.resume_timeout = None
         self.notify_callback = notify_callback
-        self._monitor_active = True
         self._is_internal_update = False
 
         self.filepath = filepath
