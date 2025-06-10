@@ -392,9 +392,6 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
             case "uninstall":
                 Util.spawnCommandLine("/usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
                 break;
-            case "run_with_nvidia_gpu":
-                Util.spawnCommandLine("optirun gtk-launch " + this._appButton.app.get_id());
-                break;
             case "offload_launch":
                 try {
                     this._appButton.app.launch_offloaded(0, [], -1);
