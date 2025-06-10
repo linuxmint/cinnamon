@@ -153,17 +153,9 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         image.disconnect(image._notif_id);
 
         let height, width;
-        let imageRatio = image.width / image.height;
-        let frameRatio = this.width / this.height;
-
-        if (imageRatio > frameRatio) {
-            width = this.width;
-            height = this.width / imageRatio;
-        } else {
-            height = this.height;
-            width = this.height * imageRatio;
-        }
-
+        let ratio = Math.min(this.width / image.width, this.height / image.height);
+        width = ratio * image.width;
+        height = ratio * image.height;
         image.set_size(width, height);
     }
 
