@@ -197,9 +197,30 @@ class PictureChooserButton(BaseChooserButton):
         if self.col == 0:
             self.row = self.row + 1
 
-    def add_separator(self):
+    def add_separator(self, label_text=None):
         self.row = self.row + 1
-        self.menu.attach(Gtk.SeparatorMenuItem(), 0, self.num_cols, self.row, self.row+1)
+        
+        # Always use a MenuItem with label (or blank) instead of SeparatorMenuItem
+        # to avoid gray background issues
+        item = Gtk.MenuItem()
+        item.set_sensitive(False)
+        
+        if label_text is not None:
+            # Add centered, bold label
+            label = Gtk.Label()
+            label.set_markup(f"<b>{label_text}</b>")
+            label.set_halign(Gtk.Align.CENTER)
+            item.add(label)
+        else:
+            # Add an empty label to create space without gray background
+            label = Gtk.Label()
+            label.set_text(" ")
+            item.add(label)
+            
+        self.menu.attach(item, 0, self.num_cols, self.row, self.row+1)
+        
+        # Reset column position after separator
+        self.col = 0
 
     def add_menuitem(self, menuitem):
         self.row = self.row + 1
