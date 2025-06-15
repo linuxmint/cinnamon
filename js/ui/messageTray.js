@@ -222,7 +222,7 @@ URLHighlighter.prototype = {
  * Creates a notification with the associated title and body
  *
  * @params can contain values for 'body', 'icon', 'titleMarkup',
- * 'bodyMarkup', and 'silent' parameters.
+ * 'bodyMarkup', 'silent', and 'desktopEntry' parameters.
  *
  * By default, the icon shown is created by calling
  * source.createNotificationIcon(). However, if @params contains an 'icon'
@@ -251,6 +251,7 @@ var Notification = class Notification {
         // 'transient' is a reserved keyword in JS, so we have to use an alternate variable name
         this.isTransient = false;
         this.silent = false;
+        this.desktopEntry = "";
         this._destroyed = false;
         this._useActionIcons = false;
         this._titleDirection = St.TextDirection.NONE;
@@ -349,10 +350,12 @@ var Notification = class Notification {
             icon: null,
             titleMarkup: false,
             bodyMarkup: false,
-            silent: false
+            silent: false,
+            desktopEntry: ""
         });
 
         this.silent = params.silent;
+        this.desktopEntry = params.desktopEntry;
 
         if (this._icon && params.icon) {
             this._icon.destroy();
