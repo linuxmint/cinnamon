@@ -118,6 +118,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _notification_added (mtray, notification) { // Notification event handler.
+        if (!this.notifications_may_be_displayed) {
+            notification.destroy();
+            return;
+        }
+
         // Ignore transient notifications?
         if (this.ignoreTransientNotifications && notification.isTransient) {
             notification.destroy();
@@ -286,6 +291,14 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         }
         this._blink_toggle = !this._blink_toggle;
         Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
+    }
+
+    get notifications_may_be_displayed () {
+        const DISPLAY_NOTIFICATIONS_SCHEMA = "org.cinnamon.desktop.notifications";
+        const DISPLAY_NOTIFICATIONS_KEY = "display-notifications";
+
+        let gsettings = Gio.Settings.new(DISPLAY_NOTIFICATIONS_SCHEMA);
+        return gsettings.get_boolean(DISPLAY_NOTIFICATIONS_KEY);
     }
 }
 
