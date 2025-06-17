@@ -406,7 +406,9 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 } else return true;
         }
         this._appButton.applet.toggleContextMenu(this._appButton);
-        this._appButton.applet.menu.close();
+        if (this._action !== "add_to_favorites" && this._action !== "remove_from_favorites") {
+            this._appButton.applet.menu.close();
+        }
         return false;
     }
 
