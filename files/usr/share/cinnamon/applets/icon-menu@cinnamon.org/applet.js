@@ -125,6 +125,7 @@ class CinnamenuApplet extends TextIconApplet {
             'menu-animated-closed',
             this._onMenuClosed.bind(this)
         );
+        this.signals.connect(XApp.Favorites.get_default(), 'changed', () => this._onXappFavoritesChange());
         this.apps = new Apps(this.appSystem);
         this.screenSaverProxy = new ScreenSaverProxy();
         this.sessionManager = new GnomeSession.SessionManager();
@@ -133,9 +134,9 @@ class CinnamenuApplet extends TextIconApplet {
             Main.keybindingManager.addHotKey(
                 'overlay-key-' + this.instance_id,
                 this.settings.overlayKey,
-                () => {                    
+                () => {
                     if (Main.overview.visible || Main.expo.visible) return;
-                    if (!this.isOpen) {
+                    if (!this.menu.isOpen) {
                         this.panel.peekPanel();
                     }
                     this.menu.toggle_with_options(this.settings.enableAnimation);
@@ -359,32 +360,15 @@ class CinnamenuApplet extends TextIconApplet {
         }
     }
 
-    updateAfterXappFavoriteFileChange() {
+    _onXappFavoritesChange() {
+        if (!this.menu.isOpen) return;
+
         this.display.sidebar.populate();
         this.display.categoriesView.update();//in case fav files category needs adding/removing
         this.display.updateMenuSize();
         if (this.currentCategory === 'favorite_files') {
             this.setActiveCategory(this.currentCategory);
         }
-    }
-
-    xappGetIsFavoriteFile(uri) {
-        const favs = XApp.Favorites.get_default();
-        return favs.find_by_uri(uri) !== null;
-    }
-
-    xappAddFavoriteFile(uri) {
-        const favs = XApp.Favorites.get_default();
-        favs.add(uri);
-        //xapp favs list doesn't update synchronously after adding fav so add small
-        //delay before updating menu.
-        Mainloop.timeout_add(100, this.updateAfterXappFavoriteFileChange.bind(this));
-    }
-
-    xappRemoveFavoriteFile(uri) {
-        const favs = XApp.Favorites.get_default();
-        favs.remove(uri);
-        this.updateAfterXappFavoriteFileChange();
     }
 
     getIsFolderCategory(path) {
@@ -750,14 +734,6 @@ class CinnamenuApplet extends TextIconApplet {
                 categoryButtons[focusedCategoryIndex].selectCategory();
             }
             return Clutter.EVENT_STOP;
-        case symbol === Clutter.unicode_to_keysym("p".charCodeAt(0)) && ctrlKey:
-            if (focusedAppItemExists && appButtons[focusedAppItemIndex].app.isApplication) {
-                const desktop_file_path = appButtons[focusedAppItemIndex].app.desktop_file_path;
-                Util.spawn(['cinnamon-desktop-editor', '-mlauncher', '-o' + desktop_file_path]);
-                this.menu.close();
-                return Clutter.EVENT_STOP;
-            }
-            return Clutter.EVENT_PROPAGATE
         case (symbol === Clutter.KEY_Up || symbol === Clutter.KEY_KP_Up) && noModifiers:
             leaveCurrentlyFocusedItem();
             upNavigation();

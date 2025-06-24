@@ -4,6 +4,7 @@ const Atk = imports.gi.Atk;
 const Clutter = imports.gi.Clutter;
 const Util = imports.misc.util;
 const St = imports.gi.St;
+const XApp = imports.gi.XApp;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {DragMotionResult, makeDraggable} = imports.ui.dnd;
@@ -69,7 +70,7 @@ class SidebarButton {
                     }
                     return DragMotionResult.NO_DROP
                 } else if (source.isDraggableFile){
-                    this.appThis.xappAddFavoriteFile(source.uri);
+                    XApp.Favorites.get_default().add(source.uri);
                     return true;
                 }
             },

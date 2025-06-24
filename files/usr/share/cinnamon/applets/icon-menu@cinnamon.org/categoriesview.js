@@ -338,7 +338,7 @@ class CategoriesView {
                     button = new CategoryButton(this.appThis, folder, displayName, null, gicon);
                     newButtons.push(button);
                 } catch(e) {
-                    log("gridmenu:Error creating folder category: " + folder + " ...skipping.");
+                    global.log("gridmenu: Error creating folder category: " + folder + " ...skipping.");
                     //remove this error causing element from the array.
                     folderCategories.splice(index, 1);
                     folderCategoriesChanged = true;

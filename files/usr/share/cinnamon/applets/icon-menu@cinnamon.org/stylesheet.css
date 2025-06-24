@@ -13,6 +13,14 @@
 │││┌──#menu-search-entry──────────
 */
 
+/* The reason that some style css is in this file rather than in cinnamon's default theme is
+ * so that the user theme does not override the more specific selectors here with less specific
+ * selectors. For instance, ".gridmenu .menu-categories-box" in the default theme would have no
+ * effect if ".menu-categories-box" is defined in the user theme. By putting it here, it still
+ * takes effect, unless ".gridmenu .menu-categories-box" specifically, is overridden in the
+ * user theme.
+ */
+
 .menu-category-button:hover {  /*Only used when "activate categories on click" option is set.*/
     background-color: rgba(128,128,128,0.2);
     border-radius: 4px;

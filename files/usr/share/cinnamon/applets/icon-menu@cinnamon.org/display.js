@@ -106,7 +106,6 @@ class Display {
             reactive: true,
             show_on_set_parent: false
         });
-        this.mainBox.add_style_class_name('menu-applications-box'); //this is to support old themes
         if (sidebarPlacement === SidebarPlacement.TOP && this.appThis.settings.showSidebar) {
             this.mainBox.add(this.bottomPane);
         }
