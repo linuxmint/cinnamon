@@ -36,8 +36,6 @@ const AUTOHIDE_BOX_FADE_TIME = 100;
 
 const TIME_DELTA = 1500;
 
-const PANEL_PEEK_TIME = 1500;
-
 const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
@@ -2090,6 +2088,7 @@ Panel.prototype = {
         this._destroyed = false;
         this._positionChanged = false;
         this._monitorsChanged = false;
+        this._mouseEntered = null;
         this._signalManager = new SignalManager.SignalManager(null);
         this.height = 0;
         this.margin_top = 0;
@@ -2102,7 +2101,6 @@ Panel.prototype = {
         this._bottomPanelBarrier = 0;
         this._shadowBox = null;
         this._panelZoneSizes = this._createEmptyZoneSizes();
-        this._peeking = false;
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
 
@@ -2372,24 +2370,8 @@ Panel.prototype = {
         return;
     },
 
-
+    /* deprecated */
     peekPanel: function() {
-        if (!this._hidden || this._peeking)
-            return;
-
-        if (this._showHideTimer > 0) {
-            Mainloop.source_remove(this._showHideTimer);
-            this._showHideTimer = 0;
-        }
-
-        this._peeking = true;
-        this._showPanel();
-
-        Mainloop.timeout_add(PANEL_PEEK_TIME, () => {
-            this._peeking = false;
-            this._updatePanelVisibility();
-            return false;
-        });
     },
 
     /**
@@ -2972,7 +2954,7 @@ Panel.prototype = {
         if (this._positionChanged) {
             panelChanged = true;
             this._positionChanged = false;
-            this._hidden = false;
+            this._showPanel();
         }
 
         // if the monitors changed, force update in case the position needs updating
@@ -3666,6 +3648,8 @@ Panel.prototype = {
 
         for (let i = 0; i < global.menuStack.length; i++) {
             let menu = global.menuStack[i];
+            if (menu.customStyleClass && menu.customStyleClass.includes("thumbnail"))
+                continue;
             if (menu.getPanel() === this.actor) {
                 return true;
             }
@@ -3684,7 +3668,9 @@ Panel.prototype = {
      * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
-        if (this._panelEditMode || this._highlighted || this._peeking || this._panelHasOpenMenus())
+        this._mouseEntered = this._mouseOnPanel();
+
+        if (this._panelEditMode || this._highlighted || this._panelHasOpenMenus())
             this._shouldShow = true;
         else {
             switch (this._autohideSettings) {
@@ -3741,6 +3727,20 @@ Panel.prototype = {
             } // end of switch on autohidesettings
         }
 
+        const focusedWindow = global.display.get_focus_window();
+        if (focusedWindow && focusedWindow.is_fullscreen() && focusedWindow.get_monitor() === this.monitorIndex
+            && this._panelHasOpenMenus()) {
+            // An applet has been opened by shortcut key over a fullscreened window so remove
+            // focus from fullscreened window so that chrome remains visible until fullscreened
+            // window is focused again by user.
+            this._focusDesktop();
+        } else if (focusedWindow && focusedWindow.get_monitor() !== this.monitorIndex
+            && global.display.get_monitor_in_fullscreen(this.monitorIndex) && this._panelHasOpenMenus()) {
+            // Focused window is on other monitor but this monitor has a fullscreened window so
+            // remove focus from other window so that chrome remains visible until a window is focused
+            this._focusDesktop();
+        }
+        
         this._queueShowHidePanel();
     },
 
@@ -3773,30 +3773,43 @@ Panel.prototype = {
         }
     },
 
+    _focusDesktop: function() {
+        const windows = global.display.list_windows(0);
+
+        for (let i = 0; i < windows.length; i++) {
+            let window = windows[i];
+            if (window.get_window_type() === Meta.WindowType.DESKTOP && window.get_monitor() === this.monitorIndex) {
+                window.activate(global.display.get_current_time());
+                return;
+            }
+        }
+    },
+
+    _mouseOnPanel: function() {
+        this.actor.sync_hover();
+        const [x, y] = global.get_pointer();
+
+        return (this.actor.x <= x && x <= this.actor.x + this.actor.width &&
+            this.actor.y <= y && y <= this.actor.y + this.actor.height);
+    },
+
     _enterPanel: function(actor=null, event=null) {
-        this._mouseEntered = true;
-        this._updatePanelVisibility();
+        if (!this._mouseEntered) {
+            this._updatePanelVisibility();
+        }
     },
 
     _leavePanel:function(actor=null, event=null) {
-        if (event !== null && this._eventOnPanelStrip(...event.get_coords())) {
-            return;
-        }
-
-        this._mouseEntered = false;
-        this._updatePanelVisibility();
-    },
-
-    _eventOnPanelStrip: function(x, y) {
-        switch (this.panelPosition) {
-            case PanelLoc.top:
-                return y === this.monitor.y;
-            case PanelLoc.bottom:
-                return y === this.monitor.y + this.monitor.height - 1;
-            case PanelLoc.left:
-                return x === this.monitor.x;
-            case PanelLoc.right:
-                return x === this.monitor.x + this.monitor.width - 1;
+        // Panel gives false leave-event's when mouse is still on panel so we determine this._mouseEntered
+        // manually with this._mouseOnPanel() in this._updatePanelVisibility()
+        
+        if (this._mouseEntered) {
+            this._updatePanelVisibility();
+            if (this.isHideable() && event !== null && this._mouseOnPanel()) {
+                // Since we get false leave-event's and reported mouse position is often still
+                // on panel even if left, we check again a short while later to make sure.
+                setTimeout(this._updatePanelVisibility.bind(this), 250);
+            }
         }
     },
 
@@ -3808,7 +3821,6 @@ Panel.prototype = {
      */
     disable: function() {
         this._disabled = true;
-        this._leavePanel();
         this.actor.ease({
             opacity: 0,
             duration: AUTOHIDE_ANIMATION_TIME,
@@ -3900,18 +3912,14 @@ Panel.prototype = {
 
     /**
      * _hidePanel:
-     * @force (boolean): whether or not to force the hide.
      *
-     * This hides the panel unless this._shouldShow is false. This behaviour is
-     * overridden if the @force argument is set to true. However, the panel
-     * will always not be hidden if a menu is open, regardless of the value of
-     * @force.
+     * This hides the panel.
      */
-    _hidePanel: function(force) {
+    _hidePanel: function() {
         if (this._destroyed) return;
         this._showHideTimer = 0;
 
-        if ((this._shouldShow && !force) || this._panelHasOpenMenus()) return;
+        if (this._hidden) return;
 
         // setup panel tween - slide out the monitor edge leaving one pixel
         // if horizontal panel, animation on y. if vertical, animation on x.
@@ -3964,7 +3972,7 @@ Panel.prototype = {
     },
 
     getIsVisible: function() {
-        return !this._hidden;
+        return !this._hidden || this._shouldShow;
     },
 
     resetDNDZones: function() {
