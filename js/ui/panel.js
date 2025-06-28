@@ -1293,7 +1293,7 @@ PanelDummy.prototype = {
 
         this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
 
-        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
+        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false, visibleInFullscreen: true });
         //
         // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left
         //
