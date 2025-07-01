@@ -127,6 +127,10 @@ function prepareExtensionReload(extension) {
     }
 }
 
+/**
+ * Get all applet definitions as Applet Definition Objects
+ * @returns {AppletDefinitionObject[]}
+ */
 function getDefinitions() {
     let _definitions = [];
     rawDefinitions = global.settings.get_strv('enabled-applets');
@@ -144,13 +148,37 @@ function getDefinitions() {
     return _definitions;
 }
 
+/**
+ * @typedef {Object} AppletDefinitionObject
+ * @property {number} panelId - ID of the panel
+ * @property {number} orientation - The side of the screen the panel is on.
+ *  Orientation is 0 at the top and increases by 1 for each side moving clockwise.
+ * @property {string} location_label - Label for the location
+ * @property {boolean} center - Whether it's centered
+ * @property {number} order - Position/order of the applet
+ * @property {string} uuid - UUID of the applet instance
+ * @property {string} real_uuid - Original UUID of the applet
+ * @property {string} applet_id - ID string of the applet
+ * @property {object} applet - The applet object itself
+ */
+
+/**
+ * @typedef {string} AppletDefinitionString
+ * - String in the format `'<panel>:<location>:<order>:<uuid>:<applet_id>'`.
+ * - `<panel>` is like 'panel1'.
+ * - `<location>` 'left', 'center', or 'right'.
+ * - `<order>` integer representing order of applet in location. 1,2,3, ...
+ * - `<uuid>` Unique ID of the applet. Determines the type of applet. e.g. menu\@cinnamon.org
+ * - `<applet_id>` Unique ID assigned to the applet instance when created.
+ */
+
+/**
+ * Creates corresponding object from provided definition string.
+ * @param {AppletDefinitionString} definition - Applet String Definition
+ * @returns {AppletDefinition}
+ */
 function createAppletDefinition(definition) {
-    // format used in gsettings is 'panel:location:order:uuid:applet_id' where:
-    // - panel is something like 'panel1',
-    // - location is either 'left', 'center' or 'right',
-    // - order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).
-    // - applet_id is a unique id assigned to the applet instance when added.
-    let elements = definition.split(":");
+        let elements = definition.split(":");
     if (elements.length > 4) {
         let panelId = parseInt(elements[0].split('panel')[1]);
         let panel = Main.panelManager.panels[panelId];
@@ -183,7 +211,6 @@ function createAppletDefinition(definition) {
         // Its important we check if the definition object already exists before creating a new object, otherwise we are
         // creating duplicate references that could cause memory leaks.
         let existingDefinition = getAppletDefinition(appletDefinition);
-
         if (existingDefinition) {
             return existingDefinition;
         }
@@ -196,6 +223,17 @@ function createAppletDefinition(definition) {
 
     global.logError("Bad applet definition: " + definition);
     return null;
+}
+
+/**
+ * Converts AppletDefinitionObject into AppletDefinitionString to
+ * be used in global settings enabled-applets array.
+ * @param {AppletDefinitionObject} definition - Applet definition object
+ * @returns {AppletDefinitionString} `'<panel>:<location>:<order>:<uuid>:<applet_id>'`
+ */
+function stringifyAppletDefinition(definition) {
+    const { panelId, location_label: location, order, uuid, applet_id } = definition
+    return `panel${panelId}:${location}:${order}:${uuid}:${applet_id}`;
 }
 
 function setOrientationForPanel(panelPos) {
@@ -809,6 +847,38 @@ function pasteAppletConfiguration(panelId) {
         let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances or were at their max number of instances so were not copied"));
         dialog.open();
     }
+}
+
+/**
+ * @type {{settings:{get_strv(key:string) => string[]}}}
+ */
+/**
+ * Copy applets and their configuration from one panel to another. Max instances permitting.
+ * @param {number} fromPanelId Panel to be copied from
+ * @param {number} toPanelId Panel to copy to
+ */
+function copyApplets(fromPanelId, toPanelId) {
+    /** @typedef {string} panel Panel ID of applet. e.g. panel1*/
+    /** @type {[AppletDefinitionString][]} */
+    const allDefinitions = global.settings.get_strv("enabled-applets");
+    /** @type {[`<panel>`,`<location>`,`<order>`,`<uuid>`,`<applet_id>`][]} */
+    const splitDefinitions = allDefinitions.map(e => e.split(":"));
+    const fromAppletDefinitions = getDefinitions().filter(e => e.panelId === fromPanelId);
+    let nextAppletId = global.settings.get_int("next-applet-id");
+    fromAppletDefinitions.forEach(appletDefinition => {
+        const MAX_INSTANCES = Extension.get_max_instances(appletDefinition.uuid, Extension.Type.APPLET);
+        const AT_MAX_INSTANCES = splitDefinitions
+            .filter(definition => definition[3] === appletDefinition.uuid)
+            .length >= MAX_INSTANCES && MAX_INSTANCES !== -1;
+        if (AT_MAX_INSTANCES) return;
+        /** @type {AppletDefinitionObject} */
+        const toAppletDefinitions = {...appletDefinition, applet_id: nextAppletId, panelId: toPanelId, applet: null};
+        allDefinitions.push(stringifyAppletDefinition(toAppletDefinitions));
+        nextAppletId++;
+    });
+
+    global.settings.set_int("next-applet-id", nextAppletId);
+    global.settings.set_strv("enabled-applets", allDefinitions);
 }
 
 function getRunningInstancesForUuid(uuid) {

@@ -657,13 +657,13 @@ PanelManager.prototype = {
      *
      * Adds a new panel to the specified position
      */
-    addPanel: function(monitorIndex, panelPosition) {
+    addPanel: function(monitorIndex, panelPosition, sharedPanelId) {
         let list = getPanelsEnabledList();
-        let i = 0; // Start counting at 1 for compatibility
+        let panelId = 0; // Start counting at 1 for compatibility
 
         // Magic: Keep recursing until there is a free panel id
         while (true)
-            if (!this.panelsMeta[++i])
+            if (!this.panelsMeta[++panelId])
                 break;
 
         // Add default values
@@ -671,32 +671,37 @@ PanelManager.prototype = {
         for (let key in DEFAULT_PANEL_VALUES) {
             let settings = global.settings.get_strv(key);
             for (let j = 0; j < settings.length; j++){
-                if (settings[j].split(":")[0] == i){
+                if (settings[j].split(":")[0] == panelId){
                     continue outerLoop;
                 }
             }
-            settings.push(i + ":" + DEFAULT_PANEL_VALUES[key]);
+            settings.push(panelId + ":" + DEFAULT_PANEL_VALUES[key]);
             global.settings.set_strv(key, settings);
         }
 
         switch (panelPosition)
         {
             case PanelLoc.top:
-                list.push(i + ":" + monitorIndex + ":" + "top");
+                list.push(panelId + ":" + monitorIndex + ":" + "top");
                 break;
             case PanelLoc.bottom:
-                list.push(i + ":" + monitorIndex + ":" + "bottom");
+                list.push(panelId + ":" + monitorIndex + ":" + "bottom");
                 break;
             case PanelLoc.left:
-                list.push(i + ":" + monitorIndex + ":" + "left");
+                list.push(panelId + ":" + monitorIndex + ":" + "left");
                 break;
             case PanelLoc.right:
-                list.push(i + ":" + monitorIndex + ":" + "right");
+                list.push(panelId + ":" + monitorIndex + ":" + "right");
                 break;
             default:
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
         setPanelsEnabledList(list);
+        try {
+        if (sharedPanelId != undefined) {
+            AppletManager.copyApplets(sharedPanelId, panelId);
+        }
+        } catch(e) {global.logError(e)}
 
         // Delete all panel dummies
         if (this.addPanelMode)
@@ -1188,11 +1193,11 @@ PanelManager.prototype = {
      *
      * Prompts user where to add the panel
      */
-    addPanelQuery: function() {
+    addPanelQuery: function(sharedPanelId) {
         if (this.addPanelMode || !this.canAdd)
             return;
 
-        this._showDummyPanels(Lang.bind(this, this.addPanel));
+        this._showDummyPanels((monitorIndex, panelPosition) => this.addPanel(monitorIndex, panelPosition, sharedPanelId));
         this._addOsd.show();
     },
 
@@ -1763,6 +1768,14 @@ PanelContextMenu.prototype = {
         });
         menu.addMenuItem(menu.addPanelItem);
 
+        menu.addSharedPanel = new PopupMenu.PopupIconMenuItem(_("Add a shared panel"), "list-add", St.IconType.SYMBOLIC); // submenu item add shared panel
+        menu.addSharedPanel.activate = Lang.bind(menu, function() {
+            Main.panelManager.addPanelQuery(this.panelId);
+            this.close(true);
+        });
+        menu.addMenuItem(menu.addSharedPanel);
+
+
         // menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
 
@@ -1827,6 +1840,7 @@ PanelContextMenu.prototype = {
 
         this.movePanelItem.setSensitive(Main.panelManager.canAdd);
         this.addPanelItem.setSensitive(Main.panelManager.canAdd);
+        this.addSharedPanel.setSensitive(Main.panelManager.canAdd);
         // this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
         let {definitions} = AppletManager;
