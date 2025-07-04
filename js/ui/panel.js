@@ -646,7 +646,6 @@ PanelManager.prototype = {
                 break;
             }
         }
-
         setPanelsEnabledList(list);
     },
 
@@ -696,12 +695,15 @@ PanelManager.prototype = {
             default:
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
-        setPanelsEnabledList(list);
+
         try {
-        if (sharedPanelId != undefined) {
-            AppletManager.copyApplets(sharedPanelId, panelId);
-        }
+            if (sharedPanelId != undefined) {
+                AppletManager.clearAppletConfiguration(panelId);
+                AppletManager.shareApplets(sharedPanelId, panelId);
+            }
         } catch(e) {global.logError(e)}
+
+        setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)

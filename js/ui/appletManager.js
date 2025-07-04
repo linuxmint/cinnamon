@@ -157,14 +157,14 @@ function getDefinitions() {
  * @property {boolean} center - Whether it's centered
  * @property {number} order - Position/order of the applet
  * @property {string} uuid - UUID of the applet instance
- * @property {string} real_uuid - Original UUID of the applet
- * @property {string} applet_id - ID string of the applet
+ * @property {string} real_uuid - UUID without !. The exclamation mark is sometimes present to override version check.
+ * @property {string} applet_id - ID of the applet
  * @property {object} applet - The applet object itself
  */
 
 /**
  * @typedef {string} AppletDefinitionString
- * - String in the format `'<panel>:<location>:<order>:<uuid>:<applet_id>'`.
+ * - String in the format `'<panel>:<location>:<order>:<uuid>:<applet_id>:<shared_applet_id>'`.
  * - `<panel>` is like 'panel1'.
  * - `<location>` 'left', 'center', or 'right'.
  * - `<order>` integer representing order of applet in location. 1,2,3, ...
@@ -175,10 +175,10 @@ function getDefinitions() {
 /**
  * Creates corresponding object from provided definition string.
  * @param {AppletDefinitionString} definition - Applet String Definition
- * @returns {AppletDefinition}
+ * @returns {AppletDefinitionObject}
  */
 function createAppletDefinition(definition) {
-        let elements = definition.split(":");
+    let elements = definition.split(":");
     if (elements.length > 4) {
         let panelId = parseInt(elements[0].split('panel')[1]);
         let panel = Main.panelManager.panels[panelId];
@@ -403,6 +403,8 @@ function _removeAppletConfigFile(uuid, instanceId) {
     }
 }
 
+let stored = undefined;
+
 function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
 
@@ -413,6 +415,19 @@ function addAppletToPanels(extension, appletDefinition, panel = null, user_actio
             return false;
         } else if (applet === true) {
             return true;
+        }
+        if (applet._uuid==="menu@cinnamon.org") {
+            if (!stored) {stored = applet.settings.settingsData; global.log("set stored")}
+            else {
+                const settings = applet.settings;
+                settings._saveToFile(stored);
+                global.log("saved to file hopefully");
+                // global.log(settings.settingsData);
+                // settings.emit("settings-changed");
+                // applet._on_applet_reloaded();
+                settings._checkSettings();
+                global.log("settings updated?");
+            }
         }
 
         // Now actually lock the applets role and set the provider
@@ -553,6 +568,7 @@ function removeApplet(appletDefinition) {
 }
 
 function moveApplet(appletDefinition, allowedLayout) {
+    global.log("move applet");
     let panelId = null;
     let panels = Panel.getPanelsEnabledList();
     for (let i = 0; i < panels.length; i++) {
@@ -849,15 +865,13 @@ function pasteAppletConfiguration(panelId) {
     }
 }
 
-/**
- * @type {{settings:{get_strv(key:string) => string[]}}}
- */
+
 /**
  * Copy applets and their configuration from one panel to another. Max instances permitting.
  * @param {number} fromPanelId Panel to be copied from
  * @param {number} toPanelId Panel to copy to
  */
-function copyApplets(fromPanelId, toPanelId) {
+function shareApplets(fromPanelId, toPanelId) {
     /** @typedef {string} panel Panel ID of applet. e.g. panel1*/
     /** @type {[AppletDefinitionString][]} */
     const allDefinitions = global.settings.get_strv("enabled-applets");
@@ -872,7 +886,7 @@ function copyApplets(fromPanelId, toPanelId) {
             .length >= MAX_INSTANCES && MAX_INSTANCES !== -1;
         if (AT_MAX_INSTANCES) return;
         /** @type {AppletDefinitionObject} */
-        const toAppletDefinitions = {...appletDefinition, applet_id: nextAppletId, panelId: toPanelId, applet: null};
+        const toAppletDefinitions = {...appletDefinition, applet_id: nextAppletId, panelId: toPanelId};
         allDefinitions.push(stringifyAppletDefinition(toAppletDefinitions));
         nextAppletId++;
     });
