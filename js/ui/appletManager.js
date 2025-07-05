@@ -32,6 +32,7 @@ var Roles = {
 };
 
 var rawDefinitions;
+/** @type {AppletDefinitionObject[]} */
 var definitions = [];
 var clipboard = [];
 var promises = [];
@@ -403,8 +404,17 @@ function _removeAppletConfigFile(uuid, instanceId) {
     }
 }
 
-let stored = undefined;
+let stored = {};
+let reloaded = false;
 
+/**
+ *
+ * @param {any} extension
+ * @param {AppletDefinitionObject} appletDefinition
+ * @param {any} panel
+ * @param {boolean} user_action When true, flashes applet.
+ * @returns {boolean} Applet exists or was created.
+ */
 function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
 
@@ -416,17 +426,29 @@ function addAppletToPanels(extension, appletDefinition, panel = null, user_actio
         } else if (applet === true) {
             return true;
         }
-        if (applet._uuid==="menu@cinnamon.org") {
-            if (!stored) {stored = applet.settings.settingsData; global.log("set stored")}
-            else {
+
+        // This depends on specific applet having AppletSettings stored in settings, temporary for testing.
+        if (appletDefinition.panelId === 1) {
+            try {
+                stored[appletDefinition.uuid] = { data: applet.settings.settingsData, reloaded: false};
+                global.log(`Set ${appletDefinition.uuid}`);
+            }
+            catch (e){
+                global.logWarning(`${appletDefinition.uuid} has no settings property`);
+            }
+        }
+        if (appletDefinition.panelId === 2 && stored[appletDefinition.uuid]) {
+            if (!stored[appletDefinition.uuid].reloaded) {
                 const settings = applet.settings;
-                settings._saveToFile(stored);
-                global.log("saved to file hopefully");
-                // global.log(settings.settingsData);
-                // settings.emit("settings-changed");
-                // applet._on_applet_reloaded();
+                settings._saveToFile(stored[appletDefinition.uuid].data);
                 settings._checkSettings();
-                global.log("settings updated?");
+                appletDefinition.applet = null;
+                stored[appletDefinition.uuid].reloaded = true;
+                addAppletToPanels(extension, appletDefinition, panel);
+                return;
+            }
+            else {
+                stored[appletDefinition.uuid].reloaded = false;
             }
         }
 
@@ -872,6 +894,7 @@ function pasteAppletConfiguration(panelId) {
  * @param {number} toPanelId Panel to copy to
  */
 function shareApplets(fromPanelId, toPanelId) {
+    clearAppletConfiguration(toPanelId);
     /** @typedef {string} panel Panel ID of applet. e.g. panel1*/
     /** @type {[AppletDefinitionString][]} */
     const allDefinitions = global.settings.get_strv("enabled-applets");

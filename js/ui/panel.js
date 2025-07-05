@@ -696,14 +696,12 @@ PanelManager.prototype = {
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
 
+        setPanelsEnabledList(list);
         try {
             if (sharedPanelId != undefined) {
-                AppletManager.clearAppletConfiguration(panelId);
-                AppletManager.shareApplets(sharedPanelId, panelId);
+                                AppletManager.shareApplets(sharedPanelId, panelId);
             }
         } catch(e) {global.logError(e)}
-
-        setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)
