@@ -933,6 +933,7 @@ PanelManager.prototype = {
         this.handling_panels_changed = true;
 
         let newPanels = new Array(this.panels.length);
+const addedPanelIndices = [];
         let newMeta = new Array(this.panels.length);
         let drawcorner = [false,false];
 
@@ -970,15 +971,13 @@ PanelManager.prototype = {
                                                                          // on_orientation_changed function
                 }
             } else {                                                       // new panel
-
                 let panel = this._loadPanel(ID,
                                             mon,
                                             ploc,
                                             drawcorner,
                                             newPanels,
                                             newMeta);
-                if (panel)
-                     AppletManager.loadAppletsOnPanel(panel);
+                if (panel) addedPanelIndices.push(ID);
             }
         }
 
@@ -997,6 +996,7 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
+addedPanelIndices.forEach(index => AppletManager.loadAppletsOnPanel(this.panels[index]));
         //
         // Adjust any vertical panel heights so as to fit snugly between horizontal panels
         // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
