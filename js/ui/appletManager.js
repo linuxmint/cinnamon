@@ -373,15 +373,15 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         }
         appletDefinition.applet = null;
 
-        if (deleteConfig) {
-            _removeAppletConfigFile(uuid, applet_id);
-        }
-
         /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
          * the applet object hasn't had the instance removed yet, so let's run it one more time
          * here when everything has been updated.
          */
         callAppletInstancesChanged(uuid, null);
+    }
+
+    if (deleteConfig) {
+        _removeAppletConfigFile(uuid, applet_id);
     }
 }
 

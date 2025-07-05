@@ -372,6 +372,51 @@ function updatePanelsMeta(meta, panel_props) {
 }
 
 /**
+ * @typedef {number[][]} AppletOrder
+ * Each key represents the order in the panel position.
+ * Each value is an array of the shared applet instance ids.
+ *
+ * @typedef {{left: AppletOrder,center: AppletOrder,right: AppletOrder}} SharedPanelApplets
+ * Contains the locations of shared applet instances.
+ *
+ * @typedef {{panels: number[], applets: SharedPanelApplets}} SharedPanels
+ */
+
+/**
+ * Returned object contains properties for shared panels and shared applet instances.
+ * @returns {SharedPanels} Parsed shared-panels value from gsettings.
+ */
+function getSharedPanels() {
+    const jsonString = global.settings.get_string("shared-panels");
+    return JSON.parse(jsonString);
+}
+
+/**
+ * Set the shared-panels gsetting.
+ * @param {SharedPanels} sharedPanels
+ */
+function setSharedPanels(sharedPanels) {
+    const jsonString = JSON.stringify(sharedPanels);
+    global.settings.set_string("shared-panels", jsonString);
+}
+
+function addSharedPanels(sharedPanelId, newPanelId) {
+    const sharedPanels = getSharedPanels();
+    if (!sharedPanels.panels.includes(sharedPanelId)) sharedPanels.panels.push(sharedPanelId);
+    sharedPanels.panels.push(newPanelId);
+    setSharedPanels(sharedPanels);
+}
+
+function removeSharedPanel(panelId) {
+    const sharedPanels = getSharedPanels();
+    const index = sharedPanels.panels.findIndex(id => id === panelId);
+    if (index === -1) return;
+    sharedPanels.panels.splice(index, 1);
+    if (sharedPanels.panels.length < 2) sharedPanels.panels.length = 0;
+    setSharedPanels(sharedPanels);
+}
+
+/**
  * #PanelManager
  *
  * @short_description: Manager of Cinnamon panels
@@ -646,6 +691,7 @@ PanelManager.prototype = {
                 break;
             }
         }
+        removeSharedPanel(panelId);
         setPanelsEnabledList(list);
     },
 
@@ -696,12 +742,15 @@ PanelManager.prototype = {
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
 
-        setPanelsEnabledList(list);
-        try {
-            if (sharedPanelId != undefined) {
-                                AppletManager.shareApplets(sharedPanelId, panelId);
-            }
-        } catch(e) {global.logError(e)}
+        if (sharedPanelId != undefined) {
+            addSharedPanels(sharedPanelId, panelId);
+            AppletManager.clearAppletConfiguration(panelId);
+            setPanelsEnabledList(list);
+            AppletManager.shareApplets(sharedPanelId, panelId);
+        }
+        else {
+            setPanelsEnabledList(list);
+        }
 
         // Delete all panel dummies
         if (this.addPanelMode)
@@ -933,7 +982,7 @@ PanelManager.prototype = {
         this.handling_panels_changed = true;
 
         let newPanels = new Array(this.panels.length);
-const addedPanelIndices = [];
+        const addedPanelIndices = [];
         let newMeta = new Array(this.panels.length);
         let drawcorner = [false,false];
 
@@ -996,7 +1045,7 @@ const addedPanelIndices = [];
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
-addedPanelIndices.forEach(index => AppletManager.loadAppletsOnPanel(this.panels[index]));
+        addedPanelIndices.forEach(index => AppletManager.loadAppletsOnPanel(this.panels[index]));
         //
         // Adjust any vertical panel heights so as to fit snugly between horizontal panels
         // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed

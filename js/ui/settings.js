@@ -837,9 +837,13 @@ XletSettingsBase.prototype = {
     },
 
     /**
-     * Save to settings config file.
-     * @param {object|undefined} settingsData Optional settings data to pass instead.
+     * Save to settings config file
+     * @param {object} settingsData Data to write
      */
+    saveToFile: function(settingsData) {
+        this._saveToFile(settingsData);
+    },
+
     _saveToFile: function(settingsData) {
         let rawData = JSON.stringify(settingsData ?? this.settingsData, null, 4);
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
