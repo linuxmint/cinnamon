@@ -421,13 +421,16 @@ function removeSharedPanel(panelId) {
     const INDEX = sharedPanels.panels.findIndex(id => id === panelId);
     if (INDEX === -1) return;
     sharedPanels.panels.splice(INDEX, 1);
-    if (sharedPanels.panels.length < 2) sharedPanels.panels.length = 0;
+    if (sharedPanels.panels.length < 2) {
+        global.settings.reset("shared-panels");
+        return;
+    }
     setSharedPanels(sharedPanels);
 }
 
 /**
  * Adds shared applet instance ids to shared-panels gsetting.
- * @param {import("./appletManager.js").AppletLocation} location Applet location in panel.
+ * @param {AppletLocation} location Applet location in panel.
  * @param {number} order Applet order in location.
  * @param {number} sharedAppletId Instance id of sharing applet.
  * @param {number} newAppletId Instance id of new applet.
@@ -445,14 +448,29 @@ function addSharedApplets(location, order, sharedAppletId, newAppletId) {
 /**
  * Removes shared applet from shared-panels gsetting.
 * Removes all applets corresponding applets.
- * @param {import("./appletManager.js").AppletLocation} location Applet location in panel.
+ * @param {number} panelId The panel we are removing from. Ensures this function only removes the applet from that
+ * panel when removing the panel.
+ * @param {number} instanceId Applet instance id that is being removed. If this is called as a result of
+ * removing the entire panel, only this instance is removed.
+ * @param {AppletLocation} location Applet location in panel.
  * @param {number} order Applet order in location.
- * @param {number} appletId Instance id of applet to remove.
- */
-function removeSharedApplets(location, order) {
+  */
+function removeSharedApplets(panelId, instanceId, location, order) {
     const sharedPanels = getSharedPanels();
     const instanceArray = sharedPanels.applets[location][order];
     if (!instanceArray) return;
+
+    // Only remove applet from the panel being removed.
+    if (!sharedPanels.panels.includes(panelId)) {
+        const index = instanceArray.indexOf(instanceId);
+        if (index === -1) {
+            global.logWarning("Could not find index of applet instance to remove");
+            return;
+        }
+        instanceArray.splice(index, 1);
+        setSharedPanels(sharedPanels);
+        return;
+    }
     
     /** @type {import("./appletManager.js").AppletDefinitionObject[]}*/
     const definitions = global.settings.get_strv("enabled-applets").map(definition => {

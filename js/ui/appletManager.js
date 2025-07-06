@@ -370,7 +370,7 @@ function onEnabledAppletsChanged() {
  * @param {boolean} changed
  */
 function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false) {
-    let {applet, uuid, applet_id, location_label, order } = appletDefinition;
+    let {applet, uuid, applet_id, location_label, order, panelId } = appletDefinition;
     if (applet) {
         try {
             if (changed) {
@@ -389,7 +389,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         appletDefinition.applet = null;
 
         if (deleteConfig) {
-            Panel.removeSharedApplets(location_label, order);
+            Panel.removeSharedApplets(panelId, parseInt(applet_id), location_label, order);
             _removeAppletConfigFile(uuid, applet_id);
         }
 
