@@ -388,25 +388,21 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         }
         appletDefinition.applet = null;
 
+        if (deleteConfig) {
+            Panel.removeSharedApplets(location_label, order);
+            _removeAppletConfigFile(uuid, applet_id);
+        }
+
         /* normal occurs during _onAppletRemovedFromPanel, but when a panel is removed,
          * the applet object hasn't had the instance removed yet, so let's run it one more time
          * here when everything has been updated.
          */
         callAppletInstancesChanged(uuid, null);
     }
-
-            Panel.removeSharedApplets(location_label, order, parseInt(applet_id));
-
-    if (deleteConfig) {
-        _removeAppletConfigFile(uuid, applet_id);
-    }
 }
 
 function _removeAppletConfigFile(uuid, instanceId) {
-    let config_paths = [
-        [GLib.get_home_dir(), ".cinnamon", "configs", uuid, instanceId + ".json"].join("/"),
-        [GLib.get_user_config_dir(), "cinnamon", "spices", uuid, instanceId + ".json"].join("/")
-    ];
+    let config_paths = _getConfigPaths(uuid, instanceId);
 
     for (let i = 0; i < config_paths.length; i++) {
         const config_path = config_paths[i];
@@ -422,6 +418,41 @@ function _removeAppletConfigFile(uuid, instanceId) {
 }
 
 /**
+ * Returns the possible paths to an applet's config file.
+ * @param {string} uuid Applet UUID.
+ * @param {string|number} instanceId Applet Instance ID.
+ * @returns {string[]} Possible applet config file paths.
+ */
+function _getConfigPaths(uuid, instanceId) {
+    return [
+        [GLib.get_home_dir(), ".cinnamon", "configs", uuid, instanceId + ".json"].join("/"),
+        [GLib.get_user_config_dir(), "cinnamon", "spices", uuid, instanceId + ".json"].join("/")
+    ];
+}
+
+/**
+ * Replaces the configuration file for the toInstance applet with the configuration from the fromInstance applet.
+ * @param {string} uuid UUID of applet. e.g. "menu\@cinnamon.org".
+ * @param {number|string} fromInstance Instance ID of the applet to copy configuration from.
+ * @param {number|string} toInstance Instance ID of the applet to copy configuration to.
+ */
+function _shareAppletConfiguration(uuid, fromInstance, toInstance) {
+    const fromConfigPaths = _getConfigPaths(uuid, fromInstance);
+    const toConfigPaths = _getConfigPaths(uuid, toInstance);
+    for (let i = 0; i < fromConfigPaths.length; i++) {
+        const fromFile = Gio.File.new_for_path(fromConfigPaths[i]);
+        const toFile = Gio.File.new_for_path(toConfigPaths[i]);
+        try{
+            fromFile.copy(toFile, Gio.FileCopyFlags.OVERWRITE, null, null);
+        }
+        catch {
+            continue;
+        }
+    }
+
+}
+
+/**
  *
  * @param {any} extension
  * @param {AppletDefinitionObject} appletDefinition
@@ -431,8 +462,22 @@ function _removeAppletConfigFile(uuid, instanceId) {
  */
 function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
-
     try {
+                const sharedPanels = Panel.getSharedPanels();
+        try{
+            if (sharedPanels.panels.includes(appletDefinition.panelId)) {
+user_action = false;
+                const { location_label, order, real_uuid} = appletDefinition;
+                const instanceArray = sharedPanels.applets[location_label][order];
+                if (!instanceArray) throw new Error(`Could not create shared applet ${real_uuid}, no sharable instances`);
+                const fromInstance = instanceArray[0];
+                _shareAppletConfiguration(real_uuid, fromInstance, appletDefinition.applet_id);
+                                        }
+        }
+catch(e) {
+            global.logWarning(e);
+        }
+
         // Create the applet
         let applet = createApplet(extension, appletDefinition, panel);
         if (applet == null) {
@@ -441,27 +486,6 @@ function addAppletToPanels(extension, appletDefinition, panel = null, user_actio
             return true;
         }
 
-        /** @todo This depends on specific applet having AppletSettings stored in settings, temporary for testing. */
-        const sharedPanels = Panel.getSharedPanels();
-        try{
-            if (sharedPanels.panels.includes(appletDefinition.panelId)) {
-user_action = false;
-                const { location_label, order, real_uuid} = appletDefinition;
-                const instanceArray = sharedPanels.applets[location_label][order];
-                if (!instanceArray) throw new Error("Could not create shared applet, no existing instances");
-                    const sharingApplet = getAppletDefinition({applet_id: String(instanceArray[0])});
-                    if (!sharingApplet) throw new Error(`Could not find sharing applet. uuid: ${real_uuid}, instance: ${instanceArray[0]}`);
-                const settings = applet.settings;
-if (!settings) throw new Error(`${real_uuid} has no settings property`);
-                settings.saveToFile(sharingApplet.applet.settings.settingsData);
-                settings.remoteUpdate();
-                appletDefinition.applet = null;
-                applet = createApplet(extension, appletDefinition, panel);
-                                        }
-        }
-catch(e) {
-            global.logWarning(e);
-        }
 
         // Now actually lock the applets role and set the provider
         extension.lockRole(applet);
@@ -911,12 +935,15 @@ function shareApplets(fromPanelId, toPanelId) {
     const splitDefinitions = allDefinitions.map(e => e.split(":"));
     const fromAppletDefinitions = getDefinitions().filter(e => e.panelId === fromPanelId);
     let nextAppletId = global.settings.get_int("next-applet-id");
+
     fromAppletDefinitions.forEach(appletDefinition => {
         const MAX_INSTANCES = Extension.get_max_instances(appletDefinition.uuid, Extension.Type.APPLET);
         const AT_MAX_INSTANCES = splitDefinitions
             .filter(definition => definition[3] === appletDefinition.uuid)
             .length >= MAX_INSTANCES && MAX_INSTANCES !== -1;
+
         if (AT_MAX_INSTANCES) return;
+
         /** @type {AppletDefinitionObject} */
         const toAppletDefinitions = {...appletDefinition, applet_id: nextAppletId, panelId: toPanelId};
         allDefinitions.push(stringifyAppletDefinition(toAppletDefinitions));

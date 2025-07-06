@@ -427,7 +427,7 @@ function removeSharedPanel(panelId) {
 
 /**
  * Adds shared applet instance ids to shared-panels gsetting.
- * @param {AppletLocation} location Applet location in panel.
+ * @param {import("./appletManager.js").AppletLocation} location Applet location in panel.
  * @param {number} order Applet order in location.
  * @param {number} sharedAppletId Instance id of sharing applet.
  * @param {number} newAppletId Instance id of new applet.
@@ -443,18 +443,31 @@ function addSharedApplets(location, order, sharedAppletId, newAppletId) {
 }
 
 /**
- * Removes shared applet instance id from shared-panels gsetting.
- * @param {AppletLocation} location Applet location in panel.
+ * Removes shared applet from shared-panels gsetting.
+* Removes all applets corresponding applets.
+ * @param {import("./appletManager.js").AppletLocation} location Applet location in panel.
  * @param {number} order Applet order in location.
  * @param {number} appletId Instance id of applet to remove.
  */
-function removeSharedApplets(location, order, appletId) {
+function removeSharedApplets(location, order) {
     const sharedPanels = getSharedPanels();
     const instanceArray = sharedPanels.applets[location][order];
     if (!instanceArray) return;
-    const INDEX = instanceArray.indexOf(appletId);
-    instanceArray.splice(INDEX, 1);
-    if (instanceArray.length < 2) instanceArray.length = 0;
+    
+    /** @type {import("./appletManager.js").AppletDefinitionObject[]}*/
+    const definitions = global.settings.get_strv("enabled-applets").map(definition => {
+        return AppletManager.createAppletDefinition(definition)
+    });
+
+    for (let instanceId of instanceArray) {
+        const index = definitions.findIndex(definition => definition.applet_id == instanceId);
+        if (index === -1) continue;
+        definitions.splice(index, 1);
+    }
+
+    const newDefinitions = definitions.map(definition => AppletManager.stringifyAppletDefinition(definition));
+    global.settings.set_strv("enabled-applets", newDefinitions);
+instanceArray.length = 0;
     setSharedPanels(sharedPanels);
 }
 
@@ -733,7 +746,10 @@ PanelManager.prototype = {
                 break;
             }
         }
+if (getSharedPanels().panels.includes(panelId)) {
         removeSharedPanel(panelId);
+AppletManager.clearAppletConfiguration(panelId);
+        }
         setPanelsEnabledList(list);
     },
 
@@ -784,14 +800,11 @@ PanelManager.prototype = {
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
 
+        setPanelsEnabledList(list);
+
         if (sharedPanelId != undefined) {
             addSharedPanels(sharedPanelId, panelId);
-            AppletManager.clearAppletConfiguration(panelId);
-            setPanelsEnabledList(list);
-            AppletManager.shareApplets(sharedPanelId, panelId);
-        }
-        else {
-            setPanelsEnabledList(list);
+                        AppletManager.shareApplets(sharedPanelId, panelId);
         }
 
         // Delete all panel dummies
