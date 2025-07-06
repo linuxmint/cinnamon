@@ -125,19 +125,19 @@
     </key>
 
     <key name="shared-panels" type="s">
-      <default>'{"panels":[],"applets":{"left":{}, "center":{}, "right":{}}}'</default>
+      <default>'{"panels":[],"applets":{"left":[], "center":[], "right":[]}}'</default>
       <summary>JSON string of shared panel information</summary>
       <description>
         JSON string containing shared panel ids, and shared applet instance ids by location.
 
-        Each key represents the order in the panel position.
-        Each value is an array of the shared applet instance ids.
+        Each index represents the order in the panel position.
+        Each element is an array of the shared applet instance ids.
 
-        @typedef {{[order: number]: number[]}} AppletOrder
+        @typedef {(number[]?)[]} AppletInstances
 
         Contains the locations of shared applet instances.
 
-        @typedef {{left: AppletOrder,center: AppletOrder,right: AppletOrder}} SharedPanelPositions
+        @typedef {{left: AppletInstances,center: AppletInstances,right: AppletInstances}} SharedPanelPositions
 
         @typedef {{panels: number[], applets: SharedPanelPositions}} SharedPanels
       </description>

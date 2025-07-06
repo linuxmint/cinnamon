@@ -372,11 +372,11 @@ function updatePanelsMeta(meta, panel_props) {
 }
 
 /**
- * @typedef {number[][]} AppletOrder
- * Each key represents the order in the panel position.
- * Each value is an array of the shared applet instance ids.
+ * @typedef {(number[]?)[]} AppletInstances
+ * Each index represents the order in the panel position.
+ * Each element is an array of the shared applet instance ids.
  *
- * @typedef {{left: AppletOrder,center: AppletOrder,right: AppletOrder}} SharedPanelApplets
+ * @typedef {{left: AppletInstances,center: AppletInstances,right: AppletInstances}} SharedPanelApplets
  * Contains the locations of shared applet instances.
  *
  * @typedef {{panels: number[], applets: SharedPanelApplets}} SharedPanels
@@ -400,6 +400,11 @@ function setSharedPanels(sharedPanels) {
     global.settings.set_string("shared-panels", jsonString);
 }
 
+/**
+ * Adds a new shared panel to shared-panels gsetting.
+ * @param {number} sharedPanelId Sharing panel id.
+ * @param {number} newPanelId New panel id.
+ */
 function addSharedPanels(sharedPanelId, newPanelId) {
     const sharedPanels = getSharedPanels();
     if (!sharedPanels.panels.includes(sharedPanelId)) sharedPanels.panels.push(sharedPanelId);
@@ -407,12 +412,49 @@ function addSharedPanels(sharedPanelId, newPanelId) {
     setSharedPanels(sharedPanels);
 }
 
+/**
+ * Removes panel id from shared-panels gsetting if panel was a shared panel.
+ * @param {number} panelId Panel id to be removed.
+ */
 function removeSharedPanel(panelId) {
     const sharedPanels = getSharedPanels();
-    const index = sharedPanels.panels.findIndex(id => id === panelId);
-    if (index === -1) return;
-    sharedPanels.panels.splice(index, 1);
+    const INDEX = sharedPanels.panels.findIndex(id => id === panelId);
+    if (INDEX === -1) return;
+    sharedPanels.panels.splice(INDEX, 1);
     if (sharedPanels.panels.length < 2) sharedPanels.panels.length = 0;
+    setSharedPanels(sharedPanels);
+}
+
+/**
+ * Adds shared applet instance ids to shared-panels gsetting.
+ * @param {AppletLocation} location Applet location in panel.
+ * @param {number} order Applet order in location.
+ * @param {number} sharedAppletId Instance id of sharing applet.
+ * @param {number} newAppletId Instance id of new applet.
+ */
+function addSharedApplets(location, order, sharedAppletId, newAppletId) {
+    const sharedPanels = getSharedPanels();
+    let instanceArray = sharedPanels.applets[location][order];
+    if (!instanceArray) instanceArray = sharedPanels.applets[location][order] = [];
+    [sharedAppletId, newAppletId].forEach(id => {
+        if (!instanceArray.includes(id)) instanceArray.push(id);
+    });
+    setSharedPanels(sharedPanels);
+}
+
+/**
+ * Removes shared applet instance id from shared-panels gsetting.
+ * @param {AppletLocation} location Applet location in panel.
+ * @param {number} order Applet order in location.
+ * @param {number} appletId Instance id of applet to remove.
+ */
+function removeSharedApplets(location, order, appletId) {
+    const sharedPanels = getSharedPanels();
+    const instanceArray = sharedPanels.applets[location][order];
+    if (!instanceArray) return;
+    const INDEX = instanceArray.indexOf(appletId);
+    instanceArray.splice(INDEX, 1);
+    if (instanceArray.length < 2) instanceArray.length = 0;
     setSharedPanels(sharedPanels);
 }
 
