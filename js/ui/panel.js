@@ -447,14 +447,14 @@ function addSharedApplets(location, order, sharedAppletId, newAppletId) {
 
 /**
  * Removes shared applet from shared-panels gsetting.
-* Removes all applets corresponding applets.
+ * Removes all applets corresponding applets.
  * @param {number} panelId The panel we are removing from. Ensures this function only removes the applet from that
  * panel when removing the panel.
  * @param {number} instanceId Applet instance id that is being removed. If this is called as a result of
  * removing the entire panel, only this instance is removed.
  * @param {AppletLocation} location Applet location in panel.
  * @param {number} order Applet order in location.
-  */
+ */
 function removeSharedApplets(panelId, instanceId, location, order) {
     const sharedPanels = getSharedPanels();
     const instanceArray = sharedPanels.applets[location][order];
@@ -471,8 +471,8 @@ function removeSharedApplets(panelId, instanceId, location, order) {
         setSharedPanels(sharedPanels);
         return;
     }
-    
-    /** @type {import("./appletManager.js").AppletDefinitionObject[]}*/
+
+    /** @type {import("./appletManager.js").AppletDefinitionObject[]} */
     const definitions = global.settings.get_strv("enabled-applets").map(definition => {
         return AppletManager.createAppletDefinition(definition)
     });
@@ -485,7 +485,7 @@ function removeSharedApplets(panelId, instanceId, location, order) {
 
     const newDefinitions = definitions.map(definition => AppletManager.stringifyAppletDefinition(definition));
     global.settings.set_strv("enabled-applets", newDefinitions);
-instanceArray.length = 0;
+    instanceArray.length = 0;
     setSharedPanels(sharedPanels);
 }
 
@@ -764,9 +764,9 @@ PanelManager.prototype = {
                 break;
             }
         }
-if (getSharedPanels().panels.includes(panelId)) {
-        removeSharedPanel(panelId);
-AppletManager.clearAppletConfiguration(panelId);
+        if (getSharedPanels().panels.includes(panelId)) {
+            removeSharedPanel(panelId);
+            AppletManager.clearAppletConfiguration(panelId);
         }
         setPanelsEnabledList(list);
     },
@@ -822,7 +822,7 @@ AppletManager.clearAppletConfiguration(panelId);
 
         if (sharedPanelId != undefined) {
             addSharedPanels(sharedPanelId, panelId);
-                        AppletManager.shareApplets(sharedPanelId, panelId);
+            AppletManager.shareApplets(sharedPanelId, panelId);
         }
 
         // Delete all panel dummies

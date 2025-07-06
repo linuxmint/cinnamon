@@ -836,16 +836,8 @@ XletSettingsBase.prototype = {
         return json;
     },
 
-    /**
-     * Save to settings config file
-     * @param {object} settingsData Data to write
-     */
-    saveToFile: function(settingsData) {
-        this._saveToFile(settingsData);
-    },
-
-    _saveToFile: function(settingsData) {
-        let rawData = JSON.stringify(settingsData ?? this.settingsData, null, 4);
+    _saveToFile: function() {
+        let rawData = JSON.stringify(this.settingsData, null, 4);
         let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
         let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
         Cinnamon.write_string_to_stream(out_file, rawData);

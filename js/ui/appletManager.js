@@ -463,18 +463,18 @@ function _shareAppletConfiguration(uuid, fromInstance, toInstance) {
 function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
     try {
-                const sharedPanels = Panel.getSharedPanels();
+        const sharedPanels = Panel.getSharedPanels();
         try{
             if (sharedPanels.panels.includes(appletDefinition.panelId)) {
-user_action = false;
+                user_action = false;
                 const { location_label, order, real_uuid} = appletDefinition;
                 const instanceArray = sharedPanels.applets[location_label][order];
                 if (!instanceArray) throw new Error(`Could not create shared applet ${real_uuid}, no sharable instances`);
                 const fromInstance = instanceArray[0];
                 _shareAppletConfiguration(real_uuid, fromInstance, appletDefinition.applet_id);
-                                        }
+            }
         }
-catch(e) {
+        catch(e) {
             global.logWarning(e);
         }
 
