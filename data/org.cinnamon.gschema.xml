@@ -133,7 +133,7 @@
         Each index represents the order in the panel position.
         Each element is an array of the shared applet instance ids.
 
-        @typedef {(number[]?)[]} AppletInstances
+        @typedef {(string[]?)[]} AppletInstances
 
         Contains the locations of shared applet instances.
 

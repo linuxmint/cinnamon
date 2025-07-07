@@ -372,7 +372,7 @@ function updatePanelsMeta(meta, panel_props) {
 }
 
 /**
- * @typedef {(number[]?)[]} AppletInstances
+ * @typedef {(string[]?)[]} AppletInstances
  * Each index represents the order in the panel position.
  * Each element is an array of the shared applet instance ids.
  *
@@ -428,17 +428,18 @@ function removeSharedPanel(panelId) {
     setSharedPanels(sharedPanels);
 }
 
+/** @typedef {import("./appletManager").AppletDefinitionObject} AppletDefinitionObject*/
+
 /**
  * Adds shared applet instance ids to shared-panels gsetting.
- * @param {AppletLocation} location Applet location in panel.
- * @param {number} order Applet order in location.
- * @param {number} sharedAppletId Instance id of sharing applet.
- * @param {number} newAppletId Instance id of new applet.
+ * @param {AppletDefinitionObject} fromAppletDefinition Definition of sharing applet
+ * @param {AppletDefinitionObject} toAppletDefinition  Definition of new applet to share.
  */
-function addSharedApplets(location, order, sharedAppletId, newAppletId) {
+function addSharedApplets(fromAppletDefinition, toAppletDefinition) {
     const sharedPanels = getSharedPanels();
-    let instanceArray = sharedPanels.applets[location][order];
-    if (!instanceArray) instanceArray = sharedPanels.applets[location][order] = [];
+    const { location_label: location, order, applet_id: sharedAppletId } = fromAppletDefinition
+    const { applet_id: newAppletId } = toAppletDefinition;
+    const instanceArray = sharedPanels.applets[location][order] ??= [];
     [sharedAppletId, newAppletId].forEach(id => {
         if (!instanceArray.includes(id)) instanceArray.push(id);
     });
@@ -446,20 +447,34 @@ function addSharedApplets(location, order, sharedAppletId, newAppletId) {
 }
 
 /**
- * Removes shared applet from shared-panels gsetting.
- * Removes all applets corresponding applets.
- * @param {number} panelId The panel we are removing from. Ensures this function only removes the applet from that
- * panel when removing the panel.
- * @param {number} instanceId Applet instance id that is being removed. If this is called as a result of
- * removing the entire panel, only this instance is removed.
- * @param {AppletLocation} location Applet location in panel.
- * @param {number} order Applet order in location.
+ * Moves applet instance stored in shared-panels to new location.
+ * @param {AppletDefinitionObject} oldDefinition Old definition.
+ * @param {AppletDefinitionObject} newDefinition New definition.
  */
-function removeSharedApplets(panelId, instanceId, location, order) {
+function updateSharedInstance(oldDefinition, newDefinition) {
+    const { location_label: oldLocation, order: oldOrder } = oldDefinition;
+    const { location_label: newLocation, order: newOrder } = newDefinition;
+    if (oldLocation === newLocation && oldOrder === newOrder) return;
     const sharedPanels = getSharedPanels();
+    const oldInstanceArray = sharedPanels.applets[oldLocation][oldOrder];
+    if (!oldInstanceArray) return;
+
+    // Move all stored ids to new location
+    (sharedPanels.applets[newLocation][newOrder] ??= []).push(oldInstanceArray.splice(0, sharedPanels.panels.length));
+    setSharedPanels(sharedPanels);
+}
+
+/**
+ * Removes shared applet from shared-panels gsetting.
+ * If individual applet is being removed, remove from all other shared panels.
+ * If entire panel is being removed, only remove given instance.
+ * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
+ */
+function removeSharedApplets(appletDefinition) {
+    const sharedPanels = getSharedPanels();
+    const { location_label: location, order, panelId, applet_id: instanceId} = appletDefinition;
     const instanceArray = sharedPanels.applets[location][order];
     if (!instanceArray) return;
-
     // Only remove applet from the panel being removed.
     if (!sharedPanels.panels.includes(panelId)) {
         const index = instanceArray.indexOf(instanceId);
@@ -472,19 +487,14 @@ function removeSharedApplets(panelId, instanceId, location, order) {
         return;
     }
 
-    /** @type {import("./appletManager.js").AppletDefinitionObject[]} */
-    const definitions = global.settings.get_strv("enabled-applets").map(definition => {
-        return AppletManager.createAppletDefinition(definition)
-    });
-
+    const definitions = AppletManager.getDefinitions();
     for (let instanceId of instanceArray) {
         const index = definitions.findIndex(definition => definition.applet_id == instanceId);
         if (index === -1) continue;
         definitions.splice(index, 1);
     }
 
-    const newDefinitions = definitions.map(definition => AppletManager.stringifyAppletDefinition(definition));
-    global.settings.set_strv("enabled-applets", newDefinitions);
+    AppletManager.setDefinitions(definitions);
     instanceArray.length = 0;
     setSharedPanels(sharedPanels);
 }
@@ -822,7 +832,7 @@ PanelManager.prototype = {
 
         if (sharedPanelId != undefined) {
             addSharedPanels(sharedPanelId, panelId);
-            AppletManager.shareApplets(sharedPanelId, panelId);
+            AppletManager.setupSharedApplets(sharedPanelId, panelId);
         }
 
         // Delete all panel dummies
