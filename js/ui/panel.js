@@ -451,7 +451,7 @@ function addSharedApplets(fromAppletDefinition, toAppletDefinition) {
  * @param {AppletDefinitionObject} oldDefinition Old definition.
  * @param {AppletDefinitionObject} newDefinition New definition.
  */
-function updateSharedInstance(oldDefinition, newDefinition) {
+function updateSharedInstances(oldDefinition, newDefinition) {
     const { location_label: oldLocation, order: oldOrder } = oldDefinition;
     const { location_label: newLocation, order: newOrder } = newDefinition;
     if (oldLocation === newLocation && oldOrder === newOrder) return;
@@ -459,9 +459,23 @@ function updateSharedInstance(oldDefinition, newDefinition) {
     const oldInstanceArray = sharedPanels.applets[oldLocation][oldOrder];
     if (!oldInstanceArray) return;
 
-    // Move all stored ids to new location
-    (sharedPanels.applets[newLocation][newOrder] ??= []).push(oldInstanceArray.splice(0, sharedPanels.panels.length));
+    // Get definitions of other shared instances
+    const allDefinitions = AppletManager.getDefinitions();
+    const sharedDefinitions = allDefinitions.filter(definition => {
+        return oldInstanceArray.slice(0, sharedPanels.panels.length).includes(definition.applet_id);
+    });
+
+    /** @todo this does not update the actual order of the applet just the definition */
+    // Update definitions to new location and order
+    sharedDefinitions.forEach(definition => {
+        definition.location_label = newLocation;
+        definition.order = newOrder;
+    });
+
+    // Move all stored instance ids to new location
+    (sharedPanels.applets[newLocation][newOrder] ??= []).push(...oldInstanceArray.splice(0, sharedPanels.panels.length));
     setSharedPanels(sharedPanels);
+    AppletManager.setDefinitions(allDefinitions);
 }
 
 /**

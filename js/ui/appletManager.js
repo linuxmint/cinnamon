@@ -328,7 +328,7 @@ function onEnabledAppletsChanged() {
             // If the applet definition previously didn't exist, also assume it's a new
             // instance. As opposed to an applet that's just getting re-loaded because something
             // about its definition changed (maybe the position value, if a new applet was added).
-            if (oldDefinition) Panel.updateSharedInstance(oldDefinition, definitions[i]);
+            if (oldDefinition) Panel.updateSharedInstances(oldDefinition, definitions[i]);
             addedApplets.push({extension, definition: definitions[i], is_new: !oldDefinition});
             continue;
         }
