@@ -298,6 +298,12 @@ function checkForUpgrade(newEnabledApplets) {
     return newEnabledApplets;
 }
 
+/**
+ * Compares panel, orientation, location, and order to determine equality.
+ * @param {AppletDefinitionObject} a
+ * @param {AppletDefinitionObject} b
+ * @returns {boolean} Whether applet definitions are mostly equal.
+ */
 function appletDefinitionsEqual(a, b) {
     return (a != null && b != null
         && a.panelId === b.panelId
@@ -328,7 +334,6 @@ function onEnabledAppletsChanged() {
             // If the applet definition previously didn't exist, also assume it's a new
             // instance. As opposed to an applet that's just getting re-loaded because something
             // about its definition changed (maybe the position value, if a new applet was added).
-            if (oldDefinition) Panel.updateSharedInstances(oldDefinition, definitions[i]);
             addedApplets.push({extension, definition: definitions[i], is_new: !oldDefinition});
             continue;
         }
@@ -399,8 +404,8 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         }
         appletDefinition.applet = null;
 
+        Panel.removeSharedApplets(appletDefinition, changed);
         if (deleteConfig) {
-            Panel.removeSharedApplets(appletDefinition);
             _removeAppletConfigFile(uuid, applet_id);
         }
 
@@ -474,6 +479,7 @@ function _addSharedAppletToPanels(appletDefinition) {
     const sharedPanels = Panel.getSharedPanels();
     if (!sharedPanels.panels.includes(panelId)) return false;
     let instanceArray = sharedPanels.applets[location][order] ??= [];
+
     if (instanceArray.length === 0) {
         const definitions = getDefinitions();
         instanceArray.push(toInstance);
@@ -789,7 +795,6 @@ function _removeAppletFromPanel(uuid, applet_id) {
 function saveAppletsPositions() {
     let enabled = global.settings.get_strv('enabled-applets');
     let newEnabled = [];
-    global.log("MOVE?");
     for (let i = 0; i < enabled.length; i++) {
         let info = enabled[i].split(':');
         let {applet} = getAppletDefinition({
@@ -960,6 +965,7 @@ function pasteAppletConfiguration(panelId) {
  * @param {number} toPanelId Panel id to copy to
  */
 function setupSharedApplets(fromPanelId, toPanelId) {
+    clearAppletConfiguration(toPanelId);
     const fromAppletDefinitions = getDefinitions().filter(e => e.panelId === fromPanelId);
     const definitions = getDefinitions();
     let nextAppletId = global.settings.get_int("next-applet-id");

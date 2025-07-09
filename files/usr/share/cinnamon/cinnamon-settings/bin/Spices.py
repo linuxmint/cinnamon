@@ -14,6 +14,7 @@ try:
     from PIL import Image
     import datetime
     import time
+    import json
 except Exception as error_message:
     print(error_message)
     sys.exit(1)
@@ -852,23 +853,56 @@ class Spice_Harvester(GObject.Object):
     def errorMessage(self, msg, detail=None):
         ui_thread_do(self._ui_error_message, msg, detail)
 
+    def _update_shared_applet_positions(self, shared_panels_info, box, new_pos, appletId):
+        box_array = shared_panels_info['applets'][box]
+
+        if new_pos >= len(box_array):
+            box_array.extend([[]] * (new_pos+1 - len(box_array)))
+        elif box_array[new_pos] is None:
+            box_array[new_pos] = []
+
+        box_array[new_pos].append(appletId)
+
     def enable_extension(self, uuid, panel=1, box='right', position=0):
         if self.collection_type == 'applet':
             entries = []
             applet_id = self.settings.get_int('next-applet-id')
-            self.settings.set_int('next-applet-id', (applet_id+1))
+            shared_panels_info = json.loads(self.settings.get_string('shared-panels'))
+            shared_panels = shared_panels_info['panels']
 
             for entry in self.settings.get_strv(self.enabled_key):
                 info = entry.split(':')
                 pos = int(info[2])
-                if info[0] == f'panel{panel}' and info[1] == box and position <= pos:
-                    info[2] = str(pos+1)
+                panelId = int(info[0][-1])
+                appletId = int(info[-1])
+                if (
+                    (info[0] == f'panel{panel}' or panelId in shared_panels)
+                    and info[1] == box
+                    and position <= pos
+                ):
+                    newPos = pos+1
+                    info[2] = str(newPos)
                     entries.append(':'.join(info))
+                    if (panelId in shared_panels):
+                        self._update_shared_applet_positions(shared_panels_info, box, newPos, appletId)
                 else:
                     entries.append(entry)
 
-            entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
+            if panel in shared_panels:
+                for panel in shared_panels:
+                    entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
+                    try:
+                        shared_panels_info['applets'][box][position].extend([applet_id])
+                    except:
+                        shared_panels_info['applets'][box].extend([[]]*(position+1-len(shared_panels_info['applets'][box])))
+                        shared_panels_info['applets'][box][position].append(applet_id)
+                    applet_id += 1
+            else:
+                entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
+                applet_id += 1
 
+            self.settings.set_int('next-applet-id', (applet_id))
+            self.settings.set_string('shared-panels', json.dumps(shared_panels_info))
             self.settings.set_strv(self.enabled_key, entries)
         elif self.collection_type == 'desklet':
             desklet_id = self.settings.get_int('next-desklet-id')

@@ -459,34 +459,21 @@ function updateSharedInstances(oldDefinition, newDefinition) {
     const oldInstanceArray = sharedPanels.applets[oldLocation][oldOrder];
     if (!oldInstanceArray) return;
 
-    // Get definitions of other shared instances
-    const allDefinitions = AppletManager.getDefinitions();
-    const sharedDefinitions = allDefinitions.filter(definition => {
-        return oldInstanceArray.slice(0, sharedPanels.panels.length).includes(definition.applet_id);
-    });
-
-    /** @todo this does not update the actual order of the applet just the definition */
-    // Update definitions to new location and order
-    sharedDefinitions.forEach(definition => {
-        definition.location_label = newLocation;
-        definition.order = newOrder;
-    });
-
     // Move all stored instance ids to new location
     (sharedPanels.applets[newLocation][newOrder] ??= []).push(...oldInstanceArray.splice(0, sharedPanels.panels.length));
     setSharedPanels(sharedPanels);
-    AppletManager.setDefinitions(allDefinitions);
 }
 
 /**
  * Removes shared applet from shared-panels gsetting.
- * If individual applet is being removed, remove from all other shared panels.
+ * If individual applet is being removed (changed is true), only remove 1 instance as this will be called multiple
+ * times from AppletManager. Otherwise (changed is false, user removed applet) remove all shared applets
  * If entire panel is being removed, only remove given instance.
  * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
  */
-function removeSharedApplets(appletDefinition) {
+function removeSharedApplets(appletDefinition, changed) {
     const sharedPanels = getSharedPanels();
-    const { location_label: location, order, panelId, applet_id: instanceId} = appletDefinition;
+    const { location_label: location, order, panelId, applet_id: instanceId } = appletDefinition;
     const instanceArray = sharedPanels.applets[location][order];
     if (!instanceArray) return;
     // Only remove applet from the panel being removed.
@@ -501,15 +488,21 @@ function removeSharedApplets(appletDefinition) {
         return;
     }
 
-    const definitions = AppletManager.getDefinitions();
-    for (let instanceId of instanceArray) {
-        const index = definitions.findIndex(definition => definition.applet_id == instanceId);
-        if (index === -1) continue;
-        definitions.splice(index, 1);
+    if (changed) {
+        instanceArray.splice(0, 1);
+    }
+    else {
+        const definitions = AppletManager.getDefinitions();
+        for (let instanceId of instanceArray) {
+            const index = definitions.findIndex(definition => definition.applet_id == instanceId);
+            if (index === -1) continue;
+            definitions.splice(index, 1);
+        }
+
+        AppletManager.setDefinitions(definitions);
+        instanceArray.length = 0;
     }
 
-    AppletManager.setDefinitions(definitions);
-    instanceArray.length = 0;
     setSharedPanels(sharedPanels);
 }
 
