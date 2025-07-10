@@ -7,7 +7,7 @@
 #include "cinnamon-global-private.h"
 #include "cinnamon-screen.h"
 #include <meta/meta-x11-display.h>
-#include <meta/compositor-mutter.h>
+#include <meta/compositor-muffin.h>
 #include <meta/meta-cursor-tracker.h>
 #include <meta/meta-background-actor.h>
 #include <meta/meta-settings.h>

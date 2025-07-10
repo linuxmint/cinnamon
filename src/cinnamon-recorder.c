@@ -16,7 +16,7 @@
 #include <cogl/cogl.h>
 #include <meta/meta-cursor-tracker.h>
 #include <meta/display.h>
-#include <meta/compositor-mutter.h>
+#include <meta/compositor-muffin.h>
 #include <st/st.h>
 
 #include "cinnamon-global.h"
