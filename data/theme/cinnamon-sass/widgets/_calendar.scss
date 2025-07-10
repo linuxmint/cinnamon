@@ -19,8 +19,12 @@
   &-today-home-button,
   &-today-home-button-enabled {
     margin-left: $base_padding * 2;
+    padding: $base_padding + 2 $base_padding * 2;
+    border-radius: $base_border_radius;
 
-    &:hover {}
+    &:hover {
+      background-color: $lighter_bg_color;
+    }
   }
 
   // the large date labels at the top

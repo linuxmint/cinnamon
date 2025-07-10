@@ -13,8 +13,9 @@ gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, Gtk
 
 from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
-from SettingsWidgets import SidePage
+from SettingsWidgets import SidePage, Keybinding
 from bin import util
+from bin import InputSources
 from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
@@ -41,6 +42,8 @@ CATEGORIES = [
     #(child)Label                       id                  parent
 
     [_("General"),          "general",          None,       "preferences-desktop-keyboard-shortcuts"],
+    [_("Keyboard"),             "keyboard",         "general",      None],
+    [_("Pointer"),              "pointer",          "general",      None],
     [_("Troubleshooting"),      "trouble",          "general",      None],
     [_("Windows"),          "windows",          None,       "preferences-system-windows"],
     [_("Positioning"),          "win-position",     "windows",      None],
@@ -57,8 +60,7 @@ CATEGORIES = [
     [_("Quiet Keys"),           "media-quiet",      "media",        None],
     [_("Universal Access"), "accessibility",    None,       "preferences-desktop-accessibility"],
     [_("Custom Shortcuts"), "custom",           None,       "cinnamon-panel-launcher"],
-    [_("Pointer"),          "pointer",          "general",  None],
-    [_("Spices"),          "spices",          None,  "cinnamon"]
+    [_("Spices"),           "spices",           None,       "cinnamon"]
 ]
 
 KEYBINDINGS = [
@@ -216,7 +218,10 @@ KEYBINDINGS = [
     [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard", "accessibility"],
     [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size", "accessibility"],
     [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size", "accessibility"],
-    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"]
+    [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast", "accessibility"],
+    # Keyboard layout switching
+    [_("Switch to next layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source", "keyboard"],
+    [_("Switch to previous layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-backward", "keyboard"],
 ]
 
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
@@ -586,7 +591,9 @@ class Module:
                         elem = None
                         if len(binding) > 4:
                             elem = binding[4]
-                        category.add(KeyBinding(binding[0], binding[1], binding[2], binding[3], elem))
+                        kb = KeyBinding(binding[0], binding[1], binding[2], binding[3], elem)
+                        kb.connect("changed", self.on_kb_changed)
+                        category.add(kb)
 
             cat_iters = {}
             longest_cat_label = " "
@@ -616,25 +623,13 @@ class Module:
 
             vbox.pack_start(headingbox, True, True, 0)
 
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            vbox.set_border_width(6)
-            vbox.set_spacing(6)
-
-            if util.get_session_type() != "wayland":
-                self.sidePage.stack.add_titled(vbox, "layouts", _("Layouts"))
-                try:
-                    widget = self.sidePage.content_box.c_manager.get_c_widget("region")
-                except:
-                    widget = None
-
-                if widget:
-                    cheat_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
-                    cheat_box.pack_start(widget, True, True, 2)
-                    cheat_box.set_vexpand(False)
-                    widget.show()
-                    vbox.pack_start(cheat_box, True, True, 0)
+            page = InputSources.InputSourceSettingsPage()
+            self.sidePage.stack.add_titled(page, "layouts", _("Layouts"))
 
             self.kb_search_entry.grab_focus()
+
+    def on_kb_changed(self, kb):
+        self.onKeyBindingChanged(self.kb_tree)
 
     def stack_page_changed(self, stack, pspec, data=None):
         if stack.get_visible_child_name() == "shortcuts":
@@ -1153,20 +1148,65 @@ class KeyBindingCategory:
         del self.keybindings[:]
 
 
-class KeyBinding:
+class KeyBinding(GObject.Object):
+    __gsignals__ = {
+        'changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
+    }
     def __init__(self, label, schema, key, category, properties=None):
+        super().__init__()
         self.key = key
         self.category = category
         self.label = label
         self.schema = schema
         self.entries = []
-        self.settings = Gio.Settings.new(schema) if "/" not in schema else schema
         self.properties = properties
-        self.loadSettings()
+        self.json_timeout_id = 0
+        self.json_monitor_id = 0
+        self.initial_load = True
+        if "/" not in schema:
+            self.settings = Gio.Settings(schema_id=schema)
+            self.load_gsettings()
+            self.settings.connect(f"changed::{self.key}", self.load_gsettings)
+        else:
+            self.settings = schema
+            self.load_json_settings()
+            self.settings_file = Gio.File.new_for_path(self.settings)
+            self.settings_monitor = self.settings_file.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+            self.resume_json_monitor()
 
-    def loadSettings(self):
+    def emit_changed(self):
+        # Skip initial emission, while the UI is loaded
+        if self.initial_load:
+            self.initial_load = False
+            return
+        self.emit("changed")
+
+    def pause_json_monitor(self):
+        if self.json_timeout_id > 0:
+            GLib.source_remove(self.json_timeout_id)
+            self.json_timeout_id = 0
+        if self.json_monitor_id > 0:
+            self.settings_monitor.disconnect(self.json_monitor_id)
+            self.json_monitor_id = 0
+
+    def resume_json_monitor(self):
+        self.json_monitor_id = self.settings_monitor.connect("changed", self.json_settings_changed)
+
+    def json_settings_changed(self, *args):
+        if self.json_timeout_id > 0:
+            GLib.source_remove(self.json_timeout_id)
+        self.json_timeout_id = GLib.timeout_add(2000, self.load_json_settings)
+
+    def load_gsettings(self, *args):
         del self.entries[:]
-        self.entries = self.get_array(self.settings.get_strv(self.key)) if "/" not in self.settings else self.getConfigSettings()
+        self.entries = self.get_array(self.settings.get_strv(self.key))
+        self.emit_changed()
+
+    def load_json_settings(self, *args):
+        del self.entries[:]
+        self.entries = self.getConfigSettings()
+        self.json_timeout_id = 0
+        self.emit_changed()
 
     def getConfigSettings(self):
         with open(self.schema, encoding="utf-8") as config_file:
@@ -1200,6 +1240,7 @@ class KeyBinding:
         if "/" not in self.schema:
             self.settings.set_strv(self.key, array)
         else:
+            self.pause_json_monitor()
             with open(self.schema, encoding="utf-8") as config_file:
                 config = json.load(config_file)
 
@@ -1207,11 +1248,15 @@ class KeyBinding:
 
             with open(self.schema, "w", encoding="utf-8") as config_file:
                 config_file.write(json.dumps(config, indent=4))
+                config_file.flush()
+            self.resume_json_monitor()
 
     def resetDefaults(self):
         if "/" not in self.schema:
             self.settings.reset(self.key)
+            self.load_gsettings()
         else:
+            self.pause_json_monitor()
             with open(self.schema, encoding="utf-8") as config_file:
                 config = json.load(config_file)
 
@@ -1219,8 +1264,9 @@ class KeyBinding:
 
             with open(self.schema, "w", encoding="utf-8") as config_file:
                 config_file.write(json.dumps(config, indent=4))
-
-        self.loadSettings()
+                config_file.flush()
+            self.resume_json_monitor()
+            self.json_settings_changed()
 
 
 class CustomKeyBinding:
