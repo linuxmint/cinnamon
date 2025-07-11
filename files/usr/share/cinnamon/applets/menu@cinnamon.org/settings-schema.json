@@ -20,7 +20,7 @@
         "panel-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "force-show-panel", "enable-animation"]
+            "keys" : ["overlay-key", "activate-on-hover", "hover-delay", "enable-animation"]
         },
         "menu-layout" : {
             "type" : "section",
@@ -154,12 +154,6 @@
     "default" : false,
     "description": "Enable filesystem path entry in search box",
     "tooltip": "Allows path entry in the menu search box."
- },
- "force-show-panel" : {
-    "type" : "switch",
-    "default" : true,
-    "description": "Force the panel to be visible when opening the menu",
-    "tooltip": "Opening the menu will also show the main panel (which may be auto-hidden)."
  },
 "activate-on-hover" : {
     "type" : "switch",
