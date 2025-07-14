@@ -1,6 +1,6 @@
 {
     "name": "Grouped window list",
-    "role": "panellauncher, windowattentionhandler, notifications",
+    "role": "panellauncher, windowattentionhandler",
     "uuid": "grouped-window-list@cinnamon.org",
     "description": "Main Cinnamon window list with app grouping",
     "icon": "cs-windows",

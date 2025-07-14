@@ -10,6 +10,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
+const MessageTray = imports.ui.messageTray;
 const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
@@ -173,7 +174,7 @@ class Notifications {
     _notificationReceived(mtray, notification) {
         const guessFlatpakAppIdFromDesktopEntryHint = (desktopEntry) => {
             let tryAppId = desktopEntry + '.desktop:flatpak';
-            if (this._appGroupList.some(appGroup => appGroup.groupState.appId === tryAppId)) {
+            if (this._appGroupList.some(appGroup => appGroup.groupState?.appId === tryAppId)) {
                 return tryAppId;
             }            
             const exceptions = {
@@ -185,7 +186,7 @@ class Notifications {
             };
             if (exceptions[desktopEntry]) {
                 tryAppId = exceptions[desktopEntry] + '.desktop:flatpak';
-                if (this._appGroupList.some(appGroup => appGroup.groupState.appId === tryAppId)) {
+                if (this._appGroupList.some(appGroup => appGroup.groupState?.appId === tryAppId)) {
                     return tryAppId;
                 }
             }
@@ -235,7 +236,7 @@ class Notifications {
         this._appGroupList.forEach(appGroup => {
             if (!appGroup.groupState || appGroup.groupState.willUnmount) return;
             if (appId === appGroup.groupState.appId) {
-                // iterate backwards due to in place array modification
+                // iterate backwards due to in place array element deletion
                 for (let i = appGroup.notifications.length - 1; i >= 0; i--) {
                     if (appGroup.notifications[i] && !appGroup.notifications[i]._destroyed) {
                         appGroup.notifications[i].destroy(NotificationDestroyedReason.DISMISSED);
@@ -476,6 +477,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         }
         this.bindAppKeys();
         this.state.set({appletReady: true});
+        MessageTray.extensionsHandlingNotifications++;
     }
 
     _updateState(initialUpdate) {
@@ -543,6 +545,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         });
         this.settings.finalize();
         unref(this, RESERVE_KEYS);
+        MessageTray.extensionsHandlingNotifications--;
     }
 
     on_panel_icon_size_changed(iconSize) {

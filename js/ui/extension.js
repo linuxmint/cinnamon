@@ -105,7 +105,6 @@ var Type = {
     }),
     APPLET: _createExtensionType("Applet", "applets", AppletManager, {
         roles: {
-            notifications: null,
             windowlist: null,
             windowattentionhandler: null,
             panellauncher: null,
@@ -114,7 +113,6 @@ var Type = {
     }),
     DESKLET: _createExtensionType("Desklet", "desklets", DeskletManager, {
         roles: {
-            notifications: null,
             windowlist: null,
             windowattentionhandler: null
         }
