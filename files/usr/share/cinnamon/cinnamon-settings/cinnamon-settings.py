@@ -23,11 +23,11 @@ gi.require_version('XApp', '1.0')
 from gi.repository import Gio, Gtk, Pango, Gdk, XApp
 
 CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
-MODULE_PATH = os.path.join(CURRENT_PATH, "modules")
-MODULE_GLOB = os.path.join(MODULE_PATH, "cs_*.py")
-MODULES = [Path(file).stem for file in glob.glob(MODULE_GLOB)]
+PYTHON_CS_MODULE_PATH = os.path.join(CURRENT_PATH, "modules")
+PYTHON_CS_MODULE_GLOB = os.path.join(PYTHON_CS_MODULE_PATH, "cs_*.py")
+PYTHON_CS_MODULES = [Path(file).stem for file in glob.glob(PYTHON_CS_MODULE_GLOB)]
 BIN_PATH = os.path.join(CURRENT_PATH, "bin")
-sys.path.append(MODULE_PATH)
+sys.path.append(PYTHON_CS_MODULE_PATH)
 sys.path.append(BIN_PATH)
 from bin import capi
 from bin import proxygsettings
@@ -395,7 +395,8 @@ class MainWindow(Gio.Application):
         self.window.show()
 
     def load_sidepage_as_standalone(self, args) -> bool:
-        self.load_python_modules(only_module=args.module)
+        if f"cs_{args.module}" in PYTHON_CS_MODULES:
+            self.load_python_modules(only_module=args.module)
 
         if args.tab is not None:
             module_tabs = TABS.get(args.module, {"default": 0})
@@ -437,9 +438,9 @@ class MainWindow(Gio.Application):
             else:
                 print("warning: failed to process CCC module", item[1])
 
-    def load_standalone_modules(self, MODULES: list) -> None:
+    def load_standalone_modules(self, mods: list) -> None:
         """Loads all standalone settings modules."""
-        for item in MODULES:
+        for item in mods:
             samodule = SettingsWidgets.SAModule(item[0], item[1], item[2], item[3], item[4], self.content_box)
             if samodule.process():
                 self.sidePages.append(SidePageData(samodule.sidePage, samodule.name, samodule.category))
@@ -459,7 +460,7 @@ class MainWindow(Gio.Application):
         if only_module is not None:
             to_import = [f"cs_{only_module}"]
         else:
-            to_import = MODULES
+            to_import = PYTHON_CS_MODULES
 
         for module in map(__import__, to_import):
             try:
@@ -752,7 +753,7 @@ class MainWindow(Gio.Application):
 if __name__ == "__main__":
     formatted_mods = ""
     i = 0
-    for mod in MODULES:
+    for mod in PYTHON_CS_MODULES:
         formatted_mods += mod.replace("cs_", "") + ", "
         i += 1
         if i == 8:
@@ -784,9 +785,12 @@ SORT_TYPE can be specified by number or name as follows:
     parser.add_argument('-p', '--panel', type=str, metavar="PANEL_ID", help="If opening the panel or applets module, specify a starting panel by its id")
     args = parser.parse_args()
 
-    if args.module is not None and f"cs_{args.module}" not in MODULES:
+    def find_module_name(name):
+        return f"cs_{name}" in PYTHON_CS_MODULES or name in [item[1] for item in CONTROL_CENTER_MODULES]
+
+    if args.module is not None and not find_module_name(args.module):
         new_mod = CS_MODULE_ALIASES.get(args.module, None)
-        if new_mod is None:
+        if not find_module_name(new_mod):
             print(f"warning: settings module {args.module} not found. Ignoring any remaining arguments.")
         args.module = new_mod
 
