@@ -50,6 +50,7 @@ XLET_SETTINGS_WIDGETS = {
     "datechooser"       :   "JSONSettingsDateChooser",
     "timechooser"       :   "JSONSettingsTimeChooser",
     "keybinding"        :   "JSONSettingsKeybinding",
+    "twocolumnlabel"    :   "JSONSettingsTwoColumnLabelRow",
     "list"              :   "JSONSettingsList"
 }
 

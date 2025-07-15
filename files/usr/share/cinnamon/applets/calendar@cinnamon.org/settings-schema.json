@@ -15,6 +15,58 @@
         "description": "Show week numbers in calendar",
         "tooltip": "Check this to show week numbers in the calendar."
     },
+    "show-weekday-headers" : {
+        "type" : "switch",
+        "default" : true,
+        "description": "Show weekday headers in calendar",
+        "tooltip": "Check this to show weekday headers (Mon, Tue, etc.) in the calendar."
+    },
+    "section-date-format": {
+        "type": "section",
+        "description": "Date Format"
+    },
+    "os-format-type": {
+        "type": "combobox",
+        "default": "linuxmint",
+        "description": "Operating system style",
+        "dependency": "!use-custom-format",
+        "options": {
+            "Linux Mint": "linuxmint",
+            "macOS": "macos",
+            "Windows 10": "windows10",
+            "Windows 11": "windows11",
+            "Ubuntu": "ubuntu",
+            "Windows 7": "windows7",
+            "GNOME": "gnome",
+            "KDE": "kde"
+        }
+    },
+    "use-24h-format" : {
+        "type" : "switch",
+        "default" : true,
+        "description": "Use 24-hour time format",
+        "dependency": "!use-custom-format",
+        "tooltip": "Use 24-hour time format instead of 12-hour AM/PM format."
+    },
+    "show-seconds" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Show seconds in time",
+        "dependency": "!use-custom-format",
+        "tooltip": "Show seconds in the time display."
+    },
+    "date-separator": {
+        "type": "combobox",
+        "default": "/",
+        "description": "Date separator",
+        "dependency": "!use-custom-format",
+        "options": {
+            "Slash (/)": "/",
+            "Dash (-)": "-",
+            "Dot (.)": "."
+        },
+        "tooltip": "Character used to separate date components."
+    },
     "use-custom-format" : {
         "type" : "switch",
         "default" : false,
@@ -24,9 +76,81 @@
     "custom-format" : {
         "type" : "entry",
         "default" : "%A, %B %e, %H:%M",
-        "description" : "Date format",
+        "description" : "Custom format",
         "dependency" : "use-custom-format",
-        "tooltip" : "Set your custom format here."
+        "tooltip" : "Enter your custom format. Use the button below to see available format codes."
+    },
+    "format-button" : {
+        "type" : "button",
+        "description" : "Show/Hide format reference",
+        "dependency" : "use-custom-format",
+        "callback" : "on_custom_format_button_pressed",
+        "tooltip" : "Click to show/hide format codes reference below."
+    },
+    "format-help-visible" : {
+        "type" : "switch",
+        "default" : false,
+        "description" : "Show format reference",
+        "dependency" : "use-custom-format",
+        "tooltip" : "Toggle visibility of format reference below"
+    },
+    "format-help-header" : {
+        "type" : "header",
+        "description" : "Date Format Reference",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-columns" : {
+        "type" : "twocolumnlabel", 
+        "left-description" : "<b>Date codes</b>",
+        "right-description" : "<b>Time codes</b>",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row1" : {
+        "type" : "twocolumnlabel", 
+        "left-description" : "<tt>%Y</tt> → 2024 (Year)",
+        "right-description" : "<tt>%H</tt> → 13 (Hour 24h)",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row2" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%m</tt> → 01 (Month number)",
+        "right-description" : "<tt>%I</tt> → 01 (Hour 12h)",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row3" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%d</tt> → 15 (Day of month)",
+        "right-description" : "<tt>%M</tt> → 30 (Minutes)",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row4" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%A</tt> → Monday (Full weekday)",
+        "right-description" : "<tt>%S</tt> → 45 (Seconds)",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row5" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%a</tt> → Mon (Short weekday)",
+        "right-description" : "<tt>%p</tt> → AM/PM",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row6" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%B</tt> → January (Full month)",
+        "right-description" : "<tt>%n</tt> → New line",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-row7" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%b</tt> → Jan (Short month)",
+        "right-description" : "",
+        "dependency" : "format-help-visible"
+    },
+    "format-help-footer" : {
+        "type" : "label",
+        "description" : "Type 'man strftime' in terminal for complete reference",
+        "dependency" : "format-help-visible"
     },
     "custom-tooltip-format" : {
         "type" : "entry",
@@ -35,18 +159,36 @@
         "dependency" : "use-custom-format",
         "tooltip" : "Set your custom tooltip format here."
     },
-    "format-button" : {
-        "type" : "button",
-        "description" : "Show information on date format syntax",
+    "section-display-locations": {
+        "type": "section",
+        "description": "Display Locations"
+    },
+    "applet-format" : {
+        "type" : "entry",
+        "default" : "%a %b %d %H:%M",
+        "description" : "Date format in applet",
         "dependency" : "use-custom-format",
-        "callback" : "on_custom_format_button_pressed",
-        "tooltip" : "Click this button to know more about the syntax for date formats."
+        "tooltip" : "Date format displayed in the calendar applet."
+    },
+    "tooltip-format" : {
+        "type" : "entry",
+        "default" : "%A, %B %e, %Y",
+        "description" : "Date format in tooltip",
+        "dependency" : "use-custom-format",
+        "tooltip" : "Date format displayed in tooltip when hovering over applet."
+    },
+    "screensaver-format" : {
+        "type" : "entry",
+        "default" : "%A, %B %e, %Y %H:%M",
+        "description" : "Date format on screensaver",
+        "dependency" : "use-custom-format",
+        "tooltip" : "Date format displayed on the screensaver."
     },
     "section2": {
         "type": "section",
         "description": "Keyboard shortcuts"
     },
-    "keyOpen": {
+    "key-open": {
         "type": "keybinding",
         "description": "Show calendar",
         "default": "<Super>c",

@@ -4,9 +4,9 @@ import subprocess
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gtk
+from gi.repository import Gtk, Gio
 
-from SettingsWidgets import SidePage
+from SettingsWidgets import SidePage, TwoColumnLabelRow
 from xapp.GSettingsWidgets import *
 
 LOCK_DELAY_OPTIONS = [
@@ -53,8 +53,7 @@ class Module:
         sidePage = SidePage(_("Screensaver"), "cs-screensaver", keywords, content_box, module=self)
         self.sidePage = sidePage
 
-    def on_show_custom_format_info_button_clicked(self, button):
-        subprocess.Popen(['xdg-open', 'http://www.foragoodstrftime.com/'])
+
 
     def on_module_selected(self):
         if self.loaded:
@@ -98,34 +97,22 @@ class Module:
         page = SettingsPage()
         self.sidePage.stack.add_titled(page, "customize", _("Customize"))
 
+        # Button to configure date/time settings in Calendar module
         settings = page.add_section(_("Date and Time"))
-
-        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
-
-        widget = GSettingsSwitch(_("Always show the clock"), schema, "show-clock")
-        widget.set_tooltip_text(_("Show the clock on the wallpaper instead of just on the unlock screen"))
-        settings.add_row(widget)
-
-        widget = GSettingsSwitch(_("Use a custom date and time format"), schema, "use-custom-format")
-        settings.add_row(widget)
-
-        widget = GSettingsEntry(_("Time Format"), schema, "time-format", size_group=size_group)
-        settings.add_reveal_row(widget, schema, "use-custom-format")
-
-        widget = GSettingsEntry(_("Date Format: "), schema, "date-format", size_group=size_group)
-        settings.add_reveal_row(widget, schema, "use-custom-format")
-
-        widget = SettingsWidget()
-        button = Gtk.Button(_("Show information on date format syntax"))
-        button.connect("clicked", self.on_show_custom_format_info_button_clicked)
-        widget.pack_start(button, True, True, 0)
-        settings.add_reveal_row(widget, schema, "use-custom-format")
-
-        widget = GSettingsFontButton(_("Time Font"), "org.cinnamon.desktop.screensaver", "font-time", size_group=size_group)
-        settings.add_row(widget)
-
-        widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
-        settings.add_row(widget)
+        
+        def open_calendar_settings():
+            import subprocess
+            try:
+                subprocess.Popen(["cinnamon-settings", "calendar"])
+            except Exception as e:
+                print(f"Error opening Calendar settings: {e}")
+        
+        button_widget = SettingsWidget()
+        button = Gtk.Button(_("Configure date and time settings..."))
+        button.connect("clicked", lambda x: open_calendar_settings())
+        button.set_tooltip_text(_("Open Calendar settings to configure clock display, fonts, and formatting"))
+        button_widget.pack_start(button, False, False, 0)
+        settings.add_row(button_widget)
 
         settings = page.add_section(_("Away message"))
 

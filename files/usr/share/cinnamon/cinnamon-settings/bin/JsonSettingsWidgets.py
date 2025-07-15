@@ -2,7 +2,7 @@
 
 from gi.repository import Gio
 from xapp.SettingsWidgets import *
-from SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding
+from SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding, TwoColumnLabelRow
 from xapp.GSettingsWidgets import CAN_BACKEND as px_can_backend
 from SettingsWidgets import CAN_BACKEND as c_can_backend
 from TreeListWidgets import List
@@ -16,6 +16,8 @@ can_backend.append('List')
 
 JSON_SETTINGS_PROPERTIES_MAP = {
     "description"      : "label",
+    "left-description" : "left_text",
+    "right-description": "right_text",
     "min"              : "mini",
     "max"              : "maxi",
     "step"             : "step",

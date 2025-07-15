@@ -157,6 +157,7 @@ class Calendar {
         this._set_date_idle_id = 0;
 
         this.settings.bindWithObject(this, "show-week-numbers", "show_week_numbers", this._onSettingsChange);
+        this.settings.bindWithObject(this, "show-weekday-headers", "show_weekday_headers", this._onSettingsChange);
         this.desktop_settings = new Gio.Settings({ schema_id: DESKTOP_SCHEMA });
         this.desktop_settings.connect("changed::" + FIRST_WEEKDAY_KEY, Lang.bind(this, this._onSettingsChange));
 
@@ -329,7 +330,7 @@ class Calendar {
 
             // Could use iter.toLocaleFormat('%a') but that normally gives three characters
             // and we want, ideally, a single character for e.g. S M T W T F S
-            let customDayAbbrev = _getCalendarDayAbbreviation(iter.getDay());
+            let customDayAbbrev = this.show_weekday_headers ? _getCalendarDayAbbreviation(iter.getDay()) : '';
             let label = new St.Label({ style_class: styleClass, text: customDayAbbrev });
             this.actor.add(label,
                            { row: 1,

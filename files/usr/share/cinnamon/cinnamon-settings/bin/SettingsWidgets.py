@@ -15,7 +15,7 @@ import util
 
 settings_objects = {}
 
-CAN_BACKEND = ["SoundFileChooser", "DateChooser", "TimeChooser", "Keybinding"]
+CAN_BACKEND = ["SoundFileChooser", "DateChooser", "TimeChooser", "Keybinding", "TwoColumnLabelRow"]
 
 class BinFileMonitor(GObject.GObject):
     __gsignals__ = {
@@ -324,6 +324,56 @@ class LabelRow(SettingsWidget):
         self.pack_start(self.label, False, False, 0)
         self.label.set_markup(text)
         self.set_tooltip_text(tooltip)
+
+class TwoColumnLabelRow(SettingsWidget):
+    bind_dir = None
+    
+    def __init__(self, left_text=None, right_text=None, tooltip=None):
+        super(TwoColumnLabelRow, self).__init__()
+        
+        # Główny kontener horizontal
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
+        self.pack_start(self.main_box, False, False, 0)
+        
+        # LEWA KOLUMNA - fixed width, niezależna
+        self.left_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.left_box.set_size_request(250, -1)  # Fixed width 250px
+        self.left_label = SettingsLabel()
+        self.left_label.set_halign(Gtk.Align.START)  # Wyrównaj do lewej
+        self.left_label.set_xalign(0.0)  # Tekst do lewej
+        if left_text:
+            self.left_label.set_markup(left_text)
+        self.left_box.pack_start(self.left_label, False, False, 0)
+        self.main_box.pack_start(self.left_box, False, False, 0)
+        
+        # SEPARATOR - wyraźna przerwa między kolumnami  
+        separator = Gtk.Box()
+        separator.set_size_request(50, -1)  # 50px przerwa
+        self.main_box.pack_start(separator, False, False, 0)
+        
+        # PRAWA KOLUMNA - fixed width, niezależna
+        self.right_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.right_box.set_size_request(250, -1)  # Fixed width 250px
+        self.right_label = SettingsLabel()
+        self.right_label.set_halign(Gtk.Align.START)  # Wyrównaj do lewej
+        self.right_label.set_xalign(0.0)  # Tekst do lewej
+        if right_text:
+            self.right_label.set_markup(right_text)
+        self.right_box.pack_start(self.right_label, False, False, 0)
+        self.main_box.pack_start(self.right_box, False, False, 0)
+        
+        self.set_tooltip_text(tooltip)
+        
+        # Ustaw content_widget na siebie - to jest wymagane przez JSON backend
+        self.content_widget = self
+
+    def on_setting_changed(self, *args):
+        # Metoda wymagana przez backend - ale dla labelki nic nie robimy
+        pass
+
+    def connect_widget_handlers(self, *args):
+        # Metoda wymagana przez backend - ale dla labelki nic nie robimy  
+        pass
 
 class SoundFileChooser(SettingsWidget):
     bind_dir = None

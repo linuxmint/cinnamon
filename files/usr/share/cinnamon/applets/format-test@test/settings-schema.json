@@ -1,0 +1,55 @@
+{
+    "section1": {
+        "type": "section",
+        "description": "Test dwukolumnowego układu formatów"
+    },
+    "new-help-header": {
+        "type": "header",
+        "description": "Formaty daty - dwukolumnowy układ"
+    },
+    "format-help-headers": {
+        "type": "twocolumnlabel",
+        "left-description": "<b>Date codes</b>",
+        "right-description": "<b>Time codes</b>"
+    },
+    "format-help-row1": {
+        "type": "twocolumnlabel",
+        "left-description": "%Y → 2024 (Year)",
+        "right-description": "%H → 13 (Hour 24h)"
+    },
+    "format-help-row2": {
+        "type": "twocolumnlabel",
+        "left-description": "%m → 01 (Month number)",
+        "right-description": "%I → 01 (Hour 12h)"
+    },
+    "format-help-row3": {
+        "type": "twocolumnlabel",
+        "left-description": "%d → 15 (Day of month)",
+        "right-description": "%M → 30 (Minutes)"
+    },
+    "format-help-row4": {
+        "type": "twocolumnlabel",
+        "left-description": "%A → Monday (Full weekday)",
+        "right-description": "%S → 45 (Seconds)"
+    },
+    "format-help-row5": {
+        "type": "twocolumnlabel",
+        "left-description": "%a → Mon (Short weekday)",
+        "right-description": "%p → AM/PM"
+    },
+    "format-help-row6": {
+        "type": "twocolumnlabel",
+        "left-description": "%B → January (Full month)",
+        "right-description": "%n → New line"
+    },
+    "format-help-row7": {
+        "type": "twocolumnlabel",
+        "left-description": "%b → Jan (Short month)",
+        "right-description": ""
+    },
+    
+    "test-setting": {
+        "type": "generic",
+        "default": false
+    }
+} 

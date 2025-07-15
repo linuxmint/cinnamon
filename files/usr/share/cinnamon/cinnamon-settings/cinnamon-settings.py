@@ -112,6 +112,7 @@ TABS = {
     "applets":          {"installed": 0, "more": 1, "download": 1},
     "actions":          {"installed": 0, "more": 1, "download": 1, "layout": 2},
     "backgrounds":      {"images": 0, "settings": 1},
+    "calendar":         {"datetime": 0, "calendar": 1, "screensaver": 2},
     "default":          {"preferred": 0, "removable": 1},
     "desklets":         {"installed": 0, "more": 1, "download": 1, "general": 2},
     "display":          {"layout": 0, "settings": 1},

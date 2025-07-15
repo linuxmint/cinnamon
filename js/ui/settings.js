@@ -183,6 +183,13 @@ var SETTINGS_TYPES = {
             "default",
             "columns"
         ]
+    },
+    "dateformat" : {
+        "required-fields": [
+            "type",
+            "default",
+            "description"
+        ]
     }
 };
 
@@ -209,6 +216,13 @@ var NON_SETTING_TYPES = {
         "required-fields": [
             "type",
             "description"
+        ]
+    },
+    "twocolumnlabel" : {
+        "required-fields": [
+            "type",
+            "left-description",
+            "right-description"
         ]
     }
 };
