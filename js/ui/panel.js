@@ -2087,6 +2087,7 @@ Panel.prototype = {
         this._hidden = false;
         this._disabled = false;
         this._panelEditMode = false;
+        this._highlighted = false;
         this._autohideSettings = null;
         this._destroyed = false;
         this._positionChanged = false;
@@ -2405,8 +2406,8 @@ Panel.prototype = {
 
         this.actor.change_style_pseudo_class('highlight', highlight);
 
-        if (highlight)
-            this.peekPanel();
+        this._highlighted = highlight;
+        this._updatePanelVisibility();
     },
 
     /**
@@ -3685,7 +3686,7 @@ Panel.prototype = {
      * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility: function() {
-        if (this._panelEditMode || this._peeking || this._panelHasOpenMenus())
+        if (this._panelEditMode || this._highlighted || this._peeking || this._panelHasOpenMenus())
             this._shouldShow = true;
         else {
             switch (this._autohideSettings) {
