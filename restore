@@ -1,4 +1,0 @@
-#!/bin/bash
-
-rm -rf /usr/share/cinnamon/js
-mv /usr/share/cinnamon/js-backup /usr/share/cinnamon/js
