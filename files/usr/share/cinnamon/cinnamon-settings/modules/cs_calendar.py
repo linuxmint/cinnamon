@@ -283,10 +283,10 @@ class Module:
             
             # Ustawienia formatowania zegara na wygaszaczu
             widget = GSettingsSwitch(_("Use custom screensaver format"), "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
-            screensaver_format.add_reveal_row(widget, "org.cinnamon.desktop.screensaver", "show-clock")
+            screensaver_format.add_row(widget)
             
             widget = GSettingsEntry(_("Screensaver format"), "org.cinnamon.applets.calendar", "screensaver-format")
-            screensaver_format.add_reveal_row(widget, "org.cinnamon.desktop.screensaver", "show-clock")
+            screensaver_format.add_reveal_row(widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
             
             # Pozycja na wygaszaczu
             position_options = [
@@ -302,7 +302,7 @@ class Module:
             ]
             
             widget = GSettingsComboBox(_("Date position on screensaver"), "org.cinnamon.applets.calendar", "screensaver-position", position_options)
-            screensaver_format.add_reveal_row(widget, "org.cinnamon.desktop.screensaver", "show-clock")
+            screensaver_format.add_reveal_row(widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
 
 
 
