@@ -221,6 +221,19 @@ class Module:
             # Własny format tooltip
             tooltip_format.add_row(GSettingsEntry(_("Tooltip format"), "org.cinnamon.applets.calendar", "tooltip-format"))
             
+            # Live preview for tooltip format
+            tooltip_preview_widget = SettingsWidget()
+            tooltip_preview_widget.pack_start(Gtk.Label(_("Preview")), False, False, 0)
+            
+            # Tooltip preview label
+            self.tooltip_preview_label = Gtk.Label()
+            self.tooltip_preview_label.set_halign(Gtk.Align.START)
+            self.tooltip_preview_label.set_line_wrap(True)
+            self.tooltip_preview_label.set_selectable(True)
+            tooltip_preview_widget.pack_end(self.tooltip_preview_label, False, False, 0)
+            
+            tooltip_format.add_row(tooltip_preview_widget)
+            
             # Tooltip format help switch
             tooltip_help_switch = GSettingsSwitch(_("Show tooltip format reference"), "org.cinnamon.applets.calendar", "tooltip-format-help-visible")
             tooltip_format.add_row(tooltip_help_switch)
@@ -304,9 +317,11 @@ class Module:
             # Connect to format changes for live preview
             self.screensaver_settings = Gio.Settings(schema_id="org.cinnamon.applets.calendar")
             self.screensaver_settings.connect("changed::screensaver-format", self.update_screensaver_preview)
+            self.screensaver_settings.connect("changed::tooltip-format", self.update_tooltip_preview)
             
             # Initial preview update
             self.update_screensaver_preview()
+            self.update_tooltip_preview()
             
             # Screensaver format help switch
             screensaver_help_switch = GSettingsSwitch(_("Show screensaver format reference"), "org.cinnamon.applets.calendar", "screensaver-format-help-visible")
@@ -435,6 +450,25 @@ class Module:
             # Other error
             error_text = _("Error:") + " " + str(e)
             self.screensaver_preview_label.set_text(error_text)
+
+    def update_tooltip_preview(self, *args):
+        format_string = self.screensaver_settings.get_string("tooltip-format")
+        try:
+            # Get current date and time
+            now = datetime.datetime.now()
+            formatted_date = now.strftime(format_string)
+            
+            # Show the formatted date
+            self.tooltip_preview_label.set_text(formatted_date)
+            
+        except ValueError as e:
+            # Invalid format string
+            error_text = _("Invalid format:") + " " + str(e)
+            self.tooltip_preview_label.set_text(error_text)
+        except Exception as e:
+            # Other error
+            error_text = _("Error:") + " " + str(e)
+            self.tooltip_preview_label.set_text(error_text)
 
 
 class SytemdDBusProxyHandler(object):
