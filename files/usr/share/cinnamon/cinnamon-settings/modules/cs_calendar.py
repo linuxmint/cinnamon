@@ -94,19 +94,15 @@ class Module:
                 (_("KDE Style (Mon 15 Jan 2024 14:30)"), "KDE")
             ]
             
-            # === OPCJE SYSTEMOWE (z revealer - widoczne gdy use-custom-format = false) ===
-            system_options_revealer = SettingsRevealer()
-            system_options_widget = SettingsWidget()
-            system_options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            
+            # === OPCJE SYSTEMOWE (bez wcięcia - widoczne gdy use-custom-format = false) ===
             self.format_combo = GSettingsComboBox(_("Date format style"), "org.cinnamon.applets.calendar", "os-format-type", format_style_options)
-            system_options_box.pack_start(self.format_combo, False, False, 0)
+            applet_format.add_row(self.format_combo)
             
             self.time_format_switch = GSettingsSwitch(_("Use 24-hour time format"), "org.cinnamon.applets.calendar", "use-24h-format")
-            system_options_box.pack_start(self.time_format_switch, False, False, 0)
+            applet_format.add_row(self.time_format_switch)
             
             self.seconds_switch = GSettingsSwitch(_("Show seconds"), "org.cinnamon.applets.calendar", "show-seconds")
-            system_options_box.pack_start(self.seconds_switch, False, False, 0)
+            applet_format.add_row(self.seconds_switch)
             
             separator_options = [
                 (_("Slash (/)"), "/"),
@@ -114,25 +110,28 @@ class Module:
                 (_("Dot (.)"), ".")
             ]
             self.separator_combo = GSettingsComboBox(_("Date separator"), "org.cinnamon.applets.calendar", "date-separator", separator_options)
-            system_options_box.pack_start(self.separator_combo, False, False, 0)
+            applet_format.add_row(self.separator_combo)
             
-            system_options_widget.pack_start(system_options_box, True, True, 0)
-            applet_format.add_reveal_row(system_options_widget, revealer=system_options_revealer)
-            
-            # === OPCJE CUSTOM (z revealer - widoczne gdy use-custom-format = true) ===
-            custom_options_revealer = SettingsRevealer()
-            custom_options_widget = SettingsWidget()
-            custom_options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-            
+            # === OPCJE CUSTOM (bez wcięcia - widoczne gdy use-custom-format = true) ===
             self.custom_format_entry = GSettingsEntry(_("Custom applet format"), "org.cinnamon.applets.calendar", "applet-format")
-            custom_options_box.pack_start(self.custom_format_entry, False, False, 0)
+            applet_format.add_row(self.custom_format_entry)
+            
+            # Live preview for custom applet format
+            custom_preview_widget = SettingsWidget()
+            custom_preview_widget.pack_start(Gtk.Label(_("Preview")), False, False, 0)
+            
+            # Custom preview label
+            self.custom_preview_label = Gtk.Label()
+            self.custom_preview_label.set_halign(Gtk.Align.START)
+            self.custom_preview_label.set_line_wrap(True)
+            self.custom_preview_label.set_selectable(True)
+            custom_preview_widget.pack_end(self.custom_preview_label, False, False, 0)
+            
+            applet_format.add_row(custom_preview_widget)
             
             # Format help switch
             self.help_switch = GSettingsSwitch(_("Show format reference"), "org.cinnamon.applets.calendar", "format-help-visible")
-            custom_options_box.pack_start(self.help_switch, False, False, 0)
-            
-            custom_options_widget.pack_start(custom_options_box, True, True, 0)
-            applet_format.add_reveal_row(custom_options_widget, revealer=custom_options_revealer)
+            applet_format.add_row(self.help_switch)
             
             # Format help content
             help_widget = SettingsWidget()
@@ -198,11 +197,16 @@ class Module:
                 is_custom = use_custom_switch.content_widget.get_active()
                 is_help_visible = self.help_switch.content_widget.get_active()
                 
-                # Opcje systemowe widoczne gdy NIE custom (płynne znikanie/pojawianie)
-                system_options_revealer.set_reveal_child(not is_custom)
+                # Opcje systemowe aktywne gdy NIE custom
+                self.format_combo.set_sensitive(not is_custom)
+                self.time_format_switch.set_sensitive(not is_custom)
+                self.seconds_switch.set_sensitive(not is_custom)
+                self.separator_combo.set_sensitive(not is_custom)
                 
-                # Opcje custom widoczne gdy custom (płynne znikanie/pojawianie)
-                custom_options_revealer.set_reveal_child(is_custom)
+                # Opcje custom aktywne gdy custom
+                self.custom_format_entry.set_sensitive(is_custom)
+                self.custom_preview_label.set_sensitive(is_custom)
+                self.help_switch.set_sensitive(is_custom)
                 
                 # Help revealer widoczny gdy custom I help włączony
                 help_revealer.set_reveal_child(is_custom and is_help_visible)
@@ -318,10 +322,12 @@ class Module:
             self.screensaver_settings = Gio.Settings(schema_id="org.cinnamon.applets.calendar")
             self.screensaver_settings.connect("changed::screensaver-format", self.update_screensaver_preview)
             self.screensaver_settings.connect("changed::tooltip-format", self.update_tooltip_preview)
+            self.screensaver_settings.connect("changed::applet-format", self.update_custom_preview)
             
             # Initial preview update
             self.update_screensaver_preview()
             self.update_tooltip_preview()
+            self.update_custom_preview()
             
             # Screensaver format help switch
             screensaver_help_switch = GSettingsSwitch(_("Show screensaver format reference"), "org.cinnamon.applets.calendar", "screensaver-format-help-visible")
@@ -469,6 +475,25 @@ class Module:
             # Other error
             error_text = _("Error:") + " " + str(e)
             self.tooltip_preview_label.set_text(error_text)
+
+    def update_custom_preview(self, *args):
+        format_string = self.screensaver_settings.get_string("applet-format")
+        try:
+            # Get current date and time
+            now = datetime.datetime.now()
+            formatted_date = now.strftime(format_string)
+            
+            # Show the formatted date
+            self.custom_preview_label.set_text(formatted_date)
+            
+        except ValueError as e:
+            # Invalid format string
+            error_text = _("Invalid format:") + " " + str(e)
+            self.custom_preview_label.set_text(error_text)
+        except Exception as e:
+            # Other error
+            error_text = _("Error:") + " " + str(e)
+            self.custom_preview_label.set_text(error_text)
 
 
 class SytemdDBusProxyHandler(object):
