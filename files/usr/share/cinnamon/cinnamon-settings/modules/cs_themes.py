@@ -737,15 +737,8 @@ class Module:
             single_item_category_themes.sort(key=lambda x: (variant_sort_order.get(x['variant'], 3), x['name']))
             multi_item_category_themes.sort(key=lambda x: (x['category'], variant_sort_order.get(x['variant'], 3), x['name']))
 
-            # Reset column position at the start
-            chooser.col = 0
-            chooser.row = 0
-            
             # Display single-item category themes first, under an "Other Themes" label
             if single_item_category_themes:
-                chooser.add_separator(_("Other Themes"))
-                # Add an additional blank separator after the category label
-                chooser.add_separator()
                 for theme_info in single_item_category_themes:
                     theme = theme_info['name']
                     theme_path = None
@@ -793,8 +786,6 @@ class Module:
                     current_category = category
                     current_variant = None # Reset variant when category changes
                     chooser.add_separator(category) # Category name separator
-                    # Add an additional blank separator after the category label
-                    chooser.add_separator()
 
                 # Update current_variant, no separator here if it's just a variant change
                 current_variant = variant
@@ -871,16 +862,9 @@ class Module:
             # Sort both lists
             single_item_category_themes.sort(key=lambda x: (variant_sort_order.get(x['variant'], 3), x['name'].lower()))
             multi_item_category_themes.sort(key=lambda x: (x['category'].lower(), variant_sort_order.get(x['variant'], 3), x['name'].lower()))
-            
-            # Reset column position at the start
-            chooser.col = 0
-            chooser.row = 0
 
             # Display single-item category themes first, under an "Other Themes" label
             if single_item_category_themes:
-                chooser.add_separator(_("Other Themes"))
-                # Add an additional blank separator after the category label
-                chooser.add_separator()
                 for theme_info in single_item_category_themes:
                     theme_name = theme_info['name']
                     theme_path_val = theme_info['path'] # Renamed theme_path to avoid conflict
@@ -914,8 +898,6 @@ class Module:
                     current_category = category
                     current_variant = None # Reset variant when category changes
                     chooser.add_separator(category) # Category name separator
-                    # Add an additional blank separator after the category label
-                    chooser.add_separator()
 
                 # Update current_variant, no separator here if it's just a variant change
                 current_variant = variant
