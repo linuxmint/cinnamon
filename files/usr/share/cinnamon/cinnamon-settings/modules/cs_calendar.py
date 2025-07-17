@@ -288,6 +288,26 @@ class Module:
             widget = GSettingsEntry(_("Screensaver format"), "org.cinnamon.applets.calendar", "screensaver-format")
             screensaver_format.add_reveal_row(widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
             
+            # Live preview for screensaver format
+            preview_widget = SettingsWidget()
+            preview_widget.pack_start(Gtk.Label(_("Preview")), False, False, 0)
+            
+            # Preview label
+            self.screensaver_preview_label = Gtk.Label()
+            self.screensaver_preview_label.set_halign(Gtk.Align.START)
+            self.screensaver_preview_label.set_line_wrap(True)
+            self.screensaver_preview_label.set_selectable(True)
+            preview_widget.pack_end(self.screensaver_preview_label, False, False, 0)
+            
+            screensaver_format.add_reveal_row(preview_widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
+            
+            # Connect to format changes for live preview
+            self.screensaver_settings = Gio.Settings(schema_id="org.cinnamon.applets.calendar")
+            self.screensaver_settings.connect("changed::screensaver-format", self.update_screensaver_preview)
+            
+            # Initial preview update
+            self.update_screensaver_preview()
+            
             # Screensaver format help switch
             screensaver_help_switch = GSettingsSwitch(_("Show screensaver format reference"), "org.cinnamon.applets.calendar", "screensaver-format-help-visible")
             screensaver_format.add_reveal_row(screensaver_help_switch, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
@@ -396,6 +416,26 @@ class Module:
 
         seconds = int((self.datetime - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
         self.proxy_handler.set_time(seconds)
+
+    def update_screensaver_preview(self, *args):
+        format_string = self.screensaver_settings.get_string("screensaver-format")
+        try:
+            # Get current date and time
+            now = datetime.datetime.now()
+            formatted_date = now.strftime(format_string)
+            
+            # Show the formatted date
+            self.screensaver_preview_label.set_text(formatted_date)
+            
+        except ValueError as e:
+            # Invalid format string
+            error_text = _("Invalid format:") + " " + str(e)
+            self.screensaver_preview_label.set_text(error_text)
+        except Exception as e:
+            # Other error
+            error_text = _("Error:") + " " + str(e)
+            self.screensaver_preview_label.set_text(error_text)
+
 
 class SytemdDBusProxyHandler(object):
     def __init__(self, proxy_ready_callback):
