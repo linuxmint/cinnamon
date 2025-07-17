@@ -1234,6 +1234,14 @@
       </description>
     </key>
     
+    <key name="screensaver-format-help-visible" type="b">
+      <default>false</default>
+      <summary>Show screensaver format reference</summary>
+      <description>
+        Toggle visibility of screensaver format reference below.
+      </description>
+    </key>
+    
     <key name="key-open" type="s">
       <default>"&lt;Super&gt;c"</default>
       <summary>Show calendar</summary>

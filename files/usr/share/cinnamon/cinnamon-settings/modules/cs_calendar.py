@@ -288,23 +288,39 @@ class Module:
             widget = GSettingsEntry(_("Screensaver format"), "org.cinnamon.applets.calendar", "screensaver-format")
             screensaver_format.add_reveal_row(widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
             
-            # Pozycja na wygaszaczu
-            position_options = [
-                (_("Top Left"), "top-left"),
-                (_("Top Center"), "top-center"),
-                (_("Top Right"), "top-right"),
-                (_("Center Left"), "center-left"),
-                (_("Center"), "center"),
-                (_("Center Right"), "center-right"),
-                (_("Bottom Left"), "bottom-left"),
-                (_("Bottom Center"), "bottom-center"),
-                (_("Bottom Right"), "bottom-right")
-            ]
+            # Screensaver format help switch
+            screensaver_help_switch = GSettingsSwitch(_("Show screensaver format reference"), "org.cinnamon.applets.calendar", "screensaver-format-help-visible")
+            screensaver_format.add_reveal_row(screensaver_help_switch, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
             
-            widget = GSettingsComboBox(_("Date position on screensaver"), "org.cinnamon.applets.calendar", "screensaver-position", position_options)
-            screensaver_format.add_reveal_row(widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
-
-
+            # Screensaver format help content
+            screensaver_help_widget = SettingsWidget()
+            screensaver_help_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+            
+            # Header
+            screensaver_help_header = Gtk.Label()
+            screensaver_help_header.set_markup("<b>" + _("Screensaver Format Reference") + "</b>")
+            screensaver_help_header.set_halign(Gtk.Align.START)
+            screensaver_help_box.pack_start(screensaver_help_header, False, False, 0)
+            
+            # Użyj tej samej listy format_pairs co wcześniej
+            for left_pair, right_pair in format_pairs:
+                left_code, left_desc = left_pair
+                right_code, right_desc = right_pair
+                
+                # Format left column
+                left_text = left_code + " - " + left_desc if left_code else ""
+                # Format right column  
+                right_text = right_code + " - " + right_desc if right_code else ""
+                
+                row = TwoColumnLabelRow(left_text, right_text)
+                screensaver_help_box.pack_start(row, False, False, 0)
+            
+            # Footer
+            screensaver_footer_label = Gtk.Label(_("Type 'man strftime' in terminal for complete reference"))
+            screensaver_footer_label.set_halign(Gtk.Align.START)
+            screensaver_help_box.pack_start(screensaver_footer_label, False, False, 6)
+            screensaver_help_widget.pack_start(screensaver_help_box, True, True, 0)
+            screensaver_format.add_reveal_row(screensaver_help_widget, "org.cinnamon.applets.calendar", "screensaver-format-help-visible")
 
             # ORYGINALNA INICJALIZACJA PROXY
             if os.path.exists('/usr/sbin/ntpd'):
