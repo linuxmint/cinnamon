@@ -479,7 +479,7 @@ var DBusClient = class {
         if (this._propertiesRequestedFor.length < 1)
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, Lang.bind(this, this._beginRequestProperties));
 
-        if (this._propertiesRequestedFor.filter(function(e) { return e === id; }).length == 0)
+        if (!this._propertiesRequestedFor.includes(id))
             this._propertiesRequestedFor.push(id);
 
     }
