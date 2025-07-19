@@ -810,31 +810,11 @@ PanelManager.prototype = {
             const OBJECT_ARRAY_KEYS = [PANEL_ZONE_ICON_SIZES, PANEL_ZONE_SYMBOLIC_ICON_SIZES, PANEL_ZONE_TEXT_SIZES];
 
             for (let key of STRING_ARRAY_KEYS) {
-                /** @type {string[]} Each string is in the form `'<panelId: number>:<value: any>'`*/
-                const settings = global.settings.get_strv(key);
-                const splitSettings = settings.map(e => e.split(":"));
-                const splitSharedSetting = splitSettings.find(e => e[0] == sharedPanelId);
-                if (!splitSharedSetting) continue;
-                splitSharedSetting[0] = panelId;
-                const sharedSetting = splitSharedSetting.join(":");
-                const existingIndex = splitSettings.findIndex(e => e[0] == panelId);
-                if (existingIndex !== -1) settings[existingIndex] = sharedSetting;
-                else settings.push(sharedSetting);
-                global.settings.set_strv(key, settings);
+                this._copyStringArraySettings(key, panelId, sharedPanelId);
             }
 
             for (let key of OBJECT_ARRAY_KEYS) {
-                /** @type {string} JSON string */
-                const settings = global.settings.get_string(key);
-                /** @type {{panelId: number}[]} Each element is an object with a panelId property */
-                const parsedSettings = JSON.parse(settings);
-                let sharedSetting = parsedSettings.find(e => e.panelId == sharedPanelId);
-                if (!sharedSetting) continue;
-                sharedSetting = { ...sharedSetting, panelId };
-                const existingSetting = parsedSettings.findIndex(e => e.panelId == panelId);
-                if (existingSetting !== -1) parsedSettings[existingSetting] = sharedSetting;
-                else parsedSettings.push(sharedSetting);
-                global.settings.set_string(key, JSON.stringify(parsedSettings));
+                this._copyObjectArraySettings(key, panelId, sharedPanelId);
             }
         }
         else {
@@ -879,6 +859,46 @@ PanelManager.prototype = {
         // Delete all panel dummies
         if (this.addPanelMode)
             this._destroyDummyPanels();
+    },
+
+    /**
+     * Copies the string array settings of the shared panel to another panel.
+     * @param {string} key Gsetting panel setting key of type `as` (String Array).
+     * @param {number} panelId Panel to copy settings to.
+     * @param {number} sharedPanelId Panel to copy settings from.
+     */
+    _copyStringArraySettings(key, panelId, sharedPanelId) {
+        /** @type {string[]} Each string is in the form `'<panelId: number>:<value: any>'`*/
+        const settings = global.settings.get_strv(key);
+        const splitSettings = settings.map(e => e.split(":"));
+        const splitSharedSetting = splitSettings.find(e => e[0] == sharedPanelId);
+        if (!splitSharedSetting) return;
+        splitSharedSetting[0] = panelId;
+        const sharedSetting = splitSharedSetting.join(":");
+        const existingIndex = splitSettings.findIndex(e => e[0] == panelId);
+        if (existingIndex !== -1) settings[existingIndex] = sharedSetting;
+        else settings.push(sharedSetting);
+        global.settings.set_strv(key, settings);
+    },
+
+    /**
+     * Copies the object array settings of the shared panel to another panel.
+     * @param {string} key Gsetting panel setting key of type `s` (String) which is valid JSON.
+     * @param {number} panelId Panel to copy settings to.
+     * @param {number} sharedPanelId Panel to copy settings from.
+     */
+    _copyObjectArraySettings(key, panelId, sharedPanelId) {
+        /** @type {string} JSON string */
+        const settings = global.settings.get_string(key);
+        /** @type {{panelId: number}[]} Each element is an object with a panelId property */
+        const parsedSettings = JSON.parse(settings);
+        let sharedSetting = parsedSettings.find(e => e.panelId == sharedPanelId);
+        if (!sharedSetting) return;
+        sharedSetting = { ...sharedSetting, panelId };
+        const existingSetting = parsedSettings.findIndex(e => e.panelId == panelId);
+        if (existingSetting !== -1) parsedSettings[existingSetting] = sharedSetting;
+        else parsedSettings.push(sharedSetting);
+        global.settings.set_string(key, JSON.stringify(parsedSettings));
     },
 
     /**
