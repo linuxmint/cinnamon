@@ -804,17 +804,51 @@ PanelManager.prototype = {
             if (!this.panelsMeta[++panelId])
                 break;
 
-        // Add default values
-        outerLoop:
-        for (let key in DEFAULT_PANEL_VALUES) {
-            let settings = global.settings.get_strv(key);
-            for (let j = 0; j < settings.length; j++){
-                if (settings[j].split(":")[0] == panelId){
-                    continue outerLoop;
-                }
+        // Copy values from shared panel or add default values
+        if (sharedPanelId) {
+            const STRING_ARRAY_KEYS = [PANEL_AUTOHIDE_KEY, PANEL_SHOW_DELAY_KEY, PANEL_HIDE_DELAY_KEY, PANEL_HEIGHT_KEY];
+            const OBJECT_ARRAY_KEYS = [PANEL_ZONE_ICON_SIZES, PANEL_ZONE_SYMBOLIC_ICON_SIZES, PANEL_ZONE_TEXT_SIZES];
+
+            for (let key of STRING_ARRAY_KEYS) {
+                /** @type {string[]} Each string is in the form `'<panelId: number>:<value: any>'`*/
+                const settings = global.settings.get_strv(key);
+                const splitSettings = settings.map(e => e.split(":"));
+                const splitSharedSetting = splitSettings.find(e => e[0] == sharedPanelId);
+                if (!splitSharedSetting) continue;
+                splitSharedSetting[0] = panelId;
+                const sharedSetting = splitSharedSetting.join(":");
+                const existingIndex = splitSettings.findIndex(e => e[0] == panelId);
+                if (existingIndex !== -1) settings[existingIndex] = sharedSetting;
+                else settings.push(sharedSetting);
+                global.settings.set_strv(key, settings);
             }
-            settings.push(panelId + ":" + DEFAULT_PANEL_VALUES[key]);
-            global.settings.set_strv(key, settings);
+
+            for (let key of OBJECT_ARRAY_KEYS) {
+                /** @type {string} JSON string */
+                const settings = global.settings.get_string(key);
+                /** @type {{panelId: number}[]} Each element is an object with a panelId property */
+                const parsedSettings = JSON.parse(settings);
+                let sharedSetting = parsedSettings.find(e => e.panelId == sharedPanelId);
+                if (!sharedSetting) continue;
+                sharedSetting = { ...sharedSetting, panelId };
+                const existingSetting = parsedSettings.findIndex(e => e.panelId == panelId);
+                if (existingSetting !== -1) parsedSettings[existingSetting] = sharedSetting;
+                else parsedSettings.push(sharedSetting);
+                global.settings.set_string(key, JSON.stringify(parsedSettings));
+            }
+        }
+        else {
+            outerLoop:
+            for (let key in DEFAULT_PANEL_VALUES) {
+                let settings = global.settings.get_strv(key);
+                for (let j = 0; j < settings.length; j++){
+                    if (settings[j].split(":")[0] == panelId){
+                        continue outerLoop;
+                    }
+                }
+                settings.push(panelId + ":" + DEFAULT_PANEL_VALUES[key]);
+                global.settings.set_strv(key, settings);
+            }
         }
 
         switch (panelPosition)
