@@ -433,7 +433,8 @@ class Module:
         if wallpaper:
             for key in wallpaper:
                 if key == "filename":
-                    self._background_schema.set_string("picture-uri", "file://" + wallpaper[key])
+                    gfile = Gio.File.new_for_path(wallpaper[key])
+                    self._background_schema.set_string("picture-uri", gfile.get_uri())
                 elif key == "options":
                     self._background_schema.set_string("picture-options", wallpaper[key])
 
