@@ -25,6 +25,11 @@ const {
 class PinnedFavs {
     constructor(params) {
         this.params = params;
+        this.params.settings.bind(
+            'share-pinned-windows', // key
+            'sharePinnedWindows', // value
+            () => this.saveFavorites() // cb
+        );
         this.reload();
     }
 
@@ -65,16 +70,31 @@ class PinnedFavs {
         }
     }
 
+    applyPins(ids, pinnedFavorites = this) {
+        pinnedFavorites.params.settings.setValue('pinned-apps', ids);
+        pinnedFavorites.onFavoritesChange();
+    }
+
     saveFavorites() {
-        const uniqueSet = new Set();
-        const ids = [];
-        for (let i = 0; i < this._favorites.length; i++) {
-            if (uniqueSet.has(this._favorites[i].id) === false) {
-                ids.push(this._favorites[i].id);
-                uniqueSet.add(this._favorites[i].id);
-            }
+        let newPins = [...new Set(this._favorites.map(e => e.id))];
+        const SHARING_PINS = this.params.settings.getValue('share-pinned-windows');
+        const BASE_CURRENT_PINS = this.params.settings.getValue('pinned-apps');
+        const REMOVED_PINS = BASE_CURRENT_PINS.filter(p => !newPins.includes(p));
+        this.applyPins(newPins);
+        if (SHARING_PINS) {
+            const INSTANCES = Main.AppletManager.getRunningInstancesForUuid(this.params.state.uuid);
+            for (let instance of INSTANCES) {
+                const otherPinnedFavorites = instance.pinnedFavorites;
+                if (otherPinnedFavorites === this) continue;
+                newPins = [...newPins];
+                // This ensures other window lists do not lose pins that were not in this window list.
+                const OTHER_CURRENT_PINS = otherPinnedFavorites.params.settings.getValue('pinned-apps');
+                OTHER_CURRENT_PINS.forEach(e => {
+                    if (!REMOVED_PINS.includes(e) && !newPins.includes(e)) newPins.push(e);
+                });
+                this.applyPins(newPins, otherPinnedFavorites);
+            };
         }
-        this.params.settings.setValue('pinned-apps', ids);
     }
 
     onFavoritesChange() {
@@ -138,7 +158,6 @@ class PinnedFavs {
         }
 
         this.saveFavorites();
-        this.onFavoritesChange();
         return true;
     }
 
@@ -156,7 +175,6 @@ class PinnedFavs {
         this.triggerUpdate(appId, false);
         this._favorites.splice(refFav, 1);
         this.saveFavorites();
-        this.onFavoritesChange();
         return true;
     }
 }
