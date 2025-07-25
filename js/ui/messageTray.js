@@ -31,6 +31,8 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 const NOTIFICATION_IMAGE_SIZE = 125;
 const NOTIFICATION_IMAGE_OPACITY = 230; // 0 - 255
 
+var extensionsHandlingNotifications = 0;
+
 var State =  Object.freeze({
     HIDDEN: 0,
     SHOWING: 1,
@@ -222,7 +224,7 @@ URLHighlighter.prototype = {
  * Creates a notification with the associated title and body
  *
  * @params can contain values for 'body', 'icon', 'titleMarkup',
- * 'bodyMarkup', and 'silent' parameters.
+ * 'bodyMarkup', 'silent', and 'desktopEntry' parameters.
  *
  * By default, the icon shown is created by calling
  * source.createNotificationIcon(). However, if @params contains an 'icon'
@@ -251,6 +253,7 @@ var Notification = class Notification {
         // 'transient' is a reserved keyword in JS, so we have to use an alternate variable name
         this.isTransient = false;
         this.silent = false;
+        this.desktopEntry = "";
         this._destroyed = false;
         this._useActionIcons = false;
         this._titleDirection = St.TextDirection.NONE;
@@ -349,10 +352,12 @@ var Notification = class Notification {
             icon: null,
             titleMarkup: false,
             bodyMarkup: false,
-            silent: false
+            silent: false,
+            desktopEntry: ""
         });
 
         this.silent = params.silent;
+        this.desktopEntry = params.desktopEntry;
 
         if (this._icon && params.icon) {
             this._icon.destroy();
@@ -635,7 +640,7 @@ function Source(title) {
 
 Source.prototype = {
     ICON_SIZE: 24,
-    MAX_NOTIFICATIONS: 10,
+    MAX_NOTIFICATIONS: 20,
 
     _init: function (title) {
         this.title = title;
@@ -913,7 +918,7 @@ MessageTray.prototype = {
             else if (!this._notificationsEnabled) {
                 if (notificationsPending) {
                     this._notification = this._notificationQueue.shift();
-                    if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+                    if (extensionsHandlingNotifications > 0) {
                         this.emit('notify-applet-update', this._notification);
                     } else {
                         this._notification.destroy(NotificationDestroyedReason.DISMISSED);
@@ -1044,7 +1049,7 @@ MessageTray.prototype = {
 
         if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(this.notificationDuration * 1000);
-        } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+        } else if (extensionsHandlingNotifications > 0) {
             this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
         }
     },
@@ -1102,7 +1107,7 @@ MessageTray.prototype = {
         this._notificationBin.hide();
         this._notificationBin.child = null;
         let notification = this._notification;
-        if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
+        if (extensionsHandlingNotifications > 0 && !this._notificationRemoved) {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)
