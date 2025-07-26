@@ -873,11 +873,10 @@ PanelManager.prototype = {
         const splitSettings = settings.map(e => e.split(":"));
         const splitSharedSetting = splitSettings.find(e => e[0] == sharedPanelId);
         if (!splitSharedSetting) return;
-        splitSharedSetting[0] = panelId;
-        const sharedSetting = splitSharedSetting.join(":");
+        const newSetting = [panelId, splitSharedSetting[1]].join(":");
         const existingIndex = splitSettings.findIndex(e => e[0] == panelId);
-        if (existingIndex !== -1) settings[existingIndex] = sharedSetting;
-        else settings.push(sharedSetting);
+        if (existingIndex !== -1) settings[existingIndex] = newSetting;
+        else settings.push(newSetting);
         global.settings.set_strv(key, settings);
     },
 
