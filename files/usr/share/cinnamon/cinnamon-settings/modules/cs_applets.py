@@ -7,6 +7,7 @@ from xapp.SettingsWidgets import SettingsStack
 from Spices import Spice_Harvester
 from gi.repository import GLib, Gtk, Gdk
 import config
+import json
 
 class Module:
     name = "applets"
@@ -90,27 +91,25 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.top_box.pack_start(self.panel_select_buttons, False, False, 0)
 
-    def previous_panel(self, *args):
+    def getNextPanel(self, positive_direction = True):
         self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, False)
+        shared_panels = json.loads(self.spices.settings.get_string("shared-panels"))["panels"]
+        step = 1 if positive_direction else -1
 
-        if self.current_panel_index - 1 >= 0:
-            self.current_panel_index -= 1
-        else:
-            self.current_panel_index = len(self.panels) - 1
-        self.panel_id = int(self.panels[self.current_panel_index].split(":")[0])
+        for _ in self.panels:
+            self.current_panel_index = (self.current_panel_index + step) % len(self.panels)
+            checked_panel_id = int(self.panels[self.current_panel_index].split(":")[0])
+            if checked_panel_id not in shared_panels or self.panel_id not in shared_panels:
+                self.panel_id = checked_panel_id
+                break
 
         self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, True)
+
+    def previous_panel(self, *args):
+        self.getNextPanel(False)
 
     def next_panel(self, widget):
-        self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, False)
-
-        if self.current_panel_index + 1 < len(self.panels):
-            self.current_panel_index += 1
-        else:
-            self.current_panel_index = 0
-        self.panel_id = int(self.panels[self.current_panel_index].split(":")[0])
-
-        self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, True)
+        self.getNextPanel()
 
     def panels_changed(self, *args):
         self.panels = []

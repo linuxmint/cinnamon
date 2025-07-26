@@ -254,21 +254,18 @@ class Module:
         if self.panel_id and self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
-        panel_index = current = self.panels.index(self.current_panel)
+        index = current = self.panels.index(self.current_panel)
         shared_panels = json.loads(self.settings.get_string("shared-panels"))["panels"]
 
-        index_step = 1 if positive_direction else -1
-        checked = 0
+        step = 1 if positive_direction else -1
 
-        while checked < len(self.panels):
-            panel_index = (panel_index + index_step) % len(self.panels)
+        for _ in self.panels:
+            index = (index + step) % len(self.panels)
 
-            if int(self.panels[panel_index].panel_id) not in shared_panels or int(self.panel_id) not in shared_panels:
-                self.current_panel = self.panels[panel_index]
+            if int(self.panels[index].panel_id) not in shared_panels or int(self.panel_id) not in shared_panels:
+                self.current_panel = self.panels[index]
                 self.panel_id = self.current_panel.panel_id
                 break
-
-            checked += 1
 
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT if positive_direction
                                               else Gtk.StackTransitionType.SLIDE_RIGHT)

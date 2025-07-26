@@ -470,6 +470,7 @@ function updateSharedInstances(oldDefinition, newDefinition) {
  * times from AppletManager. Otherwise (changed is false, user removed applet) remove all shared applets
  * If entire panel is being removed, only remove given instance.
  * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
+ * @param {boolean} changed
  */
 function removeSharedApplets(appletDefinition, changed) {
     const sharedPanels = getSharedPanels();
