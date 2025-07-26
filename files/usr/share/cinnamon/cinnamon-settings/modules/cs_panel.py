@@ -438,11 +438,16 @@ class PanelWidgetBackend(object):
             self.connect_widget_handlers()
 
     def set_value(self, value):
+        shared_panels = json.loads(self.settings['shared-panels'])['panels']
         vals = self.settings[self.key]
         newvals = []
         for val in vals:
-            if val.split(":")[0] == self.panel_id:
-                newvals.append(self.panel_id + ":" + self.stringify(value))
+            val_panel_id = val.split(":")[0]
+            if val_panel_id == self.panel_id or (
+                int(self.panel_id) in shared_panels
+                and int(val_panel_id) in shared_panels
+            ):
+                newvals.append(val_panel_id + ":" + self.stringify(value))
             else:
                 newvals.append(val)
         self.settings[self.key] = newvals
