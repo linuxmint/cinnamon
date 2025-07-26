@@ -250,45 +250,39 @@ class Module:
         if self.proxy:
             self.proxy.addPanelQuery()
 
-    def on_previous_panel(self, widget):
+    def getNextPanel(self, positive_direction = True):
         if self.panel_id and self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
-        current = self.panels.index(self.current_panel)
+        panel_index = current = self.panels.index(self.current_panel)
+        shared_panels = json.loads(self.settings.get_string("shared-panels"))["panels"]
 
-        if current - 1 >= 0:
-            self.current_panel = self.panels[current - 1]
-            self.panel_id = self.current_panel.panel_id
-        else:
-            self.current_panel = self.panels[len(self.panels) - 1]
-            self.panel_id = self.current_panel.panel_id
+        index_step = 1 if positive_direction else -1
+        checked = 0
 
-        self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_RIGHT)
+        while checked < len(self.panels):
+            panel_index = (panel_index + index_step) % len(self.panels)
+
+            if int(self.panels[panel_index].panel_id) not in shared_panels or int(self.panel_id) not in shared_panels:
+                self.current_panel = self.panels[panel_index]
+                self.panel_id = self.current_panel.panel_id
+                break
+
+            checked += 1
+
+        self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT if positive_direction
+                                              else Gtk.StackTransitionType.SLIDE_RIGHT)
 
         if self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
         self.config_stack.set_visible_child(self.current_panel)
+
+    def on_previous_panel(self, widget):
+        self.getNextPanel(False)
 
     def on_next_panel(self, widget):
-        if self.panel_id and self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
-
-        current = self.panels.index(self.current_panel)
-
-        if current + 1 < len(self.panels):
-            self.current_panel = self.panels[current + 1]
-            self.panel_id = self.current_panel.panel_id
-        else:
-            self.current_panel = self.panels[0]
-            self.panel_id = self.current_panel.panel_id
-
-        self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-
-        if self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
-
-        self.config_stack.set_visible_child(self.current_panel)
+        self.getNextPanel()
 
     def id_or_monitor_position_used(self, kept_panels, monitor_layout, panel_id, monitor_id, position):
         for keeper in kept_panels:
@@ -384,8 +378,10 @@ class Module:
         self.next_button.show()
         self.previous_button.show()
 
-        # Disable the panel switch buttons if there's only one panel
-        if len(self.panels) == 1:
+        # Disable the panel switch buttons if there's only one panel or if there is only shared panels
+        if len(self.panels) == 1 or (
+            len(self.panels) - len(json.loads(self.settings.get_string("shared-panels"))["panels"]) == 0
+        ):
             self.next_button.set_sensitive(False)
             self.previous_button.set_sensitive(False)
         else:

@@ -7,6 +7,7 @@ const Config = imports.misc.config;
 const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
+const Panel = imports.ui.panel;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
@@ -348,8 +349,17 @@ CinnamonDBus.prototype = {
     },
 
     highlightPanel: function(id, highlight) {
-        if (Main.panelManager.panels[id])
+        /** @type {number[]} */
+        const sharedPanels = Panel.getSharedPanels().panels;
+        if (Main.panelManager.panels[id]) {
             Main.panelManager.panels[id].highlight(highlight);
+            if (sharedPanels.includes(id)) {
+                for (let panel of sharedPanels) {
+                    if (panel === id || !Main.panelManager.panels[id]) continue;
+                    Main.panelManager.panels[panel].highlight(highlight);
+                }
+            }
+        }
     },
 
     addPanelQuery: function() {
