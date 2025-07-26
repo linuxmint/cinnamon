@@ -516,11 +516,44 @@ class PanelSpinButton(SpinButton, PanelWidgetBackend):
         if value is not None and value != int(self.content_widget.get_value()):
             self.content_widget.set_value(value)
 
-class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
+class PanelJSONHelper:
+    def __init__(self, isSpinBtn, *args, **kwargs):
+        self.isSpinBtn = isSpinBtn
+        super().__init__(*args, **kwargs)
+
+    def set_value(self, value):
+        shared_panels = json.loads(self.settings['shared-panels'])['panels']
+        vals = json.loads(self.settings[self.key])
+        panel_id = int(self.panel_id)
+        for obj in vals:
+            if obj['panelId'] != panel_id and (
+                panel_id not in shared_panels
+                or obj['panelId'] not in shared_panels
+            ):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    obj[key] = int(value) if self.isSpinBtn else self.valtype(value)
+                    break
+
+        self.settings[self.key] = json.dumps(vals)
+
+    def get_value(self):
+        vals = self.settings[self.key]
+        vals = json.loads(vals)
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    return int(val) if self.isSpinBtn else self.valtype(val)
+        if self.isSpinBtn: return 0 # prevent warnings if key is reset
+
+class PanelJSONSpinButton(PanelJSONHelper, SpinButton, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
         self.panel_id = panel_id
         self.zone = zone
-        super(PanelJSONSpinButton, self).__init__(label, *args, **kwargs)
+        super(PanelJSONSpinButton, self).__init__(True, label, *args, **kwargs)
 
         self.connect_to_settings(schema, key)
 
@@ -538,29 +571,6 @@ class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
     def on_setting_changed(self, *args):
         self.content_widget.set_value(self.get_value())
 
-    def set_value(self, value):
-        vals = json.loads(self.settings[self.key])
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    obj[key] = int(value)
-                    break
-
-        self.settings[self.key] = json.dumps(vals)
-
-    def get_value(self):
-        vals = self.settings[self.key]
-        vals = json.loads(vals)
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    return int(val)
-        return 0 # prevent warnings if key is reset
-
 class PanelComboBox(ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
@@ -574,11 +584,11 @@ class PanelComboBox(ComboBox, PanelWidgetBackend):
     def unstringify(self, value):
         return value
 
-class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
+class PanelJSONComboBox(PanelJSONHelper, ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
         self.panel_id = panel_id
         self.zone = zone
-        super(PanelJSONComboBox, self).__init__(label, *args, **kwargs)
+        super(PanelJSONComboBox, self).__init__(False, label, *args, **kwargs)
 
         self.connect_to_settings(schema, key)
 
@@ -587,28 +597,6 @@ class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
 
     def unstringify(self, value):
         return value
-
-    def set_value(self, value):
-        vals = json.loads(self.settings[self.key])
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    obj[key] = self.valtype(value)
-                    break
-
-        self.settings[self.key] = json.dumps(vals)
-
-    def get_value(self):
-        vals = self.settings[self.key]
-        vals = json.loads(vals)
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    return self.valtype(val)
 
 class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
