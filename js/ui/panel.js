@@ -372,7 +372,7 @@ function updatePanelsMeta(meta, panel_props) {
 }
 
 /**
- * @typedef {(string[]?)[]} AppletInstances
+ * @typedef {Record<number, string[]>} AppletInstances
  * Each index represents the order in the panel position.
  * Each element is an array of the shared applet instance ids.
  *
