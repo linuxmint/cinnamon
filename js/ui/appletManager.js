@@ -966,18 +966,27 @@ function pasteAppletConfiguration(panelId) {
  */
 function setupSharedApplets(fromPanelId, toPanelId) {
     clearAppletConfiguration(toPanelId);
-    const fromAppletDefinitions = getDefinitions().filter(e => e.panelId === fromPanelId);
     const definitions = getDefinitions();
+    const fromAppletDefinitions = definitions.filter(e => e.panelId === fromPanelId);
+    const toDefinitions = [];
     let nextAppletId = global.settings.get_int("next-applet-id");
-
     fromAppletDefinitions.forEach(appletDefinition => {
         /** @type {AppletDefinitionObject} */
         const toAppletDefinition = {...appletDefinition, applet_id: String(nextAppletId), panelId: toPanelId };
+        toDefinitions.push(toAppletDefinition);
         definitions.push(toAppletDefinition);
-        Panel.addSharedApplets(appletDefinition, toAppletDefinition);
         nextAppletId++;
     });
 
+    const sharedPanels = Panel.getSharedPanels();
+    for (const definitions of [fromAppletDefinitions, toDefinitions]) {
+        for (const { applet_id, location_label, order } of definitions) {
+            const instanceArray = sharedPanels.applets[location_label][order] ??= [];
+            if (instanceArray.includes(applet_id)) break;
+            instanceArray.push(applet_id);
+        }
+    }
+    Panel.setSharedPanels(sharedPanels);
     global.settings.set_int("next-applet-id", nextAppletId);
     setDefinitions(definitions);
 }

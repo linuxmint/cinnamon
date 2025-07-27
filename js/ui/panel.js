@@ -431,22 +431,6 @@ function removeSharedPanel(panelId) {
 /** @typedef {import("./appletManager").AppletDefinitionObject} AppletDefinitionObject*/
 
 /**
- * Adds shared applet instance ids to shared-panels gsetting.
- * @param {AppletDefinitionObject} fromAppletDefinition Definition of sharing applet
- * @param {AppletDefinitionObject} toAppletDefinition  Definition of new applet to share.
- */
-function addSharedApplets(fromAppletDefinition, toAppletDefinition) {
-    const sharedPanels = getSharedPanels();
-    const { location_label: location, order, applet_id: sharedAppletId } = fromAppletDefinition
-    const { applet_id: newAppletId } = toAppletDefinition;
-    const instanceArray = sharedPanels.applets[location][order] ??= [];
-    [sharedAppletId, newAppletId].forEach(id => {
-        if (!instanceArray.includes(id)) instanceArray.push(id);
-    });
-    setSharedPanels(sharedPanels);
-}
-
-/**
  * Moves applet instance stored in shared-panels to new location.
  * @param {AppletDefinitionObject} oldDefinition Old definition.
  * @param {AppletDefinitionObject} newDefinition New definition.
