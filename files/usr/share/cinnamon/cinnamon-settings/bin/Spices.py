@@ -855,13 +855,7 @@ class Spice_Harvester(GObject.Object):
 
     def _update_shared_applet_positions(self, shared_panels_info, box, new_pos, appletId):
         box_array = shared_panels_info['applets'][box]
-
-        if new_pos >= len(box_array):
-            box_array.extend([[]] * (new_pos+1 - len(box_array)))
-        elif box_array[new_pos] is None:
-            box_array[new_pos] = []
-
-        box_array[new_pos].append(appletId)
+        box_array.setdefault(new_pos, []).append(appletId)
 
     def enable_extension(self, uuid, panel=1, box='right', position=0):
         if self.collection_type == 'applet':
@@ -869,33 +863,30 @@ class Spice_Harvester(GObject.Object):
             applet_id = self.settings.get_int('next-applet-id')
             shared_panels_info = json.loads(self.settings.get_string('shared-panels'))
             shared_panels = shared_panels_info['panels']
+            shared_box = shared_panels_info['applets'][box]
 
             for entry in self.settings.get_strv(self.enabled_key):
                 info = entry.split(':')
                 pos = int(info[2])
                 panelId = int(info[0][-1])
-                appletId = int(info[-1])
+                appletId = info[-1]
                 if (
                     (info[0] == f'panel{panel}' or panelId in shared_panels)
                     and info[1] == box
                     and position <= pos
                 ):
-                    newPos = pos+1
-                    info[2] = str(newPos)
+                    new_pos = pos+1
+                    info[2] = str(new_pos)
                     entries.append(':'.join(info))
                     if (panelId in shared_panels):
-                        self._update_shared_applet_positions(shared_panels_info, box, newPos, appletId)
+                        shared_box.setdefault(str(new_pos), []).append(appletId)
                 else:
                     entries.append(entry)
 
             if panel in shared_panels:
                 for panel in shared_panels:
                     entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
-                    try:
-                        shared_panels_info['applets'][box][position].extend([applet_id])
-                    except:
-                        shared_panels_info['applets'][box].extend([[]]*(position+1-len(shared_panels_info['applets'][box])))
-                        shared_panels_info['applets'][box][position].append(applet_id)
+                    shared_box.setdefault(str(position), []).append(str(applet_id))
                     applet_id += 1
             else:
                 entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')

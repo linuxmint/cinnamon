@@ -478,15 +478,16 @@ function removeSharedApplets(appletDefinition, changed) {
     }
     else {
         const definitions = AppletManager.getDefinitions();
-        for (let instanceId of instanceArray) {
+        while (instanceArray.length > 0) {
+            const instanceId = instanceArray.pop();
             const index = definitions.findIndex(definition => definition.applet_id == instanceId);
             if (index === -1) continue;
             definitions.splice(index, 1);
         }
 
         AppletManager.setDefinitions(definitions);
-        instanceArray.length = 0;
     }
+    if (instanceArray.length === 0) delete sharedPanels.applets[location][order];
 
     setSharedPanels(sharedPanels);
 }
