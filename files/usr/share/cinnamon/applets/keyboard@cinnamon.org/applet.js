@@ -244,7 +244,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
             this.desktop_settings.connect("changed::keyboard-layout-show-flags", _syncConfig);
             this.desktop_settings.connect("changed::keyboard-layout-use-upper", _syncConfig);
             this.desktop_settings.connect("changed::keyboard-layout-prefer-variant-names", _syncConfig);
-            global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._onPanelEditModeChanged());
+            this.panelEditModeHandler = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._onPanelEditModeChanged());
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.menu.addAction(_("Show Keyboard Layout"), () => {
@@ -454,7 +454,7 @@ class CinnamonKeyboardApplet extends Applet.TextIconApplet {
 
     on_applet_removed_from_panel() {
         this._controller.applet_removed();
-
+        global.settings.disconnect(this.panelEditModeHandler);
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
     }
 };
