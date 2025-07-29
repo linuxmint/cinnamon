@@ -431,25 +431,7 @@ function removeSharedPanel(panelId) {
 /** @typedef {import("./appletManager").AppletDefinitionObject} AppletDefinitionObject*/
 
 /**
- * Moves applet instance stored in shared-panels to new location.
- * @param {AppletDefinitionObject} oldDefinition Old definition.
- * @param {AppletDefinitionObject} newDefinition New definition.
- */
-function updateSharedInstances(oldDefinition, newDefinition) {
-    const { location_label: oldLocation, order: oldOrder } = oldDefinition;
-    const { location_label: newLocation, order: newOrder } = newDefinition;
-    if (oldLocation === newLocation && oldOrder === newOrder) return;
-    const sharedPanels = getSharedPanels();
-    const oldInstanceArray = sharedPanels.applets[oldLocation][oldOrder];
-    if (!oldInstanceArray) return;
-
-    // Move all stored instance ids to new location
-    (sharedPanels.applets[newLocation][newOrder] ??= []).push(...oldInstanceArray.splice(0, sharedPanels.panels.length));
-    setSharedPanels(sharedPanels);
-}
-
-/**
- * Removes shared applet from shared-panels gsetting.
+ * Removes shared applets from shared-panels gsetting.
  * If individual applet is being removed (changed is true), only remove 1 instance as this will be called multiple
  * times from AppletManager. Otherwise (changed is false, user removed applet) remove all shared applets
  * If entire panel is being removed, only remove given instance.
