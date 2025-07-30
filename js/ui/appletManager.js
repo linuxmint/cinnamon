@@ -819,11 +819,11 @@ function saveAppletsPositions() {
     const sharedPanels = Panel.getSharedPanels();
     // Ensure we do not modify the existing objects.
     const enabled = getDefinitions().map(e => { return { ...e } });
-    const sharedAppletInfo = {};
+    const changedSharedDefinitions = [];
 
     for (let i = 0; i < enabled.length; i++) {
         const definition = enabled[i];
-        const { applet, panelId, location_label, order } = definition;
+        const { applet, panelId: oldPanel, location_label: oldLocation, order: oldOrder } = definition;
         if (!applet) {
             continue;
         }
@@ -837,30 +837,29 @@ function saveAppletsPositions() {
             definition.order = applet._newOrder;
             applet._newOrder = null;
 
-            if (sharedPanels.panels.includes(panelId)) {
-                sharedAppletInfo[location_label] ??= {};
-                sharedAppletInfo[location_label][order] = {
+            if (sharedPanels.panels.includes(oldPanel)) {
+                const { location_label: newLocation, order: newOrder } = definition;
+                changedSharedDefinitions.push({
                     definitions: enabled.filter(e => {
-                        return e.panelId !== panelId
+                        return e.panelId !== oldPanel
                         && sharedPanels.panels.includes(e.panelId)
-                        && e.location_label === location_label
-                        && e.order === order
+                        && e.location_label === oldLocation
+                        && e.order === oldOrder
                     }),
                     newValues: {
-                        location_label: definition.location_label,
-                        order: definition.order
+                        location_label: newLocation,
+                        order: newOrder
                     }
-                }
+                });
             }
         }
     }
 
-    for (const location of Object.values(sharedAppletInfo)) {
-        for (const { definitions, newValues } of Object.values(location)) {
-            for (const definition of definitions) {
-                definition.location_label = newValues.location_label;
-                definition.order = newValues.order;
-            }
+    for (const sharedInfo of changedSharedDefinitions) {
+        const { definitions, newValues: { location_label, order } } = sharedInfo;
+        for (const definition of definitions) {
+            definition.location_label = location_label;
+            definition.order = order;
         }
     }
 
