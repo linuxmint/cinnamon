@@ -44,19 +44,27 @@ class JSONSettingsHandler(object):
     def __init__(self, filepath, notify_callback=None):
         super(JSONSettingsHandler, self).__init__()
 
-        self.resume_timeout = None
         self.notify_callback = notify_callback
+        self._is_internal_update = False
 
         self.filepath = filepath
         self.file_obj = Gio.File.new_for_path(self.filepath)
-        self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
-        self.file_monitor.connect("changed", self.check_settings)
+        self._setup_monitor()
 
         self.bindings = {}
         self.listeners = {}
         self.deps = {}
 
         self.settings = self.get_settings()
+        
+    def _setup_monitor(self):
+        """Set up initial file monitoring."""
+        try:
+            self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
+            self.file_monitor.connect("changed", self.check_settings)
+        except GLib.Error as e:
+            print(f"Error initializing monitoring: {str(e)}")
+            self.file_monitor = None
 
     def bind(self, key, obj, prop, direction, map_get=None, map_set=None):
         if direction & (Gio.SettingsBindFlags.SET | Gio.SettingsBindFlags.GET) == 0:
@@ -132,16 +140,26 @@ class JSONSettingsHandler(object):
                 info["obj"].set_property(info["prop"], value)
 
     def check_settings(self, *args):
+        """Check for settings changes."""
+        if self._is_internal_update:
+            return 
+            
         old_settings = self.settings
         self.settings = self.get_settings()
 
         for key in self.bindings:
+            # Skip keys that don't exist in both old and new settings to avoid KeyError
+            if key not in self.settings or key not in old_settings:
+                continue
             new_value = self.settings[key]["value"]
             if new_value != old_settings[key]["value"]:
                 for info in self.bindings[key]:
                     self.set_object_value(info, new_value)
 
         for key, callback_list in self.listeners.items():
+            # Skip keys that don't exist in both old and new settings to avoid KeyError            
+            if key not in self.settings or key not in old_settings:
+                continue
             new_value = self.settings[key]["value"]
             if new_value != old_settings[key]["value"]:
                 for callback in callback_list:
@@ -158,37 +176,60 @@ class JSONSettingsHandler(object):
         return settings
 
     def save_settings(self):
-        self.pause_monitor()
-        if os.path.exists(self.filepath):
-            os.remove(self.filepath)
-        raw_data = json.dumps(self.settings, indent=4, ensure_ascii=False)
-        new_file = open(self.filepath, 'w+')
-        new_file.write(raw_data)
-        new_file.close()
-        self.resume_monitor()
+        """Save settings with real-time UI updates and proper cleanup."""
+        temp_filepath = self.filepath + '.tmp'
 
-    def pause_monitor(self):
-        self.file_monitor.cancel()
-        self.handler = None
+        with InternalUpdateContext(self):
+            try:
+                # Data serialization
+                raw_data = json.dumps(self.settings, indent=4, ensure_ascii=False)
+                
+                # Write to temporary file
+                with open(temp_filepath, 'w', encoding='utf-8') as temp_file:
+                    temp_file.write(raw_data)
+                    temp_file.flush()
+                    os.fsync(temp_file.fileno())
 
-    def resume_monitor(self):
-        if self.resume_timeout:
-            GLib.source_remove(self.resume_timeout)
-        self.resume_timeout = GLib.timeout_add(2000, self.do_resume)
+                # Atomic replacement
+                os.replace(temp_filepath, self.filepath)
 
-    def do_resume(self):
-        self.file_monitor = self.file_obj.monitor_file(Gio.FileMonitorFlags.SEND_MOVED, None)
-        self.handler = self.file_monitor.connect("changed", self.check_settings)
-        self.resume_timeout = None
-        return False
+            except (IOError, OSError, json.JSONEncodeError) as e:
+                print(f"Error while saving settings: {str(e)}")
+                # Cleanup temporary file in case of error
+                if os.path.exists(temp_filepath):
+                    try:
+                        os.remove(temp_filepath)
+                    except OSError as cleanup_error:
+                        print(f"Error while cleaning up temporary file: {str(cleanup_error)}")
+                raise
+            except Exception as e:
+                print(f"Unexpected error during save: {str(e)}")
+                if os.path.exists(temp_filepath):
+                    try:
+                        os.remove(temp_filepath)
+                    except OSError:
+                        pass
+                raise
 
     def reset_to_defaults(self):
+        """Reset settings with real-time UI updates."""
+        changed = False
+        
         for key in self.settings:
             if "value" in self.settings[key]:
-                self.settings[key]["value"] = self.settings[key]["default"]
-                self.do_key_update(key)
+                old_value = self.settings[key]["value"]
+                new_value = self.settings[key]["default"]
+                if old_value != new_value:
+                    self.settings[key]["value"] = new_value
+                    self.do_key_update(key)
+                    changed = True
+                    
+                    # Immediately notify callbacks
+                    if self.notify_callback:
+                        self.notify_callback(self, key, new_value)
 
-        self.save_settings()
+        if changed:
+            self.save_settings()  # Saving won't block UI updates anymore
 
     def do_key_update(self, key):
         if key in self.bindings:
@@ -219,12 +260,19 @@ class JSONSettingsHandler(object):
         self.save_settings()
 
     def save_to_file(self, filepath):
-        if os.path.exists(filepath):
-            os.remove(filepath)
-        raw_data = json.dumps(self.settings, indent=4)
-        new_file = open(filepath, 'w+')
-        new_file.write(raw_data)
-        new_file.close()
+        temp_filepath = filepath + '.tmp'
+        try:
+            with open(temp_filepath, 'w') as temp_file:
+                json.dump(self.settings, temp_file, indent=4)
+                temp_file.flush()
+                os.fsync(temp_file.fileno())
+            os.replace(temp_filepath, filepath)
+        finally:
+            if os.path.exists(temp_filepath):
+                try:
+                    os.remove(temp_filepath)
+                except OSError:
+                    pass
 
 class JSONSettingsRevealer(Gtk.Revealer):
     def __init__(self, settings, key):
@@ -333,3 +381,15 @@ def json_settings_factory(subclass):
 
 for widget in can_backend:
     globals()["JSONSettings"+widget] = json_settings_factory(widget)
+
+class InternalUpdateContext:
+    """Context manager for internal updates"""
+    def __init__(self, handler):
+        self.handler = handler
+
+    def __enter__(self):
+        self.handler._is_internal_update = True
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.handler._is_internal_update = False
