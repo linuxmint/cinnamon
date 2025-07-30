@@ -851,6 +851,8 @@ function saveAppletsPositions() {
                         order: newOrder
                     }
                 });
+
+                if (sharedPanels.panels.includes(newPanel)) definition.panelId = oldPanel;
             }
         }
     }
