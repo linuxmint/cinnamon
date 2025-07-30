@@ -134,7 +134,8 @@ function prepareExtensionReload(extension) {
 }
 
 /**
- * Get all applet definitions as Applet Definition Objects
+ * Get all applet definitions as Applet Definition Objects.
+ * Existing objects are **not** copied.
  * @returns {AppletDefinitionObject[]}
  */
 function getDefinitions() {
@@ -404,7 +405,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         }
         appletDefinition.applet = null;
 
-        Panel.removeSharedApplets(appletDefinition, changed);
+        removeSharedApplets(appletDefinition, changed);
         if (deleteConfig) {
             _removeAppletConfigFile(uuid, applet_id);
         }
@@ -469,37 +470,59 @@ function _shareAppletConfiguration(uuid, fromInstance, toInstance) {
 }
 
 /**
- * Attempt to add a shared applet to all shared panels. On success it returns true.
+ * If applet belongs to a shared panel, replace config file with copy of existing applet config file.
  * @param {AppletDefinitionObject} appletDefinition Definition of applet being added.
- * @returns {boolean} true if adding shared applet was successful.
+ * @returns {boolean} true if config file was updated.
  */
 function _addSharedAppletToPanels(appletDefinition) {
     const { panelId, location_label: location, order, real_uuid: uuid, applet_id: toInstance } = appletDefinition
-    /** Only run for new applet */
     const sharedPanels = Panel.getSharedPanels();
     if (!sharedPanels.panels.includes(panelId)) return false;
-    let instanceArray = sharedPanels.applets[location][order] ??= [];
-
-    if (instanceArray.length === 0) {
-        const definitions = getDefinitions();
-        instanceArray.push(toInstance);
-
-        // Add new applet to all other shared panels
-        let applet_id = global.settings.get_int("next-applet-id");
-        sharedPanels.panels.forEach(sharedPanel => {
-            if (sharedPanel === panelId) return;
-            const INSTANCE_ID = String(applet_id);
-            definitions.push({ ...appletDefinition, panelId: sharedPanel, applet_id: INSTANCE_ID });
-            sharedPanels.applets[location][order].push(INSTANCE_ID);
-            applet_id++
-        });
-
-        global.settings.set_int("next-applet-id", applet_id);
-        Panel.setSharedPanels(sharedPanels);
-        setDefinitions(definitions);
-    }
+    const instanceArray = sharedPanels.applets[location][order];
+    if (!instanceArray) return false;
     _shareAppletConfiguration(uuid, instanceArray[0], toInstance);
     return true;
+}
+
+/**
+ * Removes shared applet instances from shared-panels gsetting.
+ * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
+ * @param {boolean} changed When false, user removed applet from panel.
+ */
+function removeSharedApplets(appletDefinition, changed) {
+    const sharedPanels = Panel.getSharedPanels();
+    const { location_label: location, order, panelId, applet_id: instanceId } = appletDefinition;
+    const instanceArray = sharedPanels.applets[location][order];
+    if (!instanceArray) return;
+    // Only remove applet from the panel being removed.
+    if (!sharedPanels.panels.includes(panelId)) {
+        const index = instanceArray.indexOf(instanceId);
+        if (index === -1) {
+            global.logWarning("Could not find index of applet instance to remove");
+            return;
+        }
+        instanceArray.splice(index, 1);
+        Panel.setSharedPanels(sharedPanels);
+        return;
+    }
+
+    if (changed) {
+        instanceArray.splice(0, 1);
+    }
+    else {
+        const definitions = getDefinitions();
+        while (instanceArray.length > 0) {
+            const instanceId = instanceArray.pop();
+            const index = definitions.findIndex(definition => definition.applet_id == instanceId);
+            if (index === -1) continue;
+            definitions.splice(index, 1);
+        }
+
+        setDefinitions(definitions);
+    }
+    if (instanceArray.length === 0) delete sharedPanels.applets[location][order];
+
+    Panel.setSharedPanels(sharedPanels);
 }
 
 /**
@@ -793,34 +816,55 @@ function _removeAppletFromPanel(uuid, applet_id) {
 }
 
 function saveAppletsPositions() {
-    let enabled = global.settings.get_strv('enabled-applets');
-    let newEnabled = [];
+    const sharedPanels = Panel.getSharedPanels();
+    // Ensure we do not modify the existing objects.
+    const enabled = getDefinitions().map(e => { return { ...e } });
+    const sharedAppletInfo = {};
+
     for (let i = 0; i < enabled.length; i++) {
-        let info = enabled[i].split(':');
-        let {applet} = getAppletDefinition({
-            uuid: info[3],
-            applet_id: info[4],
-            location_label: info[1]
-        });
+        const definition = enabled[i];
+        const { applet, panelId, location_label, order } = definition;
         if (!applet) {
             continue;
         }
         if (applet._newOrder !== null) {
+            let newPanel;
             if (applet._newPanelId !== null) {
-                info[0] = 'panel' + applet._newPanelId;
-                info[1] = applet._zoneString;
+                definition.panelId = (newPanel = applet._newPanelId);
+                definition.location_label = applet._zoneString;
                 applet._newPanelId = null;
             }
-            info[2] = applet._newOrder;
+            definition.order = applet._newOrder;
             applet._newOrder = null;
-            newEnabled.push(info.join(':'));
-        }
-        else {
-            newEnabled.push(enabled[i]);
+
+            if (sharedPanels.panels.includes(panelId)) {
+                sharedAppletInfo[location_label] ??= {};
+                sharedAppletInfo[location_label][order] = {
+                    definitions: enabled.filter(e => {
+                        return e.panelId !== panelId
+                        && sharedPanels.panels.includes(e.panelId)
+                        && e.location_label === location_label
+                        && e.order === order
+                    }),
+                    newValues: {
+                        location_label: definition.location_label,
+                        order: definition.order
+                    }
+                }
+            }
         }
     }
 
-    global.settings.set_strv('enabled-applets', newEnabled);
+    for (const location of Object.values(sharedAppletInfo)) {
+        for (const { definitions, newValues } of Object.values(location)) {
+            for (const definition of definitions) {
+                definition.location_label = newValues.location_label;
+                definition.order = newValues.order;
+            }
+        }
+    }
+
+    setDefinitions(enabled);
 }
 
 // Deprecated, kept for compatibility reasons

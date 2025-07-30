@@ -428,52 +428,6 @@ function removeSharedPanel(panelId) {
     setSharedPanels(sharedPanels);
 }
 
-/** @typedef {import("./appletManager").AppletDefinitionObject} AppletDefinitionObject*/
-
-/**
- * Removes shared applets from shared-panels gsetting.
- * If individual applet is being removed (changed is true), only remove 1 instance as this will be called multiple
- * times from AppletManager. Otherwise (changed is false, user removed applet) remove all shared applets
- * If entire panel is being removed, only remove given instance.
- * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
- * @param {boolean} changed
- */
-function removeSharedApplets(appletDefinition, changed) {
-    const sharedPanels = getSharedPanels();
-    const { location_label: location, order, panelId, applet_id: instanceId } = appletDefinition;
-    const instanceArray = sharedPanels.applets[location][order];
-    if (!instanceArray) return;
-    // Only remove applet from the panel being removed.
-    if (!sharedPanels.panels.includes(panelId)) {
-        const index = instanceArray.indexOf(instanceId);
-        if (index === -1) {
-            global.logWarning("Could not find index of applet instance to remove");
-            return;
-        }
-        instanceArray.splice(index, 1);
-        setSharedPanels(sharedPanels);
-        return;
-    }
-
-    if (changed) {
-        instanceArray.splice(0, 1);
-    }
-    else {
-        const definitions = AppletManager.getDefinitions();
-        while (instanceArray.length > 0) {
-            const instanceId = instanceArray.pop();
-            const index = definitions.findIndex(definition => definition.applet_id == instanceId);
-            if (index === -1) continue;
-            definitions.splice(index, 1);
-        }
-
-        AppletManager.setDefinitions(definitions);
-    }
-    if (instanceArray.length === 0) delete sharedPanels.applets[location][order];
-
-    setSharedPanels(sharedPanels);
-}
-
 /**
  * #PanelManager
  *
