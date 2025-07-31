@@ -2096,12 +2096,32 @@ PanelZoneDNDHandler.prototype = {
             }
         }
 
+        const sharedPanels = getSharedPanels().panels;
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
         let insertAppletPos = 0;
 
         for (let i = 0, len = children.length; i < len; i++) {
             if (children[i]._delegate instanceof Applet.Applet){
+                const {
+                    panel: { panelId: sourceAppletPanel },
+                    locationLabel: sourceAppletLocation,
+                    _order: sourceAppletOrder
+                } = source.actor._applet;
+                const {
+                    panel: { panelId: targetAppletPanel },
+                    locationLabel: targetAppletLocation,
+                    _order: targetAppletOrder,
+                    instance_id
+                } = children[i]._applet;
+
+                if (targetAppletPanel !== sourceAppletPanel
+                    && targetAppletLocation === sourceAppletLocation
+                    && targetAppletOrder === sourceAppletOrder
+                    && sharedPanels.includes(targetAppletPanel
+                    )) {
+                    continue;
+                }
                 children[i]._applet._newOrder = curAppletPos;
                 curAppletPos++;
             } else if (children[i] == this._dragPlaceholder.actor){

@@ -820,10 +820,12 @@ function saveAppletsPositions() {
     // Ensure we do not modify the existing objects.
     const enabled = getDefinitions().map(e => { return { ...e } });
     const changedSharedDefinitions = [];
+    let sourceAppletInfo;
 
     for (let i = 0; i < enabled.length; i++) {
         const definition = enabled[i];
-        const { applet, panelId: oldPanel, location_label: oldLocation, order: oldOrder } = definition;
+        const old = {...definition};
+        const { applet, panelId: oldPanel, location_label: oldLocation, order: oldOrder, uuid} = definition;
         if (!applet) {
             continue;
         }
@@ -839,32 +841,50 @@ function saveAppletsPositions() {
 
             if (sharedPanels.panels.includes(oldPanel)) {
                 const { location_label: newLocation, order: newOrder } = definition;
-                changedSharedDefinitions.push({
-                    definitions: enabled.filter(e => {
-                        return e.panelId !== oldPanel
-                        && sharedPanels.panels.includes(e.panelId)
-                        && e.location_label === oldLocation
-                        && e.order === oldOrder
-                    }),
-                    newValues: {
-                        location_label: newLocation,
-                        order: newOrder
-                    }
-                });
+                if (sharedPanels.panels.includes(newPanel)) {
+                    sourceAppletInfo = {
+                        definition,
+                        oldPanel
+                    };
+                }
+                if (newLocation === oldLocation && newOrder === oldOrder) continue;
 
-                if (sharedPanels.panels.includes(newPanel)) definition.panelId = oldPanel;
+                const currentChangedDefinitions = {
+                    definitions: [],
+                    indices: [],
+                    newLocation,
+                    newOrder,
+                    removed: false
+                };
+                const length = enabled.length;
+                for (let i = 0; i < length; i++) {
+                    const sharedDefinition = enabled[i];
+                    if (sharedDefinition.panelId === oldPanel
+                        || !sharedPanels.panels.includes(sharedDefinition.panelId)
+                        || sharedDefinition.location_label !== oldLocation
+                        || sharedDefinition.order !== oldOrder) continue;
+                    currentChangedDefinitions.definitions.push(sharedDefinition);
+                    currentChangedDefinitions.indices.push(i);
+                }
+                if (newPanel) currentChangedDefinitions.removed = true;
+                changedSharedDefinitions.push(currentChangedDefinitions);
             }
         }
     }
 
+    if (sourceAppletInfo) sourceAppletInfo.definition.panelId = sourceAppletInfo.oldPanel;
+
     for (const sharedInfo of changedSharedDefinitions) {
-        const { definitions, newValues: { location_label, order } } = sharedInfo;
+        const { definitions, newLocation, newOrder, indices, removed } = sharedInfo;
+        // if (removed) {
+            //     for (const index of indices) enabled.splice(index, 1);
+            //     continue;
+            // }
         for (const definition of definitions) {
-            definition.location_label = location_label;
-            definition.order = order;
+            definition.location_label = newLocation;
+            definition.order = newOrder;
         }
     }
-
     setDefinitions(enabled);
 }
 
