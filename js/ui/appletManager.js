@@ -824,7 +824,7 @@ function saveAppletsPositions() {
 
     for (let i = 0; i < enabled.length; i++) {
         const definition = enabled[i];
-        const { applet, panelId: oldPanel, location_label: oldLocation, order: oldOrder, uuid} = definition;
+        const { applet, panelId: oldPanel, location_label: oldLocation, order: oldOrder } = definition;
         if (!applet) {
             continue;
         }

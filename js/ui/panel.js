@@ -2101,18 +2101,18 @@ PanelZoneDNDHandler.prototype = {
         let curAppletPos = 0;
         let insertAppletPos = -1;
 
+        const {
+            panel: { panelId: sourceAppletPanel },
+            locationLabel: sourceAppletLocation,
+            _order: sourceAppletOrder,
+        } = source.actor._applet;
+
         for (let i = 0, len = children.length; i < len; i++) {
             if (children[i]._delegate instanceof Applet.Applet){
-                const {
-                    panel: { panelId: sourceAppletPanel },
-                    locationLabel: sourceAppletLocation,
-                    _order: sourceAppletOrder
-                } = source.actor._applet;
                 const {
                     panel: { panelId: targetAppletPanel },
                     locationLabel: targetAppletLocation,
                     _order: targetAppletOrder,
-                    instance_id
                 } = children[i]._applet;
 
                 if (targetAppletPanel !== sourceAppletPanel
