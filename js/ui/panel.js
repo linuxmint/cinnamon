@@ -2085,6 +2085,7 @@ Panel.prototype = {
         this._hidden = false;
         this._disabled = false;
         this._panelEditMode = false;
+        this._highlighted = false;
         this._autohideSettings = null;
         this._destroyed = false;
         this._positionChanged = false;
@@ -2387,8 +2388,8 @@ Panel.prototype = {
 
         this.actor.change_style_pseudo_class('highlight', highlight);
 
-        if (highlight)
-            this.peekPanel();
+        this._highlighted = highlight;
+        this._updatePanelVisibility();
     },
 
     /**

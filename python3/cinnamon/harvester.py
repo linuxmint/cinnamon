@@ -27,11 +27,9 @@ from . import proxygsettings
 
 DEBUG = os.getenv("DEBUG") is not None
 
-
 def debug(msg):
     if DEBUG:
-        print(msg)
-
+        print(msg, file=sys.stderr)
 
 LANGUAGE_CODE = "C"
 try:
@@ -257,7 +255,7 @@ class Harvester:
             debug(f"Downloading from {r.request.url}")
             r.raise_for_status()
         except Exception as e:
-            print(f"Could not refresh json data for {self.spice_type}: {e}")
+            debug(f"Could not refresh json data for {self.spice_type}: {e}")
             return
 
         with open(self.index_file, "w", encoding="utf-8") as f:
@@ -289,7 +287,7 @@ class Harvester:
                                  params={"time": get_current_timestamp()})
                 r.raise_for_status()
             except Exception as e:
-                print(f"Could not get thumbnail for {uuid}: {e}")
+                debug(f"Could not get thumbnail for {uuid}: {e}")
                 return
 
             with open(paths.thumb_local_path, "wb", encoding="utf-8") as f:
@@ -322,7 +320,7 @@ class Harvester:
                             self.meta_map[uuid] = metadata
                     except Exception as detail:
                         debug(detail)
-                        print(f"Skipping {uuid}: there was a problem trying to read metadata.json", file=sys.stderr)
+                        debug(f"Skipping {uuid}: there was a problem trying to read metadata.json")
             except FileNotFoundError:
                 # debug("%s does not exist! Creating it now." % directory)
                 try:
@@ -365,7 +363,7 @@ class Harvester:
                     update = SpiceUpdate(self.spice_type, uuid, self.index_cache[uuid], self.meta_map[uuid])
                     self.updates.append(update)
             except Exception as e:
-                debug(f"Error checking updates for {uuid}: {e}", file=sys.stderr)
+                debug(f"Error checking updates for {uuid}: {e}")
                 raise
 
         return self.updates
@@ -384,7 +382,7 @@ class Harvester:
         try:
             item = self.index_cache[uuid]
         except KeyError:
-            print(f"Can't install {uuid} - it doesn't seem to exist on the server", file=sys.stderr)
+            debug(f"Can't install {uuid} - it doesn't seem to exist on the server")
             raise
 
         paths = SpicePathSet(item, spice_type=self.spice_type)
@@ -396,7 +394,7 @@ class Harvester:
                              params={"time": get_current_timestamp()})
             r.raise_for_status()
         except Exception as e:
-            debug(f"Could not download zip for {uuid}: {e}", file=sys.stderr)
+            debug(f"Could not download zip for {uuid}: {e}")
             raise
 
         try:
@@ -415,7 +413,7 @@ class Harvester:
 
                 self._load_metadata()
         except Exception as e:
-            debug(f"couldn't install: {e}", file=sys.stderr)
+            debug(f"couldn't install: {e}")
             raise
 
     def _install_from_folder(self, folder, base_folder, uuid, from_spices=False):

@@ -29,7 +29,7 @@
 #include <meta/meta-backend.h>
 #include <meta/meta-enum-types.h>
 #include <meta/meta-cursor-tracker.h>
-#include <meta/compositor-mutter.h>
+#include <meta/compositor-muffin.h>
 #include <meta/meta-monitor-manager.h>
 #include <meta/window.h>
 
