@@ -372,18 +372,11 @@ function updatePanelsMeta(meta, panel_props) {
 }
 
 /**
- * @typedef {Record<number, string[]>} AppletInstances
- * Each index represents the order in the panel position.
- * Each element is an array of the shared applet instance ids.
- *
- * @typedef {{left: AppletInstances,center: AppletInstances,right: AppletInstances}} SharedPanelApplets
- * Contains the locations of shared applet instances.
- *
- * @typedef {{panels: number[], applets: SharedPanelApplets}} SharedPanels
+ * @typedef {number[]} SharedPanels
  */
 
 /**
- * Returned object contains properties for shared panels and shared applet instances.
+ * Returns array of shared panel ids.
  * @returns {SharedPanels} Parsed shared-panels value from gsettings.
  */
 function getSharedPanels() {
@@ -407,8 +400,8 @@ function setSharedPanels(sharedPanels) {
  */
 function addSharedPanels(sharedPanelId, newPanelId) {
     const sharedPanels = getSharedPanels();
-    if (!sharedPanels.panels.includes(sharedPanelId)) sharedPanels.panels.push(sharedPanelId);
-    sharedPanels.panels.push(newPanelId);
+    if (!sharedPanels.includes(sharedPanelId)) sharedPanels.push(sharedPanelId);
+    sharedPanels.push(newPanelId);
     setSharedPanels(sharedPanels);
 }
 
@@ -418,10 +411,10 @@ function addSharedPanels(sharedPanelId, newPanelId) {
  */
 function removeSharedPanel(panelId) {
     const sharedPanels = getSharedPanels();
-    const INDEX = sharedPanels.panels.findIndex(id => id === panelId);
+    const INDEX = sharedPanels.findIndex(id => id === panelId);
     if (INDEX === -1) return;
-    sharedPanels.panels.splice(INDEX, 1);
-    if (sharedPanels.panels.length < 2) {
+    sharedPanels.splice(INDEX, 1);
+    if (sharedPanels.length < 2) {
         global.settings.reset("shared-panels");
         return;
     }
@@ -703,7 +696,7 @@ PanelManager.prototype = {
                 break;
             }
         }
-        if (getSharedPanels().panels.includes(panelId)) {
+        if (getSharedPanels().includes(panelId)) {
             removeSharedPanel(panelId);
             AppletManager.clearAppletConfiguration(panelId);
         }
@@ -2096,7 +2089,7 @@ PanelZoneDNDHandler.prototype = {
             }
         }
 
-        const sharedPanels = getSharedPanels().panels;
+        const sharedPanels = getSharedPanels();
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
         let insertAppletPos = -1;
@@ -2118,8 +2111,8 @@ PanelZoneDNDHandler.prototype = {
                 if (targetAppletPanel !== sourceAppletPanel
                     && targetAppletLocation === sourceAppletLocation
                     && targetAppletOrder === sourceAppletOrder
-                    && sharedPanels.includes(targetAppletPanel
-                    )) {
+                    && sharedPanels.includes(targetAppletPanel)
+                ) {
                     continue;
                 }
                 children[i]._applet._newOrder = curAppletPos;

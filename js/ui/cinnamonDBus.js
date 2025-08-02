@@ -349,8 +349,7 @@ CinnamonDBus.prototype = {
     },
 
     highlightPanel: function(id, highlight) {
-        /** @type {number[]} */
-        const sharedPanels = Panel.getSharedPanels().panels;
+        const sharedPanels = Panel.getSharedPanels();
         if (Main.panelManager.panels[id]) {
             Main.panelManager.panels[id].highlight(highlight);
             if (sharedPanels.includes(id)) {

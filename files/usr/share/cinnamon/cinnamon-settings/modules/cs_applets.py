@@ -93,7 +93,7 @@ class ManageAppletsPage(ManageSpicesPage):
 
     def getNextPanel(self, positive_direction = True):
         self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, False)
-        shared_panels = json.loads(self.spices.settings.get_string("shared-panels"))["panels"]
+        shared_panels = json.loads(self.spices.settings.get_string("shared-panels"))
         step = 1 if positive_direction else -1
 
         for _ in self.panels:

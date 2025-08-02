@@ -255,7 +255,7 @@ class Module:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
         index = current = self.panels.index(self.current_panel)
-        shared_panels = json.loads(self.settings.get_string("shared-panels"))["panels"]
+        shared_panels = json.loads(self.settings.get_string("shared-panels"))
 
         step = 1 if positive_direction else -1
 
@@ -377,7 +377,7 @@ class Module:
 
         # Disable the panel switch buttons if there's only one panel or if there is only shared panels
         if len(self.panels) == 1 or (
-            len(self.panels) - len(json.loads(self.settings.get_string("shared-panels"))["panels"]) == 0
+            len(self.panels) - len(json.loads(self.settings.get_string("shared-panels"))) == 0
         ):
             self.next_button.set_sensitive(False)
             self.previous_button.set_sensitive(False)
@@ -431,7 +431,7 @@ class PanelWidgetBackend(object):
             self.connect_widget_handlers()
 
     def set_value(self, value):
-        shared_panels = json.loads(self.settings['shared-panels'])['panels']
+        shared_panels = json.loads(self.settings['shared-panels'])
         vals = self.settings[self.key]
         newvals = []
         for val in vals:
@@ -515,7 +515,7 @@ class PanelJSONHelper:
         super().__init__(*args, **kwargs)
 
     def set_value(self, value):
-        shared_panels = json.loads(self.settings['shared-panels'])['panels']
+        shared_panels = json.loads(self.settings['shared-panels'])
         vals = json.loads(self.settings[self.key])
         panel_id = int(self.panel_id)
         for obj in vals:
