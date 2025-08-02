@@ -2099,7 +2099,7 @@ PanelZoneDNDHandler.prototype = {
         const sharedPanels = getSharedPanels().panels;
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
-        let insertAppletPos = 0;
+        let insertAppletPos = -1;
 
         for (let i = 0, len = children.length; i < len; i++) {
             if (children[i]._delegate instanceof Applet.Applet){
@@ -2130,7 +2130,7 @@ PanelZoneDNDHandler.prototype = {
             }
         }
 
-        source.actor._applet._newOrder = insertAppletPos;
+        if (insertAppletPos !== -1) source.actor._applet._newOrder = insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         source.actor._applet._zoneString = this._zoneString;
         source.actor._applet._newPanelId = this._panelId;
