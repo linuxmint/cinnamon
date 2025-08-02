@@ -2130,7 +2130,12 @@ PanelZoneDNDHandler.prototype = {
             }
         }
 
-        if (insertAppletPos !== -1) source.actor._applet._newOrder = insertAppletPos;
+        const isSameLocation = (
+            sourceAppletPanel === this._panelId
+            && sourceAppletLocation === this._zoneString
+            && insertAppletPos === -1
+        );
+        if (!isSameLocation) source.actor._applet._newOrder = insertAppletPos === -1 ? 0 : insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         source.actor._applet._zoneString = this._zoneString;
         source.actor._applet._newPanelId = this._panelId;
