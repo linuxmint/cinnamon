@@ -953,6 +953,7 @@ function saveAppletsPositions() {
                     newLocation,
                     newOrder,
                     added: false,
+                    sharingInstance: undefined,
                     removed: false
                 };
 
@@ -972,6 +973,7 @@ function saveAppletsPositions() {
                 else if (newPanelIsShared){
                     let nextAppletId = global.settings.get_int("next-applet-id");
                     currentChangedDefinitions.added = true;
+                    currentChangedDefinitions.sharingInstance = definition.applet_id;
                     for (const panel of sharedPanels) {
                         if (newPanel === panel) continue;
                         currentChangedDefinitions.definitions.push({
@@ -980,6 +982,7 @@ function saveAppletsPositions() {
                             applet_id: nextAppletId++
                         });
                     }
+                    global.settings.set_int("next-applet-id", nextAppletId);
                 }
                 changedSharedDefinitions.push(currentChangedDefinitions);
             }
@@ -989,8 +992,13 @@ function saveAppletsPositions() {
     if (sourceAppletInfo) sourceAppletInfo.definition.panelId = sourceAppletInfo.oldPanel;
 
     for (const sharedInfo of changedSharedDefinitions) {
-        const { definitions, newLocation, newOrder, indices, added, removed } = sharedInfo;
-        if (added) enabled.push(...definitions);
+        const { definitions, newLocation, newOrder, indices, added, sharingInstance, removed } = sharedInfo;
+        if (added && sharingInstance) {
+            enabled.push(...definitions);
+            for (const { real_uuid: uuid, applet_id: toInstance } of definitions) {
+                _shareAppletConfiguration(uuid, sharingInstance, toInstance);
+            }
+        }
         else if (removed) for (const index of indices) enabled.splice(index, 1);
         else {
             for (const definition of definitions) {
