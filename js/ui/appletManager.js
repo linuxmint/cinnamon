@@ -491,18 +491,45 @@ function _removeAppletConfigListeners(uuid) {
     delete appletConfigMonitors[uuid]
 }
 
-function _readJsonFile(file) {
-    const result = file.load_contents(null);
-    const rawSettings = result[1];
-    if (!rawSettings) return null;
-    const decoder = new TextDecoder();
-    try {
-        return JSON.parse(decoder.decode(rawSettings));
-    }
-    catch(e) {
-        global.logError(e);
-        return null;
-    }
+async function _readJsonFile(file) {
+    const settings = await new Promise(resolve=> file.load_contents_async(null,
+        (source, res) => {
+            try{
+                const [ok, contents] = source.load_contents_finish(res);
+                if (!ok) {
+                    resolve(null);
+                    return;
+                }
+                const decoder = new TextDecoder();
+                resolve(JSON.parse(decoder.decode(contents)));
+            }
+            catch(e) {
+                global.logError(e);
+                resolve(null)
+            }
+        }
+    ));
+    return settings;
+}
+
+async function _copyFile(sourceFile, destFile) {
+    return await new Promise(resolve => sourceFile.copy_async(
+        destFile,
+        Gio.FileCopyFlags.OVERWRITE,
+        GLib.PRIORITY_DEFAULT,
+        null,
+        null,
+        (source, res) => {
+            try{
+                source.copy_finish(res);
+                resolve();
+            }
+            catch(e) {
+                global.logError(e)
+                resolve();
+            }
+        }
+    ));
 }
 
 function _unlistenedSettingChanged(oldSettings, newSettings) {
@@ -530,7 +557,7 @@ function _unlistenedSettingChanged(oldSettings, newSettings) {
     return changed;
 }
 
-function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
+async function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
     const updatedInstance = file.get_path().match("(?<=^.+/)\\d+(?=\\.json$)")?.[0];
     if (!updatedInstance) return;
     if (eventType !== Gio.FileMonitorEvent.CHANGES_DONE_HINT) return;
@@ -539,8 +566,7 @@ function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
     const sharingApplet = definitions.find(e => e.applet_id === updatedInstance);
     if (!sharingApplet) return;
     _removeAppletConfigListeners(sharingApplet.real_uuid);
-
-    const newSettings = _readJsonFile(file);
+    const newSettings = await _readJsonFile(file);
     if (!newSettings) return;
     const sharedDefinitions = definitions.filter(e => {
         return sharedPanels.includes(e.panelId)
@@ -550,13 +576,13 @@ function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
 
     for (const definition of sharedDefinitions) {
         try{
-            const { applet_id: instance, real_uuid: uuid } = definition;
+            const { applet_id: instance } = definition;
             if (instance === updatedInstance) continue;
             const toConfigFile = file.get_parent().get_child(`${instance}.json`);
-            const oldSettings = _readJsonFile(toConfigFile);
+            const oldSettings = await _readJsonFile(toConfigFile);
             if (!oldSettings) continue;
             const unlistenedChange = _unlistenedSettingChanged(oldSettings, newSettings);
-            file.copy(toConfigFile, Gio.FileCopyFlags.OVERWRITE, null, null);
+            await _copyFile(file, toConfigFile);
             if (unlistenedChange) {
                 removeAppletFromPanels(definition, false, true);
                 addAppletToPanels(Extension.getExtension(definition.real_uuid), definition);
