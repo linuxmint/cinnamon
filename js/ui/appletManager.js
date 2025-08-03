@@ -2,7 +2,6 @@
 
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
-const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 
 const Mainloop = imports.mainloop;
@@ -481,7 +480,7 @@ function _addAppletConfigListeners(uuid, instanceId) {
     for (const directory of directoryPaths) {
         const gFileDirectory = Gio.File.new_for_path(directory);
         const monitor = gFileDirectory.monitor_directory(Gio.FileMonitorFlags.NONE, null);
-        GObject.signal_connect(monitor, "changed", _onAppletConfigChanged, null);
+        monitor.connect("changed", _onAppletConfigChanged);
         (appletConfigMonitors[uuid] ??= []).push(monitor);
     }
 }
@@ -490,6 +489,45 @@ function _removeAppletConfigListeners(uuid) {
     if (!appletConfigMonitors[uuid]) return;
     appletConfigMonitors[uuid].forEach(e => e.cancel());
     delete appletConfigMonitors[uuid]
+}
+
+function _readJsonFile(file) {
+    const result = file.load_contents(null);
+    const rawSettings = result[1];
+    if (!rawSettings) return null;
+    const decoder = new TextDecoder();
+    try {
+        return JSON.parse(decoder.decode(rawSettings));
+    }
+    catch(e) {
+        global.logError(e);
+        return null;
+    }
+}
+
+function _unlistenedSettingChanged(oldSettings, newSettings) {
+    const layout = oldSettings.layout;
+    const listenedKeys = [];
+    const unlistenedKeys = [];
+
+    for (const key in layout) {
+        if (layout[key].type !== "section") continue;
+        listenedKeys.push(...layout[key].keys);
+    }
+
+    for (const key in oldSettings) {
+        if (listenedKeys.includes(key)) continue;
+        if (typeof oldSettings[key] !== "object") continue;
+        if (!("value" in oldSettings[key])) continue;
+        unlistenedKeys.push(key);
+    }
+
+    const changed = unlistenedKeys.some(key => {
+        const oldValue = JSON.stringify(oldSettings[key]["value"]);
+        const newValue = JSON.stringify(newSettings[key]["value"]);
+        return oldValue !== newValue;
+    });
+    return changed;
 }
 
 function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
@@ -501,6 +539,9 @@ function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
     const sharingApplet = definitions.find(e => e.applet_id === updatedInstance);
     if (!sharingApplet) return;
     _removeAppletConfigListeners(sharingApplet.real_uuid);
+
+    const newSettings = _readJsonFile(file);
+    if (!newSettings) return;
     const sharedDefinitions = definitions.filter(e => {
         return sharedPanels.includes(e.panelId)
             && e.location_label === sharingApplet.location_label
@@ -512,9 +553,14 @@ function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
             const { applet_id: instance, real_uuid: uuid } = definition;
             if (instance === updatedInstance) continue;
             const toConfigFile = file.get_parent().get_child(`${instance}.json`);
+            const oldSettings = _readJsonFile(toConfigFile);
+            if (!oldSettings) continue;
+            const unlistenedChange = _unlistenedSettingChanged(oldSettings, newSettings);
             file.copy(toConfigFile, Gio.FileCopyFlags.OVERWRITE, null, null);
-            removeAppletFromPanels(definition, false, true);
-            addAppletToPanels(Extension.getExtension(uuid), definition);
+            if (unlistenedChange) {
+                removeAppletFromPanels(definition, false, true);
+                addAppletToPanels(Extension.getExtension(definition.real_uuid), definition);
+            }
         }
         catch(e) {
             global.logError(e);
