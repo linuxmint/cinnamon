@@ -128,7 +128,7 @@ class MainWindow(object):
             proxy = None
 
         if proxy:
-            proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], True)
+            self.highlightXlet(self.selected_instance, True)
 
     def load_xlet_data (self):
         self.xlet_dir = "/usr/share/cinnamon/%ss/%s" % (self.type, self.uuid)
@@ -254,6 +254,8 @@ class MainWindow(object):
         except (KeyError, ValueError):
             multi_instance = False
 
+        enabled = [x.split(":") for x in self.gsettings.get_strv('enabled-%ss' % self.type)]
+
         for item in dir_items:
             # ignore anything that isn't json
             if item[-5:] != ".json":
@@ -261,6 +263,7 @@ class MainWindow(object):
 
             instance_id = item[0:-5]
             if not multi_instance and instance_id != self.uuid:
+                print('not multi instance and instance id not uuid', instance_id, self.uuid)
                 continue # for single instance the file name should be [uuid].json
 
             if multi_instance:
@@ -271,21 +274,27 @@ class MainWindow(object):
                     continue # multi-instance should have file names of the form [instance-id].json
 
                 instance_exists = False
-                enabled = self.gsettings.get_strv('enabled-%ss' % self.type)
                 for definition in enabled:
-                    if self.uuid in definition and instance_id in definition.split(':'):
+                    if self.uuid in definition and instance_id in definition:
                         instance_exists = True
+                        if self.type == 'applet':
+                            panel, (location, order) = int(definition[0].split('panel')[1]), definition[1:3]
                         break
 
                 if not instance_exists:
                     continue
+            elif self.type == 'applet':
+                for definition in enabled:
+                    if self.uuid in definition:
+                        panel, (location, order) = int(definition[0].split('panel')[1]), definition[1:3]
+                        break
+
 
             settings = JSONSettingsHandler(os.path.join(path if item in new_items else old_path, item), self.notify_dbus)
             settings.instance_id = instance_id
             instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             self.instance_stack.add_named(instance_box, instance_id)
-
-            info = {"settings": settings, "id": instance_id}
+            info = {"settings": settings, "id": instance_id, "panel": panel, "location": location, "order": order}
             self.instance_info.append(info)
 
             settings_map = settings.get_settings()
@@ -328,7 +337,16 @@ class MainWindow(object):
 
             instances += 1
 
-        if instances < 2:
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
+        first = self.instance_info[0]
+        only_shared_instances = all(
+            info["panel"] in shared_panels
+            and info["location"] == first["location"]
+            and info["order"] == first["order"]
+            for info in self.instance_info
+        )
+
+        if instances < 2 or only_shared_instances:
             self.prev_button.set_no_show_all(True)
             self.next_button.set_no_show_all(True)
 
@@ -449,6 +467,22 @@ class MainWindow(object):
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))
 
+    def get_shared_info(self, info):
+        """
+        Returns array of the other shared info objects
+        """
+        if self.type != 'applet': return []
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
+        if info["panel"] not in shared_panels: return []
+        shared_infos = []
+        for other_info in self.instance_info:
+            if other_info == info: continue
+            if other_info["panel"] not in shared_panels: continue
+            if other_info["location"] != info["location"]: continue
+            if other_info["order"] != info["order"]: continue
+            shared_infos.append(other_info)
+        return shared_infos
+
     def set_instance(self, info):
         self.instance_stack.set_visible_child_name(info["id"])
         if "stack" in info:
@@ -460,23 +494,47 @@ class MainWindow(object):
                 else:
                     info["stack"].set_visible_child(children[0])
         if proxy:
-            proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], False)
-            proxy.highlightXlet('(ssb)', self.uuid, info["id"], True)
+            old_info = self.selected_instance
+            new_info = info
+            self.highlightXlet(old_info, False)
+            self.highlightXlet(new_info, True)
         self.selected_instance = info
 
+    def highlightXlet(self, info, highlighted):
+        shared_infos = self.get_shared_info(info)
+        while True:
+            proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
+            if len(shared_infos) == 0: break
+            info = shared_infos.pop()
+
     def previous_instance(self, *args):
-        self.instance_stack.set_transition_type(Gtk.StackTransitionType.OVER_RIGHT)
-        index = self.instance_info.index(self.selected_instance)
-        self.set_instance(self.instance_info[index-1])
+        self.get_next_instance(False)
 
     def next_instance(self, *args):
-        self.instance_stack.set_transition_type(Gtk.StackTransitionType.OVER_LEFT)
-        index = self.instance_info.index(self.selected_instance)
-        if index == len(self.instance_info) - 1:
-            index = 0
-        else:
-            index +=1
-        self.set_instance(self.instance_info[index])
+        self.get_next_instance()
+
+    def get_next_instance(self, positive_direction = True):
+        transition = Gtk.StackTransitionType.OVER_LEFT if positive_direction else Gtk.StackTransitionType.OVER_RIGHT
+        self.instance_stack.set_transition_type(transition)
+        step = 1 if positive_direction else -1
+        instances_length = len(self.instance_info)
+        start = self.instance_info.index(self.selected_instance)
+        nextIndex = (start + step) % instances_length
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
+
+        if self.selected_instance["panel"] in shared_panels and self.instance_info[nextIndex]["panel"] in shared_panels:
+            current = self.selected_instance
+            while nextIndex != start:
+                info = self.instance_info[nextIndex]
+                if (info["panel"] not in shared_panels
+                    or info["location"] != current["location"]
+                    or info["order"] != current["order"]
+                ):
+                    break
+                nextIndex = (nextIndex + step) % instances_length
+                continue
+
+        self.set_instance(self.instance_info[nextIndex])
 
     # def unpack_args(self, args):
     #    args = {}
@@ -531,7 +589,7 @@ class MainWindow(object):
 
     def quit(self, *args):
         if proxy:
-            proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], False)
+            self.highlightXlet(self.selected_instance, False)
 
         self.window.destroy()
         Gtk.main_quit()
