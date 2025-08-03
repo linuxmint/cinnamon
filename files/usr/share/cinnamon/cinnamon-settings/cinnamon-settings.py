@@ -77,6 +77,7 @@ CONTROL_CENTER_MODULES = [
 STANDALONE_MODULES = [
     # Label                           Executable                              Icon                        Category      Keywords for filter
     [_("Printers"),                   "system-config-printer",                "cs-printer",                "hardware",   _("printers, laser, inkjet")],
+    [_("Fingerprints"),               "fingwit",                              "fingwit",                   "admin",      _("fingerprint")],
     [_("Firewall"),                   "gufw",                                 "cs-firewall",               "admin",      _("firewall, block, filter, programs")],
     [_("Firewall"),                   "firewall-config",                      "cs-firewall",               "admin",      _("firewall, block, filter, programs")],
     [_("Languages"),                  "mintlocale",                           "cs-language",               "prefs",      _("language, install, foreign")],
