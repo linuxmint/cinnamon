@@ -3,5 +3,6 @@
 "name": "Notifications",
 "description": "Click to display and manage system notifications",
 "role": "notifications",
-"icon": "cs-notifications"
+"icon": "cs-notifications",
+"max-instances": -1
 }

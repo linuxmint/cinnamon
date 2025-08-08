@@ -59,6 +59,12 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
     _openMenu() {
         this._update_timestamp();
+
+        this._notificationbin.remove_all_children();
+        this.notifications.forEach(notification => {
+            global.reparentActor(notification.actor, this._notificationbin);
+        });
+
         this.menu.toggle();
     }
 
@@ -132,8 +138,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             if (notification._destroyed) {
                 this.notifications.splice(existing_index, 1);
             } else {
-                notification._inNotificationBin = true;
-                global.reparentActor(notification.actor, this._notificationbin);
                 notification._timeLabel.show();
             }
             this.update_list();
@@ -142,11 +146,8 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             return;
         }
         // Add notification to list.
-        notification._inNotificationBin = true;
         this.notifications.push(notification);
-        // Steal the notification panel.
-        this._notificationbin.add(notification.actor);
-        notification.actor._parent_container = this._notificationbin;
+
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
         notification.connect('scrolling-changed', (notif, scrolling) => { this.menu.passEvents = scrolling });

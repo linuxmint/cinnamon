@@ -257,12 +257,10 @@ var Notification = class Notification {
         this._actionArea = null;
         this._imageBin = null;
         this._timestamp = new Date();
-        this._inNotificationBin = false;
 
         source.connect('destroy', (source, reason) => { this.destroy(reason) });
 
         this.actor = new St.Button({ accessible_role: Atk.Role.NOTIFICATION });
-        this.actor._parent_container = null;
         this.actor.connect('clicked', () => this._onClicked());
         this.actor.connect('destroy', () => this._onDestroy());
 
@@ -343,7 +341,6 @@ var Notification = class Notification {
      */
     update(title, body, params) {
         this._timestamp = new Date();
-        this._inNotificationBin = false;
         params = Params.parse(params, {
             icon: null,
             titleMarkup: false,
@@ -924,8 +921,8 @@ MessageTray.prototype = {
 
     _showNotification: function () {
         this._notification = this._notificationQueue.shift();
-        if (this._notification.actor._parent_container) {
-            this._notification.actor._parent_container.remove_actor(this._notification.actor);
+        if (this._notification.actor.get_parent()) {
+            this._notification.actor.get_parent().remove_actor(this._notification.actor);
         }
 
         this._notificationBin.child = this._notification.actor;
