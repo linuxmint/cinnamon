@@ -534,6 +534,7 @@ async function _copyFile(sourceFile, destFile) {
 
 function _unlistenedSettingChanged(oldSettings, newSettings) {
     const layout = oldSettings.layout;
+    if (!layout) return false;
     const listenedKeys = [];
     const unlistenedKeys = [];
 

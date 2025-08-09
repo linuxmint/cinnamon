@@ -133,7 +133,7 @@ class MainWindow(object):
             proxy = None
 
         if proxy:
-            self.highlightXlet(self.selected_instance, True)
+            self.highlight_xlet(self.selected_instance, True)
 
     def load_xlet_data (self):
         self.xlet_dir = "/usr/share/cinnamon/%ss/%s" % (self.type, self.uuid)
@@ -520,11 +520,11 @@ class MainWindow(object):
         if proxy:
             old_info = self.selected_instance
             new_info = info
-            self.highlightXlet(old_info, False)
-            self.highlightXlet(new_info, True)
+            self.highlight_xlet(old_info, False)
+            self.highlight_xlet(new_info, True)
         self.selected_instance = info
 
-    def highlightXlet(self, info, highlighted):
+    def highlight_xlet(self, info, highlighted):
         shared_infos = self.get_shared_info(info)
         while True:
             proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
@@ -631,7 +631,7 @@ class MainWindow(object):
         self.create_settings_page(path, panel, location, order)
         self.window.show_all()
         self.update_prev_next_buttons()
-        self.highlightXlet(self.selected_instance, True)
+        self.highlight_xlet(self.selected_instance, True)
 
     def backup(self, *args):
         dialog = Gtk.FileChooserDialog(_("Select or enter file to export to"),
@@ -683,7 +683,7 @@ class MainWindow(object):
 
     def quit(self, *args):
         if proxy:
-            self.highlightXlet(self.selected_instance, False)
+            self.highlight_xlet(self.selected_instance, False)
         self.window.destroy()
         Gtk.main_quit()
 
