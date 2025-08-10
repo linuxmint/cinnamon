@@ -476,6 +476,8 @@ function _shareAppletConfiguration(uuid, fromInstance, toInstance) {
 
 function _addAppletConfigListeners(uuid, instanceId) {
     if (uuid in appletConfigMonitors) return;
+    const maxInstances = Extension.get_max_instances(uuid, Extension.Type.APPLET)
+    if (maxInstances === 1) return;
     const directoryPaths = _getConfigPaths(uuid, instanceId).map(e => e.slice(0, e.lastIndexOf("/")));
     for (const directory of directoryPaths) {
         const gFileDirectory = Gio.File.new_for_path(directory);
@@ -1153,14 +1155,14 @@ function pasteAppletConfiguration(panelId) {
  * @param {number} toPanelId Panel id to copy to
  */
 function setupSharedApplets(fromPanelId, toPanelId) {
-    clearAppletConfiguration(toPanelId);
     const definitions = getDefinitions();
     const fromAppletDefinitions = definitions.filter(e => e.panelId === fromPanelId);
     let nextAppletId = global.settings.get_int("next-applet-id");
     fromAppletDefinitions.forEach(definition => {
         /** @type {AppletDefinitionObject} */
         const toAppletDefinition = {...definition, applet_id: String(nextAppletId), panelId: toPanelId };
-        _shareAppletConfiguration(definition.real_uuid, definition.applet_id, nextAppletId);
+        const maxInstances = Extension.get_max_instances(definition.real_uuid, Extension.Type.APPLET);
+        if (maxInstances !== 1) _shareAppletConfiguration(definition.real_uuid, definition.applet_id, nextAppletId);
         definitions.push(toAppletDefinition);
         nextAppletId++;
     });

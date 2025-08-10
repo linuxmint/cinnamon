@@ -767,6 +767,7 @@ PanelManager.prototype = {
         setPanelsEnabledList(list);
 
         if (sharedPanelId != undefined) {
+            AppletManager.clearAppletConfiguration(panelId);
             addSharedPanels(sharedPanelId, panelId);
             AppletManager.setupSharedApplets(sharedPanelId, panelId);
         }
