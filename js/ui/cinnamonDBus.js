@@ -8,6 +8,7 @@ const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
 const Panel = imports.ui.panel;
+const Applet = imports.ui.applet;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
@@ -346,6 +347,19 @@ CinnamonDBus.prototype = {
     highlightXlet: function(uuid, instance_id, highlight) {
         let obj = this._getXletObject(uuid, instance_id);
         if (obj && obj.highlight) obj.highlight(highlight);
+        if (obj instanceof Applet.Applet) {
+            const highlightedApplet = AppletManager.getAppletDefinition({ uuid, applet_id: instance_id });
+            const sharedPanels = Panel.getSharedPanels();
+            if (!sharedPanels.includes(highlightedApplet.panelId)) return;
+            const otherSharedApplets = AppletManager.getDefinitions().filter(e => {
+                const { panelId, location_label, order, applet } = e;
+                return applet !== obj
+                    && sharedPanels.includes(panelId)
+                    && location_label === highlightedApplet.location_label
+                    && order === highlightedApplet.order
+            });
+            otherSharedApplets.forEach(({applet}) => applet.highlight(highlight));
+        }
     },
 
     highlightPanel: function(id, highlight) {

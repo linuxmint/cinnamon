@@ -505,22 +505,6 @@ class MainWindow(object):
     def notify_dbus(self, handler, key, value):
         proxy.updateSetting('(ssss)', self.uuid, handler.instance_id, key, json.dumps(value))
 
-    def get_shared_info(self, info):
-        """
-        Returns array of the other shared info objects
-        """
-        if self.type != 'applet': return []
-        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
-        if info["panel"] not in shared_panels: return []
-        shared_infos = []
-        for other_info in self.instance_info:
-            if other_info == info: continue
-            if other_info["panel"] not in shared_panels: continue
-            if other_info["location"] != info["location"]: continue
-            if other_info["order"] != info["order"]: continue
-            shared_infos.append(other_info)
-        return shared_infos
-
     def set_instance(self, info):
         self.instance_stack.set_visible_child_name(info["id"])
         if "stack" in info:
@@ -539,11 +523,7 @@ class MainWindow(object):
         self.selected_instance = info
 
     def highlight_xlet(self, info, highlighted):
-        shared_infos = self.get_shared_info(info)
-        while True:
-            proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
-            if len(shared_infos) == 0: break
-            info = shared_infos.pop()
+        proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
 
     def previous_instance(self, *args):
         self.get_next_instance(False)

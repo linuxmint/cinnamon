@@ -566,7 +566,7 @@ async function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
     if (eventType !== Gio.FileMonitorEvent.CHANGES_DONE_HINT) return;
     const definitions = getDefinitions();
     const sharedPanels = Panel.getSharedPanels();
-    const sharingApplet = definitions.find(e => e.applet_id === updatedInstance);
+    const sharingApplet = definitions.find(e => sharedPanels.includes(e.panelId) && e.applet_id === updatedInstance);
     if (!sharingApplet) return;
     _removeAppletConfigListeners(sharingApplet.real_uuid);
     const newSettings = await _readJsonFile(file);
