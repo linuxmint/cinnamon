@@ -408,7 +408,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         appletDefinition.applet = null;
 
         if (deleteConfig) {
-            removeSharedApplets(appletDefinition);
+            removeSharedAppletCleanup(appletDefinition);
             _removeAppletConfigFile(uuid, applet_id);
         }
 
@@ -599,25 +599,18 @@ async function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
 }
 
 /**
- * Removes shared applet instances from shared-panels gsetting.
+ * Shared applet removal cleanup
  * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
  */
-function removeSharedApplets(appletDefinition) {
+function removeSharedAppletCleanup(appletDefinition) {
     const sharedPanels = Panel.getSharedPanels();
-    const { location_label: location, order, panelId, real_uuid: uuid } = appletDefinition;
-    // Only remove applet from the panel being removed.
+    const { panelId, location_label, order, real_uuid: uuid } = appletDefinition;
     if (!sharedPanels.includes(panelId)) return;
-
-    const definitions = getDefinitions();
-    for (let i = definitions.length - 1; i >= 0; i--) {
-        const { panelId, location_label: otherLocation, order: otherOrder } = definitions[i];
-        if (!sharedPanels.includes(panelId)) continue;
-        if (definitions[i] === appletDefinition) continue;
-        if (location !== otherLocation || order !== otherOrder) continue;
-        definitions.splice(i, 1);
-    }
-    _removeAppletConfigListeners(uuid)
-    setDefinitions(definitions);
+    const sharedApplets = getDefinitions().filter(e => {
+        return sharedPanels.includes(e.panelId)
+            && e.real_uuid === uuid
+    });
+    if (!sharedApplets.length) _removeAppletConfigListeners(uuid);
 }
 
 /**
@@ -906,8 +899,20 @@ function _removeAppletFromPanel(uuid, applet_id) {
     Mainloop.idle_add(() => {
         let real_uuid = uuid;
         let definition = queryCollection(definitions, {real_uuid, applet_id});
-        if (definition)
+        if (definition) {
+            const sharedPanels = Panel.getSharedPanels();
             removeApplet(definition);
+            if (sharedPanels.includes(definition.panelId)) {
+                const enabled = getDefinitions();
+                for (const otherDefinition of enabled) {
+                    const { panelId, location_label, order } = otherDefinition;
+                    if (!sharedPanels.includes(panelId)) continue;
+                    if (definition.location_label !== location_label) continue;
+                    if (definition.order !== order) continue;
+                    removeApplet(otherDefinition);
+                }
+            }
+        }
         return false;
     });
 }
