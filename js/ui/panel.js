@@ -1945,10 +1945,12 @@ PanelContextMenu.prototype = {
 
     open: function(animate) {
         PopupMenu.PopupMenu.prototype.open.call(this, animate);
-
+        const sharedPanels = getSharedPanels();
         this.movePanelItem.setSensitive(Main.panelManager.canAdd);
         this.addPanelItem.setSensitive(Main.panelManager.canAdd);
-        this.addSharedPanel.setSensitive(Main.panelManager.canAdd);
+        this.addSharedPanel.setSensitive(Main.panelManager.canAdd
+            && (sharedPanels.length == 0 || sharedPanels.includes(this.panelId))
+        );
         // this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
         let {definitions} = AppletManager;
