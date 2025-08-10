@@ -1,7 +1,7 @@
 {
-    "section1": {
+    "section-calendar": {
         "type": "section",
-        "description": "Display"
+        "description": "Calendar"
     },
     "show-events" : {
         "type" : "switch",
@@ -21,24 +21,41 @@
         "description": "Show weekday headers in calendar",
         "tooltip": "Check this to show weekday headers (Mon, Tue, etc.) in the calendar."
     },
-    "section-date-format": {
+    "first-day-of-week-override": {
+        "type": "combobox",
+        "default": 7,
+        "description": "First day of week",
+        "tooltip": "Set the first day of week (applies system-wide)",
+        "options": {
+            "Use locale default": 7,
+            "Sunday": 0,
+            "Monday": 1
+        }
+    },
+    "section-clock": {
         "type": "section",
-        "description": "Date Format"
+        "description": "Clock"
+    },
+    "use-custom-format" : {
+        "type" : "switch",
+        "default" : false,
+        "description": "Use custom date format",
+        "tooltip": "Check this to define a custom format for the date in the calendar applet. When unchecked, predefined OS-style formats are used."
     },
     "os-format-type": {
         "type": "combobox",
-        "default": "linuxmint",
-        "description": "Operating system style",
+        "default": "Linux Mint",
+        "description": "Date format style",
         "dependency": "!use-custom-format",
         "options": {
-            "Linux Mint": "linuxmint",
-            "macOS": "macos",
-            "Windows 10": "windows10",
-            "Windows 11": "windows11",
-            "Ubuntu": "ubuntu",
-            "Windows 7": "windows7",
-            "GNOME": "gnome",
-            "KDE": "kde"
+            "Linux Mint Style (Mon Jan 15 14:30)": "Linux Mint",
+            "macOS Style (Mon Jan 15 14:30)": "macOS",
+            "Windows 10 Style (14:30 Mon Jan 15)": "Windows 10",
+            "Windows 11 Style (14:30 Mon, Jan 15)": "Windows 11",
+            "Ubuntu Style (Mon 15 Jan 2024 14:30)": "Ubuntu",
+            "Windows 7 Style (14:30 01/15/2024)": "Windows 7",
+            "GNOME Style (Mon 15 Jan 14:30)": "GNOME",
+            "KDE Style (Mon 15 Jan 2024 14:30)": "KDE"
         }
     },
     "use-24h-format" : {
@@ -51,7 +68,7 @@
     "show-seconds" : {
         "type" : "switch",
         "default" : false,
-        "description": "Show seconds in time",
+        "description": "Show seconds",
         "dependency": "!use-custom-format",
         "tooltip": "Show seconds in the time display."
     },
@@ -67,25 +84,33 @@
         },
         "tooltip": "Character used to separate date components."
     },
-    "use-custom-format" : {
-        "type" : "switch",
-        "default" : false,
-        "description": "Use a custom date format",
-        "tooltip": "Check this to define a custom format for the date in the calendar applet."
+    "applet-format" : {
+        "type" : "entry",
+        "default" : "%a %b %d %H:%M",
+        "description" : "Custom applet format",
+        "dependency" : "use-custom-format",
+        "tooltip" : "Date format displayed in the calendar applet."
     },
     "custom-format" : {
         "type" : "entry",
         "default" : "%A, %B %e, %H:%M",
         "description" : "Custom format",
         "dependency" : "use-custom-format",
-        "tooltip" : "Enter your custom format. Use the button below to see available format codes."
+        "tooltip" : "Enter your custom format. Use strftime format codes."
     },
-    "format-button" : {
-        "type" : "button",
-        "description" : "Show/Hide format reference",
-        "dependency" : "use-custom-format",
-        "callback" : "on_custom_format_button_pressed",
-        "tooltip" : "Click to show/hide format codes reference below."
+    "use-custom-time-format" : {
+        "type" : "switch",
+        "default" : false,
+        "description" : "Use custom time format",
+        "dependency" : "!use-custom-format",
+        "tooltip" : "Check this to define a custom format for the time display. When unchecked, predefined OS-style formats are used."
+    },
+    "time-format" : {
+        "type" : "entry",
+        "default" : "%H:%M",
+        "description" : "Custom time format",
+        "dependency" : "use-custom-time-format",
+        "tooltip" : "Enter your custom time format. Use strftime format codes."
     },
     "format-help-visible" : {
         "type" : "switch",
@@ -152,39 +177,25 @@
         "description" : "Type 'man strftime' in terminal for complete reference",
         "dependency" : "format-help-visible"
     },
-    "custom-tooltip-format" : {
-        "type" : "entry",
-        "default" : "%A, %B %e, %H:%M",
-        "description" : "Date format for tooltip",
-        "dependency" : "use-custom-format",
-        "tooltip" : "Set your custom tooltip format here."
-    },
-    "section-display-locations": {
+    "section-tooltip": {
         "type": "section",
-        "description": "Display Locations"
-    },
-    "applet-format" : {
-        "type" : "entry",
-        "default" : "%a %b %d %H:%M",
-        "description" : "Date format in applet",
-        "dependency" : "use-custom-format",
-        "tooltip" : "Date format displayed in the calendar applet."
+        "description": "Tooltip"
     },
     "tooltip-format" : {
         "type" : "entry",
         "default" : "%A, %B %e, %Y",
-        "description" : "Date format in tooltip",
-        "dependency" : "use-custom-format",
+        "description" : "Tooltip format",
         "tooltip" : "Date format displayed in tooltip when hovering over applet."
     },
-    "screensaver-format" : {
-        "type" : "entry",
-        "default" : "%A, %B %e, %Y %H:%M",
-        "description" : "Date format on screensaver",
-        "dependency" : "use-custom-format",
-        "tooltip" : "Date format displayed on the screensaver."
+    "tooltip-format-help-visible" : {
+        "type" : "switch",
+        "default" : false,
+        "description" : "Show tooltip format reference",
+        "tooltip" : "Toggle visibility of tooltip format reference below"
     },
-    "section2": {
+    
+
+    "section-keyboard": {
         "type": "section",
         "description": "Keyboard shortcuts"
     },

@@ -487,11 +487,24 @@ class Calendar {
             this.actor.add(group,
                            { row: row, col: offsetCols + (7 + iter.getDay() - this._weekStart) % 7 });
 
-            if (this.show_week_numbers && iter.getDay() == 4) {
-                let label = new St.Label({ text: iter.toLocaleFormat('%V'),
-                                           style_class: 'calendar-day-base calendar-week-number'});
-                this.actor.add(label,
-                               { row: row, col: 0, y_align: St.Align.MIDDLE });
+            // Place week number at the start of each week row for exact alignment with day rows
+            if (this.show_week_numbers && iter.getDay() == this._weekStart) {
+                let weekStyle = 'calendar-day-base calendar-week-number';
+                // mimic top-row border/padding hack used by day cells
+                if (row == 2)
+                    weekStyle = 'calendar-day-top ' + weekStyle;
+                // mimic left border on first column
+                weekStyle = 'calendar-day-left ' + weekStyle;
+
+                // Użyj tych samych klas co dla komórek dni
+                weekStyle = weekStyle + ' calendar-day';
+                let weekBtn = new St.Button({
+                    label: iter.toLocaleFormat('%V'),
+                    style_class: weekStyle,
+                    x_expand: true
+                });
+                // Wyrównanie przez CSS motywu
+                this.actor.add(weekBtn, { row: row, col: 0, x_align: St.Align.FILL, y_align: St.Align.FILL });
             }
 
             let color_set = this.events_manager.get_colors_for_date(iter);

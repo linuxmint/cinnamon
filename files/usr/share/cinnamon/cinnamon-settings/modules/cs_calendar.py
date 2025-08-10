@@ -11,6 +11,10 @@ from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from gi.repository import Gio, Gtk, GObject, TimezoneMap
 
 # Requires python3-tz (debian)
+try:
+    import dbus  # Optional, only used for catching specific DBus exceptions
+except Exception:
+    dbus = None
 
 class Module:
     name = "calendar"
@@ -67,6 +71,7 @@ class Module:
             self.sidePage.stack.add_titled(calendar_page, "calendar", _("Calendar"))
             
             # Sekcja 1: Podstawowe ustawienia kalendarza
+            # Calendar settings section
             calendar_settings = calendar_page.add_section(_("Calendar Settings"))
             calendar_settings.add_row(GSettingsSwitch(_("Show calendar events"), "org.cinnamon.applets.calendar", "show-events"))
             calendar_settings.add_row(GSettingsSwitch(_("Show week numbers in calendar"), "org.cinnamon.applets.calendar", "show-week-numbers"))
@@ -83,15 +88,16 @@ class Module:
             applet_format.add_row(use_custom_switch)
             
             # === OPCJE SYSTEMOWE (widoczne gdy use-custom-format = false) ===
+            # GSettingsComboBox expects [value, label]
             format_style_options = [
-                (_("Linux Mint Style (Mon Jan 15 14:30)"), "Linux Mint"),
-                (_("macOS Style (Mon Jan 15 14:30)"), "macOS"), 
-                (_("Windows 10 Style (14:30 Mon Jan 15)"), "Windows 10"),
-                (_("Windows 11 Style (14:30 Mon, Jan 15)"), "Windows 11"),
-                (_("Ubuntu Style (Mon 15 Jan 2024 14:30)"), "Ubuntu"),
-                (_("Windows 7 Style (14:30 01/15/2024)"), "Windows 7"),
-                (_("GNOME Style (Mon 15 Jan 14:30)"), "GNOME"),
-                (_("KDE Style (Mon 15 Jan 2024 14:30)"), "KDE")
+                ("Linux Mint", _("Linux Mint Style (Mon Jan 15 14:30)")),
+                ("macOS", _("macOS Style (Mon Jan 15 14:30)")), 
+                ("Windows 10", _("Windows 10 Style (14:30 Mon Jan 15)")),
+                ("Windows 11", _("Windows 11 Style (14:30 Mon, Jan 15)")),
+                ("Ubuntu", _("Ubuntu Style (Mon 15 Jan 2024 14:30)")),
+                ("Windows 7", _("Windows 7 Style (14:30 01/15/2024)")),
+                ("GNOME", _("GNOME Style (Mon 15 Jan 14:30)")),
+                ("KDE", _("KDE Style (Mon 15 Jan 2024 14:30)"))
             ]
             
             # === OPCJE SYSTEMOWE (bez wcięcia - widoczne gdy use-custom-format = false) ===
@@ -105,9 +111,9 @@ class Module:
             applet_format.add_row(self.seconds_switch)
             
             separator_options = [
-                (_("Slash (/)"), "/"),
-                (_("Dash (-)"), "-"),
-                (_("Dot (.)"), ".")
+                ("/", _("Slash (/)")),
+                ("-", _("Dash (-)")),
+                (".", _("Dot (.)"))
             ]
             self.separator_combo = GSettingsComboBox(_("Date separator"), "org.cinnamon.applets.calendar", "date-separator", separator_options)
             applet_format.add_row(self.separator_combo)
@@ -304,6 +310,17 @@ class Module:
             
             widget = GSettingsEntry(_("Screensaver format"), "org.cinnamon.applets.calendar", "screensaver-format")
             screensaver_format.add_reveal_row(widget, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
+            
+            # Screensaver position
+            position_options = [
+                ("top-left", _("Top Left")),
+                ("top-right", _("Top Right")),
+                ("bottom-left", _("Bottom Left")),
+                ("bottom-right", _("Bottom Right")),
+                ("center", _("Center"))
+            ]
+            position_combo = GSettingsComboBox(_("Screensaver position"), "org.cinnamon.applets.calendar", "screensaver-position", position_options)
+            screensaver_format.add_reveal_row(position_combo, "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
             
             # Live preview for screensaver format
             preview_widget = SettingsWidget()
@@ -527,7 +544,9 @@ class SytemdDBusProxyHandler(object):
 
     def set_timezone(self, zone):
         if self._proxy:
-            self._proxy.SetTimezone('(sb)', zone, True)
+            def async_empty_callback(*args, **kwargs):
+                pass
+            self._proxy.SetTimezone('(sb)', zone, True, result_handler=async_empty_callback)
 
     def set_ntp(self, active):
         if self._proxy:
@@ -538,7 +557,9 @@ class SytemdDBusProxyHandler(object):
 
     def set_time(self, seconds):
         if self._proxy:
-            self._proxy.SetTime('(xbb)', seconds * 1000000, False, True)
+            def async_empty_callback(*args, **kwargs):
+                pass
+            self._proxy.SetTime('(xbb)', seconds * 1000000, False, True, result_handler=async_empty_callback)
 
 
 class CsdDBusProxyHandler(object):
@@ -565,7 +586,10 @@ class CsdDBusProxyHandler(object):
         return self._proxy.GetUsingNtp()
 
     def set_timezone(self, zone):
-        self._proxy.SetTimezone('(s)', zone)
+        # not passing a callback to the dbus function will cause it to run synchronously and freeze the ui
+        def async_empty_callback(*args, **kwargs):
+            pass
+        self._proxy.SetTimezone('(s)', zone, result_handler=async_empty_callback)
 
     def set_ntp(self, active):
         # not passing a callback to the dbus function will cause it to run synchronously and freeze the ui
@@ -574,7 +598,10 @@ class CsdDBusProxyHandler(object):
         self._proxy.SetUsingNtp('(b)', active, result_handler=async_empty_callback)
 
     def set_time(self, seconds):
-        self._proxy.SetTime('(x)', seconds)
+        # not passing a callback to the dbus function will cause it to run synchronously and freeze the ui
+        def async_empty_callback(*args, **kwargs):
+            pass
+        self._proxy.SetTime('(x)', seconds, result_handler=async_empty_callback)
 
 
 class TimeZoneSelector(SettingsWidget):

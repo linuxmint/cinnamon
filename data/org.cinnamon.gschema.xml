@@ -541,6 +541,7 @@
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
     <child name="launcher" schema="org.cinnamon.launcher" />
+    <child name="calendar" schema="org.cinnamon.applets.calendar" />
 
     <key name="enable-vfade" type="b">
       <default>true</default>
@@ -608,133 +609,14 @@
       <summary>Stores the position of the hoverclick window so it can be restored there later - format is x::y</summary>
     </key>
 
-    <key name="key-open" type="s">
-      <default>"&lt;Super&gt;c"</default>
-      <summary>Show calendar</summary>
-      <description>
-        Set keybinding(s) to show the calendar.
-      </description>
-    </key>
-
-    <key name="os-format-type" type="s">
-      <default>"linuxmint"</default>
-      <summary>Operating system format style</summary>
-      <description>
-        Predefined date format style based on operating systems.
-      </description>
-    </key>
-    
-    <key name="use-24h-format" type="b">
-      <default>true</default>
-      <summary>Use 24-hour time format</summary>
-      <description>
-        Use 24-hour time format instead of 12-hour AM/PM format.
-      </description>
-    </key>
-    
-    <key name="show-seconds" type="b">
-      <default>false</default>
-      <summary>Show seconds in time</summary>
-      <description>
-        Show seconds in the time display.
-      </description>
-    </key>
-    
-    <key name="date-separator" type="s">
-      <default>"/"</default>
-      <summary>Date separator character</summary>
-      <description>
-        Character used to separate date components (/, -, .).
-      </description>
-    </key>
-    
-    <key name="use-custom-format" type="b">
-      <default>false</default>
-      <summary>Use a custom date format</summary>
-      <description>
-        Check this to define a custom format for the date in the calendar applet.
-      </description>
-    </key>
-    
-    <key name="custom-format" type="s">
-      <default>"%A, %B %e, %H:%M"</default>
-      <summary>Custom format</summary>
-      <description>
-        Enter your custom format. Use strftime format codes.
-      </description>
-    </key>
-    
-    <key name="custom-tooltip-format" type="s">
-      <default>"%A, %B %e, %H:%M"</default>
-      <summary>Date format for tooltip</summary>
-      <description>
-        Set your custom tooltip format here.
-      </description>
-    </key>
-    
-    <key name="applet-format" type="s">
-      <default>"%a %b %d %H:%M"</default>
-      <summary>Date format in applet</summary>
-      <description>
-        Date format displayed in the calendar applet.
-      </description>
-    </key>
-    
-    <key name="tooltip-format" type="s">
-      <default>"%A, %B %e, %Y"</default>
-      <summary>Date format in tooltip</summary>
-      <description>
-        Date format displayed in tooltip when hovering over applet.
-      </description>
-    </key>
-    
-    <key name="screensaver-format" type="s">
-      <default>"%A, %B %e, %Y %H:%M"</default>
-      <summary>Date format on screensaver</summary>
-      <description>
-        Date format displayed on the screensaver.
-      </description>
-    </key>
-    
-    <key name="use-system-custom-format" type="b">
-      <default>false</default>
-      <summary>Use custom system time format</summary>
-      <description>
-        Use a custom format for system time display.
-      </description>
-    </key>
-    
-    <key name="system-time-format" type="s">
-      <default>"%H:%M"</default>
-      <summary>System time format</summary>
-      <description>
-        Custom format for system time display.
-      </description>
-    </key>
-    
     <key name="system-tooltip-format" type="s">
       <default>"%A, %B %e, %Y"</default>
-      <summary>System time tooltip format</summary>
+      <summary>System tooltip format</summary>
       <description>
         Custom format for system time tooltip.
       </description>
     </key>
     
-    <key name="use-screensaver-custom-format" type="b">
-      <default>false</default>
-      <summary>Use custom screensaver format</summary>
-      <description>
-        Use a custom format for screensaver date/time display.
-      </description>
-    </key>
-    
-    <key name="screensaver-position" type="s">
-      <default>"top-right"</default>
-      <summary>Screensaver date position</summary>
-      <description>
-        Position of date/time display on screensaver.
-      </description>
-    </key>
   </schema>
 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
@@ -1170,27 +1052,11 @@
       </description>
     </key>
     
-    <key name="use-custom-format" type="b">
+        <key name="use-custom-format" type="b">
       <default>false</default>
       <summary>Use a custom date format</summary>
       <description>
         Check this to define a custom format for the date in the calendar applet.
-      </description>
-    </key>
-    
-    <key name="custom-format" type="s">
-      <default>"%A, %B %e, %H:%M"</default>
-      <summary>Custom format</summary>
-      <description>
-        Enter your custom format. Use strftime format codes.
-      </description>
-    </key>
-    
-    <key name="custom-tooltip-format" type="s">
-      <default>"%A, %B %e, %H:%M"</default>
-      <summary>Date format for tooltip</summary>
-      <description>
-        Set your custom tooltip format here.
       </description>
     </key>
     
@@ -1234,14 +1100,6 @@
       </description>
     </key>
     
-    <key name="screensaver-format-help-visible" type="b">
-      <default>false</default>
-      <summary>Show screensaver format reference</summary>
-      <description>
-        Toggle visibility of screensaver format reference below.
-      </description>
-    </key>
-    
     <key name="key-open" type="s">
       <default>"&lt;Super&gt;c"</default>
       <summary>Show calendar</summary>
@@ -1252,7 +1110,7 @@
     
     <key name="applet-format" type="s">
       <default>"%a %b %d %H:%M"</default>
-      <summary>Date format in applet</summary>
+      <summary>Custom applet format</summary>
       <description>
         Date format displayed in the calendar applet.
       </description>
@@ -1260,9 +1118,33 @@
     
     <key name="tooltip-format" type="s">
       <default>"%A, %B %e, %Y"</default>
-      <summary>Date format in tooltip</summary>
+      <summary>Tooltip format</summary>
       <description>
         Date format displayed in tooltip when hovering over applet.
+      </description>
+    </key>
+    
+    <key name="custom-format" type="s">
+      <default>"%A, %B %e, %H:%M"</default>
+      <summary>Custom format</summary>
+      <description>
+        Enter your custom format. Use strftime format codes.
+      </description>
+    </key>
+    
+    <key name="use-custom-time-format" type="b">
+      <default>false</default>
+      <summary>Use custom time format</summary>
+      <description>
+        Check this to define a custom format for the time display. When unchecked, predefined OS-style formats are used.
+      </description>
+    </key>
+    
+    <key name="time-format" type="s">
+      <default>"%H:%M"</default>
+      <summary>Custom time format</summary>
+      <description>
+        Enter your custom time format. Use strftime format codes.
       </description>
     </key>
     
@@ -1271,22 +1153,6 @@
       <summary>Date format on screensaver</summary>
       <description>
         Date format displayed on the screensaver.
-      </description>
-    </key>
-    
-    <key name="use-system-custom-format" type="b">
-      <default>false</default>
-      <summary>Use custom system time format</summary>
-      <description>
-        Use custom format for system time display.
-      </description>
-    </key>
-    
-    <key name="system-time-format" type="s">
-      <default>"%H:%M"</default>
-      <summary>System time format</summary>
-      <description>
-        Custom format for system time display.
       </description>
     </key>
     
@@ -1311,6 +1177,14 @@
       <summary>Screensaver date position</summary>
       <description>
         Position of date/time on screensaver screen.
+      </description>
+    </key>
+    
+    <key name="screensaver-format-help-visible" type="b">
+      <default>false</default>
+      <summary>Show screensaver format reference</summary>
+      <description>
+        Toggle visibility of screensaver format reference below.
       </description>
     </key>
     
