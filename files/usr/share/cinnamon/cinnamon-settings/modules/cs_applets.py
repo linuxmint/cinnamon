@@ -113,6 +113,7 @@ class ManageAppletsPage(ManageSpicesPage):
 
     def panels_changed(self, *args):
         self.panels = []
+        shared_panels = json.loads(self.spices.settings.get_string("shared-panels"))
         n_mons = Gdk.Screen.get_default().get_n_monitors()
 
         # we only want to select panels that are on a connected screen
@@ -130,7 +131,7 @@ class ManageAppletsPage(ManageSpicesPage):
             self.current_panel_index = 0
             self.panel_id = int(self.panels[self.current_panel_index].split(":")[0])
 
-        if len(self.panels) > 1:
+        if len(self.panels) > 1 and len(self.panels) != len(shared_panels):
             self.previous_button.show()
             self.next_button.show()
             # just in case, we'll make sure the current panel is highlighted
