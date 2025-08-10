@@ -256,6 +256,8 @@ class MainWindow(object):
         new_items = os.listdir(path) if path.exists() else []
         old_items = os.listdir(old_path) if old_path.exists() else []
         dir_items = sorted(new_items + old_items)
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
+
         try:
             multi_instance = int(self.xlet_meta["max-instances"]) != 1
         except (KeyError, ValueError):
@@ -264,6 +266,7 @@ class MainWindow(object):
         enabled = [x.split(":") for x in self.gsettings.get_strv('enabled-%ss' % self.type)]
         for item in dir_items:
             panel = location = order = None
+            extra_infos = []
             # ignore anything that isn't json
             if item[-5:] != ".json":
                 continue
@@ -292,11 +295,15 @@ class MainWindow(object):
                     continue
             elif self.type == 'applet':
                 for definition in enabled:
-                    if self.uuid in definition:
-                        panel, (location, order) = int(definition[0].split('panel')[1]), definition[1:3]
-                        break
+                    panel_id = int(definition[0].split('panel')[1])
+                    if self.uuid not in definition or panel_id not in shared_panels: continue
+                    if panel == None or location == None or order == None:
+                        panel, (location, order) = panel_id, definition[1:3]
+                    else:
+                        extra_infos.append({"panel": panel_id, "id": definition[-1]})
 
-            self.create_settings_page(os.path.join(path if item in new_items else old_path, item), panel, location, order)
+            config_path = os.path.join(path if item in new_items else old_path, item)
+            self.create_settings_page(config_path, panel, location, order, extra_infos)
 
         if not self.instance_info:
             print(f"No instances were found for {self.uuid}. Exiting...")
@@ -306,7 +313,7 @@ class MainWindow(object):
         self.prev_button.set_no_show_all(True)
         self.update_prev_next_buttons()
 
-    def create_settings_page(self, config_path, panel = None, location = None, order = None):
+    def create_settings_page(self, config_path, panel = None, location = None, order = None, extra_infos = []):
         instance_id = os.path.basename(config_path)[:-5]
         if self.instance_stack.get_child_by_name(instance_id) is not None: return
         settings = JSONSettingsHandler(config_path, self.notify_dbus)
@@ -314,9 +321,16 @@ class MainWindow(object):
         instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.instance_stack.add_named(instance_box, instance_id)
         info = {"settings": settings, "id": instance_id}
+        infos = [info]
+
         if panel != None and location != None and order != None:
             info.update({"panel": panel, "location": location, "order": order})
-        self.instance_info.append(info)
+            for extra_info in extra_infos:
+                info_copy = info.copy()
+                info_copy.update(extra_info)
+                infos.append(info_copy)
+
+        self.instance_info.extend(infos)
         settings_map = settings.get_settings()
         first_key = next(iter(settings_map.values()))
 
