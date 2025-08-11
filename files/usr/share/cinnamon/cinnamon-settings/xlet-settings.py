@@ -299,8 +299,7 @@ class MainWindow(object):
                     if self.uuid not in definition or panel_id not in shared_panels: continue
                     if panel == None or location == None or order == None:
                         panel, (location, order) = panel_id, definition[1:3]
-                    else:
-                        extra_infos.append({"panel": panel_id, "id": definition[-1]})
+                    extra_infos.append({"panel": panel_id, "id": definition[-1]})
 
             config_path = os.path.join(path if item in new_items else old_path, item)
             self.create_settings_page(config_path, panel, location, order, extra_infos)
@@ -325,7 +324,10 @@ class MainWindow(object):
 
         if panel != None and location != None and order != None:
             info.update({"panel": panel, "location": location, "order": order})
-            for extra_info in extra_infos:
+            for i, extra_info in enumerate(extra_infos):
+                if i == 0:
+                    info.update(extra_info)
+                    continue
                 info_copy = info.copy()
                 info_copy.update(extra_info)
                 infos.append(info_copy)
@@ -523,7 +525,10 @@ class MainWindow(object):
         self.selected_instance = info
 
     def highlight_xlet(self, info, highlighted):
-        proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
+        try:
+            proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
+        except:
+            return
 
     def previous_instance(self, *args):
         self.get_next_instance(False)

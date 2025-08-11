@@ -349,6 +349,10 @@ CinnamonDBus.prototype = {
         if (obj && obj.highlight) obj.highlight(highlight);
         if (obj instanceof Applet.Applet) {
             const highlightedApplet = AppletManager.getAppletDefinition({ uuid, applet_id: instance_id });
+            if (!highlightedApplet) {
+                global.logError("Can't find highlighted applet")
+                return;
+            }
             const sharedPanels = Panel.getSharedPanels();
             if (!sharedPanels.includes(highlightedApplet.panelId)) return;
             const otherSharedApplets = AppletManager.getDefinitions().filter(e => {
