@@ -372,7 +372,17 @@ NotificationDaemon.prototype = {
                 this._notifyForSource(source, ndata);
                 return invocation.return_value(GLib.Variant.new('(u)', [id]));
             } catch (e) {
-                return invocation.return_gerror(e);
+                global.logError(e);
+                if (e instanceof GLib.Error) {
+                    return invocation.return_gerror(e);
+                } else {
+                    let name = e.name;
+                    if (!name.includes('.')) {
+                        name = `org.gnome.gjs.JSError.${name}`;
+                    }
+
+                    return invocation.return_dbus_error(name, e.message);
+                }
             }
         }
 
@@ -411,7 +421,12 @@ NotificationDaemon.prototype = {
                     delete this._senderToPid[sender];
                 }));
             }
-            this._notifyForSource(source, ndata);
+
+            try {
+                this._notifyForSource(source, ndata);
+            } catch (e) {
+                global.logError(e);
+            }
         }));
 
         return invocation.return_value(GLib.Variant.new('(u)', [id]));
