@@ -447,7 +447,6 @@ class Module:
             self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
             self.cat_tree.connect("button-release-event", self.onCategorySelected)
             self.cat_tree.connect("key-release-event", self.onCategorySelected)
-            self.cat_tree.connect("row-activated", self.onCategoryChanged)
             self.cat_tree.connect("map", self.categoryHighlightOnMap)
             self.cat_tree.connect("focus-in-event", self.categoryHighlightOnMap)
             self.cat_tree.connect("unmap", self.categoryHighlightUnmap)
