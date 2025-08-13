@@ -38,7 +38,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         // Events
         Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
+        this.panelEditModeHandler = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
 
         // States
         this._blinking = false;
@@ -53,6 +53,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     on_applet_removed_from_panel () {
         Main.keybindingManager.removeHotKey("notification-open-" + this.instance_id);
         Main.keybindingManager.removeHotKey("notification-clear-" + this.instance_id);
+        global.settings.disconnect(this.panelEditModeHandler);
     }
 
     _openMenu() {
