@@ -166,6 +166,7 @@ class Module:
             ]
             widget = GSettingsComboBox(_("Alt-Tab switcher style"), "org.cinnamon", "alttab-switcher-style", alttab_styles)
             settings.add_row(widget)
+            settings.add_note("When using Coverflow (3D) or Timeline (3D) as an Alt-Tab switcher style with multiple monitors, monitor freezing may occur.")
 
             widget = GSettingsSwitch(_("Display the alt-tab switcher on the primary monitor instead of the active one"), "org.cinnamon", "alttab-switcher-enforce-primary-monitor")
             settings.add_row(widget)
