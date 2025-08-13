@@ -21,6 +21,12 @@
         "description": "Show weekday headers in calendar",
         "tooltip": "Check this to show weekday headers (Mon, Tue, etc.) in the calendar."
     },
+	    "key-open": {
+	        "type": "keybinding",
+	        "description": "Show calendar",
+	        "default": "<Super>c",
+	        "tooltip" : "Set keybinding(s) to show the calendar."
+	    },
     "first-day-of-week-override": {
         "type": "combobox",
         "default": 7,
@@ -84,21 +90,7 @@
         },
         "tooltip": "Character used to separate date components."
     },
-    "applet-format" : {
-        "type" : "entry",
-        "default" : "%a %b %d %H:%M",
-        "description" : "Custom applet format",
-        "dependency" : "use-custom-format",
-        "tooltip" : "Date format displayed in the calendar applet."
-    },
-    "custom-format" : {
-        "type" : "entry",
-        "default" : "%A, %B %e, %H:%M",
-        "description" : "Custom format",
-        "dependency" : "use-custom-format",
-        "tooltip" : "Enter your custom format. Use strftime format codes."
-    },
-    "use-custom-time-format" : {
+	    "use-custom-time-format" : {
         "type" : "switch",
         "default" : false,
         "description" : "Use custom time format",
@@ -112,6 +104,20 @@
         "dependency" : "use-custom-time-format",
         "tooltip" : "Enter your custom time format. Use strftime format codes."
     },
+	    "applet-format" : {
+	        "type" : "entry",
+	        "default" : "%a %b %d %H:%M",
+	        "description" : "Custom applet format",
+	        "dependency" : "use-custom-format",
+	        "tooltip" : "Date format displayed in the calendar applet."
+	    },
+	    "custom-format" : {
+	        "type" : "entry",
+	        "default" : "%A, %B %e, %H:%M",
+	        "description" : "Custom format",
+	        "dependency" : "use-custom-format",
+	        "tooltip" : "Enter your custom format. Use strftime format codes."
+	    },
     "format-help-visible" : {
         "type" : "switch",
         "default" : false,
@@ -177,7 +183,7 @@
         "description" : "Type 'man strftime' in terminal for complete reference",
         "dependency" : "format-help-visible"
     },
-    "section-tooltip": {
+	    "section-tooltip": {
         "type": "section",
         "description": "Tooltip"
     },
@@ -195,14 +201,4 @@
     },
     
 
-    "section-keyboard": {
-        "type": "section",
-        "description": "Keyboard shortcuts"
-    },
-    "key-open": {
-        "type": "keybinding",
-        "description": "Show calendar",
-        "default": "<Super>c",
-        "tooltip" : "Set keybinding(s) to show the calendar."
-    }
 }
