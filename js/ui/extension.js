@@ -105,7 +105,6 @@ var Type = {
     }),
     APPLET: _createExtensionType("Applet", "applets", AppletManager, {
         roles: {
-            notifications: null,
             windowlist: null,
             windowattentionhandler: null,
             panellauncher: null,
@@ -114,7 +113,6 @@ var Type = {
     }),
     DESKLET: _createExtensionType("Desklet", "desklets", DeskletManager, {
         roles: {
-            notifications: null,
             windowlist: null,
             windowattentionhandler: null
         }
@@ -340,7 +338,7 @@ Extension.prototype = {
         // If a role is set, make sure it's a valid one
         let meta_role_list_str = this.meta['role'];
         if (meta_role_list_str) {
-            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+            let meta_roles = meta_role_list_str.replaceAll(" ", "").split(",");
             for (let role of meta_roles) {
                 if (!(role in Type[this.upperType].roles)) {
                     throw logError(`Unknown role definition: ${role} in metadata.json`, this.uuid);
@@ -416,7 +414,7 @@ Extension.prototype = {
     lockRole: function(roleProvider) {
         if (this.meta && this.meta.role) {
             let meta_role_list_str = this.meta.role;
-            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+            let meta_roles = meta_role_list_str.replaceAll(" ", "").split(",");
 
             let avail_roles = [];
 
@@ -449,7 +447,7 @@ Extension.prototype = {
     unlockRoles: function() {
         if (this.meta.role) {
             let meta_role_list_str = this.meta.role;
-            let meta_roles = meta_role_list_str.replace(" ", "").split(",");
+            let meta_roles = meta_role_list_str.replaceAll(" ", "").split(",");
 
             for (let role of meta_roles) {
                 if (Type[this.upperType].roles[role] === this.uuid) {
