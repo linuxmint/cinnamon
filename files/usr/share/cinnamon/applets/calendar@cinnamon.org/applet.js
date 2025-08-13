@@ -171,21 +171,21 @@ function generateFormat(osType, use24h, showSeconds, dateSeparator, useCustomTim
 
 
 
-// Tymczasowe logowanie do debugowania
+// Lekki logger (można włączyć kiedy potrzebne)
+const DEBUG_ENABLED = false;
 function debugLog(message) {
+    if (!DEBUG_ENABLED) return;
     try {
         let timestamp = new Date().toISOString();
         let logMessage = timestamp + " [CALENDAR DEBUG] " + message + "\n";
-        global.log(logMessage); // Najpierw spróbujmy z global.log
-        
-        // Spróbuj też zapisać do pliku
+        global.log(logMessage);
+        // Opcjonalny zapis do pliku tylko gdy debug aktywny
         let file = Gio.File.new_for_path("/tmp/calendar-debug.log");
         let stream = file.append_to(Gio.FileCreateFlags.NONE, null);
         stream.write(logMessage, null);
         stream.close(null);
     } catch (e) {
-        global.log("Debug log error: " + e.message);
-        global.log("Original message was: " + message);
+        // w trybie release ignorujemy błędy loggera
     }
 }
 
@@ -234,9 +234,137 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             
             // Initialize sync flag
             this._syncing_settings = false;
+
+            // Bridge AppletSettings (right-click config) -> GSettings (system settings)
+            // to keep both UIs in sync and refresh calendar immediately
+            const bridgeAppletSetting = (key) => {
+                try {
+                    this.settings.connect('changed::' + key, () => {
+                        try {
+                            if (this._syncing_settings) return;
+                            this._syncing_settings = true;
+                            let val = this.settings.getValue(key);
+                            // Propagate to GSettings only if different
+                            if (typeof val === 'boolean') {
+                                const current = this.gsettings.get_boolean(key);
+                                if (current !== val) this.gsettings.set_boolean(key, val);
+                            } else if (typeof val === 'string') {
+                                const current = this.gsettings.get_string(key);
+                                if (current !== val) this.gsettings.set_string(key, val);
+                            }
+                            // Ensure calendar header/grid refreshes instantly
+                            if (this._calendar && typeof this._calendar._onSettingsChange === 'function') {
+                                this._calendar._onSettingsChange(this, key, null, val);
+                            }
+                        } catch (e) {
+                            debugLog('Bridge error for ' + key + ': ' + e.message);
+                        } finally {
+                            this._syncing_settings = false;
+                        }
+                    });
+                } catch (e) {
+                    debugLog('Failed to connect bridge for ' + key + ': ' + e.message);
+                }
+            };
+            bridgeAppletSetting('show-week-numbers');
+            bridgeAppletSetting('show-weekday-headers');
+            bridgeAppletSetting('show-events');
+            // Formatting-related keys (so both settings windows stay in sync)
+            bridgeAppletSetting('use-custom-format');
+            bridgeAppletSetting('os-format-type');
+            bridgeAppletSetting('use-24h-format');
+            bridgeAppletSetting('show-seconds');
+            bridgeAppletSetting('date-separator');
+            bridgeAppletSetting('applet-format');
+            bridgeAppletSetting('tooltip-format');
+            bridgeAppletSetting('use-custom-time-format');
+            bridgeAppletSetting('time-format');
             
+            // Track connections for cleanup
+            this._gsettingsKeyChangedIds = {};
+            this._desktopConnIds = [];
+            this._menuOpenConnId = 0;
+
             // Listen for changes in GSettings (from system settings)
-            this.gsettings.connect("changed", this._onGSettingsChanged.bind(this));
+            this._fastKeys = new Set([
+                'show-seconds', 'use-24h-format', 'use-custom-format', 'os-format-type',
+                'date-separator', 'applet-format', 'use-custom-time-format', 'time-format', 'tooltip-format'
+            ]);
+            this._gsettingsChangedId = this.gsettings.connect("changed", this._onGSettingsChanged.bind(this));
+            // Fast path: react instantly to critical keys (avoid heavy reload path)
+            const fastUpdate = () => {
+                this._updateFormatString();
+                this._updateClockAndDate();
+            };
+            this._debounceTimers = {};
+            const debounceFast = (key, fn) => {
+                try {
+                    if (this._debounceTimers[key]) {
+                        Mainloop.source_remove(this._debounceTimers[key]);
+                        this._debounceTimers[key] = 0;
+                    }
+                } catch (e) {}
+                this._debounceTimers[key] = Mainloop.timeout_add(50, () => {
+                    try { fn(); } catch (e) {}
+                    this._debounceTimers[key] = 0;
+                    return false;
+                });
+            };
+            const connectFast = (key) => {
+                try {
+                    const id = this.gsettings.connect(`changed::${key}`, () => {
+                        try {
+                            // refresh the single value locally
+                            switch (key) {
+                                case 'show-seconds':
+                                    this.show_seconds = this.gsettings.get_boolean('show-seconds');
+                                    if (typeof this._ensureGlobalHeaderTimer === 'function') this._ensureGlobalHeaderTimer();
+                                    break;
+                                case 'use-24h-format':
+                                    this.use_24h_format = this.gsettings.get_boolean('use-24h-format');
+                                    break;
+                                case 'use-custom-format':
+                                    this.use_custom_format = this.gsettings.get_boolean('use-custom-format');
+                                    break;
+                                case 'os-format-type':
+                                    this.os_format_type = this.gsettings.get_string('os-format-type');
+                                    break;
+                                case 'date-separator':
+                                    this.date_separator = this.gsettings.get_string('date-separator');
+                                    break;
+                                case 'applet-format':
+                                    this.applet_format = this.gsettings.get_string('applet-format');
+                                    break;
+                                case 'use-custom-time-format':
+                                    this.use_custom_time_format = this.gsettings.get_boolean('use-custom-time-format');
+                                    break;
+                                case 'time-format':
+                                    this.time_format = this.gsettings.get_string('time-format');
+                                    break;
+                                case 'tooltip-format':
+                                    this.tooltip_format = this.gsettings.get_string('tooltip-format');
+                                    break;
+                            }
+                            // Debounce only for free-typed text keys
+                            if (key === 'applet-format' || key === 'time-format' || key === 'tooltip-format') {
+                                debounceFast(key, fastUpdate);
+                            } else {
+                                fastUpdate();
+                            }
+                        } catch (e) {}
+                    });
+                    this._gsettingsKeyChangedIds[key] = id;
+                } catch (e) {}
+            };
+            connectFast('show-seconds');
+            connectFast('use-24h-format');
+            connectFast('use-custom-format');
+            connectFast('os-format-type');
+            connectFast('date-separator');
+            connectFast('applet-format');
+            connectFast('use-custom-time-format');
+            connectFast('time-format');
+            connectFast('tooltip-format');
 
             this.clock = new CinnamonDesktop.WallClock();
             this.clock_notify_id = 0;
@@ -309,12 +437,27 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             /* FIXME: Add gobject properties to the WallClock class to allow easier access from
              * its clients, and possibly a separate signal to notify of updates to these properties
              * (though GObject "changed" would be sufficient.) */
-            this.desktop_settings.connect("changed::clock-use-24h", () => {
-                this._onSettingsChanged();
-            });
-            this.desktop_settings.connect("changed::clock-show-seconds", () => {
-                this._onSettingsChanged();
-            });
+            // Fast path for desktop interface keys too
+            const connectFastDesktop = (key) => {
+                try {
+                    const id = this.desktop_settings.connect(`changed::${key}`, () => {
+                        try {
+                            if (key === 'clock-use-24h') {
+                                // mirror only if using OS preset logic depends on it
+                                this.use_24h_format = this.use_custom_format ? this.use_24h_format : this.use_24h_format;
+                            } else if (key === 'clock-show-seconds') {
+                                this.show_seconds = this.show_seconds; // keep our key as source of truth
+                                if (typeof this._ensureGlobalHeaderTimer === 'function') this._ensureGlobalHeaderTimer();
+                            }
+                            this._updateFormatString();
+                            this._updateClockAndDate();
+                        } catch (e) {}
+                    });
+                    this._desktopConnIds.push(id);
+                } catch (e) {}
+            };
+            connectFastDesktop('clock-use-24h');
+            connectFastDesktop('clock-show-seconds');
 
             // https://bugzilla.gnome.org/show_bug.cgi?id=655129
             this._upClient = new UPowerGlib.Client();
@@ -403,6 +546,10 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         // Keep AppletSettings (JSON) in sync for keys that EventView expects there
         this._syncAppletSettingsVisibilityOptions();
+        // And keep format-related options mirrored initially as well
+        if (typeof this._syncAppletSettingsFormatOptions === 'function') {
+            this._syncAppletSettingsFormatOptions();
+        }
     }
 
     _syncAppletSettingsVisibilityOptions() {
@@ -416,6 +563,34 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             }
         } catch (e) {
             debugLog("Error syncing AppletSettings visibility options: " + e.message);
+        }
+    }
+
+    _syncAppletSettingsFormatOptions() {
+        if (!this.settings || typeof this.settings.setValue !== 'function') return;
+        try {
+            this._syncing_from_gsettings = true;
+            const syncKey = (key, value) => {
+                try {
+                    let current = this.settings.getValue(key);
+                    if (current !== value) {
+                        this.settings.setValue(key, value);
+                    }
+                } catch (e) {
+                    // Key might not exist in AppletSettings schema; ignore
+                }
+            };
+            syncKey('use-custom-format', !!this.use_custom_format);
+            syncKey('os-format-type', this.os_format_type);
+            syncKey('use-24h-format', !!this.use_24h_format);
+            syncKey('show-seconds', !!this.show_seconds);
+            syncKey('date-separator', this.date_separator);
+            syncKey('applet-format', this.applet_format);
+            syncKey('tooltip-format', this.tooltip_format);
+            syncKey('use-custom-time-format', !!this.use_custom_time_format);
+            syncKey('time-format', this.time_format);
+        } finally {
+            this._syncing_from_gsettings = false;
         }
     }
 
@@ -477,9 +652,20 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
         // Ensure EventView sees updated visibility flags via AppletSettings
         this._syncAppletSettingsVisibilityOptions();
+        // Keep AppletSettings format-related options in sync with GSettings for live UI updates in applet config
+        this._syncAppletSettingsFormatOptions();
+
+        // Restart global header timer if available
+        if (typeof this._ensureGlobalHeaderTimer === 'function') {
+            this._ensureGlobalHeaderTimer();
+        }
 
         this._updateFormatString();
         this._updateClockAndDate();
+        // Force calendar header/grid to rebuild when relevant settings change
+        if (this._calendar && typeof this._calendar._onSettingsChange === 'function') {
+            try { this._calendar._onSettingsChange(this, 'calendar-settings', null, null); } catch (e) {}
+        }
         this.event_list.actor.visible = this.events_manager.is_active();
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
         
@@ -490,8 +676,11 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     _onGSettingsChanged(settings, key) {
         try {
             debugLog("GSettings changed: " + key + " - value: " + settings.get_value(key).print(true));
-            // Settings are automatically updated via property bindings
-            // Just trigger UI update
+            // If fast-path key, pomijamy ciężką ścieżkę (już zaktualizowana per-key)
+            if (this._fastKeys && this._fastKeys.has(key)) {
+                return;
+            }
+            // Inne klucze – klasyczny refresh
             this._onSettingsChanged();
         } catch (e) {
             debugLog("Error handling GSettings change: " + e.message);
@@ -613,6 +802,26 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         
         debugLog("Applet added to panel - initial settings state:");
         this._debugSettingsState();
+
+        // Global per-second timer when seconds are enabled, regardless of menu state
+        this._globalHeaderTimerId = 0;
+        const ensureGlobalHeaderTimer = () => {
+            if (this._globalHeaderTimerId) {
+                Mainloop.source_remove(this._globalHeaderTimerId);
+                this._globalHeaderTimerId = 0;
+            }
+            if (this.show_seconds) {
+                this._globalHeaderTimerId = Mainloop.timeout_add_seconds(1, () => {
+                    try {
+                        // trigger applet label/time update
+                        this._updateClockAndDate();
+                    } catch (e) {}
+                    return true;
+                });
+            }
+        };
+        this._ensureGlobalHeaderTimer = ensureGlobalHeaderTimer;
+        ensureGlobalHeaderTimer();
     }
 
     on_applet_removed_from_panel() {
@@ -620,10 +829,35 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;
         }
-        
+
         if (this.key_open && Array.isArray(this.key_open)) {
             Main.keybindingManager.removeHotKey("calendar-open-" + this.instance_id);
         }
+
+        try {
+            if (this._gsettingsChangedId) {
+                this.gsettings.disconnect(this._gsettingsChangedId);
+                this._gsettingsChangedId = 0;
+            }
+            if (this._gsettingsKeyChangedIds) {
+                Object.keys(this._gsettingsKeyChangedIds).forEach(k => {
+                    try { this.gsettings.disconnect(this._gsettingsKeyChangedIds[k]); } catch (e) {}
+                });
+                this._gsettingsKeyChangedIds = {};
+            }
+            if (this._desktopConnIds) {
+                this._desktopConnIds.forEach(id => { try { this.desktop_settings.disconnect(id); } catch (e) {} });
+                this._desktopConnIds = [];
+            }
+            if (this._headerTimerId) {
+                Mainloop.source_remove(this._headerTimerId);
+                this._headerTimerId = 0;
+            }
+            if (this._globalHeaderTimerId) {
+                Mainloop.source_remove(this._globalHeaderTimerId);
+                this._globalHeaderTimerId = 0;
+            }
+        } catch (e) {}
     }
 
     _initContextMenu() {
@@ -683,14 +917,14 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this.clock.connect("notify::clock", updateHeader);
         updateHeader();
 
-        // While menu is open and seconds are enabled, update every second (independent of system setting)
+        // While menu is open, update every second for smooth seconds display
         this._headerTimerId = 0;
         this.menu.connect('open-state-changed', (m, isOpen) => {
             if (this._headerTimerId) {
                 Mainloop.source_remove(this._headerTimerId);
                 this._headerTimerId = 0;
             }
-            if (isOpen && this.show_seconds) {
+            if (isOpen) {
                 updateHeader();
                 this._headerTimerId = Mainloop.timeout_add_seconds(1, () => {
                     updateHeader();

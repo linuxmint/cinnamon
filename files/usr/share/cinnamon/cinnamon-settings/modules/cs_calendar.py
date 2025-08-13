@@ -8,7 +8,7 @@ gi.require_version('TimezoneMap', '1.0')
 from SettingsWidgets import SidePage, SettingsWidget, SettingsLabel, GSettingsKeybinding, TwoColumnLabelRow
 from xapp.GSettingsWidgets import *
 from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
-from gi.repository import Gio, Gtk, GObject, TimezoneMap
+from gi.repository import Gio, Gtk, GObject, TimezoneMap, GLib
 
 # Requires python3-tz (debian)
 try:
@@ -100,15 +100,16 @@ class Module:
                 ("KDE", _("KDE Style (Mon 15 Jan 2024 14:30)"))
             ]
             
-            # === OPCJE SYSTEMOWE (bez wcięcia - widoczne gdy use-custom-format = false) ===
+            # === OPCJE SYSTEMOWE (pokazuj gdy use-custom-format = false) ===
+            os_revealer = SettingsRevealer()
             self.format_combo = GSettingsComboBox(_("Date format style"), "org.cinnamon.applets.calendar", "os-format-type", format_style_options)
-            applet_format.add_row(self.format_combo)
-            
+            applet_format.add_reveal_row(self.format_combo, revealer=os_revealer)
+
             self.time_format_switch = GSettingsSwitch(_("Use 24-hour time format"), "org.cinnamon.applets.calendar", "use-24h-format")
-            applet_format.add_row(self.time_format_switch)
-            
+            applet_format.add_reveal_row(self.time_format_switch, revealer=os_revealer)
+
             self.seconds_switch = GSettingsSwitch(_("Show seconds"), "org.cinnamon.applets.calendar", "show-seconds")
-            applet_format.add_row(self.seconds_switch)
+            applet_format.add_reveal_row(self.seconds_switch, revealer=os_revealer)
             
             separator_options = [
                 ("/", _("Slash (/)")),
@@ -116,11 +117,12 @@ class Module:
                 (".", _("Dot (.)"))
             ]
             self.separator_combo = GSettingsComboBox(_("Date separator"), "org.cinnamon.applets.calendar", "date-separator", separator_options)
-            applet_format.add_row(self.separator_combo)
+            applet_format.add_reveal_row(self.separator_combo, revealer=os_revealer)
             
-            # === OPCJE CUSTOM (bez wcięcia - widoczne gdy use-custom-format = true) ===
+            # === OPCJE CUSTOM (pokazuj gdy use-custom-format = true) ===
+            custom_revealer = SettingsRevealer()
             self.custom_format_entry = GSettingsEntry(_("Custom applet format"), "org.cinnamon.applets.calendar", "applet-format")
-            applet_format.add_row(self.custom_format_entry)
+            applet_format.add_reveal_row(self.custom_format_entry, revealer=custom_revealer)
             
             # Live preview for custom applet format
             custom_preview_widget = SettingsWidget()
@@ -133,11 +135,11 @@ class Module:
             self.custom_preview_label.set_selectable(True)
             custom_preview_widget.pack_end(self.custom_preview_label, False, False, 0)
             
-            applet_format.add_row(custom_preview_widget)
+            applet_format.add_reveal_row(custom_preview_widget, revealer=custom_revealer)
             
             # Format help switch
             self.help_switch = GSettingsSwitch(_("Show format reference"), "org.cinnamon.applets.calendar", "format-help-visible")
-            applet_format.add_row(self.help_switch)
+            applet_format.add_reveal_row(self.help_switch, revealer=custom_revealer)
             
             # Format help content
             help_widget = SettingsWidget()
@@ -202,19 +204,9 @@ class Module:
             def update_visibility():
                 is_custom = use_custom_switch.content_widget.get_active()
                 is_help_visible = self.help_switch.content_widget.get_active()
-                
-                # Opcje systemowe aktywne gdy NIE custom
-                self.format_combo.set_sensitive(not is_custom)
-                self.time_format_switch.set_sensitive(not is_custom)
-                self.seconds_switch.set_sensitive(not is_custom)
-                self.separator_combo.set_sensitive(not is_custom)
-                
-                # Opcje custom aktywne gdy custom
-                self.custom_format_entry.set_sensitive(is_custom)
-                self.custom_preview_label.set_sensitive(is_custom)
-                self.help_switch.set_sensitive(is_custom)
-                
-                # Help revealer widoczny gdy custom I help włączony
+                # Pokaż/ukryj całe bloki opcji
+                os_revealer.set_reveal_child(not is_custom)
+                custom_revealer.set_reveal_child(is_custom)
                 help_revealer.set_reveal_child(is_custom and is_help_visible)
             
             # Połącz revealery z przełącznikami
@@ -224,6 +216,29 @@ class Module:
             # Ustaw początkowy stan
             update_visibility()
             help_revealer.set_reveal_child(self.help_switch.content_widget.get_active())
+
+            # Minimalizacja opóźnień Python -> JS: wymuszaj natychmiastowy sync po zmianie kluczowych kluczy
+            try:
+                self._calendar_settings = Gio.Settings(schema_id="org.cinnamon.applets.calendar")
+                def _immediate_sync(*args):
+                    # wykonaj sync na najbliższym IDLE o wysokim priorytecie
+                    def _do_sync():
+                        try:
+                            Gio.Settings.sync()
+                        except Exception:
+                            pass
+                        return False
+                    GLib.idle_add(GLib.PRIORITY_HIGH_IDLE, _do_sync)
+                for k in (
+                    'use-custom-format', 'os-format-type', 'use-24h-format', 'show-seconds',
+                    'date-separator', 'applet-format', 'use-custom-time-format', 'time-format', 'tooltip-format'
+                ):
+                    try:
+                        self._calendar_settings.connect(f"changed::{k}", _immediate_sync)
+                    except Exception:
+                        pass
+            except Exception as e:
+                print("GSettings immediate sync hooks disabled:", e)
             
             # Sekcja 3: Formatowanie tooltip (w zakładce Calendar)
             tooltip_format = calendar_page.add_section(_("Tooltip"))
