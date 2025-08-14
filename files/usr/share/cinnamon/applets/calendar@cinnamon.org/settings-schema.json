@@ -1,7 +1,7 @@
 {
     "section-calendar": {
         "type": "section",
-        "description": "Calendar"
+        "description": "Calendar Settings"
     },
     "show-events" : {
         "type" : "switch",
@@ -40,7 +40,7 @@
     },
     "section-clock": {
         "type": "section",
-        "description": "Clock"
+        "description": "Time Applet"
     },
     "use-custom-format" : {
         "type" : "switch",
