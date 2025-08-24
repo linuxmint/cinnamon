@@ -95,13 +95,21 @@ class MainWindow(object):
         self.type = args.type
         self.uuid = args.uuid
         self.tab = 0
+        self.instance_info = []
         self.instance_id = str(args.id)
         if args.tab is not None:
             self.tab = int(args.tab)
 
         self.selected_instance = None
         self.gsettings = Gio.Settings.new("org.cinnamon")
+        self.monitors = {}
+        self.g_directories = []
         self.custom_modules = {}
+        if self.type == "applet": changed_key = "enabled-applets"
+        elif self.type == "desklet": changed_key = "enabled-desklets"
+        else: changed_key = None
+        if changed_key:
+            self.gsettings.connect("changed::" + changed_key, lambda *args: self.on_enabled_xlets_changed(changed_key, *args))
 
         self.load_xlet_data()
         self.build_window()
@@ -128,7 +136,7 @@ class MainWindow(object):
             proxy = None
 
         if proxy:
-            proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], True)
+            self.highlight_xlet(self.selected_instance, True)
 
     def load_xlet_data (self):
         self.xlet_dir = "/usr/share/cinnamon/%ss/%s" % (self.type, self.uuid)
@@ -242,18 +250,22 @@ class MainWindow(object):
         self.next_button.connect("clicked", self.next_instance)
 
     def load_instances(self):
-        self.instance_info = []
         path = Path(os.path.join(settings_dir, self.uuid))
         old_path = Path("%s/.cinnamon/configs/%s" % (home, self.uuid))
-        instances = 0
+        for p in path, old_path:
+            if not p.exists(): continue
+            self.g_directories.append(Gio.File.new_for_path(str(p)))
+
         new_items = os.listdir(path) if path.exists() else []
         old_items = os.listdir(old_path) if old_path.exists() else []
         dir_items = sorted(new_items + old_items)
+
         try:
             multi_instance = int(self.xlet_meta["max-instances"]) != 1
         except (KeyError, ValueError):
             multi_instance = False
 
+        enabled = [x.split(":") for x in self.gsettings.get_strv('enabled-%ss' % self.type)]
         for item in dir_items:
             # ignore anything that isn't json
             if item[-5:] != ".json":
@@ -271,66 +283,82 @@ class MainWindow(object):
                     continue # multi-instance should have file names of the form [instance-id].json
 
                 instance_exists = False
-                enabled = self.gsettings.get_strv('enabled-%ss' % self.type)
                 for definition in enabled:
-                    if self.uuid in definition and instance_id in definition.split(':'):
+                    if self.uuid in definition and instance_id in definition:
                         instance_exists = True
                         break
 
                 if not instance_exists:
                     continue
 
-            settings = JSONSettingsHandler(os.path.join(path if item in new_items else old_path, item), self.notify_dbus)
-            settings.instance_id = instance_id
-            instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-            self.instance_stack.add_named(instance_box, instance_id)
+            config_path = os.path.join(path if item in new_items else old_path, item)
+            self.create_settings_page(config_path)
 
-            info = {"settings": settings, "id": instance_id}
-            self.instance_info.append(info)
+        if not self.instance_info:
+            print(f"No instances were found for {self.uuid}. Exiting...")
+            sys.exit()
 
-            settings_map = settings.get_settings()
-            first_key = next(iter(settings_map.values()))
+        self.next_button.set_no_show_all(True)
+        self.prev_button.set_no_show_all(True)
+        self.show_prev_next_buttons() if self.has_multiple_instances() else self.hide_prev_next_buttons()
 
-            try:
-                for setting in settings_map:
-                    if setting == "__md5__":
-                        continue
-                    for key in settings_map[setting]:
-                        if key in ("description", "tooltip", "units"):
-                            try:
-                                settings_map[setting][key] = translate(self.uuid, settings_map[setting][key])
-                            except (KeyError, ValueError):
-                                traceback.print_exc()
-                        elif key in "options":
-                            new_opt_data = collections.OrderedDict()
-                            opt_data = settings_map[setting][key]
-                            for option in opt_data:
-                                if opt_data[option] == "custom":
-                                    continue
-                                new_opt_data[translate(self.uuid, option)] = opt_data[option]
-                            settings_map[setting][key] = new_opt_data
-                        elif key in "columns":
-                            columns_data = settings_map[setting][key]
-                            for column in columns_data:
-                                column["title"] = translate(self.uuid, column["title"])
-            finally:
-                # if a layout is not explicitly defined, generate the settings
-                # widgets based on the order they occur
-                if first_key["type"] == "layout":
-                    self.build_with_layout(settings_map, info, instance_box, first_key)
-                else:
-                    self.build_from_order(settings_map, info, instance_box, first_key)
+    def create_settings_page(self, config_path):
+        instance_id = os.path.basename(config_path)[:-5]
+        if self.instance_stack.get_child_by_name(instance_id) is not None: return
+        settings = JSONSettingsHandler(config_path, self.notify_dbus)
+        settings.instance_id = instance_id
+        instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        self.instance_stack.add_named(instance_box, instance_id)
+        info = {"settings": settings, "id": instance_id}
+        self.instance_info.append(info)
+        settings_map = settings.get_settings()
+        first_key = next(iter(settings_map.values()))
 
-                if self.selected_instance is None:
-                    self.selected_instance = info
-                    if "stack" in info:
-                        self.stack_switcher.set_stack(info["stack"])
+        try:
+            for setting in settings_map:
+                if setting == "__md5__":
+                    continue
+                for key in settings_map[setting]:
+                    if key in ("description", "tooltip", "units"):
+                        try:
+                            settings_map[setting][key] = translate(self.uuid, settings_map[setting][key])
+                        except (KeyError, ValueError):
+                            traceback.print_exc()
+                    elif key in "options":
+                        new_opt_data = collections.OrderedDict()
+                        opt_data = settings_map[setting][key]
+                        for option in opt_data:
+                            if opt_data[option] == "custom":
+                                continue
+                            new_opt_data[translate(self.uuid, option)] = opt_data[option]
+                        settings_map[setting][key] = new_opt_data
+                    elif key in "columns":
+                        columns_data = settings_map[setting][key]
+                        for column in columns_data:
+                            column["title"] = translate(self.uuid, column["title"])
+        finally:
+            # if a layout is not explicitly defined, generate the settings
+            # widgets based on the order they occur
+            if first_key["type"] == "layout":
+                self.build_with_layout(settings_map, info, instance_box, first_key)
+            else:
+                self.build_from_order(settings_map, info, instance_box, first_key)
 
-            instances += 1
+            if self.selected_instance is None:
+                self.selected_instance = info
+                if "stack" in info:
+                    self.stack_switcher.set_stack(info["stack"])
 
-        if instances < 2:
-            self.prev_button.set_no_show_all(True)
-            self.next_button.set_no_show_all(True)
+    def has_multiple_instances(self):
+        return len(self.instance_info) > 1
+
+    def hide_prev_next_buttons(self):
+        self.prev_button.hide()
+        self.next_button.hide()
+
+    def show_prev_next_buttons(self):
+        self.prev_button.show()
+        self.next_button.show()
 
     def build_with_layout(self, settings_map, info, box, first_key):
         layout = first_key
@@ -460,26 +488,95 @@ class MainWindow(object):
                 else:
                     info["stack"].set_visible_child(children[0])
         if proxy:
-            proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], False)
-            proxy.highlightXlet('(ssb)', self.uuid, info["id"], True)
+            old_info = self.selected_instance
+            new_info = info
+            self.highlight_xlet(old_info, False)
+            self.highlight_xlet(new_info, True)
         self.selected_instance = info
 
+    def highlight_xlet(self, info, highlighted):
+        try:
+            proxy.highlightXlet('(ssb)', self.uuid, info["id"], highlighted)
+        except:
+            return
+
     def previous_instance(self, *args):
-        self.instance_stack.set_transition_type(Gtk.StackTransitionType.OVER_RIGHT)
-        index = self.instance_info.index(self.selected_instance)
-        self.set_instance(self.instance_info[index-1])
+        self.get_next_instance(False)
 
     def next_instance(self, *args):
-        self.instance_stack.set_transition_type(Gtk.StackTransitionType.OVER_LEFT)
-        index = self.instance_info.index(self.selected_instance)
-        if index == len(self.instance_info) - 1:
-            index = 0
-        else:
-            index +=1
-        self.set_instance(self.instance_info[index])
+        self.get_next_instance()
 
-    # def unpack_args(self, args):
-    #    args = {}
+    def get_next_instance(self, positive_direction = True):
+        transition = Gtk.StackTransitionType.OVER_LEFT if positive_direction else Gtk.StackTransitionType.OVER_RIGHT
+        self.instance_stack.set_transition_type(transition)
+        step = 1 if positive_direction else -1
+        instances_length = len(self.instance_info)
+        start = self.instance_info.index(self.selected_instance)
+        nextIndex = (start + step) % instances_length
+        self.set_instance(self.instance_info[nextIndex])
+
+    def on_enabled_xlets_changed(self, key, *args):
+        """
+        Args:
+            key ("enabled-applets"|"enabled-desklets")
+        """
+        current_ids = {info["id"] for info in self.instance_info}
+        new_ids = set()
+        for definition in self.gsettings.get_strv(key):
+            definition = definition.split(":")
+            uuid, instance_id = (definition[-2], definition[-1]) if key == "enabled-applets"\
+                else (definition[0], definition[1])
+            if uuid != self.uuid: continue
+            new_ids.add(instance_id)
+        added_ids = new_ids - current_ids
+
+        removed_indices = []
+        selected_removed_index = -1
+        for i, info in enumerate(self.instance_info):
+            if info["id"] in new_ids: continue
+            removed_indices.append(i)
+            if info == self.selected_instance: selected_removed_index = i
+
+        if len(current_ids) + len(added_ids) == len(removed_indices):
+            self.quit()
+            return
+
+        for id in added_ids:
+            for dir in self.g_directories:
+                file = dir.get_child(id + ".json")
+                if file.query_exists(None):
+                    self.create_new_settings_page(file.get_path())
+                    continue
+                # Config files have not been added yet, need to monitor directories
+                monitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, None)
+                monitor.connect("changed", self.on_config_file_added)
+                self.monitors.setdefault(id, []).append(monitor)
+
+        if (selected_removed_index != -1):
+            self.get_next_instance()
+
+        for index in sorted(removed_indices, reverse=True):
+            self.monitors.get(self.instance_info[index]["id"], []).clear()
+            self.instance_stack.remove(self.instance_stack.get_child_by_name(self.instance_info[index]["id"]))
+            self.instance_info.pop(index)
+
+        if not self.has_multiple_instances(): self.hide_prev_next_buttons()
+
+    def on_config_file_added(self, *args):
+        file, event_type = args[1], args[-1]
+        instance = file.get_basename()[:-5]
+        if event_type != Gio.FileMonitorEvent.CHANGES_DONE_HINT : return
+        if instance not in self.monitors: return
+        for monitor in self.monitors[instance]: monitor.cancel()
+        del self.monitors[instance]
+        self.create_new_settings_page(file.get_path())
+
+
+    def create_new_settings_page(self, path):
+        self.create_settings_page(path)
+        self.window.show_all()
+        if self.has_multiple_instances(): self.show_prev_next_buttons()
+        self.highlight_xlet(self.selected_instance, True)
 
     def backup(self, *args):
         dialog = Gtk.FileChooserDialog(_("Select or enter file to export to"),
@@ -531,8 +628,7 @@ class MainWindow(object):
 
     def quit(self, *args):
         if proxy:
-            proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], False)
-
+            self.highlight_xlet(self.selected_instance, False)
         self.window.destroy()
         Gtk.main_quit()
 
