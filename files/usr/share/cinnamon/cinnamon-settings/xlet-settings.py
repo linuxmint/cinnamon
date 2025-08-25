@@ -259,6 +259,7 @@ class MainWindow(object):
         new_items = os.listdir(path) if path.exists() else []
         old_items = os.listdir(old_path) if old_path.exists() else []
         dir_items = sorted(new_items + old_items)
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
 
         try:
             multi_instance = int(self.xlet_meta["max-instances"]) != 1
@@ -267,6 +268,7 @@ class MainWindow(object):
 
         enabled = [x.split(":") for x in self.gsettings.get_strv('enabled-%ss' % self.type)]
         for item in dir_items:
+            applet_info = {}
             # ignore anything that isn't json
             if item[-5:] != ".json":
                 continue
@@ -286,13 +288,32 @@ class MainWindow(object):
                 for definition in enabled:
                     if self.uuid in definition and instance_id in definition:
                         instance_exists = True
+                        if self.type == "applet":
+                            applet_info.update(
+                                panel = int(definition[0].split("panel")[1]),
+                                location = definition[1],
+                                order = definition[2]
+                            )
                         break
 
                 if not instance_exists:
                     continue
+            elif self.type == "applet":
+                first = True
+                for definition in enabled:
+                    panel_id = int(definition[0].split("panel")[1])
+                    if self.uuid not in definition or panel_id not in shared_panels: continue
+                    if first:
+                        applet_info.update(
+                            panel = panel_id,
+                            location = definition[1],
+                            order = definition[2]
+                        )
+                        first = False
+                    applet_info.setdefault("extra_infos", []).append({"panel": panel_id, "id": definition[-1]})
 
             config_path = os.path.join(path if item in new_items else old_path, item)
-            self.create_settings_page(config_path)
+            self.create_settings_page(config_path, applet_info)
 
         if not self.instance_info:
             print(f"No instances were found for {self.uuid}. Exiting...")
@@ -300,9 +321,10 @@ class MainWindow(object):
 
         self.next_button.set_no_show_all(True)
         self.prev_button.set_no_show_all(True)
-        self.show_prev_next_buttons() if self.has_multiple_instances() else self.hide_prev_next_buttons()
+        self.show_prev_next_buttons() if self.has_multiple_instances() and not self.has_only_shared_instances()\
+            else self.hide_prev_next_buttons()
 
-    def create_settings_page(self, config_path):
+    def create_settings_page(self, config_path, applet_info = {}):
         instance_id = os.path.basename(config_path)[:-5]
         if self.instance_stack.get_child_by_name(instance_id) is not None: return
         settings = JSONSettingsHandler(config_path, self.notify_dbus)
@@ -310,7 +332,23 @@ class MainWindow(object):
         instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
         self.instance_stack.add_named(instance_box, instance_id)
         info = {"settings": settings, "id": instance_id}
-        self.instance_info.append(info)
+        infos = [info]
+
+        if applet_info:
+            info.update(
+                panel = applet_info["panel"],
+                location = applet_info["location"],
+                order = applet_info["order"]
+            )
+            for i, extra_info in enumerate(applet_info.get("extra_infos", [])):
+                if i == 0:
+                    info.update(extra_info)
+                    continue
+                info_copy = info.copy()
+                info_copy.update(extra_info)
+                infos.append(info_copy)
+
+        self.instance_info.extend(infos)
         settings_map = settings.get_settings()
         first_key = next(iter(settings_map.values()))
 
@@ -351,6 +389,17 @@ class MainWindow(object):
 
     def has_multiple_instances(self):
         return len(self.instance_info) > 1
+
+    def has_only_shared_instances(self):
+        if self.type != "applet": return False
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
+        first = self.instance_info[0]
+        return all(
+            info["panel"] in shared_panels
+            and info["location"] == first["location"]
+            and info["order"] == first["order"]
+            for info in self.instance_info
+        )
 
     def hide_prev_next_buttons(self):
         self.prev_button.hide()
@@ -510,10 +559,27 @@ class MainWindow(object):
         transition = Gtk.StackTransitionType.OVER_LEFT if positive_direction else Gtk.StackTransitionType.OVER_RIGHT
         self.instance_stack.set_transition_type(transition)
         step = 1 if positive_direction else -1
-        instances_length = len(self.instance_info)
         start = self.instance_info.index(self.selected_instance)
-        nextIndex = (start + step) % instances_length
-        self.set_instance(self.instance_info[nextIndex])
+        next_index = self.get_next_not_shared_index(start, step)
+        self.set_instance(self.instance_info[next_index])
+
+    def get_next_not_shared_index(self, start, step):
+        next_index = (start + step) % len(self.instance_info)
+        if self.type != "applet": return next_index
+        shared_panels = json.loads(self.gsettings.get_string("shared-panels"))
+        if self.selected_instance["panel"] in shared_panels and self.instance_info[next_index]["panel"] in shared_panels:
+            current = self.selected_instance
+            while next_index != start:
+                info = self.instance_info[next_index]
+                if (info["panel"] not in shared_panels
+                    or info["location"] != current["location"]
+                    or info["order"] != current["order"]
+                ):
+                    break
+                next_index = (next_index + step) % len(self.instance_info)
+                continue
+
+        return next_index
 
     def on_enabled_xlets_changed(self, key, *args):
         """
@@ -522,12 +588,23 @@ class MainWindow(object):
         """
         current_ids = {info["id"] for info in self.instance_info}
         new_ids = set()
+        new_instances = {}
+        added_instances = {}
         for definition in self.gsettings.get_strv(key):
             definition = definition.split(":")
             uuid, instance_id = (definition[-2], definition[-1]) if key == "enabled-applets"\
                 else (definition[0], definition[1])
             if uuid != self.uuid: continue
             new_ids.add(instance_id)
+            if self.type == "applet":
+                new_instances[instance_id] = {
+                    "panel": int(definition[0].split("panel")[1]),
+                    "location": definition[1],
+                    "order": definition[2]
+                }
+                if instance_id in current_ids: continue
+                added_instances[instance_id] = new_instances[instance_id]
+
         added_ids = new_ids - current_ids
 
         removed_indices = []
@@ -541,15 +618,22 @@ class MainWindow(object):
             self.quit()
             return
 
+        if self.type == "applet":
+            for info in self.instance_info:
+                updated = new_instances.get(info["id"], {})
+                info.update(updated)
+
         for id in added_ids:
             for dir in self.g_directories:
                 file = dir.get_child(id + ".json")
                 if file.query_exists(None):
-                    self.create_new_settings_page(file.get_path())
+                    added_instance = added_instances.get(id)
+                    if added_instance: self.create_new_settings_page(file.get_path(), **added_instance)
+                    else: self.create_new_settings_page(file.get_path())
                     continue
                 # Config files have not been added yet, need to monitor directories
                 monitor = dir.monitor_directory(Gio.FileMonitorFlags.NONE, None)
-                monitor.connect("changed", self.on_config_file_added)
+                monitor.connect("changed", lambda *args: self.on_config_file_added(added_instances, *args))
                 self.monitors.setdefault(id, []).append(monitor)
 
         if (selected_removed_index != -1):
@@ -560,22 +644,23 @@ class MainWindow(object):
             self.instance_stack.remove(self.instance_stack.get_child_by_name(self.instance_info[index]["id"]))
             self.instance_info.pop(index)
 
-        if not self.has_multiple_instances(): self.hide_prev_next_buttons()
+        if not self.has_multiple_instances() or self.has_only_shared_instances(): self.hide_prev_next_buttons()
 
-    def on_config_file_added(self, *args):
+    def on_config_file_added(self, added_instances, *args):
         file, event_type = args[1], args[-1]
         instance = file.get_basename()[:-5]
         if event_type != Gio.FileMonitorEvent.CHANGES_DONE_HINT : return
         if instance not in self.monitors: return
         for monitor in self.monitors[instance]: monitor.cancel()
         del self.monitors[instance]
-        self.create_new_settings_page(file.get_path())
+        applet_info = added_instances.get(instance, {})
+        self.create_new_settings_page(file.get_path(), applet_info)
 
 
-    def create_new_settings_page(self, path):
-        self.create_settings_page(path)
+    def create_new_settings_page(self, path, applet_info = {}):
+        self.create_settings_page(path, applet_info)
         self.window.show_all()
-        if self.has_multiple_instances(): self.show_prev_next_buttons()
+        if self.has_multiple_instances() and not self.has_only_shared_instances(): self.show_prev_next_buttons()
         self.highlight_xlet(self.selected_instance, True)
 
     def backup(self, *args):
