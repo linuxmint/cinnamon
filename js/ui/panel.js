@@ -1957,7 +1957,7 @@ PanelZoneDNDHandler.prototype = {
     acceptDrop: function(source, actor, x, y, time) {
         this._origAppletCenters = null;
 
-        if (!(source instanceof Applet.Applet)) return false;
+        if (!(source instanceof Applet.Applet)  || !this._dragPlaceholder) return false;
 
         //  We want to ensure that applets placed in a panel can be shown correctly
         //  If the applet is of type Icon Applet then should be fine
@@ -1968,31 +1968,20 @@ PanelZoneDNDHandler.prototype = {
             }
         }
 
-        let children = this._panelZone.get_children();
         let curAppletPos = 0;
-        let insertAppletPos = -1;
+        let insertAppletPos = 0;
 
-        const {
-            panel: { panelId: sourceAppletPanel },
-            locationLabel: sourceAppletLocation,
-        } = source.actor._applet;
-
-        for (let i = 0, len = children.length; i < len; i++) {
-            if (children[i]._delegate instanceof Applet.Applet){
-                children[i]._applet._newOrder = curAppletPos;
+        this._panelZone.get_children().forEach(child => {
+            if (child._delegate instanceof Applet.Applet && child._delegate !== source.actor._applet){
+                child._applet._newOrder = curAppletPos;
                 curAppletPos++;
-            } else if (children[i] == this._dragPlaceholder.actor){
+            } else if (child == this._dragPlaceholder.actor){
                 insertAppletPos = curAppletPos;
                 curAppletPos++;
             }
-        }
+        });
 
-        const isSameLocation = (
-            sourceAppletPanel === this._panelId
-            && sourceAppletLocation === this._zoneString
-            && insertAppletPos === -1
-        );
-        if (!isSameLocation) source.actor._applet._newOrder = insertAppletPos === -1 ? 0 : insertAppletPos;
+        source.actor._applet._newOrder = insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         source.actor._applet._zoneString = this._zoneString;
         source.actor._applet._newPanelId = this._panelId;
@@ -2012,9 +2001,7 @@ PanelZoneDNDHandler.prototype = {
         }
 
         if (sourcebox.has_style_class_name("panelRight") || sourcebox.has_style_class_name("panelLeft")) {
-            children = sourcebox.get_children();
-
-            if (children.length == 0) {         /* put back some minimum space if the source box is now empty */
+            if (sourcebox.get_children().length == 0) {         /* put back some minimum space if the source box is now empty */
                 if (sourcebox.get_parent()._delegate.is_vertical) {
                     let height = sourcebox.get_height();
                     if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
