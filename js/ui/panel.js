@@ -1957,7 +1957,7 @@ PanelZoneDNDHandler.prototype = {
     acceptDrop: function(source, actor, x, y, time) {
         this._origAppletCenters = null;
 
-        if (!(source instanceof Applet.Applet)  || !this._dragPlaceholder) return false;
+        if (!(source instanceof Applet.Applet)) return false;
 
         //  We want to ensure that applets placed in a panel can be shown correctly
         //  If the applet is of type Icon Applet then should be fine
@@ -1969,10 +1969,15 @@ PanelZoneDNDHandler.prototype = {
         }
 
         let curAppletPos = 0;
-        let insertAppletPos = 0;
+        let insertAppletPos = -1;
+
+        const {
+            panel: { panelId: sourceAppletPanel },
+            locationLabel: sourceAppletLocation,
+        } = source.actor._applet;
 
         this._panelZone.get_children().forEach(child => {
-            if (child._delegate instanceof Applet.Applet && child._delegate !== source.actor._applet){
+            if (child._delegate instanceof Applet.Applet){
                 child._applet._newOrder = curAppletPos;
                 curAppletPos++;
             } else if (child == this._dragPlaceholder.actor){
@@ -1981,7 +1986,12 @@ PanelZoneDNDHandler.prototype = {
             }
         });
 
-        source.actor._applet._newOrder = insertAppletPos;
+        const isSameLocation = (
+            sourceAppletPanel === this._panelId
+            && sourceAppletLocation === this._zoneString
+            && insertAppletPos === -1
+        );
+        if (!isSameLocation) source.actor._applet._newOrder = insertAppletPos === -1 ? 0 : insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         source.actor._applet._zoneString = this._zoneString;
         source.actor._applet._newPanelId = this._panelId;
