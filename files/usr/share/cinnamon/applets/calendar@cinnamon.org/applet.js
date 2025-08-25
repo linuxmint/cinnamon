@@ -284,7 +284,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this._gsettingsKeyChangedIds = {};
             this._desktopConnIds = [];
             this._menuOpenConnId = 0;
-
+            
             // Listen for changes in GSettings (from system settings)
             this._fastKeys = new Set([
                 'show-seconds', 'use-24h-format', 'use-custom-format', 'os-format-type',
@@ -391,7 +391,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             // Safely obtain event list from manager
             try {
-                this.event_list = this.events_manager.get_event_list();
+            this.event_list = this.events_manager.get_event_list();
             } catch (e) {
                 debugLog("Error getting event list: " + e.message);
                 this.event_list = null;
@@ -410,7 +410,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             });
 
             if (this.event_list && this.event_list.actor) {
-                box.add_actor(this.event_list.actor);
+            box.add_actor(this.event_list.actor);
             }
 
             let calbox = new St.BoxLayout(
@@ -829,7 +829,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;
         }
-
+        
         if (this.key_open && Array.isArray(this.key_open)) {
             Main.keybindingManager.removeHotKey("calendar-open-" + this.instance_id);
         }
