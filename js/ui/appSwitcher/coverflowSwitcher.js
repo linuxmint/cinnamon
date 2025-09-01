@@ -141,9 +141,8 @@ CoverflowSwitcher.prototype = {
     },
     
     _animatePreviewToMid: function(preview, oldGravity, animation_time, extraParams) {
-        let rotation_vertex_x = (oldGravity == Clutter.Gravity.EAST) ? preview.width / 2 : -preview.width / 2;
         preview.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
-        preview.rotation_center_y = new Graphene.Point3D({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
+        preview.set_pivot_point( 0.5, 0.0 );
         preview.raise_top();
         let tweenParams = {
             opacity: 255,
@@ -164,7 +163,7 @@ CoverflowSwitcher.prototype = {
     
     _animatePreviewToSide: function(preview, index, gravity, xOffset, extraParams) {
         preview.move_anchor_point_from_gravity(gravity);
-        preview.rotation_center_y = new Graphene.Point3D({ x: 0.0, y: 0.0, z: 0.0 });
+        preview.set_pivot_point( 0.0, 0.0 );
 
         let tweenParams = {
             x: xOffset + 50 * (index - this._currentIndex),
