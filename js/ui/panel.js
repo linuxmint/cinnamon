@@ -1811,6 +1811,7 @@ PanelContextMenu.prototype = {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
                     function() {
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                        Util.spawnCommandLine("gsettings reset-recursively org.cinnamon.desktop.input-sources");
                         Main.restartCinnamon(true);
                     });
             confirm.open();
