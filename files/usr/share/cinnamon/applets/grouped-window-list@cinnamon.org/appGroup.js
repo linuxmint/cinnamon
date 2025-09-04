@@ -119,31 +119,50 @@ class AppGroup {
         });
         this.actor.add_child(this.progressOverlay);
 
-        // Create the app button icon, number label, and text label for titleDisplay
+        // Create the app button icon, window count and notification badges, and text label for titleDisplay
         this.iconBox = new Cinnamon.Slicer({name: 'appMenuIcon'});
         this.actor.add_child(this.iconBox);
         this.setActorAttributes(null, params.metaWindow);
 
-        this.badge = new St.BoxLayout({
-            style_class: 'grouped-window-list-badge',
+        this.windowsBadge = new St.BoxLayout({
+            style_class: 'grouped-window-list-windows-badge',
             important: true,
-            x_align: St.Align.START,
+            x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
         });
-        this.numberLabel = new St.Label({
-            style_class: 'grouped-window-list-number-label',
+        this.windowsBadgeLabel = new St.Label({
+            style_class: 'grouped-window-list-windows-badge-label',
             important: true,
-            text: '',
-            anchor_x: -3 * global.ui_scale,
+            text: ''
         });
-        this.numberLabel.clutter_text.ellipsize = false;
-        this.badge.add(this.numberLabel, {
+        this.windowsBadgeLabel.clutter_text.ellipsize = false;
+        this.windowsBadge.add(this.windowsBadgeLabel, {
             x_align: St.Align.START,
             y_align: St.Align.START,
         });
-        this.actor.add_child(this.badge);
-        this.badge.set_text_direction(St.TextDirection.LTR);
+        this.actor.add_child(this.windowsBadge);
+        this.windowsBadge.set_text_direction(St.TextDirection.LTR);
+
+        this.notificationsBadge = new St.BoxLayout({
+            style_class: 'grouped-window-list-notifications-badge',
+            important: true,
+            x_align: St.Align.MIDDLE,
+            y_align: St.Align.MIDDLE,
+            show_on_set_parent: false,
+        });
+        this.notificationsBadgeLabel = new St.Label({
+            style_class: 'grouped-window-list-notifications-badge-label',
+            important: true,
+            text: ''
+        });
+        this.notificationsBadgeLabel.clutter_text.ellipsize = false;
+        this.notificationsBadge.add(this.notificationsBadgeLabel, {
+            x_align: St.Align.START,
+            y_align: St.Align.START,
+        });
+        this.actor.add_child(this.notificationsBadge);
+        this.notificationsBadge.set_text_direction(St.TextDirection.LTR);
 
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
@@ -172,6 +191,7 @@ class AppGroup {
         this.calcWindowNumber();
         this.on_orientation_changed(true);
         this.handleFavorite();
+        this.state.notifications.addAppGroup(this);
     }
 
     initThumbnailMenu() {
@@ -394,15 +414,23 @@ class AppGroup {
 
         this.iconBox.allocate(childBox, flags);
 
-        // Set badge position
-        const windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
-        const badgeOffset = 2 * global.ui_scale;
-        childBox.x1 = childBox.x1 - badgeOffset;
-        childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
-        childBox.y1 = Math.max(childBox.y1 - badgeOffset, 0);
-        childBox.y2 = childBox.y1 + this.badge.get_preferred_height(childBox.get_width())[1];
+        this.updateBadgesTextSize();
 
-        this.badge.allocate(childBox, flags);
+        // Set windows badge position
+        childBox.x1 = box.x1;
+        childBox.x2 = childBox.x1 + this.windowsBadgeLabel.width;
+        childBox.y1 = box.y2 - this.windowsBadge.get_preferred_height(childBox.get_width())[1];
+        childBox.y2 = box.y2;
+
+        this.windowsBadge.allocate(childBox, flags);
+
+        // Set notifications badge position
+        childBox.x2 = this.iconBox.x + this.iconBox.width;
+        childBox.x1 = childBox.x2 - this.notificationsBadgeLabel.width;
+        childBox.y1 = box.y1;
+        childBox.y2 = childBox.y1 + this.notificationsBadge.get_preferred_height(childBox.get_width())[1];
+
+        this.notificationsBadge.allocate(childBox, flags);
 
         // Set label position
         if (this.drawLabel) {
@@ -448,6 +476,14 @@ class AppGroup {
         }
 
         if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
+    }
+
+    updateBadgesTextSize() {
+        const badgeTextSize = Math.round(this.iconBox.width / 2.5 / global.ui_scale);
+        const badgePadding = Math.round(badgeTextSize / 4);
+        const sizeStyle = `font-size: ${badgeTextSize}px; padding-left: ${badgePadding}px; padding-right: ${badgePadding}px;`;
+        this.windowsBadgeLabel.set_style(sizeStyle);
+        this.notificationsBadgeLabel.set_style(sizeStyle);
     }
 
     showLabel(animate = false) {
@@ -676,8 +712,8 @@ class AppGroup {
     }
 
     showOrderLabel(number) {
-        this.numberLabel.text = (number + 1).toString();
-        this.badge.show();
+        this.windowsBadgeLabel.text = (number + 1).toString();
+        this.windowsBadge.show();
     }
 
     launchNewInstance(offload=false) {
@@ -917,6 +953,7 @@ class AppGroup {
             this.setIcon(metaWindow)
 
             this.calcWindowNumber();
+            this.state.notifications.updateNotificationsBadge(this);
             this.onFocusChange();
         }
         set({
@@ -1074,20 +1111,16 @@ class AppGroup {
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        const windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
-        this.numberLabel.text = windowCount.toString();
+        this.groupState.set({windowCount: this.groupState.metaWindows ? this.groupState.metaWindows.length : 0});
+        this.updateWindowsBadge();
+    }
 
-        this.groupState.set({windowCount});
-
-        if (this.state.settings.numDisplay) {
-            if (windowCount <= 1) {
-                this.badge.hide();
-            } else {
-                this.badge.show();
-
-            }
+    updateWindowsBadge(){
+        if (this.groupState.windowCount > 1) {
+            this.windowsBadgeLabel.text = this.groupState.windowCount.toString();
+            this.windowsBadge.show();
         } else {
-            this.badge.hide();
+            this.windowsBadge.hide();
         }
     }
 
