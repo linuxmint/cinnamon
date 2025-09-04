@@ -89,7 +89,7 @@ Depends:
  metacity,
  nemo,
  network-manager-gnome [linux-any],
- policykit-1-gnome,
+ policykit-1-gnome | mate-polkit,
  python3,
  python3-distro,
  python3-gi,
