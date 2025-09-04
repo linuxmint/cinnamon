@@ -106,65 +106,7 @@ class Module:
             ]
             
             # === OPCJE SYSTEMOWE (pokazuj gdy use-custom-format = false) ===
-            os_revealer = SettingsRevealer()
-            self.format_combo = GSettingsComboBox(_("Date format style"), "org.cinnamon.applets.calendar", "os-format-type", format_style_options)
-            applet_format.add_reveal_row(self.format_combo, revealer=os_revealer)
-
-            self.time_format_switch = GSettingsSwitch(_("Use 24-hour time format"), "org.cinnamon.applets.calendar", "use-24h-format")
-            applet_format.add_reveal_row(self.time_format_switch, revealer=os_revealer)
-
-            self.seconds_switch = GSettingsSwitch(_("Show seconds"), "org.cinnamon.applets.calendar", "show-seconds")
-            applet_format.add_reveal_row(self.seconds_switch, revealer=os_revealer)
-            
-            separator_options = [
-                ("/", _("Slash (/)")),
-                ("-", _("Dash (-)")),
-                (".", _("Dot (.)"))
-            ]
-            self.separator_combo = GSettingsComboBox(_("Date separator"), "org.cinnamon.applets.calendar", "date-separator", separator_options)
-            applet_format.add_reveal_row(self.separator_combo, revealer=os_revealer)
-
-            # Ukrywanie separatora, gdy wybór to Automatic (Region)
-            def update_os_revealer_visibility(*args):
-                try:
-                    current = self._calendar_settings.get_string("os-format-type")
-                except Exception:
-                    current = ""
-                # Separator i inne predefiniowane opcje mają sens tylko gdy nie jest AUTO
-                self.separator_combo.set_visible(current != "AUTO")
-            try:
-                self._calendar_settings = Gio.Settings(schema_id="org.cinnamon.applets.calendar")
-                self._calendar_settings.connect("changed::os-format-type", lambda *a: update_os_revealer_visibility())
-                update_os_revealer_visibility()
-            except Exception:
-                pass
-            
             # === OPCJE CUSTOM (pokazuj gdy use-custom-format = true) ===
-            custom_revealer = SettingsRevealer()
-            self.custom_format_entry = GSettingsEntry(_("Custom applet format"), "org.cinnamon.applets.calendar", "applet-format")
-            applet_format.add_reveal_row(self.custom_format_entry, revealer=custom_revealer)
-            
-            # Live preview for custom applet format
-            custom_preview_widget = SettingsWidget()
-            custom_preview_widget.pack_start(Gtk.Label(_("Preview")), False, False, 0)
-            
-            # Custom preview label
-            self.custom_preview_label = Gtk.Label()
-            self.custom_preview_label.set_halign(Gtk.Align.START)
-            self.custom_preview_label.set_line_wrap(True)
-            self.custom_preview_label.set_selectable(True)
-            custom_preview_widget.pack_end(self.custom_preview_label, False, False, 0)
-            
-            applet_format.add_reveal_row(custom_preview_widget, revealer=custom_revealer)
-            
-            # Format help switch
-            self.help_switch = GSettingsSwitch(_("Show format reference"), "org.cinnamon.applets.calendar", "format-help-visible")
-            applet_format.add_reveal_row(self.help_switch, revealer=custom_revealer)
-            
-            # Format help content
-            help_widget = SettingsWidget()
-            help_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-            
             # Header
             help_header = Gtk.Label()
             help_header.set_markup("<b>" + _("Date Format Reference") + "</b>")
@@ -344,7 +286,7 @@ class Module:
             screensaver_clock.add_reveal_row(widget, "org.cinnamon.desktop.screensaver", "show-clock")
             
             # Sekcja 2: Formatowanie i pozycja zegara na wygaszaczu
-            screensaver_format = screensaver_page.add_section(_("Screensaver Format & Position"))
+            screensaver_format = screensaver_page.add_section(_("Screensaver Format &amp; Position"))
             
             # Ustawienia formatowania zegara na wygaszaczu
             widget = GSettingsSwitch(_("Use custom screensaver format"), "org.cinnamon.applets.calendar", "use-screensaver-custom-format")
