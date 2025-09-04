@@ -372,6 +372,56 @@ function updatePanelsMeta(meta, panel_props) {
 }
 
 /**
+ * @typedef {number[]} SharedPanels
+ */
+
+/**
+ * Returns array of shared panel ids.
+ * @returns {SharedPanels} Parsed shared-panels value from gsettings.
+ */
+function getSharedPanels() {
+    const jsonString = global.settings.get_string("shared-panels");
+    return JSON.parse(jsonString);
+}
+
+/**
+ * Set the shared-panels gsetting.
+ * @param {SharedPanels} sharedPanels
+ */
+function setSharedPanels(sharedPanels) {
+    const jsonString = JSON.stringify(sharedPanels);
+    global.settings.set_string("shared-panels", jsonString);
+}
+
+/**
+ * Adds a new shared panel to shared-panels gsetting.
+ * @param {number} sharedPanelId Sharing panel id.
+ * @param {number} newPanelId New panel id.
+ */
+function addSharedPanels(sharedPanelId, newPanelId) {
+    const sharedPanels = getSharedPanels();
+    if (!sharedPanels.includes(sharedPanelId)) sharedPanels.push(sharedPanelId);
+    sharedPanels.push(newPanelId);
+    setSharedPanels(sharedPanels);
+}
+
+/**
+ * Removes panel id from shared-panels gsetting if panel was a shared panel.
+ * @param {number} panelId Panel id to be removed.
+ */
+function removeSharedPanel(panelId) {
+    const sharedPanels = getSharedPanels();
+    const INDEX = sharedPanels.findIndex(id => id === panelId);
+    if (INDEX === -1) return;
+    sharedPanels.splice(INDEX, 1);
+    if (sharedPanels.length < 2) {
+        global.settings.reset("shared-panels");
+        return;
+    }
+    setSharedPanels(sharedPanels);
+}
+
+/**
  * #PanelManager
  *
  * @short_description: Manager of Cinnamon panels
@@ -646,7 +696,10 @@ PanelManager.prototype = {
                 break;
             }
         }
-
+        if (getSharedPanels().includes(panelId)) {
+            removeSharedPanel(panelId);
+            AppletManager.clearAppletConfiguration(panelId);
+        }
         setPanelsEnabledList(list);
     },
 
@@ -657,50 +710,110 @@ PanelManager.prototype = {
      *
      * Adds a new panel to the specified position
      */
-    addPanel: function(monitorIndex, panelPosition) {
+    addPanel: function(monitorIndex, panelPosition, sharedPanelId) {
         let list = getPanelsEnabledList();
-        let i = 0; // Start counting at 1 for compatibility
+        let panelId = 0; // Start counting at 1 for compatibility
 
         // Magic: Keep recursing until there is a free panel id
         while (true)
-            if (!this.panelsMeta[++i])
+            if (!this.panelsMeta[++panelId])
                 break;
 
-        // Add default values
-        outerLoop:
-        for (let key in DEFAULT_PANEL_VALUES) {
-            let settings = global.settings.get_strv(key);
-            for (let j = 0; j < settings.length; j++){
-                if (settings[j].split(":")[0] == i){
-                    continue outerLoop;
-                }
+        // Copy values from shared panel or add default values
+        if (sharedPanelId) {
+            const STRING_ARRAY_KEYS = [PANEL_AUTOHIDE_KEY, PANEL_SHOW_DELAY_KEY, PANEL_HIDE_DELAY_KEY, PANEL_HEIGHT_KEY];
+            const OBJECT_ARRAY_KEYS = [PANEL_ZONE_ICON_SIZES, PANEL_ZONE_SYMBOLIC_ICON_SIZES, PANEL_ZONE_TEXT_SIZES];
+
+            for (let key of STRING_ARRAY_KEYS) {
+                this._copyStringArraySettings(key, panelId, sharedPanelId);
             }
-            settings.push(i + ":" + DEFAULT_PANEL_VALUES[key]);
-            global.settings.set_strv(key, settings);
+
+            for (let key of OBJECT_ARRAY_KEYS) {
+                this._copyObjectArraySettings(key, panelId, sharedPanelId);
+            }
+        }
+        else {
+            outerLoop:
+            for (let key in DEFAULT_PANEL_VALUES) {
+                let settings = global.settings.get_strv(key);
+                for (let j = 0; j < settings.length; j++){
+                    if (settings[j].split(":")[0] == panelId){
+                        continue outerLoop;
+                    }
+                }
+                settings.push(panelId + ":" + DEFAULT_PANEL_VALUES[key]);
+                global.settings.set_strv(key, settings);
+            }
         }
 
         switch (panelPosition)
         {
             case PanelLoc.top:
-                list.push(i + ":" + monitorIndex + ":" + "top");
+                list.push(panelId + ":" + monitorIndex + ":" + "top");
                 break;
             case PanelLoc.bottom:
-                list.push(i + ":" + monitorIndex + ":" + "bottom");
+                list.push(panelId + ":" + monitorIndex + ":" + "bottom");
                 break;
             case PanelLoc.left:
-                list.push(i + ":" + monitorIndex + ":" + "left");
+                list.push(panelId + ":" + monitorIndex + ":" + "left");
                 break;
             case PanelLoc.right:
-                list.push(i + ":" + monitorIndex + ":" + "right");
+                list.push(panelId + ":" + monitorIndex + ":" + "right");
                 break;
             default:
                 global.log("addPanel - unrecognised panel position "+panelPosition);
         }
+
         setPanelsEnabledList(list);
+
+        if (sharedPanelId != undefined) {
+            AppletManager.clearAppletConfiguration(panelId);
+            addSharedPanels(sharedPanelId, panelId);
+            AppletManager.setupSharedApplets(sharedPanelId, panelId);
+        }
 
         // Delete all panel dummies
         if (this.addPanelMode)
             this._destroyDummyPanels();
+    },
+
+    /**
+     * Copies the string array settings of the shared panel to another panel.
+     * @param {string} key Gsetting panel setting key of type `as` (String Array).
+     * @param {number} panelId Panel to copy settings to.
+     * @param {number} sharedPanelId Panel to copy settings from.
+     */
+    _copyStringArraySettings(key, panelId, sharedPanelId) {
+        /** @type {string[]} Each string is in the form `'<panelId: number>:<value: any>'`*/
+        const settings = global.settings.get_strv(key);
+        const splitSettings = settings.map(e => e.split(":"));
+        const splitSharedSetting = splitSettings.find(e => e[0] == sharedPanelId);
+        if (!splitSharedSetting) return;
+        const newSetting = [panelId, splitSharedSetting[1]].join(":");
+        const existingIndex = splitSettings.findIndex(e => e[0] == panelId);
+        if (existingIndex !== -1) settings[existingIndex] = newSetting;
+        else settings.push(newSetting);
+        global.settings.set_strv(key, settings);
+    },
+
+    /**
+     * Copies the object array settings of the shared panel to another panel.
+     * @param {string} key Gsetting panel setting key of type `s` (String) which is valid JSON.
+     * @param {number} panelId Panel to copy settings to.
+     * @param {number} sharedPanelId Panel to copy settings from.
+     */
+    _copyObjectArraySettings(key, panelId, sharedPanelId) {
+        /** @type {string} JSON string */
+        const settings = global.settings.get_string(key);
+        /** @type {{panelId: number}[]} Each element is an object with a panelId property */
+        const parsedSettings = JSON.parse(settings);
+        let sharedSetting = parsedSettings.find(e => e.panelId == sharedPanelId);
+        if (!sharedSetting) return;
+        sharedSetting = { ...sharedSetting, panelId };
+        const existingSetting = parsedSettings.findIndex(e => e.panelId == panelId);
+        if (existingSetting !== -1) parsedSettings[existingSetting] = sharedSetting;
+        else parsedSettings.push(sharedSetting);
+        global.settings.set_string(key, JSON.stringify(parsedSettings));
     },
 
     /**
@@ -928,6 +1041,7 @@ PanelManager.prototype = {
         this.handling_panels_changed = true;
 
         let newPanels = new Array(this.panels.length);
+        const addedPanelIndices = [];
         let newMeta = new Array(this.panels.length);
         let drawcorner = [false,false];
 
@@ -965,15 +1079,13 @@ PanelManager.prototype = {
                                                                          // on_orientation_changed function
                 }
             } else {                                                       // new panel
-
                 let panel = this._loadPanel(ID,
                                             mon,
                                             ploc,
                                             drawcorner,
                                             newPanels,
                                             newMeta);
-                if (panel)
-                     AppletManager.loadAppletsOnPanel(panel);
+                if (panel) addedPanelIndices.push(ID);
             }
         }
 
@@ -992,6 +1104,7 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
+        addedPanelIndices.forEach(index => AppletManager.loadAppletsOnPanel(this.panels[index]));
         //
         // Adjust any vertical panel heights so as to fit snugly between horizontal panels
         // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
@@ -1188,11 +1301,11 @@ PanelManager.prototype = {
      *
      * Prompts user where to add the panel
      */
-    addPanelQuery: function() {
+    addPanelQuery: function(sharedPanelId) {
         if (this.addPanelMode || !this.canAdd)
             return;
 
-        this._showDummyPanels(Lang.bind(this, this.addPanel));
+        this._showDummyPanels((monitorIndex, panelPosition) => this.addPanel(monitorIndex, panelPosition, sharedPanelId));
         this._addOsd.show();
     },
 
@@ -1763,6 +1876,14 @@ PanelContextMenu.prototype = {
         });
         menu.addMenuItem(menu.addPanelItem);
 
+        menu.addSharedPanel = new PopupMenu.PopupIconMenuItem(_("Add a shared panel"), "list-add", St.IconType.SYMBOLIC); // submenu item add shared panel
+        menu.addSharedPanel.activate = Lang.bind(menu, function() {
+            Main.panelManager.addPanelQuery(this.panelId);
+            this.close(true);
+        });
+        menu.addMenuItem(menu.addSharedPanel);
+
+
         // menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
 
@@ -1824,9 +1945,12 @@ PanelContextMenu.prototype = {
 
     open: function(animate) {
         PopupMenu.PopupMenu.prototype.open.call(this, animate);
-
+        const sharedPanels = getSharedPanels();
         this.movePanelItem.setSensitive(Main.panelManager.canAdd);
         this.addPanelItem.setSensitive(Main.panelManager.canAdd);
+        this.addSharedPanel.setSensitive(Main.panelManager.canAdd
+            && (sharedPanels.length == 0 || sharedPanels.includes(this.panelId))
+        );
         // this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
         let {definitions} = AppletManager;
@@ -1970,7 +2094,12 @@ PanelZoneDNDHandler.prototype = {
 
         let children = this._panelZone.get_children();
         let curAppletPos = 0;
-        let insertAppletPos = 0;
+        let insertAppletPos = -1;
+
+        const {
+            panel: { panelId: sourceAppletPanel },
+            locationLabel: sourceAppletLocation,
+        } = source.actor._applet;
 
         for (let i = 0, len = children.length; i < len; i++) {
             if (children[i]._delegate instanceof Applet.Applet){
@@ -1982,7 +2111,12 @@ PanelZoneDNDHandler.prototype = {
             }
         }
 
-        source.actor._applet._newOrder = insertAppletPos;
+        const isSameLocation = (
+            sourceAppletPanel === this._panelId
+            && sourceAppletLocation === this._zoneString
+            && insertAppletPos === -1
+        );
+        if (!isSameLocation) source.actor._applet._newOrder = insertAppletPos === -1 ? 0 : insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         source.actor._applet._zoneString = this._zoneString;
         source.actor._applet._newPanelId = this._panelId;

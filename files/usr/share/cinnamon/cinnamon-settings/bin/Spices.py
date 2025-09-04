@@ -14,6 +14,7 @@ try:
     from PIL import Image
     import datetime
     import time
+    import json
 except Exception as error_message:
     print(error_message)
     sys.exit(1)
@@ -856,19 +857,32 @@ class Spice_Harvester(GObject.Object):
         if self.collection_type == 'applet':
             entries = []
             applet_id = self.settings.get_int('next-applet-id')
-            self.settings.set_int('next-applet-id', (applet_id+1))
+            shared_panels = json.loads(self.settings.get_string('shared-panels'))
 
             for entry in self.settings.get_strv(self.enabled_key):
                 info = entry.split(':')
                 pos = int(info[2])
-                if info[0] == f'panel{panel}' and info[1] == box and position <= pos:
-                    info[2] = str(pos+1)
+                panelId = int(info[0][-1])
+                if (
+                    (info[0] == f'panel{panel}' or panelId in shared_panels)
+                    and info[1] == box
+                    and position <= pos
+                ):
+                    new_pos = pos+1
+                    info[2] = str(new_pos)
                     entries.append(':'.join(info))
                 else:
                     entries.append(entry)
 
-            entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
+            if panel in shared_panels:
+                for panel in shared_panels:
+                    entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
+                    applet_id += 1
+            else:
+                entries.append(f'panel{panel}:{box}:{position}:{uuid}:{applet_id}')
+                applet_id += 1
 
+            self.settings.set_int('next-applet-id', (applet_id))
             self.settings.set_strv(self.enabled_key, entries)
         elif self.collection_type == 'desklet':
             desklet_id = self.settings.get_int('next-desklet-id')

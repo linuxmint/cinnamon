@@ -134,7 +134,7 @@ class JSONSettingsHandler(object):
     def check_settings(self, *args):
         old_settings = self.settings
         self.settings = self.get_settings()
-
+        if self.settings is None: return
         for key in self.bindings:
             new_value = self.settings[key]["value"]
             if new_value != old_settings[key]["value"]:
@@ -147,10 +147,20 @@ class JSONSettingsHandler(object):
                 for callback in callback_list:
                     callback(key, new_value)
 
+        for key in self.settings:
+            if ("value" in self.settings[key]
+                and self.settings[key]["value"] != old_settings[key]["value"]
+                and self.notify_callback
+            ):
+                self.notify_callback(self, key, new_value)
+
     def get_settings(self):
-        file = open(self.filepath)
-        raw_data = file.read()
-        file.close()
+        try:
+            file = open(self.filepath)
+            raw_data = file.read()
+            file.close()
+        except FileNotFoundError:
+            return
         try:
             settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
