@@ -107,6 +107,34 @@ class Module:
             
             # === OPCJE SYSTEMOWE (pokazuj gdy use-custom-format = false) ===
             # === OPCJE CUSTOM (pokazuj gdy use-custom-format = true) ===
+            # Każdy widget ma swój własny revealer aby uniknąć konfliktów GTK
+            custom_revealer_entry = SettingsRevealer()
+            self.custom_format_entry = GSettingsEntry(_("Custom applet format"), "org.cinnamon.applets.calendar", "applet-format")
+            applet_format.add_reveal_row(self.custom_format_entry, revealer=custom_revealer_entry)
+
+            # Live preview for custom applet format
+            custom_revealer_preview = SettingsRevealer()
+            custom_preview_widget = SettingsWidget()
+            custom_preview_widget.pack_start(Gtk.Label(_("Preview")), False, False, 0)
+
+            # Custom preview label
+            self.custom_preview_label = Gtk.Label()
+            self.custom_preview_label.set_halign(Gtk.Align.START)
+            self.custom_preview_label.set_line_wrap(True)
+            self.custom_preview_label.set_selectable(True)
+            custom_preview_widget.pack_end(self.custom_preview_label, False, False, 0)
+
+            applet_format.add_reveal_row(custom_preview_widget, revealer=custom_revealer_preview)
+
+            # Format help switch
+            custom_revealer_help = SettingsRevealer()
+            self.help_switch = GSettingsSwitch(_("Show format reference"), "org.cinnamon.applets.calendar", "format-help-visible")
+            applet_format.add_reveal_row(self.help_switch, revealer=custom_revealer_help)
+
+            # Format help content
+            help_widget = SettingsWidget()
+            help_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+
             # Header
             help_header = Gtk.Label()
             help_header.set_markup("<b>" + _("Date Format Reference") + "</b>")
@@ -170,11 +198,15 @@ class Module:
                 # Automatic: ukryj wszystko poza opisem/preview
                 if is_auto:
                     os_revealer.set_reveal_child(False)
-                    custom_revealer.set_reveal_child(False)
+                    custom_revealer_entry.set_reveal_child(False)
+                    custom_revealer_preview.set_reveal_child(False)
+                    custom_revealer_help.set_reveal_child(False)
                     help_revealer.set_reveal_child(False)
                 else:
                     os_revealer.set_reveal_child(not is_custom)
-                    custom_revealer.set_reveal_child(is_custom)
+                    custom_revealer_entry.set_reveal_child(is_custom)
+                    custom_revealer_preview.set_reveal_child(is_custom)
+                    custom_revealer_help.set_reveal_child(is_custom)
                     help_revealer.set_reveal_child(is_custom and is_help_visible)
             
             # Połącz revealery z przełącznikami
