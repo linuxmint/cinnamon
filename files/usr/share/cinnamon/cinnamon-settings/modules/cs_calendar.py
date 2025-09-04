@@ -106,8 +106,29 @@ class Module:
             ]
             
             # === OPCJE SYSTEMOWE (pokazuj gdy use-custom-format = false) ===
-            # === OPCJE CUSTOM (pokazuj gdy use-custom-format = true) ===
             # Każdy widget ma swój własny revealer aby uniknąć konfliktów GTK
+            os_revealer_format = SettingsRevealer()
+            self.format_combo = GSettingsComboBox(_("Date format style"), "org.cinnamon.applets.calendar", "os-format-type", format_style_options)
+            applet_format.add_reveal_row(self.format_combo, revealer=os_revealer_format)
+
+            os_revealer_time = SettingsRevealer()
+            self.time_format_switch = GSettingsSwitch(_("Use 24-hour time format"), "org.cinnamon.applets.calendar", "use-24h-format")
+            applet_format.add_reveal_row(self.time_format_switch, revealer=os_revealer_time)
+
+            os_revealer_seconds = SettingsRevealer()
+            self.seconds_switch = GSettingsSwitch(_("Show seconds"), "org.cinnamon.applets.calendar", "show-seconds")
+            applet_format.add_reveal_row(self.seconds_switch, revealer=os_revealer_seconds)
+
+            separator_options = [
+                ("/", _("Slash (/)")),
+                ("-", _("Dash (-)")),
+                (".", _("Dot (.)"))
+            ]
+            os_revealer_separator = SettingsRevealer()
+            self.separator_combo = GSettingsComboBox(_("Date separator"), "org.cinnamon.applets.calendar", "date-separator", separator_options)
+            applet_format.add_reveal_row(self.separator_combo, revealer=os_revealer_separator)
+
+            # === OPCJE CUSTOM (pokazuj gdy use-custom-format = true) ===
             custom_revealer_entry = SettingsRevealer()
             self.custom_format_entry = GSettingsEntry(_("Custom applet format"), "org.cinnamon.applets.calendar", "applet-format")
             applet_format.add_reveal_row(self.custom_format_entry, revealer=custom_revealer_entry)
