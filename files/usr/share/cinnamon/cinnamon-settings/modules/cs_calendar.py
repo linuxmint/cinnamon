@@ -81,15 +81,16 @@ class Module:
             calendar_settings.add_row(GSettingsComboBox(_("First day of week"), "org.cinnamon.desktop.interface", "first-day-of-week", days, valtype=int))
             
             # Sekcja 2: Formatowanie appletu (główny przełącznik + opcje)
-            applet_format = calendar_page.add_section(_("Time Applet"))
+            applet_format = calendar_page.add_section(_("Time Applet Format"))
             
             # Główny przełącznik: Automatic (Region)
             use_auto_switch = GSettingsSwitch(_("Automatic (Region)"), "org.cinnamon.applets.calendar", "use-automatic-format")
             applet_format.add_row(use_auto_switch)
 
             # Drugi przełącznik: Custom, widoczny tylko gdy Automatic=off
+            custom_switch_revealer = SettingsRevealer()
             use_custom_switch = GSettingsSwitch(_("Use custom date format"), "org.cinnamon.applets.calendar", "use-custom-format")
-            applet_format.add_row(use_custom_switch)
+            applet_format.add_reveal_row(use_custom_switch, revealer=custom_switch_revealer)
             
             # === OPCJE SYSTEMOWE (widoczne gdy use-custom-format = false) ===
             # GSettingsComboBox expects [value, label]
@@ -218,6 +219,8 @@ class Module:
                 is_help_visible = self.help_switch.content_widget.get_active()
                 # Automatic: ukryj wszystko poza opisem/preview
                 if is_auto:
+                    # Ukryj "Use custom format" switch
+                    custom_switch_revealer.set_reveal_child(False)
                     # Ukryj wszystkie opcje systemu operacyjnego
                     os_revealer_format.set_reveal_child(False)
                     os_revealer_time.set_reveal_child(False)
@@ -228,6 +231,8 @@ class Module:
                     custom_revealer_help.set_reveal_child(False)
                     help_revealer.set_reveal_child(False)
                 else:
+                    # Pokaż "Use custom format" switch
+                    custom_switch_revealer.set_reveal_child(True)
                     # Pokaż/ukryj opcje systemu operacyjnego w zależności od custom
                     show_os_options = not is_custom
                     os_revealer_format.set_reveal_child(show_os_options)
@@ -259,7 +264,7 @@ class Module:
                         except Exception:
                             pass
                         return False
-                    GLib.idle_add(GLib.PRIORITY_HIGH_IDLE, _do_sync)
+                    GLib.idle_add(_do_sync, priority=GLib.PRIORITY_HIGH_IDLE)
                 for k in (
                     'use-custom-format', 'os-format-type', 'use-24h-format', 'show-seconds',
                     'date-separator', 'applet-format', 'use-custom-time-format', 'time-format', 'tooltip-format'
