@@ -6,8 +6,8 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const XdgAppState = {
     BACKGROUND: 0, // window.is_hidden
-    RUNNING:    1, // window visible
-    ACTIVE:     2  // window focused
+    RUNNING: 1, // window visible
+    ACTIVE: 2  // window focused
 }
 
 const CinnamonPortalIface =
@@ -26,7 +26,7 @@ var CinnamonPortalHandler = class CinnamonPortalHandler {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonPortalIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
 
-        this.running_apps = {}
+        this.running_apps = {};
         Cinnamon.AppSystem.get_default().connect("app-state-changed", () => this.EmitRunningAppsChanged());
         Cinnamon.WindowTracker.get_default().connect("notify::focus-app", () => this.EmitRunningAppsChanged());
     }
@@ -37,18 +37,10 @@ var CinnamonPortalHandler = class CinnamonPortalHandler {
 
     has_focus(app) {
         const fwin = global.display.get_focus_window();
-        if (fwin == null) {
+        if (!fwin) {
             return false;
         }
-
-        const app_windows = app.get_windows();
-        for (let w of app_windows) {
-            if (w == fwin) {
-                return true;
-            }
-        }
-
-        return false;
+        return app.get_windows().includes(fwin);
     }
 
     /* org.freedesktop.impl.portal.Background.GetAppState:
@@ -66,21 +58,18 @@ var CinnamonPortalHandler = class CinnamonPortalHandler {
             if (app.get_is_flatpak()) {
                 id = app.get_flatpak_app_id();
             }
-            else
-            {
+            else {
                 id = app.get_id();
             }
+            let state;
             if (app.get_n_windows() === 0) {
-                apps[id] = GLib.Variant.new_uint32(XdgAppState.BACKGROUND); // Can't happen currently.
+                state = XdgAppState.BACKGROUND;
+            } else if (this.has_focus(app)) {
+                state = XdgAppState.ACTIVE;
             } else {
-                if (this.has_focus(app)) {
-                    apps[id] = GLib.Variant.new_uint32(XdgAppState.ACTIVE);
-                }
-                else
-                {
-                    apps[id] = GLib.Variant.new_uint32(XdgAppState.RUNNING);
-                }
+                state = XdgAppState.RUNNING;
             }
+            apps[id] = GLib.Variant.new_uint32(state);
         }
 
         return new GLib.Variant("(a{sv})", [apps]);
