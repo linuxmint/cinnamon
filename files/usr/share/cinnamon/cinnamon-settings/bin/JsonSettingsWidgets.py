@@ -154,7 +154,7 @@ class JSONSettingsHandler(object):
         try:
             settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
-            raise Exception("Failed to parse settings JSON data for file %s" % self.filepath)
+            raise Exception(f"Failed to parse settings JSON data for file {self.filepath}")
         return settings
 
     def save_settings(self):
@@ -206,7 +206,7 @@ class JSONSettingsHandler(object):
         try:
             settings = json.loads(raw_data, object_pairs_hook=collections.OrderedDict)
         except:
-            raise Exception("Failed to parse settings JSON data for file %s" % self.filepath)
+            raise Exception(f"Failed to parse settings JSON data for file {self.filepath}")
 
         for key in self.settings:
             if "value" not in self.settings[key]:
@@ -215,7 +215,7 @@ class JSONSettingsHandler(object):
                 self.settings[key]["value"] = settings[key]["value"]
                 self.do_key_update(key)
             else:
-                print("Skipping key %s: the key does not exist in %s or has no value" % (key, filepath))
+                print(f"Skipping key {key}: the key does not exist in {filepath} or has no value")
         self.save_settings()
 
     def save_to_file(self, filepath):

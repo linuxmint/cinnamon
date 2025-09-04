@@ -271,7 +271,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         if not self.author:
             name_label.set_markup(f'<b>{name_markup}</b>')
         else:
-            by_author = _("by %s") % self.author
+            by_author = _(f"by {self.author}")
             name_label.set_markup(f'<b>{name_markup}</b><small> {by_author}</small>')
         name_label.props.xalign = 0.0
         desc_box.add(name_label)
@@ -588,7 +588,7 @@ class ManageSpicesPage(SettingsPage):
 
     def enable_extension(self, uuid, name, version_check=True):
         if not version_check:
-            show_message(_("Extension %s is not compatible with your version of Cinnamon.") % uuid, self.window)
+            show_message(_(f"Extension {uuid} is not compatible with your version of Cinnamon."), self.window)
             return
 
         self.enable(uuid)
@@ -608,7 +608,7 @@ class ManageSpicesPage(SettingsPage):
 
     def uninstall_extension(self, *args):
         extension_row = self.list_box.get_selected_row()
-        if not show_prompt(_("Are you sure you want to completely remove %s?") % extension_row.uuid, self.window):
+        if not show_prompt(_(f"Are you sure you want to completely remove {extension_row.uuid}?"), self.window):
             return
 
         self.spices.disable_extension(extension_row.uuid)
@@ -665,7 +665,7 @@ class ManageSpicesPage(SettingsPage):
             enabled = self.spices.get_enabled(row.uuid)
             row.set_enabled(enabled)
             if enabled and not self.spices.get_is_running(row.uuid) and self.collection_type != 'action':
-                row.add_status('error', 'dialog-error-symbolic', _("Something went wrong while loading %s. Please make sure you are using the latest version, and then report the issue to its developer.") % row.uuid)
+                row.add_status('error', 'dialog-error-symbolic', _(f"Something went wrong while loading {row.uuid}. Please make sure you are using the latest version, and then report the issue to its developer."))
             else:
                 row.remove_status('error')
 
@@ -740,7 +740,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         if self.author == "":
             name_label.set_markup(f'<b>{name_markup}</b>')
         else:
-            by_author = _("by %s") % self.author
+            by_author = _(f"by {self.author}")
             name_label.set_markup(f'<b>{name_markup}</b><small> {by_author}</small>')
         name_label.set_hexpand(True)
         name_label.set_halign(Gtk.Align.START)
@@ -1008,7 +1008,7 @@ class DownloadSpicesPage(SettingsPage):
 
     def uninstall(self, *args):
         extension_row = self.list_box.get_selected_row()
-        if not show_prompt(_("Are you sure you want to completely remove %s?") % extension_row.uuid, self.window):
+        if not show_prompt(_(f"Are you sure you want to completely remove {extension_row.uuid}?"), self.window):
             return
 
         self.spices.disable_extension(extension_row.uuid)

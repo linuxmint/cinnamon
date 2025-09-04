@@ -453,7 +453,7 @@ class Spice_Harvester(GObject.Object):
                         try:
                             keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
                         except GLib.Error as e:
-                            print("Could not read action file '%s': %s" % (full_path, e.message))
+                            print(f"Could not read action file '{full_path}': {e.message}")
                             continue
 
                         try:
@@ -469,7 +469,7 @@ class Spice_Harvester(GObject.Object):
                             name = keyfile.get_locale_string('Nemo Action', 'Name')
                             metadata['name'] = name.replace("_", "")
                         except GLib.Error as e:
-                            print("Could not read Name field for action. Skipping '%s': %s" % (full_path, e.message))
+                            print(f"Could not read Name field for action. Skipping '{full_path}': {e.message}")
                             continue
 
                         try:
@@ -682,7 +682,7 @@ class Spice_Harvester(GObject.Object):
         """ downloads and installs the given extension"""
         _callback = None if self.actions else self._install_finished
         job = {'uuid': uuid, 'func': self._install, 'callback': _callback}
-        job['progress_text'] = _("Installing %s") % uuid
+        job['progress_text'] = _(f"Installing {uuid}")
         self._push_job(job)
 
     def _install(self, job):
@@ -710,7 +710,7 @@ class Spice_Harvester(GObject.Object):
                 self.install_from_folder(uuidfolder, uuid, True)
         except Exception as detail:
             if not self.abort_download:
-                self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
+                self.errorMessage(_(f"An error occurred during the installation of {uuid}. Please report this incident to its developer."), str(detail))
             return
 
         try:
@@ -786,7 +786,7 @@ class Spice_Harvester(GObject.Object):
     def uninstall(self, uuid):
         """ uninstalls and removes the given extension"""
         job = {'uuid': uuid, 'func': self._uninstall}
-        job['progress_text'] = _("Uninstalling %s") % uuid
+        job['progress_text'] = _(f"Uninstalling {uuid}")
         self._push_job(job)
 
     def _uninstall(self, job):
@@ -797,8 +797,8 @@ class Spice_Harvester(GObject.Object):
                 if os.path.exists(locale_inst):
                     i19_folders = os.listdir(locale_inst)
                     for i19_folder in i19_folders:
-                        if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', '%s.mo' % uuid)):
-                            os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', '%s.mo' % uuid))
+                        if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', f'{uuid}.mo')):
+                            os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', f'{uuid}.mo'))
                         # Clean-up this locale folder
                         removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 
@@ -820,7 +820,7 @@ class Spice_Harvester(GObject.Object):
                 except FileNotFoundError:
                     pass
         except Exception as error:
-            self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(error))
+            self.errorMessage(_(f"A problem occurred while removing {job['uuid']}."), str(error))
 
     def update_all(self):
         """ applies all available updates"""
@@ -842,7 +842,7 @@ class Spice_Harvester(GObject.Object):
                                    buttons=Gtk.ButtonsType.OK)
         markup = msg
         if detail is not None:
-            markup += _("\n\nDetails:  %s") % (str(detail))
+            markup += _(f"\n\nDetails:  {detail!s}")
         esc = html.escape(markup)
         dialog.set_markup(esc)
         dialog.show_all()

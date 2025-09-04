@@ -27,7 +27,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 home = os.path.expanduser("~")
 settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
-old_settings_dir = '%s/.cinnamon/configs/' % home
+old_settings_dir = f'{home}/.cinnamon/configs/'
 
 translations = {}
 
@@ -67,7 +67,7 @@ def translate(uuid, string):
     #check for a translation for this xlet
     if uuid not in translations:
         try:
-            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").gettext
+            translations[uuid] = gettext.translation(uuid, f"{home}/.local/share/locale").gettext
         except IOError:
             try:
                 translations[uuid] = gettext.translation(uuid, "/usr/share/locale").gettext
@@ -131,15 +131,15 @@ class MainWindow(object):
             proxy.highlightXlet('(ssb)', self.uuid, self.selected_instance["id"], True)
 
     def load_xlet_data (self):
-        self.xlet_dir = "/usr/share/cinnamon/%ss/%s" % (self.type, self.uuid)
+        self.xlet_dir = f"/usr/share/cinnamon/{self.type}s/{self.uuid}"
         if not os.path.exists(self.xlet_dir):
-            self.xlet_dir = "%s/.local/share/cinnamon/%ss/%s" % (home, self.type, self.uuid)
+            self.xlet_dir = f"{home}/.local/share/cinnamon/{self.type}s/{self.uuid}"
 
-        if os.path.exists("%s/metadata.json" % self.xlet_dir):
-            raw_data = open("%s/metadata.json" % self.xlet_dir).read()
+        if os.path.exists(f"{self.xlet_dir}/metadata.json"):
+            raw_data = open(f"{self.xlet_dir}/metadata.json").read()
             self.xlet_meta = json.loads(raw_data)
         else:
-            print("Could not find %s metadata for uuid %s - are you sure it's installed correctly?" % (self.type, self.uuid))
+            print(f"Could not find {self.type} metadata for uuid {self.uuid} - are you sure it's installed correctly?")
             quit()
 
     def build_window(self):
@@ -201,7 +201,7 @@ class MainWindow(object):
         menu.append(separator)
         separator.show()
 
-        reload_option = Gtk.MenuItem(label=_("Reload %s") % self.uuid)
+        reload_option = Gtk.MenuItem(label=_(f"Reload {self.uuid}"))
         menu.append(reload_option)
         reload_option.connect("activate", self.reload_xlet)
         reload_option.show()
@@ -244,7 +244,7 @@ class MainWindow(object):
     def load_instances(self):
         self.instance_info = []
         path = Path(os.path.join(settings_dir, self.uuid))
-        old_path = Path("%s/.cinnamon/configs/%s" % (home, self.uuid))
+        old_path = Path(f"{home}/.cinnamon/configs/{self.uuid}")
         instances = 0
         new_items = os.listdir(path) if path.exists() else []
         old_items = os.listdir(old_path) if old_path.exists() else []
@@ -271,7 +271,7 @@ class MainWindow(object):
                     continue # multi-instance should have file names of the form [instance-id].json
 
                 instance_exists = False
-                enabled = self.gsettings.get_strv('enabled-%ss' % self.type)
+                enabled = self.gsettings.get_strv(f'enabled-{self.type}s')
                 for definition in enabled:
                     if self.uuid in definition and instance_id in definition.split(':'):
                         instance_exists = True
@@ -390,7 +390,7 @@ class MainWindow(object):
 
         # if the first key is not of type 'header' or type 'section' we need to make a new section
         if first_key["type"] not in ("header", "section"):
-            section = page.add_section(_("Settings for %s") % self.uuid)
+            section = page.add_section(_(f"Settings for {self.uuid}"))
 
         for key, item in settings_map.items():
             if key == "__md5__":

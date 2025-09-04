@@ -54,7 +54,7 @@ class SoundBox(Gtk.Box):
         self.set_spacing(5)
 
         label = Gtk.Label()
-        label.set_markup("<b>%s</b>" % title)
+        label.set_markup(f"<b>{title}</b>")
         label.set_xalign(0.0)
         self.add(label)
 
@@ -134,8 +134,8 @@ class Slider(SettingsWidget):
         max_label.set_alignment(0.0, 0.75)
         min_label.set_margin_right(6)
         max_label.set_margin_left(6)
-        min_label.set_markup("<i><small>%s</small></i>" % minLabel)
-        max_label.set_markup("<i><small>%s</small></i>" % maxLabel)
+        min_label.set_markup(f"<i><small>{minLabel}</small></i>")
+        max_label.set_markup(f"<i><small>{maxLabel}</small></i>")
         sizeGroup.add_widget(min_label)
         sizeGroup.add_widget(max_label)
 
@@ -472,7 +472,7 @@ class SoundTest(Gtk.Dialog):
         try:
             util.play_sound_name(sound, position[1])
         except GLib.Error as e:
-            print("Could not play test sound: %s" % e.message)
+            print(f"Could not play test sound: {e.message}")
 
     def setPositionHideState(self):
         map = self.stream.get_channel_map()
@@ -814,7 +814,7 @@ class Module:
             if name is None:
                 name = _("Unknown")
 
-            label = "%s: " % name
+            label = "{name}: "
 
             self.appList[deviceId] = VolumeBar(self.controller.get_vol_max_norm(),
                                          100,

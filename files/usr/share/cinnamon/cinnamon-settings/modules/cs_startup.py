@@ -84,7 +84,7 @@ class Module:
             try:
                 os.makedirs(user_autostart_dir)
             except:
-                print("Could not create autostart dir: %s" % user_autostart_dir)
+                print(f"Could not create autostart dir: {user_autostart_dir}")
 
     def gather_apps(self):
         system_files = []
@@ -129,7 +129,7 @@ class AutostartApp:
         try:
             self.key_file.load_from_file(self.app, KEYFILE_FLAGS)
         except GLib.GError as e:
-            print("Failed to load %s" % self.app, e)
+            print(f"Failed to load {self.app}", e)
             return
 
         self.key_file_loaded = True
@@ -227,7 +227,7 @@ class AutostartApp:
             else:
                 key_file.load_from_file(self.path, KEYFILE_FLAGS)
         except Exception as e:
-            print("Problem creating user keyfile: %s" % e)
+            print(f"Problem creating user keyfile: {e}")
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_TYPE, "Application")
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_EXEC, "/bin/false")
 
@@ -483,7 +483,7 @@ class AutostartBox(Gtk.Box):
             warning = Gtk.InfoBar()
             warning.set_message_type(Gtk.MessageType.ERROR)
 
-            label = Gtk.Label(_("Could not execute '%s'\n%s") % (app.command, e.message))
+            label = Gtk.Label(_(f"Could not execute '{app.command}'\n{e.message}"))
             warning.get_content_area().add(label)
 
             warning.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
@@ -584,7 +584,7 @@ class AutostartBox(Gtk.Box):
             try:
                 shutil.copyfile(desktop_file_dir, user_desktop_file)
             except IOError:
-                print("Failed to copy desktop file %s" % desktop_file_name)
+                print(f"Failed to copy desktop file {desktop_file_name}")
 
             app = AutostartApp(user_desktop_file, user_position=os.path.dirname(user_desktop_file))
             key = get_appname(user_desktop_file)
@@ -622,14 +622,14 @@ class AutostartBox(Gtk.Box):
         else:
             base_path = os.path.join(GLib.get_user_config_dir(), "autostart", suggested_name)
 
-        filename = "%s.desktop" % base_path
+        filename = f"{base_path}.desktop"
         basename = os.path.basename(filename)
 
         i = 1
         max_tries = 100
         while (self.find_app_with_basename(basename) is not None and
                i < max_tries):
-            filename = "%s-%d.desktop" % (base_path, i)
+            filename = f"{base_path}-{i:d}.desktop"
             basename = os.path.basename(filename)
             i += 1
 
@@ -717,7 +717,7 @@ class AutostartRow(Gtk.ListBoxRow):
         self.delay_box.pack_start(self.delay_label, False, False, 0)
         self.delay_time_label = Gtk.Label()
         self.delay_time_label.set_no_show_all(True)
-        self.delay_time_label.set_markup(_("%s s") % delay_time_markup)
+        self.delay_time_label.set_markup(_(f"{delay_time_markup} s"))
         self.delay_time_label.get_style_context().add_class("dim-label")
         self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
@@ -744,7 +744,7 @@ class AutostartRow(Gtk.ListBoxRow):
 
         self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
-        self.delay_time_label.set_markup(_("%s s") % delay_time_markup)
+        self.delay_time_label.set_markup(_(f"{delay_time_markup} s"))
         self.delay_label.set_visible(delay_time_markup != "0")
         self.delay_time_label.set_visible(delay_time_markup != "0")
 
@@ -863,7 +863,7 @@ class AppDialog(Gtk.Dialog):
             if error_msg is not None:
                 msg_box = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,
                                             Gtk.ButtonsType.CANCEL,
-                                            "%s" % error_msg)
+                                            f"{error_msg}")
                 error_msg = None
                 msg_box.run()
                 msg_box.destroy()

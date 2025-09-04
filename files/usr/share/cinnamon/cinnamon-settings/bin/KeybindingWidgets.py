@@ -110,7 +110,7 @@ class ButtonKeybinding(Gtk.TreeView):
         if prop.name == 'accel-string':
             return self.accel_string
         else:
-            raise AttributeError('unknown property %s' % prop.name)
+            raise AttributeError(f'unknown property {prop.name}')
 
     def do_set_property(self, prop, value):
         if prop.name == 'accel-string':
@@ -118,7 +118,7 @@ class ButtonKeybinding(Gtk.TreeView):
                 self.accel_string = value
                 self.keybinding_cell.set_value(value)
         else:
-            raise AttributeError('unknown property %s' % prop.name)
+            raise AttributeError(f'unknown property {prop.name}')
 
     def get_accel_string(self):
         return self.accel_string
@@ -168,7 +168,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         if prop.name == 'accel-string':
             return self.accel_string
         else:
-            raise AttributeError('unknown property %s' % prop.name)
+            raise AttributeError(f'unknown property {prop.name}')
 
     def do_set_property(self, prop, value):
         if prop.name == 'accel-string':
@@ -176,7 +176,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 self.accel_string = value
                 self.update_label()
         else:
-            raise AttributeError('unknown property %s' % prop.name)
+            raise AttributeError(f'unknown property {prop.name}')
 
     def update_label(self):
         text = _("unassigned") if self.default_value else self.text_string

@@ -155,10 +155,10 @@ class Module:
         if self.has_battery:
             header = SettingsWidget()
             label_ac = Gtk.Label()
-            label_ac.set_markup("<b>%s</b>" % _("On A/C power"))
+            label_ac.set_markup(f"<b>{_('On A/C power')}</b>")
             size_group.add_widget(label_ac)
             label_battery = Gtk.Label()
-            label_battery.set_markup("<b>%s</b>" % _("On battery power"))
+            label_battery.set_markup(f"<b>{_('On battery power')}</b>")
             size_group.add_widget(label_battery)
             header.pack_end(label_battery, False, False, 0)
             header.pack_end(label_ac, False, False, 0)
@@ -245,7 +245,7 @@ class Module:
         try:
             brightness = proxy.GetPercentage()
         except GLib.Error as e:
-            print("Power module brightness page not available: %s" % e.message)
+            print(f"Power module brightness page not available: {e.message}")
 
             if self.show_battery_page:
                 self.sidePage.add_widget(self.sidePage.stack)
@@ -284,7 +284,7 @@ class Module:
             try:
                 brightness = proxy.GetPercentage()
             except GLib.Error as e:
-                print("Power module no keyboard backlight: %s" % e.message)
+                print(f"Power module no keyboard backlight: {e.message}")
             else:
                 section = page.add_section(_("Keyboard backlight"))
                 section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
@@ -392,9 +392,9 @@ class Module:
 
             if state == UPowerGlib.DeviceState.DISCHARGING:
                 if percentage < 20:
-                    details = _("Caution low UPS, %s remaining") % time_string
+                    details = _(f"Caution low UPS, {time_string} remaining")
                 else:
-                    details = _("Using UPS power - %s remaining") % time_string
+                    details = _(f"Using UPS power - {time_string} remaining")
             else:
                 details = UPowerGlib.Device.state_to_string(state)
         else:
@@ -408,7 +408,7 @@ class Module:
 
         desc = _("UPS")
         if model != "" or vendor != "":
-            desc = "%s %s" % (vendor, model)
+            desc = f"{vendor} {model}"
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
@@ -427,12 +427,12 @@ class Module:
             time_string = get_timestring(time)
 
             if state == UPowerGlib.DeviceState.CHARGING or state == UPowerGlib.DeviceState.PENDING_CHARGE:
-                details = _("Charging - %s until fully charged") % time_string
+                details = _(f"Charging - {time_string} until fully charged")
             elif state == UPowerGlib.DeviceState.DISCHARGING or state == UPowerGlib.DeviceState.PENDING_DISCHARGE:
                 if percentage < 20:
-                    details = _("Caution low battery, %s remaining") % time_string
+                    details = _(f"Caution low battery, {time_string} remaining")
                 else:
-                    details = _("Using battery power - %s remaining") % time_string
+                    details = _(f"Using battery power - {time_string} remaining")
             else:
                 details = UPowerGlib.Device.state_to_string(state)
         else:
@@ -453,7 +453,7 @@ class Module:
 
         desc = _("Battery")
         if model != "" or vendor != "":
-            desc = "%s %s" % (vendor, model)
+            desc = f"{vendor} {model}"
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
@@ -498,7 +498,7 @@ class Module:
             desc = (_("Battery"))
 
         if model != "" or vendor != "":
-            desc = "%s %s" % (vendor, model)
+            desc = f"{vendor} {model}"
 
         widget = self.create_battery_row(device_id, icon_name, desc, percentage, battery_level)
         return widget
@@ -573,7 +573,7 @@ class Module:
         self.aliases[device_id] = entry.get_text()
         aliases = []
         for alias in self.aliases:
-            aliases.append("%s:=%s" % (alias, self.aliases[alias]))
+            aliases.append(f"{alias}:={self.aliases[alias]}")
         self.settings.set_strv("device-aliases", aliases)
 
 

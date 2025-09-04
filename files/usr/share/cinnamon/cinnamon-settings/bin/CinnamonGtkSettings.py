@@ -95,7 +95,7 @@ class GtkCssEditor:
 
         self.selector = selector
 
-        self.rule_separator = "/***** %s - cinnamon-settings-generated - do not edit *****/" % self.selector
+        self.rule_separator = f"/***** {self.selector} - cinnamon-settings-generated - do not edit *****/"
         rules = []
 
         file = Gio.File.new_for_path(self._path)
@@ -368,7 +368,7 @@ class CssRange(Range):
         def apply(self):
             editor = get_css_editor()
             for name in self.decl_names:
-                value_as_str = "%d%s" % (int(self.content_widget.get_value()), self.units)
+                value_as_str = f"{int(self.content_widget.get_value()):d}{self.units}"
                 editor.set_declaration(self.selector, name, value_as_str)
 
             editor.save_stylesheet()
@@ -429,7 +429,7 @@ class Gtk2ScrollbarSizeEditor:
             if e.code == Gio.IOErrorEnum.NOT_FOUND:
                 pass
             else:
-                print("Could not load .gtkrc-2.0 file: %s" % e.message)
+                print(f"Could not load .gtkrc-2.0 file: {e.message}")
 
         self.parse_contents()
 
@@ -446,7 +446,7 @@ class Gtk2ScrollbarSizeEditor:
         c = self._contents
 
         if size > 0:
-            style_prop = "GtkScrollbar::slider-width = %d" % size
+            style_prop = f"GtkScrollbar::slider-width = {size:d}"
             final_contents = c[:self.style_prop_start] + style_prop + c[self.style_prop_start:]
         else:
             final_contents = self._contents
@@ -463,7 +463,7 @@ class Gtk2ScrollbarSizeEditor:
                                         0,
                                         None)
         except GLib.Error as e:
-            print("Could not save .gtkrc-2.0 file: %s" % e.message)
+            print(f"Could not save .gtkrc-2.0 file: {e.message}")
 
         self.timeout_id = 0
         return False

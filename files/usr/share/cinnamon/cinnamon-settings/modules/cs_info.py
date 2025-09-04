@@ -120,7 +120,7 @@ def createSystemInfos():
     infos.append((_("Linux Kernel"), platform.release()))
     infos.append((_("Processor"), processorName))
     if memunit == "kB":
-        infos.append((_("Memory"), '%.1f %s' % ((float(memsize)/(1024*1024)), _("GiB"))))
+        infos.append((_("Memory"), f'{float(memsize)/(1024*1024):.1f} {_("GiB")}'))
     else:
         infos.append((_("Memory"), procInfos['mem_total']))
 
@@ -130,7 +130,7 @@ def createSystemInfos():
     else:
         diskText = _("Hard Drive")
     try:
-        infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000*1000)), _("GB"))))
+        infos.append((diskText, f'{diskSize / (1000*1000*1000):.1f} {_("GB")}'))
     except:
         infos.append((diskText, diskSize))
     cards = getGraphicsInfos()
@@ -250,7 +250,7 @@ class Module:
             subproc.wait_check_async(None, self.on_subprocess_complete, spinner)
             spinner.start()
         except GLib.Error as e:
-            print("upload-system-info failed to run: %s" % e.message)
+            print(f"upload-system-info failed to run: {e.message}")
 
     def on_subprocess_complete(self, subproc, result, spinner):
         spinner.stop()
@@ -258,4 +258,4 @@ class Module:
         try:
             success = subproc.wait_check_finish(result)
         except GLib.Error as e:
-            print("upload-system-info failed: %s" % e.message)
+            print(f"upload-system-info failed: {e.message}")

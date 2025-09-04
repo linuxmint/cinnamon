@@ -204,7 +204,7 @@ class ColumnBox(Gtk.VBox):
         super(ColumnBox, self).__init__()
 
         label = Gtk.Label.new("")
-        label.set_markup('<b>%s\n</b>' % title)
+        label.set_markup(f'<b>{title}\n</b>')
         label.set_alignment(0.5, 0.5)
 
         self.set_homogeneous(False)
@@ -259,7 +259,7 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
         info = button.get_app_info()
 
         if info:
-            print("%s: " % info.get_name())
+            print("{info.get_name()}: ")
 
             supported_mimetypes = info.get_supported_types()
             hardcoded_mimetypes = None
@@ -273,24 +273,24 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
                 for t in sorted(supported_mimetypes):
                     if t.startswith(self.generic_content_type):
                         if info.set_as_default_for_type (t):
-                            print("  Set as default for supported %s" % t)
+                            print(f"  Set as default for supported {t}")
                             set_mimes.append(t)
                         else:
-                            print("  Failed to set as default application for '%s'" % t)
+                            print(f"  Failed to set as default application for '{t}'")
 
             # Also assign mimes hardcoded in the mimetypes hashtable
             if hardcoded_mimetypes is not None:
                 for t in sorted(hardcoded_mimetypes):
                     if t not in set_mimes:
                         if info.set_as_default_for_type (t):
-                            print("  Set as default for hardcoded %s" % t)
+                            print(f"  Set as default for hardcoded {t}")
                         else:
-                            print("  Failed to set as default application for '%s'" % t)
+                            print(f"  Failed to set as default application for '{t}'")
 
             #Web
             if self.content_type == "x-scheme-handler/http":
                 if not info.set_as_default_for_type("x-scheme-handler/https"):
-                    print("  Failed to set '%s' as the default application for '%s'" % (info.get_name(), "x-scheme-handler/https"))
+                    print(f"  Failed to set '{info.get_name()}' as the default application for 'x-scheme-handler/https'")
 
 class DefaultTerminalButton(Gtk.AppChooserButton):
     #TODO: See if we can get this to change the x-terminal-emulator default to allow it to be a more global change rather then just cinnamon/nemo
@@ -528,7 +528,7 @@ class OtherTypeDialog(Gtk.Dialog):
                 break
 
         if description is None:
-            print("Content type '%s' is missing from the info panel" % content_type)
+            print(f"Content type '{content_type}' is missing from the info panel")
             return Gio.content_type_get_description(content_type)
 
         return description
@@ -635,7 +635,7 @@ class Module:
                         widget = SettingsWidget()
                         button = DefaultTerminalButton()
                         label = MnemonicLabel(_("Terminal"), button)
-                        entry_label = Gtk.Label(label="<i>%s</i>" % _("Arguments"), margin_end=4, use_markup=True)
+                        entry_label = Gtk.Label(label=f"<i>{_('Arguments')}</i>", margin_end=4, use_markup=True)
                         entry_label.get_style_context().add_class("dim-label")
                         entry = TerminalExecArgEntry()
 
@@ -659,7 +659,7 @@ class Module:
             self.sidePage.stack.add_titled(page, "removable", _("Removable media"))
 
             switch = InvertedSwitch("", MEDIA_HANDLING_SCHEMA, PREF_MEDIA_AUTORUN_NEVER)
-            switch.label.set_markup("<b>%s</b>" % _("Prompt or start programs on media insertion"))
+            switch.label.set_markup(f"<b>{_('Prompt or start programs on media insertion')}</b>")
             switch.fill_row()
             page.add(switch)
 
