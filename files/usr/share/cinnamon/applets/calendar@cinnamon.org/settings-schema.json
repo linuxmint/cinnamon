@@ -42,18 +42,26 @@
         "type": "section",
         "description": "Time Applet"
     },
+    "use-automatic-format": {
+        "type": "switch",
+        "default": true,
+        "description": "Automatic (Region)",
+        "tooltip": "Use system regional format (locale %x/%X). Hides preset and custom options."
+    },
     "use-custom-format" : {
         "type" : "switch",
         "default" : false,
         "description": "Use custom date format",
+        "dependency": "!use-automatic-format",
         "tooltip": "Check this to define a custom format for the date in the calendar applet. When unchecked, predefined OS-style formats are used."
     },
     "os-format-type": {
         "type": "combobox",
-        "default": "Linux Mint",
+        "default": "Automatic (Region)",
         "description": "Date format style",
-        "dependency": "!use-custom-format",
+        "dependency": "!use-automatic-format & !use-custom-format",
         "options": {
+            "Automatic (Region)": "AUTO",
             "Linux Mint Style (Mon Jan 15 14:30)": "Linux Mint",
             "macOS Style (Mon Jan 15 14:30)": "macOS",
             "Windows 10 Style (14:30 Mon Jan 15)": "Windows 10",
@@ -68,21 +76,21 @@
         "type" : "switch",
         "default" : true,
         "description": "Use 24-hour time format",
-        "dependency": "!use-custom-format",
+        "dependency": "!use-automatic-format & !use-custom-format",
         "tooltip": "Use 24-hour time format instead of 12-hour AM/PM format."
     },
     "show-seconds" : {
         "type" : "switch",
         "default" : false,
         "description": "Show seconds",
-        "dependency": "!use-custom-format",
+        "dependency": "!use-automatic-format & !use-custom-format",
         "tooltip": "Show seconds in the time display."
     },
     "date-separator": {
         "type": "combobox",
         "default": "/",
         "description": "Date separator",
-        "dependency": "!use-custom-format",
+        "dependency": "!use-automatic-format & !use-custom-format",
         "options": {
             "Slash (/)": "/",
             "Dash (-)": "-",
@@ -94,14 +102,14 @@
         "type" : "switch",
         "default" : false,
         "description" : "Use custom time format",
-        "dependency" : "!use-custom-format",
+        "dependency" : "!use-automatic-format & !use-custom-format",
         "tooltip" : "Check this to define a custom format for the time display. When unchecked, predefined OS-style formats are used."
     },
     "time-format" : {
         "type" : "entry",
         "default" : "%H:%M",
         "description" : "Custom time format",
-        "dependency" : "use-custom-time-format",
+        "dependency" : "!use-automatic-format & use-custom-time-format",
         "tooltip" : "Enter your custom time format. Use strftime format codes."
     },
 	    "applet-format" : {
@@ -111,18 +119,19 @@
 	        "dependency" : "use-custom-format",
 	        "tooltip" : "Date format displayed in the calendar applet."
 	    },
-	    "custom-format" : {
-	        "type" : "entry",
-	        "default" : "%A, %B %e, %H:%M",
-	        "description" : "Custom format",
+	    "applet-format-preview" : {
+	        "type" : "label",
+	        "description" : "Preview: %a %b %d %H:%M",
 	        "dependency" : "use-custom-format",
-	        "tooltip" : "Enter your custom format. Use strftime format codes."
+	        "tooltip" : "Live preview of your custom format"
 	    },
     "format-help-visible" : {
         "type" : "switch",
         "default" : false,
         "description" : "Show format reference",
-        "dependency" : "use-custom-format",
+        "dependency" : "!use-automatic-format & use-custom-format",
+        "dependency" : "!use-automatic-format & use-custom-format",
+        "dependency" : "!use-automatic-format & use-custom-format",
         "tooltip" : "Toggle visibility of format reference below"
     },
     "format-help-header" : {
@@ -193,12 +202,75 @@
         "description" : "Tooltip format",
         "tooltip" : "Date format displayed in tooltip when hovering over applet."
     },
+    "tooltip-format-preview" : {
+        "type" : "label",
+        "description" : "Preview: %A, %B %e, %Y",
+        "tooltip" : "Live preview of your tooltip format"
+    },
     "tooltip-format-help-visible" : {
         "type" : "switch",
         "default" : false,
         "description" : "Show tooltip format reference",
         "tooltip" : "Toggle visibility of tooltip format reference below"
     },
-    
+    "tooltip-format-help-header" : {
+        "type" : "header",
+        "description" : "Tooltip Format Reference",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-columns" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<b>Date codes</b>",
+        "right-description" : "<b>Time codes</b>",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row1" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%Y</tt> → 2024 (Year)",
+        "right-description" : "<tt>%H</tt> → 13 (Hour 24h)",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row2" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%m</tt> → 01 (Month number)",
+        "right-description" : "<tt>%I</tt> → 01 (Hour 12h)",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row3" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%d</tt> → 15 (Day of month)",
+        "right-description" : "<tt>%M</tt> → 30 (Minutes)",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row4" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%A</tt> → Monday (Full weekday)",
+        "right-description" : "<tt>%S</tt> → 45 (Seconds)",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row5" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%a</tt> → Mon (Short weekday)",
+        "right-description" : "<tt>%p</tt> → AM/PM",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row6" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%B</tt> → January (Full month)",
+        "right-description" : "<tt>%n</tt> → New line",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-row7" : {
+        "type" : "twocolumnlabel",
+        "left-description" : "<tt>%b</tt> → Jan (Short month)",
+        "right-description" : "",
+        "dependency" : "tooltip-format-help-visible"
+    },
+    "tooltip-format-help-footer" : {
+        "type" : "label",
+        "description" : "Type 'man strftime' in terminal for complete reference",
+        "dependency" : "tooltip-format-help-visible"
+    }
+
 
 }

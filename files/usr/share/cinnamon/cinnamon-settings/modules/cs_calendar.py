@@ -83,13 +83,18 @@ class Module:
             # Sekcja 2: Formatowanie appletu (główny przełącznik + opcje)
             applet_format = calendar_page.add_section(_("Time Applet"))
             
-            # Główny przełącznik
+            # Główny przełącznik: Automatic (Region)
+            use_auto_switch = GSettingsSwitch(_("Automatic (Region)"), "org.cinnamon.applets.calendar", "use-automatic-format")
+            applet_format.add_row(use_auto_switch)
+
+            # Drugi przełącznik: Custom, widoczny tylko gdy Automatic=off
             use_custom_switch = GSettingsSwitch(_("Use custom date format"), "org.cinnamon.applets.calendar", "use-custom-format")
             applet_format.add_row(use_custom_switch)
             
             # === OPCJE SYSTEMOWE (widoczne gdy use-custom-format = false) ===
             # GSettingsComboBox expects [value, label]
             format_style_options = [
+                ("AUTO", _("Automatic (Region)")),
                 ("Linux Mint", _("Linux Mint Style (Mon Jan 15 14:30)")),
                 ("macOS", _("macOS Style (Mon Jan 15 14:30)")), 
                 ("Windows 10", _("Windows 10 Style (14:30 Mon Jan 15)")),
@@ -118,6 +123,21 @@ class Module:
             ]
             self.separator_combo = GSettingsComboBox(_("Date separator"), "org.cinnamon.applets.calendar", "date-separator", separator_options)
             applet_format.add_reveal_row(self.separator_combo, revealer=os_revealer)
+
+            # Ukrywanie separatora, gdy wybór to Automatic (Region)
+            def update_os_revealer_visibility(*args):
+                try:
+                    current = self._calendar_settings.get_string("os-format-type")
+                except Exception:
+                    current = ""
+                # Separator i inne predefiniowane opcje mają sens tylko gdy nie jest AUTO
+                self.separator_combo.set_visible(current != "AUTO")
+            try:
+                self._calendar_settings = Gio.Settings(schema_id="org.cinnamon.applets.calendar")
+                self._calendar_settings.connect("changed::os-format-type", lambda *a: update_os_revealer_visibility())
+                update_os_revealer_visibility()
+            except Exception:
+                pass
             
             # === OPCJE CUSTOM (pokazuj gdy use-custom-format = true) ===
             custom_revealer = SettingsRevealer()
@@ -202,14 +222,21 @@ class Module:
             
             # Kontrola widoczności opcji z płynnymi animacjami
             def update_visibility():
+                is_auto = use_auto_switch.content_widget.get_active()
                 is_custom = use_custom_switch.content_widget.get_active()
                 is_help_visible = self.help_switch.content_widget.get_active()
-                # Pokaż/ukryj całe bloki opcji
-                os_revealer.set_reveal_child(not is_custom)
-                custom_revealer.set_reveal_child(is_custom)
-                help_revealer.set_reveal_child(is_custom and is_help_visible)
+                # Automatic: ukryj wszystko poza opisem/preview
+                if is_auto:
+                    os_revealer.set_reveal_child(False)
+                    custom_revealer.set_reveal_child(False)
+                    help_revealer.set_reveal_child(False)
+                else:
+                    os_revealer.set_reveal_child(not is_custom)
+                    custom_revealer.set_reveal_child(is_custom)
+                    help_revealer.set_reveal_child(is_custom and is_help_visible)
             
             # Połącz revealery z przełącznikami
+            use_auto_switch.content_widget.connect("notify::active", lambda *args: update_visibility())
             use_custom_switch.content_widget.connect("notify::active", lambda *args: update_visibility())
             self.help_switch.content_widget.connect("notify::active", lambda *args: help_revealer.set_reveal_child(self.help_switch.content_widget.get_active()))
             

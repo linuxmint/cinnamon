@@ -113,6 +113,42 @@ function generateFormat(osType, use24h, showSeconds, dateSeparator, useCustomTim
         debugLog("Mapped full description to short key: '" + osType + "'");
     }
     
+    // Auto (Region): build from locale patterns directly
+    if (osType === 'AUTO') {
+        try {
+            // Localized date pattern (%x) and localized time pattern (%X) often return proper separators/order
+            // But we still honor showSeconds and 12/24h switches
+            let localizedDate = "%x"; // will be interpreted by WallClock
+
+            // Base time according to 12/24h
+            let baseTime = use24h ? "%H:%M" : "%I:%M %p";
+            if (showSeconds) {
+                baseTime = use24h ? "%H:%M:%S" : "%I:%M:%S %p";
+            }
+
+            // Compose: prefer "time then date" similar to Mint default
+            // We can't pre-resolve %x here; WallClock.get_clock_for_format will format at runtime.
+            let panelFormat = baseTime + " %x";
+
+            // If user provided custom time format within presets, override time part
+            if (useCustomTime && customTimeFormat && customTimeFormat.length > 0) {
+                let t = customTimeFormat;
+                if (showSeconds && !/%S/.test(t)) {
+                    // try to inject seconds if missing and requested
+                    t = t.replace(/%H:%M/, "%H:%M:%S").replace(/%I:%M( %p)?/, "%I:%M:%S %p");
+                }
+                panelFormat = t + " %x";
+            }
+
+            // dateSeparator is ignored in AUTO, because %x provides localized separator/order
+            debugLog("Generated AUTO panel format: " + panelFormat);
+            return panelFormat;
+        } catch (e) {
+            debugLog("AUTO region format failed, falling back: " + e.message);
+            // fallback continues below to OS presets
+        }
+    }
+
     if (!OS_BASE_FORMATS[osType]) {
         debugLog("OS type '" + osType + "' not found in OS_BASE_FORMATS, using fallback 'Linux Mint'");
         osType = "Linux Mint"; // fallback
@@ -270,6 +306,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             bridgeAppletSetting('show-weekday-headers');
             bridgeAppletSetting('show-events');
             // Formatting-related keys (so both settings windows stay in sync)
+            bridgeAppletSetting('use-automatic-format');
             bridgeAppletSetting('use-custom-format');
             bridgeAppletSetting('os-format-type');
             bridgeAppletSetting('use-24h-format');
@@ -287,7 +324,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             
             // Listen for changes in GSettings (from system settings)
             this._fastKeys = new Set([
-                'show-seconds', 'use-24h-format', 'use-custom-format', 'os-format-type',
+                'show-seconds', 'use-24h-format', 'use-automatic-format', 'use-custom-format', 'os-format-type',
                 'date-separator', 'applet-format', 'use-custom-time-format', 'time-format', 'tooltip-format'
             ]);
             this._gsettingsChangedId = this.gsettings.connect("changed", this._onGSettingsChanged.bind(this));
@@ -322,6 +359,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
                                     break;
                                 case 'use-24h-format':
                                     this.use_24h_format = this.gsettings.get_boolean('use-24h-format');
+                                    break;
+                                case 'use-automatic-format':
+                                    this.use_automatic_format = this.gsettings.get_boolean('use-automatic-format');
                                     break;
                                 case 'use-custom-format':
                                     this.use_custom_format = this.gsettings.get_boolean('use-custom-format');
@@ -358,6 +398,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             };
             connectFast('show-seconds');
             connectFast('use-24h-format');
+            connectFast('use-automatic-format');
             connectFast('use-custom-format');
             connectFast('os-format-type');
             connectFast('date-separator');
@@ -480,6 +521,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this.show_events = this.gsettings.get_boolean("show-events");
         this.show_week_numbers = this.gsettings.get_boolean("show-week-numbers");
         this.show_weekday_headers = this.gsettings.get_boolean("show-weekday-headers");
+        this.use_automatic_format = this.gsettings.get_boolean("use-automatic-format");
         this.use_custom_format = this.gsettings.get_boolean("use-custom-format");
         this.os_format_type = this.gsettings.get_string("os-format-type");
         this.use_24h_format = this.gsettings.get_boolean("use-24h-format");
@@ -505,6 +547,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this.gsettings.bind("show-events", this, "show_events", Gio.SettingsBindFlags.DEFAULT);
         this.gsettings.bind("show-week-numbers", this, "show_week_numbers", Gio.SettingsBindFlags.DEFAULT);
         this.gsettings.bind("show-weekday-headers", this, "show_weekday_headers", Gio.SettingsBindFlags.DEFAULT);
+        this.gsettings.bind("use-automatic-format", this, "use_automatic_format", Gio.SettingsBindFlags.DEFAULT);
         this.gsettings.bind("use-custom-format", this, "use_custom_format", Gio.SettingsBindFlags.DEFAULT);
         this.gsettings.bind("os-format-type", this, "os_format_type", Gio.SettingsBindFlags.DEFAULT);
         this.gsettings.bind("use-24h-format", this, "use_24h_format", Gio.SettingsBindFlags.DEFAULT);
@@ -527,6 +570,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         this.connect("notify::show-events", this._onSettingsChanged.bind(this));
         this.connect("notify::show-week-numbers", this._onSettingsChanged.bind(this));
         this.connect("notify::show-weekday-headers", this._onSettingsChanged.bind(this));
+        this.connect("notify::use-automatic-format", this._onSettingsChanged.bind(this));
         this.connect("notify::use-custom-format", this._onSettingsChanged.bind(this));
         this.connect("notify::os-format-type", this._onSettingsChanged.bind(this));
         this.connect("notify::use-24h-format", this._onSettingsChanged.bind(this));
@@ -730,9 +774,12 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             // Use custom format directly
             this.format_string = this.applet_format;
         } else {
+            // When Automatic switch is on, force AUTO regardless of current combobox value
+            const isAutomatic = !!this.use_automatic_format;
+            const osType = isAutomatic ? 'AUTO' : this.os_format_type;
             // Generate format based on OS type and preferences
             this.format_string = generateFormat(
-                this.os_format_type,
+                osType,
                 this.use_24h_format,
                 this.show_seconds,
                 this.date_separator,
@@ -863,6 +910,18 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     _initContextMenu() {
         this.menu = new Applet.AppletPopupMenu(this, this.orientation);
         this.menuManager.addMenu(this.menu);
+
+        // Add "Change Date & Time" option to context menu
+        const datetime_item = new PopupMenu.PopupIconMenuItem(_("Change Date & Time"), "appointment-soon", St.IconType.SYMBOLIC);
+        datetime_item.connect("activate", () => {
+            try {
+                Util.spawnCommandLine("cinnamon-settings calendar");
+                debugLog("Opened date & time settings");
+            } catch (e) {
+                debugLog("Failed to open date & time settings: " + e.message);
+            }
+        });
+        this._applet_context_menu.addMenuItem(datetime_item);
     }
 
     _resetCalendar() {

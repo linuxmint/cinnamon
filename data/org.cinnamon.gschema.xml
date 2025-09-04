@@ -1020,6 +1020,14 @@
   <schema id="org.cinnamon.applets.calendar" path="/org/cinnamon/applets/calendar/"
         gettext-domain="@GETTEXT_PACKAGE@">
     
+    <key name="use-automatic-format" type="b">
+      <default>true</default>
+      <summary>Use system regional date/time format</summary>
+      <description>
+        When enabled, the applet uses the system locale for date (%x) and time (%X or 12/24h preference), hiding preset and custom options.
+      </description>
+    </key>
+    
     <key name="os-format-type" type="s">
       <default>"Linux Mint"</default>
       <summary>Operating system format style</summary>
