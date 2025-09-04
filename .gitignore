@@ -12,3 +12,8 @@ debian/files
 debian/tmp/
 obj-x86_64-linux-gnu
 *.pyc
+
+# Build artifacts and installation scripts
+data/gschemas.compiled
+install-cinnamon-system.sh
+restore-cinnamon-system.sh
