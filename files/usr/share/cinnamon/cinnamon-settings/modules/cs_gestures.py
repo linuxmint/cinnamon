@@ -203,8 +203,7 @@ class Module:
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
             for fingers in range(2, 5):
-                section = page.add_section(_(f"Pinch with {fingers} fingers"))
-
+                section = page.add_section(_("Pinch with %d fingers") % fingers)
                 for key in keys:
                     label = self.get_key_label(key, "pinch", fingers)
 
@@ -327,7 +326,7 @@ class Module:
         if gtype == "tap":
             if int(parts[1]) != fingers:
                 return None
-            return _(f"Tap with {fingers:d} fingers")
+            return _("Tap with %d fingers") % fingers
 
         return None
 

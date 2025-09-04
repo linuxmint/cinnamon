@@ -682,7 +682,7 @@ class Spice_Harvester(GObject.Object):
         """ downloads and installs the given extension"""
         _callback = None if self.actions else self._install_finished
         job = {'uuid': uuid, 'func': self._install, 'callback': _callback}
-        job['progress_text'] = _(f"Installing {uuid}")
+        job['progress_text'] = _("Installing %s") % uuid
         self._push_job(job)
 
     def _install(self, job):
@@ -710,7 +710,7 @@ class Spice_Harvester(GObject.Object):
                 self.install_from_folder(uuidfolder, uuid, True)
         except Exception as detail:
             if not self.abort_download:
-                self.errorMessage(_(f"An error occurred during the installation of {uuid}. Please report this incident to its developer."), str(detail))
+                self.errorMessage(_("An error occurred during the installation of %s. Please report this incident to its developer.") % uuid, str(detail))
             return
 
         try:
@@ -786,7 +786,7 @@ class Spice_Harvester(GObject.Object):
     def uninstall(self, uuid):
         """ uninstalls and removes the given extension"""
         job = {'uuid': uuid, 'func': self._uninstall}
-        job['progress_text'] = _(f"Uninstalling {uuid}")
+        job['progress_text'] = _("Uninstalling %s") % uuid
         self._push_job(job)
 
     def _uninstall(self, job):
@@ -820,7 +820,7 @@ class Spice_Harvester(GObject.Object):
                 except FileNotFoundError:
                     pass
         except Exception as error:
-            self.errorMessage(_(f"A problem occurred while removing {job['uuid']}."), str(error))
+            self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(error))
 
     def update_all(self):
         """ applies all available updates"""
@@ -842,7 +842,7 @@ class Spice_Harvester(GObject.Object):
                                    buttons=Gtk.ButtonsType.OK)
         markup = msg
         if detail is not None:
-            markup += _(f"\n\nDetails:  {detail!s}")
+            markup += _("\n\nDetails:  %s") % (str(detail))
         esc = html.escape(markup)
         dialog.set_markup(esc)
         dialog.show_all()

@@ -172,7 +172,7 @@ class GSettingsDependencySwitch(SettingsWidget):
             pkg_string += pkg
 
         self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                       _(f"Please install: {pkg_string}"),
+                                                       _("Please install: %s") % pkg_string,
                                                        binfiles,
                                                        self.switch)
         self.content_widget.add(self.dep_button)

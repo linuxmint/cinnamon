@@ -27,7 +27,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 home = os.path.expanduser("~")
 settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
-old_settings_dir = f'{home}/.cinnamon/configs/'
+old_settings_dir = '%s/.cinnamon/configs/' % home
 
 translations = {}
 
@@ -67,7 +67,7 @@ def translate(uuid, string):
     #check for a translation for this xlet
     if uuid not in translations:
         try:
-            translations[uuid] = gettext.translation(uuid, f"{home}/.local/share/locale").gettext
+            translations[uuid] = gettext.translation(uuid, home + "/.local/share/locale").gettext
         except IOError:
             try:
                 translations[uuid] = gettext.translation(uuid, "/usr/share/locale").gettext
@@ -201,7 +201,7 @@ class MainWindow(object):
         menu.append(separator)
         separator.show()
 
-        reload_option = Gtk.MenuItem(label=_(f"Reload {self.uuid}"))
+        reload_option = Gtk.MenuItem(label=_("Reload %s") % self.uuid)
         menu.append(reload_option)
         reload_option.connect("activate", self.reload_xlet)
         reload_option.show()
@@ -390,7 +390,7 @@ class MainWindow(object):
 
         # if the first key is not of type 'header' or type 'section' we need to make a new section
         if first_key["type"] not in ("header", "section"):
-            section = page.add_section(_(f"Settings for {self.uuid}"))
+            section = page.add_section(_("Settings for %s") % self.uuid)
 
         for key, item in settings_map.items():
             if key == "__md5__":

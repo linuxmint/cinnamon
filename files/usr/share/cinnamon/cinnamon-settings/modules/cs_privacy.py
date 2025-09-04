@@ -43,7 +43,7 @@ class Module:
             self.sidePage.add_widget(page)
 
             switch = GSettingsSwitch("", PRIVACY_SCHEMA, GTK_RECENT_ENABLE_KEY)
-            switch.label.set_markup(f"<b>{_('Remember recently accessed files')}</b>")
+            switch.label.set_markup("<b>%s</b>" % _("Remember recently accessed files"))
             switch.fill_row()
             page.add(switch)
 

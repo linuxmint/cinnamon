@@ -635,7 +635,7 @@ class Module:
                         widget = SettingsWidget()
                         button = DefaultTerminalButton()
                         label = MnemonicLabel(_("Terminal"), button)
-                        entry_label = Gtk.Label(label=f"<i>{_('Arguments')}</i>", margin_end=4, use_markup=True)
+                        entry_label = Gtk.Label(label="<i>%s</i>" % _("Arguments"), margin_end=4, use_markup=True)
                         entry_label.get_style_context().add_class("dim-label")
                         entry = TerminalExecArgEntry()
 
@@ -659,7 +659,7 @@ class Module:
             self.sidePage.stack.add_titled(page, "removable", _("Removable media"))
 
             switch = InvertedSwitch("", MEDIA_HANDLING_SCHEMA, PREF_MEDIA_AUTORUN_NEVER)
-            switch.label.set_markup(f"<b>{_('Prompt or start programs on media insertion')}</b>")
+            switch.label.set_markup("<b>%s</b>" % _("Prompt or start programs on media insertion"))
             switch.fill_row()
             page.add(switch)
 

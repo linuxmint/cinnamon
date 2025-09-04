@@ -483,7 +483,7 @@ class AutostartBox(Gtk.Box):
             warning = Gtk.InfoBar()
             warning.set_message_type(Gtk.MessageType.ERROR)
 
-            label = Gtk.Label(_(f"Could not execute '{app.command}'\n{e.message}"))
+            label = Gtk.Label(_("Could not execute '%s'\n%s") % (app.command, e.message))
             warning.get_content_area().add(label)
 
             warning.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
@@ -717,7 +717,7 @@ class AutostartRow(Gtk.ListBoxRow):
         self.delay_box.pack_start(self.delay_label, False, False, 0)
         self.delay_time_label = Gtk.Label()
         self.delay_time_label.set_no_show_all(True)
-        self.delay_time_label.set_markup(_(f"{delay_time_markup} s"))
+        self.delay_time_label.set_markup(_("%s s") % delay_time_markup)
         self.delay_time_label.get_style_context().add_class("dim-label")
         self.delay_box.pack_start(self.delay_time_label, False, False, 0)
         grid.attach_next_to(self.delay_box, self.desc_box, Gtk.PositionType.RIGHT, 1, 1)
@@ -744,7 +744,7 @@ class AutostartRow(Gtk.ListBoxRow):
 
         self.name_label.set_markup("<b>{}</b>".format(name_markup))
         self.comment_label.set_markup("<small>{}</small>".format(comment_markup))
-        self.delay_time_label.set_markup(_(f"{delay_time_markup} s"))
+        self.delay_time_label.set_markup(_("%s s") % delay_time_markup)
         self.delay_label.set_visible(delay_time_markup != "0")
         self.delay_time_label.set_visible(delay_time_markup != "0")
 

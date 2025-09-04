@@ -120,7 +120,7 @@ def createSystemInfos():
     infos.append((_("Linux Kernel"), platform.release()))
     infos.append((_("Processor"), processorName))
     if memunit == "kB":
-        infos.append((_("Memory"), f'{float(memsize)/(1024*1024):.1f} {_("GiB")}'))
+        infos.append((_("Memory"), '%.1f %s' % ((float(memsize)/(1024*1024)), _("GiB"))))
     else:
         infos.append((_("Memory"), procInfos['mem_total']))
 
@@ -130,7 +130,7 @@ def createSystemInfos():
     else:
         diskText = _("Hard Drive")
     try:
-        infos.append((diskText, f'{diskSize / (1000*1000*1000):.1f} {_("GB")}'))
+        infos.append((diskText, '%.1f %s' % ((diskSize / (1000*1000*1000)), _("GB"))))
     except:
         infos.append((diskText, diskSize))
     cards = getGraphicsInfos()

@@ -155,10 +155,10 @@ class Module:
         if self.has_battery:
             header = SettingsWidget()
             label_ac = Gtk.Label()
-            label_ac.set_markup(f"<b>{_('On A/C power')}</b>")
+            label_ac.set_markup("<b>%s</b>" % _("On A/C power"))
             size_group.add_widget(label_ac)
             label_battery = Gtk.Label()
-            label_battery.set_markup(f"<b>{_('On battery power')}</b>")
+            label_battery.set_markup("<b>%s</b>" % _("On battery power"))
             size_group.add_widget(label_battery)
             header.pack_end(label_battery, False, False, 0)
             header.pack_end(label_ac, False, False, 0)
@@ -392,9 +392,9 @@ class Module:
 
             if state == UPowerGlib.DeviceState.DISCHARGING:
                 if percentage < 20:
-                    details = _(f"Caution low UPS, {time_string} remaining")
+                    details = _("Caution low UPS, %s remaining") % time_string
                 else:
-                    details = _(f"Using UPS power - {time_string} remaining")
+                    details = _("Using UPS power - %s remaining") % time_string
             else:
                 details = UPowerGlib.Device.state_to_string(state)
         else:
@@ -427,12 +427,12 @@ class Module:
             time_string = get_timestring(time)
 
             if state == UPowerGlib.DeviceState.CHARGING or state == UPowerGlib.DeviceState.PENDING_CHARGE:
-                details = _(f"Charging - {time_string} until fully charged")
+                details = _("Charging - %s until fully charged") % time_string
             elif state == UPowerGlib.DeviceState.DISCHARGING or state == UPowerGlib.DeviceState.PENDING_DISCHARGE:
                 if percentage < 20:
-                    details = _(f"Caution low battery, {time_string} remaining")
+                    details = _("Caution low battery, %s remaining") % time_string
                 else:
-                    details = _(f"Using battery power - {time_string} remaining")
+                    details = _("Using battery power - %s remaining") % time_string
             else:
                 details = UPowerGlib.Device.state_to_string(state)
         else:
