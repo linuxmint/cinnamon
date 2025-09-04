@@ -197,13 +197,22 @@ class Module:
                 is_help_visible = self.help_switch.content_widget.get_active()
                 # Automatic: ukryj wszystko poza opisem/preview
                 if is_auto:
-                    os_revealer.set_reveal_child(False)
+                    # Ukryj wszystkie opcje systemu operacyjnego
+                    os_revealer_format.set_reveal_child(False)
+                    os_revealer_time.set_reveal_child(False)
+                    os_revealer_seconds.set_reveal_child(False)
+                    os_revealer_separator.set_reveal_child(False)
                     custom_revealer_entry.set_reveal_child(False)
                     custom_revealer_preview.set_reveal_child(False)
                     custom_revealer_help.set_reveal_child(False)
                     help_revealer.set_reveal_child(False)
                 else:
-                    os_revealer.set_reveal_child(not is_custom)
+                    # Pokaż/ukryj opcje systemu operacyjnego w zależności od custom
+                    show_os_options = not is_custom
+                    os_revealer_format.set_reveal_child(show_os_options)
+                    os_revealer_time.set_reveal_child(show_os_options)
+                    os_revealer_seconds.set_reveal_child(show_os_options)
+                    os_revealer_separator.set_reveal_child(show_os_options)
                     custom_revealer_entry.set_reveal_child(is_custom)
                     custom_revealer_preview.set_reveal_child(is_custom)
                     custom_revealer_help.set_reveal_child(is_custom)
