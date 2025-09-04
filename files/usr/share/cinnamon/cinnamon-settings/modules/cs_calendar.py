@@ -111,6 +111,9 @@ class Module:
             os_revealer_format = SettingsRevealer()
             self.format_combo = GSettingsComboBox(_("Date format style"), "org.cinnamon.applets.calendar", "os-format-type", format_style_options)
             applet_format.add_reveal_row(self.format_combo, revealer=os_revealer_format)
+            
+            # Formaty które wspierają separatory (tylko te z datą w formacie DD/MM/YYYY)
+            separator_supported_formats = ["Windows 7", "Linux Mint", "Ubuntu"]
 
             os_revealer_time = SettingsRevealer()
             self.time_format_switch = GSettingsSwitch(_("Use 24-hour time format"), "org.cinnamon.applets.calendar", "use-24h-format")
@@ -243,10 +246,17 @@ class Module:
                     custom_revealer_preview.set_reveal_child(is_custom)
                     custom_revealer_help.set_reveal_child(is_custom)
                     help_revealer.set_reveal_child(is_custom and is_help_visible)
+                    
+                    # Kontrola stanu separatora (wycisz jeśli format nie wspiera)
+                    if show_os_options:
+                        current_format = self.format_combo.content_widget.get_active_id()
+                        separator_supported = current_format in separator_supported_formats
+                        self.separator_combo.content_widget.set_sensitive(separator_supported)
             
             # Połącz revealery z przełącznikami
             use_auto_switch.content_widget.connect("notify::active", lambda *args: update_visibility())
             use_custom_switch.content_widget.connect("notify::active", lambda *args: update_visibility())
+            self.format_combo.content_widget.connect("changed", lambda *args: update_visibility())
             self.help_switch.content_widget.connect("notify::active", lambda *args: help_revealer.set_reveal_child(self.help_switch.content_widget.get_active()))
             
             # Ustaw początkowy stan
