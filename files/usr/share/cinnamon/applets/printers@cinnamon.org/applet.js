@@ -30,7 +30,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind('show-icon', 'show_icon', this.update);
 
-        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
+        this.panelEditModeHandler = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
 
         this.jobsCount = 0;
         this.printersCount = 0;
@@ -56,6 +56,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
     on_applet_removed_from_panel() {
         this.settings.finalize();
+        global.settings.disconnect(this.panelEditModeHandler);
     }
 
     _on_panel_edit_mode_changed () {
