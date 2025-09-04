@@ -130,7 +130,7 @@ class Module:
                         self.frame.show()
                         return
                 except GLib.Error as e:
-                    print("Unable to generate preview for file '%s' - %s\n" % (filename, e.message))
+                    print(f"Unable to generate preview for file '{filename}' - {e.message}\n")
 
         preview.clear()
         self.frame.hide()

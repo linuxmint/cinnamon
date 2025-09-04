@@ -245,7 +245,7 @@ class Module:
         try:
             brightness = proxy.GetPercentage()
         except GLib.Error as e:
-            print("Power module brightness page not available: %s" % e.message)
+            print(f"Power module brightness page not available: {e.message}")
 
             if self.show_battery_page:
                 self.sidePage.add_widget(self.sidePage.stack)
@@ -284,7 +284,7 @@ class Module:
             try:
                 brightness = proxy.GetPercentage()
             except GLib.Error as e:
-                print("Power module no keyboard backlight: %s" % e.message)
+                print(f"Power module no keyboard backlight: {e.message}")
             else:
                 section = page.add_section(_("Keyboard backlight"))
                 section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
@@ -408,7 +408,7 @@ class Module:
 
         desc = _("UPS")
         if model != "" or vendor != "":
-            desc = "%s %s" % (vendor, model)
+            desc = f"{vendor} {model}"
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
@@ -453,7 +453,7 @@ class Module:
 
         desc = _("Battery")
         if model != "" or vendor != "":
-            desc = "%s %s" % (vendor, model)
+            desc = f"{vendor} {model}"
 
         widget = self.create_battery_row(device_id, "battery", desc, percentage, battery_level, details)
         return widget
@@ -498,7 +498,7 @@ class Module:
             desc = (_("Battery"))
 
         if model != "" or vendor != "":
-            desc = "%s %s" % (vendor, model)
+            desc = f"{vendor} {model}"
 
         widget = self.create_battery_row(device_id, icon_name, desc, percentage, battery_level)
         return widget
@@ -573,7 +573,7 @@ class Module:
         self.aliases[device_id] = entry.get_text()
         aliases = []
         for alias in self.aliases:
-            aliases.append("%s:=%s" % (alias, self.aliases[alias]))
+            aliases.append(f"{alias}:={self.aliases[alias]}")
         self.settings.set_strv("device-aliases", aliases)
 
 

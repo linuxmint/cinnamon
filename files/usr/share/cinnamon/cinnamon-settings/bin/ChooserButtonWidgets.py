@@ -130,7 +130,7 @@ class PictureChooserButton(BaseChooserButton):
             if pixbuf:
                 return Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
         except GLib.Error as e:
-            print("Could not load thumbnail file '%s': %s" % (path, e.message))
+            print(f"Could not load thumbnail file '{path}': {e.message}")
         return None
 
     def set_picture_from_file (self, path):
@@ -408,7 +408,7 @@ class TimeChooserDialog(Gtk.Dialog):
         self.time = {'hour': time.hour, 'minute': time.minute, 'second': time.second}
         self.use_seconds = use_seconds
         self.use24hour = use24hour
-        self.markup = lambda text: '<span weight="bold" size="xx-large">%s</span>' % text
+        self.markup = lambda text: f'<span weight="bold" size="xx-large">{text}</span>'
 
         content = self.get_content_area()
 

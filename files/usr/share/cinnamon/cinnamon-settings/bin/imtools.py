@@ -442,7 +442,7 @@ def generate_layer(image_size, mark, method,
             mark = mark.transpose(orientation_value)
         paste(layer, mark, location, force=True)
     else:
-        raise ValueError('Unknown method "%s" for generate_layer.' % method)
+        raise ValueError(f'Unknown method "{method}" for generate_layer.')
     return layer
 
 
