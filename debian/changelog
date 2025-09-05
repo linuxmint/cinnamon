@@ -1,3 +1,10 @@
+cinnamon (6.4.11) gigi; urgency=medium
+
+  [ Michael Webster ]
+  * debian/control: add mate-polkit agent as an alternative to gnome's.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 05 Sep 2025 17:50:20 +0100
+
 cinnamon (6.4.10) xia; urgency=medium
 
   [ Michael Webster ]
