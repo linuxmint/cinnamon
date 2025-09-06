@@ -164,7 +164,9 @@ class WindowGraph {
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
         this._icon = null;
-        this.positionIconOnGraph(this.intersectionRect());
+
+        if (this.iconEnabled)
+            this.updateIcon(this.intersectionRect());
     }
 
     get icon() {
@@ -179,17 +181,14 @@ class WindowGraph {
         return [x, y];
     }
 
-    positionIconOnGraph(rect) {
+    updateIcon(rect) {
         if (this.iconEnabled) {
             const [x, y] = this.calcIconPos(rect);
-
-            this.icon.set_x(x);
-            this.icon.set_y(y);
-
+            this.icon.set_position(x, y);
             if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
-                this.icon.hide();
+                this.icon.set_opacity(0);
             } else {
-                this.icon.show();
+                this.icon.set_opacity(255);
             }
         }
     }
@@ -239,7 +238,7 @@ class WindowGraph {
         cr.fill();
         cr.$dispose();
 
-        this.positionIconOnGraph(rect);
+        this.updateIcon(rect);
     }
 
     getWinThemeColors() {
@@ -280,7 +279,7 @@ class WindowGraph {
     }
 
     destroy() {
-        if (this.iconEnabled && this._icon) {
+        if (this._icon) {
             this._icon.destroy();
             this._icon = null;
         }
