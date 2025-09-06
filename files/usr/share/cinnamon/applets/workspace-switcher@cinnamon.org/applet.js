@@ -194,44 +194,32 @@ class WindowGraph {
         }
     }
 
-    /**
-     * Intersection between the scaled window rect area
-     * and the workspace graph area.
-     */
     intersectionRect() {
+        const windowRect = this.metaWindow.get_buffer_rect();
+        const workspaceRect = this.workspaceGraph.workspace_size;
+        const scaleFactor = this.workspaceGraph.scaleFactor;
+
+        const scaledWindowX = (windowRect.x - workspaceRect.x) / scaleFactor;
+        const scaledWindowY = (windowRect.y - workspaceRect.y) / scaleFactor;
+        const scaledWindowWidth = windowRect.width / scaleFactor;
+        const scaledWindowHeight = windowRect.height / scaleFactor;
+
+        const graphWidth = this.workspaceGraph.width;
+        const graphHeight = this.workspaceGraph.height;
+
+        const intersectionX = Math.max(0, scaledWindowX);
+        const intersectionY = Math.max(0, scaledWindowY);
+        const intersectionRight = Math.min(graphWidth, scaledWindowX + scaledWindowWidth);
+        const intersectionBottom = Math.min(graphHeight, scaledWindowY + scaledWindowHeight);
+
         const intersection = new Meta.Rectangle();
-        const rect = this.scaledRect();
 
-        const workspace_rect = this.workspaceGraph.workspace_size;
-        const scale_factor = this.workspaceGraph.scaleFactor;
-
-        const workspace_x = Math.round(workspace_rect.x / scale_factor);
-        const workspace_y = Math.round(workspace_rect.y / scale_factor);
-
-        const offsetX = workspace_x - rect.x;
-        const offsetY = workspace_y - rect.y;
-
-        const heightSurplus = Math.max(0, -offsetY + rect.height - this.workspaceGraph.height);
-        const widthSurplus = Math.max(0,  -offsetX + rect.width - this.workspaceGraph.width);
-
-        intersection.x = Math.max(workspace_x, rect.x);
-        intersection.y = Math.max(workspace_y, rect.y);
-        intersection.width = Math.round(rect.width - Math.max(0, offsetX) - widthSurplus);
-        intersection.height = Math.round(rect.height - Math.max(0, offsetY) - heightSurplus);
+        intersection.x = Math.round(intersectionX);
+        intersection.y = Math.round(intersectionY);
+        intersection.width = Math.round(intersectionRight - intersectionX);
+        intersection.height = Math.round(intersectionBottom - intersectionY);
 
         return intersection;
-    }
-
-    scaledRect() {
-        const scaled_rect = new Meta.Rectangle();
-        const windows_rect = this.metaWindow.get_buffer_rect();
-        const workspace_rect = this.workspaceGraph.workspace_size;
-        const scale_factor = this.workspaceGraph.scaleFactor;
-        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / scale_factor);
-        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / scale_factor);
-        scaled_rect.width = Math.round(windows_rect.width / scale_factor);
-        scaled_rect.height = Math.round(windows_rect.height / scale_factor);
-        return scaled_rect;
     }
 
     onRepaint(area) {
