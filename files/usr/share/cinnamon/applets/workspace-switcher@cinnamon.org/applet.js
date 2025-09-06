@@ -470,8 +470,6 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.createButtonsQueued = false;
 
         this._focusWindow = null;
-        if (global.display.focus_window)
-            this._focusWindow = global.display.focus_window;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
