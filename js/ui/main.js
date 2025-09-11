@@ -78,6 +78,7 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GioUnix = imports.gi.GioUnix;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Mainloop = imports.mainloop;
@@ -312,7 +313,7 @@ function start() {
     // Chain up async errors reported from C
     global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });
 
-    Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
+    GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
     Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 

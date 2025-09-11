@@ -307,10 +307,10 @@ class DefaultTerminalButton(Gtk.AppChooserButton):
 
         while self.this_item is not None and count_up < len(apps):
             self.this_item = apps[count_up]
-            cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
-            exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
-            name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
-            icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
+            cat_val = GioUnix.DesktopAppInfo.get_categories(self.this_item)
+            exec_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Exec")
+            name_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Name")
+            icon_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Icon")
             # terminals don't have mime types, so we check for "TerminalEmulator" under the "Category" key in desktop files
             if cat_val is not None and "TerminalEmulator" in cat_val:
                 # this crazy if statement makes sure remaining desktop file info is not empty, then prevents root terminals from showing, then prevents repeating terminals from trying to being added which leave a blank space and Gtk-WARNING's
@@ -364,11 +364,11 @@ class DefaultCalculatorButton(Gtk.AppChooserButton):
 
         while self.this_item is not None and count_up < len(apps):
             self.this_item = apps[count_up]
-            cat_val = Gio.DesktopAppInfo.get_categories(self.this_item)
-            exec_val = Gio.DesktopAppInfo.get_string(self.this_item, "Exec")
-            name_val = Gio.DesktopAppInfo.get_string(self.this_item, "Name")
-            icon_val = Gio.DesktopAppInfo.get_string(self.this_item, "Icon")
-            comment_val = Gio.DesktopAppInfo.get_string(self.this_item, "Comment")
+            cat_val = GioUnix.DesktopAppInfo.get_categories(self.this_item)
+            exec_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Exec")
+            name_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Name")
+            icon_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Icon")
+            comment_val = GioUnix.DesktopAppInfo.get_string(self.this_item, "Comment")
             #calculators don't have mime types, so we check for "Calculator" under the "Category" key in desktop files
             if (cat_val is not None and "Calculator" in cat_val) or \
                (exec_val is not None and "alculator" in exec_val.lower()) or \
