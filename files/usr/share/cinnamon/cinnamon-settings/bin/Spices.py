@@ -453,7 +453,7 @@ class Spice_Harvester(GObject.Object):
                         try:
                             keyfile.load_from_file(full_path, GLib.KeyFileFlags.KEEP_TRANSLATIONS)
                         except GLib.Error as e:
-                            print("Could not read action file '%s': %s" % (full_path, e.message))
+                            print(f"Could not read action file '{full_path}': {e.message}")
                             continue
 
                         try:
@@ -469,7 +469,7 @@ class Spice_Harvester(GObject.Object):
                             name = keyfile.get_locale_string('Nemo Action', 'Name')
                             metadata['name'] = name.replace("_", "")
                         except GLib.Error as e:
-                            print("Could not read Name field for action. Skipping '%s': %s" % (full_path, e.message))
+                            print(f"Could not read Name field for action. Skipping '{full_path}': {e.message}")
                             continue
 
                         try:
@@ -797,8 +797,8 @@ class Spice_Harvester(GObject.Object):
                 if os.path.exists(locale_inst):
                     i19_folders = os.listdir(locale_inst)
                     for i19_folder in i19_folders:
-                        if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', '%s.mo' % uuid)):
-                            os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', '%s.mo' % uuid))
+                        if os.path.isfile(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', f'{uuid}.mo')):
+                            os.remove(os.path.join(locale_inst, i19_folder, 'LC_MESSAGES', f'{uuid}.mo'))
                         # Clean-up this locale folder
                         removeEmptyFolders(os.path.join(locale_inst, i19_folder))
 

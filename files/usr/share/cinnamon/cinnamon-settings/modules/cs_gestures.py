@@ -72,9 +72,9 @@ def setting_to_string(action="", command=None, phase="end"):
         return ""
 
     if command is not None:
-        return "%s::%s::%s" % (action, command, phase)
+        return f"{action}::{command}::{phase}"
     else:
-        return "%s::%s" % (action, phase)
+        return f"{action}::{phase}"
 
 class Module:
     name = "gestures"
@@ -204,7 +204,6 @@ class Module:
 
             for fingers in range(2, 5):
                 section = page.add_section(_("Pinch with %d fingers") % fingers)
-
                 for key in keys:
                     label = self.get_key_label(key, "pinch", fingers)
 

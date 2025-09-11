@@ -38,9 +38,9 @@ class CManager:
         x86archs = ["i386", "i486", "i586", "i686"]
         if architecture in x86archs:
             for arch in x86archs:
-                paths += ["/usr/lib/%s" % arch]
+                paths += [f"/usr/lib/{arch}"]
         else:
-            paths += ["/usr/lib/%s" % architecture]
+            paths += [f"/usr/lib/{architecture}"]
 
         for path in paths:
             if not os.path.islink(path):
@@ -49,12 +49,12 @@ class CManager:
                     try:
                         self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
                     except Exception as e:
-                        print("capi failed to load multiarch modules from %s: " % path, e)
+                        print(f"capi failed to load multiarch modules from {path}: ", e)
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)
         if extension is None:
-            print("Could not load %s module; is the cinnamon-control-center package installed?" % mod_id)
+            print(f"Could not load {mod_id} module; is the cinnamon-control-center package installed?")
             return None
         panel_type = extension.get_type()
         return GObject.new(panel_type)
@@ -62,7 +62,7 @@ class CManager:
     def lookup_c_module(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)
         if extension is None:
-            print("Could not find %s module; is the cinnamon-control-center package installed?" % mod_id)
+            print(f"Could not find {mod_id} module; is the cinnamon-control-center package installed?")
             return False
         else:
             return True

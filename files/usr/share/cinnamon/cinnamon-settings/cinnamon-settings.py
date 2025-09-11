@@ -158,7 +158,7 @@ def print_timing(func):
         t1 = time.time()
         res = func(*args, **kwargs)
         t2 = time.time()
-        print('%s took %0.3f ms' % (func.__name__, (t2-t1)*1000.0))
+        print(f'{func.__name__} took {(t2-t1)*1000.0:0.3f} ms')
         return res
     return wrapper
 
@@ -262,7 +262,7 @@ class MainWindow(Gio.Application):
     # Create the UI
     def __init__(self, parsed_args):
         Gio.Application.__init__(self,
-                                 application_id="org.cinnamon.Settings_%d" % os.getpid(),
+                                 application_id=f"org.cinnamon.Settings_{os.getpid():d}",
                                  flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
@@ -360,7 +360,7 @@ class MainWindow(Gio.Application):
             # Don't allow item names (and their translations) to be more than 30 chars long. It looks ugly and it creates huge gaps in the icon views
             name = sp.name
             if len(name) > 30:
-                name = "%s..." % name[:30]
+                name = f"{name[:30]}..."
             self.store_by_cat[sp_cat].append([name, Gio.ThemedIcon.new(sp.icon), sp, sp_cat])
 
         self.min_label_length = 0
@@ -571,7 +571,7 @@ class MainWindow(Gio.Application):
 
         widget = Gtk.Label(yalign=0.5)
         widget.set_use_markup(True)
-        widget.set_markup('<span size="12000">%s</span>' % category["label"])
+        widget.set_markup(f'<span size="12000">{category["label"]}</span>')
         box.pack_start(widget, False, False, 1)
         self.side_view_container.pack_start(box, False, False, 0)
         widget = Gtk.IconView.new_with_model(self.storeFilter[category["id"]])
@@ -761,9 +761,9 @@ if __name__ == "__main__":
         if i == 8:
             formatted_mods += "\n    "
             i = 0
-    EPILOG = """
+    EPILOG = f"""
 Available modules:
-    %s
+    {formatted_mods}
 
 To see a list of available tabs for a specific module, use `cinnamon-settings MODULE --tab help`
 
@@ -773,7 +773,7 @@ SORT_TYPE can be specified by number or name as follows:
     2 | date:       Sort by date
     3 | installed:  Show installed first
     4 | update:     Show upgradable first, then sort by date
-    """ % formatted_mods
+    """
     sort_options = list(SORT_CHOICES.keys()) + list(SORT_CHOICES.values())
 
     parser = argparse.ArgumentParser(
@@ -798,11 +798,11 @@ SORT_TYPE can be specified by number or name as follows:
 
     if args.module is not None and args.tab == "help":
         if args.module in TABS:
-            print("Available tabs for '%s':" % args.module)
+            print(f"Available tabs for '{args.module}':")
             for key in TABS[args.module]:
-                print("    %s" % key)
+                print("    {key}")
         else:
-            print("Module '%s' does not have any tabs." % args.module)
+            print("Module '{args.module}' does not have any tabs.")
         exit(0)
 
     if args.panel is not None and args.module not in ("applets", "panel"):

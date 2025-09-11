@@ -73,7 +73,7 @@ class DeskletsViewSidePage(SidePage):
         settings.add_row(GSettingsSwitch(_("Lock desklets in their current position"), "org.cinnamon", "lock-desklets"))
 
 class ManageDeskletsPage(ManageSpicesPage):
-    directories = ["%s/.local/share/cinnamon/desklets" % GLib.get_home_dir(), "/usr/share/cinnamon/desklets"]
+    directories = [f"{GLib.get_home_dir()}/.local/share/cinnamon/desklets", "/usr/share/cinnamon/desklets"]
     collection_type = "desklet"
     installed_page_title = _("Installed desklets")
     instance_button_text = _("Add")

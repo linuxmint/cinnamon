@@ -826,7 +826,7 @@ class Module:
 
                 with open(icon_cache_path, 'w') as cache_file:
                     for theme_name, icon_path_val in icon_paths.items(): # Renamed icon_path to avoid conflict
-                        cache_file.write('%s:%s\\n' % (theme_name, icon_path_val))
+                        cache_file.write(f'{theme_name}:{icon_path_val}\\n')
 
         else:
             if path_suffix == "cinnamon":
@@ -869,14 +869,14 @@ class Module:
                     theme_name = theme_info['name']
                     theme_path_val = theme_info['path'] # Renamed theme_path to avoid conflict
                     try:
-                        for path_option in ["%s/%s/%s/thumbnail.png" % (theme_path_val, theme_name, path_suffix),
-                                     "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
-                                     "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                        for path_option in [f"{theme_path_val}/{theme_name}/{path_suffix}/thumbnail.png"
+                                     f"/usr/share/cinnamon/thumbnails/{path_suffix}/{theme_name}.png",
+                                     f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png"]:
                             if os.path.exists(path_option):
                                 chooser.add_picture(path_option, callback, title=theme_name, id=theme_name)
                                 break
                     except:
-                        chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
+                        chooser.add_picture(f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png", callback, title=theme_name, id=theme_name)
                     GLib.timeout_add(5, self.increment_progress, (chooser, inc))
 
             # Add a blank separator if both single and multi-item categories exist
@@ -903,14 +903,14 @@ class Module:
                 current_variant = variant
 
                 try:
-                    for path_option in ["%s/%s/%s/thumbnail.png" % (theme_path_val, theme_name, path_suffix),
-                                 "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme_name),
-                                 "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]:
+                    for path_option in [f"{theme_path_val}/{theme_name}/{path_suffix}/thumbnail.png",
+                                 f"/usr/share/cinnamon/thumbnails/{path_suffix}/{theme_name}.png",
+                                 f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png"]:
                         if os.path.exists(path_option):
                             chooser.add_picture(path_option, callback, title=theme_name, id=theme_name)
                             break
                 except:
-                    chooser.add_picture("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix, callback, title=theme_name, id=theme_name)
+                    chooser.add_picture(f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png", callback, title=theme_name, id=theme_name)
                 GLib.timeout_add(5, self.increment_progress, (chooser, inc))
         GLib.timeout_add(500, self.hide_progress, chooser)
 
@@ -958,14 +958,14 @@ class Module:
         else:
             try:
                 for path in ([os.path.join(datadir, path_prefix, theme, path_suffix, "thumbnail.png") for datadir in GLib.get_system_data_dirs()]
-                             + [os.path.expanduser("~/.%s/%s/%s/thumbnail.png" % (path_prefix, theme, path_suffix)),
-                             "/usr/share/cinnamon/thumbnails/%s/%s.png" % (path_suffix, theme),
-                             "/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix]):
+                             + [os.path.expanduser(f"~/.{path_prefix}/{theme}/{path_suffix}/thumbnail.png"),
+                             f"/usr/share/cinnamon/thumbnails/{path_suffix}/{theme}.png",
+                             f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png"]):
                     if os.path.exists(path):
                         chooser.set_picture_from_file(path)
                         break
             except:
-                chooser.set_picture_from_file("/usr/share/cinnamon/thumbnails/%s/unknown.png" % path_suffix)
+                chooser.set_picture_from_file(f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png")
 
     def set_button_chooser_text(self, chooser, theme):
         chooser.set_button_label(theme)
@@ -1014,7 +1014,7 @@ class Module:
         return False
 
     def update_cursor_theme_link(self, path, name):
-        contents = "[icon theme]\nInherits=%s\n" % name
+        contents = f"[icon theme]\nInherits={name}\n"
         self._set_cursor_theme_at(ICON_FOLDERS[0], contents)
         self._set_cursor_theme_at(ICON_FOLDERS[1], contents)
 
