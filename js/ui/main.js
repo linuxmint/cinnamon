@@ -312,7 +312,11 @@ function start() {
     // Chain up async errors reported from C
     global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });
 
-    Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
+    // DesktopAppInfo deprecated and removed
+    GLib.setenv('XDG_CURRENT_DESKTOP', 'X-Cinnamon', false);
+    if (Gio.DesktopAppInfo != undefined) {
+        Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
+    }
 
     Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
