@@ -1,3 +1,10 @@
+cinnamon (6.4.12) zara; urgency=medium
+
+  [ Michael Webster ]
+  * polkitAuthenticationAgent.js: Handle system accounts properly. (#12865)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 13 Sep 2025 11:53:12 +0100
+
 cinnamon (6.4.11) gigi; urgency=medium
 
   [ Michael Webster ]
