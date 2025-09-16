@@ -250,45 +250,36 @@ class Module:
         if self.proxy:
             self.proxy.addPanelQuery()
 
-    def on_previous_panel(self, widget):
+    def getNextPanel(self, positive_direction = True):
         if self.panel_id and self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
 
-        current = self.panels.index(self.current_panel)
+        index = current = self.panels.index(self.current_panel)
+        shared_panels = json.loads(self.settings.get_string("shared-panels"))
 
-        if current - 1 >= 0:
-            self.current_panel = self.panels[current - 1]
-            self.panel_id = self.current_panel.panel_id
-        else:
-            self.current_panel = self.panels[len(self.panels) - 1]
-            self.panel_id = self.current_panel.panel_id
+        step = 1 if positive_direction else -1
 
-        self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_RIGHT)
+        for _ in self.panels:
+            index = (index + step) % len(self.panels)
+
+            if int(self.panels[index].panel_id) not in shared_panels or int(self.panel_id) not in shared_panels:
+                self.current_panel = self.panels[index]
+                self.panel_id = self.current_panel.panel_id
+                break
+
+        self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT if positive_direction
+                                              else Gtk.StackTransitionType.SLIDE_RIGHT)
 
         if self.proxy:
             self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
 
         self.config_stack.set_visible_child(self.current_panel)
+
+    def on_previous_panel(self, widget):
+        self.getNextPanel(False)
 
     def on_next_panel(self, widget):
-        if self.panel_id and self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
-
-        current = self.panels.index(self.current_panel)
-
-        if current + 1 < len(self.panels):
-            self.current_panel = self.panels[current + 1]
-            self.panel_id = self.current_panel.panel_id
-        else:
-            self.current_panel = self.panels[0]
-            self.panel_id = self.current_panel.panel_id
-
-        self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
-
-        if self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
-
-        self.config_stack.set_visible_child(self.current_panel)
+        self.getNextPanel()
 
     def id_or_monitor_position_used(self, kept_panels, monitor_layout, panel_id, monitor_id, position):
         for keeper in kept_panels:
@@ -384,8 +375,10 @@ class Module:
         self.next_button.show()
         self.previous_button.show()
 
-        # Disable the panel switch buttons if there's only one panel
-        if len(self.panels) == 1:
+        # Disable the panel switch buttons if there's only one panel or if there is only shared panels
+        if len(self.panels) == 1 or (
+            len(self.panels) - len(json.loads(self.settings.get_string("shared-panels"))) == 0
+        ):
             self.next_button.set_sensitive(False)
             self.previous_button.set_sensitive(False)
         else:
@@ -438,11 +431,16 @@ class PanelWidgetBackend(object):
             self.connect_widget_handlers()
 
     def set_value(self, value):
+        shared_panels = json.loads(self.settings['shared-panels'])
         vals = self.settings[self.key]
         newvals = []
         for val in vals:
-            if val.split(":")[0] == self.panel_id:
-                newvals.append(self.panel_id + ":" + self.stringify(value))
+            val_panel_id = val.split(":")[0]
+            if val_panel_id == self.panel_id or (
+                int(self.panel_id) in shared_panels
+                and int(val_panel_id) in shared_panels
+            ):
+                newvals.append(val_panel_id + ":" + self.stringify(value))
             else:
                 newvals.append(val)
         self.settings[self.key] = newvals
@@ -511,11 +509,44 @@ class PanelSpinButton(SpinButton, PanelWidgetBackend):
         if value is not None and value != int(self.content_widget.get_value()):
             self.content_widget.set_value(value)
 
-class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
+class PanelJSONHelper:
+    def __init__(self, isSpinBtn, *args, **kwargs):
+        self.isSpinBtn = isSpinBtn
+        super().__init__(*args, **kwargs)
+
+    def set_value(self, value):
+        shared_panels = json.loads(self.settings['shared-panels'])
+        vals = json.loads(self.settings[self.key])
+        panel_id = int(self.panel_id)
+        for obj in vals:
+            if obj['panelId'] != panel_id and (
+                panel_id not in shared_panels
+                or obj['panelId'] not in shared_panels
+            ):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    obj[key] = int(value) if self.isSpinBtn else self.valtype(value)
+                    break
+
+        self.settings[self.key] = json.dumps(vals)
+
+    def get_value(self):
+        vals = self.settings[self.key]
+        vals = json.loads(vals)
+        for obj in vals:
+            if obj['panelId'] != int(self.panel_id):
+                continue
+            for key, val in obj.items():
+                if key == self.zone:
+                    return int(val) if self.isSpinBtn else self.valtype(val)
+        if self.isSpinBtn: return 0 # prevent warnings if key is reset
+
+class PanelJSONSpinButton(PanelJSONHelper, SpinButton, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
         self.panel_id = panel_id
         self.zone = zone
-        super(PanelJSONSpinButton, self).__init__(label, *args, **kwargs)
+        super(PanelJSONSpinButton, self).__init__(True, label, *args, **kwargs)
 
         self.connect_to_settings(schema, key)
 
@@ -533,29 +564,6 @@ class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
     def on_setting_changed(self, *args):
         self.content_widget.set_value(self.get_value())
 
-    def set_value(self, value):
-        vals = json.loads(self.settings[self.key])
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    obj[key] = int(value)
-                    break
-
-        self.settings[self.key] = json.dumps(vals)
-
-    def get_value(self):
-        vals = self.settings[self.key]
-        vals = json.loads(vals)
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    return int(val)
-        return 0 # prevent warnings if key is reset
-
 class PanelComboBox(ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
@@ -569,11 +577,11 @@ class PanelComboBox(ComboBox, PanelWidgetBackend):
     def unstringify(self, value):
         return value
 
-class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
+class PanelJSONComboBox(PanelJSONHelper, ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
         self.panel_id = panel_id
         self.zone = zone
-        super(PanelJSONComboBox, self).__init__(label, *args, **kwargs)
+        super(PanelJSONComboBox, self).__init__(False, label, *args, **kwargs)
 
         self.connect_to_settings(schema, key)
 
@@ -582,28 +590,6 @@ class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
 
     def unstringify(self, value):
         return value
-
-    def set_value(self, value):
-        vals = json.loads(self.settings[self.key])
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    obj[key] = self.valtype(value)
-                    break
-
-        self.settings[self.key] = json.dumps(vals)
-
-    def get_value(self):
-        vals = self.settings[self.key]
-        vals = json.loads(vals)
-        for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
-                continue
-            for key, val in obj.items():
-                if key == self.zone:
-                    return self.valtype(val)
 
 class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
