@@ -4748,7 +4748,7 @@ msgid "Cinnamon Version"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:120
-msgid "Linux Kernel"
+msgid "Kernel"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_info.py:121
