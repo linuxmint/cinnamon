@@ -4,7 +4,10 @@ import os
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
-from gi.repository import *
+
+import gi
+gi.require_version('GioUnix', '2.0')
+from gi.repository import Gio, GioUnix, Gtk
 
 PREF_MEDIA_AUTORUN_NEVER = "autorun-never"
 PREF_MEDIA_AUTORUN_X_CONTENT_START_APP = "autorun-x-content-start-app"
