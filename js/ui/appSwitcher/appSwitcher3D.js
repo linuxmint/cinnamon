@@ -108,14 +108,8 @@ AppSwitcher3D.prototype = {
                 continue;
             }
 
-            let rotation_vertex_x = 0.0;
-            if (preview.get_anchor_point_gravity() == Clutter.Gravity.EAST) {
-                rotation_vertex_x = preview.width / 2;
-            } else if (preview.get_anchor_point_gravity() == Clutter.Gravity.WEST) {
-                rotation_vertex_x = -preview.width / 2;
-            }
             preview.move_anchor_point_from_gravity(compositor.get_anchor_point_gravity());
-            preview.rotation_center_y = new Graphene.Point3D({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
+            preview.set_pivot_point( 0.5, 0.0 );
 
             Tweener.addTween(preview, {
                 opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace
