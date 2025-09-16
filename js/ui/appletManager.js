@@ -37,8 +37,12 @@ var clipboard = [];
 var promises = [];
 
 function initEnabledApplets() {
+   // Load each unique Applet UUID, ignoring duplicates due to multiple instances
     for (let i = 0; i < definitions.length; i++) {
-        promises.push(Extension.loadExtension(definitions[i].uuid, Extension.Type.APPLET))
+        let uuid = definitions[i].uuid;
+        if (definitions.findIndex( (e) => e.uuid === uuid) === i) {
+            promises.push(Extension.loadExtension(uuid, Extension.Type.APPLET));
+        }
     }
     return Promise.all(promises).then(function() {
         Main.cinnamonDBusService.EmitXletsLoadedComplete();
