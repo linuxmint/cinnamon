@@ -486,7 +486,7 @@ var InfoOSD = class {
             this.actor.add(label);
         }
         Main.layoutManager.addChrome(this.actor, {
-            visibleInFullscreen: false,
+            visibleInFullscreen: true,
             affectsInputRegion: false
         });
     }
