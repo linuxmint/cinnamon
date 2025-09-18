@@ -1197,10 +1197,16 @@ function _stageEventHandler(actor, event) {
             wm.actionMoveWorkspaceRight();
             return true;
         case Meta.KeyBindingAction.WORKSPACE_UP:
+            wm.actionMoveWorkspaceUp();
+            return true;
+        case Meta.KeyBindingAction.WORKSPACE_DOWN:
+            wm.actionMoveWorkspaceDown();
+            return true;
+        case Meta.KeyBindingAction.TOGGLE_WORKSPACE_SELECTION:
             overview.hide();
             expo.hide();
             return true;
-        case Meta.KeyBindingAction.WORKSPACE_DOWN:
+        case Meta.KeyBindingAction.TOGGLE_WINDOW_SELECTION:
             overview.hide();
             expo.hide();
             return true;
