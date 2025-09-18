@@ -3728,16 +3728,12 @@ Panel.prototype = {
         }
 
         const focusedWindow = global.display.get_focus_window();
-        if (focusedWindow && focusedWindow.is_fullscreen() && focusedWindow.get_monitor() === this.monitorIndex
-            && this._panelHasOpenMenus()) {
-            // An applet has been opened by shortcut key over a fullscreened window so remove
-            // focus from fullscreened window so that chrome remains visible until fullscreened
-            // window is focused again by user.
-            this._focusDesktop();
-        } else if (focusedWindow && focusedWindow.get_monitor() !== this.monitorIndex
-            && global.display.get_monitor_in_fullscreen(this.monitorIndex) && this._panelHasOpenMenus()) {
-            // Focused window is on other monitor but this monitor has a fullscreened window so
-            // remove focus from other window so that chrome remains visible until a window is focused
+        if (this._panelHasOpenMenus() && focusedWindow &&
+            (focusedWindow.get_monitor() === this.monitorIndex && focusedWindow.is_fullscreen() ||
+            focusedWindow.get_monitor() !== this.monitorIndex && global.display.get_monitor_in_fullscreen(this.monitorIndex))) {
+            // An applet has been opened by shortcut key either over a focused fullscreened window or on a monitor with a 
+            // fullscreened window (while focused window is on a different monitor), so focus desktop on current monitor
+            // so that chrome (panel) remains visible and usable until the fullscreened window is again focused by user.
             this._focusDesktop();
         }
         
