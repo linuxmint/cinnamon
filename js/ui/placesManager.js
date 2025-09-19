@@ -125,7 +125,7 @@ PlaceDeviceInfo.prototype = {
         if (!this.isRemovable())
             return;
 
-        let mountOp = new Gio.MountOperation(this._mount);
+        let mountOp = new Gio.MountOperation();
         let drive = this._mount.get_drive();
         let volume = this._mount.get_volume();
 
