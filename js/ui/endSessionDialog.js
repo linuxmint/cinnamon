@@ -104,14 +104,17 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
     }
 
     _addCancel(buttonIsDefault=false) {
-        this.addButton({
+        let buttonAction = () => {
+            this._dialogProxy.CancelRemote();
+        };
+        let button = this.addButton({
             label: _("Cancel"),
-            action: () => {
-                this._dialogProxy.CancelRemote();
-            },
+            action: buttonAction,
             default: buttonIsDefault,
             key: Clutter.KEY_Escape
         });
+
+        return [button, buttonAction];
     }
 
     _getCapabilities(result, error) {
