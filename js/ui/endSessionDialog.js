@@ -129,7 +129,7 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
 
         var [canSwitchUser, canStop, canRestart, canHybridSleep, canSuspend, canHibernate, canLogout] = result[0];
         var content = null;
-        let button, buttonAction;
+        let button, buttonAction, buttonIsDefault;
 
         switch(this._mode) {
             case DialogMode.LOGOUT:
@@ -164,45 +164,71 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                 };
                 let shutdownDefaultAction = this._shutdownDefaultActions.filter(a => allowedShutdownDefaultActions[a])[0];
 
-                [button, buttonAction] = this._addCancel();
+                buttonIsDefault = (shutdownDefaultAction == "cancel");
+                [button, buttonAction] = this._addCancel(buttonIsDefault);
+                if (buttonIsDefault) {
+                    button.grab_key_focus();
+                    this._defaultAction = buttonAction;
+                }
 
                 if (canSuspend) {
+                    buttonIsDefault = (shutdownDefaultAction == "suspend");
                     buttonAction = () => {
                         this._dialogProxy.SuspendRemote();
                         this.close();
                     };
                     button = this.addButton({
                         label: _("Suspend"),
-                        action: buttonAction
+                        action: buttonAction,
+                        default: buttonIsDefault
                     });
+                    if (buttonIsDefault) {
+                        button.grab_key_focus();
+                        this._defaultAction = buttonAction;
+                    }
                 }
 
                 if (canHibernate) {
+                    buttonIsDefault = (shutdownDefaultAction == "hibernate");
                     buttonAction = this._dialogProxy.HibernateRemote.bind(this._dialogProxy);
                     button = this.addButton({
                         label: _("Hibernate"),
-                        action: buttonAction
+                        action: buttonAction,
+                        default: buttonIsDefault
                     });
+                    if (buttonIsDefault) {
+                        button.grab_key_focus();
+                        this._defaultAction = buttonAction;
+                    }
                 }
 
                 if (canRestart) {
+                    buttonIsDefault = (shutdownDefaultAction == "restart");
                     buttonAction = this._dialogProxy.RestartRemote.bind(this._dialogProxy);
                     button = this.addButton({
                         label: _("Restart"),
-                        action: buttonAction
+                        action: buttonAction,
+                        default: buttonIsDefault
                     });
+                    if (buttonIsDefault) {
+                        button.grab_key_focus();
+                        this._defaultAction = buttonAction;
+                    }
                 }
 
                 if (canStop) {
+                    buttonIsDefault = (shutdownDefaultAction == "shutdown");
                     buttonAction = this._dialogProxy.ShutdownRemote.bind(this._dialogProxy);
                     button = this.addButton({
                         label: _("Shut Down"),
                         action: buttonAction,
                         destructive_action: true,
-                        default: true,
+                        default: buttonIsDefault
                     });
-                    button.grab_key_focus();
-                    this._defaultAction = buttonAction;
+                    if (buttonIsDefault) {
+                        button.grab_key_focus();
+                        this._defaultAction = buttonAction;
+                    }
                 }
 
                 this._messageDialogContent.title = _("Shut Down");
