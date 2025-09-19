@@ -60,6 +60,7 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
         this._inhibited = false;
         this._settings = new Gio.Settings({ schema_id: 'org.cinnamon.SessionManager' });
         this._currentTime = this._settings.get_int('quit-time-delay');
+        this._shutdownDefaultActions = this._settings.get_strv("shutdown-dialog-default-actions");
         this._progressTimerId = 0;
         this._defaultAction = null;
 
@@ -154,6 +155,15 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
 
                 break;
             case DialogMode.SHUTDOWN:
+                const allowedShutdownDefaultActions = {
+                    "cancel": true,
+                    "shutdown": canStop,
+                    "restart": canRestart,
+                    "suspend": canSuspend,
+                    "hibernate": canHibernate
+                };
+                let shutdownDefaultAction = this._shutdownDefaultActions.filter(a => allowedShutdownDefaultActions[a])[0];
+
                 [button, buttonAction] = this._addCancel();
 
                 if (canSuspend) {
