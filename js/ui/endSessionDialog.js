@@ -208,6 +208,7 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                     button = this.addButton({
                         label: _("Restart"),
                         action: buttonAction,
+                        destructive_action: true,
                         default: buttonIsDefault
                     });
                     if (buttonIsDefault) {
