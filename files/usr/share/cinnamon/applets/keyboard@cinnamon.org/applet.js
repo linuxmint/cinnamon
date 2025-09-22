@@ -115,14 +115,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
     }
 
     _onPanelEditModeChanged() {
-        if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
-            if (!this.actor.visible) {
-                this.set_applet_icon_symbolic_name("input-keyboard");
-                this.actor.show();
-            }
-        } else {
-            this._syncConfig();
-        }
+        this.actor.visible = global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._inputSourcesManager.multipleSources;
     }
 
     on_applet_added_to_panel() {
@@ -178,14 +171,6 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         this._selectedLayout = null;
 
-        if (!this._inputSourcesManager.multipleSources) {
-            this.menu.close();
-            this.actor.hide();
-            return;
-        }
-
-        this.actor.show();
-
         for (const sourceId of Object.keys(this._inputSourcesManager.inputSources)) {
             const source = this._inputSourcesManager.inputSources[sourceId];
 
@@ -207,15 +192,17 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._layoutItems.set(source, menuItem);
             this._layoutSection.addMenuItem(menuItem);
         }
+
+        if (!this._inputSourcesManager.multipleSources) {
+            this.menu.close();
+            this.actor.hide();
+        } else {
+            this.actor.show();
+        }
     }
 
     _syncGroup() {
         const selected = this._inputSourcesManager.currentSource;
-
-        if (!this._inputSourcesManager.multipleSources) {
-            this.actor.hide();
-            return;
-        }
 
         if (this._selectedLayout) {
             this._selectedLayout.setShowDot(false);
@@ -243,6 +230,10 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         }
 
         this._panel_icon_box.set_child(actor);
+
+        if (!this._inputSourcesManager.multipleSources) {
+            this.actor.hide();
+        }
 
         this._updatePropertySection(selected.properties);
     }
