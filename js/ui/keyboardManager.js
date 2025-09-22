@@ -203,8 +203,8 @@ var InputSource = class {
         this.emit('changed');
     }
 
-    activate(interactive) {
-        this.emit('activate', !!interactive);
+    activate() {
+        this.emit('activate');
     }
 
     _getXkbId() {
@@ -568,7 +568,7 @@ var InputSourceManager = class {
         }
 
         is = this._inputSources[nextIndex];
-        is.activate(true);
+        is.activate();
         return true;
     }
 
@@ -602,13 +602,13 @@ var InputSourceManager = class {
 
         try {
             let is = this._inputSources[index];
-            this.activateInputSource(is, true);
+            this.activateInputSource(is);
         } catch (e) {
             global.logError(`Could not activate input source index: ${index}`);
         }
     }
 
-    activateInputSource(is, interactive) {
+    activateInputSource(is) {
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
@@ -637,15 +637,6 @@ var InputSourceManager = class {
         else
             this._ibusManager.setEngine(engine);
         this._currentInputSourceChanged(is);
-
-        if (interactive) {
-            global.log("INTERACTIVE");
-            let sourcesList = [];
-            for (let i in this._inputSources)
-                sourcesList.push(this._inputSources[i]);
-
-            this._keyboardManager.setUserLayouts(sourcesList.map(x => x.xkbId));
-        }
     }
 
     _inputSourcesChanged() {
@@ -762,9 +753,14 @@ var InputSourceManager = class {
             }
         }
 
+        let sourcesList = [];
+        for (let i in this._inputSources)
+            sourcesList.push(this._inputSources[i]);
+        this._keyboardManager.setUserLayouts(sourcesList.map(x => x.xkbId));
+
         this.emit('sources-changed');
 
-        this._inputSources[0].activate(false);
+        this._inputSources[0].activate();
 
         // All ibus engines are preloaded here to reduce the launching time
         // when users switch the input sources.
@@ -874,7 +870,7 @@ var InputSourceManager = class {
         }
 
         if (window._currentSource)
-            window._currentSource.activate(false);
+            window._currentSource.activate();
     }
 
     _sourcesPerWindowChanged() {
