@@ -1,3 +1,10 @@
+cinnamon (6.4.13) zara; urgency=medium
+
+  [ Michael Webster ]
+  * placesManager.js: a new Gio.MountOperation takes no arguments.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 22 Sep 2025 15:57:37 +0100
+
 cinnamon (6.4.12) zara; urgency=medium
 
   [ Michael Webster ]
