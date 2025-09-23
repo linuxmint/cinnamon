@@ -438,9 +438,8 @@ LayoutManager.prototype = {
         let kb_height = this.keyboardMonitor.height / size;
 
         let kb_x = this.keyboardMonitor.x;
-        let kb_y = top ? -kb_height : this.keyboardMonitor.y + this.keyboardMonitor.height;
+        let kb_y = top ? 0 : this.keyboardMonitor.y + this.keyboardMonitor.height - kb_height;
         let kb_width = this.keyboardMonitor.width;
-
         for (let panel of panels) {
             if (panel.isHideable()) {
                 continue;
@@ -450,13 +449,12 @@ LayoutManager.prototype = {
                 case Panel.PanelLoc.top:
                     if (top) {
                         kb_height -= panel.actor.height;
-                        kb_y = (-kb_height) + panel.actor.height;
+                        kb_y += panel.actor.height;
                     }
                     break;
                 case Panel.PanelLoc.bottom:
                     if (!top) {
                         kb_height -= panel.actor.height;
-                        kb_y = this.keyboardMonitor.y + this.keyboardMonitor.height - panel.actor.height;
                     }
                     break;
                 case Panel.PanelLoc.left:
@@ -488,53 +486,16 @@ LayoutManager.prototype = {
 
     showKeyboard: function() {
         this.keyboardBox.show();
-
-        let top = Main.virtualKeyboardManager.getKeyboardPosition() == "top";
-        this.keyboardBox.ease({
-            translation_y: top ? this.keyboardBox.height : -this.keyboardBox.height,
-            opacity: 255,
-            duration: KEYBOARD_ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
-                this._showKeyboardComplete();
-            },
-        });
+        this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
+        this._chrome.updateRegions();
         this.emit('keyboard-visible-changed', true);
     },
 
-    _showKeyboardComplete: function() {
-        // Poke Chrome to update the input shape; it doesn't notice
-        // anchor point changes
-        this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
-        this._chrome.updateRegions();
-
-        this._keyboardHeightNotifyId = this.keyboardBox.connect('notify::height', () => {
-            this.keyboardBox.translation_y = -this.keyboardBox.height;
-        });
-    },
-
     hideKeyboard: function(immediate) {
-        if (this._keyboardHeightNotifyId) {
-            this.keyboardBox.disconnect(this._keyboardHeightNotifyId);
-            this._keyboardHeightNotifyId = 0;
-        }
-        this.keyboardBox.ease({
-            translation_y: 0,
-            opacity: 0,
-            duration: immediate ? 0 : KEYBOARD_ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_IN_QUAD,
-            onComplete: () => {
-                this._hideKeyboardComplete();
-            },
-        });
-
-        this.emit('keyboard-visible-changed', false);
-    },
-
-    _hideKeyboardComplete: function() {
-        this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this.keyboardBox.hide();
+        this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this._chrome.updateRegions();
+        this.emit('keyboard-visible-changed', false);
     },
 
     /**
