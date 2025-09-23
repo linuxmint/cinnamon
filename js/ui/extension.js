@@ -38,7 +38,6 @@ var knownCinnamon4Conflicts = [
 ];
 
 var x11Only = [
-        "keyboard@cinnamon.org",
         "systray@cinnamon.org"
     ]
 
