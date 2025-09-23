@@ -1,5 +1,5 @@
 [Desktop Entry]
-Exec=dbus-send --print-reply --dest=org.Cinnamon /org/Cinnamon org.Cinnamon.ToggleKeyboard
+Exec=cinnamon-dbus-command ToggleKeyboard
 Icon=cinnamon-virtual-keyboard
 Terminal=false
 Type=Application

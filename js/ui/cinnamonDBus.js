@@ -446,7 +446,7 @@ CinnamonDBus.prototype = {
     },
 
     ToggleKeyboard: function() {
-        Main.virtualKeyboard.toggle();
+        Main.virtualKeyboardManager.manualToggle();
     },
 
     GetMonitors: function() {
