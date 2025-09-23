@@ -61,6 +61,7 @@ Depends:
  gir1.2-gcr-3,
  gir1.2-gdkpixbuf-2.0,
  gir1.2-gkbd-3.0,
+ gir1.2-graphene-1.0,
  gir1.2-gsound-1.0,
  gir1.2-gtkclutter-1.0,
  gir1.2-ical-3.0,
