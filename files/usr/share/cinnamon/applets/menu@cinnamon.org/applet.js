@@ -756,12 +756,12 @@ class UserfileContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 
 class RecentButton extends SimpleMenuItem {
     constructor(applet, recent) {
-        let fileIndex = recent.uriDecoded.indexOf("file:///");
-        let selectedAppUri = fileIndex === -1 ? "" : recent.uriDecoded.substr(fileIndex + 7);
+        let path = recent.uriDecoded.replace("file://", "");
+        path = path.replace(GLib.get_home_dir(), "~").replace("/" + recent.name, "");
 
         super(applet, {
             name: recent.name,
-            description: selectedAppUri,
+            description: path,
             type: 'recent',
             styleClass: 'menu-application-button',
             withMenu: true,
