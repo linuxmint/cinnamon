@@ -1321,14 +1321,42 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _updateKeybinding() {
-        Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, Lang.bind(this, function() {
-            if (!Main.overview.visible && !Main.expo.visible) {
-                if (this.forceShowPanel && !this.isOpen) {
-                    this.panel.peekPanel();
+        const binds = this.overlayKey.split('::').map(e => e ? e : '::');
+        for (let i = 0; i < binds.length; i++) {
+            const bind = binds[i];
+            Main.keybindingManager.addHotKey(`overlay-key-${i}-${this.instance_id}`, bind, Lang.bind(this, function() {
+                const instancesWithSameBinding = this._getInstancesWithSameOverlayBinding(bind);
+                if (!instancesWithSameBinding.length || this._mouseOnSameMonitor(this.actor)) {
+                    this.toggleOverlay();
+                    return;
                 }
-                this.menu.toggle_with_options(this.enableAnimation);
+                const matchingInstance = instancesWithSameBinding.find(instance => this._mouseOnSameMonitor(instance.actor));
+                (matchingInstance ?? this).toggleOverlay();
+            }));
+        }
+    }
+
+    _getInstancesWithSameOverlayBinding(bind) {
+        const instances = Main.AppletManager.getRunningInstancesForUuid("menu@cinnamon.org");
+        return instances.filter(instance => {
+            if (instance === this) return false;
+            return instance.overlayKey.split('::').includes(bind);
+        });
+    }
+
+    _mouseOnSameMonitor(actor) {
+        const mouseMonitor = Main.layoutManager.currentMonitor.index;
+        const actorMonitor = Main.layoutManager.findMonitorIndexForActor(actor);
+        return mouseMonitor === actorMonitor;
+    }
+
+    toggleOverlay() {
+        if (!Main.overview.visible && !Main.expo.visible) {
+            if (this.forceShowPanel && !this.isOpen) {
+                this.panel.peekPanel();
             }
-        }));
+            this.menu.toggle_with_options(this.enableAnimation);
+        }
     }
 
     _updateCategoryHover() {
