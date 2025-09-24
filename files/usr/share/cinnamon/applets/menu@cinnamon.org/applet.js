@@ -83,6 +83,13 @@ function calc_angle(x, y) {
     return r;
 }
 
+function shorten_path(path, filename) {
+    let str = path.replace("file://", "");
+    str = str.replace(GLib.get_home_dir(), "~");
+    str = str.replace("/" + filename, "");
+    return str;
+}
+
 class VisibleChildIterator {
     constructor(container) {
         this.container = container;
@@ -138,7 +145,8 @@ class VisibleChildIterator {
  * no-recent        "No recent documents" button
  * none             Default type
  * place            PlaceButton
- * recent           RecentsButton
+ * favorite         PathButton
+ * recent           PathButton
  * recent-clear     "Clear recent documents" button
  * search-provider  SearchProviderResultButton
  * system           SystemButton
@@ -765,9 +773,7 @@ class RecentButton extends SimpleMenuItem {
             type: 'recent',
             styleClass: 'menu-application-button',
             withMenu: true,
-            mimeType: recent.mimeType,
             uri: recent.uri,
-            uriDecoded: recent.uriDecoded,
         });
 
         this.icon = recent.createIcon(applet.applicationIconSize);
@@ -799,107 +805,37 @@ class RecentButton extends SimpleMenuItem {
             source.notify(notification);
         }
     }
-
-    hasLocalPath(file) {
-        return file.is_native() || file.get_path() != null;
-    }
-
-    populateMenu(menu) {
-        let menuItem;
-        menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
-        menuItem.actor.style = "font-weight: bold";
-        menu.addMenuItem(menuItem);
-
-        let file = Gio.File.new_for_uri(this.uri);
-
-        let default_info = Gio.AppInfo.get_default_for_type(this.mimeType, !this.hasLocalPath(file));
-
-        let infoLaunchFunc = (info, file) => {
-            info.launch([file], null);
-            this.applet.toggleContextMenu(this);
-            this.applet.menu.close();
-        };
-
-        if (default_info) {
-            menuItem = new UserfileContextMenuItem(this,
-                                                   default_info.get_display_name(),
-                                                   false,
-                                                   [default_info, file],
-                                                   infoLaunchFunc);
-            menu.addMenuItem(menuItem);
-        }
-
-        let infos = Gio.AppInfo.get_all_for_type(this.mimeType);
-
-        for (let i = 0; i < infos.length; i++) {
-            let info = infos[i];
-
-            file = Gio.File.new_for_uri(this.uri);
-
-            if (!this.hasLocalPath(file) && !info.supports_uris())
-                continue;
-
-            if (info.equal(default_info))
-                continue;
-
-            menuItem = new UserfileContextMenuItem(this,
-                                                   info.get_display_name(),
-                                                   false,
-                                                   [info, file],
-                                                   infoLaunchFunc);
-            menu.addMenuItem(menuItem);
-        }
-
-        if (GLib.find_program_in_path ("nemo-open-with") != null) {
-            menuItem = new UserfileContextMenuItem(this,
-                                                 _("Other application..."),
-                                                 false,
-                                                 [],
-                                                 () => {
-                                                     Util.spawnCommandLine("nemo-open-with " + this.uri);
-                                                     this.applet.toggleContextMenu(this);
-                                                     this.applet.menu.close();
-                                                 });
-            menu.addMenuItem(menuItem);
-        }
-    }
 }
 
-class FavoriteButton extends SimpleMenuItem {
-    constructor(applet, favoriteInfo) {
+class PathButton extends SimpleMenuItem {
+    constructor(applet, type, name, uri, icon) {
         super(applet, {
-            name: favoriteInfo.display_name,
-            description: decodeURIComponent(favoriteInfo.uri),
-            type: 'favorite',
+            name: name,
+            description: shorten_path(uri, name),
+            type: type,
             styleClass: 'menu-application-button',
-            withMenu: true,
-            mimeType: favoriteInfo.cached_mimetype,
-            uri: favoriteInfo.uri,
+            withMenu: false,
+            uri: uri,
         });
 
-        this.favoriteInfo = favoriteInfo;
-
-        let gicon = Gio.content_type_get_icon(favoriteInfo.cached_mimetype);
-        this.icon = new St.Icon({
-            gicon: gicon,
-            icon_size: applet.applicationIconSize,
-        });
-
+        this.icon = icon;
         this.addActor(this.icon);
-
         if (!applet.showApplicationIcons)
             this.icon.visible = false;
 
-        this.addLabel(this.name, 'menu-application-button-label');
+        this.addLabel(name, 'menu-application-button-label');
+
+        if (applet.showDescription)
+            this.addDescription(this.description, 'menu-application-button-description');
 
         this.searchStrings = [
-            AppUtils.decomp_string(favoriteInfo.display_name).replace(/\s/g, '')
+            AppUtils.decomp_string(name).replace(/\s/g, '')
         ];
     }
 
     activate() {
         try {
-            XApp.Favorites.get_default().launch(this.uri, 0);
+            Gio.app_info_launch_default_for_uri(this.uri, global.create_app_launch_context());
             this.applet.menu.close();
         } catch (e) {
             let source = new MessageTray.SystemNotificationSource();
@@ -910,70 +846,6 @@ class FavoriteButton extends SimpleMenuItem {
             notification.setTransient(true);
             notification.setUrgency(MessageTray.Urgency.NORMAL);
             source.notify(notification);
-        }
-    }
-
-    hasLocalPath(file) {
-        return file.is_native() || file.get_path() != null;
-    }
-
-    populateMenu(menu) {
-        let menuItem;
-        menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
-        menuItem.actor.style = "font-weight: bold";
-        menu.addMenuItem(menuItem);
-
-        let file = Gio.File.new_for_uri(this.uri);
-
-        let default_info = Gio.AppInfo.get_default_for_type(this.mimeType, !this.hasLocalPath(file));
-
-        let infoLaunchFunc = (info, file) => {
-            info.launch([file], null);
-            this.applet.toggleContextMenu(this);
-            this.applet.menu.close();
-        };
-
-        if (default_info) {
-            menuItem = new UserfileContextMenuItem(this,
-                                                   default_info.get_display_name(),
-                                                   false,
-                                                   [default_info, file],
-                                                   infoLaunchFunc);
-            menu.addMenuItem(menuItem);
-        }
-
-        let infos = Gio.AppInfo.get_all_for_type(this.mimeType);
-
-        for (let i = 0; i < infos.length; i++) {
-            let info = infos[i];
-
-            file = Gio.File.new_for_uri(this.uri);
-
-            if (!this.hasLocalPath(file) && !info.supports_uris())
-                continue;
-
-            if (info.equal(default_info))
-                continue;
-
-            menuItem = new UserfileContextMenuItem(this,
-                                                   info.get_display_name(),
-                                                   false,
-                                                   [info, file],
-                                                   infoLaunchFunc);
-            menu.addMenuItem(menuItem);
-        }
-
-        if (GLib.find_program_in_path ("nemo-open-with") != null) {
-            menuItem = new UserfileContextMenuItem(this,
-                                                   _("Other application..."),
-                                                   false,
-                                                   [],
-                                                   () => {
-                                                       Util.spawnCommandLine("nemo-open-with " + this.uri);
-                                                       this.applet.toggleContextMenu(this);
-                                                       this.applet.menu.close();
-                                                   });
-            menu.addMenuItem(menuItem);
         }
     }
 }
@@ -2567,7 +2439,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if (recents.length > 0) {
             this.noRecentDocuments = false;
             recents.forEach( info => {
-                let button = new RecentButton(this, info);
+                let icon = info.createIcon(this.applicationIconSize);
+                let button = new PathButton(this, 'recent', info.name, info.uri, icon);
                 this._recentButtons.push(button);
                 this.applicationsBox.add_actor(button.actor);
                 button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "recent";
@@ -2634,7 +2507,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         favorite_infos.forEach( info => {
-            let button = new FavoriteButton(this, info);
+            let icon = new St.Icon({
+                gicon: Gio.content_type_get_icon(info.cached_mimetype),
+                icon_size: this.applicationIconSize
+            });
+            let button = new PathButton(this, 'favorite', info.display_name, info.uri, icon);
             this._favoriteDocButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
             button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "favorite";
