@@ -977,7 +977,7 @@ class EventRow {
         if (this.use_24h) {
             time_format = "%H:%M";
         } else {
-            time_format = "%l:%M %p";
+            time_format = "%-l:%M %p";
         }
 
         let final_str = "";
