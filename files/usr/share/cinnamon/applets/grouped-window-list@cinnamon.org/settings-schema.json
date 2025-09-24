@@ -31,7 +31,8 @@
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces",
-        "window-display-settings"
+        "window-display-settings",
+        "share-pinned-windows"
       ]
     },
     "hotKeysSection": {
@@ -138,6 +139,11 @@
       "Only from monitors without a window list": 1,
       "From all monitors": 2
     }
+  },
+  "share-pinned-windows": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Share pinned windows with all window lists"
   },
   "cycleMenusHotkey": {
     "type": "keybinding",
