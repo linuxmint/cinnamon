@@ -4,6 +4,16 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Meta = imports.gi.Meta;
 
+const common_css =
+"                       \
+  border-radius: 6px;   \
+  border-width: 2px;    \
+  border-color: black;  \
+  color: black;         \
+  padding: 12px;        \
+  text-align: center;   \
+";
+
 var MonitorLabel = class {
     constructor(monitor, connector, info) {
         this._monitor = monitor;
@@ -13,11 +23,8 @@ var MonitorLabel = class {
         this._display_name = info[2];
         this._color = info[3];
 
-        this.actor = new St.BoxLayout({ style_class: "monitor-label",
-                                        vertical: true,
-                                        important: true });
-
-        this.actor.style = `background-color: ${this._color};`;
+        this.actor = new St.BoxLayout({ style: `${common_css} background-color: ${this._color};`,
+                                        vertical: true });
 
         let label_text;
 
