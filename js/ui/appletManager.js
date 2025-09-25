@@ -23,6 +23,8 @@ var appletMeta;
 var appletObj = [];
 var appletsLoaded = false;
 
+const appletConfigMonitors = {};
+
 // FIXME: This role stuff is checked in extension.js, why not move checks from here to there?
 var Roles = {
     NOTIFICATIONS: 'notifications',
@@ -32,6 +34,7 @@ var Roles = {
 };
 
 var rawDefinitions;
+/** @type {AppletDefinitionObject[]} */
 var definitions = [];
 var clipboard = [];
 var promises = [];
@@ -72,6 +75,11 @@ function init() {
     });
 }
 
+/**
+ * Get the first corresponding applet definition that matches all keys and values provided.
+ * @param {Partial<AppletDefinitionObject>} definition Object containing the keys and values to search by.
+ * @returns {AppletDefinitionObject?}
+ */
 function getAppletDefinition(definition) {
     return queryCollection(definitions, definition);
 }
@@ -127,6 +135,11 @@ function prepareExtensionReload(extension) {
     }
 }
 
+/**
+ * Get all applet definitions as Applet Definition Objects.
+ * Existing objects are **not** copied.
+ * @returns {AppletDefinitionObject[]}
+ */
 function getDefinitions() {
     let _definitions = [];
     rawDefinitions = global.settings.get_strv('enabled-applets');
@@ -144,12 +157,50 @@ function getDefinitions() {
     return _definitions;
 }
 
+/**
+ * Helper function to set enabled-applets gsetting.
+ * @param {AppletDefinitionObject[]} definitions Definitions to set.
+ * @returns {string[]} Stringified definitions for gsetting.
+ */
+function setDefinitions(definitions) {
+    const definitionStrings = definitions.map(definition => stringifyAppletDefinition(definition));
+    global.settings.set_strv("enabled-applets", definitionStrings);
+}
+
+/**
+ * @typedef {Object} AppletDefinitionObject
+ * @property {number} panelId - ID of the panel
+ * @property {number} orientation - The side of the screen the panel is on.
+ *  Orientation is 0 at the top and increases by 1 for each side moving clockwise.
+ * @property {AppletLocation} location_label - Label for the location.
+ * @property {boolean} center - Whether it's centered
+ * @property {number} order - Position/order of the applet
+ * @property {string} uuid - UUID of the applet instance
+ * @property {string} real_uuid - UUID without !. The exclamation mark is sometimes present to override version check.
+ * @property {string} applet_id - ID of the applet
+ * @property {object} applet - The applet object itself
+ */
+
+/**
+ * @typedef {string} AppletDefinitionString
+ * - String in the format `'<panel>:<location>:<order>:<uuid>:<applet_id>'`.
+ * - `<panel>` is like 'panel1'.
+ * - `<location>` 'left', 'center', or 'right'.
+ * - `<order>` integer representing order of applet in location. 1,2,3, ...
+ * - `<uuid>` Unique ID of the applet. Determines the type of applet. e.g. menu\@cinnamon.org
+ * - `<applet_id>` Unique ID assigned to the applet instance when created.
+ */
+
+/**
+ * @typedef {"left"|"center"|"right"} AppletLocation
+ */
+
+/**
+ * Creates corresponding object from provided definition string.
+ * @param {AppletDefinitionString} definition - Applet String Definition
+ * @returns {AppletDefinitionObject}
+ */
 function createAppletDefinition(definition) {
-    // format used in gsettings is 'panel:location:order:uuid:applet_id' where:
-    // - panel is something like 'panel1',
-    // - location is either 'left', 'center' or 'right',
-    // - order is an integer representing the order of the applet within the panel/location (i.e. 1st, 2nd etc..).
-    // - applet_id is a unique id assigned to the applet instance when added.
     let elements = definition.split(":");
     if (elements.length > 4) {
         let panelId = parseInt(elements[0].split('panel')[1]);
@@ -183,7 +234,6 @@ function createAppletDefinition(definition) {
         // Its important we check if the definition object already exists before creating a new object, otherwise we are
         // creating duplicate references that could cause memory leaks.
         let existingDefinition = getAppletDefinition(appletDefinition);
-
         if (existingDefinition) {
             return existingDefinition;
         }
@@ -196,6 +246,17 @@ function createAppletDefinition(definition) {
 
     global.logError("Bad applet definition: " + definition);
     return null;
+}
+
+/**
+ * Converts AppletDefinitionObject into AppletDefinitionString to
+ * be used in global settings enabled-applets array.
+ * @param {AppletDefinitionObject} definition - Applet definition object
+ * @returns {AppletDefinitionString} `'<panel>:<location>:<order>:<uuid>:<applet_id>'`
+ */
+function stringifyAppletDefinition(definition) {
+    const { panelId, location_label: location, order, uuid, applet_id } = definition
+    return `panel${panelId}:${location}:${order}:${uuid}:${applet_id}`;
 }
 
 function setOrientationForPanel(panelPos) {
@@ -240,6 +301,12 @@ function checkForUpgrade(newEnabledApplets) {
     return newEnabledApplets;
 }
 
+/**
+ * Compares panel, orientation, location, and order to determine equality.
+ * @param {AppletDefinitionObject} a
+ * @param {AppletDefinitionObject} b
+ * @returns {boolean} Whether applet definitions are mostly equal.
+ */
 function appletDefinitionsEqual(a, b) {
     return (a != null && b != null
         && a.panelId === b.panelId
@@ -254,11 +321,12 @@ function onEnabledAppletsChanged() {
     let addedApplets = [];
     let removedApplets = [];
     let unChangedApplets = [];
+    const sharedPanels = Panel.getSharedPanels();
 
     for (let i = 0; i < definitions.length; i++) {
         let {uuid, real_uuid, applet_id} = definitions[i];
+        /** @type {AppletDefinitionObject?} */
         let oldDefinition = queryCollection(oldDefinitions, {real_uuid, applet_id});
-
         let isEqualToOldDefinition = appletDefinitionsEqual(definitions[i], oldDefinition);
 
         if (oldDefinition && !isEqualToOldDefinition) {
@@ -305,9 +373,8 @@ function onEnabledAppletsChanged() {
         if (!extension) {
             continue;
         }
-
-        // is_new will get this applet flashied.
-        addAppletToPanels(extension, definition, null, appletsLoaded && is_new);
+        const flashApplet = appletsLoaded && is_new && !sharedPanels.includes(definition.panelId);
+        addAppletToPanels(extension, definition, null, flashApplet);
     }
 
     // Make sure all applet extensions are loaded.
@@ -315,8 +382,14 @@ function onEnabledAppletsChanged() {
     initEnabledApplets();
 }
 
+/**
+ * Removes applet from panel.
+ * @param {AppletDefinitionObject} appletDefinition
+ * @param {boolean} deleteConfig Deletes config file when true.
+ * @param {boolean} changed
+ */
 function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false) {
-    let {applet, uuid, applet_id} = appletDefinition;
+    let {applet, uuid, applet_id } = appletDefinition;
     if (applet) {
         try {
             if (changed) {
@@ -335,6 +408,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
         appletDefinition.applet = null;
 
         if (deleteConfig) {
+            removeSharedAppletCleanup(appletDefinition);
             _removeAppletConfigFile(uuid, applet_id);
         }
 
@@ -347,10 +421,7 @@ function removeAppletFromPanels(appletDefinition, deleteConfig, changed = false)
 }
 
 function _removeAppletConfigFile(uuid, instanceId) {
-    let config_paths = [
-        [GLib.get_home_dir(), ".cinnamon", "configs", uuid, instanceId + ".json"].join("/"),
-        [GLib.get_user_config_dir(), "cinnamon", "spices", uuid, instanceId + ".json"].join("/")
-    ];
+    let config_paths = _getConfigPaths(uuid, instanceId);
 
     for (let i = 0; i < config_paths.length; i++) {
         const config_path = config_paths[i];
@@ -365,9 +436,193 @@ function _removeAppletConfigFile(uuid, instanceId) {
     }
 }
 
+/**
+ * Returns the possible paths to an applet's config file or uuid directory.
+ * @param {string} uuid Applet UUID.
+ * @param {string|number|undefined} instanceId Applet Instance ID. If undefined, will search for the uuid directory
+ * path instead.
+ * @returns {string[]} Possible applet config file paths or uuid directory path.
+ */
+function _getConfigPaths(uuid, instanceId) {
+    let paths = [
+        `${GLib.get_home_dir()}/.cinnamon/configs/${uuid}/`,
+        `${GLib.get_user_config_dir()}/cinnamon/spices/${uuid}/`
+    ];
+    if (instanceId) paths = paths.map(e => e + `${instanceId}.json`);
+    return paths;
+}
+
+/**
+ * Replaces the configuration file for the toInstance applet with the configuration from the fromInstance applet.
+ * @param {string} uuid UUID of applet. e.g. "menu\@cinnamon.org".
+ * @param {number|string} fromInstance Instance ID of the applet to copy configuration from.
+ * @param {number|string} toInstance Instance ID of the applet to copy configuration to.
+ */
+function _shareAppletConfiguration(uuid, fromInstance, toInstance) {
+    const fromConfigPaths = _getConfigPaths(uuid, fromInstance);
+    const toConfigPaths = _getConfigPaths(uuid, toInstance);
+    for (let i = 0; i < fromConfigPaths.length; i++) {
+        const fromFile = Gio.File.new_for_path(fromConfigPaths[i]);
+        const toFile = Gio.File.new_for_path(toConfigPaths[i]);
+        try{
+            fromFile.copy(toFile, Gio.FileCopyFlags.OVERWRITE, null, null);
+        }
+        catch {
+            continue;
+        }
+    }
+
+}
+
+function _addAppletConfigListeners(uuid, instanceId) {
+    if (uuid in appletConfigMonitors) return;
+    const maxInstances = Extension.get_max_instances(uuid, Extension.Type.APPLET)
+    if (maxInstances === 1) return;
+    const directoryPaths = _getConfigPaths(uuid, instanceId).map(e => e.slice(0, e.lastIndexOf("/")));
+    for (const directory of directoryPaths) {
+        const gFileDirectory = Gio.File.new_for_path(directory);
+        const monitor = gFileDirectory.monitor_directory(Gio.FileMonitorFlags.NONE, null);
+        monitor.connect("changed", _onAppletConfigChanged);
+        (appletConfigMonitors[uuid] ??= []).push(monitor);
+    }
+}
+
+function _removeAppletConfigListeners(uuid) {
+    if (!appletConfigMonitors[uuid]) return;
+    appletConfigMonitors[uuid].forEach(e => e.cancel());
+    delete appletConfigMonitors[uuid]
+}
+
+async function _readJsonFile(file) {
+    const settings = await new Promise(resolve=> file.load_contents_async(null,
+        (source, res) => {
+            try{
+                const [ok, contents] = source.load_contents_finish(res);
+                if (!ok) {
+                    resolve(null);
+                    return;
+                }
+                const decoder = new TextDecoder();
+                resolve(JSON.parse(decoder.decode(contents)));
+            }
+            catch(e) {
+                global.logError(e);
+                resolve(null)
+            }
+        }
+    ));
+    return settings;
+}
+
+async function _copyFile(sourceFile, destFile) {
+    return await new Promise(resolve => sourceFile.copy_async(
+        destFile,
+        Gio.FileCopyFlags.OVERWRITE,
+        GLib.PRIORITY_DEFAULT,
+        null,
+        null,
+        (source, res) => {
+            try{
+                source.copy_finish(res);
+                resolve();
+            }
+            catch(e) {
+                global.logError(e)
+                resolve();
+            }
+        }
+    ));
+}
+
+function _unlistenedSettingChanged(oldSettings, newSettings) {
+    const layout = oldSettings.layout;
+    if (!layout) return false;
+    const listenedKeys = [];
+    const unlistenedKeys = [];
+
+    for (const key in layout) {
+        if (layout[key].type !== "section") continue;
+        listenedKeys.push(...layout[key].keys);
+    }
+
+    for (const key in oldSettings) {
+        if (listenedKeys.includes(key)) continue;
+        if (typeof oldSettings[key] !== "object") continue;
+        if (!("value" in oldSettings[key])) continue;
+        unlistenedKeys.push(key);
+    }
+
+    const changed = unlistenedKeys.some(key => {
+        const oldValue = JSON.stringify(oldSettings[key]["value"]);
+        const newValue = JSON.stringify(newSettings[key]["value"]);
+        return oldValue !== newValue;
+    });
+    return changed;
+}
+
+async function _onAppletConfigChanged(monitor, file, otherFile, eventType) {
+    const updatedInstance = file.get_path().match("(?<=^.+/)\\d+(?=\\.json$)")?.[0];
+    if (!updatedInstance) return;
+    if (eventType !== Gio.FileMonitorEvent.CHANGES_DONE_HINT) return;
+    const definitions = getDefinitions();
+    const sharedPanels = Panel.getSharedPanels();
+    const sharingApplet = definitions.find(e => sharedPanels.includes(e.panelId) && e.applet_id === updatedInstance);
+    if (!sharingApplet) return;
+    _removeAppletConfigListeners(sharingApplet.real_uuid);
+    const newSettings = await _readJsonFile(file);
+    if (!newSettings) return;
+    const sharedDefinitions = definitions.filter(e => {
+        return sharedPanels.includes(e.panelId)
+            && e.location_label === sharingApplet.location_label
+            && e.order === sharingApplet.order
+    });
+
+    for (const definition of sharedDefinitions) {
+        try{
+            const { applet_id: instance } = definition;
+            if (instance === updatedInstance) continue;
+            const toConfigFile = file.get_parent().get_child(`${instance}.json`);
+            const oldSettings = await _readJsonFile(toConfigFile);
+            if (!oldSettings) continue;
+            const unlistenedChange = _unlistenedSettingChanged(oldSettings, newSettings);
+            await _copyFile(file, toConfigFile);
+            if (unlistenedChange) {
+                removeAppletFromPanels(definition, false, true);
+                addAppletToPanels(Extension.getExtension(definition.real_uuid), definition);
+            }
+        }
+        catch(e) {
+            global.logError(e);
+        }
+    }
+    _addAppletConfigListeners(sharingApplet.real_uuid);
+}
+
+/**
+ * Shared applet removal cleanup
+ * @param {AppletDefinitionObject} appletDefinition Definition of applet to remove.
+ */
+function removeSharedAppletCleanup(appletDefinition) {
+    const sharedPanels = Panel.getSharedPanels();
+    const { panelId, location_label, order, real_uuid: uuid } = appletDefinition;
+    if (!sharedPanels.includes(panelId)) return;
+    const sharedApplets = getDefinitions().filter(e => {
+        return sharedPanels.includes(e.panelId)
+            && e.real_uuid === uuid
+    });
+    if (!sharedApplets.length) _removeAppletConfigListeners(uuid);
+}
+
+/**
+ *
+ * @param {any} extension
+ * @param {AppletDefinitionObject} appletDefinition
+ * @param {any} panel
+ * @param {boolean} user_action When true, flashes applet.
+ * @returns {boolean} Applet exists or was created.
+ */
 function addAppletToPanels(extension, appletDefinition, panel = null, user_action=false) {
     if (!appletDefinition.panelId) return true;
-
     try {
         // Create the applet
         let applet = createApplet(extension, appletDefinition, panel);
@@ -376,6 +631,7 @@ function addAppletToPanels(extension, appletDefinition, panel = null, user_actio
         } else if (applet === true) {
             return true;
         }
+
 
         // Now actually lock the applets role and set the provider
         extension.lockRole(applet);
@@ -415,6 +671,10 @@ function addAppletToPanels(extension, appletDefinition, panel = null, user_actio
 
         removeAppletFromInappropriatePanel (extension, appletDefinition);
 
+        const sharedPanels = Panel.getSharedPanels();
+        if (sharedPanels.includes(appletDefinition.panelId)) {
+            _addAppletConfigListeners(appletDefinition.real_uuid, appletDefinition.applet_id);
+        }
         return true;
     } catch (e) {
         extension.unlockRoles();
@@ -639,42 +899,123 @@ function _removeAppletFromPanel(uuid, applet_id) {
     Mainloop.idle_add(() => {
         let real_uuid = uuid;
         let definition = queryCollection(definitions, {real_uuid, applet_id});
-        if (definition)
+        if (definition) {
+            const sharedPanels = Panel.getSharedPanels();
             removeApplet(definition);
+            if (sharedPanels.includes(definition.panelId)) {
+                const enabled = getDefinitions();
+                for (const otherDefinition of enabled) {
+                    const { panelId, location_label, order } = otherDefinition;
+                    if (!sharedPanels.includes(panelId)) continue;
+                    if (definition.location_label !== location_label) continue;
+                    if (definition.order !== order) continue;
+                    removeApplet(otherDefinition);
+                }
+            }
+        }
         return false;
     });
 }
 
 function saveAppletsPositions() {
-    let enabled = global.settings.get_strv('enabled-applets');
-    let newEnabled = [];
+    const sharedPanels = Panel.getSharedPanels();
+    // Ensure we do not modify the existing objects.
+    const enabled = getDefinitions().map(e => { return { ...e } });
+    const changedSharedDefinitions = [];
+    let sourceAppletInfo;
 
     for (let i = 0; i < enabled.length; i++) {
-        let info = enabled[i].split(':');
-        let {applet} = getAppletDefinition({
-            uuid: info[3],
-            applet_id: info[4],
-            location_label: info[1]
-        });
+        const definition = enabled[i];
+        const { applet, panelId: oldPanel, location_label: oldLocation, order: oldOrder } = definition;
         if (!applet) {
             continue;
         }
         if (applet._newOrder !== null) {
+            let newPanel;
             if (applet._newPanelId !== null) {
-                info[0] = 'panel' + applet._newPanelId;
-                info[1] = applet._zoneString;
+                definition.panelId = (newPanel = applet._newPanelId);
+                definition.location_label = applet._zoneString;
                 applet._newPanelId = null;
             }
-            info[2] = applet._newOrder;
+            definition.order = applet._newOrder;
             applet._newOrder = null;
-            newEnabled.push(info.join(':'));
-        }
-        else {
-            newEnabled.push(enabled[i]);
+
+            const oldPanelIsShared = sharedPanels.includes(oldPanel);
+            const newPanelIsShared = sharedPanels.includes(newPanel);
+            if (oldPanelIsShared || newPanelIsShared) {
+                const { panelId: newPanel, location_label: newLocation, order: newOrder } = definition;
+                if (oldPanelIsShared && newPanelIsShared) {
+                    sourceAppletInfo = {
+                        definition,
+                        oldPanel
+                    };
+                }
+                if (oldPanel === newPanel
+                    && newLocation === oldLocation
+                    && newOrder === oldOrder
+                ) continue;
+
+                const currentChangedDefinitions = {
+                    definitions: [],
+                    indices: [],
+                    newLocation,
+                    newOrder,
+                    added: false,
+                    sharingInstance: undefined,
+                    removed: false
+                };
+
+                if (oldPanelIsShared) {
+                    const length = enabled.length;
+                    for (let i = 0; i < length; i++) {
+                        const sharedDefinition = enabled[i];
+                        if (sharedDefinition.panelId === oldPanel
+                            || !sharedPanels.includes(sharedDefinition.panelId)
+                            || sharedDefinition.location_label !== oldLocation
+                            || sharedDefinition.order !== oldOrder) continue;
+                        currentChangedDefinitions.definitions.push(sharedDefinition);
+                        currentChangedDefinitions.indices.push(i);
+                    }
+                    if (newPanel && !sharedPanels.includes(newPanel)) currentChangedDefinitions.removed = true;
+                }
+                else if (newPanelIsShared){
+                    let nextAppletId = global.settings.get_int("next-applet-id");
+                    currentChangedDefinitions.added = true;
+                    currentChangedDefinitions.sharingInstance = definition.applet_id;
+                    for (const panel of sharedPanels) {
+                        if (newPanel === panel) continue;
+                        currentChangedDefinitions.definitions.push({
+                            ...definition,
+                            panelId: panel,
+                            applet_id: nextAppletId++
+                        });
+                    }
+                    global.settings.set_int("next-applet-id", nextAppletId);
+                }
+                changedSharedDefinitions.push(currentChangedDefinitions);
+            }
         }
     }
 
-    global.settings.set_strv('enabled-applets', newEnabled);
+    if (sourceAppletInfo) sourceAppletInfo.definition.panelId = sourceAppletInfo.oldPanel;
+
+    for (const sharedInfo of changedSharedDefinitions) {
+        const { definitions, newLocation, newOrder, indices, added, sharingInstance, removed } = sharedInfo;
+        if (added && sharingInstance) {
+            enabled.push(...definitions);
+            for (const { real_uuid: uuid, applet_id: toInstance } of definitions) {
+                _shareAppletConfiguration(uuid, sharingInstance, toInstance);
+            }
+        }
+        else if (removed) for (const index of indices) enabled.splice(index, 1);
+        else {
+            for (const definition of definitions) {
+                definition.location_label = newLocation;
+                definition.order = newOrder;
+            }
+        }
+    }
+    setDefinitions(enabled);
 }
 
 // Deprecated, kept for compatibility reasons
@@ -809,6 +1150,30 @@ function pasteAppletConfiguration(panelId) {
         let dialog = new ModalDialog.NotifyDialog(_("Certain applets do not allow multiple instances or were at their max number of instances so were not copied"));
         dialog.open();
     }
+}
+
+
+/**
+ * Set up shared applets on another panel.
+ * Configurations of applets on from and to panels will be kept in sync based on location and order.
+ * @param {number} fromPanelId Panel id to be copied from
+ * @param {number} toPanelId Panel id to copy to
+ */
+function setupSharedApplets(fromPanelId, toPanelId) {
+    const definitions = getDefinitions();
+    const fromAppletDefinitions = definitions.filter(e => e.panelId === fromPanelId);
+    let nextAppletId = global.settings.get_int("next-applet-id");
+    fromAppletDefinitions.forEach(definition => {
+        /** @type {AppletDefinitionObject} */
+        const toAppletDefinition = {...definition, applet_id: String(nextAppletId), panelId: toPanelId };
+        const maxInstances = Extension.get_max_instances(definition.real_uuid, Extension.Type.APPLET);
+        if (maxInstances !== 1) _shareAppletConfiguration(definition.real_uuid, definition.applet_id, nextAppletId);
+        definitions.push(toAppletDefinition);
+        nextAppletId++;
+    });
+
+    global.settings.set_int("next-applet-id", nextAppletId);
+    setDefinitions(definitions);
 }
 
 function getRunningInstancesForUuid(uuid) {
