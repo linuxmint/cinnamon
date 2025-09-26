@@ -117,23 +117,12 @@ class VisibleChildIterator {
         return this.array[this.array.length - 1];
     }
 
-    getVisibleIndex(curChild) {
-        return this.array.indexOf(curChild);
-    }
-
     getVisibleItem(index) {
         let len = this.array.length;
         index = ((index % len) + len) % len;
         return this.array[index];
     }
 
-    getNumVisibleChildren() {
-        return this.array.length;
-    }
-
-    getAbsoluteIndexOfChild(child) {
-        return this.container.get_children().indexOf(child);
-    }
 }
 
 /**
@@ -273,16 +262,6 @@ class SimpleMenuItem {
     }
 
     /**
-     * Removes the icon previously added with addIcon()
-     */
-    removeIcon() {
-        if (!this.icon)
-            return;
-        this.icon.destroy();
-        this.icon = null;
-    }
-
-    /**
      * Adds an StLabel as the next child, accessible as `this.label`.
      *
      * Only one label is supported by the base SimpleMenuItem prototype.
@@ -301,16 +280,6 @@ class SimpleMenuItem {
         this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this.actor.add_actor(this.labelContainer);
         this.labelContainer.add_actor(this.label);
-    }
-
-    /**
-     * Removes the label previously added with addLabel()
-     */
-    removeLabel() {
-        if (!this.label)
-            return;
-        this.label.destroy();
-        this.label = null;
     }
 
     addDescription(label='', styleClass=null) {
@@ -339,15 +308,6 @@ class SimpleMenuItem {
      */
     addActor(child) {
         this.actor.add_actor(child);
-    }
-
-    /**
-     * Removes a ClutterActor.
-     *
-     * @param {ClutterActor} child
-     */
-    removeActor(child) {
-        this.actor.remove_actor(child);
     }
 
     destroy(actorDestroySignal=false) {
@@ -739,26 +699,6 @@ class PlaceButton extends SimpleMenuItem {
     activate() {
         this.place.launch();
         this.applet.menu.close();
-    }
-}
-
-class UserfileContextMenuItem extends PopupMenu.PopupBaseMenuItem {
-    constructor(button, label, is_default, cbParams, callback) {
-        super({focusOnHover: false});
-
-        this._button = button;
-        this._cbParams = cbParams;
-        this._callback = callback;
-        this.label = new St.Label({ text: label });
-        this.addActor(this.label);
-
-        if (is_default)
-            this.label.style = "font-weight: bold;";
-    }
-
-    activate (event) {
-        this._callback(...this._cbParams);
-        return false;
     }
 }
 
@@ -1232,10 +1172,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.RecentManager.connect('changed', () => this.queueRefresh(RefreshFlags.RECENT));
         this.privacy_settings.connect("changed::" + REMEMBER_RECENT_KEY, () => this.queueRefresh(RefreshFlags.RECENT));
         XApp.Favorites.get_default().connect("changed", () => this.queueRefresh(RefreshFlags.FAV_DOC));
-        this._fileFolderAccessActive = false;
         this._pathCompleter = new Gio.FilenameCompleter();
         this._pathCompleter.set_dirs_only(false);
-        this.settings.bind("search-filesystem", "searchFilesystem");
         this.contextMenu = null;
         this.lastSelectedCategory = null;
         this.settings.bind("force-show-panel", "forceShowPanel");
@@ -2063,50 +2001,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     favPos = selectedItemIndex - 1;
                 appFavorites.moveFavoriteToPos(id, favPos);
                 item_actor = this.favoriteAppsBox.get_child_at_index(favPos);
-            } else if (this.searchFilesystem && (this._fileFolderAccessActive || symbol === Clutter.KEY_slash)) {
-                if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
-                    if (this._run(this.searchEntry.get_text())) {
-                        this.menu.close();
-                    }
-                    return true;
-                }
-                if (symbol === Clutter.KEY_Escape) {
-                    this.searchEntry.set_text('');
-                    this._fileFolderAccessActive = false;
-                }
-                if (symbol === Clutter.KEY_slash) {
-                    // Need preload data before get completion. GFilenameCompleter load content of parent directory.
-                    // Parent directory for /usr/include/ is /usr/. So need to add fake name('a').
-                    let text = this.searchEntry.get_text().concat('/a');
-                    let prefix;
-                    if (!text.includes(' '))
-                        prefix = text;
-                    else
-                        prefix = text.substr(text.lastIndexOf(' ') + 1);
-                    this._getCompletion(prefix);
-
-                    return false;
-                }
-                if (symbol === Clutter.KEY_Tab) {
-                    let text = actor.get_text();
-                    let prefix;
-                    if (!text.includes(' '))
-                        prefix = text;
-                    else
-                        prefix = text.substr(text.lastIndexOf(' ') + 1);
-                    let postfix = this._getCompletion(prefix);
-                    if (postfix != null && postfix.length > 0) {
-                        actor.insert_text(postfix, -1);
-                        actor.set_cursor_position(text.length + postfix.length);
-                        if (postfix[postfix.length - 1] == '/')
-                            this._getCompletion(text + postfix + 'a');
-                    }
-                    return true;
-                }
-                if (symbol === Clutter.KEY_ISO_Left_Tab) {
-                    return true;
-                }
-                return false;
             } else if (symbol === Clutter.KEY_Tab || symbol === Clutter.KEY_ISO_Left_Tab) {
                 return true;
             } else {
@@ -2726,7 +2620,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._activeActor = null;
         this.actor_motion_id = 0;
         this.vector_update_loop = 0;
-        this.foobar = 0;
         let section = new PopupMenu.PopupMenuSection();
         this.menu.addMenuItem(section);
 
@@ -3075,7 +2968,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._previousSearchPattern = searchString;
 
         this.searchActive = searchActive;
-        this._fileFolderAccessActive = searchActive && this.searchFilesystem;
         this._clearAllSelections();
 
         if (searchActive) {
@@ -3161,18 +3053,13 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         var acResultButtons = []; // search box autocompletion results
         var buttons = []
 
-        if (this.searchFilesystem && ["~", "/"].includes(rawPattern[0])) {
-            // Don't use the pattern here, as filesystem is case sensitive
-            acResultButtons = this._getCompletions(rawPattern);
-        } else {
-            buttons = this._listApplications(pattern);
+        buttons = this._listApplications(pattern);
 
-            let result = this._matchNames(this._favoriteDocButtons, pattern);
-            buttons = [...buttons, ...result];
+        let result = this._matchNames(this._favoriteDocButtons, pattern);
+        buttons = [...buttons, ...result];
 
-            result = this._matchNames(this._recentButtons, pattern);
-            buttons = [...buttons, ...result];
-        }
+        result = this._matchNames(this._recentButtons, pattern);
+        buttons = [...buttons, ...result];
 
         this._displayButtons(null, buttons, acResultButtons);
 
@@ -3208,51 +3095,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
 
         return false;
-    }
-
-    _getCompletion (text) {
-        if (!text.includes('/') || text.endsWith('/'))
-            return '';
-        return this._pathCompleter.get_completion_suffix(text);
-    }
-
-    _getCompletions (text) {
-        if (!text.includes('/'))
-            return [];
-        return this._pathCompleter.get_completions(text);
-    }
-
-    _run (input) {
-        this._commandError = false;
-        if (input) {
-            let path = null;
-            if (input.startsWith('/')) {
-                path = input;
-            } else {
-                if (input.startsWith('~'))
-                    input = input.slice(1);
-                path = GLib.get_home_dir() + '/' + input;
-            }
-
-            if (GLib.file_test(path, GLib.FileTest.EXISTS)) {
-                let file = Gio.file_new_for_path(path);
-                try {
-                    Gio.app_info_launch_default_for_uri(file.get_uri(),
-                                                        global.create_app_launch_context());
-                } catch (e) {
-                    // The exception from gjs contains an error string like:
-                    //     Error invoking Gio.app_info_launch_default_for_uri: No application
-                    //     is registered as handling this file
-                    // We are only interested in the part after the first colon.
-                    //let message = e.message.replace(/[^:]*: *(.+)/, '$1');
-                    return false;
-                }
-            } else {
-                return false;
-            }
-        }
-
-        return true;
     }
 };
 

@@ -33,7 +33,7 @@
         "menu-behave" : {
             "type" : "section",
             "title" : "Behavior",
-            "keys" : ["category-hover", "enable-autoscroll", "search-filesystem"]
+            "keys" : ["category-hover", "enable-autoscroll"]
         }
     },
  "overlay-key" : {
@@ -155,12 +155,6 @@
     "default" : true,
     "description": "Enable autoscrolling in application list",
     "tooltip": "Choose whether or not to enable smooth autoscrolling in the application list."
- },
-"search-filesystem" : {
-    "type" : "switch",
-    "default" : false,
-    "description": "Enable filesystem path entry in search box",
-    "tooltip": "Allows path entry in the menu search box."
  },
  "force-show-panel" : {
     "type" : "switch",
