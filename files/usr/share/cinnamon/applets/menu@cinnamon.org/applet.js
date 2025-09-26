@@ -2398,9 +2398,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         //Load places again
         this._placesButtons = [];
 
-        let places = Main.placesManager.getAllPlaces();
-        for (let i = 0; i < places.length; ++i ) {
-            let button = new PlaceButton(this, places[i]);
+        let places = [...Main.placesManager.getDefaultPlaces(), ...Main.placesManager.getBookmarks()]
+        for (let place of places) {
+            let button = new PlaceButton(this, place);
             this._placesButtons.push(button);
             this.placesBox.add(button.actor, {
                 y_align: St.Align.END,
