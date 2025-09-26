@@ -1280,7 +1280,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("search-filesystem", "searchFilesystem");
         this.contextMenu = null;
         this.lastSelectedCategory = null;
-        this.settings.bind("force-show-panel", "forceShowPanel");
 
         this.orderDirty = false;
 
@@ -1323,9 +1322,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _updateKeybinding() {
         Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, Lang.bind(this, function() {
             if (!Main.overview.visible && !Main.expo.visible) {
-                if (this.forceShowPanel && !this.isOpen) {
-                    this.panel.peekPanel();
-                }
                 this.menu.toggle_with_options(this.enableAnimation);
             }
         }));
