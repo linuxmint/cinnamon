@@ -486,14 +486,11 @@ class GenericApplicationButton extends SimpleMenuItem {
             menu.addMenuItem(menuItem);
         }
 
-        let actions = appinfo.list_actions();
-        if (actions) {
-            for (let i = 0; i < actions.length; i++) {
-                let icon = Util.getDesktopActionIcon(actions[i]);
-                let label = appinfo.get_action_name(actions[i]);
-                menuItem = new ApplicationContextMenuItem(this, label, "action_" + actions[i], icon);
-                menu.addMenuItem(menuItem);
-            }
+        for (action of appinfo.list_actions()) {
+            let icon = Util.getDesktopActionIcon(action);
+            let label = appinfo.get_action_name(action);
+            menuItem = new ApplicationContextMenuItem(this, label, "action_" + action, icon);
+            menu.addMenuItem(menuItem);
         }
     }
 }
@@ -2291,9 +2288,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _setCategoryButtonsReactive(active) {
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            this._categoryButtons[i].actor.reactive = active;
-            this._categoryButtons[i].actor.queue_redraw();
+        for (let button of this._categoryButtons) {
+            button.actor.reactive = active;
+            button.actor.queue_redraw();
         }
     }
 
@@ -2316,19 +2313,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _refreshRecent () {
-        for (let i = 0; i < this._recentButtons.length; i++) {
-            this._recentButtons[i].destroy();
-        }
-
+        this._recentButtons.forEach(button => button.destroy());
         this._recentButtons = [];
 
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === 'recent') {
-                this._categoryButtons[i].destroy();
-                this._categoryButtons.splice(i, 1);
-                this.recentButton = null;
-                break;
-            }
+        const index = this._categoryButtons.findIndex(button => button.categoryId === 'recent');
+        if (index !== -1) {
+            this._categoryButtons[index].destroy();
+            this._categoryButtons.splice(index, 1);
+            this.recentButton = null;
         }
 
         if (!this.showRecents || !this.privacy_settings.get_boolean(REMEMBER_RECENT_KEY)) {
@@ -2385,19 +2377,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _refreshFavDocs() {
-        for (let i = 0; i < this._favoriteDocButtons.length; i++) {
-            this._favoriteDocButtons[i].destroy();
-        }
-
+        this._favoriteDocButtons.forEach(button => button.destroy());
         this._favoriteDocButtons = [];
 
-        for (let i = 0; i < this._categoryButtons.length; i++) {
-            if (this._categoryButtons[i].categoryId === 'favorite') {
-                this._categoryButtons[i].destroy();
-                this._categoryButtons.splice(i, 1);
-                this.favoriteDocsButton = null;
-                break;
-            }
+        const index = this._categoryButtons.findIndex(button => button.categoryId === 'favorite');
+        if (index !== -1) {
+            this._categoryButtons[index].destroy();
+            this._categoryButtons.splice(index, 1);
+            this.favoriteDocsButton = null;
         }
 
         let favorite_infos = XApp.Favorites.get_default().get_favorites(null);
@@ -2492,8 +2479,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._favoriteAppButtons = [];
         let launchers = global.settings.get_strv('favorite-apps');
-        for ( let i = 0; i < launchers.length; ++i ) {
-            let app = appsys.lookup_app(launchers[i]);
+        for (let launcher of launchers) {
+            let app = appsys.lookup_app(launcher);
             if (app) {
                 let button = new FavoritesButton(this, app);
                 this._favoriteAppButtons[app] = button;
@@ -2788,44 +2775,32 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _hideAllAppActors() {
-        let actors = this.applicationsBox.get_children();
-        for (let i = 0; i < actors.length; i++) {
-            let actor = actors[i];
+        this.applicationsBox.get_children().forEach(actor => {
             actor.hide();
-        }
+        });
     }
 
     _clearAllSelections() {
-        let actors = this.applicationsBox.get_children();
-        for (let i = 0; i < actors.length; i++) {
-            let actor = actors[i];
+        this.applicationsBox.get_children().forEach(actor => {
             actor.style_class = "menu-application-button";
-        }
-        actors = this.categoriesBox.get_children();
-        for (let i = 0; i < actors.length; i++){
-            let actor = actors[i];
+        });
+        this.categoriesBox.get_children().forEach(actor => {
             actor.remove_style_pseudo_class("hover")
             actor.style_class = "menu-category-button";
             actor.show();
-        }
-        actors = this.placesBox.get_children();
-        for (let i = 0; i < actors.length; i++){
-            let actor = actors[i];
+        });
+        this.placesBox.get_children().forEach(actor => {
             actor.remove_style_pseudo_class("hover");
             actor.show();
-        }
-        actors = this.favoriteAppsBox.get_children();
-        for (let i = 0; i < actors.length; i++){
-            let actor = actors[i];
+        });
+        this.favoriteAppsBox.get_children().forEach(actor => {
             actor.remove_style_pseudo_class("hover");
             actor.show();
-        }
-        actors = this.systemButtonsBox.get_children();
-        for (let i = 0; i < actors.length; i++){
-            let actor = actors[i];
+        });
+        this.systemButtonsBox.get_children().forEach(actor => {
             actor.remove_style_pseudo_class("hover");
             actor.show();
-        }
+        });
     }
 
     _resetSortOrder() {
@@ -3012,16 +2987,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let ret = [];
         let regexpPattern = new RegExp(Util.escapeRegExp(pattern));
 
-        for (let i = 0; i < buttons.length; i++) {
-            if (buttons[i].type == "recent-clear" || buttons[i].type == "no-recent") {
+        for (let button of buttons) {
+            if (button.type == "recent-clear" || button.type == "no-recent") {
                 continue;
             }
-            let res = buttons[i].searchStrings[0].match(regexpPattern);
+            let res = button.searchStrings[0].match(regexpPattern);
             if (res) {
-                buttons[i].matchIndex = res.index;
-                ret.push(buttons[i]);
+                button.matchIndex = res.index;
+                ret.push(button);
             } else {
-                buttons[i].matchIndex = NO_MATCH;
+                button.matchIndex = NO_MATCH;
             }
         }
 
@@ -3035,13 +3010,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let apps = [];
         let regexpPattern = new RegExp(Util.escapeRegExp(pattern));
 
-        for (let i in this._applicationsButtons) {
-            let button = this._applicationsButtons[i];
-
-            for (let j = 0; j < button.searchStrings.length; j++) {
-                let res = button.searchStrings[j].match(regexpPattern);
+        for (let button of this._applicationsButtons) {
+            for (let i = 0; i < button.searchStrings.length; i++) {
+                let res = button.searchStrings[i].match(regexpPattern);
                 if (res) {
-                    button.matchIndex = res.index + MATCH_ADDERS[j];
+                    button.matchIndex = res.index + MATCH_ADDERS[i];
                     apps.push(button);
                     break;
                 } else {
@@ -3085,10 +3058,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         SearchProviderManager.launch_all(lowerPattern, (provider, results) => {
             try {
-                for (var i in results) {
-                    if (results[i].type != 'software')
-                    {
-                        let button = new SearchProviderResultButton(this, provider, results[i]);
+                for (let result of results) {
+                    if (result.type != 'software') {
+                        let button = new SearchProviderResultButton(this, provider, result);
                         this._searchProviderButtons.push(button);
                         this.applicationsBox.add_actor(button.actor);
                         if (this._activeActor === null) {
