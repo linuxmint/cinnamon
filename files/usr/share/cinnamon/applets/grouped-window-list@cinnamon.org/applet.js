@@ -310,6 +310,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
+            {key: 'enable-notification-badges', value: 'enableNotificationBadges', cb: this.onEnableNotificationsChange},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
@@ -1092,6 +1093,16 @@ class GroupedWindowListApplet extends Applet.Applet {
                 for (let i = appGroup.notifications.length - 1; i >= 0; i--) {
                     appGroup.notifications[i].destroy();
                 }
+            });
+        });
+    }
+
+    onEnableNotificationsChange() {
+        this.workspaces.forEach(workspace => {
+            if (!workspace) return;
+            workspace.appGroups.forEach(appGroup => {
+                if (!appGroup || !appGroup.groupState || appGroup.groupState.willUnmount) return;
+                appGroup.updateNotificationsBadge();
             });
         });
     }

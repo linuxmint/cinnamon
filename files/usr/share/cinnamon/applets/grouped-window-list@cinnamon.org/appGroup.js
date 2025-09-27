@@ -480,7 +480,7 @@ class AppGroup {
     }
 
     updateBadgesTextSize() {
-        const badgeTextSize = Math.round(this.iconBox.width / 2.5 / global.ui_scale);
+        const badgeTextSize = Math.round(Math.min(this.iconBox.width, this.iconBox.height)  / 2.5 / global.ui_scale);
         const badgePadding = Math.round(badgeTextSize / 4);
         const sizeStyle = `font-size: ${badgeTextSize}px; padding-left: ${badgePadding}px; padding-right: ${badgePadding}px;`;
         this.windowsBadgeLabel.set_style(sizeStyle);
@@ -1126,7 +1126,7 @@ class AppGroup {
     }
 
     updateNotificationsBadge() {
-        if (this.notifications.length > 0) {
+        if (this.notifications.length > 0 && this.state.settings.enableNotificationBadges) {
             this.notificationsBadgeLabel.text = this.notifications.length.toString();
             this.notificationsBadge.show();
         } else {
