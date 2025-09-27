@@ -26,8 +26,8 @@
             "type" : "section",
             "title" : "Layout and content",
             "keys" : ["show-category-icons",
-                      "category-icon-size", "show-application-icons", "application-icon-size",
-                      "sidebar-show", "sidebar-icon-size", "bottombox-show", "show-recents",
+                      "category-icon-size", "application-icon-size",
+                      "show-sidebar", "sidebar-icon-size", "show-bottombox", "show-favorites", "show-recents",
                       "show-description", "menu-editor-button", "reset-menu-size-button"]
         },
         "menu-behave" : {
@@ -88,12 +88,6 @@
     "description" : "Categories icon size",
     "dependency" : "show-category-icons"
  },
- "show-application-icons" : {
-    "type" : "switch",
-    "default" : true,
-    "description" : "Show application icons",
-    "tooltip" : "Choose whether or not to show icons on applications."
- },
  "application-icon-size" : {
     "type": "spinbutton",
     "default" : 32,
@@ -101,10 +95,9 @@
     "max" : 48,
     "step" : 1,
     "units" : "px",
-    "description" : "Applications icon size",
-    "dependency" : "show-application-icons"
+    "description" : "Applications icon size"
  },
- "sidebar-show" : {
+ "show-sidebar" : {
     "type" : "switch",
     "default" : true,
     "description" : "Show the sidebar",
@@ -118,9 +111,9 @@
     "step" : 1,
     "units" : "px",
     "description" : "Sidebar icon size",
-    "dependency" : "sidebar-show"
+    "dependency" : "show-sidebar"
  },
- "bottombox-show" : {
+ "show-bottombox" : {
     "type" : "switch",
     "default" : true,
     "description" : "Show the bottom bar",
