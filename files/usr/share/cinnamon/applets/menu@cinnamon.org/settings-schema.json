@@ -25,7 +25,7 @@
         "menu-layout" : {
             "type" : "section",
             "title" : "Layout and content",
-            "keys" : ["show-category-icons",
+            "keys" : ["symbolic-category-icons",
                       "category-icon-size", "application-icon-size",
                       "show-sidebar", "sidebar-icon-size", "show-bottombox", "show-favorites", "show-recents",
                       "show-description", "menu-editor-button", "reset-menu-size-button"]
@@ -72,11 +72,11 @@
     "tooltip" : "Enter custom text to show in the panel.",
     "dependency" : "menu-custom"
  },
- "show-category-icons" : {
+ "symbolic-category-icons" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Show category icons",
-    "tooltip" : "Choose whether or not to show icons on categories."
+    "description" : "Use symbolic icons for categories",
+    "tooltip" : "Choose whether or not to use symbolic icons for categories."
  },
  "category-icon-size" : {
     "type": "spinbutton",
@@ -86,7 +86,7 @@
     "step" : 1,
     "units" : "px",
     "description" : "Categories icon size",
-    "dependency" : "show-category-icons"
+    "dependency" : "!symbolic-category-icons"
  },
  "application-icon-size" : {
     "type": "spinbutton",

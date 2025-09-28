@@ -796,13 +796,22 @@ class CategoryButton extends SimpleMenuItem {
         });
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
 
-        if (typeof icon === 'string')
-            this.addIcon(applet.categoryIconSize, icon, null, symbolic);
-        else if (icon)
-            this.addIcon(applet.categoryIconSize, null, icon, symbolic);
+        let size = applet.categoryIconSize;
+        if (applet.symbolicCategoryIcons) {
+            size = 16;
+            symbolic = true;
+            if (categoryId == 'recent')
+                icon = 'folder-recent';
+            else if (categoryId == 'favorite')
+                icon = 'xapp-user-favorites';
+            else
+                icon = 'cinnamon-all-applications';
+        }
 
-        if (this.icon && !applet.showCategoryIcons)
-            this.icon.visible = false;
+        if (typeof icon === 'string')
+            this.addIcon(size, icon, null, symbolic);
+        else if (icon)
+            this.addIcon(size, null, icon, symbolic);
 
         this.addLabel(this.name, 'menu-category-button-label');
 
@@ -1110,7 +1119,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("menu-icon-size", "menuIconSize", this._updateIconAndLabel);
         this.settings.bind("menu-label", "menuLabel", this._updateIconAndLabel);
         this.settings.bind("overlay-key", "overlayKey", this._updateKeybinding);
-        this.settings.bind("show-category-icons", "showCategoryIcons", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("symbolic-category-icons", "symbolicCategoryIcons", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("category-icon-size", "categoryIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("category-hover", "categoryHover", this._updateCategoryHover);
         this.settings.bind("application-icon-size", "applicationIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
@@ -2160,8 +2169,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
          * the remaining elements */
         for (let i = this._categoryButtons.length - 1; i > -1; i--) {
             let b = this._categoryButtons[i];
-            if (b === this._allAppsCategoryButton ||
-                ['recent', 'favorite'].includes(b.categoryId))
+            if (['recent', 'favorite'].includes(b.categoryId))
                 continue;
             this._categoryButtons[i].destroy();
             this._categoryButtons.splice(i, 1);
@@ -2170,11 +2178,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._applicationsButtons.forEach(button => button.destroy());
         this._applicationsButtons = [];
 
-        if (!this._allAppsCategoryButton) {
-            this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), "cinnamon-all-applications", true);
-            this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
-            this._categoryButtons.push(this._allAppsCategoryButton);
+        const index = this._categoryButtons.findIndex(button => button.categoryId == null);
+        if (index !== -1) {
+            this._categoryButtons[index].destroy();
+            this._categoryButtons.splice(index, 1);
+            this._allAppsCategoryButton = null;
         }
+        this._allAppsCategoryButton = new CategoryButton(this, null, _("All Applications"), "cinnamon-all-applications", true);
+        this.categoriesBox.add_actor(this._allAppsCategoryButton.actor);
+        this._categoryButtons.push(this._allAppsCategoryButton);
 
         // grab top level directories and all apps in them
         let [apps, dirs] = AppUtils.getApps();
