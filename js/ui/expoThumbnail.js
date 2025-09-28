@@ -861,11 +861,12 @@ ExpoWorkspaceThumbnail.prototype = {
         let rearrangeTime = force ? REARRANGE_TIME_OFF/2 : REARRANGE_TIME_OFF;
 
         Main.layoutManager.monitors.forEach(function(monitor, monitorIndex) {
-            let iconCount = 0;
-            this.windows.filter(function(window) {
-                return monitorIndex === window.metaWindow.get_monitor();
-            },this).forEach(function(window) {
+            this.windows.forEach(function(window) {
                 if (window.inDrag) {return;}
+
+                if (monitorIndex !== window.metaWindow.get_monitor()) {
+                    return;
+                }
                 
                 window.refreshClone(false);
                 window.showUrgencyState();
