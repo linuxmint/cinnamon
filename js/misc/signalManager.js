@@ -220,9 +220,9 @@ var SignalManager = class SignalManager {
         let results = this.getSignals.apply(this, arguments).filter(_signalIsConnected);
         _disconnect(results);
         this._storage = this._storage.filter((x) => {
-            return results.findIndex(function(signalObj) {
+            return !results.some(function(signalObj) {
                 return signalObj[0] === x[0] && signalObj[1] === x[1];
-            }) === -1;
+            });
         });
     }
 
