@@ -1126,7 +1126,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("show-description", "showDescription", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-sidebar", "showSidebar", this._sidebarToggle);
         this.settings.bind("sidebar-icon-size", "sidebarIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
-        this.settings.bind("show-bottombox", "showBottomBox", this._bottomBoxToggle);
         this.settings.bind("enable-animation", "enableAnimation", null);
         this.settings.bind("popup-width", "popup_width");
         this.settings.bind("popup-height", "popup_height");
@@ -1423,14 +1422,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.sidebar.hide();
         else
             this.sidebar.show();
-        this.updateNavigation();
-    }
-
-    _bottomBoxToggle() {
-        if (!this.showBottomBox)
-            this.menuBottomBox.hide();
-        else
-            this.menuBottomBox.show();
         this.updateNavigation();
     }
 
@@ -2275,7 +2266,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         };
 
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
 
         //Logout button
         button = new SystemButton(this, "system-log-out",
@@ -2287,7 +2278,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._session.LogoutRemote(0);
         };
 
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
 
         //Shutdown button
         button = new SystemButton(this, "system-shutdown",
@@ -2299,7 +2290,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._session.ShutdownRemote();
         };
 
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+        this.systemButtonsBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
     }
 
     _scrollToButton(button, scrollBox = this.applicationsScrollBox) {
@@ -2464,22 +2455,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.categoriesApplicationsBox.actor.add(this.applicationsScrollBox, {span: -1, expand: true});
 
-        this.menuBottomBox = new St.BoxLayout({
-            style_class: 'menu-bottom-box',
-            y_expand: false,
-            x_expand: true,
-            x_align: Clutter.ActorAlign.FILL
-        });
-
         this.systemButtonsBox = new St.BoxLayout({
             style_class: 'menu-system-buttons-box',
             y_expand: false,
-            x_expand: true,
+            x_expand: false,
             x_align: Clutter.ActorAlign.END
         });
 
-        this.right_box.add(this.menuBottomBox);
-        this.menuBottomBox.add(this.systemButtonsBox);
+        this.searchBox.add(this.systemButtonsBox);
 
         this.appBoxIter = new VisibleChildIterator(this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
@@ -2508,7 +2491,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("enable-autoscroll", "autoscroll_enabled", this._update_autoscroll);
         this._update_autoscroll();
 
-        this._bottomBoxToggle();
         this._sidebarToggle();
     }
 
@@ -2523,21 +2505,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.favBoxIter.down = this.placesBoxIter;
         if (this.showSidebar)
             this.catBoxIter.left = this.placesBoxIter;
-        else if (this.showBottomBox)
-            this.catBoxIter.left = this.sysBoxIter;
         else
             this.catBoxIter.left = this.appBoxIter;
         this.catBoxIter.right = this.appBoxIter;
         this.appBoxIter.left = this.catBoxIter;
-        if (this.showBottomBox)
-            this.appBoxIter.right = this.sysBoxIter;
-        else if (this.showSidebar)
+        if (this.showSidebar)
             this.appBoxIter.right = this.placesBoxIter;
         else
             this.appBoxIter.right = this.catBoxIter;
-        if (this.showBottomBox)
-            this.appBoxIter.right = this.sysBoxIter;
-        else if (this.showSidebar)
+        if (this.showSidebar)
             this.appBoxIter.right = this.placeBoxIter;
         else
             this.appBoxIter.right = this.catBoxIter;

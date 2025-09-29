@@ -27,7 +27,7 @@
             "title" : "Layout and content",
             "keys" : ["symbolic-category-icons",
                       "category-icon-size", "application-icon-size",
-                      "show-sidebar", "sidebar-icon-size", "show-bottombox", "show-favorites", "show-recents",
+                      "show-sidebar", "sidebar-icon-size", "show-favorites", "show-recents",
                       "show-description", "menu-editor-button", "reset-menu-size-button"]
         },
         "menu-behave" : {
@@ -112,12 +112,6 @@
     "units" : "px",
     "description" : "Sidebar icon size",
     "dependency" : "show-sidebar"
- },
- "show-bottombox" : {
-    "type" : "switch",
-    "default" : true,
-    "description" : "Show the bottom bar",
-    "tooltip" : "Choose whether or not to show the bottom bar of the menu."
  },
  "show-favorites" : {
    "type" : "switch",
