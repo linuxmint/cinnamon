@@ -1332,22 +1332,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _setMenuSize(width, height) {
         this.main_container.natural_height = (height * global.ui_scale);
         this.main_container.natural_width = (width * global.ui_scale);
-
-        this._update_scroll_policy(this.sidebarAppsBox, this.sidebarAppsScrollBox);
-        this._update_scroll_policy(this.categoriesBox, this.categoriesScrollBox);
-
         this._size_dirty = false;
-    }
-
-    _update_scroll_policy(box, scrollview) {
-        let h = box.get_preferred_height(-1)[1];
-        let alloc = box.get_allocation_box();
-
-        if (alloc.y2 - alloc.y1 < h) {
-            scrollview.vscroll.visible = true;
-        } else {
-            scrollview.vscroll.visible = false;
-        }
     }
 
     on_orientation_changed (orientation) {
@@ -2392,6 +2377,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
         this.sidebarAppsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.sidebarAppsScrollBox.add_actor(this.sidebarAppsBox);
+        this.sidebarAppsScrollBox.get_vscroll_bar().hide();
 
         this.sidebar.add(this.sidebarAppsScrollBox, { expand: true });
 
@@ -2472,6 +2458,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.categoriesScrollBox.set_clip_to_allocation(true);
+        this.categoriesScrollBox.get_vscroll_bar().hide();
 
         this.categoriesApplicationsBox.actor.add(this.categoriesScrollBox);
 
