@@ -55,7 +55,7 @@ void main ()
 
         float vfade_scale = height / vfade_offset;
         if (fade_top) {
-            ratio *= (fade_area_topleft[1] - y) / (fade_area_topleft[1] - fade_bottom_start);
+            ratio *= (fade_area_topleft[1] - y) / (fade_area_topleft[1] - fade_top_start);
         }
 
         if (fade_bottom) {
