@@ -122,7 +122,7 @@ function prepareExtensionReload(extension) {
             if (!applet) continue;
             global.log(`Reloading applet: ${extension.uuid}/${applet_id}`);
             applet.on_applet_reloaded();
-            return;
+            //return;
         }
     }
 }
