@@ -44,31 +44,25 @@ void main ()
     if (x > fade_area_topleft[0] && x < fade_area_bottomright[0] &&
         y > fade_area_topleft[1] && y < fade_area_bottomright[1]) {
         float ratio = 1.0;
-        float fade_top_start = fade_area_topleft[1] + vfade_offset;
-        float fade_left_start = fade_area_topleft[0] + hfade_offset;
-        float fade_bottom_start = fade_area_bottomright[1] - vfade_offset;
-        float fade_right_start = fade_area_bottomright[0] - hfade_offset;
-        bool fade_top = y < vfade_offset && fade_edges_top;
-        bool fade_bottom = y > fade_bottom_start && fade_edges_bottom;
-        bool fade_left = x < fade_left_start && fade_edges_left;
-        bool fade_right = x > fade_right_start && fade_edges_right;
+        float after_left = x - fade_area_topleft[0];
+        float before_right = fade_area_bottomright[0] - x;
+        float after_top = y - fade_area_topleft[1];
+        float before_bottom = fade_area_bottomright[1] - y;
 
-        float vfade_scale = height / vfade_offset;
-        if (fade_top) {
-            ratio *= (fade_area_topleft[1] - y) / (fade_area_topleft[1] - fade_top_start);
+        if (after_top < vfade_offset && fade_edges_top) {
+            ratio *= after_top / vfade_offset;
         }
 
-        if (fade_bottom) {
-            ratio *= (fade_area_bottomright[1] - y) / (fade_area_bottomright[1] - fade_bottom_start);
+        if (before_bottom < vfade_offset && fade_edges_bottom) {
+            ratio *= before_bottom / vfade_offset;
         }
 
-        float hfade_scale = width / hfade_offset;
-        if (fade_left) {
-            ratio *= (fade_area_topleft[0] - x) / (fade_area_topleft[0] - fade_left_start);
+        if (after_left < hfade_offset && fade_edges_left) {
+            ratio *= after_left / hfade_offset;
         }
 
-        if (fade_right) {
-            ratio *= (fade_area_bottomright[0] - x) / (fade_area_bottomright[0] - fade_right_start);
+        if (before_right < hfade_offset && fade_edges_right) {
+            ratio *= before_right / hfade_offset;
         }
 
         cogl_color_out *= ratio;
