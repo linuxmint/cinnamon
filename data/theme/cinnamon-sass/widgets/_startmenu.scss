@@ -1,13 +1,16 @@
-$menu_outer_padding: 9px;
-$menu_outer_border_radius: $base_border_radius * 1.25;
 
-%start_menu_button {
+// New menu (since Cinnamon 6.6)
+
+$appmenu_outer_padding: 9px;
+$appmenu_outer_border_radius: $base_border_radius * 1.25;
+
+%appmenu_button {
   padding: $base_padding;
   spacing: $base_margin;
   border-radius: $base_border_radius;
 }
 
-.menu {
+.appmenu {
 
   // this can be used to color the entire menu background but we aren't using it here
   &-background {
@@ -20,72 +23,63 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
 
   &-sidebar {
     background-color: $base_color;
-    border-radius: $menu_outer_border_radius 0 0 $menu_outer_border_radius;
+    border-radius: $appmenu_outer_border_radius 0 0 $appmenu_outer_border_radius;
     border-right-width: 1px;
     border-color: $borders_color;
 
-    .sidebar-user-box {
-      padding-top: $menu_outer_padding;
-      padding-bottom: $menu_outer_padding / 2;
-    }
-
-    .menu-favorites-button {
-      @extend %start_menu_button;
-
-      padding: 3px $base_padding 3px $base_padding;
-      margin: 0 $menu_outer_padding 0 $menu_outer_padding;
-
-      &:hover {
-        background-color: $lighter_bg_color;
-        border-color: $borders_color;
-      }
-    }
-
-    .popup-separator-menu-item {
-      -gradient-height: 1px;
-      -gradient-start: lighten($base_color, 5%);
-      -gradient-end: lighten($base_color, 5%);
-      -margin-horizontal: 0;
-      height: 1px;
+    &-user-box {
+      padding-top: $appmenu_outer_padding;
+      padding-bottom: $appmenu_outer_padding / 2;
     }
   }
 
-  &-system-buttons-box {
+  &-system-box {
     spacing: 6px;
     padding-left: 6px;
     padding-right: 6px;
-
-    .system-button {
-      padding: $base_padding * 1.4;
-      border: 1px solid $borders_color;
-      border-radius: 9999px;
-      background-color: lighten($bg_color, 10%);
-
-      &:hover { background-color: $accent_color; }
-    }
   }
 
-  &-categories-box { padding: $menu_outer_padding $base_padding * 3; }
-  &-applications-box { padding: $menu_outer_padding; }
+  &-categories-box { padding: $appmenu_outer_padding $base_padding * 3; }
+  &-applications-box { padding: $appmenu_outer_padding; }
   // This small amount of padding is needed to be able
   // to resize the menu with the mouse
   &-applications-scrollbox { padding-right: 3px; }
 
+  &-sidebar-button {
+    @extend %appmenu_button;
+
+    padding: 3px $base_padding 3px $base_padding;
+    margin: 0 $appmenu_outer_padding 0 $appmenu_outer_padding;
+
+    &:hover {
+      background-color: $lighter_bg_color;
+      border-color: $borders_color;
+    }
+  }
+
+  &-system-button {
+    padding: $base_padding * 1.4;
+    border: 1px solid $borders_color;
+    border-radius: 9999px;
+    background-color: lighten($bg_color, 10%);
+    &-lock:hover { background-color: lighten($bg_color, 15%); }
+    &-logout:hover { background-color: lighten($bg_color, 15%); }
+    &-shutdown:hover { background-color: $destructive_bg_color; }
+  }
+
   &-application-button {
-    @extend %start_menu_button;
+    @extend %appmenu_button;
 
     &-label { padding: 0; }
     &-description {
       @extend %caption;
-
       color: $light_text_color;
     }
 
     &:highlighted { font-weight: bold; }
 
     &-selected {
-      @extend %start_menu_button;
-
+      @extend %appmenu_button;
       background-color: $light_bg_color;
 
       &:highlighted { font-weight: bold; }
@@ -93,20 +87,20 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
   }
 
   &-category-button {
-    @extend %start_menu_button;
+    @extend %appmenu_button;
 
     &-label { padding: 0; }
 
     &:hover { background-color: $lighter_bg_color; }
 
     &-selected {
-      @extend %start_menu_button;
+      @extend %appmenu_button;
 
       background-color: $light_bg_color;
     }
 
     &-greyed {
-      @extend %start_menu_button;
+      @extend %appmenu_button;
       color: $insensitive_fg_color;
       font-style: italic;
 
@@ -117,18 +111,17 @@ $menu_outer_border_radius: $base_border_radius * 1.25;
   &-context-menu {}
 
   &-search-box {
-    padding: $base_padding $base_padding $base_padding $menu_outer_padding;
+    padding: $base_padding $base_padding $base_padding $appmenu_outer_padding;
     border-bottom-width: 1px;
     border-color: $borders_color;
   }
+
+  &-search-entry-icon {
+    icon-size: $scalable_icon_size;
+  }
 }
 
-#menu-search-entry {
+#appmenu-search-entry {
   @extend %entry;
-
-  margin: $menu_outer_padding;
-}
-
-.menu-search-entry-icon {
-  icon-size: $scalable_icon_size;
+  margin: $appmenu_outer_padding;
 }

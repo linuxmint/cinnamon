@@ -500,7 +500,7 @@ class TransientButton extends SimpleMenuItem {
         super(applet, {
             description: pathOrCommand,
             type: 'transient',
-            styleClass: 'menu-application-button',
+            styleClass: 'appmenu-application-button',
         });
 
         if (pathOrCommand.startsWith('~')) {
@@ -544,7 +544,7 @@ class TransientButton extends SimpleMenuItem {
 
         this.addActor(this.icon);
 
-        this.addLabel(this.description, 'menu-application-button-label');
+        this.addLabel(this.description, 'appmenu-application-button-label');
 
         this.isDraggableApp = false;
     }
@@ -567,7 +567,7 @@ class TransientButton extends SimpleMenuItem {
 
 class ApplicationButton extends GenericApplicationButton {
     constructor(applet, app) {
-        super(applet, app, 'app', true, 'menu-application-button');
+        super(applet, app, 'app', true, 'appmenu-application-button');
         this.category = [];
         this.icon = this.app.create_icon_texture(applet.applicationIconSize);
         let gicon = this.icon.get_gicon();
@@ -585,9 +585,9 @@ class ApplicationButton extends GenericApplicationButton {
         }
         this.addActor(this.icon);
 
-        this.addLabel(this.name, 'menu-application-button-label');
+        this.addLabel(this.name, 'appmenu-application-button-label');
         if (applet.showDescription)
-            this.addDescription(this.description, 'menu-application-button-description');
+            this.addDescription(this.description, 'appmenu-application-button-description');
 
         this._draggable = DND.makeDraggable(this.actor);
         this._signals.connect(this._draggable, 'drag-end', this._onDragEnd.bind(this));
@@ -631,7 +631,7 @@ class SearchProviderResultButton extends SimpleMenuItem {
             name:result.label,
             description: result.description,
             type: 'search-provider',
-            styleClass: 'menu-application-button',
+            styleClass: 'appmenu-application-button',
             provider: provider,
             result: result,
         });
@@ -650,7 +650,7 @@ class SearchProviderResultButton extends SimpleMenuItem {
         if (this.icon)
             this.addActor(this.icon);
 
-        this.addLabel(result.label, 'menu-application-button-label');
+        this.addLabel(result.label, 'appmenu-application-button-label');
     }
 
     activate() {
@@ -683,7 +683,7 @@ class PlaceButton extends SimpleMenuItem {
         super(applet, {
             name: place.name,
             type: 'place',
-            styleClass: 'menu-favorites-button',
+            styleClass: 'appmenu-sidebar-button',
             place: place,
         });
 
@@ -693,7 +693,7 @@ class PlaceButton extends SimpleMenuItem {
         else
             this.addIcon(applet.applicationIconSize, 'folder');
 
-        this.addLabel(this.name, 'menu-application-button-label');
+        this.addLabel(this.name, 'appmenu-application-button-label');
     }
 
     activate() {
@@ -711,7 +711,7 @@ class RecentButton extends SimpleMenuItem {
             name: recent.name,
             description: path,
             type: 'recent',
-            styleClass: 'menu-application-button',
+            styleClass: 'appmenu-application-button',
             withMenu: true,
             uri: recent.uri,
         });
@@ -719,9 +719,9 @@ class RecentButton extends SimpleMenuItem {
         this.icon = recent.createIcon(applet.applicationIconSize);
         this.addActor(this.icon);
 
-        this.addLabel(this.name, 'menu-application-button-label');
+        this.addLabel(this.name, 'appmenu-application-button-label');
         if (applet.showDescription)
-            this.addDescription(this.description, 'menu-application-button-description');
+            this.addDescription(this.description, 'appmenu-application-button-description');
 
         this.searchStrings = [
             AppUtils.decomp_string(recent.name).replace(/\s/g, '')
@@ -751,7 +751,7 @@ class PathButton extends SimpleMenuItem {
             name: name,
             description: shorten_path(uri, name),
             type: type,
-            styleClass: 'menu-application-button',
+            styleClass: 'appmenu-application-button',
             withMenu: false,
             uri: uri,
         });
@@ -759,10 +759,10 @@ class PathButton extends SimpleMenuItem {
         this.icon = icon;
         this.addActor(this.icon);
 
-        this.addLabel(name, 'menu-application-button-label');
+        this.addLabel(name, 'appmenu-application-button-label');
 
         if (applet.showDescription)
-            this.addDescription(this.description, 'menu-application-button-description');
+            this.addDescription(this.description, 'appmenu-application-button-description');
 
         this.searchStrings = [
             AppUtils.decomp_string(name).replace(/\s/g, '')
@@ -791,7 +791,7 @@ class CategoryButton extends SimpleMenuItem {
         super(applet, {
             name: label,
             type: 'category',
-            styleClass: 'menu-category-button',
+            styleClass: 'appmenu-category-button',
             categoryId: categoryId,
         });
         this.actor.accessible_role = Atk.Role.LIST_ITEM;
@@ -813,7 +813,7 @@ class CategoryButton extends SimpleMenuItem {
         else if (icon)
             this.addIcon(size, null, icon, symbolic);
 
-        this.addLabel(this.name, 'menu-category-button-label');
+        this.addLabel(this.name, 'appmenu-category-button-label');
 
         this.actor_motion_id = 0;
     }
@@ -824,17 +824,17 @@ class CategoryButton extends SimpleMenuItem {
         this.applet._select_category(this.categoryId);
         this.applet.hoveredApp = null;
         this.applet.categoriesBox.get_children().forEach(child =>
-            child.set_style_class_name("menu-category-button"));
-        this.actor.style_class = "menu-category-button-selected";
+            child.set_style_class_name("appmenu-category-button"));
+        this.actor.style_class = "appmenu-category-button-selected";
     }
 }
 
 class FavoritesButton extends GenericApplicationButton {
     constructor(applet, app) {
-        super(applet, app, 'fav', false, 'menu-favorites-button');
+        super(applet, app, 'fav', false, 'appmenu-sidebar-button');
         this.icon = app.create_icon_texture(applet.sidebarIconSize);
         this.addActor(this.icon);
-        this.addLabel(this.name);
+        this.addLabel(this.name, 'appmenu-application-button-label');
 
         this._draggable = DND.makeDraggable(this.actor);
         this._signals.connect(this._draggable, 'drag-end', this._onDragEnd.bind(this));
@@ -871,7 +871,7 @@ class SystemButton extends SimpleMenuItem {
             name: name,
             description: desc,
             type: 'system',
-            styleClass: 'system-button',
+            styleClass: 'appmenu-system-button',
         });
         this.addIcon(16, iconName, null, true);
     }
@@ -1107,7 +1107,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("activate-on-hover", "activateOnHover", this._updateActivateOnHover);
         this._updateActivateOnHover();
 
-        this.menu.setCustomStyleClass('menu-background');
+        this.menu.setCustomStyleClass('appmenu-background');
         this.menu.connect('open-state-changed', this._onOpenStateChanged.bind(this));
         this.menu.connect('menu-animated-closed', () => {
             this._clearAllSelections();
@@ -1144,12 +1144,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._updateIconAndLabel();
 
         this._searchInactiveIcon = new St.Icon({
-            style_class: 'menu-search-entry-icon',
+            style_class: 'appmenu-search-entry-icon',
             icon_name: 'edit-find',
             icon_type: St.IconType.SYMBOLIC,
         });
         this._searchActiveIcon = new St.Icon({
-            style_class: 'menu-search-entry-icon',
+            style_class: 'appmenu-search-entry-icon',
             icon_name: 'edit-clear',
             icon_type: St.IconType.SYMBOLIC,
         });
@@ -1378,7 +1378,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             for (let i = 0; i < n; i++) {
                 this._applicationsButtons[i].actor.show();
             }
-            this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+            this._allAppsCategoryButton.actor.style_class = "appmenu-category-button-selected";
 
             Mainloop.idle_add(() => {
                 if(this.lastSelectedCategory !== null) //if a category is already selected
@@ -1528,7 +1528,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 return false;
             };
 
-            menu.actor.set_style_class_name('menu-context-menu');
+            menu.actor.set_style_class_name('appmenu-context-menu');
             menu.connect('open-state-changed', this._contextMenuOpenStateChanged.bind(this));
             this.contextMenu = menu;
             this.applicationsBox.add_actor(menu.actor);
@@ -1775,7 +1775,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _buttonEnterEvent(button) {
         this.categoriesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
-        this.applicationsBox.get_children().forEach(child => child.set_style_class_name("menu-application-button"));
+        this.applicationsBox.get_children().forEach(child => child.set_style_class_name("appmenu-application-button"));
         this.favoriteAppsBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
         this.placesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
         this.systemButtonsBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
@@ -1787,7 +1787,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             if (button.categoryId !== this.lastSelectedCategory) {
                 if (this.categoryHover) {
                     this.categoriesBox.get_children().forEach(child =>
-                        child.set_style_class_name("menu-category-button"));
+                        child.set_style_class_name("appmenu-category-button"));
                     button.activate();
                 } else {
                     button.actor.add_style_pseudo_class("hover");
@@ -2125,9 +2125,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             let button = new SimpleMenuItem(this, { name: _("Clear list"),
                                                     description: _("Clear all recent documents"),
                                                     type: 'recent-clear',
-                                                    styleClass: 'menu-application-button' });
+                                                    styleClass: 'appmenu-application-button' });
             button.addIcon(22, 'edit-clear', null, true);
-            button.addLabel(button.name, 'menu-application-button-label');
+            button.addLabel(button.name, 'appmenu-application-button-label');
             button.label.set_style('font-weight: bold;');
             button.activate = () => {
                 this.menu.close();
@@ -2141,10 +2141,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.noRecentDocuments = true;
             let button = new SimpleMenuItem(this, { name: _("No recent documents"),
                                                     type: 'no-recent',
-                                                    styleClass: 'menu-application-button',
+                                                    styleClass: 'appmenu-application-button',
                                                     reactive: false,
                                                     activatable: false });
-            button.addLabel(button.name, 'menu-application-button-label');
+            button.addLabel(button.name, 'appmenu-application-button-label');
             this._recentButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
             button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "recent";
@@ -2279,6 +2279,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         button = new SystemButton(this, "system-lock-screen",
                                   _("Lock Screen"),
                                   _("Lock the screen"));
+        button.actor.add_style_class_name("appmenu-system-button-lock");
 
         button.activate = () => {
             this.menu.close();
@@ -2304,6 +2305,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         button = new SystemButton(this, "system-log-out",
                                   _("Log Out"),
                                   _("Leave the session"));
+        button.actor.add_style_class_name("appmenu-system-button-logout");
 
         button.activate = () => {
             this.menu.close();
@@ -2316,6 +2318,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         button = new SystemButton(this, "system-shutdown",
                                   _("Shut Down"),
                                   _("Shut down the computer"));
+        button.actor.add_style_class_name("appmenu-system-button-shutdown");
 
         button.activate = () => {
             this.menu.close();
@@ -2348,12 +2351,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _buildSidebar() {
         this.sidebar = new St.BoxLayout({
-            style_class: 'menu-sidebar',
+            style_class: 'appmenu-sidebar',
             vertical: true
         });
 
         this.userBox = new St.BoxLayout({
-            style_class: 'sidebar-user-box',
+            style_class: 'appmenu-sidebar-user-box',
             vertical: true
         });
 
@@ -2373,7 +2376,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.sidebarAppsBox = new SidebarAppsBox().actor;
         this.sidebarAppsScrollBox = new St.ScrollView({
             y_align: St.Align.START,
-            style_class: 'menu-sidebar-scrollbox'
+            style_class: 'appmenu-sidebar-scrollbox'
         });
         this.sidebarAppsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.sidebarAppsScrollBox.add_actor(this.sidebarAppsBox);
@@ -2404,7 +2407,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.main_container = new St.BoxLayout({
             vertical: false,
-            style_class: 'menu-main-box'
+            style_class: 'appmenu-main-box'
         });
         this.main_container._delegate = null;
         section.addActor(this.main_container, {
@@ -2419,11 +2422,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.main_container.add(this.right_box, { expand: true });
 
         this.searchBox = new St.BoxLayout({
-            style_class: 'menu-search-box',
+            style_class: 'appmenu-search-box',
             vertical: false,
         });
         this.searchEntry = new St.Entry({
-            name: 'menu-search-entry',
+            name: 'appmenu-search-entry',
             track_hover: true,
             can_focus: true,
         });
@@ -2449,12 +2452,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
 
         this.categoriesBox = new St.BoxLayout({
-            style_class: 'menu-categories-box',
+            style_class: 'appmenu-categories-box',
             vertical: true,
             accessible_role: Atk.Role.LIST
         });
 
-        this.categoriesScrollBox = new St.ScrollView({ style_class: 'menu-categories-scrollbox' });
+        this.categoriesScrollBox = new St.ScrollView({ style_class: 'appmenu-categories-scrollbox' });
         this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.categoriesScrollBox.set_clip_to_allocation(true);
@@ -2463,10 +2466,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesApplicationsBox.actor.add(this.categoriesScrollBox);
 
         this.applicationsBox = new St.BoxLayout({
-            style_class: 'menu-applications-box',
+            style_class: 'appmenu-applications-box',
             vertical:true
         });
-        this.applicationsScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox'});
+        this.applicationsScrollBox = new St.ScrollView({ style_class: 'vfade appmenu-applications-scrollbox'});
         this.applicationsScrollBox.add_actor(this.applicationsBox);
         this.applicationsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.applicationsScrollBox.set_clip_to_allocation(true);
@@ -2490,7 +2493,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.categoriesApplicationsBox.actor.add(this.applicationsScrollBox, {span: -1, expand: true});
 
         this.systemButtonsBox = new St.BoxLayout({
-            style_class: 'menu-system-buttons-box',
+            style_class: 'appmenu-system-box',
             y_expand: false,
             x_expand: false,
             x_align: Clutter.ActorAlign.END
@@ -2561,9 +2564,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled") &&
                      this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
-            this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
+            this.applicationsScrollBox.style_class = "appmenu-applications-scrollbox";
         } else {
-            this.applicationsScrollBox.style_class = "vfade menu-applications-scrollbox";
+            this.applicationsScrollBox.style_class = "vfade appmenu-applications-scrollbox";
         }
     }
 
@@ -2581,11 +2584,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _clearAllSelections() {
         this.applicationsBox.get_children().forEach(actor => {
-            actor.style_class = "menu-application-button";
+            actor.style_class = "appmenu-application-button";
         });
         this.categoriesBox.get_children().forEach(actor => {
             actor.remove_style_pseudo_class("hover")
-            actor.style_class = "menu-category-button";
+            actor.style_class = "appmenu-category-button";
             actor.show();
         });
         this.placesBox.get_children().forEach(actor => {
@@ -2720,12 +2723,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 let button = categoriesButtons[i];
                 let icon = button._delegate.icon;
                 if (active){
-                    button.set_style_class_name("menu-category-button");
+                    button.set_style_class_name("appmenu-category-button");
                     if (icon) {
                         icon.set_opacity(255);
                     }
                 } else {
-                    button.set_style_class_name("menu-category-button-greyed");
+                    button.set_style_class_name("appmenu-category-button-greyed");
                     if (icon) {
                         let icon_opacity = icon.get_theme_node().get_double('opacity');
                         icon_opacity = Math.min(Math.max(0, icon_opacity), 1);
@@ -2777,7 +2780,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._previousSearchPattern = "";
             this._setCategoriesButtonActive(true);
             this._select_category();
-            this._allAppsCategoryButton.actor.style_class = "menu-category-button-selected";
+            this._allAppsCategoryButton.actor.style_class = "appmenu-category-button-selected";
             this._activeContainer = null;
         }
     }
