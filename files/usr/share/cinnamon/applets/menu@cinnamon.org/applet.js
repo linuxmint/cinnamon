@@ -2373,7 +2373,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.sidebarAppsBox = new SidebarAppsBox().actor;
         this.sidebarAppsScrollBox = new St.ScrollView({
             y_align: St.Align.START,
-            style_class: 'vfade menu-sidebar-scrollbox'
+            style_class: 'menu-sidebar-scrollbox'
         });
         this.sidebarAppsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.sidebarAppsScrollBox.add_actor(this.sidebarAppsBox);
@@ -2454,7 +2454,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             accessible_role: Atk.Role.LIST
         });
 
-        this.categoriesScrollBox = new St.ScrollView({ style_class: 'vfade menu-applications-scrollbox' });
+        this.categoriesScrollBox = new St.ScrollView({ style_class: 'menu-categories-scrollbox' });
         this.categoriesScrollBox.add_actor(this.categoriesBox);
         this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
         this.categoriesScrollBox.set_clip_to_allocation(true);
@@ -2562,12 +2562,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                      this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
             this.applicationsScrollBox.style_class = "menu-applications-scrollbox";
-            this.categoriesScrollBox.style_class = "menu-applications-scrollbox";
-            this.sidebarAppsScrollBox.style_class = "menu-favorites-scrollbox";
         } else {
             this.applicationsScrollBox.style_class = "vfade menu-applications-scrollbox";
-            this.categoriesScrollBox.style_class = "vfade menu-applications-scrollbox";
-            this.sidebarAppsScrollBox.style_class = "vfade menu-favorites-scrollbox";
         }
     }
 
