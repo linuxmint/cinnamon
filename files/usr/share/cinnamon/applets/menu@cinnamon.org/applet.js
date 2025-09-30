@@ -1125,6 +1125,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("application-icon-size", "applicationIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-description", "showDescription", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-sidebar", "showSidebar", this._sidebarToggle);
+        this.settings.bind("show-home", "showHome", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-desktop", "showDesktop", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-downloads", "showDownloads", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-documents", "showDocuments", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-music", "showMusic", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-pictures", "showPictures", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-videos", "showVideos", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("show-bookmarks", "showBookmarks", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("sidebar-icon-size", "sidebarIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("enable-animation", "enableAnimation", null);
         this.settings.bind("popup-width", "popup_width");
@@ -1250,14 +1258,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let m = this.refreshMask;
         if ((m & RefreshFlags.APP) === RefreshFlags.APP)
             this._refreshApps();
-        if ((m & RefreshFlags.FAV_APP) === RefreshFlags.FAV_APP)
-            this._refreshFavApps();
         if ((m & RefreshFlags.SYSTEM) === RefreshFlags.SYSTEM)
             this._refreshSystemButtons();
         if ((m & RefreshFlags.FAV_DOC) === RefreshFlags.FAV_DOC)
             this._refreshFavDocs();
         if ((m & RefreshFlags.PLACE) === RefreshFlags.PLACE)
             this._refreshPlaces();
+        if ((m & RefreshFlags.FAV_APP) === RefreshFlags.FAV_APP)
+            this._refreshFavApps();
         if ((m & RefreshFlags.RECENT) === RefreshFlags.RECENT)
             this._refreshRecent();
 
@@ -1739,7 +1747,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         item_actor = iter.left.last();
                     if (this._activeContainer === this.systemButtonsBox) {
                         if (active === iter.first())
-                            item_actor = iter.left.last();
+                            item_actor = iter.left.first();
                         else
                             item_actor = iter.prev(active);
                     }
@@ -2048,8 +2056,43 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         //Load places again
         this._placesButtons = [];
 
-        let places = [...Main.placesManager.getDefaultPlaces(), ...Main.placesManager.getBookmarks()]
+        let places = [...Main.placesManager.getDefaultPlaces(), ...Main.placesManager.getBookmarks()];
         for (let place of places) {
+            let path = place.idDecoded.replace("bookmark:file://", "")
+            switch (path) {
+                case "special:home":
+                    if (!this.showHome)
+                        continue;
+                    break;
+                case "special:desktop":
+                     if (!this.showDesktop)
+                        continue;
+                    break;
+                case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD):
+                    if (!this.showDownloads)
+                        continue;
+                    break;
+                case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOCUMENTS):
+                    if (!this.showDocuments)
+                        continue;
+                    break;
+                case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_MUSIC):
+                    if (!this.showMusic)
+                        continue;
+                    break;
+                case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES):
+                    if (!this.showPictures)
+                        continue;
+                    break;
+                case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_VIDEOS):
+                    if (!this.showVideos)
+                        continue;
+                    break;
+                default:
+                    if (!this.showBookmarks)
+                        continue;
+                    break;
+            }
             let button = new PlaceButton(this, place);
             this._placesButtons.push(button);
             this.placesBox.add(button.actor, {
@@ -2057,6 +2100,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 y_fill: false
             });
         }
+        // Update navigation because the presence/absence of places
+        // can impact it.
+        this.updateNavigation();
     }
 
     _refreshRecent () {
@@ -2221,9 +2267,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.favoriteAppsBox.destroy_all_children();
 
         //Load favorites again addding the separator first
-        let separator = new PopupMenu.PopupSeparatorMenuItem();
-        this.favoriteAppsBox.add_actor(separator.actor);
-
+        if (this._placesButtons.length > 0) {
+            let separator = new PopupMenu.PopupSeparatorMenuItem();
+            this.favoriteAppsBox.add_actor(separator.actor);
+        }
         this._favoriteAppButtons = [];
         let launchers = global.settings.get_strv('favorite-apps');
         for (let launcher of launchers) {
@@ -2501,27 +2548,26 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.placesBoxIter.down = this.favBoxIter;
         this.favBoxIter.left = this.sysBoxIter;
         this.favBoxIter.right = this.catBoxIter;
-        this.favBoxIter.up = this.placesBoxIter;
-        this.favBoxIter.down = this.placesBoxIter;
-        if (this.showSidebar)
-            this.catBoxIter.left = this.placesBoxIter;
-        else
-            this.catBoxIter.left = this.appBoxIter;
+        this.favBoxIter.up = null;
+        this.favBoxIter.down = null;
         this.catBoxIter.right = this.appBoxIter;
+        this.catBoxIter.left = this.sysBoxIter;
         this.appBoxIter.left = this.catBoxIter;
-        if (this.showSidebar)
-            this.appBoxIter.right = this.placesBoxIter;
-        else
-            this.appBoxIter.right = this.catBoxIter;
-        if (this.showSidebar)
-            this.appBoxIter.right = this.placeBoxIter;
-        else
-            this.appBoxIter.right = this.catBoxIter;
+        this.appBoxIter.right = this.sysBoxIter;
         this.sysBoxIter.left = this.appBoxIter;
-        if (this.showSidebar)
-            this.sysBoxIter.right = this.placesBoxIter;
-        else
-            this.sysBoxIter.right = this.catBoxIter;
+        this.sysBoxIter.right = this.catBoxIter;
+        if (this.showSidebar) {
+            if (this._placesButtons.length > 0) {
+                this.favBoxIter.up = this.placesBoxIter;
+                this.favBoxIter.down = this.placesBoxIter;
+                this.catBoxIter.left = this.placesBoxIter;
+                this.sysBoxIter.right = this.placesBoxIter;
+            }
+            else {
+                this.catBoxIter.left = this.favBoxIter;
+                this.sysBoxIter.right = this.favBoxIter;
+            }
+        }
     }
 
     _updateVFade() {
