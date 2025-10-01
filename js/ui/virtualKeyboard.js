@@ -59,11 +59,11 @@ const defaultKeysPost = [
      dir_keys],
     [[backsp_key, hide_key],
      [return_key],
-     [{ label: '=/<', width: 3, level: 3, right: true, extraClassName: 'non-alpha-key' }],
+     [{ label: '=/<', width: 1.5, level: 3, right: true, extraClassName: 'non-alpha-key' }],
      dir_keys],
     [[backsp_key, hide_key],
      [return_key],
-     [{ label: '?123', width: 3, level: 2, right: true, extraClassName: 'non-alpha-key' }],
+     [{ label: '?123', width: 1.5, level: 2, right: true, extraClassName: 'non-alpha-key' }],
      dir_keys],
 ];
 
@@ -1095,8 +1095,6 @@ class Keyboard extends St.BoxLayout {
                 extraButton.setWidth(1.5);
             } else if (key.right && numKeys > 8) {
                 extraButton.setWidth(2);
-            } else if (keyval == Clutter.KEY_Return && numKeys > 9) {
-                extraButton.setWidth(1.5);
             }
 
             layout.appendKey(extraButton, extraButton.keyButton.keyWidth);
@@ -1499,7 +1497,15 @@ var KeyboardController = class {
     }
 
     getIbusInputActive() {
-        return this._currentSource.type === "ibus";
+        let inputSources = this._inputSourceManager.inputSources;
+
+        for (let i in inputSources) {
+            if (inputSources[i].type === "ibus")
+                return true;
+        }
+
+        return false;
+    }
 
     activateNextGroup() {
         let new_index = this._inputSourceManager.currentSource.index + 1;
