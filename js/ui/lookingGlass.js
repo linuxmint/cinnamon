@@ -279,7 +279,7 @@ class Inspector {
         this._eventHandler = eventHandler;
         Main.pushModal(this._eventHandler);
         container.add_actor(eventHandler);
-        this._displayText = new St.Label();
+        this._displayText = new St.Label({style: 'text-align: center;'});
         eventHandler.add(this._displayText, { expand: true });
         this._passThroughText = new St.Label({style: 'text-align: center;'});
         eventHandler.add(this._passThroughText, { expand: true });
@@ -428,9 +428,9 @@ class Inspector {
             this._target = target;
         this._pointerTarget = target;
 
-        let position = '[inspect x: ' + stageX + ' y: ' + stageY + ']';
+        let position = `[  x: ${stageX.toFixed(6)} y: ${stageY.toFixed(6)}  ]\n`;
         this._displayText.text = '';
-        this._displayText.text = position + ' ' + this._target;
+        this._displayText.text = position + this._target;
 
         if (this._borderPaintTarget != this._target) {
             if (this._borderPaintTarget != null)
@@ -675,7 +675,7 @@ var Melange = class {
         try {
             let inspector = new Inspector();
             inspector.connect('target', (i, target, stageX, stageY) => {
-                let name = '<inspect x:' + stageX + ' y:' + stageY + '>';
+                let name = `<x:${stageX.toFixed(6)} y:${stageY.toFixed(6)}>`;
                 this._pushResult(name, target, "Inspected actor");
             });
             inspector.connect('closed', () => { this.emitInspectorDone() });
