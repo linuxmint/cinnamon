@@ -47,7 +47,7 @@
        "layout-content" : {
             "type" : "section",
             "title" : "Content",
-            "keys" : ["show-sidebar", "show-favorites", "show-recents", "menu-editor-button"]
+            "keys" : ["show-sidebar", "show-avatar", "show-favorites", "show-recents", "menu-editor-button"]
         }
     },
  "overlay-key" : {
@@ -116,6 +116,12 @@
     "default" : true,
     "description" : "Sidebar",
     "tooltip" : "Choose whether or not to show the left pane of the menu."
+ },
+ "show-avatar" : {
+    "type" : "switch",
+    "default" : true,
+    "description" : "Avatar",
+    "tooltip" : "Choose whether or not to show the avatar."
  },
 "show-home" : {
     "type" : "switch",

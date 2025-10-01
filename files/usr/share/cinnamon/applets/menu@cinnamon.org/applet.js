@@ -1125,6 +1125,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("application-icon-size", "applicationIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-description", "showDescription", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-sidebar", "showSidebar", this._sidebarToggle);
+        this.settings.bind("show-avatar", "showAvatar", this._avatarToggle);
         this.settings.bind("show-home", "showHome", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-desktop", "showDesktop", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-downloads", "showDownloads", () => this.queueRefresh(REFRESH_ALL_MASK));
@@ -1416,6 +1417,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         else
             this.sidebar.show();
         this.updateNavigation();
+    }
+
+    _avatarToggle() {
+        if (!this.showAvatar) {
+            this.userIcon.hide();
+            this.avatarSeparator.hide();
+        }
+        else {
+            this.userIcon.show();
+            this.avatarSeparator.show();
+        }
     }
 
     // Override js/applet.js so _updateIconAndLabel doesn't have to fight with size changes
@@ -2363,14 +2375,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
 
         let user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
-        let userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL);
+        this.userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL);
 
         this.userBox.connect('button-press-event', () => {
             this.menu.toggle();
             Util.spawnCommandLine("cinnamon-settings user");
         });
 
-        this.userBox.add(userIcon);
+        this.userBox.add(this.userIcon);
 
         this.sidebar.add(this.userBox, {
             x_fill:  true,
@@ -2379,7 +2391,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             y_align: St.Align.START
         });
 
-        this.sidebar.add(new PopupMenu.PopupSeparatorMenuItem().actor);
+        this.avatarSeparator = new PopupMenu.PopupSeparatorMenuItem().actor;
+        this.sidebar.add(this.avatarSeparator);
 
         this.sidebarAppsBox = new SidebarAppsBox().actor;
         this.sidebarAppsScrollBox = new St.ScrollView({
@@ -2537,6 +2550,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._update_autoscroll();
 
         this._sidebarToggle();
+        this._avatarToggle();
     }
 
     updateNavigation() {
