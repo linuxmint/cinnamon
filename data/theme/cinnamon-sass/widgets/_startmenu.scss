@@ -30,12 +30,6 @@ $appmenu_outer_border_radius: $base_border_radius * 1.25;
     &-user-box {
       padding-top: $appmenu_outer_padding;
       padding-bottom: $appmenu_outer_padding / 2;
-
-      &:hover {
-        .user-icon {
-          box-shadow: 0 0 0 1px #EEEEEE;
-        }
-      }
     }
   }
 

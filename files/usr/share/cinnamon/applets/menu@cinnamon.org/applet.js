@@ -2370,8 +2370,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.userBox = new St.BoxLayout({
             style_class: 'appmenu-sidebar-user-box',
             vertical: true,
-            reactive: true,
-            track_hover: true
+            reactive: true
         });
 
         let user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
