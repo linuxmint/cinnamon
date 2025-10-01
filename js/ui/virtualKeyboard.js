@@ -28,38 +28,42 @@ const KEYBOARD_POSITION_KEY = 'keyboard-position';
 /* KeyContainer puts keys in a grid where a 1:1 key takes this size */
 const KEY_SIZE = 2;
 
+const escape_key = { keyval: Clutter.KEY_Escape, label: "Esc",                               extraClassName: 'escape-key' };
+const tab_key =    { keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
+const _123_key =   { width: 1.5, level: 2,       label: '?123',                              extraClassName: 'non-alpha-key' };
+const abc_key =    { width: 1.5, level: 0,       label: 'ABC',                               extraClassName: 'non-alpha-key' };
+const backsp_key = { width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic', extraClassName: 'non-alpha-key' };
+const hide_key =   { action: 'hide', icon: 'input-keyboard-symbolic',                        extraClassName: 'hide-key' };
+const return_key = { width: 2, keyval: Clutter.KEY_Return, icon: 'keyboard-enter-symbolic',  extraClassName: 'enter-key' };
+const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                                 extraClassName: 'non-alpha-key'},
+                   { keyval: Clutter.KEY_Up,     label: '↑',                                 extraClassName: 'non-alpha-key' },
+                   { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
+                   { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
+
 const defaultKeysPre = [
-    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [{ label: '?123', width: 1.5, level: 2 }]],
-    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [{ label: '?123', width: 1.5, level: 2 }]],
-    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ label: '=/<', width: 1.5, level: 3 }], [{ label: 'ABC', width: 1.5, level: 0 }]],
-    [[{ keyval: Clutter.KEY_Escape, label: "Esc" }], [{ keyval: Clutter.KEY_Tab, label: '⇥' }], [{ label: '?123', width: 1.5, level: 2 }], [{ label: 'ABC', width: 1.5, level: 0 }]],
+    [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [_123_key]],
+    [[escape_key], [tab_key], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [_123_key]],
+    [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [abc_key]],
+    [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [abc_key]],
 ];
 
 const defaultKeysPost = [
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
-     [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
+    [[backsp_key, hide_key],
+     [return_key],
      [{ width: 1.5, level: 1, right: true, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' },
-         { keyval: Clutter.KEY_Left, action: 'left', label: '←'}, { keyval: Clutter.KEY_Up, label: '↑' },
-         { keyval: Clutter.KEY_Down, action: 'left', label: '↓'}, { keyval: Clutter.KEY_Right, label: '→'}]],
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
-     [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
+     dir_keys],
+    [[backsp_key, hide_key],
+     [return_key],
      [{ width: 1.5, level: 0, right: true, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' },
-         { keyval: Clutter.KEY_Left, action: 'left', label: '←'}, { keyval: Clutter.KEY_Up, label: '↑' },
-         { keyval: Clutter.KEY_Down, action: 'left', label: '↓'}, { keyval: Clutter.KEY_Right, label: '→'}]],
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
-     [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
-     [{ label: '=/<', width: 3, level: 3, right: true }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' },
-         { keyval: Clutter.KEY_Left, action: 'left', label: '←' }, { keyval: Clutter.KEY_Up, label: '↑' },
-         { keyval: Clutter.KEY_Down, action: 'left', label: '↓' }, { keyval: Clutter.KEY_Right, label: '→' }]],
-    [[{ width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic' }, { action: 'hide', extraClassName: 'hide-key', icon: 'input-keyboard-symbolic' }],
-     [{ width: 2, keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic' }],
-     [{ label: '?123', width: 3, level: 2, right: true }],
-     [{ action: 'emoji', icon: 'face-smile-symbolic' },
-         { keyval: Clutter.KEY_Left, action: 'left', label: '←' }, { keyval: Clutter.KEY_Up, label: '↑' },
-         { keyval: Clutter.KEY_Down, action: 'left', label: '↓' }, { keyval: Clutter.KEY_Right, label: '→' }]],
+     dir_keys],
+    [[backsp_key, hide_key],
+     [return_key],
+     [{ label: '=/<', width: 3, level: 3, right: true, extraClassName: 'non-alpha-key' }],
+     dir_keys],
+    [[backsp_key, hide_key],
+     [return_key],
+     [{ label: '?123', width: 3, level: 2, right: true, extraClassName: 'non-alpha-key' }],
+     dir_keys],
 ];
 
 var AspectContainer = GObject.registerClass(
@@ -226,7 +230,7 @@ var Key = GObject.registerClass({
     },
 }, class Key extends St.BoxLayout {
     _init(key, extendedKeys, icon = null) {
-        super._init({ style_class: 'key-container' });
+        super._init({ style_class: 'vkeyboard-key-container', important: true });
 
         this.key = key || "";
         this.keyButton = this._makeKey(this.key, icon);
@@ -269,7 +273,7 @@ var Key = GObject.registerClass({
         this._boxPointer.setPosition(this.keyButton, 0.5);
 
         // Adds style to existing keyboard style to avoid repetition
-        this._boxPointer.add_style_class_name('keyboard-subkeys');
+        this._boxPointer.add_style_class_name('vkeyboard-subkeys');
         this._getExtendedKeys();
         this.keyButton._extendedKeys = this._extendedKeyboard;
     }
@@ -374,8 +378,9 @@ var Key = GObject.registerClass({
 
     _makeKey(key, icon) {
         let button = new St.Button({
-            style_class: 'keyboard-key',
+            style_class: 'vkeyboard-key',
             x_expand: true,
+            important: true
         });
 
         if (icon) {
@@ -424,7 +429,7 @@ var Key = GObject.registerClass({
 
     _getExtendedKeys() {
         this._extendedKeyboard = new St.BoxLayout({
-            style_class: 'key-container',
+            style_class: 'vkeyboard-key-container',
             vertical: false,
         });
         for (let i = 0; i < this._extendedKeys.length; ++i) {
@@ -575,455 +580,6 @@ var FocusTracker = class {
     }
 };
 Signals.addSignalMethods(FocusTracker.prototype);
-
-var EmojiPager = GObject.registerClass({
-    Properties: {
-        'delta': GObject.ParamSpec.int(
-            'delta', 'delta', 'delta',
-            GObject.ParamFlags.READWRITE,
-            GLib.MININT32, GLib.MAXINT32, 0),
-    },
-    Signals: {
-        'emoji': { param_types: [GObject.TYPE_STRING] },
-        'page-changed': {
-            param_types: [GObject.TYPE_INT, GObject.TYPE_INT, GObject.TYPE_INT],
-        },
-    },
-}, class EmojiPager extends St.Widget {
-    _init(sections, nCols, nRows) {
-        super._init({
-            layout_manager: new Clutter.BinLayout(),
-            reactive: true,
-            clip_to_allocation: true,
-            y_expand: true,
-        });
-        this._sections = sections;
-        this._nCols = nCols;
-        this._nRows = nRows;
-
-        this._pages = [];
-        this._panel = null;
-        this._curPage = null;
-        this._followingPage = null;
-        this._followingPanel = null;
-        this._currentKey = null;
-        this._delta = 0;
-        this._width = null;
-
-        this._initPagingInfo();
-
-        let panAction = new Clutter.PanAction({ interpolate: false });
-        panAction.connect('pan', this._onPan.bind(this));
-        panAction.connect('gesture-begin', this._onPanBegin.bind(this));
-        panAction.connect('gesture-cancel', this._onPanCancel.bind(this));
-        panAction.connect('gesture-end', this._onPanEnd.bind(this));
-        this._panAction = panAction;
-        this.add_action(panAction);
-    }
-
-    get delta() {
-        return this._delta;
-    }
-
-    set delta(value) {
-        if (value > this._width)
-            value = this._width;
-        else if (value < -this._width)
-            value = -this._width;
-
-        if (this._delta == value)
-            return;
-
-        this._delta = value;
-        this.notify('delta');
-
-        if (value == 0)
-            return;
-
-        let relValue = Math.abs(value / this._width);
-        let followingPage = this.getFollowingPage();
-
-        if (this._followingPage != followingPage) {
-            if (this._followingPanel) {
-                this._followingPanel.destroy();
-                this._followingPanel = null;
-            }
-
-            if (followingPage != null) {
-                this._followingPanel = this._generatePanel(followingPage);
-                this._followingPanel.set_pivot_point(0.5, 0.5);
-                this.add_child(this._followingPanel);
-                this.set_child_below_sibling(this._followingPanel, this._panel);
-            }
-
-            this._followingPage = followingPage;
-        }
-
-        this._panel.translation_x = value;
-        this._panel.opacity = 255 * (1 - Math.pow(relValue, 3));
-
-        if (this._followingPanel) {
-            this._followingPanel.scale_x = 0.8 + (0.2 * relValue);
-            this._followingPanel.scale_y = 0.8 + (0.2 * relValue);
-            this._followingPanel.opacity = 255 * relValue;
-        }
-    }
-
-    _prevPage(nPage) {
-        return (nPage + this._pages.length - 1) % this._pages.length;
-    }
-
-    _nextPage(nPage) {
-        return (nPage + 1) % this._pages.length;
-    }
-
-    getFollowingPage() {
-        if (this.delta == 0)
-            return null;
-
-        if ((this.delta < 0 && global.stage.text_direction == Clutter.TextDirection.LTR) ||
-            (this.delta > 0 && global.stage.text_direction == Clutter.TextDirection.RTL))
-            return this._nextPage(this._curPage);
-        else
-            return this._prevPage(this._curPage);
-    }
-
-    _onPan(action) {
-        let [dist_, dx, dy_] = action.get_motion_delta(0);
-        this.delta = this.delta + dx;
-
-        if (this._currentKey != null) {
-            this._currentKey.cancel();
-            this._currentKey = null;
-        }
-
-        return false;
-    }
-
-    _onPanBegin() {
-        this._width = this.width;
-        return true;
-    }
-
-    _onPanEnd() {
-        if (Math.abs(this._delta) < this.width * PANEL_SWITCH_RELATIVE_DISTANCE) {
-            this._onPanCancel();
-        } else {
-            let value;
-            if (this._delta > 0)
-                value = this._width;
-            else if (this._delta < 0)
-                value = -this._width;
-
-            let relDelta = Math.abs(this._delta - value) / this._width;
-            let time = PANEL_SWITCH_ANIMATION_TIME * Math.abs(relDelta);
-
-            this.remove_all_transitions();
-            this.ease_property('delta', value, {
-                duration: time,
-                onComplete: () => {
-                    this.setCurrentPage(this.getFollowingPage());
-                },
-            });
-        }
-    }
-
-    _onPanCancel() {
-        let relDelta = Math.abs(this._delta) / this.width;
-        let time = PANEL_SWITCH_ANIMATION_TIME * Math.abs(relDelta);
-
-        this.remove_all_transitions();
-        this.ease_property('delta', 0, {
-            duration: time,
-        });
-    }
-
-    _initPagingInfo() {
-        for (let i = 0; i < this._sections.length; i++) {
-            let section = this._sections[i];
-            let itemsPerPage = this._nCols * this._nRows;
-            let nPages = Math.ceil(section.keys.length / itemsPerPage);
-            let page = -1;
-            let pageKeys;
-
-            for (let j = 0; j < section.keys.length; j++) {
-                if (j % itemsPerPage == 0) {
-                    page++;
-                    pageKeys = [];
-                    this._pages.push({ pageKeys, nPages, page, section: this._sections[i] });
-                }
-
-                pageKeys.push(section.keys[j]);
-            }
-        }
-    }
-
-    _lookupSection(section, nPage) {
-        for (let i = 0; i < this._pages.length; i++) {
-            let page = this._pages[i];
-
-            if (page.section == section && page.page == nPage)
-                return i;
-        }
-
-        return -1;
-    }
-
-    _generatePanel(nPage) {
-        let gridLayout = new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL,
-                                                  column_homogeneous: true,
-                                                  row_homogeneous: true });
-        let panel = new St.Widget({ layout_manager: gridLayout,
-                                    style_class: 'emoji-page',
-                                    x_expand: true,
-                                    y_expand: true });
-
-        /* Set an expander actor so all proportions are right despite the panel
-         * not having all rows/cols filled in.
-         */
-        let expander = new Clutter.Actor();
-        gridLayout.attach(expander, 0, 0, this._nCols, this._nRows);
-
-        let page = this._pages[nPage];
-        let col = 0;
-        let row = 0;
-
-        for (let i = 0; i < page.pageKeys.length; i++) {
-            let modelKey = page.pageKeys[i];
-            let key = new Key(modelKey.label, modelKey.variants);
-
-            key.keyButton.set_button_mask(0);
-
-            key.connect('activated', () => {
-                this._currentKey = key;
-            });
-            key.connect('long-press', () => {
-                this._panAction.cancel();
-            });
-            key.connect('released', (actor, keyval, str) => {
-                if (this._currentKey != key)
-                    return;
-                this._currentKey = null;
-                this.emit('emoji', str);
-            });
-
-            gridLayout.attach(key, col, row, 1, 1);
-
-            col++;
-            if (col >= this._nCols) {
-                col = 0;
-                row++;
-            }
-        }
-
-        return panel;
-    }
-
-    setCurrentPage(nPage) {
-        if (this._curPage == nPage)
-            return;
-
-        this._curPage = nPage;
-
-        if (this._panel) {
-            this._panel.destroy();
-            this._panel = null;
-        }
-
-        /* Reuse followingPage if possible */
-        if (nPage == this._followingPage) {
-            this._panel = this._followingPanel;
-            this._followingPanel = null;
-        }
-
-        if (this._followingPanel)
-            this._followingPanel.destroy();
-
-        this._followingPanel = null;
-        this._followingPage = null;
-        this._delta = 0;
-
-        if (!this._panel) {
-            this._panel = this._generatePanel(nPage);
-            this.add_child(this._panel);
-        }
-
-        let page = this._pages[nPage];
-        this.emit('page-changed', page.section.label, page.page, page.nPages);
-    }
-
-    setCurrentSection(section, nPage) {
-        for (let i = 0; i < this._pages.length; i++) {
-            let page = this._pages[i];
-
-            if (page.section == section && page.page == nPage) {
-                this.setCurrentPage(i);
-                break;
-            }
-        }
-    }
-});
-
-var EmojiSelection = GObject.registerClass({
-    Signals: {
-        'emoji-selected': { param_types: [GObject.TYPE_STRING] },
-        'close-request': {},
-        'toggle': {},
-    },
-}, class EmojiSelection extends St.BoxLayout {
-    _init() {
-        super._init({
-            style_class: 'emoji-panel',
-            x_expand: true,
-            y_expand: true,
-            vertical: true,
-        });
-
-        this._sections = [
-            { first: 'grinning face', label: '🙂️' },
-            { first: 'selfie', label: '👍️' },
-            { first: 'monkey face', label: '🌷️' },
-            { first: 'grapes', label: '🍴️' },
-            { first: 'globe showing Europe-Africa', label: '✈️' },
-            { first: 'jack-o-lantern', label: '🏃️' },
-            { first: 'muted speaker', label: '🔔️' },
-            { first: 'ATM sign', label: '❤️' },
-            { first: 'chequered flag', label: '🚩️' },
-        ];
-
-        this._populateSections();
-
-        this._emojiPager = new EmojiPager(this._sections, 11, 3);
-        this._emojiPager.connect('page-changed', (pager, sectionLabel, page, nPages) => {
-            this._onPageChanged(sectionLabel, page, nPages);
-        });
-        this._emojiPager.connect('emoji', (pager, str) => {
-            this.emit('emoji-selected', str);
-        });
-        this.add_child(this._emojiPager);
-
-        this._pageIndicator = new PageIndicators.PageIndicators(
-            Clutter.Orientation.HORIZONTAL
-        );
-        this.add_child(this._pageIndicator);
-        this._pageIndicator.setReactive(false);
-
-        this._emojiPager.connect('notify::delta', () => {
-            this._updateIndicatorPosition();
-        });
-
-        let bottomRow = this._createBottomRow();
-        this.add_child(bottomRow);
-
-        this._curPage = 0;
-    }
-
-    vfunc_map() {
-        this._emojiPager.setCurrentPage(0);
-        super.vfunc_map();
-    }
-
-    _onPageChanged(sectionLabel, page, nPages) {
-        this._curPage = page;
-        this._pageIndicator.setNPages(nPages);
-        this._updateIndicatorPosition();
-
-        for (let i = 0; i < this._sections.length; i++) {
-            let sect = this._sections[i];
-            sect.button.setLatched(sectionLabel == sect.label);
-        }
-    }
-
-    _updateIndicatorPosition() {
-        this._pageIndicator.setCurrentPosition(this._curPage -
-            this._emojiPager.delta / this._emojiPager.width);
-    }
-
-    _findSection(emoji) {
-        for (let i = 0; i < this._sections.length; i++) {
-            if (this._sections[i].first == emoji)
-                return this._sections[i];
-        }
-
-        return null;
-    }
-
-    _populateSections() {
-        let file = Gio.File.new_for_uri('resource:///org/cinnamon/osk-layouts/emoji.json');
-        let [success_, contents] = file.load_contents(null);
-
-        if (contents instanceof Uint8Array)
-            contents = imports.byteArray.toString(contents);
-        let emoji = JSON.parse(contents);
-
-        let variants = [];
-        let currentKey = 0;
-        let currentSection = null;
-
-        for (let i = 0; i < emoji.length; i++) {
-            /* Group variants of a same emoji so they appear on the key popover */
-            if (emoji[i].name.startsWith(emoji[currentKey].name)) {
-                variants.push(emoji[i].char);
-                if (i < emoji.length - 1)
-                    continue;
-            }
-
-            let newSection = this._findSection(emoji[currentKey].name);
-            if (newSection != null) {
-                currentSection = newSection;
-                currentSection.keys = [];
-            }
-
-            /* Create the key */
-            let label = emoji[currentKey].char + String.fromCharCode(0xFE0F);
-            currentSection.keys.push({ label, variants });
-            currentKey = i;
-            variants = [];
-        }
-    }
-
-    _createBottomRow() {
-        let row = new KeyContainer();
-        let key;
-
-        row.appendRow();
-
-        key = new Key('ABC', []);
-        key.keyButton.add_style_class_name('default-key');
-        key.connect('released', () => this.emit('toggle'));
-        row.appendKey(key, 1.5);
-
-        for (let i = 0; i < this._sections.length; i++) {
-            let section = this._sections[i];
-
-            key = new Key(section.label, []);
-            key.connect('released', () => this._emojiPager.setCurrentSection(section, 0));
-            row.appendKey(key);
-
-            section.button = key;
-        }
-
-        key = new Key(null, [], 'go-down-symbolic');
-        key.keyButton.add_style_class_name('default-key');
-        key.keyButton.add_style_class_name('hide-key');
-        key.connect('released', () => {
-            this.emit('close-request');
-        });
-        row.appendKey(key);
-        row.layoutButtons();
-
-        let actor = new AspectContainer({ layout_manager: new Clutter.BinLayout(),
-                                          x_expand: true, y_expand: true });
-        actor.add_child(row);
-        /* Regular keyboard layouts are 11.5×4 grids, optimize for that
-         * at the moment. Ideally this should be as wide as the current
-         * keymap.
-         */
-        actor.setRatio(11.5, 1);
-
-        return actor;
-    }
-});
 
 var Keypad = GObject.registerClass({
     Signals: {
@@ -1211,9 +767,8 @@ var VirtualKeyboardManager = GObject.registerClass({
 var Keyboard = GObject.registerClass(
 class Keyboard extends St.BoxLayout {
     _init(onDemand) {
-        super._init({ name: 'keyboard', vertical: true });
+        super._init({ name: 'virtual-keyboard', vertical: true, important: true });
         this._focusInExtendedKeys = false;
-        this._emojiActive = false;
         this._onDemand = onDemand;
 
         this._languagePopup = null;
@@ -1224,7 +779,6 @@ class Keyboard extends St.BoxLayout {
         this._latched = false; // current level is latched
 
         this._suggestions = null;
-        this._emojiKeyVisible = Meta.is_wayland_compositor();
 
         if (!this._onDemand) {
             this._focusTracker = new FocusTracker();
@@ -1311,26 +865,15 @@ class Keyboard extends St.BoxLayout {
         this._groups = {};
         this._currentPage = null;
 
-        if (this._keyboardController.getIbusInputActive()) {
-            this._suggestions = new Suggestions();
-            this.add_child(this._suggestions);
-        }
+        this._suggestions = new Suggestions();
+        this.add_child(this._suggestions);
+        this._suggestions.visible = this._keyboardController.getIbusInputActive();
 
         this._aspectContainer = new AspectContainer({
             layout_manager: new Clutter.BinLayout(),
             y_expand: true,
         });
         this.add_child(this._aspectContainer);
-
-        this._emojiSelection = new EmojiSelection();
-        this._emojiSelection.connect('toggle', this._toggleEmoji.bind(this));
-        this._emojiSelection.connect('close-request', () => this.close());
-        this._emojiSelection.connect('emoji-selected', (selection, emoji) => {
-            this._keyboardController.commitString(emoji);
-        });
-
-        this._aspectContainer.add_child(this._emojiSelection);
-        this._emojiSelection.hide();
 
         this._keypad = new Keypad();
         this._connectSignal(this._keypad, 'keyval', (_keypad, keyval) => {
@@ -1360,10 +903,6 @@ class Keyboard extends St.BoxLayout {
         if (!this._onDemand) {
             this._connectSignal(global.stage, 'notify::key-focus',
                 this._onKeyFocusChanged.bind(this));
-        }
-        if (Meta.is_wayland_compositor()) {
-            this._connectSignal(this._keyboardController, 'emoji-visible',
-                this._onEmojiKeyVisible.bind(this));
         }
 
         this._relayout();
@@ -1467,13 +1006,9 @@ class Keyboard extends St.BoxLayout {
             let action = key.action;
             let icon = key.icon;
 
-            /* Skip emoji button if necessary */
-            if (!this._emojiKeyVisible && action == 'emoji')
-                continue;
-
             extraButton = new Key(key.label || '', [], icon);
 
-            extraButton.keyButton.add_style_class_name('default-key');
+            // extraButton.keyButton.add_style_class_name('default-key');
             if (key.extraClassName != null)
                 extraButton.keyButton.add_style_class_name(key.extraClassName);
             if (key.width != null)
@@ -1495,8 +1030,6 @@ class Keyboard extends St.BoxLayout {
                     this._keyboardController.keyvalRelease(keyval);
                 else if (action == 'hide')
                     this.close();
-                else if (action == 'emoji')
-                    this._toggleEmoji();
             });
 
             if (switchToLevel == 0) {
@@ -1522,8 +1055,6 @@ class Keyboard extends St.BoxLayout {
                 extraButton.setWidth(2);
             } else if (keyval == Clutter.KEY_Return && numKeys > 9) {
                 extraButton.setWidth(1.5);
-            } else if (!this._emojiKeyVisible && (action == 'hide' || action == 'languageMenu')) {
-                extraButton.setWidth(1.5);
             }
 
             layout.appendKey(extraButton, extraButton.keyButton.keyWidth);
@@ -1532,17 +1063,7 @@ class Keyboard extends St.BoxLayout {
 
     _updateCurrentPageVisible() {
         if (this._currentPage)
-            this._currentPage.visible = !this._emojiActive && !this._keypadVisible;
-    }
-
-    _setEmojiActive(active) {
-        this._emojiActive = active;
-        this._emojiSelection.visible = this._emojiActive;
-        this._updateCurrentPageVisible();
-    }
-
-    _toggleEmoji() {
-        this._setEmojiActive(!this._emojiActive);
+            this._currentPage.visible = !this._keypadVisible;
     }
 
     _setCurrentLevelLatched(layout, latched) {
@@ -1603,6 +1124,8 @@ class Keyboard extends St.BoxLayout {
     }
 
     _relayout() {
+        this._suggestions.visible = this._keyboardController.getIbusInputActive();
+
         let monitor = Main.layoutManager.keyboardMonitor;
 
         if (!monitor)
@@ -1626,12 +1149,24 @@ class Keyboard extends St.BoxLayout {
     }
 
     _onGroupChanged() {
+        if (this._keyboardController.getIbusInputActive()) {
+            if (!this._suggestions.visible) {
+                this._suggestions.visible = true;
+                this._relayout();
+            }
+        } else {
+            if (this._suggestions.visible) {
+                this._suggestions.visible = false;
+                this._relayout();
+            }
+        }
+
         this._ensureKeysForGroup(this._keyboardController.getCurrentGroup());
         this._setActiveLayer(0);
     }
 
     _onKeyboardGroupsChanged() {
-        let nonGroupActors = [this._emojiSelection, this._keypad];
+        let nonGroupActors = [this._keypad];
         this._aspectContainer.get_children().filter(c => !nonGroupActors.includes(c)).forEach(c => {
             c.destroy();
         });
@@ -1647,15 +1182,6 @@ class Keyboard extends St.BoxLayout {
         this._keypadVisible = visible;
         this._keypad.visible = this._keypadVisible;
         this._updateCurrentPageVisible();
-    }
-
-    _onEmojiKeyVisible(controller, visible) {
-        if (visible == this._emojiKeyVisible)
-            return;
-
-        this._emojiKeyVisible = visible;
-        /* Rebuild keyboard widgetry to include emoji button */
-        this._onKeyboardGroupsChanged();
     }
 
     _onKeyboardStateChanged(controller, state) {
@@ -1739,8 +1265,6 @@ class Keyboard extends St.BoxLayout {
         Main.layoutManager.keyboardIndex = monitor;
         this._relayout();
         Main.layoutManager.showKeyboard();
-
-        this._setEmojiActive(false);
 
         if (this._delayedAnimFocusWindow) {
             this._setAnimationWindow(this._delayedAnimFocusWindow);
@@ -1906,20 +1430,13 @@ var KeyboardController = class {
 
     _onContentPurposeHintsChanged(method) {
         let purpose = method.content_purpose;
-        let emojiVisible = false;
         let keypadVisible = false;
 
-        if (purpose == Clutter.InputContentPurpose.NORMAL ||
-            purpose == Clutter.InputContentPurpose.ALPHA ||
-            purpose == Clutter.InputContentPurpose.PASSWORD ||
-            purpose == Clutter.InputContentPurpose.TERMINAL)
-            emojiVisible = true;
         if (purpose == Clutter.InputContentPurpose.DIGITS ||
             purpose == Clutter.InputContentPurpose.NUMBER ||
             purpose == Clutter.InputContentPurpose.PHONE)
             keypadVisible = true;
 
-        this.emit('emoji-visible', emojiVisible);
         this.emit('keypad-visible', keypadVisible);
     }
 
