@@ -931,6 +931,23 @@ var InputSourceManager = class {
     get showFlags() {
         return this._interface_settings.get_boolean("keyboard-layout-show-flags");
     }
+
+    createFlagIcon(source, actorClass, size) {
+        let actor = null;
+        let name = source.flagName;
+
+        const file = Gio.file_new_for_path(getFlagFileName(name));
+        if (file.query_exists(null)) {
+            actor = new SubscriptableFlagIcon({
+                style_class: actorClass,
+                file: file,
+                subscript: source.dupeId > 0 ? String(source.dupeId) : null,
+                height: size,
+            });
+        }
+
+        return actor;
+    }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);
 

@@ -148,23 +148,6 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this.menu.toggle();
     }
 
-    _createFlagIcon(source, actorClass, size) {
-        let actor = null;
-        let name = source.flagName;
-
-        const file = Gio.file_new_for_path(KeyboardManager.getFlagFileName(name));
-        if (file.query_exists(null)) {
-            actor = new KeyboardManager.SubscriptableFlagIcon({
-                style_class: actorClass,
-                file: file,
-                subscript: source.dupeId > 0 ? String(source.dupeId) : null,
-                height: size,
-            });
-        }
-
-        return actor;
-    }
-
     _syncConfig() {
         this._layoutItems.forEach((v, k, m) => v.destroy());
         this._layoutItems = new Map()
@@ -177,7 +160,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             let actor = null;
 
             if (this._inputSourcesManager.showFlags) {
-                actor = this._createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22 * global.ui_scale);
+                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22 * global.ui_scale);
             }
 
             if (actor == null) {
@@ -219,7 +202,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         const iconSize = this.getPanelIconSize(St.IconType.SYMBOLIC);
 
         if (this._inputSourcesManager.showFlags) {
-            actor = this._createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
+            actor = this._inputSourcesManager.createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
         }
 
         if (actor == null) {

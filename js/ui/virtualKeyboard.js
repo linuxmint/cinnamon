@@ -39,10 +39,11 @@ const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                  
                    { keyval: Clutter.KEY_Up,     label: '↑',                                 extraClassName: 'non-alpha-key' },
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
+const layout_key = { action: 'next-layout',      icon: 'input-keyboard-symbolic',            extraClassName: 'non-alpha-key' };
 
 const defaultKeysPre = [
-    [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [_123_key]],
-    [[escape_key], [tab_key], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [_123_key]],
+    [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
+    [[escape_key], [tab_key], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
     [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [abc_key]],
     [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [abc_key]],
 ];
@@ -251,6 +252,13 @@ var Key = GObject.registerClass({
         this._longPress = false;
     }
 
+    updateKey(label, icon = null) {
+        this.key = label || "";
+        this.keyButton.destroy();
+        this.keyButton = this._makeKey(this.key, icon);
+        this.add_child(this.keyButton);
+    }
+
     _onDestroy() {
         if (this._boxPointer) {
             this._boxPointer.destroy();
@@ -384,9 +392,14 @@ var Key = GObject.registerClass({
         });
 
         if (icon) {
-            let child = new St.Icon({ icon_name: icon });
-            button.set_child(child);
-            this._icon = child;
+            if (icon instanceof Clutter.Actor) {
+                button.set_child(icon);
+                this._icon = icon;
+            } else {
+                let child = new St.Icon({ icon_name: icon });
+                button.set_child(child);
+                this._icon = child;
+            }
         } else {
             let label = GLib.markup_escape_text(key, -1);
             button.set_label(label);
@@ -464,6 +477,29 @@ var Key = GObject.registerClass({
         } else {
             this.keyButton.remove_style_pseudo_class('latched');
             this._icon.icon_name = 'keyboard-shift-filled-symbolic';
+        }
+    }
+});
+
+var ActiveGroupKey = GObject.registerClass({}, class ActiveGroupKey extends Key {
+    _init(controller) {
+        this._controller = controller;
+        let [shortName, icon] = this._controller.getCurrentGroupLabelIcon();
+
+        super._init(shortName, [], icon);
+        this._groupChangedId = this._controller.connect('active-group', this._onGroupChanged.bind(this));
+        this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    _onGroupChanged(id) {
+        let [shortName, icon] = this._controller.getCurrentGroupLabelIcon();
+        this.updateKey(shortName, icon);
+    }
+
+    _onDestroy() {
+        if (this._groupChangedId > 0) {
+            this._controller.disconnect(this._groupChangedId);
+            this._groupChangedId = 0;
         }
     }
 });
@@ -1006,7 +1042,11 @@ class Keyboard extends St.BoxLayout {
             let action = key.action;
             let icon = key.icon;
 
-            extraButton = new Key(key.label || '', [], icon);
+            if (action === 'next-layout') {
+                extraButton = new ActiveGroupKey(this._keyboardController);
+            } else {
+                extraButton = new Key(key.label || '', [], icon);
+            }
 
             // extraButton.keyButton.add_style_class_name('default-key');
             if (key.extraClassName != null)
@@ -1030,6 +1070,8 @@ class Keyboard extends St.BoxLayout {
                     this._keyboardController.keyvalRelease(keyval);
                 else if (action == 'hide')
                     this.close();
+                else if (action == 'next-layout')
+                    this._keyboardController.activateNextGroup();
             });
 
             if (switchToLevel == 0) {
@@ -1458,6 +1500,27 @@ var KeyboardController = class {
 
     getIbusInputActive() {
         return this._currentSource.type === "ibus";
+
+    activateNextGroup() {
+        let new_index = this._inputSourceManager.currentSource.index + 1;
+        if (new_index == this._inputSourceManager.numInputSources) {
+            new_index = 0;
+        }
+
+        this._inputSourceManager.activateInputSourceIndex(new_index);
+    }
+
+    getCurrentGroupLabelIcon() {
+        let actor = null;
+
+        if (this._inputSourceManager.showFlags) {
+            actor = this._inputSourceManager.createFlagIcon(this._currentSource, null, 16);
+        }
+
+        if (actor == null) {
+            return [this._currentSource.shortName, null];
+        }
+        return [null, actor];
     }
 
     commitString(string, fromKey) {
