@@ -16,6 +16,7 @@ class CinnamonOnScreenKeyboardApplet extends Applet.IconApplet {
             null);
         this._applet_context_menu.addMenuItem(this.keyboard_switch);
         this.keyboard_switch.connect("toggled", (item, state) => this.settings.set_boolean("screen-keyboard-enabled", state));
+        this._applet_context_menu.addSettingsAction(_("Virtual keyboard settings"), 'accessibility', "keyboard");
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.update_status();
