@@ -1043,7 +1043,12 @@ class Keyboard extends St.BoxLayout {
             let icon = key.icon;
 
             if (action === 'next-layout') {
-                extraButton = new ActiveGroupKey(this._keyboardController);
+                let groups = this._keyboardController.getGroups();
+                if (groups.length > 1) {
+                    extraButton = new ActiveGroupKey(this._keyboardController);
+                } else {
+                    continue;
+                }
             } else {
                 extraButton = new Key(key.label || '', [], icon);
             }
