@@ -39,7 +39,7 @@ const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                  
                    { keyval: Clutter.KEY_Up,     label: '↑',                                 extraClassName: 'non-alpha-key' },
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
-const layout_key = { action: 'next-layout',      icon: 'input-keyboard-symbolic',            extraClassName: 'non-alpha-key' };
+const layout_key = { action: 'next-layout',      icon: 'input-keyboard-symbolic' };
 
 const defaultKeysPre = [
     [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
@@ -494,6 +494,7 @@ var ActiveGroupKey = GObject.registerClass({}, class ActiveGroupKey extends Key 
     _onGroupChanged(id) {
         let [shortName, icon] = this._controller.getCurrentGroupLabelIcon();
         this.updateKey(shortName, icon);
+        this.keyButton.add_style_class_name("non-alpha-key");
     }
 
     _onDestroy() {
