@@ -5,6 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
 from gi.repository import Gio, GLib, GObject, Gtk
 import sys
+import subprocess
 import signal
 import json
 from pathlib import Path
@@ -29,12 +30,9 @@ class OskLayoutTester():
         self.window = Gtk.Window()
         self.window.set_default_size(300, 400)
         self.window.connect("destroy", self.on_window_destroy)
-        self.window_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,
+        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
                                 margin=6,
                                 spacing=0)
-
-        self.window_box.pack_start(self.main_box, True, True, 0)
 
         # list stuff
         sw_frame = Gtk.Frame()
@@ -49,9 +47,13 @@ class OskLayoutTester():
 
         sw.add(self.list_box)
 
-        self.main_box.pack_start(sw_frame, True, True, 6)
-        self.window.add(self.window_box)
+        self.main_box.pack_start(sw_frame, True, True, 3)
 
+        self.toggle_button = Gtk.Button(label="Toggle Keyboard")
+        self.toggle_button.connect("clicked", self.toggle_keyboard)
+        self.main_box.pack_start(self.toggle_button, False, False, 3)
+
+        self.window.add(self.main_box)
         self.window.show_all()
 
         self.input_source_settings = Gio.Settings.new("org.cinnamon.desktop.input-sources")
@@ -60,6 +62,9 @@ class OskLayoutTester():
 
         self.shortname_size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
         self.load_layouts()
+
+    def toggle_keyboard(self, button, data=None):
+        subprocess.run(["cinnamon-dbus-command", "ToggleKeyboard"])
 
     def load_layouts(self):
         for file in Path.cwd().iterdir():
