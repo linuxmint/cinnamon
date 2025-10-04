@@ -490,9 +490,9 @@ LayoutManager.prototype = {
     },
 
     hideKeyboard: function(immediate) {
-        this.keyboardBox.hide();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
         this._chrome.updateRegions();
+        this.keyboardBox.hide();
         this.emit('keyboard-visible-changed', false);
     },
 
@@ -1007,7 +1007,7 @@ Chrome.prototype = {
                 let monitor = this.findMonitorForActor(actorData.actor);
                 let side;
                 if (x1 <= monitor.x && x2 >= monitor.x + monitor.width) {
-                    if (y1 <= monitor.y)
+                    if (y1 <= monitor.y + (actorData.actor.name === "keyboardBox" ? 100 : 0))
                         side = Meta.Side.TOP;
                     // Hack to let the keyboardBox be considered struts even though it's off the edge of the monitor
                     // by some panel height amount.
