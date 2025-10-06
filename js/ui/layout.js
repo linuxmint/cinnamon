@@ -1007,10 +1007,10 @@ Chrome.prototype = {
                 let monitor = this.findMonitorForActor(actorData.actor);
                 let side;
                 if (x1 <= monitor.x && x2 >= monitor.x + monitor.width) {
+                    // Allow the keyboard box to become chrome even though it's only adjacent to a panel
+                    // rather than a monitor edge.
                     if (y1 <= monitor.y + (actorData.actor.name === "keyboardBox" ? 100 : 0))
                         side = Meta.Side.TOP;
-                    // Hack to let the keyboardBox be considered struts even though it's off the edge of the monitor
-                    // by some panel height amount.
                     else if (y2 >= monitor.y + monitor.height - (actorData.actor.name === "keyboardBox" ? 100 : 0))
                         side = Meta.Side.BOTTOM;
                     else

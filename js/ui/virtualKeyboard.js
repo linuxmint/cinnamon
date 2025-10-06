@@ -249,7 +249,6 @@ var Key = GObject.registerClass({
 
         this._capturedEventId = 0;
         this._unmapId = 0;
-        this._longPress = false;
     }
 
     updateKey(label, icon = null) {
@@ -294,20 +293,19 @@ var Key = GObject.registerClass({
     _press(key) {
         this.emit('activated');
 
-        if (key !== this.key || this._extendedKeys.length === 0)
+        if (this._extendedKeys.length === 0)
             this.emit('pressed', this._getKeyval(key), key);
 
         if (key == this.key) {
             this._pressTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
                 KEY_LONG_PRESS_TIME,
                 () => {
-                    this._longPress = true;
                     this._pressTimeoutId = 0;
 
                     this.emit('long-press');
 
                     if (this._extendedKeys.length > 0) {
-                        this._touchPressed = false;
+                        this._touchPressSlot = null;
                         this._ensureExtendedKeysPopup();
                         this.keyButton.set_hover(false);
                         this.keyButton.fake_release();
@@ -325,12 +323,11 @@ var Key = GObject.registerClass({
             this._pressTimeoutId = 0;
         }
 
-        if (!this._longPress && key === this.key && this._extendedKeys.length > 0)
+        if (this._extendedKeys.length > 0)
             this.emit('pressed', this._getKeyval(key), key);
 
         this.emit('released', this._getKeyval(key), key);
         this._hideSubkeys();
-        this._longPress = false;
     }
 
     cancel() {
@@ -338,7 +335,7 @@ var Key = GObject.registerClass({
             GLib.source_remove(this._pressTimeoutId);
             this._pressTimeoutId = 0;
         }
-        this._touchPressed = false;
+        this._touchPressSlot = null;
         this.keyButton.set_hover(false);
         this.keyButton.fake_release();
     }
@@ -425,14 +422,19 @@ var Key = GObject.registerClass({
             if (!Meta.is_wayland_compositor())
                 return Clutter.EVENT_PROPAGATE;
 
-            if (!this._touchPressed &&
+            const slot = event.get_event_sequence().get_slot();
+
+            if (!this._touchPressSlot &&
                 event.type() == Clutter.EventType.TOUCH_BEGIN) {
-                this._touchPressed = true;
+                this._touchPressSlot = slot;
                 this._press(key);
-            } else if (this._touchPressed &&
-                       event.type() == Clutter.EventType.TOUCH_END) {
-                this._touchPressed = false;
-                this._release(key);
+            } else if (event.type() === Clutter.EventType.TOUCH_END) {
+                if (!this._touchPressSlot ||
+                    this._touchPressSlot === slot)
+                    this._release(key);
+
+                if (this._touchPressSlot === slot)
+                    this._touchPressSlot = null;
             }
             return Clutter.EVENT_PROPAGATE;
         });
