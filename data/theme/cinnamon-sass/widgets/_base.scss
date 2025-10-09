@@ -152,9 +152,11 @@ StScrollBar {
 
 .user-widget.horizontal { spacing: $base_padding; }
 
+.user-widget.vertical { spacing: $base_padding; }
+
 .user-widget.vertical .user-widget-label {
-  @extend %title_4;
+  font-weight: 700;
+  @include fontsize(13pt);
   color: $fg_color;
-  padding-top: $base_margin * 2;
   text-align: center;
 }

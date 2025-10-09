@@ -879,7 +879,7 @@ class SystemButton extends SimpleMenuItem {
 
 class CategoriesApplicationsBox {
     constructor() {
-        this.actor = new St.BoxLayout({ vertical: false });
+        this.actor = new St.BoxLayout({ vertical: false, style_class: 'appmenu-categories-applications-box' });
         this.actor._delegate = this;
     }
 
@@ -901,12 +901,13 @@ class CategoriesApplicationsBox {
     }
 }
 
-class SidebarAppsBox {
+class SidebarScrollBox {
     constructor() {
         this.actor = new St.BoxLayout({
             vertical: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
+            style_class: 'appmenu-sidebar-scrollbox'
         });
         this.actor._delegate = this;
     }
@@ -918,6 +919,7 @@ class FavoriteAppsBox {
             vertical: true,
             y_expand: true,
             y_align: Clutter.ActorAlign.START,
+            style_class: 'appmenu-favs-box'
         });
         this.actor._delegate = this;
 
@@ -1123,6 +1125,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("category-icon-size", "categoryIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("category-hover", "categoryHover", this._updateCategoryHover);
         this.settings.bind("application-icon-size", "applicationIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
+        this.settings.bind("search-position", "searchPosition", () => this._layout());
+        this.settings.bind("system-position", "systemPosition", () => this._layout());
         this.settings.bind("show-description", "showDescription", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-sidebar", "showSidebar", this._sidebarToggle);
         this.settings.bind("show-avatar", "showAvatar", this._avatarToggle);
@@ -1264,9 +1268,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         if ((m & RefreshFlags.FAV_DOC) === RefreshFlags.FAV_DOC)
             this._refreshFavDocs();
         if ((m & RefreshFlags.PLACE) === RefreshFlags.PLACE)
-            this._refreshPlaces();
+            this._refreshSidebar();
         if ((m & RefreshFlags.FAV_APP) === RefreshFlags.FAV_APP)
-            this._refreshFavApps();
+            this._refreshSidebar();
         if ((m & RefreshFlags.RECENT) === RefreshFlags.RECENT)
             this._refreshRecent();
 
@@ -1398,9 +1402,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.closeContextMenu(false);
 
             this._disableVectorMask();
-            this._scrollToButton(null, this.applicationsScrollBox);
-            this._scrollToButton(null, this.categoriesScrollBox);
-            this._scrollToButton(null, this.sidebarAppsScrollBox);
+            this._scrollToButton(null, this.applicationsScrollView);
+            this._scrollToButton(null, this.categoriesScrollView);
+            this._scrollToButton(null, this.sidebarScrollView);
         }
     }
 
@@ -1723,7 +1727,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         item_actor = this.hoveredCategory || iter.right.first();
                     else if (iter.right === this.appBoxIter)
                         item_actor = this.hoveredApp || iter.right.first();
-                    if (this._activeContainer === this.systemButtonsBox) {
+                    if (this._activeContainer === this.systemBox) {
                         if (active === iter.last())
                             item_actor = iter.right.first();
                         else
@@ -1742,7 +1746,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                         item_actor = this.hoveredApp || iter.left.first();
                     else if (iter.left === this.sysBoxIter)
                         item_actor = iter.left.last();
-                    if (this._activeContainer === this.systemButtonsBox) {
+                    if (this._activeContainer === this.systemBox) {
                         if (active === iter.first())
                             item_actor = iter.left.first();
                         else
@@ -1775,11 +1779,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         if (item_actor._delegate instanceof CategoryButton)
-            this._scrollToButton(item_actor._delegate, this.categoriesScrollBox);
+            this._scrollToButton(item_actor._delegate, this.categoriesScrollView);
         else if (item_actor._delegate instanceof FavoritesButton)
-            this._scrollToButton(item_actor._delegate, this.sidebarAppsScrollBox);
+            this._scrollToButton(item_actor._delegate, this.sidebarScrollView);
         else if (item_actor.get_parent() === this.applicationsBox)
-            this._scrollToButton(item_actor._delegate, this.applicationsScrollBox);
+            this._scrollToButton(item_actor._delegate, this.applicationsScrollView);
 
         this._buttonEnterEvent(item_actor._delegate);
         return true;
@@ -1790,7 +1794,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.applicationsBox.get_children().forEach(child => child.set_style_class_name("appmenu-application-button"));
         this.favoriteAppsBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
         this.placesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
-        this.systemButtonsBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
+        this.systemBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
 
         if (button instanceof CategoryButton) {
             if (this.searchActive)
@@ -1885,12 +1889,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _getNewVectorInfo() {
         let [mx, my, mask] = global.get_pointer();
-        let [bx, by] = this.categoriesScrollBox.get_transformed_position();
+        let [bx, by] = this.categoriesScrollView.get_transformed_position();
 
         // The allocation is the only thing that works here - the 'height'
         // property (and natural height) are the size of the entire scrollable
         // area (the inner categoriesBox), which is weird...
-        let alloc = this.categoriesScrollBox.get_allocation_box();
+        let alloc = this.categoriesScrollView.get_allocation_box();
         let bw = alloc.x2 - alloc.x1;
         let bh = alloc.y2 - alloc.y1;
 
@@ -2046,7 +2050,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
-    _refreshPlaces() {
+    _refreshSidebar() {
         //Remove all places
         this.placesBox.destroy_all_children();
 
@@ -2097,9 +2101,32 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 y_fill: false
             });
         }
+        this.placesBox.queue_relayout();
+
         // Update navigation because the presence/absence of places
         // can impact it.
         this.updateNavigation();
+
+        // FAV APPS
+        this.favoriteAppsBox.destroy_all_children();
+        this._favoriteAppButtons = [];
+        let launchers = global.settings.get_strv('favorite-apps');
+        for (let launcher of launchers) {
+            let app = appsys.lookup_app(launcher);
+            if (app) {
+                let button = new FavoritesButton(this, app);
+                this._favoriteAppButtons[app] = button;
+                this.favoriteAppsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
+            }
+        }
+        this.favoriteAppsBox.queue_relayout();
+
+        // Separator between favs and places
+        if (this._placesButtons.length > 0 && this._favoriteDocButtons.length > 0)
+            this.placesSeparator.show();
+        else
+            this.placesSeparator.hide();
+        this.sidebarScrollBox.queue_relayout();
     }
 
     _refreshRecent () {
@@ -2259,30 +2286,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._appsWereRefreshed = true;
     }
 
-    _refreshFavApps() {
-        //Remove all favorites
-        this.favoriteAppsBox.destroy_all_children();
-
-        //Load favorites again addding the separator first
-        if (this._placesButtons.length > 0) {
-            let separator = new PopupMenu.PopupSeparatorMenuItem();
-            this.favoriteAppsBox.add_actor(separator.actor);
-        }
-        this._favoriteAppButtons = [];
-        let launchers = global.settings.get_strv('favorite-apps');
-        for (let launcher of launchers) {
-            let app = appsys.lookup_app(launcher);
-            if (app) {
-                let button = new FavoritesButton(this, app);
-                this._favoriteAppButtons[app] = button;
-                this.favoriteAppsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
-            }
-        }
-    }
-
     _refreshSystemButtons() {
         // Remove all system buttons
-        this.systemButtonsBox.destroy_all_children();
+        this.systemBox.destroy_all_children();
 
         // Load system buttons again
         let button;
@@ -2311,7 +2317,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         };
 
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
+        this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
 
         //Logout button
         button = new SystemButton(this, "system-log-out",
@@ -2324,7 +2330,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._session.LogoutRemote(0);
         };
 
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
+        this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
 
         //Shutdown button
         button = new SystemButton(this, "system-shutdown",
@@ -2337,10 +2343,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._session.ShutdownRemote();
         };
 
-        this.systemButtonsBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
+        this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
     }
 
-    _scrollToButton(button, scrollBox = this.applicationsScrollBox) {
+    _scrollToButton(button, scrollBox = this.applicationsScrollView) {
         let adj = scrollBox.get_vscroll_bar().get_adjustment();
         if (button) {
             let box = scrollBox.get_allocation_box();
@@ -2361,6 +2367,37 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
     }
 
+    _layout() {
+        // Position the search bar
+        this.right_box.remove_all_children();
+        if (this.searchPosition == "top") {
+            this.right_box.add(this.searchBox, {span: 1});
+            this.right_box.add(this.searchSeparator);
+            this.right_box.add(this.categoriesApplicationsBox.actor, {
+                expand: true,
+                span: 1,
+            });
+            this.categoriesApplicationsBox.actor.remove_style_pseudo_class("top");
+        }
+        else {
+            this.right_box.add(this.categoriesApplicationsBox.actor, {
+                expand: true,
+                span: 1,
+            });
+            this.categoriesApplicationsBox.actor.add_style_pseudo_class("top");
+            this.right_box.add(this.searchSeparator);
+            this.right_box.add(this.searchBox, {span: 1});
+        }
+
+        // Position the system box
+        this.searchBox.remove_child(this.systemBox);
+        this.sidebar.remove_child(this.systemBox);
+        if (this.systemPosition == "sidebar")
+            this.sidebar.add(this.systemBox);
+        else
+            this.searchBox.add(this.systemBox);
+    }
+
     _buildSidebar() {
         this.sidebar = new St.BoxLayout({
             style_class: 'appmenu-sidebar',
@@ -2374,7 +2411,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
 
         let user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
-        this.userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL);
+        this.userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL, false);
 
         this.userBox.connect('button-press-event', () => {
             this.menu.toggle();
@@ -2383,38 +2420,39 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this.userBox.add(this.userIcon);
 
+        this.avatarSeparator = new PopupMenu.PopupSeparatorMenuItem().actor;
+        this.placesSeparator = new PopupMenu.PopupSeparatorMenuItem().actor;
+
+        this.sidebarScrollBox = new SidebarScrollBox().actor;
+        this.sidebarScrollView = new St.ScrollView({
+            y_align: St.Align.START,
+            style_class: 'appmenu-sidebar-scrollview'
+        });
+        this.sidebarScrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.sidebarScrollView.add_actor(this.sidebarScrollBox);
+        this.sidebarScrollView.get_vscroll_bar().hide();
+
+        this.placesBox = new St.BoxLayout({
+            vertical: true,
+            y_align: Clutter.ActorAlign.START,
+            style_class: 'appmenu-places-box'
+        });
+
+        this.favoriteAppsBox = new FavoriteAppsBox().actor;
+
+        this.main_container.add(this.sidebar, { span: 1 });
+
         this.sidebar.add(this.userBox, {
             x_fill:  true,
             y_fill:  true,
             x_align: St.Align.MIDDLE,
             y_align: St.Align.START
         });
-
-        this.avatarSeparator = new PopupMenu.PopupSeparatorMenuItem().actor;
         this.sidebar.add(this.avatarSeparator);
-
-        this.sidebarAppsBox = new SidebarAppsBox().actor;
-        this.sidebarAppsScrollBox = new St.ScrollView({
-            y_align: St.Align.START,
-            style_class: 'appmenu-sidebar-scrollbox'
-        });
-        this.sidebarAppsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
-        this.sidebarAppsScrollBox.add_actor(this.sidebarAppsBox);
-        this.sidebarAppsScrollBox.get_vscroll_bar().hide();
-
-        this.sidebar.add(this.sidebarAppsScrollBox, { expand: true });
-
-        this.placesBox = new St.BoxLayout({
-            vertical: true,
-            y_align: Clutter.ActorAlign.START
-        });
-
-        this.sidebarAppsBox.add(this.placesBox);
-
-        this.favoriteAppsBox = new FavoriteAppsBox().actor;
-        this.sidebarAppsBox.add(this.favoriteAppsBox);
-
-        this.main_container.add(this.sidebar, { span: 1 });
+        this.sidebar.add(this.sidebarScrollView, { expand: true });
+        this.sidebarScrollBox.add(this.placesBox);
+        this.sidebarScrollBox.add(this.placesSeparator);
+        this.sidebarScrollBox.add(this.favoriteAppsBox);
     }
 
     _display() {
@@ -2438,7 +2476,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._buildSidebar();
 
-        this.right_box = new St.BoxLayout({ vertical: true });
+        this.right_box = new St.BoxLayout({ vertical: true, style_class: 'appmenu-right-box'});
         this.main_container.add(this.right_box, { expand: true });
 
         this.searchBox = new St.BoxLayout({
@@ -2450,11 +2488,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             track_hover: true,
             can_focus: true,
         });
-        this.searchBox.add(this.searchEntry, {
-            x_align: St.Align.START,
-            y_align: St.Align.MIDDLE,
-            expand: true,
-        });
 
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
         this.searchActive = false;
@@ -2463,13 +2496,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.searchEntryText.connect('key-press-event', this._onMenuKeyPress.bind(this));
         this._previousSearchPattern = "";
 
-        this.right_box.add(this.searchBox, {span: 1});
-
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
-        this.right_box.add(this.categoriesApplicationsBox.actor, {
-            expand: true,
-            span: 1,
-        });
 
         this.categoriesBox = new St.BoxLayout({
             style_class: 'appmenu-categories-box',
@@ -2477,24 +2504,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             accessible_role: Atk.Role.LIST
         });
 
-        this.categoriesScrollBox = new St.ScrollView({ style_class: 'appmenu-categories-scrollbox' });
-        this.categoriesScrollBox.add_actor(this.categoriesBox);
-        this.categoriesScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
-        this.categoriesScrollBox.set_clip_to_allocation(true);
-        this.categoriesScrollBox.get_vscroll_bar().hide();
+        this.categoriesScrollView = new St.ScrollView({ style_class: 'appmenu-categories-scrollview' });
+        this.categoriesScrollView.add_actor(this.categoriesBox);
+        this.categoriesScrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.categoriesScrollView.set_clip_to_allocation(true);
+        this.categoriesScrollView.get_vscroll_bar().hide();
 
-        this.categoriesApplicationsBox.actor.add(this.categoriesScrollBox);
+        this.categoriesApplicationsBox.actor.add(this.categoriesScrollView);
 
         this.applicationsBox = new St.BoxLayout({
             style_class: 'appmenu-applications-box',
             vertical:true
         });
-        this.applicationsScrollBox = new St.ScrollView({ style_class: 'vfade appmenu-applications-scrollbox'});
-        this.applicationsScrollBox.add_actor(this.applicationsBox);
-        this.applicationsScrollBox.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
-        this.applicationsScrollBox.set_clip_to_allocation(true);
+        this.applicationsScrollView = new St.ScrollView({ style_class: 'vfade appmenu-applications-scrollview'});
+        this.applicationsScrollView.add_actor(this.applicationsBox);
+        this.applicationsScrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.applicationsScrollView.set_clip_to_allocation(true);
 
-        let vscroll = this.applicationsScrollBox.get_vscroll_bar();
+        let vscroll = this.applicationsScrollView.get_vscroll_bar();
         vscroll.connect('scroll-start', () => {
             this.menu.passEvents = true;
         });
@@ -2502,7 +2529,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.menu.passEvents = false;
         });
 
-        let vscrollCat = this.categoriesScrollBox.get_vscroll_bar();
+        let vscrollCat = this.categoriesScrollView.get_vscroll_bar();
         vscrollCat.connect('scroll-start', () => {
             this.menu.passEvents = true;
         });
@@ -2510,16 +2537,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.menu.passEvents = false;
         });
 
-        this.categoriesApplicationsBox.actor.add(this.applicationsScrollBox, {span: -1, expand: true});
+        this.categoriesApplicationsBox.actor.add(this.applicationsScrollView, {span: -1, expand: true});
 
-        this.systemButtonsBox = new St.BoxLayout({
+        this.systemBox = new St.BoxLayout({
             style_class: 'appmenu-system-box',
             y_expand: false,
             x_expand: false,
-            x_align: Clutter.ActorAlign.END
+            x_align: Clutter.ActorAlign.CENTER
         });
 
-        this.searchBox.add(this.systemButtonsBox);
+        this.searchSeparator = new PopupMenu.PopupSeparatorMenuItem().actor;
+
+        this.searchBox.add(this.searchEntry, {
+            x_align: St.Align.START,
+            y_align: St.Align.MIDDLE,
+            expand: true,
+        });
+
+        this._layout();
 
         this.appBoxIter = new VisibleChildIterator(this.applicationsBox);
         this.applicationsBox._vis_iter = this.appBoxIter;
@@ -2529,8 +2564,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.placesBox._vis_iter = this.placesBoxIter;
         this.favBoxIter = new VisibleChildIterator(this.favoriteAppsBox);
         this.favoriteAppsBox._vis_iter = this.favBoxIter;
-        this.sysBoxIter = new VisibleChildIterator(this.systemButtonsBox);
-        this.systemButtonsBox._vis_iter = this.sysBoxIter;
+        this.sysBoxIter = new VisibleChildIterator(this.systemBox);
+        this.systemBox._vis_iter = this.sysBoxIter;
 
         this.updateNavigation();
 
@@ -2585,16 +2620,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let mag_on = this.a11y_settings.get_boolean("screen-magnifier-enabled") &&
                      this.a11y_mag_settings.get_double("mag-factor") > 1.0;
         if (mag_on) {
-            this.applicationsScrollBox.style_class = "appmenu-applications-scrollbox";
+            this.applicationsScrollView.style_class = "appmenu-applications-scrollbox";
         } else {
-            this.applicationsScrollBox.style_class = "vfade appmenu-applications-scrollbox";
+            this.applicationsScrollView.style_class = "vfade appmenu-applications-scrollbox";
         }
     }
 
     _update_autoscroll() {
-        this.applicationsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
-        this.categoriesScrollBox.set_auto_scrolling(this.autoscroll_enabled);
-        this.sidebarAppsScrollBox.set_auto_scrolling(this.autoscroll_enabled);
+        this.applicationsScrollView.set_auto_scrolling(this.autoscroll_enabled);
+        this.categoriesScrollView.set_auto_scrolling(this.autoscroll_enabled);
+        this.sidebarScrollView.set_auto_scrolling(this.autoscroll_enabled);
     }
 
     _hideAllAppActors() {
@@ -2620,7 +2655,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             actor.remove_style_pseudo_class("hover");
             actor.show();
         });
-        this.systemButtonsBox.get_children().forEach(actor => {
+        this.systemBox.get_children().forEach(actor => {
             actor.remove_style_pseudo_class("hover");
             actor.show();
         });

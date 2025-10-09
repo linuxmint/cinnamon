@@ -1,16 +1,16 @@
 {
     "layout1" : {
         "type" : "layout",
-        "pages" : ["layout", "appearance", "behavior"],
-        "layout" : {
+        "pages" : ["content", "appearance", "behavior"],
+        "content" : {
             "type" : "page",
-            "title" : "Layout",
-            "sections" : ["layout-places", "layout-content"]
+            "title" : "Content",
+            "sections" : ["content-places", "content-content"]
         },
         "appearance" : {
             "type" : "page",
             "title" : "Appearance",
-            "sections" : ["appearance-menu"]
+            "sections" : ["appearance-menu", "appearance-panel"]
         },
         "behavior" : {
             "type" : "page",
@@ -29,8 +29,8 @@
         },
         "appearance-menu" : {
             "type" : "section",
-            "title" : "Menu",
-            "keys" : ["show-description", "symbolic-category-icons", "category-icon-size",
+            "title" : "Options",
+            "keys" : ["search-position", "system-position", "show-description", "symbolic-category-icons", "category-icon-size",
                       "application-icon-size", "sidebar-icon-size",
                       "reset-menu-size-button"]
         },
@@ -39,12 +39,12 @@
             "title" : "Panel",
             "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
         },
-        "layout-places" : {
+        "content-places" : {
             "type" : "section",
             "title" : "Places",
             "keys" : ["show-home", "show-desktop", "show-documents", "show-downloads", "show-music", "show-pictures", "show-videos", "show-bookmarks"]
         },
-       "layout-content" : {
+       "content-content" : {
             "type" : "section",
             "title" : "Content",
             "keys" : ["show-sidebar", "show-avatar", "show-favorites", "show-recents", "menu-editor-button"]
@@ -94,7 +94,7 @@
  },
  "category-icon-size" : {
     "type": "spinbutton",
-    "default" : 32,
+    "default" : 16,
     "min" : 16,
     "max" : 48,
     "step" : 1,
@@ -171,9 +171,27 @@
     "description" : "Other bookmarks",
     "tooltip" : "Choose whether or not to show other bookmarks."
  },
+ "system-position" : {
+      "type": "combobox",
+      "default" : "sidebar",
+      "description" : "Position of the system buttons",
+      "options" : {
+          "In the sidebar" : "sidebar",
+          "Alongside the search bar" : "search"
+      }
+  },
+  "search-position" : {
+      "type": "combobox",
+      "default" : "bottom",
+      "description" : "Position of the search bar",
+      "options" : {
+          "At the top" : "top",
+          "At the bottom" : "bottom"
+      }
+  },
  "sidebar-icon-size" : {
     "type": "spinbutton",
-    "default" : 24,
+    "default" : 22,
     "min" : 16,
     "max" : 48,
     "step" : 1,
