@@ -156,6 +156,7 @@ class Module:
         keywords = _("system, information, details, graphic, sound, kernel, version, about")
         sidePage = SidePage(_("System Info"), "cs-details", keywords, content_box, module=self)
         self.sidePage = sidePage
+        self.loaded = False
 
     def on_module_selected(self):
         if not self.loaded:
@@ -218,44 +219,62 @@ class Module:
                 widget.pack_start(button, True, True, 0)
                 settings.add_row(widget)
 
+            self.loaded = True
+
     def on_copy_clipboard_button_clicked(self, button, spinner):
-            spinner.start()
+        spinner.start()
 
-            def finished_inxi(output):
-                spinner.stop()
+        def finished_inxi(output):
+            spinner.stop()
 
-                if output is None:
-                    return
+            if output is None:
+                return
 
-                clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
-                clipboard.set_text(output.decode("utf-8"), -1)
+            clipboard = Gtk.Clipboard.get(Gdk.SELECTION_CLIPBOARD)
+            clipboard.set_text(output.decode("utf-8"), -1)
 
-            def _run_inxi(spinner):
-                inxiOutput = None
+        def _run_inxi(spinner):
+            inxiOutput = None
 
-                try:
-                    inxiOutput = subprocess.run(['inxi', '-FJxxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
-                except Exception as e:
-                    print("An error occurred while copying the system information to clipboard")
-                    print(e)
+            try:
+                inxiOutput = subprocess.run(['inxi', '-FJxxxrzc0'], check=True, stdout=subprocess.PIPE).stdout
+            except Exception as e:
+                print("An error occurred while copying the system information to clipboard")
+                print(e)
 
-                GLib.idle_add(finished_inxi, inxiOutput)
+            GLib.idle_add(finished_inxi, inxiOutput)
 
-            inxi_thread = threading.Thread(target=_run_inxi, args=(spinner,))
-            inxi_thread.start()
+        inxi_thread = threading.Thread(target=_run_inxi, args=(spinner,))
+        inxi_thread.start()
 
     def on_upload_button_clicked(self, button, spinner):
-        try:
-            subproc = Gio.Subprocess.new(["upload-system-info"], Gio.SubprocessFlags.NONE)
-            subproc.wait_check_async(None, self.on_subprocess_complete, spinner)
-            spinner.start()
-        except GLib.Error as e:
-            print("upload-system-info failed to run: %s" % e.message)
+        spinner.start()
+        
+        def _run_upload():
+            success = False
+            error_msg = None
+            
+            try:
+                result = subprocess.run(['upload-system-info'], 
+                                      check=True, 
+                                      capture_output=True,
+                                      timeout=30)
+                success = True
+            except subprocess.TimeoutExpired:
+                error_msg = "upload-system-info timed out after 30 seconds"
+            except subprocess.CalledProcessError as e:
+                error_msg = f"upload-system-info failed with exit code {e.returncode}"
+            except Exception as e:
+                error_msg = f"upload-system-info failed: {str(e)}"
+            
+            GLib.idle_add(self.on_upload_complete, success, error_msg, spinner)
+        
+        upload_thread = threading.Thread(target=_run_upload)
+        upload_thread.daemon = True
+        upload_thread.start()
 
-    def on_subprocess_complete(self, subproc, result, spinner):
+    def on_upload_complete(self, success, error_msg, spinner):
         spinner.stop()
-
-        try:
-            success = subproc.wait_check_finish(result)
-        except GLib.Error as e:
-            print("upload-system-info failed: %s" % e.message)
+        
+        if not success and error_msg:
+            print(error_msg)
