@@ -107,6 +107,16 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
             this.icon = new St.Icon({icon_name: this.app_icon, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
         }
 
+        this.icon.reactive = true;
+        this.icon.track_hover = true;
+        this.icon.connect('button-press-event', (actor, event) => {
+            if (this.stream && event.get_button() === 1) {
+                this.stream.change_is_muted(!this.stream.is_muted);
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+
         this.removeActor(this._slider);
         this.addActor(this.icon, {span: 0});
         this.addActor(this._slider, {span: -1, expand: true});
