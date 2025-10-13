@@ -150,9 +150,9 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                 for(var n = 0; n < this.printersCount; n++) {
                     let printer = out[n].split(' ')[0].trim();
                     this.printers.push(printer);
-                    let printerItem = new PopupMenu.PopupIconMenuItem(printer, 'emblem-documents', St.IconType.SYMBOLIC);
+                    let printerItem = new PopupMenu.PopupIconMenuItem(printer, 'xapp-emblem-documents', St.IconType.SYMBOLIC);
                     if(out2.toString() == printer.toString()) {
-                        printerItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'emblem-default', icon_type: St.IconType.SYMBOLIC }));
+                        printerItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xapp-emblem-default', icon_type: St.IconType.SYMBOLIC }));
                     }
                     printerItem.connect('activate', Lang.bind(printerItem, this.onShowJobsClicked));
                     this.menu.addMenuItem(printerItem);
@@ -194,9 +194,9 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                                 doc = doc + '...';
                             }
                             let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer);
-                            let jobItem = new PopupMenu.PopupIconMenuItem(text, 'edit-delete', St.IconType.SYMBOLIC);
+                            let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xapp-edit-delete', St.IconType.SYMBOLIC);
                             if(out2[out2.indexOf(job) - 2] == 'active') {
-                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'emblem-default', icon_type: St.IconType.SYMBOLIC }));
+                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xapp-emblem-default', icon_type: St.IconType.SYMBOLIC }));
                             }
                             jobItem.job = job;
                             jobItem.connect('activate', Lang.bind(jobItem, this.onCancelJobClicked));

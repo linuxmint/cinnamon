@@ -72,7 +72,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="has-focus">True</property>
-            <property name="primary-icon-name">edit-find-symbolic</property>
+            <property name="primary-icon-name">xapp-edit-find-symbolic</property>
             <property name="primary-icon-activatable">False</property>
             <property name="primary-icon-sensitive">False</property>
             <property name="placeholder-text" translatable="yes">Type to search layouts</property>
@@ -131,12 +131,12 @@
   <object class="GtkImage" id="image1">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">go-up-symbolic</property>
+    <property name="icon-name">xapp-go-up-symbolic</property>
   </object>
   <object class="GtkImage" id="image2">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">go-down-symbolic</property>
+    <property name="icon-name">xapp-go-down-symbolic</property>
   </object>
   <object class="GtkBox" id="input_sources_list_box">
     <property name="visible">True</property>

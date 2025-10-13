@@ -58,7 +58,7 @@ class InhibitSwitch extends PopupMenu.PopupBaseMenuItem {
         this._statusIcon = new St.Icon({
             style_class: 'popup-menu-icon',
             icon_type: St.IconType.SYMBOLIC,
-            icon_name: "dialog-warning-symbolic",
+            icon_name: "xapp-dialog-warning-symbolic",
             reactive: true
         });
 
@@ -172,7 +172,7 @@ class InhibitingAppMenuItem extends PopupMenu.PopupIconMenuItem {
     constructor(appId) {
         super(
             appId,
-            "dialog-information-symbolic",
+            "xapp-dialog-information-symbolic",
             St.IconType.SYMBOLIC,
             { activate: false, hover: false }
         );

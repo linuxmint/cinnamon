@@ -278,7 +278,7 @@ class Module:
             page.set_spacing(10)
             box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, valign=Gtk.Align.START, margin_top=150)
             page.pack_start(box, True, True, 0)
-            image = Gtk.Image(icon_name="dialog-warning-symbolic", icon_size=Gtk.IconSize.DIALOG)
+            image = Gtk.Image(icon_name="xapp-dialog-warning-symbolic", icon_size=Gtk.IconSize.DIALOG)
             box.pack_start(image, False, False, 0)
             self.disabled_label = Gtk.Label(expand=True)
             box.pack_start(self.disabled_label, False, False, 0)

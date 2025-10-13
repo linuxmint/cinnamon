@@ -454,35 +454,35 @@ class GenericApplicationButton extends SimpleMenuItem {
     populateMenu(menu) {
         let menuItem;
         if (Main.gpu_offload_supported) {
-            menuItem = new ApplicationContextMenuItem(this, _("Run with dedicated GPU"), "offload_launch", "cpu");
+            menuItem = new ApplicationContextMenuItem(this, _("Run with dedicated GPU"), "offload_launch", "xapp-cpu");
             menu.addMenuItem(menuItem);
         }
 
-        menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "list-add");
+        menuItem = new ApplicationContextMenuItem(this, _("Add to panel"), "add_to_panel", "xapp-list-add");
         menu.addMenuItem(menuItem);
 
         if (USER_DESKTOP_PATH){
-            menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop", "computer");
+            menuItem = new ApplicationContextMenuItem(this, _("Add to desktop"), "add_to_desktop", "xapp-computer");
             menu.addMenuItem(menuItem);
         }
 
         if (AppFavorites.getAppFavorites().isFavorite(this.app.get_id())){
-            menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites", "starred");
+            menuItem = new ApplicationContextMenuItem(this, _("Remove from favorites"), "remove_from_favorites", "xapp-starred");
             menu.addMenuItem(menuItem);
         } else {
-            menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites", "non-starred");
+            menuItem = new ApplicationContextMenuItem(this, _("Add to favorites"), "add_to_favorites", "xapp-non-starred");
             menu.addMenuItem(menuItem);
         }
 
         const appinfo = this.app.get_app_info();
 
         if (appinfo.get_filename() != null) {
-            menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "document-properties-symbolic");
+            menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "xapp-document-properties-symbolic");
             menu.addMenuItem(menuItem);
         }
 
         if (this.applet._canUninstallApps) {
-            menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "edit-delete");
+            menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "xapp-edit-delete");
             menu.addMenuItem(menuItem);
         }
 
@@ -1079,7 +1079,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.menu = new Menu(this, orientation);
         this.menuManager.addMenu(this.menu);
 
-        const edit_item = new PopupMenu.PopupIconMenuItem(_("Edit menu"), "document-edit", St.IconType.SYMBOLIC);
+        const edit_item = new PopupMenu.PopupIconMenuItem(_("Edit menu"), "xapp-document-edit", St.IconType.SYMBOLIC);
         edit_item.connect("activate", () => Util.spawnCommandLine("cinnamon-menu-editor"));
         this._applet_context_menu.addMenuItem(edit_item);
 
@@ -1150,12 +1150,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         this._searchInactiveIcon = new St.Icon({
             style_class: 'appmenu-search-entry-icon',
-            icon_name: 'edit-find',
+            icon_name: 'xapp-edit-find',
             icon_type: St.IconType.SYMBOLIC,
         });
         this._searchActiveIcon = new St.Icon({
             style_class: 'appmenu-search-entry-icon',
-            icon_name: 'edit-clear',
+            icon_name: 'xapp-edit-clear',
             icon_type: St.IconType.SYMBOLIC,
         });
         this._searchIconClickedId = 0;
@@ -2294,7 +2294,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let button;
 
         //Lock screen
-        button = new SystemButton(this, "system-lock-screen",
+        button = new SystemButton(this, "xapp-lock-screen",
                                   _("Lock Screen"),
                                   _("Lock the screen"));
         button.actor.add_style_class_name("appmenu-system-button-lock");
@@ -2320,7 +2320,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
 
         //Logout button
-        button = new SystemButton(this, "system-log-out",
+        button = new SystemButton(this, "xapp-log-out",
                                   _("Log Out"),
                                   _("Leave the session"));
         button.actor.add_style_class_name("appmenu-system-button-logout");
@@ -2333,7 +2333,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
 
         //Shutdown button
-        button = new SystemButton(this, "system-shutdown",
+        button = new SystemButton(this, "xapp-shutdown",
                                   _("Shut Down"),
                                   _("Shut down the computer"));
         button.actor.add_style_class_name("appmenu-system-button-shutdown");

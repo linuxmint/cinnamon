@@ -33,8 +33,8 @@
                         <property name="invisible_char">●</property>
                         <property name="width_chars">25</property>
                         <property name="caps_lock_warning">False</property>
-                        <property name="primary_icon_name">edit-find-symbolic</property>
-                        <property name="secondary_icon_name">edit-clear-symbolic</property>
+                        <property name="primary_icon_name">xapp-edit-find-symbolic</property>
+                        <property name="secondary_icon_name">xapp-edit-clear-symbolic</property>
                         <property name="placeholder_text">Search...</property>
                       </object>
                       <packing>
@@ -65,7 +65,7 @@
                           <object class="GtkImage" id="image1">
                             <property name="visible">True</property>
                             <property name="can_focus">False</property>
-                            <property name="icon_name">go-previous-symbolic</property>
+                            <property name="icon_name">xapp-go-previous-symbolic</property>
                           </object>
                         </child>
                         <style>

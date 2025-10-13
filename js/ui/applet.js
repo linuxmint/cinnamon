@@ -582,14 +582,14 @@ var Applet = class Applet {
         if (this.context_menu_item_remove == null) {
             this.context_menu_item_remove = new PopupMenu.PopupIconMenuItem(_("Remove '%s'")
                 .format(this._(this._meta.name)),
-                   "edit-delete",
+                   "xapp-edit-delete",
                    St.IconType.SYMBOLIC);
             this.context_menu_item_remove.connect('activate', (actor, event) => this.confirmRemoveApplet(event));
         }
 
         if (this.context_menu_item_about == null) {
             this.context_menu_item_about = new PopupMenu.PopupIconMenuItem(_("About..."),
-                    "dialog-question",
+                    "xapp-dialog-question",
                     St.IconType.SYMBOLIC);
             this.context_menu_item_about.connect('activate', Lang.bind(this, this.openAbout));
         }
@@ -606,7 +606,7 @@ var Applet = class Applet {
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {
             if (this.context_menu_item_configure == null) {
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
-                        "system-run",
+                        "xapp-run",
                         St.IconType.SYMBOLIC);
                 this.context_menu_item_configure.connect('activate', () => this.configureApplet());
             }

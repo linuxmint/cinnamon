@@ -133,16 +133,16 @@ class ModulePage(pageutils.WindowAndActionBars):
         self.parent = parent
 
         self.add_toggle_button("info",
-                               "dialog-information-symbolic",
+                               "xapp-dialog-information-symbolic",
                                "Show/Hide Messages tagged as 'info'")
         self.add_toggle_button("warning",
-                               "dialog-warning-symbolic",
+                               "xapp-dialog-warning-symbolic",
                                "Show/Hide Messages tagged as 'warning'")
         self.add_toggle_button("error",
-                               "dialog-error-symbolic",
+                               "xapp-dialog-error-symbolic",
                                "Show/Hide Messages tagged as 'error'")
         self.add_toggle_button("trace",
-                               "dialog-question-symbolic",
+                               "xapp-dialog-question-symbolic",
                                "Show/Hide Messages tagged as 'trace'")
 
     def add_toggle_button(self, log_type, icon, tooltip):

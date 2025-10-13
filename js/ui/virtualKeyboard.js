@@ -32,14 +32,14 @@ const escape_key = { keyval: Clutter.KEY_Escape, label: "Esc",                  
 const tab_key =    { keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
 const _123_key =   { width: 1.5, level: 2,       label: '?123',                              extraClassName: 'non-alpha-key' };
 const abc_key =    { width: 1.5, level: 0,       label: 'ABC',                               extraClassName: 'non-alpha-key' };
-const backsp_key = { width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic', extraClassName: 'non-alpha-key' };
-const hide_key =   { action: 'hide', icon: 'input-keyboard-symbolic',                        extraClassName: 'hide-key' };
+const backsp_key = { width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'xapp-edit-clear-symbolic', extraClassName: 'non-alpha-key' };
+const hide_key =   { action: 'hide', icon: 'xapp-input-keyboard-symbolic',                        extraClassName: 'hide-key' };
 const return_key = { width: 2, keyval: Clutter.KEY_Return, icon: 'keyboard-enter-symbolic',  extraClassName: 'enter-key' };
 const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Up,     label: '↑',                                 extraClassName: 'non-alpha-key' },
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
-const layout_key = { action: 'next-layout',      icon: 'input-keyboard-symbolic' };
+const layout_key = { action: 'next-layout',      icon: 'xapp-input-keyboard-symbolic' };
 
 const defaultKeysPre = [
     [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
@@ -637,7 +637,7 @@ var Keypad = GObject.registerClass({
             { label: '8', keyval: Clutter.KEY_8, left: 1, top: 2 },
             { label: '9', keyval: Clutter.KEY_9, left: 2, top: 2 },
             { label: '0', keyval: Clutter.KEY_0, left: 1, top: 3 },
-            { keyval: Clutter.KEY_BackSpace, icon: 'edit-clear-symbolic', left: 3, top: 0 },
+            { keyval: Clutter.KEY_BackSpace, icon: 'xapp-edit-clear-symbolic', left: 3, top: 0 },
             { keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic', left: 3, top: 1, height: 2 },
         ];
 

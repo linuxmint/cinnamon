@@ -84,7 +84,7 @@ class GroupDialog (Gtk.Dialog):
     def _on_entry_changed(self, entry):
         name = entry.get_text()
         if " " in name or name.lower() != name:
-            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
+            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xapp-dialog-warning-symbolic")
             entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The group name cannot contain upper-case or space characters"))
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
         else:
@@ -198,7 +198,7 @@ class PasswordDialog(Gtk.Dialog):
         table.add_labels([_("New password"), None, _("Confirm password")])
 
         self.new_password = Gtk.Entry()
-        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "view-refresh-symbolic")
+        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xapp-view-refresh-symbolic")
         self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
         self.new_password.connect("changed", self._on_passwords_changed)
@@ -320,7 +320,7 @@ class PasswordDialog(Gtk.Dialog):
         confirm_password = self.confirm_password.get_text()
         strength = self.password_strength(new_password)
         if new_password != confirm_password:
-            self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
+            self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xapp-dialog-warning-symbolic")
             self.confirm_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Passwords do not match"))
         else:
             self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
@@ -402,11 +402,11 @@ class NewUserDialog(Gtk.Dialog):
         username = self.username_entry.get_text()
         valid = True
         if re.search('[^a-z0-9_-]', username):
-            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
+            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xapp-dialog-warning-symbolic")
             self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Invalid username"))
             valid = False
         elif self.user_exists(username):
-            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "dialog-warning-symbolic")
+            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xapp-dialog-warning-symbolic")
             self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("A user with the name '%s' already exists.") % username)
             valid = False
         else:
