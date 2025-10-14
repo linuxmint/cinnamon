@@ -124,6 +124,14 @@
       </description>
     </key>
 
+    <key name="shared-panels" type="s">
+      <default>'[]'</default>
+      <summary>JSON string of shared panel information</summary>
+      <description>
+        Stores the panel ids that are being shared.
+      </description>
+    </key>
+
     <key name="panels-autohide" type="as">
       <default>['1:false']</default>
       <summary>Auto-hide panel</summary>
