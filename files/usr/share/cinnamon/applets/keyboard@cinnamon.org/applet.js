@@ -76,12 +76,12 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._propSection = new PopupMenu.PopupMenuSection();
             this.menu.addMenuItem(this._propSection);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
+            this.showLayoutAction = this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
             this.menu.addAction(_("Show Character Table"), () => {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
             });
-            this.menu.addSettingsAction(_("Keyboard layouts"), 'keyboard', "layouts");
+            this._applet_context_menu.addSettingsAction(_("Manage keyboard layouts"), 'keyboard', "layouts");
 
             this._inputSourcesManager = KeyboardManager.getInputSourceManager();
             this._signalManager.connect(this._inputSourcesManager, "sources-changed", this._onSourcesChanged.bind(this));
@@ -217,6 +217,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         if (!this._inputSourcesManager.multipleSources) {
             this.actor.hide();
         }
+
+        this.showLayoutAction.setSensitive(selected.type === 'xkb');
 
         this._updatePropertySection(selected.properties);
     }
