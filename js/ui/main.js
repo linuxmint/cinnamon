@@ -91,6 +91,8 @@ const GObject = imports.gi.GObject;
 const XApp = imports.gi.XApp;
 const PointerTracker = imports.misc.pointerTracker;
 
+const AutomountManager = imports.ui.automountManager;
+const AutorunManager = imports.ui.autorunManager;
 const AudioDeviceSelection = imports.ui.audioDeviceSelection;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
@@ -167,6 +169,8 @@ var screenRecorder = null;
 var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
 var cinnamonMountOpDBusService = null;
+var automountManager = null;
+var autorunManager = null;
 var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
@@ -348,6 +352,9 @@ function start() {
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
     cinnamonMountOpDBusService = new CinnamonMountOperation.CinnamonMountOpHandler();
+    automountManager = new AutomountManager.AutomountManager();
+    autorunManager = new AutorunManager.AutorunManager();
+
     setRunState(RunState.STARTUP);
 
     screenshotService = new Screenshot.ScreenshotService();
