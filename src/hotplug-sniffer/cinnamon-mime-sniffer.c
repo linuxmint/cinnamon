@@ -14,9 +14,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street - Suite 500, Boston, MA
- * 02110-1335, USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Cosimo Cecchi <cosimoc@redhat.com>
  *
@@ -45,8 +43,6 @@
 #define DIRECTORY_LOAD_ITEMS_PER_CALLBACK 100
 #define HIGH_SCORE_RATIO 0.10
 
-G_DEFINE_TYPE (CinnamonMimeSniffer, cinnamon_mime_sniffer, G_TYPE_OBJECT);
-
 enum {
   PROP_FILE = 1,
   NUM_PROPERTIES
@@ -74,15 +70,25 @@ typedef struct {
   gint total_items;
 } DeepCountState;
 
+typedef struct _CinnamonMimeSnifferPrivate   CinnamonMimeSnifferPrivate;
+
+struct _CinnamonMimeSniffer
+{
+  GObject parent_instance;
+
+  CinnamonMimeSnifferPrivate *priv;
+};
+
 struct _CinnamonMimeSnifferPrivate {
   GFile *file;
 
   GCancellable *cancellable;
   guint watchdog_id;
 
-  GSimpleAsyncResult *async_result;
-  gchar **sniffed_mime;
+  GTask *task;
 };
+
+G_DEFINE_TYPE_WITH_PRIVATE (CinnamonMimeSniffer, cinnamon_mime_sniffer, G_TYPE_OBJECT);
 
 static void deep_count_load (DeepCountState *state,
                              GFile *file);
@@ -181,6 +187,7 @@ prepare_async_result (DeepCountState *state)
   GArray *results;
   GPtrArray *sniffed_mime;
   SniffedResult result;
+  char **mimes;
 
   sniffed_mime = g_ptr_array_new ();
   results = g_array_new (TRUE, TRUE, sizeof (SniffedResult));
@@ -222,16 +229,16 @@ prepare_async_result (DeepCountState *state)
 
  out:
   g_ptr_array_add (sniffed_mime, NULL);
-  self->priv->sniffed_mime = (gchar **) g_ptr_array_free (sniffed_mime, FALSE);
+  mimes = (gchar **) g_ptr_array_free (sniffed_mime, FALSE);
 
   g_array_free (results, TRUE);
-  g_simple_async_result_complete_in_idle (self->priv->async_result);
+  g_task_return_pointer (self->priv->task, mimes, (GDestroyNotify)g_strfreev);
 }
 
 /* adapted from nautilus/libnautilus-private/nautilus-directory-async.c */
 static void
 deep_count_one (DeepCountState *state,
-		GFileInfo *info)
+        GFileInfo *info)
 {
   GFile *subdir;
   const char *content_type;
@@ -242,11 +249,13 @@ deep_count_one (DeepCountState *state,
       subdir = g_file_get_child (state->file, g_file_info_get_name (info));
       state->deep_count_subdirectories =
         g_list_append (state->deep_count_subdirectories, subdir);
-    }
+    } 
   else
     {
       content_type = g_file_info_get_content_type (info);
-      add_content_type_to_cache (state, content_type);
+
+      if (content_type)
+        add_content_type_to_cache (state, content_type);
     }
 }
 
@@ -297,8 +306,8 @@ deep_count_next_dir (DeepCountState *state)
 
 static void
 deep_count_more_files_callback (GObject *source_object,
-				GAsyncResult *res,
-				gpointer user_data)
+                GAsyncResult *res,
+                gpointer user_data)
 {
   DeepCountState *state;
   GList *files, *l;
@@ -311,10 +320,10 @@ deep_count_more_files_callback (GObject *source_object,
       deep_count_finish (state);
       return;
     }
-
+    
   files = g_file_enumerator_next_files_finish (state->enumerator,
                                                res, NULL);
-
+  
   for (l = files; l != NULL; l = l->next)
     {
       info = l->data;
@@ -345,8 +354,8 @@ deep_count_more_files_callback (GObject *source_object,
 
 static void
 deep_count_callback (GObject *source_object,
-		     GAsyncResult *res,
-		     gpointer user_data)
+             GAsyncResult *res,
+             gpointer user_data)
 {
   DeepCountState *state;
   GFileEnumerator *enumerator;
@@ -361,7 +370,7 @@ deep_count_callback (GObject *source_object,
 
   enumerator = g_file_enumerate_children_finish (G_FILE (source_object),
                                                  res, NULL);
-
+    
   if (enumerator == NULL)
     {
       deep_count_next_dir (state);
@@ -418,21 +427,18 @@ query_info_async_ready_cb (GObject *source,
 
   if (error != NULL)
     {
-      g_simple_async_result_take_error (self->priv->async_result,
-                                        error);
-      g_simple_async_result_complete_in_idle (self->priv->async_result);
+      g_task_return_error (self->priv->task, error);
 
       return;
     }
 
   if (g_file_info_get_file_type (info) != G_FILE_TYPE_DIRECTORY)
     {
-      g_simple_async_result_set_error (self->priv->async_result,
-                                       G_IO_ERROR,
-                                       G_IO_ERROR_NOT_DIRECTORY,
-                                       "Not a directory");
-      g_simple_async_result_complete_in_idle (self->priv->async_result);
-      g_object_unref(info);
+      g_task_return_new_error (self->priv->task,
+                               G_IO_ERROR,
+                               G_IO_ERROR_NOT_DIRECTORY,
+                               "Not a directory");
+
       return;
     }
 
@@ -477,25 +483,11 @@ cinnamon_mime_sniffer_dispose (GObject *object)
 
   g_clear_object (&self->priv->file);
   g_clear_object (&self->priv->cancellable);
-  g_clear_object (&self->priv->async_result);
+  g_clear_object (&self->priv->task);
 
-  if (self->priv->watchdog_id != 0)
-    {
-      g_source_remove (self->priv->watchdog_id);
-      self->priv->watchdog_id = 0;
-    }
+  g_clear_handle_id (&self->priv->watchdog_id, g_source_remove);
 
   G_OBJECT_CLASS (cinnamon_mime_sniffer_parent_class)->dispose (object);
-}
-
-static void
-cinnamon_mime_sniffer_finalize (GObject *object)
-{
-  CinnamonMimeSniffer *self = CINNAMON_MIME_SNIFFER (object);
-
-  g_strfreev (self->priv->sniffed_mime);
-
-  G_OBJECT_CLASS (cinnamon_mime_sniffer_parent_class)->finalize (object);
 }
 
 static void
@@ -541,7 +533,6 @@ cinnamon_mime_sniffer_class_init (CinnamonMimeSnifferClass *klass)
 
   oclass = G_OBJECT_CLASS (klass);
   oclass->dispose = cinnamon_mime_sniffer_dispose;
-  oclass->finalize = cinnamon_mime_sniffer_finalize;
   oclass->get_property = cinnamon_mime_sniffer_get_property;
   oclass->set_property = cinnamon_mime_sniffer_set_property;
 
@@ -550,19 +541,15 @@ cinnamon_mime_sniffer_class_init (CinnamonMimeSnifferClass *klass)
                          "File",
                          "The loaded file",
                          G_TYPE_FILE,
-                         G_PARAM_READWRITE);
+                         G_PARAM_READWRITE | G_PARAM_STATIC_STRINGS);
 
-  g_type_class_add_private (klass, sizeof (CinnamonMimeSnifferPrivate));
   g_object_class_install_properties (oclass, NUM_PROPERTIES, properties);
 }
 
 static void
 cinnamon_mime_sniffer_init (CinnamonMimeSniffer *self)
 {
-  self->priv =
-    G_TYPE_INSTANCE_GET_PRIVATE (self,
-                                 CINNAMON_TYPE_MIME_SNIFFER,
-                                 CinnamonMimeSnifferPrivate);
+  self->priv = cinnamon_mime_sniffer_get_instance_private (self);
   init_mimetypes ();
 }
 
@@ -580,18 +567,16 @@ cinnamon_mime_sniffer_sniff_async (CinnamonMimeSniffer *self,
                                 gpointer user_data)
 {
   g_assert (self->priv->watchdog_id == 0);
-  g_assert (self->priv->async_result == NULL);
-
-  self->priv->async_result =
-    g_simple_async_result_new (G_OBJECT (self),
-                               callback, user_data,
-                               cinnamon_mime_sniffer_sniff_finish);
+  g_assert (self->priv->task == NULL);
 
   self->priv->cancellable = g_cancellable_new ();
+  self->priv->task = g_task_new (self, self->priv->cancellable,
+                                 callback, user_data);
 
   self->priv->watchdog_id =
     g_timeout_add (WATCHDOG_TIMEOUT,
                    watchdog_timeout_reached_cb, self);
+  g_source_set_name_by_id (self->priv->watchdog_id, "[gnome-shell] watchdog_timeout_reached_cb");
 
   start_loading_file (self);
 }
@@ -601,8 +586,5 @@ cinnamon_mime_sniffer_sniff_finish (CinnamonMimeSniffer *self,
                                  GAsyncResult *res,
                                  GError **error)
 {
-  if (g_simple_async_result_propagate_error (self->priv->async_result, error))
-    return NULL;
-
-  return g_strdupv (self->priv->sniffed_mime);
+  return g_task_propagate_pointer (self->priv->task, error);
 }
