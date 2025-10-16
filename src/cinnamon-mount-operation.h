@@ -19,28 +19,23 @@
  *
  */
 
-#ifndef __CINNAMON_MIME_SNIFFER_H__
-#define __CINNAMON_MIME_SNIFFER_H__
+#ifndef __CINNAMON_MOUNT_OPERATION_H__
+#define __CINNAMON_MOUNT_OPERATION_H__
 
-#include <glib-object.h>
 #include <gio/gio.h>
 
 G_BEGIN_DECLS
 
-#define CINNAMON_TYPE_MIME_SNIFFER (cinnamon_mime_sniffer_get_type ())
-G_DECLARE_FINAL_TYPE (CinnamonMimeSniffer, cinnamon_mime_sniffer,
-                      CINNAMON, MIME_SNIFFER, GObject)
+#define CINNAMON_TYPE_MOUNT_OPERATION (cinnamon_mount_operation_get_type ())
+G_DECLARE_FINAL_TYPE (CinnamonMountOperation, cinnamon_mount_operation,
+                      CINNAMON, MOUNT_OPERATION, GMountOperation)
 
-CinnamonMimeSniffer *cinnamon_mime_sniffer_new (GFile *file);
+GMountOperation *cinnamon_mount_operation_new        (void);
 
-void cinnamon_mime_sniffer_sniff_async (CinnamonMimeSniffer *self,
-                                     GAsyncReadyCallback callback,
-                                     gpointer user_data);
-
-gchar ** cinnamon_mime_sniffer_sniff_finish (CinnamonMimeSniffer *self,
-                                          GAsyncResult *res,
-                                          GError **error);
+GArray * cinnamon_mount_operation_get_show_processes_pids (CinnamonMountOperation *self);
+gchar ** cinnamon_mount_operation_get_show_processes_choices (CinnamonMountOperation *self);
+gchar * cinnamon_mount_operation_get_show_processes_message (CinnamonMountOperation *self);
 
 G_END_DECLS
 
-#endif /* __CINNAMON_MIME_SNIFFER_H__ */
+#endif /* __CINNAMON_MOUNT_OPERATION_H__ */
