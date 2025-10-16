@@ -116,6 +116,7 @@ const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
+const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const Screenshot = imports.ui.screenshot;
 const ScreensaverController = imports.ui.screensaver.controller;
 const ThemeManager = imports.ui.themeManager;
@@ -165,6 +166,7 @@ var windowAttentionHandler = null;
 var screenRecorder = null;
 var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
+var cinnamonMountOpDBusService = null;
 var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
@@ -345,6 +347,7 @@ function start() {
     new CinnamonPortalHandler();
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
+    cinnamonMountOpDBusService = new CinnamonMountOperation.CinnamonMountOpHandler();
     setRunState(RunState.STARTUP);
 
     screenshotService = new Screenshot.ScreenshotService();
