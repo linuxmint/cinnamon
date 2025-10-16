@@ -64,6 +64,7 @@ Depends:
  gir1.2-graphene-1.0,
  gir1.2-gsound-1.0,
  gir1.2-gtkclutter-1.0,
+ gir1.2-ibus-1.0,
  gir1.2-ical-3.0,
  gir1.2-keybinder-3.0,
  gir1.2-meta-muffin-0.0 (>= 5.3),
