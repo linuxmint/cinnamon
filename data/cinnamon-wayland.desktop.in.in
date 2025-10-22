@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-_Name=Cinnamon (Wayland session)
-_Comment=Window management and application launching
+Name=Cinnamon (Wayland session)
+Comment=Window management and application launching
 Exec=cinnamon --replace
 X-GNOME-Bugzilla-Bugzilla=GNOME
 X-GNOME-Bugzilla-Product=cinnamon
