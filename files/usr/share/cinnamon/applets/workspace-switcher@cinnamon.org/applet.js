@@ -11,8 +11,11 @@ const Tooltips = imports.ui.tooltips;
 const Settings = imports.ui.settings;
 const ModalDialog = imports.ui.modalDialog;
 const Pango = imports.gi.Pango;
+const Cinnamon = imports.gi.Cinnamon;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
+
+const DEFAULT_ICON_SIZES = [8, 12, 16, 18, 22, 24, 32];
 
 
 function removeWorkspaceAtIndex(index) {
@@ -77,7 +80,7 @@ class WorkspaceButton {
         }
     }
 
-    update() {
+    update(options = {}) {
         // defined in subclass
     }
 
@@ -92,152 +95,6 @@ class WorkspaceButton {
     }
 }
 
-class WorkspaceGraph extends WorkspaceButton {
-    constructor(index, applet) {
-        super(index, applet);
-
-        this.scaleFactor = 0;
-
-        this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
-                                  style_class: 'workspace',
-                                  y_fill: true,
-                                  important: true });
-
-        this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
-        this.actor.add_actor(this.graphArea);
-        this.panelApplet = applet;
-
-        this.graphArea.set_size(1, 1);
-        this.graphArea.connect('repaint', Lang.bind(this, this.onRepaint));
-    }
-
-    getSizeAdjustment (actor, vertical) {
-        let themeNode = actor.get_theme_node()
-        if (vertical) {
-            return themeNode.get_horizontal_padding() +
-                themeNode.get_border_width(St.Side.LEFT) +
-                themeNode.get_border_width(St.Side.RIGHT);
-        }
-        else {
-            return themeNode.get_vertical_padding() +
-                themeNode.get_border_width(St.Side.TOP) +
-                themeNode.get_border_width(St.Side.BOTTOM);
-        }
-    }
-
-    setGraphSize () {
-        this.workspace_size = this.workspace.get_work_area_all_monitors();
-
-        let height, width;
-        if (this.panelApplet.orientation == St.Side.LEFT ||
-            this.panelApplet.orientation == St.Side.RIGHT) {
-
-            width = this.panelApplet._panelHeight -
-                this.getSizeAdjustment(this.panelApplet.actor, true) -
-                this.getSizeAdjustment(this.actor, true);
-            this.scaleFactor = this.workspace_size.width / width;
-            height = Math.round(this.workspace_size.height / this.scaleFactor);
-        }
-        else {
-            height = this.panelApplet._panelHeight -
-                this.getSizeAdjustment(this.panelApplet.actor, false) -
-                this.getSizeAdjustment(this.actor, false);
-            this.scaleFactor = this.workspace_size.height / height;
-            width = Math.round(this.workspace_size.width / this.scaleFactor);
-        }
-
-        this.graphArea.set_size(width, height);
-    }
-
-    scale (windows_rect, workspace_rect) {
-        let scaled_rect = new Meta.Rectangle();
-        scaled_rect.x = Math.round((windows_rect.x - workspace_rect.x) / this.scaleFactor);
-        scaled_rect.y = Math.round((windows_rect.y - workspace_rect.y) / this.scaleFactor);
-        scaled_rect.width = Math.round(windows_rect.width / this.scaleFactor);
-        scaled_rect.height = Math.round(windows_rect.height / this.scaleFactor);
-        return scaled_rect;
-    }
-
-    sortWindowsByUserTime (win1, win2) {
-        let t1 = win1.get_user_time();
-        let t2 = win2.get_user_time();
-        return (t2 < t1) ? 1 : -1;
-    }
-
-    paintWindow(metaWindow, themeNode, cr) {
-        let windowBackgroundColor;
-        let windowBorderColor;
-
-        let scaled_rect = this.scale(metaWindow.get_buffer_rect(), this.workspace_size);
-
-        if (metaWindow.has_focus()) {
-            windowBorderColor = themeNode.get_color('-active-window-border');
-            windowBackgroundColor = themeNode.get_color('-active-window-background');
-        } else {
-            windowBorderColor = themeNode.get_color('-inactive-window-border');
-            windowBackgroundColor = themeNode.get_color('-inactive-window-background');
-        }
-
-        Clutter.cairo_set_source_color(cr, windowBorderColor);
-        cr.rectangle(scaled_rect.x, scaled_rect.y, scaled_rect.width, scaled_rect.height);
-        cr.strokePreserve();
-
-        Clutter.cairo_set_source_color(cr, windowBackgroundColor);
-        cr.fill();
-    }
-
-    onRepaint(area) {
-        // we need to set the size of the drawing area the first time, but we can't get
-        // accurate measurements until everything is added to the stage
-        if (this.scaleFactor === 0) this.setGraphSize();
-
-        let graphThemeNode = this.graphArea.get_theme_node();
-        let cr = area.get_context();
-        cr.setLineWidth(1);
-
-        // construct a list with all windows
-        let windows = this.workspace.list_windows();
-        windows = windows.filter( Main.isInteresting );
-        windows = windows.filter(
-            function(w) {
-                return !w.is_skip_taskbar() && !w.minimized;
-            });
-
-        windows.sort(this.sortWindowsByUserTime);
-
-        if (windows.length) {
-            let focusWindow = null;
-
-            for (let i = 0; i < windows.length; ++i) {
-                let metaWindow = windows[i];
-
-                if (metaWindow.has_focus()) {
-                    focusWindow = metaWindow;
-                    continue;
-                }
-
-                this.paintWindow(metaWindow, graphThemeNode, cr);
-            }
-
-            if (focusWindow) {
-                this.paintWindow(focusWindow, graphThemeNode, cr);
-            }
-        }
-
-        cr.$dispose();
-    }
-
-    update() {
-        this.graphArea.queue_repaint();
-    }
-
-    activate(active) {
-        if (active)
-            this.actor.add_style_pseudo_class('active');
-        else
-            this.actor.remove_style_pseudo_class('active');
-    }
-}
 
 class SimpleButton extends WorkspaceButton {
     constructor(index, applet) {
@@ -278,18 +135,330 @@ class SimpleButton extends WorkspaceButton {
             this.actor.remove_style_pseudo_class('shaded');
         }
     }
-    
-    update() {
+
+    update(options = {}) {
         let windows = this.workspace.list_windows();
         let used = windows.some(Main.isInteresting);
         this.shade(used);
     }
 }
 
+
+class WindowGraph {
+    constructor(workspaceGraph, metaWindow, tracker, iconEnabled, iconSize) {
+        this.workspaceGraph = workspaceGraph;
+        this.metaWindow = metaWindow;
+        this.tracker = tracker;
+        this.iconEnabled = iconEnabled;
+        this._iconSize = iconSize;
+        this._iconScaledSize = this._iconSize * global.ui_scale;
+        this._halvedIconScaledSize = this._iconScaledSize * 0.5;
+
+        this.drawingArea = new St.DrawingArea({
+            style_class: 'windows',
+            width: this.workspaceGraph.width,
+            height: this.workspaceGraph.height,
+            important: true,
+        });
+
+        this.drawingArea.connect('repaint', this.onRepaint.bind(this));
+
+        this._icon = null;
+
+        if (this.iconEnabled)
+            this.updateIcon(this.intersectionRect());
+    }
+
+    get icon() {
+        if (!this._icon)
+            this._icon = this.createIcon();
+        return this._icon;
+    }
+
+    calcIconPos(rect) {
+        const x = Math.round(rect.x + rect.width / 2 - this._halvedIconScaledSize);
+        const y = Math.round(rect.y + rect.height / 2 - this._halvedIconScaledSize);
+        return [x, y];
+    }
+
+    updateIcon(rect) {
+        if (this.iconEnabled) {
+            const [x, y] = this.calcIconPos(rect);
+            this.icon.set_position(x, y);
+            if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
+                this.icon.set_opacity(0);
+            } else {
+                this.icon.set_opacity(255);
+            }
+        }
+    }
+
+    intersectionRect() {
+        const windowRect = this.metaWindow.get_buffer_rect();
+        const workspaceRect = this.workspaceGraph.workspace_size;
+        const scaleFactor = this.workspaceGraph.scaleFactor;
+
+        const scaledWindowX = (windowRect.x - workspaceRect.x) / scaleFactor;
+        const scaledWindowY = (windowRect.y - workspaceRect.y) / scaleFactor;
+        const scaledWindowWidth = windowRect.width / scaleFactor;
+        const scaledWindowHeight = windowRect.height / scaleFactor;
+
+        const graphWidth = this.workspaceGraph.width;
+        const graphHeight = this.workspaceGraph.height;
+
+        const intersectionX = Math.max(0, scaledWindowX);
+        const intersectionY = Math.max(0, scaledWindowY);
+        const intersectionRight = Math.min(graphWidth, scaledWindowX + scaledWindowWidth);
+        const intersectionBottom = Math.min(graphHeight, scaledWindowY + scaledWindowHeight);
+
+        const intersection = new Meta.Rectangle();
+
+        intersection.x = Math.round(intersectionX);
+        intersection.y = Math.round(intersectionY);
+        intersection.width = Math.round(intersectionRight - intersectionX);
+        intersection.height = Math.round(intersectionBottom - intersectionY);
+
+        return intersection;
+    }
+
+    onRepaint(area) {
+        const [winBackgroundColor, winBorderColor] = this.getWinThemeColors();
+        const rect = this.intersectionRect();
+        const cr = area.get_context();
+
+        cr.setLineWidth(1);
+
+        Clutter.cairo_set_source_color(cr, winBorderColor);
+        cr.rectangle(rect.x, rect.y, rect.width, rect.height);
+
+        cr.strokePreserve();
+
+        Clutter.cairo_set_source_color(cr, winBackgroundColor);
+
+        cr.fill();
+        cr.$dispose();
+
+        this.updateIcon(rect);
+    }
+
+    getWinThemeColors() {
+        const graphThemeNode = this.workspaceGraph.graphArea.get_theme_node();
+        let windowBackgroundColor, windowBorderColor;
+
+        if (this.metaWindow.has_focus()) {
+            windowBorderColor = graphThemeNode.get_color('-active-window-border');
+            windowBackgroundColor = graphThemeNode.get_color('-active-window-background');
+        } else {
+            windowBorderColor = graphThemeNode.get_color('-inactive-window-border');
+            windowBackgroundColor = graphThemeNode.get_color('-inactive-window-background');
+        }
+
+        return [windowBackgroundColor, windowBorderColor];
+    }
+
+    createIcon() {
+        let iconActor = null;
+        let app = this.tracker.get_window_app(this.metaWindow);
+
+        if (app) {
+            iconActor = app.create_icon_texture_for_window(
+                this._iconSize,
+                this.metaWindow,
+            );
+        }
+
+        if (!iconActor) {
+            iconActor = new St.Icon({
+                icon_name: 'applications-other',
+                icon_type: St.IconType.FULLCOLOR,
+                icon_size: this._iconSize,
+            });
+        }
+
+        return iconActor;
+    }
+
+    destroy() {
+        if (this._icon) {
+            this._icon.destroy();
+            this._icon = null;
+        }
+
+        this.drawingArea.destroy();
+        this.drawingArea = null;
+    }
+
+    update(options = {}) {
+        this.drawingArea.queue_repaint();
+    }
+
+    show() {
+        this.workspaceGraph.graphArea.add_child(this.drawingArea);
+
+        if (this.iconEnabled) {
+            this.workspaceGraph.graphArea.add_child(this.icon);
+        }
+    }
+}
+
+
+class WorkspaceGraph extends WorkspaceButton {
+    constructor(index, applet) {
+        super(index, applet);
+
+        this.scaleFactor = 0;
+
+        this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
+                                  style_class: 'workspace',
+                                  y_fill: true,
+                                  important: true });
+
+        this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
+        this.actor.add_actor(this.graphArea);
+
+        this.graphArea.set_size(1, 1);
+        this.graphArea.connect('repaint', this.onRepaint.bind(this));
+
+        this.focusGraph = null;
+        this.windowsGraphs = [];
+
+        this.height = 1;
+        this.width = 1;
+    }
+
+    getSizeAdjustment(actor, vertical) {
+        let themeNode = actor.get_theme_node();
+
+        if (vertical) {
+            return themeNode.get_horizontal_padding() +
+                themeNode.get_border_width(St.Side.LEFT) +
+                themeNode.get_border_width(St.Side.RIGHT);
+        }
+        else {
+            return themeNode.get_vertical_padding() +
+                themeNode.get_border_width(St.Side.TOP) +
+                themeNode.get_border_width(St.Side.BOTTOM);
+        }
+    }
+
+    getIdealIconSize() {
+        const maxAllowed = (Math.min(this.width, this.height) * 0.55) / global.ui_scale;
+
+        for (let i = DEFAULT_ICON_SIZES.length - 1; i >= 0; i--) {
+            if (DEFAULT_ICON_SIZES[i] <= maxAllowed) {
+                return DEFAULT_ICON_SIZES[i];
+            }
+        }
+
+        return DEFAULT_ICON_SIZES[0];
+    }
+
+    setGraphSize() {
+        this.workspace_size = this.workspace.get_work_area_all_monitors();
+
+        if (this.applet.orientation == St.Side.LEFT ||
+            this.applet.orientation == St.Side.RIGHT) {
+
+            this.width = this.applet._panelHeight -
+                this.getSizeAdjustment(this.applet.actor, true) -
+                this.getSizeAdjustment(this.actor, true);
+            this.scaleFactor = this.workspace_size.width / this.width;
+            this.height = Math.round(this.workspace_size.height / this.scaleFactor);
+        }
+        else {
+            this.height = this.applet._panelHeight -
+                this.getSizeAdjustment(this.applet.actor, false) -
+                this.getSizeAdjustment(this.actor, false);
+            this.scaleFactor = this.workspace_size.height / this.height;
+            this.width = Math.round(this.workspace_size.width / this.scaleFactor);
+        }
+
+        this.graphArea.set_size(this.width, this.height);
+    }
+
+    sortWindowsByUserTime(win1, win2) {
+        let t1 = win1.get_user_time();
+        let t2 = win2.get_user_time();
+        return (t2 < t1) ? 1 : -1;
+    }
+
+    filterWindows(win) {
+        return Main.isInteresting(win) &&
+            !win.is_skip_taskbar()     &&
+            !win.minimized;
+    }
+
+    onRepaint(area) {
+        // we need to set the size of the drawing area the first time, but we can't get
+        // accurate measurements until everything is added to the stage
+        if (this.scaleFactor === 0) this.setGraphSize();
+
+        // construct a list with all windows
+        let windows = this.workspace.list_windows();
+        windows = windows.filter(this.filterWindows);
+        windows.sort(this.sortWindowsByUserTime);
+
+        this.graphArea.remove_all_children();
+
+        if (this.windowsGraphs) this.windowsGraphs.forEach(e => e.destroy());
+
+        this.windowsGraphs = [];
+
+        const iconEnabled = this.applet.show_window_icons;
+        const iconSize = this.applet.window_icon_size == -1 ? this.getIdealIconSize() : this.applet.window_icon_size;
+        const tracker = Cinnamon.WindowTracker.get_default();
+
+        this.focusGraph = null;
+        for (const window of windows) {
+            const graph = new WindowGraph(this, window, tracker, iconEnabled, iconSize);
+
+            this.windowsGraphs.push(graph);
+
+            if (window.has_focus()) {
+                this.focusGraph = graph;
+            } else {
+                graph.show();
+                graph.update();
+            }
+        }
+
+        if (this.focusGraph) {
+            this.focusGraph.show();
+            this.focusGraph.update();
+        }
+    }
+
+    update(options = {}) {
+        const state = options.state;
+
+        if ((state == "position-changed" || state == "size-changed") &&
+            this.focusGraph && this.focusGraph.metaWindow.has_focus()
+        ) {
+            this.focusGraph.update(options);
+        } else {
+            this.graphArea.queue_repaint();
+        }
+    }
+
+    activate(active) {
+        if (active)
+            this.actor.add_style_pseudo_class('active');
+        else
+            this.actor.remove_style_pseudo_class('active');
+    }
+
+    destroy() {
+        this.focusGraph = null;
+        this.windowsGraphs.forEach(e => e.destroy());
+        this.windowsGraphs = [];
+        super.destroy();
+    }
+}
+
+
 class CinnamonWorkspaceSwitcher extends Applet.Applet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
-
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.orientation = orientation;
@@ -300,12 +469,12 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.createButtonsQueued = false;
 
         this._focusWindow = null;
-        if (global.display.focus_window)
-            this._focusWindow = global.display.focus_window;
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
         this.settings.bind("scroll-behavior", "scroll_behavior");
+        this.settings.bind("show-window-icons", "show_window_icons", this.updateButtons);
+        this.settings.bind("window-icon-size", "window_icon_size", this.updateButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
@@ -409,6 +578,10 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         }
     }
 
+    updateButtons() {
+        this.buttons.forEach(btn => btn.update());
+    }
+
     _createButtons() {
         this.createButtonsQueued = false;
         for (let i = 0; i < this.buttons.length; ++i) {
@@ -453,14 +626,14 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", Lang.bind(this, this._onPositionChanged), this);
-        this.signals.connect(this._focusWindow, "size-changed", Lang.bind(this, this._onPositionChanged), this);
-        this._onPositionChanged();
+        this.signals.connect(this._focusWindow, "position-changed", () => this._onWindowsStateChanged("position-changed"), this);
+        this.signals.connect(this._focusWindow, "size-changed", () => this._onWindowsStateChanged("size-changed"), this);
+        this._onWindowsStateChanged("focus-changed");
     }
 
-    _onPositionChanged() {
+    _onWindowsStateChanged(state) {
         let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
-        button.update();
+        button.update({ state: state });
     }
 
     on_applet_removed_from_panel() {
