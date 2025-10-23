@@ -170,10 +170,18 @@ configure_file(
     install_dir: 'share/cinnamon/js/misc/'
 )
 
+
+excluded_files = []
+if get_option('exclude_info_settings')
+    excluded_files += ['usr/share/applications/cinnamon-settings-info.desktop']
+    excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_info.py']
+endif
+
 install_subdir(
     'files',
     install_dir: '/',
     strip_directory: true,
+    exclude_files : excluded_files
 )
 
 session_files = ['cinnamon.session', 'cinnamon2d.session']

@@ -29,4 +29,9 @@ option('wayland',
     value : true,
     description: 'Enable wayland support'
 )
+option('exclude_info_settings',
+    type : 'boolean',
+    value : false,
+    description: 'Exclude Info settings'
+)
 
