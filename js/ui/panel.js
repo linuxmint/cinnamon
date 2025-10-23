@@ -1711,10 +1711,10 @@ PanelContextMenu.prototype = {
         this.actor.hide();
         this.panelId = panelId;
 
-        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel --panel " + panelId, "xapp-cog");
+        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel --panel " + panelId, "xsi-cog");
         this.addMenuItem(moreSettingsMenuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets --panel " + panelId, "xapp-addon");
+        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets --panel " + panelId, "xsi-addon");
         this.addMenuItem(applet_settings_item);
 
         let menu = this;
@@ -1739,14 +1739,14 @@ PanelContextMenu.prototype = {
 
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
-        menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "xapp-move", St.IconType.SYMBOLIC); // submenu item move panel
+        menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "xsi-move", St.IconType.SYMBOLIC); // submenu item move panel
         menu.movePanelItem.activate = Lang.bind(menu, function() {
             Main.panelManager.movePanelQuery(this.panelId);
             this.close(true);
         });
         menu.addMenuItem(menu.movePanelItem);
 
-        let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "xapp-list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
+        let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "xsi-list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
         menuItem.activate = Lang.bind(menu, function() {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?"),
                     function() {
@@ -1756,7 +1756,7 @@ PanelContextMenu.prototype = {
         });
         menu.addMenuItem(menuItem);
 
-        menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add a new panel"), "xapp-list-add", St.IconType.SYMBOLIC); // submenu item add panel
+        menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add a new panel"), "xsi-list-add", St.IconType.SYMBOLIC); // submenu item add panel
         menu.addPanelItem.activate = Lang.bind(menu, function() {
             Main.panelManager.addPanelQuery();
             this.close(true);
@@ -1766,14 +1766,14 @@ PanelContextMenu.prototype = {
         // menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
 
-        // menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applets"), "xapp-edit-copy", St.IconType.SYMBOLIC);
+        // menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applets"), "xsi-edit-copy", St.IconType.SYMBOLIC);
         // menu.copyAppletItem.activate = Lang.bind(menu, function() {
         //     AppletManager.copyAppletConfiguration(this.panelId);
         //     this.close(true);
         // });
         // menu.addMenuItem(menu.copyAppletItem);  // submenu item copy applet config
 
-        // menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applets"), "xapp-edit-paste", St.IconType.SYMBOLIC);
+        // menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applets"), "xsi-edit-paste", St.IconType.SYMBOLIC);
         // menu.pasteAppletItem.activate = Lang.bind(menu, function() {
         //     let dialog = new ModalDialog.ConfirmDialog(
         //             _("Pasting applet configuration will remove all existing applets on this panel. Do you want to continue?") + "\n\n",
@@ -1784,7 +1784,7 @@ PanelContextMenu.prototype = {
         // });
         // menu.addMenuItem(menu.pasteAppletItem); // submenu item paste applet config
 
-        // menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "xapp-edit-clear-all", St.IconType.SYMBOLIC);
+        // menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "xsi-edit-clear-all", St.IconType.SYMBOLIC);
         // menu.clearAppletItem.activate = Lang.bind(menu, function() {
         //     let dialog = new ModalDialog.ConfirmDialog(
         //             _("Are you sure you want to clear all applets on this panel?") + "\n\n",
@@ -1820,7 +1820,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "xapp-tools"));
+        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "xsi-tools"));
     },
 
     open: function(animate) {

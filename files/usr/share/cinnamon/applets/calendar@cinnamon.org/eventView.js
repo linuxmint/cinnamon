@@ -683,7 +683,7 @@ class EventList {
         let no_events_icon = new St.Icon(
             {
                 style_class: "calendar-events-no-events-icon",
-                icon_name: 'xapp-x-office-calendar',
+                icon_name: 'xsi-x-office-calendar',
                 icon_type: St.IconType.SYMBOLIC,
                 icon_size: 48
             }

@@ -96,11 +96,11 @@ const AudioDeviceSelectionDialog = GObject.registerClass({
      _getDeviceIcon(device) {
         switch (device) {
         case AudioDevice.HEADPHONES:
-            return 'xapp-audio-headphones-symbolic';
+            return 'xsi-audio-headphones-symbolic';
         case AudioDevice.HEADSET:
-            return 'xapp-audio-headset-symbolic';
+            return 'xsi-audio-headset-symbolic';
         case AudioDevice.MICROPHONE:
-            return 'xapp-audio-input-microphone-symbolic';
+            return 'xsi-audio-input-microphone-symbolic';
         default:
             return null;
         }

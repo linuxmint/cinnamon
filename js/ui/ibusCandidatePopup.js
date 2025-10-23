@@ -98,14 +98,14 @@ var CandidateArea = GObject.registerClass({
             this.vertical = false;
             this.remove_style_class_name('vertical');
             this.add_style_class_name('horizontal');
-            this._previousButton.child.icon_name = 'xapp-go-previous-symbolic';
-            this._nextButton.child.icon_name = 'xapp-go-next-symbolic';
+            this._previousButton.child.icon_name = 'xsi-go-previous-symbolic';
+            this._nextButton.child.icon_name = 'xsi-go-next-symbolic';
         } else {                // VERTICAL || SYSTEM
             this.vertical = true;
             this.add_style_class_name('vertical');
             this.remove_style_class_name('horizontal');
-            this._previousButton.child.icon_name = 'xapp-go-up-symbolic';
-            this._nextButton.child.icon_name = 'xapp-go-down-symbolic';
+            this._previousButton.child.icon_name = 'xsi-go-up-symbolic';
+            this._nextButton.child.icon_name = 'xsi-go-down-symbolic';
         }
     }
 

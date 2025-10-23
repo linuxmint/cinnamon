@@ -43,7 +43,7 @@ gtk = dependency('gtk+-3.0', version: '>= 3.12.0')
 muffin = dependency('libmuffin-0', version: '>= 5.2.0')
 muffin_typelibdir = muffin.get_variable(pkgconfig: 'typelibdir')
 pango = dependency('muffin-cogl-pango-0')
-xapp = dependency('xapp', version: '>= 3.0.0')
+xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
 xml = dependency('libxml-2.0')
 

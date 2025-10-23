@@ -217,7 +217,7 @@ MyApplet.prototype =
             this.settings = new AppletSettings(this, "finder@cinnamon.org", instanceId);
             this.settings.bind("launch_shortcut", "launch_shortcut", this.on_launch_shortcut_changed, null);
 
-            this.set_applet_icon_name("xapp-edit-find-symbolic");
+            this.set_applet_icon_name("xsi-edit-find-symbolic");
             this.set_applet_tooltip(_("Search using search providers"));
 
             let menuManager = new PopupMenu.PopupMenuManager(this);

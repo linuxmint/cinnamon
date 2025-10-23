@@ -72,7 +72,7 @@ var WindowHandlerSource = class extends MessageTray.Source {
             return this.app.create_icon_texture(this.ICON_SIZE);
         }
 
-        return new St.Icon({ icon_name: 'xapp-dialog-information',
+        return new St.Icon({ icon_name: 'xsi-dialog-information',
                              icon_type: St.IconType.SYMBOLIC,
                              icon_size: this.ICON_SIZE });
     }

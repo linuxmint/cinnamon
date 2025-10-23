@@ -196,7 +196,7 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
         item = this.addAction(this, _("Mi_nimize"), () => {
             window.minimize();
         });
-        item.setIcon("xapp-window-minimize-symbolic");
+        item.setIcon("xsi-window-minimize-symbolic");
 
         if (!window.can_minimize())
             item.setSensitive(false);
@@ -213,7 +213,7 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
             item = this.addAction(this, _("Ma_ximize"), () => {
                 window.maximize(Meta.MaximizeFlags.BOTH);
             });
-            item.setIcon("xapp-window-maximize-symbolic");
+            item.setIcon("xsi-window-maximize-symbolic");
         }
         if (!window.can_maximize())
             item.setSensitive(false);
@@ -339,7 +339,7 @@ var WindowMenu = class extends PopupMenu.PopupMenu {
         item = this.addAction(this, _("_Close"), event => {
             window.delete(event.get_time());
         });
-        item.setIcon("xapp-window-close-symbolic");
+        item.setIcon("xsi-window-close-symbolic");
         if (!window.can_close())
             item.setSensitive(false);
     }

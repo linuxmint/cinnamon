@@ -30,7 +30,7 @@ class FrozenWindow(Gtk.Window):
         heading = Gtk.Label(label="<b>Click the button to freeze the window</b>", use_markup=True)
         box.pack_start(heading, False, False, 6)
 
-        button = Gtk.Button(image=Gtk.Image.new_from_icon_name("xapp-face-sad-symbolic", Gtk.IconSize.DIALOG))
+        button = Gtk.Button(image=Gtk.Image.new_from_icon_name("xsi-face-sad-symbolic", Gtk.IconSize.DIALOG))
         box.pack_start(button, True, True, 0)
         button.connect("clicked", self.button_clicked)
 

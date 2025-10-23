@@ -182,7 +182,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
             this._panel_avatar.show();
         } else {
             this._panel_icon = new St.Icon({
-                icon_name: 'xapp-avatar-default-symbolic',
+                icon_name: 'xsi-avatar-default-symbolic',
                 icon_type: St.IconType.SYMBOLIC,
                 icon_size: this.getPanelIconSize(St.IconType.SYMBOLIC),
             });

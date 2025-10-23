@@ -664,7 +664,7 @@ const DESKTOP_ACTION_ICON_NAMES = {
     new_private_window: 'view-private',
     new_root_window: 'dialog-password',
     news: 'news',
-    new_session: 'xapp-tab-new-symbolic',
+    new_session: 'xsi-tab-new-symbolic',
     new_window: 'window-new',
     next: 'media-skip-forward',
     open_computer: 'computer',

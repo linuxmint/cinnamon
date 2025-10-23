@@ -54,7 +54,7 @@ var RootUser = class {
         this.realName = _("Superuser (%s)").format(name);
 
         this.avatar = new St.Icon({
-            icon_name: 'xapp-avatar-default-symbolic',
+            icon_name: 'xsi-avatar-default-symbolic',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: DIALOG_ICON_SIZE,
             style_class: 'user-icon'

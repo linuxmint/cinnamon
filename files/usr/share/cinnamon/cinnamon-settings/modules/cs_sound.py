@@ -169,7 +169,7 @@ class VolumeBar(Slider):
         self.set_margin_right(23)
         self.slider.set_sensitive(False)
 
-        self.muteImage = Gtk.Image.new_from_icon_name("xapp-audio-volume-muted-symbolic", 1)
+        self.muteImage = Gtk.Image.new_from_icon_name("xsi-audio-volume-muted-symbolic", 1)
         self.muteSwitch = Gtk.ToggleButton()
         self.muteSwitch.set_image(self.muteImage)
         self.muteSwitch.set_relief(Gtk.ReliefStyle.NONE)
@@ -255,11 +255,11 @@ class VolumeBar(Slider):
         self.muteSwitch.handler_unblock(self.muteSwitchHandlerId)
 
         if self.isMuted:
-            self.muteImage.set_from_icon_name("xapp-audio-volume-muted-symbolic", 1)
+            self.muteImage.set_from_icon_name("xsi-audio-volume-muted-symbolic", 1)
             self.label.set_label(self.baseTitle + _("Muted"))
             self.muteSwitch.set_tooltip_text(_("Click to unmute"))
         else:
-            self.muteImage.set_from_icon_name("xapp-audio-volume-high-symbolic", 1)
+            self.muteImage.set_from_icon_name("xsi-audio-volume-high-symbolic", 1)
             self.label.set_label(self.baseTitle + str(self.volume) + "%")
             self.muteSwitch.set_tooltip_text(_("Click to mute"))
 
@@ -585,7 +585,7 @@ class Module:
 
         noInputsMessage = Gtk.Box()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        image = Gtk.Image.new_from_icon_name("xapp-sign-forbidden-symbolic", Gtk.IconSize.DIALOG)
+        image = Gtk.Image.new_from_icon_name("xsi-sign-forbidden-symbolic", Gtk.IconSize.DIALOG)
         image.set_pixel_size(96)
         box.pack_start(image, False, False, 0)
         box.set_valign(Gtk.Align.CENTER)
@@ -623,7 +623,7 @@ class Module:
 
         noAppsMessage = Gtk.Box()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        image = Gtk.Image.new_from_icon_name("xapp-sign-forbidden-symbolic", Gtk.IconSize.DIALOG)
+        image = Gtk.Image.new_from_icon_name("xsi-sign-forbidden-symbolic", Gtk.IconSize.DIALOG)
         image.set_pixel_size(96)
         box.pack_start(image, False, False, 0)
         box.set_valign(Gtk.Align.CENTER)

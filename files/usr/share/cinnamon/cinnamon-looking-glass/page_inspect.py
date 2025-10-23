@@ -70,12 +70,12 @@ class ModulePage(pageutils.WindowAndActionBars):
         pageutils.WindowAndActionBars.__init__(self, self.view)
         self.parent = parent
 
-        self.back = pageutils.ImageButton("xapp-go-previous-symbolic")
+        self.back = pageutils.ImageButton("xsi-go-previous-symbolic")
         self.back.set_tooltip_text("Go back")
         self.back.connect("clicked", self.on_back_button)
         self.add_to_left_bar(self.back, 1)
 
-        self.insert = pageutils.ImageButton("xapp-insert-object-symbolic")
+        self.insert = pageutils.ImageButton("xsi-insert-object-symbolic")
         self.insert.set_tooltip_text("Insert into results")
         self.insert.set_sensitive(False)
         self.insert.connect("clicked", self.on_insert_button)

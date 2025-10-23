@@ -125,7 +125,7 @@ class Avatar extends St.Bin {
         } else {
             this.style = null;
             this.child = new St.Icon({
-                icon_name: 'xapp-avatar-default-symbolic',
+                icon_name: 'xsi-avatar-default-symbolic',
                 icon_size: this._iconSize,
             });
         }

@@ -226,7 +226,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         enabled_box = Gtk.Box()
         enabled_box.set_spacing(4)
         size_groups[0].add_widget(enabled_box)
-        self.enabled_image = Gtk.Image.new_from_icon_name('xapp-object-select-symbolic', 2)
+        self.enabled_image = Gtk.Image.new_from_icon_name('xsi-object-select-symbolic', 2)
         if self.extension_type == "applet":
             self.enabled_image.set_tooltip_text(_("This applet is currently enabled"))
         elif self.extension_type == "desklet":
@@ -301,7 +301,7 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         size_groups[2].add_widget(self.button_box)
 
         if self.has_config:
-            config_icon = Gtk.Image.new_from_icon_name('xapp-run-symbolic', 2)
+            config_icon = Gtk.Image.new_from_icon_name('xsi-run-symbolic', 2)
             self.config_button = Gtk.Button(image=config_icon)
             self.config_button.set_tooltip_text(_('Configure'))
             self.button_box.pack_start(self.config_button, False, False, 0)
@@ -310,13 +310,13 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
         if not self.writable:
             if self.extension_type == "applet":
-                self.add_status('locked', 'xapp-changes-prevent-symbolic', _("This is a system applet. It cannot be removed."))
+                self.add_status('locked', 'xsi-changes-prevent-symbolic', _("This is a system applet. It cannot be removed."))
             elif self.extension_type == "desklet":
-                self.add_status('locked', 'xapp-changes-prevent-symbolic', _("This is a system desklet. It cannot be removed."))
+                self.add_status('locked', 'xsi-changes-prevent-symbolic', _("This is a system desklet. It cannot be removed."))
             elif self.extension_type == "extension":
-                self.add_status('locked', 'xapp-changes-prevent-symbolic', _("This is a system extension. It cannot be removed."))
+                self.add_status('locked', 'xsi-changes-prevent-symbolic', _("This is a system extension. It cannot be removed."))
             elif self.extension_type == "action":
-                self.add_status('locked', 'xapp-changes-prevent-symbolic', '')
+                self.add_status('locked', 'xsi-changes-prevent-symbolic', '')
 
         if self.writable and self.extension_type != 'action':
             self.scan_extension_for_danger(self.metadata['path'])
@@ -417,11 +417,11 @@ class ManageSpicesRow(Gtk.ListBoxRow):
     def on_scan_complete(self, is_dangerous):
         if is_dangerous:
             if self.extension_type == "applet":
-                self.add_status('dangerous', 'xapp-dialog-warning-symbolic', _("This applet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
+                self.add_status('dangerous', 'xsi-dialog-warning-symbolic', _("This applet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
             elif self.extension_type == "desklet":
-                self.add_status('dangerous', 'xapp-dialog-warning-symbolic', _("This desklet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
+                self.add_status('dangerous', 'xsi-dialog-warning-symbolic', _("This desklet contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
             elif self.extension_type == "extension":
-                self.add_status('dangerous', 'xapp-dialog-warning-symbolic', _("This extension contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
+                self.add_status('dangerous', 'xsi-dialog-warning-symbolic', _("This extension contains function calls that could potentially cause Cinnamon to crash or freeze. If you are experiencing crashes or freezing, please try removing it."))
 
 
 class ManageSpicesPage(SettingsPage):
@@ -442,7 +442,7 @@ class ManageSpicesPage(SettingsPage):
         self.pack_start(self.top_box, False, False, 10)
 
         self.search_entry = Gtk.Entry()
-        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'xapp-edit-find-symbolic')
+        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'xsi-edit-find-symbolic')
         self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
@@ -500,34 +500,34 @@ class ManageSpicesPage(SettingsPage):
         button_holder.add(box)
 
         # buttons
-        self.instance_button = Gtk.Button.new_from_icon_name("xapp-list-add-symbolic", Gtk.IconSize.MENU)
+        self.instance_button = Gtk.Button.new_from_icon_name("xsi-list-add-symbolic", Gtk.IconSize.MENU)
         self.instance_button.set_size_request(50, -1)
         self.instance_button.set_tooltip_text(self.instance_button_text)
         self.instance_button.connect('clicked', self.add_instance)
         box.add(self.instance_button)
         self.instance_button.set_sensitive(False)
 
-        self.remove_button = Gtk.Button.new_from_icon_name("xapp-list-remove-symbolic", Gtk.IconSize.MENU)
+        self.remove_button = Gtk.Button.new_from_icon_name("xsi-list-remove-symbolic", Gtk.IconSize.MENU)
         self.remove_button.set_size_request(50, -1)
         self.remove_button.set_tooltip_text(self.remove_button_text)
         self.remove_button.connect('clicked', self.remove_all_instances)
         box.add(self.remove_button)
         self.remove_button.set_sensitive(False)
 
-        self.uninstall_button = Gtk.Button.new_from_icon_name("xapp-edit-delete-symbolic", Gtk.IconSize.MENU)
+        self.uninstall_button = Gtk.Button.new_from_icon_name("xsi-edit-delete-symbolic", Gtk.IconSize.MENU)
         self.uninstall_button.set_size_request(50, -1)
         self.uninstall_button.set_tooltip_text(self.uninstall_button_text)
         self.uninstall_button.connect('clicked', self.uninstall_extension)
         box.add(self.uninstall_button)
         self.uninstall_button.set_sensitive(False)
 
-        self.restore_button = Gtk.Button.new_from_icon_name("xapp-edit-undo-symbolic", Gtk.IconSize.MENU)
+        self.restore_button = Gtk.Button.new_from_icon_name("xsi-edit-undo-symbolic", Gtk.IconSize.MENU)
         self.restore_button.set_size_request(50, -1)
         self.restore_button.set_tooltip_text(self.restore_button_text)
         self.restore_button.connect('clicked', self.restore_to_default)
         box.add(self.restore_button)
 
-        self.about_button = Gtk.Button.new_from_icon_name("xapp-help-about-symbolic", Gtk.IconSize.MENU)
+        self.about_button = Gtk.Button.new_from_icon_name("xsi-help-about-symbolic", Gtk.IconSize.MENU)
         self.about_button.set_size_request(50, -1)
         self.about_button.set_tooltip_text(_("About"))
         self.about_button.connect('clicked', self.about)
@@ -665,7 +665,7 @@ class ManageSpicesPage(SettingsPage):
             enabled = self.spices.get_enabled(row.uuid)
             row.set_enabled(enabled)
             if enabled and not self.spices.get_is_running(row.uuid) and self.collection_type != 'action':
-                row.add_status('error', 'xapp-dialog-error-symbolic', _("Something went wrong while loading %s. Please make sure you are using the latest version, and then report the issue to its developer.") % row.uuid)
+                row.add_status('error', 'xsi-dialog-error-symbolic', _("Something went wrong while loading %s. Please make sure you are using the latest version, and then report the issue to its developer.") % row.uuid)
             else:
                 row.remove_status('error')
 
@@ -718,7 +718,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         installed_box.set_spacing(4)
         widget.pack_start(installed_box, False, False, 0)
         size_groups[0].add_widget(installed_box)
-        installed_image = Gtk.Image.new_from_icon_name('xapp-object-select-symbolic', 2)
+        installed_image = Gtk.Image.new_from_icon_name('xsi-object-select-symbolic', 2)
         installed_box.pack_end(installed_image, False, False, 0)
         installed_image.set_tooltip_text(_("Installed"))
         installed_image.set_no_show_all(True)
@@ -765,7 +765,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         widget.pack_start(desc_box, True, True, 0)
 
         score_box = Gtk.Box()
-        score_image = Gtk.Image.new_from_icon_name('xapp-starred-symbolic', 2)
+        score_image = Gtk.Image.new_from_icon_name('xsi-starred-symbolic', 2)
         score_box.pack_start(score_image, False, False, 0)
         score_label = Gtk.Label(self.score)
         score_box.pack_start(score_label, False, False, 5)
@@ -784,13 +784,13 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         size_groups[3].add_widget(self.button_box)
 
         if not self.installed:
-            download_button = Gtk.Button.new_from_icon_name('xapp-folder-download-symbolic', 2)
+            download_button = Gtk.Button.new_from_icon_name('xsi-folder-download-symbolic', 2)
             self.button_box.pack_start(download_button, False, False, 0)
             download_button.connect('clicked', self.download)
             download_button.set_tooltip_text(_("Install"))
         elif self.spices.get_has_update(uuid):
             self.has_update = True
-            download_button = Gtk.Button.new_from_icon_name('xapp-view-refresh-symbolic', 2)
+            download_button = Gtk.Button.new_from_icon_name('xsi-view-refresh-symbolic', 2)
             self.button_box.pack_start(download_button, False, False, 0)
             download_button.connect('clicked', self.download)
             download_button.set_tooltip_text(_("Update"))
@@ -856,7 +856,7 @@ class DownloadSpicesPage(SettingsPage):
         self.top_box.pack_start(self.spices_sort_combo, False, False, 4)
 
         self.search_entry = Gtk.Entry()
-        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'xapp-edit-find-symbolic')
+        self.search_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.PRIMARY, 'xsi-edit-find-symbolic')
         self.search_entry.set_placeholder_text(_("Search"))
         self.search_entry.connect('changed', self.on_entry_refilter)
 
@@ -900,27 +900,27 @@ class DownloadSpicesPage(SettingsPage):
         button_holder.add(box)
 
         # buttons
-        self.more_info_button = Gtk.Button.new_from_icon_name("xapp-dialog-information-symbolic", Gtk.IconSize.MENU)
+        self.more_info_button = Gtk.Button.new_from_icon_name("xsi-dialog-information-symbolic", Gtk.IconSize.MENU)
         self.more_info_button.set_size_request(50, -1)
         self.more_info_button.set_tooltip_text(_("More info"))
         self.more_info_button.connect('clicked', self.get_more_info)
         box.add(self.more_info_button)
         self.more_info_button.set_sensitive(False)
 
-        self.uninstall_button = Gtk.Button.new_from_icon_name("xapp-edit-delete-symbolic", Gtk.IconSize.MENU)
+        self.uninstall_button = Gtk.Button.new_from_icon_name("xsi-edit-delete-symbolic", Gtk.IconSize.MENU)
         self.uninstall_button.set_size_request(50, -1)
         self.uninstall_button.set_tooltip_text(_("Uninstall"))
         self.uninstall_button.connect('clicked', self.uninstall)
         box.add(self.uninstall_button)
         self.uninstall_button.set_sensitive(False)
 
-        self.update_all_button = Gtk.Button.new_from_icon_name("xapp-software-update-available-symbolic", Gtk.IconSize.MENU)
+        self.update_all_button = Gtk.Button.new_from_icon_name("xsi-software-update-available-symbolic", Gtk.IconSize.MENU)
         self.update_all_button.set_size_request(50, -1)
         self.update_all_button.connect('clicked', self.update_all)
         box.add(self.update_all_button)
         self.update_all_button.set_sensitive(False)
 
-        self.refresh_button = Gtk.Button.new_from_icon_name("xapp-emblem-synchronizing-symbolic", Gtk.IconSize.MENU)
+        self.refresh_button = Gtk.Button.new_from_icon_name("xsi-emblem-synchronizing-symbolic", Gtk.IconSize.MENU)
         self.refresh_button.set_size_request(50, -1)
         self.refresh_button.set_tooltip_text(_("Refresh"))
         self.refresh_button.connect('clicked', self.refresh)

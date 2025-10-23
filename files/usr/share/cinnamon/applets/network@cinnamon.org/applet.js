@@ -1736,7 +1736,7 @@ NMMessageTraySource.prototype = {
     _init: function() {
         MessageTray.Source.prototype._init.call(this, _("Network Manager"));
 
-        let icon = new St.Icon({ icon_name: 'xapp-network-transmit-receive',
+        let icon = new St.Icon({ icon_name: 'xsi-network-transmit-receive',
                                  icon_type: St.IconType.SYMBOLIC,
                                  icon_size: this.ICON_SIZE
                                });
@@ -1764,7 +1764,7 @@ CinnamonNetworkApplet.prototype = {
             this.menuManager.addMenu(this.menu);
 
             this._currentIconName = undefined;
-            this._setIcon('xapp-network-offline');
+            this._setIcon('xsi-network-offline');
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
@@ -2324,7 +2324,7 @@ CinnamonNetworkApplet.prototype = {
             this.actor.show();
 
         if (!this._client.networking_enabled) {
-            this._setIcon('xapp-network-offline');
+            this._setIcon('xsi-network-offline');
             this._hideDevices();
             this._statusItem.label.text = _("Networking is disabled");
             this._statusSection.actor.show();
@@ -2343,35 +2343,35 @@ CinnamonNetworkApplet.prototype = {
             let mc = this._mainConnection;
 
             if (!mc) {
-                this._setIcon('xapp-network-offline');
+                this._setIcon('xsi-network-offline');
                 this.set_applet_tooltip(_("No connection"));
             } else if (mc.state == NM.ActiveConnectionState.ACTIVATING) {
                 new_delay = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
-                    this._setIcon('xapp-network-cellular-acquiring');
+                    this._setIcon('xsi-network-cellular-acquiring');
                     this.set_applet_tooltip(_("Connecting to the cellular network..."));
                     break;
                 case NMConnectionCategory.WIRELESS:
-                    this._setIcon('xapp-network-wireless-acquiring');
+                    this._setIcon('xsi-network-wireless-acquiring');
                     this.set_applet_tooltip(_("Connecting to the wireless network..."));
                     break;
                 case NMConnectionCategory.WIRED:
-                    this._setIcon('xapp-network-wired-acquiring');
+                    this._setIcon('xsi-network-wired-acquiring');
                     this.set_applet_tooltip(_("Connecting to the wired network..."));
                     break;
                 case NMConnectionCategory.VPN:
-                    this._setIcon('xapp-network-vpn-acquiring');
+                    this._setIcon('xsi-network-vpn-acquiring');
                     this.set_applet_tooltip(_("Connecting to the VPN..."));
                     break;
                 case NMConnectionCategory.WIREGUARD:
-                    this._setIcon('xapp-network-vpn-acquiring');
+                    this._setIcon('xsi-network-vpn-acquiring');
                     this.set_applet_tooltip(_("Connecting to WIREGUARD..."));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
-                    this._setIcon('xapp-network-wired-acquiring');
+                    this._setIcon('xsi-network-wired-acquiring');
                     this.set_applet_tooltip(_("Connecting to the network..."));
                 }
             } else {
@@ -2390,14 +2390,14 @@ CinnamonNetworkApplet.prototype = {
                                 log('An active wireless connection, in infrastructure mode, involves no access point?');
                                 break;
                             }
-                            this._setIcon('xapp-network-wireless-connected');
+                            this._setIcon('xsi-network-wireless-connected');
                             this.set_applet_tooltip(_("Connected to the wireless network"));
                         } else {
                             if (limited_conn) {
-                                this._setIcon('xapp-network-wireless-no-route');
+                                this._setIcon('xsi-network-wireless-no-route');
                                 this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " " + _("(Limited connectivity)"));
                             } else {
-                                this._setIcon('xapp-network-wireless-signal-' + signalToIcon(ap.strength));
+                                this._setIcon('xsi-network-wireless-signal-' + signalToIcon(ap.strength));
                                 this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " ("+ ap.strength +"%)");
                             }
                         }
@@ -2407,11 +2407,11 @@ CinnamonNetworkApplet.prototype = {
                     break;
                 case NMConnectionCategory.WIRED:
                     if (limited_conn) {
-                        this._setIcon('xapp-network-wired-no-route');
+                        this._setIcon('xsi-network-wired-no-route');
                         this.set_applet_tooltip(_("Connected to the wired network") + " " + _("(Limited connectivity)"));
 
                     } else {
-                        this._setIcon('xapp-network-wired');
+                        this._setIcon('xsi-network-wired');
                         this.set_applet_tooltip(_("Connected to the wired network"));
                     }
                     break;
@@ -2423,16 +2423,16 @@ CinnamonNetworkApplet.prototype = {
                     }
                     if (!dev.mobileDevice) {
                         // this can happen for bluetooth in PAN mode
-                        this._setIcon('xapp-network-cellular-connected');
+                        this._setIcon('xsi-network-cellular-connected');
                         this.set_applet_tooltip(_("Connected to the cellular network"));
                         break;
                     }
 
                     if (limited_conn) {
-                        this._setIcon('xapp-network-cellular-no-route');
+                        this._setIcon('xsi-network-cellular-no-route');
                         this.set_applet_tooltip(_("Connected to the cellular network") + " " + _("(Limited connectivity)"));
                     } else {
-                        this._setIcon('xapp-network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
+                        this._setIcon('xsi-network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
                         this.set_applet_tooltip(_("Connected to the cellular network"));
                     }
 
@@ -2440,41 +2440,41 @@ CinnamonNetworkApplet.prototype = {
                 case NMConnectionCategory.VPN:
                     // Should we indicate limited connectivity for VPNs like we do above? What if the connection is to
                     // a local machine? Need to test.
-                    this._setIcon('xapp-network-vpn');
+                    this._setIcon('xsi-network-vpn');
                     this.set_applet_tooltip(_("Connected to the VPN"));
                     break;
                 case NMConnectionCategory.WIREGUARD:
                     // Should we indicate limited connectivity for WIREGUARDs like we do above? What if the connection is to
                     // a local machine? Need to test.
-                    this._setIcon('xapp-network-vpn');
+                    this._setIcon('xsi-network-vpn');
                     this.set_applet_tooltip(_("Connected to WIREGUARD"));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
-                    this._setIcon('xapp-network-wired');
+                    this._setIcon('xsi-network-wired');
                     this.set_applet_tooltip(_("Connected to the network"));
                     break;
                 }
             }
             if (this._devices.wireguard.item && this._devices.wireguard.item._switch.state) {
-                this._setIcon('xapp-network-vpn');
+                this._setIcon('xsi-network-vpn');
                 this.set_applet_tooltip(_("Connected to WIREGUARD"));
             }
             for (let i = 0; i < this._activeConnections.length; i++) {
                 const a = this._activeConnections[i];
                 if (a._section === NMConnectionCategory.VPN && a.state === NM.ActiveConnectionState.ACTIVATING) {
-                    this._setIcon('xapp-network-vpn-acquiring');
+                    this._setIcon('xsi-network-vpn-acquiring');
                     this.set_applet_tooltip(_("Connecting to the VPN..."));
                     break;
                 }
                 else if (a._section === NMConnectionCategory.VPN && a.state === NM.ActiveConnectionState.ACTIVATED) {
-                    let iconName = 'xapp-network-vpn';
+                    let iconName = 'xsi-network-vpn';
                     if (mc._section == NMConnectionCategory.WIRELESS) {
                         const dev = mc._primaryDevice;
                         if (dev) {
                             const ap = dev.device.active_access_point;
-                            iconName = 'xapp-network-wireless-signal-' + signalToIcon(ap.strength) + '-secure-symbolic';
+                            iconName = 'xsi-network-wireless-signal-' + signalToIcon(ap.strength) + '-secure-symbolic';
                         }
                     }
                     this._setIcon(iconName);

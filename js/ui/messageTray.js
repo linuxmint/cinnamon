@@ -310,7 +310,7 @@ var Notification = class Notification {
 
         // notification dismiss button
         let icon = new St.Icon({
-            icon_name: 'xapp-window-close',
+            icon_name: 'xsi-window-close',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: 16
         });
@@ -1131,7 +1131,7 @@ SystemNotificationSource.prototype = {
 
     createNotificationIcon: function () {
         return new St.Icon({
-            icon_name: 'xapp-dialog-information',
+            icon_name: 'xsi-dialog-information',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: this.ICON_SIZE
         });
