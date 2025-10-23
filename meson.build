@@ -79,7 +79,6 @@ message('Building recorder: @0@'.format(get_option('build_recorder')))
 cc = meson.get_compiler('c')
 math = cc.find_library('m', required: false)
 
-intltool_merge = find_program('intltool-merge')
 python = find_program('python3')
 
 # generate config.h

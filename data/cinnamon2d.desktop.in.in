@@ -1,7 +1,7 @@
 [Desktop Entry]
 Type=Application
-_Name=Cinnamon 2D
-_Comment=Window management and application launching
+Name=Cinnamon 2D
+Comment=Window management and application launching
 Exec=@bindir@/cinnamon2d
 Categories=GNOME;GTK;System;Core;
 OnlyShowIn=X-Cinnamon;
