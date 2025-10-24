@@ -5,6 +5,8 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const GdkPixbuf = imports.gi.GdkPixbuf;
+const Cogl = imports.gi.Cogl;
 const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const Settings = imports.ui.settings;
@@ -149,16 +151,6 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         this.update_id = Mainloop.timeout_add_seconds(this.delay, Lang.bind(this, this._update_loop));
     }
 
-    _size_pic(image) {
-        image.disconnect(image._notif_id);
-
-        let height, width;
-        let ratio = Math.min(this.width / image.width, this.height / image.height);
-        width = ratio * image.width;
-        height = ratio * image.height;
-        image.set_size(width, height);
-    }
-
     _update() {
         if (this.updateInProgress) {
             return;
@@ -226,11 +218,18 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 
     _loadImage(filePath) {
         try {
-            let image = St.TextureCache.get_default().load_uri_async(filePath, this.width, this.height);
+            let path = decodeURIComponent(filePath.replace(/file:\/\//g, ''));
+            let pixBuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, this.width, this.height);
+            
+            const image = new Clutter.Image();
+            const pixelFormat = pixBuf.get_has_alpha() ? Cogl.PixelFormat.RGBA_8888 : Cogl.PixelFormat.RGB_888;
+            image.set_data(pixBuf.get_pixels(), pixelFormat, pixBuf.get_width(), pixBuf.get_height(), pixBuf.get_rowstride());
 
-            image._notif_id = image.connect('notify::size', Lang.bind(this, this._size_pic));
-
-            return image;
+            return new Clutter.Actor({ 
+                content: image,
+                width: pixBuf.get_width(),
+                height: pixBuf.get_height() 
+            });
         } catch (x) {
             // Probably a non-image is in the folder
             return null;
