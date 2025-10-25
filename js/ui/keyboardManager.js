@@ -481,18 +481,27 @@ var InputSourceManager = class {
         this._kb_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.keybindings.wm" });
         this._interface_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
 
-        this._keybindingAction = global.display.add_keybinding(
+        global.display.add_keybinding(
             'switch-input-source',
             this._kb_settings,
             Meta.KeyBindingFlags.NONE,
             this._switchInputSource.bind(this)
         );
-        this._keybindingActionBackward = global.display.add_keybinding(
+        global.display.add_keybinding(
             'switch-input-source-backward',
             this._kb_settings,
             Meta.KeyBindingFlags.NONE,
             this._switchInputSource.bind(this)
         );
+        for (let i = 0; i <= 3; i++) {
+            const name = `switch-input-source-${i}`;
+            global.display.add_keybinding(
+                name,
+                this._kb_settings,
+                Meta.KeyBindingFlags.NONE,
+                () => this.activateInputSourceIndex(i)
+            );
+        }
 
         this._settings = new InputSourceSettings();
         this._settings.connect('input-sources-changed', this._inputSourcesChanged.bind(this));
@@ -597,10 +606,11 @@ var InputSourceManager = class {
     }
 
     activateInputSourceIndex(index) {
-        // Dbus helper for cinnamon-settings
-
         try {
             let is = this._inputSources[index];
+            if (is === undefined) {
+                return;
+            }
             this.activateInputSource(is);
         } catch (e) {
             global.logError(`Could not activate input source index: ${index}`);

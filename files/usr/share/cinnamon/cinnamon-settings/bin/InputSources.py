@@ -92,6 +92,31 @@ class InputSourceSettingsPage(SettingsPage):
             "switch-input-source-backward"
         )
         section.add_row(widget)
+        widget = GSettingsKeybinding(
+            _("Switch to first layout"),
+            "org.cinnamon.desktop.keybindings.wm",
+            "switch-input-source-0"
+        )
+        section.add_row(widget)
+        widget = GSettingsKeybinding(
+            _("Switch to second layout"),
+            "org.cinnamon.desktop.keybindings.wm",
+            "switch-input-source-1"
+        )
+        section.add_row(widget)
+        widget = GSettingsKeybinding(
+            _("Switch to third layout"),
+            "org.cinnamon.desktop.keybindings.wm",
+            "switch-input-source-2"
+        )
+        section.add_row(widget)
+        widget = GSettingsKeybinding(
+            _("Switch to fourth layout"),
+            "org.cinnamon.desktop.keybindings.wm",
+            "switch-input-source-3"
+        )
+        section.add_row(widget)
+
 
     def row_separator_func(self, row, before, data=None):
         if before is None:
