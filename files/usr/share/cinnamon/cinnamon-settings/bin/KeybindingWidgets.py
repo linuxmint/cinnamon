@@ -58,8 +58,9 @@ class ButtonKeybinding(Gtk.TreeView):
                          GObject.ParamFlags.READWRITE)
     }
 
-    def __init__(self):
-        super(ButtonKeybinding, self).__init__()
+    def __init__(self, position=0, **kwargs):
+        super(ButtonKeybinding, self).__init__(**kwargs)
+        self.position = position
 
         self.set_headers_visible(False)
         self.set_enable_search(False)

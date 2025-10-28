@@ -13,6 +13,8 @@ from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from KeybindingWidgets import ButtonKeybinding
 import util
 
+import KeybindingTable
+
 settings_objects = {}
 
 CAN_BACKEND = ["SoundFileChooser", "DateChooser", "TimeChooser", "Keybinding"]
@@ -471,6 +473,10 @@ class Keybinding(SettingsWidget):
         super(Keybinding, self).__init__(dep_key=dep_key)
 
         self.num_bind = num_bind
+        self.kb_table = KeybindingTable.get_default()
+        self.kb_label = label
+        self.keybinding = self.kb_table.find_keybinding_by_label(self.kb_label)
+        self.keybinding.connect("changed", self.on_kb_table_entry_changed)
 
         self.label = SettingsLabel(label)
 
@@ -488,10 +494,11 @@ class Keybinding(SettingsWidget):
         for x in range(self.num_bind):
             if x != 0:
                 box.add(Gtk.Separator(orientation=Gtk.Orientation.VERTICAL))
-            kb = ButtonKeybinding()
+            kb = ButtonKeybinding(position=x)
             kb.set_size_request(150, -1)
+            kb.set_accel_string(self.keybinding.entries[x] if self.keybinding else "")
             kb.connect("accel-edited", self.on_kb_changed)
-            kb.connect("accel-cleared", self.on_kb_changed)
+            kb.connect("accel-cleared", self.on_kb_cleared)
             box.pack_start(kb, False, False, 0)
             self.buttons.append(kb)
 
@@ -503,32 +510,24 @@ class Keybinding(SettingsWidget):
         if size_group:
             self.add_to_size_group(size_group)
 
-    def on_kb_changed(self, *args):
-        bindings = []
+    def on_kb_changed(self, button, accel_string, accel_label):
+        if self.keybinding:
+            if not self.kb_table.maybe_update_binding(self.keybinding, accel_string, accel_label, button.position):
+                self.on_kb_table_entry_changed(self.keybinding)
 
-        for x in range(self.num_bind):
-            string = self.buttons[x].get_accel_string()
-            if string != '':
-                bindings.append(string)
+    def on_kb_cleared(self, button):
+        if self.keybinding:
+            self.kb_table.clear_binding(self.keybinding, button.position)
 
-        if isinstance(self, PXGSettingsBackend):
-            self.set_value(bindings)
-        else:
-            self.set_value("::".join(bindings))
-
-    def on_setting_changed(self, *args):
-        value = self.get_value()
-
-        if isinstance(self, PXGSettingsBackend):
-            bindings = value
-        else:
-            bindings = value.split("::")
-
+    def on_kb_table_entry_changed(self, keybinding):
         for x in range(0, self.num_bind):
             try:
-                self.buttons[x].set_accel_string(bindings[x])
+                self.buttons[x].set_accel_string(keybinding.entries[x])
             except IndexError:
                 self.buttons[x].set_accel_string("")
+
+    def on_setting_changed(self, *args):
+        pass
 
     def connect_widget_handlers(self, *args):
         pass
