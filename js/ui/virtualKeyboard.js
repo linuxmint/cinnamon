@@ -12,7 +12,7 @@ const Main = imports.ui.main;
 const PageIndicators = imports.ui.pageIndicators;
 const PopupMenu = imports.ui.popupMenu;
 
-var KEYBOARD_REST_TIME = Layout.KEYBOARD_ANIMATION_TIME * 2;
+var KEYBOARD_REST_TIME = 50;
 var KEY_LONG_PRESS_TIME = 250;
 var PANEL_SWITCH_ANIMATION_TIME = 500;
 var PANEL_SWITCH_RELATIVE_DISTANCE = 1 / 3; /* A third of the actor width */
@@ -738,7 +738,7 @@ var VirtualKeyboardManager = GObject.registerClass({
         if (this._keyboard == null) {
             return;
         }
-        this._keyboard.setCursorLocation(null);
+
         this._keyboard.destroy();
         this._keyboard = null;
         Main.layoutManager.hideKeyboard(true);
@@ -812,8 +812,6 @@ class Keyboard extends St.BoxLayout {
 
         this._languagePopup = null;
         this._currentFocusWindow = null;
-        this._animFocusedWindow = null;
-        this._delayedAnimFocusWindow = null;
 
         this._latched = false; // current level is latched
 
@@ -821,13 +819,6 @@ class Keyboard extends St.BoxLayout {
 
         if (!this._onDemand) {
             this._focusTracker = new FocusTracker();
-            this._connectSignal(this._focusTracker, 'position-changed',
-                this._onFocusPositionChanged.bind(this));
-            this._connectSignal(this._focusTracker, 'reset', () => {
-                this._delayedAnimFocusWindow = null;
-                this._animFocusedWindow = null;
-                this._oskFocusWindow = null;
-            });
             // Valid only for X11
             if (!Meta.is_wayland_compositor()) {
                 this._connectSignal(this._focusTracker, 'focus-changed', (_tracker, focused) => {
@@ -870,11 +861,6 @@ class Keyboard extends St.BoxLayout {
 
     set visible(visible) {
         super.visible = visible;
-    }
-
-    _onFocusPositionChanged(focusTracker) {
-        let rect = focusTracker.getCurrentRect();
-        this.setCursorLocation(focusTracker.currentWindow, rect.x, rect.y, rect.width, rect.height);
     }
 
     _onDestroy() {
@@ -1313,11 +1299,6 @@ class Keyboard extends St.BoxLayout {
         Main.layoutManager.keyboardIndex = monitor;
         this._relayout();
         Main.layoutManager.showKeyboard();
-
-        if (this._delayedAnimFocusWindow) {
-            this._setAnimationWindow(this._delayedAnimFocusWindow);
-            this._delayedAnimFocusWindow = null;
-        }
     }
 
     close() {
@@ -1342,7 +1323,6 @@ class Keyboard extends St.BoxLayout {
         if (this._keyboardRequested)
             return;
         Main.layoutManager.hideKeyboard();
-        this.setCursorLocation(null);
     }
 
     resetSuggestions() {
@@ -1363,74 +1343,6 @@ class Keyboard extends St.BoxLayout {
             return;
         GLib.source_remove(this._showIdleId);
         this._showIdleId = 0;
-    }
-
-    _windowSlideAnimationComplete(window, delta) {
-        // Synchronize window positions again.
-        let frameRect = window.get_frame_rect();
-        frameRect.y += delta;
-        window.move_frame(true, frameRect.x, frameRect.y);
-    }
-
-    _animateWindow(window, show) {
-        let windowActor = window.get_compositor_private();
-        let deltaY = Main.layoutManager.keyboardBox.height;
-        if (!windowActor)
-            return;
-
-        if (show) {
-            windowActor.ease({
-                y: windowActor.y - deltaY,
-                duration: Layout.KEYBOARD_ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this._windowSlideAnimationComplete(window, -deltaY);
-                },
-            });
-        } else {
-            windowActor.ease({
-                y: windowActor.y + deltaY,
-                duration: Layout.KEYBOARD_ANIMATION_TIME,
-                mode: Clutter.AnimationMode.EASE_IN_QUAD,
-                onComplete: () => {
-                    this._windowSlideAnimationComplete(window, deltaY);
-                },
-            });
-        }
-    }
-
-    _setAnimationWindow(window) {
-        if (this._animFocusedWindow == window)
-            return;
-
-        if (this._animFocusedWindow)
-            this._animateWindow(this._animFocusedWindow, false);
-        if (window)
-            this._animateWindow(window, true);
-
-        this._animFocusedWindow = window;
-    }
-
-    setCursorLocation(window, x, y, w, h) {
-        let monitor = Main.layoutManager.keyboardMonitor;
-
-        if (window && monitor) {
-            let keyboardHeight = Main.layoutManager.keyboardBox.height;
-
-            if (y + h >= monitor.y + monitor.height - keyboardHeight) {
-                if (this._keyboardVisible)
-                    this._setAnimationWindow(window);
-                else
-                    this._delayedAnimFocusWindow = window;
-            } else if (y < keyboardHeight) {
-                this._delayedAnimFocusWindow = null;
-                this._setAnimationWindow(null);
-            }
-        } else {
-            this._setAnimationWindow(null);
-        }
-
-        this._oskFocusWindow = window;
     }
 });
 

@@ -23,6 +23,8 @@ const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
 const StartupAnimation = imports.ui.startupAnimation;
 
+var KEYBOARD_FADE_TIME = 150;
+
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
@@ -483,17 +485,46 @@ LayoutManager.prototype = {
     },
 
     showKeyboard: function() {
+        this.keyboardBox.opacity = 0;
         this.keyboardBox.show();
+        this.keyboardBox.remove_all_transitions();
+
+        this.keyboardBox.ease({
+            opacity: 255,
+            duration: KEYBOARD_FADE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._showKeyboardComplete();
+            }
+        });
+    },
+
+    _showKeyboardComplete: function() {
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: true });
-        this._chrome.updateRegions();
+        this._chrome._queueUpdateRegions();
         this.emit('keyboard-visible-changed', true);
     },
 
     hideKeyboard: function(immediate) {
+        this.keyboardBox.remove_all_transitions();
         this._chrome.modifyActorParams(this.keyboardBox, { affectsStruts: false });
-        this._chrome.updateRegions();
-        this.keyboardBox.hide();
+        this._chrome._queueUpdateRegions();
+
+        this.keyboardBox.ease({
+            opacity: 0,
+            duration: immediate ? 0 : KEYBOARD_FADE_TIME,
+            mode: Clutter.AnimationMode.EASE_IN_QUAD,
+            onComplete: () => {
+                this._hideKeyboardComplete();
+            }
+        });
+
         this.emit('keyboard-visible-changed', false);
+    },
+
+    _hideKeyboardComplete: function() {
+        this.keyboardBox.hide();
+        this.keyboardBox.opacity = 255;
     },
 
     /**
