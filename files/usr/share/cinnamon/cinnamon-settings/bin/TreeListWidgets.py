@@ -101,10 +101,11 @@ class List(SettingsWidget):
     bind_dir = None
 
     def __init__(self, label=None, columns=None, height=200, size_group=None, \
-                 dep_key=None, tooltip="", show_buttons=True):
+                 dep_key=None, tooltip="", show_buttons=True, hidden_buttons=[]):
         super(List, self).__init__(dep_key=dep_key)
         self.columns = columns
         self.show_buttons = show_buttons
+        self.hidden_buttons = hidden_buttons
 
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(0)
@@ -201,11 +202,16 @@ class List(SettingsWidget):
             self.move_down_button.set_tooltip_text(_("Move selected entry down"))
             self.move_down_button.connect("clicked", self.move_item_down)
             self.move_down_button.set_sensitive(False)
-            button_toolbar.insert(self.add_button, 0)
-            button_toolbar.insert(self.remove_button, 1)
-            button_toolbar.insert(self.edit_button, 2)
-            button_toolbar.insert(self.move_up_button, 3)
-            button_toolbar.insert(self.move_down_button, 4)
+            if "+" not in self.hidden_buttons:
+                button_toolbar.insert(self.add_button, 0)
+            if "-" not in self.hidden_buttons:
+                button_toolbar.insert(self.remove_button, 1)
+            if "edit" not in self.hidden_buttons:
+                button_toolbar.insert(self.edit_button, 2)
+            if "up" not in self.hidden_buttons:
+                button_toolbar.insert(self.move_up_button, 3)
+            if "down" not in self.hidden_buttons:
+                button_toolbar.insert(self.move_down_button, 4)
 
         self.content_widget.get_selection().connect("changed", self.update_button_sensitivity)
         self.content_widget.set_activate_on_single_click(False)
