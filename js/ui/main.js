@@ -571,6 +571,7 @@ function start() {
 
 function updateAnimationsEnabled() {
     animations_enabled = !(software_rendering) && global.settings.get_boolean("desktop-effects-workspace");
+    St.Settings.get().animations_enabled = animations_enabled;
     cinnamonDBusService.notifyAnimationsEnabled();
 }
 
