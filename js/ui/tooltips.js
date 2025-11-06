@@ -8,7 +8,6 @@ const GLib = imports.gi.GLib;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
-const Tweener = imports.ui.tweener;
 const {PanelLoc} = imports.ui.panel;
 
 const DESKTOP_SCHEMA = 'org.cinnamon.desktop.interface';

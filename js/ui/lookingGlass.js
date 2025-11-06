@@ -24,7 +24,6 @@ var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
                     'const Meta = imports.gi.Meta; ' +
                     'const Cinnamon = imports.gi.Cinnamon; ' +
                     'const Main = imports.ui.main; ' +
-                    'const Tweener = imports.ui.tweener; ' +
                     /* Utility functions...we should probably be able to use these
                      * in Cinnamon core code too. */
                     'const stage = global.stage; ' +

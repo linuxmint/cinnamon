@@ -4,7 +4,6 @@ const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
 const Gio = imports.gi.Gio;
 const CDesktopEnums = imports.gi.CDesktopEnums;
-const Flashspot = imports.ui.flashspot;
 const Clutter = imports.gi.Clutter;
 const Dialogs = imports.ui.wmGtkDialogs;
 const Cairo = imports.cairo;
