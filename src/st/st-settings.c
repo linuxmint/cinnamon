@@ -37,6 +37,7 @@ enum {
     PROP_GTK_ICON_THEME,
     PROP_MAGNIFIER_ACTIVE,
     PROP_SLOW_DOWN_FACTOR,
+    PROP_ANIMATIONS_ENABLED,
     N_PROPS
 };
 
@@ -52,6 +53,7 @@ struct _StSettings
   gchar *gtk_icon_theme;
   gboolean mag_active;
   double slow_down_factor;
+  gboolean animations_enabled;
 };
 
 G_DEFINE_TYPE (StSettings, st_settings, G_TYPE_OBJECT)
@@ -95,6 +97,16 @@ st_settings_set_property (GObject      *object,
     case PROP_SLOW_DOWN_FACTOR:
       st_settings_set_slow_down_factor (settings, g_value_get_double (value));
       break;
+    case PROP_ANIMATIONS_ENABLED:
+      {
+        gboolean enabled = g_value_get_boolean (value);
+        if (enabled != settings->animations_enabled)
+          {
+            settings->animations_enabled = enabled;
+            g_object_notify_by_pspec (G_OBJECT (settings), props[PROP_ANIMATIONS_ENABLED]);
+          }
+        break;
+      }
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
     }
@@ -121,6 +133,9 @@ st_settings_get_property (GObject    *object,
       break;
     case PROP_SLOW_DOWN_FACTOR:
       g_value_set_double (value, settings->slow_down_factor);
+      break;
+    case PROP_ANIMATIONS_ENABLED:
+      g_value_set_boolean (value, settings->animations_enabled);
       break;
     default:
       G_OBJECT_WARN_INVALID_PROPERTY_ID (object, prop_id, pspec);
@@ -159,6 +174,12 @@ st_settings_class_init (StSettingsClass *klass)
                                                       "Factor applied to all animation durations",
                                                       EPSILON, G_MAXDOUBLE, 1.0,
                                                       ST_PARAM_READWRITE);
+
+  props[PROP_ANIMATIONS_ENABLED] = g_param_spec_boolean ("animations-enabled",
+                                                         "animations are enabled",
+                                                         "True if ... animations are enabled",
+                                                         TRUE,
+                                                         ST_PARAM_READWRITE);
 
   g_object_class_install_properties (object_class, N_PROPS, props);
 }
