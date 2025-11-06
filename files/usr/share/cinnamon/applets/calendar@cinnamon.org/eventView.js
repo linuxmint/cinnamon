@@ -16,7 +16,6 @@ const Separator = imports.ui.separator;
 const Main = imports.ui.main;
 const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
 const Interfaces = imports.misc.interfaces;
 
 const STATUS_UNKNOWN = 0;
