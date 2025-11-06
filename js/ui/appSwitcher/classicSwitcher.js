@@ -12,23 +12,20 @@ const Mainloop = imports.mainloop;
 
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 
 const WindowUtils = imports.misc.windowUtils;
 
-const POPUP_SCROLL_TIME = 0.10; // seconds
-const POPUP_DELAY_TIMEOUT = 150; // milliseconds
-const POPUP_FADE_OUT_TIME = 0.1; // seconds
+// easing durations (ms)
+const POPUP_SCROLL_TIME = 100;
+const POPUP_FADE_OUT_TIME = 100;
+const THUMBNAIL_FADE_TIME = 100;
+const PREVIEW_SWITCHER_FADEOUT_TIME = 50;
 
-const APP_ICON_HOVER_TIMEOUT = 200; // milliseconds
+// timers (ms)
+const THUMBNAIL_POPUP_TIME = 300;
+const PREVIEW_DELAY_TIMEOUT = 0;
 
 const THUMBNAIL_DEFAULT_SIZE = 256;
-const THUMBNAIL_POPUP_TIME = 300; // milliseconds
-const THUMBNAIL_FADE_TIME = 0.1; // seconds
-
-const PREVIEW_DELAY_TIMEOUT = 0; // milliseconds
-var PREVIEW_SWITCHER_FADEOUT_TIME = 0.2; // seconds
-
 const iconSizes = [96, 64, 48];
 
 function mod(a, b) {
@@ -158,10 +155,11 @@ ClassicSwitcher.prototype = {
         // panels
         Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(true); });
 
-        Tweener.addTween(this.actor, { opacity: 0,
-            time: POPUP_FADE_OUT_TIME,
-            transition: 'easeOutQuad',
-            onComplete: Lang.bind(this, this._destroyActors)
+        this.actor.ease({
+            opacity: 0,
+            duration: POPUP_FADE_OUT_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._destroyActors()
         });
     },
 
@@ -235,13 +233,14 @@ ClassicSwitcher.prototype = {
         
         if (this._showIconAndThumbnails) {
             this._thumbnailTimeoutId = Mainloop.timeout_add(
-                THUMBNAIL_POPUP_TIME, Lang.bind(this, function() {
-
+                Main.animations_enabled ? THUMBNAIL_POPUP_TIME : 0,
+                () => {
                     if (!this._thumbnails)
                         this._createThumbnails();
                     this._thumbnails.highlight(0, false);
                     this._thumbnailTimeoutId = 0;
-            }));
+                }
+            );
         }
     },
 
@@ -287,12 +286,12 @@ ClassicSwitcher.prototype = {
         if (this._previewClones) {
             for (let i = 0; i < this._previewClones.length; ++i) {
                 let clone = this._previewClones[i];
-                Tweener.addTween(clone, {
+
+                clone.ease({
                     opacity: 0,
-                    time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
-                    transition: 'linear',
-                    onCompleteScope: this,
-                    onComplete: function() {
+                    duration: PREVIEW_SWITCHER_FADEOUT_TIME,
+                    mode: Clutter.AnimationMode.LINEAR,
+                    onComplete: () => {
                         this.actor.remove_actor(clone);
                         clone.destroy();
                     }
@@ -359,11 +358,12 @@ ClassicSwitcher.prototype = {
             childBox.y2 = this.actor.y + this.actor.height;
             backdrop.allocate(childBox, 0);
             backdrop.opacity = 0;
-            Tweener.addTween(backdrop,
-                            { opacity: 255,
-                            time: PREVIEW_SWITCHER_FADEOUT_TIME / 4,
-                            transition: 'linear'
-                            });
+
+            backdrop.ease({
+                opacity: 255,
+                duration: PREVIEW_SWITCHER_FADEOUT_TIME,
+                mode: Clutter.AnimationMode.LINEAR
+            });
         }
     },
 
@@ -390,12 +390,15 @@ ClassicSwitcher.prototype = {
         this._thumbnails.actor.get_allocation_box();
 
         this._thumbnails.actor.opacity = 0;
-        Tweener.addTween(this._thumbnails.actor,
-                         { opacity: 255,
-                           time: THUMBNAIL_FADE_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: Lang.bind(this, function () { this.thumbnailsVisible = true; })
-                         });
+
+        this._thumbnails.actor.ease({
+            opacity: 255,
+            duration: THUMBNAIL_FADE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.thumbnailsVisible = true;
+            }
+        });
     }
 };
 
@@ -613,16 +616,18 @@ SwitcherList.prototype = {
     _scrollToLeft : function() {
         let x = this._items[this._highlighted].allocation.x1;
         this._scrollableRight = true;
-        Tweener.addTween(this._list, { anchor_x: x,
-                                        time: POPUP_SCROLL_TIME,
-                                        transition: 'easeOutQuad',
-                                        onComplete: Lang.bind(this, function () {
-                                                                        if (this._highlighted == 0) {
-                                                                            this._scrollableLeft = false;
-                                                                            this.actor.queue_relayout();
-                                                                        }
-                                                             })
-                        });
+
+        this._list.ease({
+            anchor_x: x,
+            duration: POPUP_SCROLL_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                if (this._highlighted == 0) {
+                    this._scrollableLeft = false;
+                    this.actor.queue_relayout();
+                }
+            }
+        });
     },
 
     _scrollToRight : function() {
@@ -631,16 +636,18 @@ SwitcherList.prototype = {
         let padding = this.actor.get_theme_node().get_horizontal_padding();
         let parentPadding = this.actor.get_parent().get_theme_node().get_horizontal_padding();
         let x = this._items[this._highlighted].allocation.x2 - monitor.width + padding + parentPadding;
-        Tweener.addTween(this._list, { anchor_x: x,
-                                        time: POPUP_SCROLL_TIME,
-                                        transition: 'easeOutQuad',
-                                        onComplete: Lang.bind(this, function () {
-                                                                        if (this._highlighted == this._items.length - 1) {
-                                                                            this._scrollableRight = false;
-                                                                            this.actor.queue_relayout();
-                                                                        }
-                                                             })
-                        });
+
+        this._list.ease({
+            anchor_x: x,
+            duration: POPUP_SCROLL_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                if (this._highlighted == this._items.length - 1) {
+                    this._scrollableRight = false;
+                    this.actor.queue_relayout();
+                }
+            }
+        });
     },
 
     _itemActivated: function(n) {
