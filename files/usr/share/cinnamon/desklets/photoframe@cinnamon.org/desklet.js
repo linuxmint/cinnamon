@@ -5,7 +5,6 @@ const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
-const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const Settings = imports.ui.settings;
 
@@ -241,6 +240,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             this._bin.ease({
                 opacity: 0,
                 duration: (this.fade_delay * 1000) / 2, // setting is sec, easing uses ms
+                animationRequired: true,
                 mode: Clutter.AnimationMode.EASE_IN_SINE,
                 onComplete: () => {
                     this._bin.set_child(this.currentPicture);
@@ -251,7 +251,8 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
 
                     this._bin.ease({
                         opacity: 255,
-                        time: (this.fade_delay * 1000) / 2,
+                        duration: (this.fade_delay * 1000) / 2,
+                        animationRequired: true,
                         mode: Clutter.AnimationMode.EASE_IN_SINE
                     });
                 }
