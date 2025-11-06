@@ -13,14 +13,13 @@ const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const Overview = imports.ui.overview;
 const PopupMenu = imports.ui.popupMenu;
-const Tweener = imports.ui.tweener;
 const PointerTracker = imports.misc.pointerTracker;
 const GridNavigator = imports.misc.gridNavigator;
 const WindowUtils = imports.misc.windowUtils;
 
 const WINDOW_DND_SIZE = 256;
 
-const CLOSE_BUTTON_FADE_TIME = 0.1;
+const CLOSE_BUTTON_FADE_TIME = 100;
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
 
@@ -325,10 +324,11 @@ WindowOverlay.prototype = {
         this.show();
         this._parentActor.raise_top();
         this.caption.opacity = 0;
-        Tweener.addTween(this.caption,
-                       { opacity: 255,
-                         time: CLOSE_BUTTON_FADE_TIME,
-                         transition: 'easeOutQuad' });
+        this.caption.ease({
+            opacity: 255,
+            duration: CLOSE_BUTTON_FADE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        });
     },
 
     _idleHideCloseButton: function(timeout) {
@@ -352,11 +352,12 @@ WindowOverlay.prototype = {
         }
         for (let item of [this.closeButton, this.border]) {
             item.opacity = 255;
-            Tweener.addTween(item,
-                           { opacity: 0,
-                             time: CLOSE_BUTTON_FADE_TIME,
-                             transition: 'easeInQuad',
-                             onComplete: item.hide });
+            item.ease({
+                opacity: 0,
+                duration: CLOSE_BUTTON_FADE_TIME,
+                mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                onComplete: () => item.hide()
+            });
         }
         this.caption.remove_style_pseudo_class('focus');
     },
@@ -366,10 +367,11 @@ WindowOverlay.prototype = {
         for (let item of [this.closeButton, this.border]) {
             item.show();
             item.opacity = 0;
-            Tweener.addTween(item,
-                           { opacity: 255,
-                             time: CLOSE_BUTTON_FADE_TIME,
-                             transition: 'easeInQuad' });
+            item.ease({
+                opacity: 255,
+                duration: CLOSE_BUTTON_FADE_TIME,
+                mode: Clutter.AnimationMode.EASE_IN_QUAD
+            });
         }
         this.caption.add_style_pseudo_class('focus');
     },
@@ -750,27 +752,26 @@ WorkspaceMonitor.prototype = {
                         clone.actor.y = y + clone.actor.height * scale / 2;
                     }
 
-
-                     // Make the window slightly transparent to indicate it's hidden
-                     Tweener.addTween(clone.actor,
-                                      { opacity: 255,
-                                        time: Overview.ANIMATION_TIME,
-                                        transition: 'easeInQuad'
-                                      });
+                    // Make the window slightly transparent to indicate it's hidden
+                    clone.actor.ease({
+                        opacity: 255,
+                        duration: Overview.ANIMATION_TIME,
+                        mode: Clutter.AnimationMode.EASE_IN_QUAD
+                    });
                 }
 
-                Tweener.addTween(clone.actor,
-                                 { x: x,
-                                   y: y,
-                                   scale_x: scale,
-                                   scale_y: scale,
-                                   time: Overview.ANIMATION_TIME,
-                                   transition: 'easeInOutQuad',
-                                   onComplete: () => {
-                                       this._animating = false
-                                       this._showWindowOverlay(clone, true);
-                                   }
-                                 });
+                clone.actor.ease({
+                    x: x,
+                    y: y,
+                    scale_x: scale,
+                    scale_y: scale,
+                    duration: Overview.ANIMATION_TIME,
+                    mode: Clutter.AnimationMode.EASE_IN_OUT_QUAD,
+                    onComplete: () => {
+                        this._animating = false
+                        this._showWindowOverlay(clone, true);
+                    }
+                });
             } else {
                 clone.actor.set_position(x, y);
                 clone.actor.set_scale(scale, scale);
@@ -1004,34 +1005,34 @@ WorkspaceMonitor.prototype = {
             let clone = this._windows[i];
 
             if (clone.metaWindow.showing_on_its_workspace()) {
-                Tweener.addTween(clone.actor,
-                                 { x: clone.origX,
-                                   y: clone.origY,
-                                   scale_x: 1.0,
-                                   scale_y: 1.0,
-                                   time: Overview.ANIMATION_TIME * 0.45,
-                                   opacity: 255,
-                                   transition: 'easeOutQuad'
-                                 });
+                clone.actor.ease({
+                    x: clone.origX,
+                    y: clone.origY,
+                    scale_x: 1.0,
+                    scale_y: 1.0,
+                    opacity: 255,
+                    duration: Overview.ANIMATION_TIME * 0.45,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
             } else {
                 // The window is hidden, make it shrink and fade it out
-                Tweener.addTween(clone.actor,
-                                 { scale_x: 0,
-                                   scale_y: 0,
-                                   x: this._width / 2,
-                                   y: this._height / 2,
-                                   opacity: 0,
-                                   time: Overview.ANIMATION_TIME,
-                                   transition: 'easeOutQuad'
-                                 });
+                clone.actor.ease({
+                    scale_x: 0,
+                    scale_y: 0,
+                    x: this._width / 2,
+                    y: this._height / 2,
+                    opacity: 0,
+                    duration: Overview.ANIMATION_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
             }
         }
 
         if (this._emptyPlaceHolder.visible) {
-            Tweener.addTween(this._emptyPlaceHolder, {
+            this._emptyPlaceHolder.ease({
                 opacity: 0,
-                time: Overview.ANIMATION_TIME,
-                transition: 'easeOutQuad'
+                duration: Overview.ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
             });
         }
     },
@@ -1046,7 +1047,7 @@ WorkspaceMonitor.prototype = {
             Main.overview.disconnect(this._overviewHiddenId);
             this._overviewHiddenId = 0;
         }
-        Tweener.removeTweens(actor);
+        actor.remove_all_transitions();
 
         this._myWorkspace.myView.disconnect(this.stickyCallbackId);
         if (this.metaWorkspace) {

@@ -3,7 +3,6 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
-const Tweener = imports.ui.tweener;
 const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -92,12 +91,13 @@ Animation.prototype = {
         }
 
         try {
-            Tweener.addTween(this.logo,
-                             { time: .75,
-                               opacity: 0,
-                               transition: 'easeInExpo',
-                               onComplete: this._fade_shroud,
-                               onCompleteScope: this });
+            this.logo.ease({
+                opacity: 0,
+                duration: 750,
+                animationRequired: true,
+                mode: Clutter.AnimationMode.EASE_IN_EXPO,
+                onComplete: () => this._fade_shroud()
+            });
         } catch (e) {
             this._onError(e);
         }
@@ -105,12 +105,13 @@ Animation.prototype = {
 
     _fade_shroud: function() {
         try {
-            Tweener.addTween(this.shroud,
-                             { time: .75,
-                               transition: 'easeNone',
-                               opacity: 0,
-                               onComplete: this._finished,
-                               onCompleteScope: this });
+            this.shroud.ease({
+                opacity: 0,
+                duration: 750,
+                animationRequired: true,
+                mode: Clutter.AnimationMode.LINEAR,
+                onComplete: () => this._finished()
+            });
         } catch (e) {
             this._onError(e);
         }

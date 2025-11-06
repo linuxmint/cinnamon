@@ -7,7 +7,6 @@ const St = imports.gi.St;
 const Util = imports.misc.util;
 const Layout = imports.ui.layout;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const Mainloop = imports.mainloop;
 
 const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
@@ -175,12 +174,12 @@ class HotCorner {
         Main.layoutManager.removeChrome(this.actor)
     }
 
-    _animRipple(ripple, delay, time, startScale, startOpacity, finalScale) {
-        Tweener.removeTweens(ripple);
+    _animRipple(ripple, delay, duration, startScale, startOpacity, finalScale) {
+        ripple.remove_all_transitions();
         // We draw a ripple by using a source image and animating it scaling
         // outwards and fading away. We want the ripples to move linearly
         // or it looks unrealistic, but if the opacity of the ripple goes
-        // linearly to zero it fades away too quickly, so we use Tweener's
+        // linearly to zero it fades away too quickly, so we use easing
         // 'onUpdate' to give a non-linear curve to the fade-away and make
         // it more visible in the middle section.
 
@@ -197,15 +196,14 @@ class HotCorner {
         let [x, y] = this.actor.get_transformed_position();
         ripple.x = x;
         ripple.y = y;
-
-        Tweener.addTween(ripple, {
-            _opacity: 0,
+        ripple.ease({
             scale_x: finalScale,
             scale_y: finalScale,
             delay: delay,
-            time: time,
-            transition: 'linear',
-            onUpdate: function() {
+            duration: duration,
+            mode: Clutter.AnimationMode.LINEAR,
+            onUpdate: (timeline, index) => {
+                ripple._opacity = (1 - (index / duration)) * startOpacity;
                 ripple.opacity = 255 * Math.sqrt(ripple._opacity);
             },
             onComplete: function() {
@@ -228,10 +226,10 @@ class HotCorner {
         this._ripple2.show();
         this._ripple3.show();
 
-        //                              delay  time  scale opacity => scale
-        this._animRipple(this._ripple1, 0.0, 0.83, 0.25, 1.0, 1.5);
-        this._animRipple(this._ripple2, 0.05, 1.0, 0.0, 0.7, 1.25);
-        this._animRipple(this._ripple3, 0.35, 1.0, 0.0, 0.3, 1);
+        //                              delay duration scale opacity fscale
+        this._animRipple(this._ripple1, 0,    830,     0.25, 1.0,    1.5);
+        this._animRipple(this._ripple2, 50,   1000,    0.0,  0.7,    1.25);
+        this._animRipple(this._ripple3, 350,  1000,    0.0,  0.3,    1);
     }
 
     runAction(timestamp) {

@@ -18,7 +18,6 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 const Gtk = imports.gi.Gtk;
-const Tweener = imports.ui.tweener;
 
 const ScreenshotIface =
     '<node> \
@@ -403,14 +402,15 @@ class SelectArea {
 
     _onButtonRelease(actor, event) {
         this._result = this._getGeometry();
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           time: 0.1,
-                           transition: 'easeOutQuad',
-                           onComplete: () => {
-                               this._ungrab();
-                           }
-                         });
+        this._group.ease({
+            opacity: 0,
+            duration: 100,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._ungrab();
+            }
+        });
+
         return Clutter.EVENT_PROPAGATE;
     }
 
@@ -518,14 +518,14 @@ class PickColor {
 
     _onButtonRelease(actor, event) {
         this._result = this._getGeometry();
-        Tweener.addTween(this._group,
-                         { opacity: 0,
-                           time: 0.1,
-                           transition: 'easeOutQuad',
-                           onComplete: () => {
-                               this._ungrab();
-                           }
-                         });
+        this._group.ease({
+            opacity: 0,
+            duration: 100,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._ungrab();
+            }
+        });
         return Clutter.EVENT_PROPAGATE;
     }
 

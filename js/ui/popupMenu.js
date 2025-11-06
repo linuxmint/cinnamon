@@ -15,7 +15,6 @@ const BoxPointer = imports.ui.boxpointer;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
-const Tweener = imports.ui.tweener;
 const CheckBox = imports.ui.checkBox;
 const RadioButton = imports.ui.radioButton;
 
@@ -2372,9 +2371,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.show();
             this.actor.opacity = 0;
 
-            let tweenParams = {
-                transition: "easeOutQuad",
-                time: Main.wm.MENU_ANIMATION_TIME,
+            let easeParams = {
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                duration: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 255,
                 onComplete: () => {
                     this.animating = false;
@@ -2387,7 +2386,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 case St.Side.TOP:
                 case St.Side.BOTTOM:
                     this.actor.x = xPos;
-                    tweenParams["y"] = yPos;
+                    easeParams["y"] = yPos;
                     yPos -= this.actor.margin_top;
                     if (this.sideFlipped) // Bottom
                         this.actor.y = yPos + MENU_ANIMATION_OFFSET + this.actor.margin_top;
@@ -2397,7 +2396,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
                     this.actor.y = yPos;
-                    tweenParams["x"] = xPos;
+                    easeParams["x"] = xPos;
                     xPos -= this.actor.margin_left;
                     if (this.sideFlipped) // Right
                         this.actor.x = xPos + MENU_ANIMATION_OFFSET + this.actor.margin_left;
@@ -2406,7 +2405,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                     break;
             }
 
-            Tweener.addTween(this.actor, tweenParams);
+            this.actor.ease(easeParams);
         } else {
             this.animating = false;
 
@@ -2444,9 +2443,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.set_position(...this._calculatePosition());
             this.actor.set_size(...this.actor.get_size());
             this.animating = true;
-            let tweenParams = {
-                transition: "easeInQuad",
-                time: Main.wm.MENU_ANIMATION_TIME,
+            let easeParams = {
+                mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                duration: Main.wm.MENU_ANIMATION_TIME,
                 opacity: 0,
                 onComplete: () => {
                     this.animating = false;
@@ -2462,21 +2461,21 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 case St.Side.BOTTOM:
                     let yPos = this.actor.y - this.actor.margin_top;
                     if (this.sideFlipped) // Bottom
-                        tweenParams["y"] = yPos + MENU_ANIMATION_OFFSET + this.actor.margin_bottom;
+                        easeParams["y"] = yPos + MENU_ANIMATION_OFFSET + this.actor.margin_bottom;
                     else // Top
-                        tweenParams["y"] = yPos - MENU_ANIMATION_OFFSET - this.actor.margin_top;
+                        easeParams["y"] = yPos - MENU_ANIMATION_OFFSET - this.actor.margin_top;
                     break;
                 case St.Side.LEFT:
                 case St.Side.RIGHT:
                     let xPos = this.actor.x - this.actor.margin_left;
                     if (this.sideFlipped) // Right
-                        tweenParams["x"] = xPos + MENU_ANIMATION_OFFSET + this.actor.margin_right;
+                        easeParams["x"] = xPos + MENU_ANIMATION_OFFSET + this.actor.margin_right;
                     else // Left
-                        tweenParams["x"] = xPos - MENU_ANIMATION_OFFSET - this.actor.margin_left;
+                        easeParams["x"] = xPos - MENU_ANIMATION_OFFSET - this.actor.margin_left;
                     break;
             }
 
-            Tweener.addTween(this.actor, tweenParams);
+            this.actor.ease(easeParams);
         }
         else {
             this.animating = false;
@@ -2797,19 +2796,21 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
                 this.actor._arrowRotation = this._arrow.rotation_angle_z;
             else
                 this.actor._arrowRotation = targetAngle;
-            Tweener.addTween(this.actor,
-                             { _arrowRotation: targetAngle,
-                               height: naturalHeight,
-                               time: 0.25,
-                               onUpdate: () => {
-                                   if (this._arrow)
-                                       this._arrow.rotation_angle_z = this.actor._arrowRotation;
-                               },
-                               onComplete: () => {
-                                   this.actor.set_height(-1);
-                                   this.emit('open-state-changed', true);
-                               }
-                             });
+
+            this.actor.ease({
+                height: naturalHeight,
+                duration: 250,
+                onUpdate: () => {
+                    if (this._arrow) {
+                        let progress = this.actor.height / naturalHeight;
+                        this._arrow.rotation_angle_z = progress * targetAngle;
+                    }
+                },
+                onComplete: () => {
+                    this.actor.set_height(-1);
+                    this.emit('open-state-changed', true);
+                }
+            });
         } else {
             if (this._arrow)
                 this._arrow.rotation_angle_z = targetAngle;
@@ -2837,21 +2838,23 @@ var PopupSubMenu = class PopupSubMenu extends PopupMenuBase {
         if (animate && Main.wm.desktop_effects_menus) {
             if (this._arrow)
                 this.actor._arrowRotation = this._arrow.rotation_angle_z;
-            Tweener.addTween(this.actor,
-                             { _arrowRotation: 0,
-                               height: 0,
-                               time: 0.25,
-                               onComplete: () => {
-                                   this.actor.hide();
-                                   this.actor.set_height(-1);
+            const startingHeight = this.actor.height;
 
-                                   this.emit('open-state-changed', false);
-                               },
-                               onUpdate: () => {
-                                   if (this._arrow)
-                                       this._arrow.rotation_angle_z = this.actor._arrowRotation;
-                               }
-                             });
+            this.actor.ease({
+                height: 0,
+                duration: 250,
+                onUpdate: () => {
+                    if (this._arrow) {
+                        let progress = (this.actor.height / startingHeight);
+                        this._arrow.rotation_angle_z = progress * this.actor._arrowRotation;
+                    }
+                },
+                onComplete: () => {
+                    this.actor.hide();
+                    this.actor.set_height(-1);
+                    this.emit('open-state-changed', false);
+                }
+            });
         } else {
             if (this._arrow) this._arrow.rotation_angle_z = 0;
             this.actor.hide();
@@ -3029,14 +3032,16 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
 
         this.actor.raise_top();
 
-        this.actor.opacity = 0;
         this.actor.show();
 
         if (Main.wm.desktop_effects_menus) {
-            Tweener.addTween(this.actor,
-                             { opacity: 255,
-                               transition: 'linear',
-                               time: BoxPointer.POPUP_ANIMATION_TIME });
+            this.actor.opacity = 0;
+
+            this.actor.ease({
+                opacity: 255,
+                mode: Clutter.AnimationMode.LINEAR,
+                duration: BoxPointer.POPUP_ANIMATION_TIME,
+            });
         }
 
         this.savedFocusActor = global.stage.get_key_focus();
@@ -3050,12 +3055,14 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
 
         this.isOpen = false;
         if (Main.wm.desktop_effects_menus) {
-            Tweener.addTween(this.actor,
-                             { opacity: 0,
-                               transition: 'linear',
-                               time: BoxPointer.POPUP_ANIMATION_TIME,
-                               onComplete: () => { this.actor.hide() }
-                             });
+            this.actor.ease({
+                opacity: 0,
+                mode: Clutter.AnimationMode.LINEAR,
+                duration: BoxPointer.POPUP_ANIMATION_TIME,
+                onComplete: () => {
+                    this.actor.hide();
+                }
+            });
         } else {
             this.actor.hide();
         }
