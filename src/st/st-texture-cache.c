@@ -1571,18 +1571,19 @@ on_image_from_file_loaded (GObject      *source,
   actor = clutter_actor_new ();
 
   pixbuf = g_task_propagate_pointer (task, &error);
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
 
   if (error)
     {
-      g_warning ("Could not load image from file: %s\n", error->message);
+      g_warning ("Could not load image from file: %s", error->message);
       g_error_free (error);
 
       data->load_callback (ST_TEXTURE_CACHE (source), data->handle, actor, data->load_callback_data);
 
       return;
     }
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
 
   content = clutter_image_new ();
 
@@ -1591,8 +1592,7 @@ on_image_from_file_loaded (GObject      *source,
                           gdk_pixbuf_get_has_alpha (pixbuf)
                               ? COGL_PIXEL_FORMAT_RGBA_8888
                               : COGL_PIXEL_FORMAT_RGB_888,
-                          gdk_pixbuf_get_width (pixbuf),
-                          gdk_pixbuf_get_height (pixbuf),
+                          width, height,
                           gdk_pixbuf_get_rowstride (pixbuf),
                           &error);
 
@@ -1641,7 +1641,7 @@ load_image_from_file_thread (GTask        *task,
  * @width: Width in pixels (or -1 to leave unconstrained)
  * @height: Height in pixels (or -1 to leave unconstrained)
  * @callback: (scope async) (not nullable): Function called when the image is loaded (required)
- * @user_data: Data to pass to the load callback
+ * @user_data: (closure): Data to pass to the load callback
  *
  * This function loads an image file into a clutter actor asynchronously.  This is
  * mostly useful for situations where you want to load an image asynchronously, but don't
