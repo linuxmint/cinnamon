@@ -299,7 +299,7 @@ class ResizePopup extends St.Widget {
 });
 
 var WindowManager = class WindowManager {
-        MENU_ANIMATION_TIME = 0.15;
+        MENU_ANIMATION_TIME = 150;
         WORKSPACE_ANIMATION_TIME = 0.15;
         TILE_PREVIEW_ANIMATION_TIME = 0.15;
         SIZE_CHANGE_ANIMATION_TIME = 0.12;

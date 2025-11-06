@@ -26,18 +26,15 @@ const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
-const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
-const SPINNER_ANIMATION_TIME = 0.2;
+const AUTOHIDE_ANIMATION_TIME = 200;
+const AUTOHIDE_BOX_FADE_TIME = 100;
 
-const AUTOHIDE_ANIMATION_TIME = 0.2;
 const TIME_DELTA = 1500;
-
-const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
 const PANEL_PEEK_TIME = 1500;
 
@@ -3000,7 +2997,7 @@ Panel.prototype = {
 
         if (panelChanged) {
             // remove any tweens that might be active for autohide
-            Tweener.removeTweens(this.actor);
+            this.actor.remove_all_transitions();
 
             this.margin_top = newMarginTop;
             this.margin_bottom = newMarginBottom;
@@ -3814,7 +3811,7 @@ Panel.prototype = {
         this._leavePanel();
         this.actor.ease({
             opacity: 0,
-            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this.actor.hide();
@@ -3832,7 +3829,7 @@ Panel.prototype = {
         this.actor.show();
         this.actor.ease({
             opacity: 255,
-            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
@@ -3854,8 +3851,8 @@ Panel.prototype = {
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
-        let panelParams = { time: animationTime,
-                            transition: 'easeOutQuad' };
+        let panelParams = { duration: animationTime,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // set up original and destination positions and add tween
         // destination parameter
@@ -3883,23 +3880,20 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
-        panelParams['onUpdateParams'] = [origPos];
-        panelParams['onUpdate'] =
-            Lang.bind(this, function(origPos) { this._setClipRegion(false, origPos); });
-
+        panelParams['onUpdate'] = () => this._setClipRegion(false, origPos);
         // setup boxes tween - fade in as panel slides
         let boxParams = { opacity: 255,
-                          time: animationTime+0.2,
-                          transition: 'easeOutQuad' };
+                          duration: animationTime * 2,
+                          mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // show boxes and add tweens
         this._leftBox.show();
         this._centerBox.show();
         this._rightBox.show();
-        Tweener.addTween(this.actor, panelParams);
-        Tweener.addTween(this._leftBox, boxParams);
-        Tweener.addTween(this._centerBox, boxParams);
-        Tweener.addTween(this._rightBox, boxParams);
+        this.actor.ease(panelParams);
+        this._leftBox.ease(boxParams);
+        this._centerBox.ease(boxParams);
+        this._rightBox.ease(boxParams);
 
         this._hidden = false;
     },
@@ -3923,9 +3917,8 @@ Panel.prototype = {
         // if horizontal panel, animation on y. if vertical, animation on x.
         let isHorizontal = this.panelPosition == PanelLoc.top
                          || this.panelPosition == PanelLoc.bottom;
-        let animationTime = AUTOHIDE_ANIMATION_TIME;
-        let panelParams = { time: animationTime,
-                            transition: 'easeOutQuad' };
+        let panelParams = { duration: AUTOHIDE_ANIMATION_TIME,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // setup destination position and add tween destination parameter
         // remember to always leave a vestigial 1px strip or the panel
@@ -3948,28 +3941,24 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to update the actor clip region during animation
-        panelParams['onUpdateParams'] = [destPos];
-        panelParams['onUpdate'] =
-            Lang.bind(this, function(destPos) { this._setClipRegion(true, destPos); });
-
+        panelParams['onUpdate'] = () => this._setClipRegion(true, destPos);
         // hide boxes after panel slides out
-        panelParams['onComplete'] =
-            Lang.bind(this, function() {
+        panelParams['onComplete'] = () => {
                this._leftBox.hide();
                this._centerBox.hide();
                this._rightBox.hide();
-            });
+        };
 
         // setup boxes tween - fade out as panel slides out
         let boxParams = { opacity: 0,
-                          time: Math.max(0, animationTime - 0.1),
-                          transition: 'easeOutQuad' };
+                          duration: AUTOHIDE_BOX_FADE_TIME,
+                          mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // add all tweens
-        Tweener.addTween(this.actor, panelParams);
-        Tweener.addTween(this._leftBox, boxParams);
-        Tweener.addTween(this._centerBox, boxParams);
-        Tweener.addTween(this._rightBox, boxParams);
+        this.actor.ease(panelParams);
+        this._leftBox.ease(boxParams);
+        this._centerBox.ease(boxParams);
+        this._rightBox.ease(boxParams);
 
         this._hidden = true;
     },
