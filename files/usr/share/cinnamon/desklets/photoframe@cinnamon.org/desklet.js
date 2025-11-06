@@ -14,7 +14,6 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         super(metadata, desklet_id);
 
         this.metadata = metadata;
-        this.update_id = 0;
 
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, this.instance_id);
         this.settings.bind('directory', 'dir', this.on_setting_changed);
@@ -29,16 +28,28 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         this.dir_monitor = null;
         this.dir_file = null;
 
+        this._update_id = 0;
+        this._loop_start_id = 0;
+
         this.setHeader(_('Photo Frame'));
         this._setup_dir_monitor();
         this.setup_display();
     }
 
-    on_setting_changed() {
-        if (this.update_id != 0) {
-            Mainloop.source_remove(this.update_id);
+    _remove_timers() {
+        if (this._update_id != 0) {
+            GLib.source_remove(this._update_id);
+            this._update_id = 0;
         }
-        this.update_id = 0;
+
+        if (this._loop_start_id != 0) {
+            GLib.source_remove(this._loop_start_id);
+            this._loop_start_id = 0;
+        }
+    }
+
+    on_setting_changed() {
+        this._remove_timers();
         this._setup_dir_monitor();
         if (this.currentPicture) {
             this.currentPicture.destroy();
@@ -48,7 +59,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
     }
 
     _setup_dir_monitor() {
-        if (this.dir_monitor_id != 0 && this.dir_monitor) {
+        if (this.dir_monitor_id != 0) {
             this.dir_monitor.disconnect(this.dir_monitor_id);
             this.dir_monitor_id = 0;
         }
@@ -63,11 +74,11 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         }
 
         if (this.dir === ' ') {
-            let file = Gio.file_new_for_path(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES));
-            this.dir = file.get_uri();
+            this.dir_file = Gio.file_new_for_path(GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES));
+        } else {
+            this.dir_file = Gio.file_new_for_uri(this.dir);
         }
 
-        this.dir_file = Gio.file_new_for_uri(this.dir);
         this.dir_monitor = this.dir_file.monitor_directory(0, null);
         this.dir_monitor_id = this.dir_monitor.connect('changed', Lang.bind(this, this.on_setting_changed));
     }
@@ -78,32 +89,59 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             this.dir_monitor_id = null;
         }
 
-        if (this.update_id != 0) {
-            Mainloop.source_remove(this.update_id);
-            this.update_id = 0;
-        }
+        this._remove_timers();
     }
 
-    _scan_dir(dir) {
-        let dir_file = Gio.file_new_for_uri(dir);
-        let fileEnum = dir_file.enumerate_children('standard::type,standard::name,standard::is-hidden', Gio.FileQueryInfoFlags.NONE, null);
+    _scan_picture_dir(dir) {
+        let fileEnum = dir.enumerate_children_async(
+            'standard::type,standard::name,standard::is-hidden,standard::content-type',
+            Gio.FileQueryInfoFlags.NONE, GLib.PRIORITY_LOW, null, (obj, res) => {
+                let enumerator = null;
+                try {
+                    enumerator = obj.enumerate_children_finish(res);
+                } catch (e) {
+                    global.logError("Could not read location for photoframe desklet", e);
+                    return;
+                }
 
-        let info;
-        while ((info = fileEnum.next_file(null)) != null) {
-            if (info.get_is_hidden()) {
-                continue;
+                var next_files_complete = (obj, res) => {
+                    let children;
+                    try {
+                        children = obj.next_files_finish(res);
+                    } catch (e) {
+                        global.logError(e);
+                        enumerator.close(null);
+                        return;
+                    }
+
+                    if (children.length == 0) {
+                        enumerator.close(null);
+                        return;
+                    }
+
+                    for (let child_info of children) {
+                        if (child_info.get_is_hidden()) {
+                            continue;
+                        }
+
+                        if (child_info.get_file_type() == Gio.FileType.DIRECTORY) {
+                            this._scan_picture_dir(enumerator.get_child(child_info));
+                        } else {
+                            const content_type = child_info.get_content_type();
+
+                            if (content_type == null || !Gio.content_type_is_a(content_type, 'image/*'))
+                                continue;
+
+                            this._addImage(enumerator.get_child(child_info).get_path());
+                        }
+                    }
+
+                    enumerator.next_files_async(10, GLib.PRIORITY_LOW, null, next_files_complete);
+                }
+
+                enumerator.next_files_async(10, GLib.PRIORITY_LOW, null, next_files_complete);
             }
-
-            let fileType = info.get_file_type();
-            let fileName = dir + '/' + info.get_name();
-            if (fileType != Gio.FileType.DIRECTORY) {
-                this._images.push(fileName);
-            } else {
-                this._scan_dir(fileName);
-            }
-        }
-
-        fileEnum.close(null);
+        );
     }
 
     setup_display() {
@@ -121,7 +159,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             this._bin.add_effect(effect);
         } else if (this.effect == 'sepia') {
             let color = new Clutter.Color();
-            color.from_hls(17.0, 0.59, 0.4);
+            Clutter.Color.from_hls(color, 17.0, 0.59, 0.4);
             let colorize_effect = new Clutter.ColorizeEffect(color);
             let contrast_effect = new Clutter.BrightnessContrastEffect();
             let desaturate_effect = new Clutter.DesaturateEffect();
@@ -133,38 +171,38 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             this._bin.add_effect(desaturate_effect);
         }
 
-        if (this.dir_file.query_exists(null)) {
-            this._scan_dir(this.dir);
+        this.updateInProgress = false;
+        this.currentPicture = null;
 
-            this.updateInProgress = false;
-            this.currentPicture = null;
+        this._scan_picture_dir(this.dir_file);
+    }
 
-            this.update_id = 0;
-            this._update_loop();
+    _addImage(path) {
+        this._images.push(path);
+
+        if (this._loop_start_id > 0) {
+            GLib.source_remove(this._loop_start_id);
         }
+
+        this._loop_start_id = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 200, () => this._update_loop());
     }
 
     _update_loop() {
         this._update();
-        this.update_id = Mainloop.timeout_add_seconds(this.delay, Lang.bind(this, this._update_loop));
-    }
 
-    _size_pic(image) {
-        image.disconnect(image._notif_id);
+        if (this._update_id != 0) {
+            GLib.source_remove(this._update_id);
+        }
 
-        let height, width;
-        let ratio = Math.min(this.width / image.width, this.height / image.height);
-        width = ratio * image.width;
-        height = ratio * image.height;
-        image.set_size(width, height);
+        this._update_id = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, this.delay, () => this._update());
+
+        this._loop_start_id = 0;
+        return GLib.SOURCE_REMOVE;
     }
 
     _update() {
-        if (this.updateInProgress) {
-            return;
-        }
-        this.updateInProgress = true;
         let image_path;
+
         if (!this.shuffle) {
             image_path = this._images.shift();
             this._images.push(image_path);
@@ -172,44 +210,59 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             image_path = this._images[Math.floor(Math.random() * this._images.length)];
         }
 
-        if (!image_path) {
-            this.updateInProgress = false;
-            return;
+        if (image_path) {
+            St.TextureCache.get_default().load_image_from_file_async(
+                image_path,
+                this.width, this.height,
+                // FIXME: image_path should be the user_data arg of load_image_from_file_async,
+                // not our callback binding, but we get a complaint about wrong number of args.
+                // This seems to work but it ends up putting image_path as the first argument of
+                // _nextImageLoaded instead of the last.
+                // We need to pass the path so we have something to open if the user middle-clicks
+                // the photo (to open it in a viewer).
+                this._nextImageLoaded.bind(this, image_path)
+            );
         }
 
-        let image = this._loadImage(image_path);
+        return GLib.SOURCE_CONTINUE;
+    }
 
-        if (image == null) {
+    _nextImageLoaded(image_path, cache, handle, actor) {
+        if (actor == null) {
             this.updateInProgress = false;
             return;
         }
 
         let old_pic = this.currentPicture;
-        this.currentPicture = image;
+        this.currentPicture = actor;
         this.currentPicture.path = image_path;
 
         if (this.fade_delay > 0) {
-            Tweener.addTween(this._bin, {
+            this._bin.ease({
                 opacity: 0,
-                time: this.fade_delay,
-                transition: 'easeInSine',
+                duration: (this.fade_delay * 1000) / 2, // setting is sec, easing uses ms
+                mode: Clutter.AnimationMode.EASE_IN_SINE,
                 onComplete: () => {
                     this._bin.set_child(this.currentPicture);
-                    Tweener.addTween(this._bin, {
+                    
+                    if (old_pic) {
+                        old_pic.destroy();
+                    }
+
+                    this._bin.ease({
                         opacity: 255,
-                        time: this.fade_delay,
-                        transition: 'easeInSine'
+                        time: (this.fade_delay * 1000) / 2,
+                        mode: Clutter.AnimationMode.EASE_IN_SINE
                     });
                 }
             });
         } else {
             this._bin.set_child(this.currentPicture);
-        }
-        if (old_pic) {
-            old_pic.destroy();
-        }
 
-        this.updateInProgress = false;
+            if (old_pic) {
+                old_pic.destroy();
+            }
+        }
     }
 
     on_desklet_clicked(event) {
@@ -221,19 +274,6 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             }
         } catch (e) {
             global.logError(e);
-        }
-    }
-
-    _loadImage(filePath) {
-        try {
-            let image = St.TextureCache.get_default().load_uri_async(filePath, this.width, this.height);
-
-            image._notif_id = image.connect('notify::size', Lang.bind(this, this._size_pic));
-
-            return image;
-        } catch (x) {
-            // Probably a non-image is in the folder
-            return null;
         }
     }
 }
