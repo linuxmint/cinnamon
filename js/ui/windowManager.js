@@ -28,13 +28,9 @@ const WINDOW_ANIMATION_TIME_MULTIPLIERS = [
     0.6  // 2 FAST
 ]
 
-const EASING_MULTIPLIER = 1000; // multiplier for tweening.time ---> easing.duration
-var ONE_SECOND = 1000; // in ms
-
-const DIM_TIME = 0.500;
+const DIM_TIME = 500;
+const UNDIM_TIME = 250;
 const DIM_BRIGHTNESS = -0.2;
-const UNDIM_TIME = 0.250;
-const WORKSPACE_OSD_TIMEOUT = 0.4;
 
 /* edge zones for tiling/snapping identification
    copied from muffin/src/core/window-private.h
@@ -90,7 +86,7 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
         this._okButton = this.addButton({ label: _("Keep changes"),
                                           action: this._onSuccess.bind(this) });
 
-        this._timeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, ONE_SECOND, this._tick.bind(this));
+        this._timeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, this._tick.bind(this));
         GLib.Source.set_name_by_id(this._timeoutId, '[cinnamon] this._tick');
     }
 
@@ -161,7 +157,7 @@ class WindowDimmer {
 
         this.actor.ease_property('@effects.dim.brightness', color, {
             mode: Clutter.AnimationMode.LINEAR,
-            duration: (dimmed ? DIM_TIME : UNDIM_TIME) * EASING_MULTIPLIER * (animate ? 1 : 0),
+            duration: (dimmed ? DIM_TIME : UNDIM_TIME) * (animate ? 1 : 0),
             onComplete: () => this._syncEnabled()
         });
 
@@ -235,7 +231,7 @@ class TilePreview {
             this.actor.remove_all_transitions();
 
             Object.assign(props, {
-                duration: this.anim_time * EASING_MULTIPLIER,
+                duration: this.anim_time,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD
             });
             this.actor.ease(props);
@@ -254,7 +250,7 @@ class TilePreview {
         this.actor.remove_all_transitions();
         this.actor.ease({
             opacity: 0,
-            duration: this.anim_time * EASING_MULTIPLIER,
+            duration: this.anim_time,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => this._reset()
         });
@@ -300,12 +296,12 @@ class ResizePopup extends St.Widget {
 
 var WindowManager = class WindowManager {
         MENU_ANIMATION_TIME = 150;
-        WORKSPACE_ANIMATION_TIME = 0.15;
-        TILE_PREVIEW_ANIMATION_TIME = 0.15;
-        SIZE_CHANGE_ANIMATION_TIME = 0.12;
-        MAP_ANIMATION_TIME = 0.12;
-        DESTROY_ANIMATION_TIME = 0.12;
-        MINIMIZE_ANIMATION_TIME = 0.12;
+        WORKSPACE_ANIMATION_TIME = 150;
+        TILE_PREVIEW_ANIMATION_TIME = 150;
+        SIZE_CHANGE_ANIMATION_TIME = 120;
+        MAP_ANIMATION_TIME = 120;
+        DESTROY_ANIMATION_TIME = 120;
+        MINIMIZE_ANIMATION_TIME = 120;
 
     constructor() {
         this._cinnamonwm = global.window_manager;
@@ -532,7 +528,7 @@ var WindowManager = class WindowManager {
                         scale_y: yScale,
                         x: xDest,
                         y: yDest,
-                        duration: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                        duration: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
                         mode: Clutter.AnimationMode.EASE_IN_QUAD,
                         onStopped: () => this._minimizeWindowDone(cinnamonwm, actor),
                     });
@@ -549,7 +545,7 @@ var WindowManager = class WindowManager {
                     opacity: 0,
                     scale_x: 0.88,
                     scale_y: 0.88,
-                    duration: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: this.MINIMIZE_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onStopped: () => this._minimizeWindowDone(cinnamonwm, actor),
                 });
@@ -571,7 +567,7 @@ var WindowManager = class WindowManager {
                 actor.ease({
                     x: xDest,
                     y: yDest,
-                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: time * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_IN_SINE,
                     onStopped: () => this._minimizeWindowDone(cinnamonwm, actor),
                 });
@@ -621,7 +617,7 @@ var WindowManager = class WindowManager {
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
-                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
@@ -656,7 +652,7 @@ var WindowManager = class WindowManager {
                 actor.ease({
                     x: xDest,
                     y: yDest,
-                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: time * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_IN_SINE,
                     onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                 });
@@ -680,7 +676,7 @@ var WindowManager = class WindowManager {
                         scale_y: 1.0,
                         x: xDest,
                         y: yDest,
-                        duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                        duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                         mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                         onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
@@ -695,7 +691,7 @@ var WindowManager = class WindowManager {
                         opacity: 255,
                         scale_x: 1.0,
                         scale_y: 1.0,
-                        duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                        duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                         mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                         onStopped: () => this._unminimizeWindowDone(cinnamonwm, actor),
                     });
@@ -792,7 +788,7 @@ var WindowManager = class WindowManager {
             scale_x: scaleX,
             scale_y: scaleY,
             opacity: 0,
-            duration: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+            duration: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         });
 
@@ -809,7 +805,7 @@ var WindowManager = class WindowManager {
                 scale_y: 1,
                 translation_x: 0,
                 translation_y: 0,
-                duration: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                duration: this.SIZE_CHANGE_ANIMATION_TIME * this.window_effect_multiplier,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onStopped: () => this._sizeChangeWindowDone(cinnamonwm, actor),
         });
@@ -952,14 +948,12 @@ var WindowManager = class WindowManager {
                 actor.opacity = 0;
                 actor.show();
 
-                let time = this.MAP_ANIMATION_TIME * this.window_effect_multiplier;
-
                 actor.ease({
                     opacity: actor.orig_opacity,
                     scale_x: 1,
                     scale_y: 1,
                     x: actor.x + 1,
-                    duration: time * EASING_MULTIPLIER,
+                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onStopped: () => this._mapWindowDone(cinnamonwm, actor),
                 });
@@ -981,7 +975,7 @@ var WindowManager = class WindowManager {
                     scale_y: 1.0,
                     x: xDest,
                     y: yDest,
-                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: this.MAP_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onStopped: () => this._mapWindowDone(cinnamonwm, actor),
                 });
@@ -1004,7 +998,7 @@ var WindowManager = class WindowManager {
 
                 actor.ease({
                     y: yDest,
-                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: time * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_IN_SINE,
                     onStopped: () => this._mapWindowDone(cinnamonwm, actor),
                 });
@@ -1077,7 +1071,7 @@ var WindowManager = class WindowManager {
 
                 actor.ease({
                     y: yDest,
-                    duration: time * this.window_effect_multiplier * EASING_MULTIPLIER,
+                    duration: time * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_IN_SINE,
                     onStopped: () => this._destroyWindowDone(cinnamonwm, actor),
                 });
@@ -1105,7 +1099,7 @@ var WindowManager = class WindowManager {
                             opacity: 0,
                             scale_x: 0.88,
                             scale_y: 0.88,
-                            duration: this.DESTROY_ANIMATION_TIME * this.window_effect_multiplier * EASING_MULTIPLIER,
+                            duration: this.DESTROY_ANIMATION_TIME * this.window_effect_multiplier,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                             onStopped: () => this._destroyWindowDone(cinnamonwm, actor),
                         });
@@ -1249,7 +1243,7 @@ var WindowManager = class WindowManager {
                 window.ease({
                     x: window.origX + xDest,
                     y: window.origY + yDest,
-                    duration: this.WORKSPACE_ANIMATION_TIME * EASING_MULTIPLIER,
+                    duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => finish_switch_workspace(window)
                 });
@@ -1264,7 +1258,7 @@ var WindowManager = class WindowManager {
                 window.ease({
                     x: window.origX,
                     y: window.origY,
-                    duration: this.WORKSPACE_ANIMATION_TIME * EASING_MULTIPLIER,
+                    duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onComplete: () => finish_switch_workspace(window)
                 });
