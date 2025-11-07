@@ -214,7 +214,7 @@ cr_font_family_to_string (CRFontFamily const * a_this,
  * @a_this: the current instance of #CRFontFamily.
  * @a_name: the new name
  *
- * Returns CR_OK upon sucessful completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_font_family_set_name (CRFontFamily * a_this, guchar * a_name)
@@ -291,7 +291,7 @@ cr_font_family_prepend (CRFontFamily * a_this,
  * cr_font_family_destroy:
  * @a_this: the current instance of #CRFontFamily.
  *
- * Returns CR_OK upon sucessful completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_font_family_destroy (CRFontFamily * a_this)
@@ -412,7 +412,7 @@ cr_font_size_copy (CRFontSize * a_dst, CRFontSize const * a_src)
  * @a_this: the current instance of #CRFontSize.
  * @a_predefined: what to set.
  *
- * Returns CR_OK upon sucessful completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus 
 cr_font_size_set_predefined_absolute_font_size (CRFontSize *a_this, 
@@ -456,7 +456,7 @@ cr_font_size_set_relative_font_size (CRFontSize *a_this,
  * @a_num_type: the type of number to set.
  * @a_value: the actual value to set.
  *
- * Returns CR_OK upon succesful completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus 
 cr_font_size_set_absolute_font_size (CRFontSize *a_this,
@@ -478,7 +478,7 @@ cr_font_size_set_absolute_font_size (CRFontSize *a_this,
  * cr_font_size_set_to_inherit:
  * @a_this: the current instance of #CRFontSize 
  *
- * Returns CR_OK upon succesful completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_font_size_set_to_inherit (CRFontSize *a_this)

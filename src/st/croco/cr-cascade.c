@@ -58,7 +58,7 @@ struct _CRCascadePriv {
  *should call their ref/unref method instead if it wants
  *
  *Returns the newly built instance of CRCascade or NULL if
- *an error arose during constrution.
+ *an error arose during construction.
  */
 CRCascade *
 cr_cascade_new (CRStyleSheet * a_author_sheet,
@@ -128,7 +128,7 @@ cr_cascade_get_sheet (CRCascade * a_this, enum CRStyleOrigin a_origin)
  *
  *Sets a stylesheet in the cascade
  *
- *Returns CR_OK upon successfull completion, an error
+ *Returns CR_OK upon successful completion, an error
  *code otherwise.
  */
 enum CRStatus

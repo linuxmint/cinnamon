@@ -29,7 +29,7 @@
  *
  *The definition of the CRDocHandler class.
  *Contains methods to instantiate, destroy,
- *and initialyze instances of #CRDocHandler
+ *and initialize instances of #CRDocHandler
  *to custom values.
  */
 
@@ -98,7 +98,7 @@ cr_doc_handler_new (void)
  *Gets the private parsing context associated to the document handler
  *The private parsing context is used by libcroco only.
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_doc_handler_get_ctxt (CRDocHandler const * a_this, gpointer * a_ctxt)
@@ -117,7 +117,7 @@ cr_doc_handler_get_ctxt (CRDocHandler const * a_this, gpointer * a_ctxt)
  *
  *Sets the private parsing context.
  *This is used by libcroco only.
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_doc_handler_set_ctxt (CRDocHandler * a_this, gpointer a_ctxt)
@@ -135,7 +135,7 @@ cr_doc_handler_set_ctxt (CRDocHandler * a_this, gpointer a_ctxt)
  *Gets the private parsing result.
  *The private parsing result is used by libcroco only.
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_doc_handler_get_result (CRDocHandler const * a_this, gpointer * a_result)
@@ -155,7 +155,7 @@ cr_doc_handler_get_result (CRDocHandler const * a_this, gpointer * a_result)
  *Sets the private parsing context.
  *This is used by libcroco only.
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_doc_handler_set_result (CRDocHandler * a_this, gpointer a_result)
@@ -175,7 +175,7 @@ cr_doc_handler_set_result (CRDocHandler * a_this, gpointer a_result)
  *test handlers. This is expected to change in a
  *near future, when the libcroco gets a bit debugged.
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_doc_handler_set_default_sac_handler (CRDocHandler * a_this)
@@ -216,7 +216,7 @@ cr_doc_handler_ref (CRDocHandler * a_this)
 
 /**
  * cr_doc_handler_unref:
- *@a_this: the currrent instance of #CRDocHandler.
+ *@a_this: the current instance of #CRDocHandler.
  *
  *Decreases the ref count of the current instance of #CRDocHandler.
  *If the ref count reaches '0' then, destroys the instance.

@@ -28,7 +28,7 @@
 /**
  * CRAdditionalSel:
  *
- * #CRAdditionalSel abstracts an additionnal selector.
+ * #CRAdditionalSel abstracts an additional selector.
  * An additional selector is the selector part
  * that comes after the combination of type selectors.
  * It can be either "a class selector (the .class part),

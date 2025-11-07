@@ -313,7 +313,7 @@ cr_declaration_append (CRDeclaration * a_this, CRDeclaration * a_new)
  *@a_decls: the declaration to unlink.
  *
  *Unlinks the declaration from the declaration list.
- *case of a successfull completion, NULL otherwise.
+ *case of a successful completion, NULL otherwise.
  *
  *Returns a pointer to the unlinked declaration in
  */

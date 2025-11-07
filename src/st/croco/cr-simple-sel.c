@@ -55,7 +55,7 @@ cr_simple_sel_new (void)
  *@a_this: the this pointer of the current instance of #CRSimpleSel.
  *@a_sel: the simple selector to append.
  *
- *Returns: the new list upon successfull completion, an error code otherwise.
+ *Returns: the new list upon successful completion, an error code otherwise.
  */
 CRSimpleSel *
 cr_simple_sel_append_simple_sel (CRSimpleSel * a_this, CRSimpleSel * a_sel)
@@ -83,7 +83,7 @@ cr_simple_sel_append_simple_sel (CRSimpleSel * a_this, CRSimpleSel * a_sel)
  *
  *Prepends a simple selector to the current list of simple selectors.
  *
- *Returns the new list upon successfull completion, an error code otherwise.
+ *Returns the new list upon successful completion, an error code otherwise.
  */
 CRSimpleSel *
 cr_simple_sel_prepend_simple_sel (CRSimpleSel * a_this, CRSimpleSel * a_sel)
@@ -208,7 +208,7 @@ cr_simple_sel_one_to_string (CRSimpleSel const * a_this)
  *Dumps the selector to a file.
  *TODO: add the support of unicode in the dump.
  *
- *Returns CR_OK upon successfull completion, an error code
+ *Returns CR_OK upon successful completion, an error code
  *otherwise.
  */
 enum CRStatus
@@ -238,7 +238,7 @@ cr_simple_sel_dump (CRSimpleSel const * a_this, FILE * a_fp)
  *Computes the selector (combinator separated list of simple selectors)
  *as defined in the css2 spec in chapter 6.4.3
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_simple_sel_compute_specificity (CRSimpleSel * a_this)

@@ -55,7 +55,7 @@ cr_attr_sel_new (void)
  *
  * Appends an attribute selector to the current list of
  * attribute selectors represented by a_this.
- * Returns CR_OK upon successfull completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_attr_sel_append_attr_sel (CRAttrSel * a_this, CRAttrSel * a_attr_sel)
@@ -82,7 +82,7 @@ cr_attr_sel_append_attr_sel (CRAttrSel * a_this, CRAttrSel * a_attr_sel)
  *
  *Prepends an attribute selector to the list of
  *attributes selector represented by a_this.
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_attr_sel_prepend_attr_sel (CRAttrSel * a_this, 
