@@ -800,12 +800,14 @@ class CategoryButton extends SimpleMenuItem {
         if (applet.symbolicCategoryIcons) {
             size = 16;
             symbolic = true;
-            if (categoryId == 'recent')
-                icon = 'folder-recent';
-            else if (categoryId == 'favorite')
-                icon = 'xapp-user-favorites';
-            else
-                icon = 'cinnamon-all-applications';
+            if (typeof icon !== 'string')
+                icon = icon.get_names()[0]
+            if (icon.startsWith("applications-"))
+                icon = "xsi-" + icon
+            else if (icon == "preferences-system")
+                icon = "xsi-applications-administration"
+            else if (icon == "preferences-desktop")
+                icon = "xsi-applications-preferences"
         }
 
         if (typeof icon === 'string')
