@@ -671,8 +671,8 @@ var PopupSliderMenuItem = class PopupSliderMenuItem extends PopupBaseMenuItem {
         this._slider = new St.DrawingArea({ style_class: 'popup-slider-menu-item', reactive: true });
         this.addActor(this._slider, { span: -1, expand: true });
         this._signals.connect(this._slider, 'repaint', Lang.bind(this, this._sliderRepaint));
-        this._signals.connect(this.actor, 'button-press-event', Lang.bind(this, this._startDragging));
-        this._signals.connect(this.actor, 'scroll-event', Lang.bind(this, this._onScrollEvent));
+        this._signals.connect(this._slider, 'button-press-event', Lang.bind(this, this._startDragging));
+        this._signals.connect(this._slider, 'scroll-event', Lang.bind(this, this._onScrollEvent));
 
         this._releaseId = this._motionId = 0;
         this._dragging = false;
