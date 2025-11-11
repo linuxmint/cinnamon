@@ -973,11 +973,13 @@ NMDeviceVPN.prototype = {
     __proto__: NMDevice.prototype,
 
     _init: function(client) {
-        // Disable autoconnections
+        this._client = client
         this._autoConnectionName = null;
         this.category = NMConnectionCategory.VPN;
 
-        NMDevice.prototype._init.call(this, client, null, [ ]);
+        this._activeConnections = [];
+
+        NMDevice.prototype._init.call(this, client, null, []);
     },
 
     connectionValid: function(connection) {
@@ -989,26 +991,71 @@ NMDeviceVPN.prototype = {
     },
 
     get connected() {
-        return !!this._activeConnection;
+        return this._activeConnections.length > 0;
     },
 
-    setActiveConnection: function(activeConnection) {
-        NMDevice.prototype.setActiveConnection.call(this, activeConnection);
+    setActiveConnections: function(activeConnections) {
+        this._activeConnections = activeConnections || [];
 
-        this.emit('active-connection-changed');
-    },
-
-    _shouldShowConnectionList: function() {
-        return true;
+        this._createSection();
+        this.emit('active-connections-changed');
     },
 
     deactivate: function() {
-        if (this._activeConnection)
-            this._client.deactivate_connection(this._activeConnection, null);
+        for (let ac of this._activeConnections)
+            this._client.deactivate_connection(ac, null);
+
+        this._activeConnections = []
     },
 
     statusLabel: null,
-    controllable: true
+    controllable: true,
+
+    _clearSection: function() {
+        if (this.section && this.section.removeAll)
+            this.section.removeAll();
+
+        this._autoConnectionItem = null;
+        this._overflowItem = null;
+
+        for (let i = 0; i < this._connections.length; i++) {
+            if (this._connections[i].item && this._connections[i].item.destroy)
+                this._connections[i].item.destroy();
+
+            this._connections[i].item = null;
+        }
+    },
+
+    _updateConnectionItemView: function(item, connection, active) {
+        item.label.text = connection._name  || _("Connected (private)");
+        if (active) {
+            item.setShowDot(true);
+            item.actor.add_style_class_name('popup-device-menu-item');
+        } else {
+            item.setShowDot(false);
+            item.actor.remove_style_class_name('popup-device-menu-item');
+        }
+    },
+
+    _createSection: function() {
+        for (let obj of this._connections) {
+            if (!obj.item) {
+                obj.item = new PopupMenu.PopupMenuItem(obj.name);
+                this._updateConnectionItemView(obj.item, obj.connection);
+                obj.item.connect('activate', Lang.bind(this, function() {
+                    let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
+                    if (activeConnection) {
+                        this._client.deactivate_connection(activeConnection, null);
+                    } else {
+                        this._client.activate_connection_async(obj.connection, this.device, null, null, null);
+                    }
+                }));
+                this.section.addMenuItem(obj.item);
+            } else {
+                this._updateConnectionItemView(obj.item, obj.connection, this._activeConnections.some(ac => ac.connection == obj.connection));
+            }
+        }
+    },
 };
 
 function NMDeviceWIREGUARD() {
@@ -1842,7 +1889,7 @@ CinnamonNetworkApplet.prototype = {
                 device: new NMDeviceVPN(this._client),
                 item: new NMWiredSectionTitleMenuItem(_("VPN Connections"))
             };
-            this._devices.vpn.device.connect('active-connection-changed', Lang.bind(this, function() {
+            this._devices.vpn.device.connect('active-connections-changed', Lang.bind(this, function() {
                 this._devices.vpn.item.updateForDevice(this._devices.vpn.device);
             }));
             this._devices.vpn.item.updateForDevice(this._devices.vpn.device);
@@ -2089,41 +2136,43 @@ CinnamonNetworkApplet.prototype = {
     },
 
     _syncActiveConnections: function() {
-        let closedConnections = [ ];
-        let newActiveConnections = this._client.get_active_connections() || [ ];
-        for (let i = 0; i < this._activeConnections.length; i++) {
-            let a = this._activeConnections[i];
-            if (newActiveConnections.indexOf(a) == -1) // connection is removed
+        let closedConnections = [];
+        let newActiveConnections = this._client.get_active_connections() || [];
+
+        for (let a of this._activeConnections) {
+            if (!newActiveConnections.includes(a))
                 closedConnections.push(a);
         }
 
-        for (let i = 0; i < closedConnections.length; i++) {
-            let active = closedConnections[i];
+        for (let active of closedConnections) {
             if (active._primaryDevice) {
-                active._primaryDevice.setActiveConnection(null);
+                if (active._type == NM.SETTING_VPN_SETTING_NAME)
+                    this._devices.vpn.device.setActiveConnections([]);
+                else
+                    active._primaryDevice.setActiveConnection(null);
+
                 active._primaryDevice = null;
             }
+
             if (active._inited) {
                 active.disconnect(active._notifyStateId);
-                //active.disconnect(active._notifyDefaultId);
-                //active.disconnect(active._notifyDefault6Id);
                 active._inited = false;
             }
         }
 
         this._activeConnections = newActiveConnections;
         this._mainConnection = null;
+
         let activating = null;
         let activated = null;
         let default_ip4 = null;
         let default_ip6 = null;
-        for (let i = 0; i < this._activeConnections.length; i++) {
-            let a = this._activeConnections[i];
-            if (!a._inited) {
-                //a._notifyDefaultId = a.connect('notify::default', Lang.bind(this, this._updateIcon));
-                //a._notifyDefault6Id = a.connect('notify::default6', Lang.bind(this, this._updateIcon));
-                a._notifyStateId = a.connect('notify::state', Lang.bind(this, this._notifyActivated));
 
+        let vpnConnections = [];
+
+        for (let a of this._activeConnections) {
+            if (!a._inited) {
+                a._notifyStateId = a.connect('notify::state', Lang.bind(this, this._notifyActivated));
                 a._inited = true;
             }
 
@@ -2196,9 +2245,16 @@ CinnamonNetworkApplet.prototype = {
             }
 
             if (a._primaryDevice) {
-                a._primaryDevice.setActiveConnection(a);
+                if (a._type == NM.SETTING_VPN_SETTING_NAME) {
+                    vpnConnections.push(a);
+                } else {
+                    a._primaryDevice.setActiveConnection(a);
+                }
             }
         }
+
+        if (this._devices.vpn && this._devices.vpn.device)
+            this._devices.vpn.device.setActiveConnections(vpnConnections);
 
         this._mainConnection = activated || activating || default_ip4 || default_ip6 || null;
     },
