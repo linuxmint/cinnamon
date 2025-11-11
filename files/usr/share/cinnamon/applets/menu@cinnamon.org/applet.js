@@ -2392,12 +2392,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         // Position the system box
-        this.searchBox.remove_child(this.systemBox);
-        this.sidebar.remove_child(this.systemBox);
         if (this.systemPosition == "sidebar")
-            this.sidebar.add(this.systemBox);
+            global.reparentActor(this.systemBox, this.sidebar);
         else
-            this.searchBox.add(this.systemBox);
+            global.reparentActor(this.systemBox, this.searchBox);
     }
 
     _buildSidebar() {
