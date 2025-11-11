@@ -128,7 +128,7 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
                         } else {
                             const content_type = child_info.get_content_type();
 
-                            if (content_type == null || !Gio.content_type_is_a(content_type, 'image/*'))
+                            if (content_type == null || !St.TextureCache.get_default().can_load_mime_type(content_type))
                                 continue;
 
                             this._addImage(enumerator.get_child(child_info).get_path());

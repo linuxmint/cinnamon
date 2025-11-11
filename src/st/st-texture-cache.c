@@ -52,11 +52,15 @@ struct _StTextureCachePrivate
   /* File monitors to evict cache data on changes */
   GHashTable *file_monitors; /* char * -> GFileMonitor * */
 
+  /* Table of mimetypes GdkPixbuf can load. */
+  GHashTable *image_type_table;
+
   GCancellable *cancellable;
 };
 
 static void st_texture_cache_dispose (GObject *object);
 static void st_texture_cache_finalize (GObject *object);
+static void load_image_type_table (StTextureCache *cache);
 
 enum
 {
@@ -195,6 +199,9 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_file_hash, (GEqualFunc) g_file_equal,
                                                      g_object_unref, g_object_unref);
 
+  self->priv->image_type_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+  load_image_type_table (self);
+
   self->priv->cancellable = g_cancellable_new ();
 
   on_icon_theme_changed (settings, NULL, self);
@@ -216,6 +223,7 @@ st_texture_cache_dispose (GObject *object)
   g_clear_pointer (&self->priv->used_scales, g_hash_table_destroy);
   g_clear_pointer (&self->priv->outstanding_requests, g_hash_table_destroy);
   g_clear_pointer (&self->priv->file_monitors, g_hash_table_destroy);
+  g_clear_pointer (&self->priv->image_type_table, g_hash_table_destroy);
 
   G_OBJECT_CLASS (st_texture_cache_parent_class)->dispose (object);
 }
@@ -224,6 +232,26 @@ static void
 st_texture_cache_finalize (GObject *object)
 {
   G_OBJECT_CLASS (st_texture_cache_parent_class)->finalize (object);
+}
+
+static void
+load_image_type_table (StTextureCache *cache)
+{
+  GSList *formats, *l;
+
+  formats = gdk_pixbuf_get_formats ();
+
+  for (l = formats; l != NULL; l = l->next)
+    {
+      GdkPixbufFormat *format = l->data;
+      gchar **types = gdk_pixbuf_format_get_mime_types (format);
+      for (int i = 0; types[i] != NULL; i++)
+        {
+          g_hash_table_add (cache->priv->image_type_table, g_strdup (types[i]));
+        }
+      g_strfreev (types);
+    }
+  g_slist_free (formats);
 }
 
 static void
@@ -2166,4 +2194,26 @@ st_texture_cache_get_icon_theme (StTextureCache *cache)
   StTextureCachePrivate *priv = cache->priv;
 
   return priv->icon_theme;
+}
+
+/**
+ * st_texture_cache_can_load_mime_type:
+ * @cache: A #StTextureCache
+ * @mime_type: A MIME type string (like 'image/png')
+ *
+ * Compares @mime_type with a list of types that we are capable
+ * of loading.
+ *
+ * Returns: %TRUE if the mime_type is valid.
+ */
+gboolean
+st_texture_cache_can_load_mime_type (StTextureCache *cache,
+                                     const char     *mime_type)
+{
+  StTextureCachePrivate *priv = cache->priv;
+
+  if (mime_type == NULL)
+    return FALSE;
+
+  return g_hash_table_contains (priv->image_type_table, mime_type);
 }
