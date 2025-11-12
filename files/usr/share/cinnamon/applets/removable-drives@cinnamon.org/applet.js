@@ -18,7 +18,7 @@ class DriveMenuItem extends PopupMenu.PopupBaseMenuItem {
         this.label = new St.Label({ text: place.name });
         this.addActor(this.label);
 
-        let ejectIcon = new St.Icon({ icon_name: 'media-eject',
+        let ejectIcon = new St.Icon({ icon_name: 'xsi-media-eject',
                       icon_type: St.IconType.SYMBOLIC,
                       style_class: 'popup-menu-icon ' });
         let ejectButton = new St.Button({ child: ejectIcon });
@@ -41,7 +41,7 @@ class CinnamonRemovableDrivesApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.set_applet_icon_symbolic_name("drive-removable-media");
+        this.set_applet_icon_symbolic_name("xsi-drive-removable-media");
         this.set_applet_tooltip(_("Removable drives"));
 
         global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));

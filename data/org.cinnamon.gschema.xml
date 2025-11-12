@@ -248,30 +248,6 @@
       </description>
     </key>
 
-    <key type="s" name="desktop-effects-sizechange-effect">
-      <default>"scale"</default>
-      <summary>Effect used when maximizing windows</summary>
-      <description>
-       An effect: none
-      </description>
-    </key>
-
-     <key name="desktop-effects-sizechange-transition" type="s">
-      <default>"easeInQuad"</default>
-      <summary>Transition used when maximizing windows</summary>
-      <description>
-       A Tweener transition
-      </description>
-    </key>
-
-    <key type="i" name="desktop-effects-sizechange-time">
-      <default>100</default>
-      <summary>Duration of the effect (in milliseconds)</summary>
-      <description>
-       Duration of the effect (in milliseconds)
-      </description>
-    </key>
-
     <key type="i" name="window-effect-speed">
       <default>1</default>
       <range min="0" max="2"/>

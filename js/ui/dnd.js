@@ -14,11 +14,11 @@ const Params = imports.misc.params;
 
 var DND_ANIMATION_TIME = 0.2;
 // Time to scale down to maxDragActorSize
-var SCALE_ANIMATION_TIME = 0.25;
+var SCALE_ANIMATION_TIME = 250;
 // Time to animate to original position on cancel
-var SNAP_BACK_ANIMATION_TIME = 0.25;
+var SNAP_BACK_ANIMATION_TIME = 250;
 // Time to animate to original position on success
-var REVERT_ANIMATION_TIME = 0.75;
+var REVERT_ANIMATION_TIME = 750;
 
 var DragMotionResult = {
     NO_DROP:       0,
@@ -353,18 +353,19 @@ var _Draggable = new Lang.Class({
                 // fight with updates as the user continues dragging
                 // the mouse; instead we do the position computations in
                 // an onUpdate() function.
-                Tweener.addTween(this._dragActor,
-                                 { scale_x: scale * origScale,
-                                   scale_y: scale * origScale,
-                                   time: SCALE_ANIMATION_TIME,
-                                   transition: 'easeOutQuad',
-                                   onUpdate: function() {
-                                       let currentScale = this._dragActor.scale_x / origScale;
-                                       this._dragOffsetX = currentScale * origDragOffsetX;
-                                       this._dragOffsetY = currentScale * origDragOffsetY;
-                                       this._setDragActorPosition();
-                                   },
-                                   onUpdateScope: this });
+                this._dragActor.ease({
+                    scale_x: scale * origScale,
+                    scale_y: scale * origScale,
+                    animationRequired: true,
+                    duration: SCALE_ANIMATION_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onUpdate: () => {
+                        let currentScale = this._dragActor.scale_x / origScale;
+                        this._dragOffsetX = currentScale * origDragOffsetX;
+                        this._dragOffsetY = currentScale * origDragOffsetY;
+                        this._setDragActorPosition();
+                    }
+                });
             }
         }
     },
@@ -604,18 +605,18 @@ var _Draggable = new Lang.Class({
 
         this._animationInProgress = true;
         // No target, so snap back
-        Tweener.addTween(this._dragActor,
-                         { x: snapBackX,
-                           y: snapBackY,
-                           scale_x: snapBackScale,
-                           scale_y: snapBackScale,
-                           opacity: this._dragOrigOpacity,
-                           time: SNAP_BACK_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._onAnimationComplete,
-                           onCompleteScope: this,
-                           onCompleteParams: [this._dragActor, eventTime]
-                         });
+        this._dragActor.ease({
+            x: snapBackX,
+            y: snapBackY,
+            scale_x: snapBackScale,
+            scale_y: snapBackScale,
+            animationRequired: true,
+            duration: SNAP_BACK_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._onAnimationComplete(this._dragActor, eventTime);
+            }
+        });
     },
 
     _restoreDragActor: function(eventTime) {
@@ -628,14 +629,15 @@ var _Draggable = new Lang.Class({
         this._dragActor.opacity = 0;
 
         this._animationInProgress = true;
-        Tweener.addTween(this._dragActor,
-                         { opacity: this._dragOrigOpacity,
-                           time: REVERT_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: this._onAnimationComplete,
-                           onCompleteScope: this,
-                           onCompleteParams: [this._dragActor, eventTime]
-                         });
+        this._dragActor.ease({
+            opacity: this._dragOrigOpacity,
+            duration: REVERT_ANIMATION_TIME,
+            animationRequired: true,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._onAnimationComplete(this._dragActor, eventTime);
+            }
+        });
     },
 
     _onAnimationComplete : function (dragActor, eventTime) {

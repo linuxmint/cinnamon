@@ -107,6 +107,7 @@ class CinnamonDBusCommand:
             exit(1)
 
     def build_variant(self, method_name, in_args):
+        parsed_args = []
         i = 0
 
         variant_string = "("
@@ -122,16 +123,19 @@ class CinnamonDBusCommand:
                 print("The parameter '%s' seems invalid for method '%s'" % (arg, method_name))
                 exit(1)
 
+            match arg_info.arg_type:
+                case "i" | "u" | "x" | "t" | "q" | "n" | "b":
+                    parsed_args.append(int(arg))
+                case "d":
+                    parsed_args.append(float(arg))
+                case "s" | "o" | "g":
+                    parsed_args.append(str(arg))
+                case _:
+                    parsed_args.append(eval(arg))
+
             i += 1
 
         variant_string += ")"
-
-        parsed_args = []
-        for arg_as_str in in_args:
-            try:
-                parsed_args.append(eval(arg_as_str))
-            except:
-                parsed_args.append(arg_as_str)
 
         print("Parsed: %s(format_string='%s', args=%s)\n" % (method_name, variant_string, parsed_args))
 

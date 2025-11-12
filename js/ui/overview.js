@@ -10,14 +10,13 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const Tweener = imports.ui.tweener;
 const WorkspacesView = imports.ui.workspacesView;
 // ***************
 // This shows all of the windows on the current workspace
 // ***************
 
 // Time for initial animation going into Overview mode
-var ANIMATION_TIME = 0.2;
+var ANIMATION_TIME = 200;
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -167,17 +166,15 @@ Overview.prototype = {
                     this._coverPane.raise_top();
                     this._coverPane.show();
 
-                    Tweener.addTween(this._scrollAdjustment,
-                                     { value: newValue,
-                                       time: ANIMATION_TIME,
-                                       transition: 'easeOutQuad',
-                                       onCompleteScope: this,
-                                       onComplete: function() {
-                                          this._coverPane.hide();
-                                          this.emit('swipe-scroll-end',
-                                                    result);
-                                       }
-                                     });
+                    this._scrollAdjustment.ease({
+                        value: newValue,
+                        duration: ANIMATION_TIME,
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        onComplete: () => {
+                            this._coverPane.hide();
+                            this.emit('swipe-scroll-end', result);
+                        }
+                    });
                 }
 
                 global.stage.disconnect(this._capturedEventId);
@@ -288,27 +285,17 @@ Overview.prototype = {
         global.overlay_group.add_actor(this.workspacesView.actor);
         Main.panelManager.disablePanels();
 
-        let animate = Main.animations_enabled;
-        if (animate) {
-            this._group.opacity = 0;
-            Tweener.addTween(this._group, {
-                opacity: 255,
-                transition: 'easeOutQuad',
-                time: ANIMATION_TIME * 0.45,
-                onComplete: this._showDone,
-                onCompleteScope: this
-            });
-        }
-
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('showing');
 
-        if (!animate) {
-            this._group.opacity = 255;
-            this._showDone();
-        }
+        this._group.opacity = 0;
+        this._group.ease({
+            opacity: 255,
+            duration: ANIMATION_TIME * 0.45,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._showDone()
+        });
     },
 
     // showTemporarily:
@@ -407,24 +394,17 @@ Overview.prototype = {
 
         this.workspacesView.hide();
 
-        let animate = Main.animations_enabled;
-        if (animate) {
-            // Make other elements fade out.
-            Tweener.addTween(this._group, {
-                opacity: 0,
-                transition: 'easeInQuad',
-                time: ANIMATION_TIME,
-                onComplete: this._hideDone,
-                onCompleteScope: this
-            });
-        }
-
         this._coverPane.raise_top();
         this._coverPane.show();
         this.emit('hiding');
 
-        if (!animate)
-            this._hideDone();
+        // Make other elements fade out.
+        this._group.ease({
+            opacity: 0,
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_IN_QUAD,
+            onComplete: () => this._hideDone()
+        });
     },
 
     _showDone: function() {

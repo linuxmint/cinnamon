@@ -105,7 +105,7 @@ PlaceDeviceInfo.prototype = {
     },
 
     isRemovable: function() {
-        return this._mount.can_unmount();
+        return this._mount.can_eject();
     },
 
     remove: function() {
@@ -125,7 +125,7 @@ PlaceDeviceInfo.prototype = {
         if (!this.isRemovable())
             return;
 
-        let mountOp = new Gio.MountOperation(this._mount);
+        let mountOp = new Gio.MountOperation();
         let drive = this._mount.get_drive();
         let volume = this._mount.get_volume();
 
@@ -465,18 +465,6 @@ PlacesManager.prototype = {
             }
         }
 
-        /* add mounts that have no volume (/etc/mtab mounts, ftp, sftp,...) */
-        let mounts = this._volumeMonitor.get_mounts();
-        for(let i = 0; i < mounts.length; i++) {
-            if(mounts[i].is_shadowed())
-                continue;
-
-            if(mounts[i].get_volume())
-                continue;
-
-            this._addMount(mounts[i]);
-        }
-
         /* We emit two signals, one for a generic 'all places' update
          * and the other for one specific to mounts. We do this because
          * clients like PlaceDisplay may only care about places in general
@@ -563,8 +551,10 @@ PlacesManager.prototype = {
     },
 
     _addMount: function(mount) {
-        let devItem = new PlaceDeviceInfo(mount);
-        this._mounts.push(devItem);
+        if(!mount.is_shadowed()) {
+            let devItem = new PlaceDeviceInfo(mount);
+            this._mounts.push(devItem);
+        }
     },
 
     getAllPlaces: function () {

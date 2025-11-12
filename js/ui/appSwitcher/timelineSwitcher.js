@@ -1,13 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
-const Config = imports.misc.config;
-
-const Tweener = imports.ui.tweener;
 const AppSwitcher3D = imports.ui.appSwitcher.appSwitcher3D;
-
-const TRANSITION_TYPE = 'easeOutQuad';
 
 function TimelineSwitcher() {
     this._init.apply(this, arguments);
@@ -47,19 +41,21 @@ TimelineSwitcher.prototype = {
             return;
 
         let monitor = this._activeMonitor;
-        let animation_time = AppSwitcher3D.ANIMATION_TIME;
-        
+
         if(this._previews.length == 1) {
             let preview = this._previews[0];
-            Tweener.addTween(preview, {
+
+            preview.ease({
                 opacity: 255,
                 x: preview.target_x,
                 y: preview.target_y,
                 width: preview.target_width,
                 height: preview.target_height,
-                time: animation_time / 2,
-                transition: TRANSITION_TYPE
+                animationRequired: true,
+                duration: AppSwitcher3D.ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
             });
+
             return;
         }
 
@@ -71,42 +67,42 @@ TimelineSwitcher.prototype = {
 
             if (distance == this._previews.length - 1 && direction > 0) {
                 preview.__looping = true;
-                Tweener.addTween(preview, {
+
+                preview.ease({
                     opacity: 0,
                     x: preview.target_x + 200,
                     y: preview.target_y + 100,
                     width: preview.target_width,
                     height: preview.target_height,
-                    time: animation_time / 2,
-                    transition: TRANSITION_TYPE,
-                    onCompleteParams: [preview, distance, animation_time],
-                    onComplete: this._onFadeForwardComplete,
-                    onCompleteScope: this,
+                    duration: AppSwitcher3D.ANIMATION_TIME / 2,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    animationRequired: true,
+                    onComplete: () => this._onFadeForwardComplete(preview, distance, AppSwitcher3D.ANIMATION_TIME)
                 });
             } else if (distance == 0 && direction < 0) {
                 preview.__looping = true;
-                Tweener.addTween(preview, {
+                preview.ease({
                     opacity: 0,
-                    time: animation_time / 2,
-                    transition: TRANSITION_TYPE,
-                    onCompleteParams: [preview, distance, animation_time],
-                    onComplete: this._onFadeBackwardsComplete,
-                    onCompleteScope: this,
+                    duration: AppSwitcher3D.ANIMATION_TIME / 2,
+                    animationRequired: true,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => this._onFadeBackwardsComplete(preview, distance, AppSwitcher3D.ANIMATION_TIME)
                 });
             } else {
-                let tweenparams = {
+                let easeParams = {
                     opacity: 255,
                     x: preview.target_x - Math.sqrt(distance) * 150,
                     y: preview.target_y - Math.sqrt(distance) * 100,
                     width: Math.max(preview.target_width * ((20 - 2 * distance) / 20), 0),
                     height: Math.max(preview.target_height * ((20 - 2 * distance) / 20), 0),
-                    time: animation_time,
-                    transition: TRANSITION_TYPE,
+                    animationRequired: true,
+                    duration: AppSwitcher3D.ANIMATION_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 };
-                if(preview.__looping || preview.__finalTween)
-                    preview.__finalTween = tweenparams;
+                if(preview.__looping || preview.__finalEase)
+                    preview.__finalEase = easeParams;
                 else
-                    Tweener.addTween(preview, tweenparams);
+                    preview.ease(easeParams);
             }
         }
     },
@@ -120,17 +116,16 @@ TimelineSwitcher.prototype = {
         preview.width = preview.target_width;
         preview.height = preview.target_height;
 
-        Tweener.addTween(preview, {
+        preview.ease({
             opacity: 255,
             x: preview.target_x,
             y: preview.target_y,
             width: preview.target_width,
             height: preview.target_height,
-            time: animation_time / 2,
-            transition: TRANSITION_TYPE,
-            onCompleteParams: [preview],
-            onComplete: this._onFinishMove,
-            onCompleteScope: this,
+            animationRequired: true,
+            duration: animation_time / 2,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._onFinishMove(preview)
         });
     },
 
@@ -143,20 +138,19 @@ TimelineSwitcher.prototype = {
         preview.width = Math.max(preview.target_width * ((20 - 2 * distance) / 20), 0);
         preview.height = Math.max(preview.target_height * ((20 - 2 * distance) / 20), 0);
 
-        Tweener.addTween(preview, {
+        preview.ease({
             opacity: 255,
-            time: animation_time / 2,
-            transition: TRANSITION_TYPE,
-            onCompleteParams: [preview],
-            onComplete: this._onFinishMove,
-            onCompleteScope: this,
+            duration: animation_time / 2,
+            animationRequired: true,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._onFinishMove(preview)
         });
     },
 
     _onFinishMove: function(preview) {
-        if(preview.__finalTween) {
-            Tweener.addTween(preview, preview.__finalTween);
-            preview.__finalTween = null;
+        if(preview.__finalEase) {
+            preview.ease(preview.__finalEase);
+            preview.__finalEase = null;
         }
     }
 

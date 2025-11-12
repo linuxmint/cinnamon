@@ -8,7 +8,9 @@ import sys
 import time
 import gettext
 from setproctitle import setproctitle
+from pathlib import Path
 import psutil
+import subprocess
 import threading
 import gi
 import shutil
@@ -53,6 +55,9 @@ class Launcher:
         self.fb_pid = 0
         self.kill_lock = threading.Lock()
 
+        self.polkit_agent_proc = None
+        self.nm_applet_proc = None
+
         self.cinnamon_pid = os.fork()
         if self.cinnamon_pid == 0:
             os.execvp("cinnamon", ("cinnamon", "--replace", ) + tuple(sys.argv[1:]))
@@ -81,18 +86,51 @@ class Launcher:
                 else:
                     self.fb_pid = os.fork()
                     if self.fb_pid == 0:
-                        # Start NM applet
-                        if shutil.which("nm-applet"):
-                            os.system("nm-applet &")
                         # Start the fallback panel
                         if panel_cmd is not None:
                             os.system(panel_cmd)
                         # Start the fallback window manager
                         os.execvp(FALLBACK_COMMAND, (FALLBACK_COMMAND,) + FALLBACK_ARGS)
                     else:
+                        self.launch_fallback_helpers()
                         self.confirm_restart()
         else:
             Gtk.main_quit()
+
+    def launch_fallback_helpers(self):
+        agents = ("/usr/lib/policykit-1-gnome/polkit-gnome-authentication-agent-1",
+                  "/usr/libexec/polkit-gnome-authentication-agent-1",
+                  "/usr/libexec/polkit-mate-authentication-agent-1")
+
+        for path in agents:
+            if Path(path).exists():
+                print(f"Launching for fallback session: {path}")
+                self.polkit_agent_proc = subprocess.Popen([path])
+                break
+
+        # Start NM applet
+        if shutil.which("nm-applet"):
+            print(f"Launching for fallback session: nm-applet")
+            self.nm_applet_proc = subprocess.Popen(["nm-applet"])
+
+    def kill_fallback_helpers(self):
+        if self.polkit_agent_proc is not None:
+            print("Killing fallback polkit agent")
+            self.polkit_agent_proc.terminate()
+            try:
+                self.polkit_agent_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.polkit_agent_proc.kill()
+            self.polkit_agent_proc = None
+
+        if self.nm_applet_proc is not None:
+            print("Killing fallback nm-applet")
+            self.nm_applet_proc.terminate()
+            try:
+                self.nm_applet_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.nm_applet_proc.kill()
+            self.nm_applet_proc = None
 
     @async_function
     def monitor_memory(self):
@@ -153,7 +191,7 @@ class Launcher:
             if checkbutton.get_active():
                 os.environ["CINNAMON_TROUBLESHOOT"] = "1"
             os.system("killall %s" % panel_process_name)
-            os.system("killall nm-applet")
+            self.kill_fallback_helpers()
             os.system("kill %d" % self.fb_pid)
             os.waitpid(self.fb_pid, 0)
             self.restart_cinnamon()

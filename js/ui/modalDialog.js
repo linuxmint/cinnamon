@@ -72,9 +72,8 @@ var ModalDialog = GObject.registerClass({
             y: 0,
             accessible_role: Atk.Role.DIALOG,
         });
-
         params = Params.parse(params, {
-            cinnamonReactive: Main.virtualKeyboard.enabled,
+            cinnamonReactive: Main.virtualKeyboardManager.enabled,
             styleClass: null,
             destroyOnClose: true,
         });

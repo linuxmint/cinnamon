@@ -11,7 +11,6 @@ const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Tooltips = imports.ui.tooltips;
 const DND = imports.ui.dnd;
-const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const Settings = imports.ui.settings;
 const Signals = imports.signals;
@@ -211,25 +210,24 @@ class PanelAppLauncher extends DND.LauncherDraggable {
     _animateIcon(step) {
         if (step >= 3) return;
         this.icon.set_pivot_point(0.5, 0.5);
-        Tweener.addTween(this.icon,
-                         { scale_x: 0.7,
-                           scale_y: 0.7,
-                           time: 0.2,
-                           transition: 'easeOutQuad',
-                           onComplete() {
-                               Tweener.addTween(this.icon,
-                                                { scale_x: 1.0,
-                                                  scale_y: 1.0,
-                                                  time: 0.2,
-                                                  transition: 'easeOutQuad',
-                                                  onComplete() {
-                                                      this._animateIcon(step + 1);
-                                                  },
-                                                  onCompleteScope: this
-                                                });
-                           },
-                           onCompleteScope: this
-                         });
+
+        this.icon.ease({
+            scale_x: 0.7,
+            scale_y: 0.7,
+            duration: 200,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this.icon.ease({
+                    scale_x: 1.0,
+                    scale_y: 1.0,
+                    duration: 200,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
+                        this._animateIcon(step + 1);
+                    }
+                });
+            }
+        });
     }
 
     launch(offload=false) {
@@ -246,11 +244,13 @@ class PanelAppLauncher extends DND.LauncherDraggable {
                 this.app.open_new_window(-1);
             }
         }
+        this.icon.remove_all_transitions();
         this._animateIcon(0);
     }
 
     launchAction(name) {
         this.getAppInfo().launch_action(name, null);
+        this.icon.remove_all_transitions();
         this._animateIcon(0);
     }
 

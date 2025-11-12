@@ -184,5 +184,7 @@ CoglTexture * st_texture_cache_load (StTextureCache       *cache,
 gboolean st_texture_cache_rescan_icon_theme (StTextureCache *cache);
 
 GtkIconTheme *st_texture_cache_get_icon_theme (StTextureCache *cache);
+gboolean st_texture_cache_can_load_mime_type (StTextureCache *cache,
+                                              const char     *mime_type);
 
 #endif /* __ST_TEXTURE_CACHE_H__ */

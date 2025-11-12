@@ -52,11 +52,15 @@ struct _StTextureCachePrivate
   /* File monitors to evict cache data on changes */
   GHashTable *file_monitors; /* char * -> GFileMonitor * */
 
+  /* Table of mimetypes GdkPixbuf can load. */
+  GHashTable *image_type_table;
+
   GCancellable *cancellable;
 };
 
 static void st_texture_cache_dispose (GObject *object);
 static void st_texture_cache_finalize (GObject *object);
+static void load_image_type_table (StTextureCache *cache);
 
 enum
 {
@@ -195,6 +199,9 @@ st_texture_cache_init (StTextureCache *self)
   self->priv->file_monitors = g_hash_table_new_full (g_file_hash, (GEqualFunc) g_file_equal,
                                                      g_object_unref, g_object_unref);
 
+  self->priv->image_type_table = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
+  load_image_type_table (self);
+
   self->priv->cancellable = g_cancellable_new ();
 
   on_icon_theme_changed (settings, NULL, self);
@@ -216,6 +223,7 @@ st_texture_cache_dispose (GObject *object)
   g_clear_pointer (&self->priv->used_scales, g_hash_table_destroy);
   g_clear_pointer (&self->priv->outstanding_requests, g_hash_table_destroy);
   g_clear_pointer (&self->priv->file_monitors, g_hash_table_destroy);
+  g_clear_pointer (&self->priv->image_type_table, g_hash_table_destroy);
 
   G_OBJECT_CLASS (st_texture_cache_parent_class)->dispose (object);
 }
@@ -224,6 +232,26 @@ static void
 st_texture_cache_finalize (GObject *object)
 {
   G_OBJECT_CLASS (st_texture_cache_parent_class)->finalize (object);
+}
+
+static void
+load_image_type_table (StTextureCache *cache)
+{
+  GSList *formats, *l;
+
+  formats = gdk_pixbuf_get_formats ();
+
+  for (l = formats; l != NULL; l = l->next)
+    {
+      GdkPixbufFormat *format = l->data;
+      gchar **types = gdk_pixbuf_format_get_mime_types (format);
+      for (int i = 0; types[i] != NULL; i++)
+        {
+          g_hash_table_add (cache->priv->image_type_table, g_strdup (types[i]));
+        }
+      g_strfreev (types);
+    }
+  g_slist_free (formats);
 }
 
 static void
@@ -1571,18 +1599,19 @@ on_image_from_file_loaded (GObject      *source,
   actor = clutter_actor_new ();
 
   pixbuf = g_task_propagate_pointer (task, &error);
-  width = gdk_pixbuf_get_width (pixbuf);
-  height = gdk_pixbuf_get_height (pixbuf);
 
   if (error)
     {
-      g_warning ("Could not load image from file: %s\n", error->message);
+      g_warning ("Could not load image from file: %s", error->message);
       g_error_free (error);
 
       data->load_callback (ST_TEXTURE_CACHE (source), data->handle, actor, data->load_callback_data);
 
       return;
     }
+
+  width = gdk_pixbuf_get_width (pixbuf);
+  height = gdk_pixbuf_get_height (pixbuf);
 
   content = clutter_image_new ();
 
@@ -1591,8 +1620,7 @@ on_image_from_file_loaded (GObject      *source,
                           gdk_pixbuf_get_has_alpha (pixbuf)
                               ? COGL_PIXEL_FORMAT_RGBA_8888
                               : COGL_PIXEL_FORMAT_RGB_888,
-                          gdk_pixbuf_get_width (pixbuf),
-                          gdk_pixbuf_get_height (pixbuf),
+                          width, height,
                           gdk_pixbuf_get_rowstride (pixbuf),
                           &error);
 
@@ -1641,7 +1669,7 @@ load_image_from_file_thread (GTask        *task,
  * @width: Width in pixels (or -1 to leave unconstrained)
  * @height: Height in pixels (or -1 to leave unconstrained)
  * @callback: (scope async) (not nullable): Function called when the image is loaded (required)
- * @user_data: Data to pass to the load callback
+ * @user_data: (closure): Data to pass to the load callback
  *
  * This function loads an image file into a clutter actor asynchronously.  This is
  * mostly useful for situations where you want to load an image asynchronously, but don't
@@ -2166,4 +2194,26 @@ st_texture_cache_get_icon_theme (StTextureCache *cache)
   StTextureCachePrivate *priv = cache->priv;
 
   return priv->icon_theme;
+}
+
+/**
+ * st_texture_cache_can_load_mime_type:
+ * @cache: A #StTextureCache
+ * @mime_type: A MIME type string (like 'image/png')
+ *
+ * Compares @mime_type with a list of types that we are capable
+ * of loading.
+ *
+ * Returns: %TRUE if the mime_type is valid.
+ */
+gboolean
+st_texture_cache_can_load_mime_type (StTextureCache *cache,
+                                     const char     *mime_type)
+{
+  StTextureCachePrivate *priv = cache->priv;
+
+  if (mime_type == NULL)
+    return FALSE;
+
+  return g_hash_table_contains (priv->image_type_table, mime_type);
 }

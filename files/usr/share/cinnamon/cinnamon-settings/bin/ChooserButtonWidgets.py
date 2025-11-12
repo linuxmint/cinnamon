@@ -431,8 +431,8 @@ class TimeChooserDialog(Gtk.Dialog):
             self.labels[ttype] = Gtk.Label(self.markup(self.time[ttype]), use_markup=True)
             grid.attach(self.labels[ttype], column, 2, 1, 1)
 
-            up_button = Gtk.Button.new_from_icon_name('pan-up-symbolic', Gtk.IconSize.DIALOG)
-            down_button = Gtk.Button.new_from_icon_name('pan-down-symbolic', Gtk.IconSize.DIALOG)
+            up_button = Gtk.Button.new_from_icon_name('xsi-pan-up-symbolic', Gtk.IconSize.DIALOG)
+            down_button = Gtk.Button.new_from_icon_name('xsi-pan-down-symbolic', Gtk.IconSize.DIALOG)
             up_button.set_relief(Gtk.ReliefStyle.NONE)
             down_button.set_relief(Gtk.ReliefStyle.NONE)
             grid.attach(up_button, column, 1, 1, 1)

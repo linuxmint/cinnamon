@@ -1,564 +1,1473 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
+/* exported KeyboardManager */
 
-const Caribou = imports.gi.Caribou;
-const Clutter = imports.gi.Clutter;
-const Gdk = imports.gi.Gdk;
-const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
-const Lang = imports.lang;
-const St = imports.gi.St;
+const { Clutter, Gio, GLib, GObject, Meta, St } = imports.gi;
+const Signals = imports.signals;
 
+const KeyboardManager = imports.ui.keyboardManager;
+const IBusManager = imports.misc.ibusManager;
 const BoxPointer = imports.ui.boxpointer;
+const Layout = imports.ui.layout;
 const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
-const Panel = imports.ui.panel;
+const PageIndicators = imports.ui.pageIndicators;
+const PopupMenu = imports.ui.popupMenu;
 
-const KEYBOARD_SCHEMA = 'org.cinnamon.keyboard';
-const KEYBOARD_TYPE = 'keyboard-type';
-const KEYBOARD_SIZE = 'keyboard-size';
-const KEYBOARD_POSITION = 'keyboard-position';
-const ACTIVATION_MODE = 'activation-mode';
+var KEYBOARD_REST_TIME = 50;
+var KEY_LONG_PRESS_TIME = 250;
+var PANEL_SWITCH_ANIMATION_TIME = 500;
+var PANEL_SWITCH_RELATIVE_DISTANCE = 1 / 3; /* A third of the actor width */
 
 const A11Y_APPLICATIONS_SCHEMA = 'org.cinnamon.desktop.a11y.applications';
-const SHOW_KEYBOARD = 'screen-keyboard-enabled';
+const SHOW_KEYBOARD_KEY = 'screen-keyboard-enabled';
 
-const CaribouKeyboardIface =
-    "<node> \
-        <interface name='org.gnome.Caribou.Keyboard'> \
-            <method name='Show'> \
-                <arg type='u' direction='in' /> \
-            </method> \
-            <method name='Hide'> \
-                <arg type='u' direction='in' /> \
-            </method> \
-            <method name='SetCursorLocation'> \
-                <arg type='i' direction='in' /> \
-                <arg type='i' direction='in' /> \
-                <arg type='i' direction='in' /> \
-                <arg type='i' direction='in' /> \
-            </method> \
-            <method name='SetEntryLocation'> \
-                <arg type='i' direction='in' /> \
-                <arg type='i' direction='in' /> \
-                <arg type='i' direction='in' /> \
-                <arg type='i' direction='in' /> \
-            </method> \
-            <property name='Name' access='read' type='s' /> \
-        </interface> \
-    </node>";
+const OSK_SETTINGS = 'org.cinnamon.keyboard';
+const ACTIVATION_MODE_KEY = 'activation-mode';
+const KEYBOARD_SIZE_KEY = 'keyboard-size';
+const KEYBOARD_POSITION_KEY = 'keyboard-position';
 
-function Key() {
-    this._init.apply(this, arguments);
-}
+/* KeyContainer puts keys in a grid where a 1:1 key takes this size */
+const KEY_SIZE = 2;
 
-Key.prototype = {
-    _init : function(key) {
-        this._key = key;
+const escape_key = { keyval: Clutter.KEY_Escape, label: "Esc",                               extraClassName: 'escape-key' };
+const tab_key =    { keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
+const _123_key =   { width: 1.5, level: 2,       label: '?123',                              extraClassName: 'non-alpha-key' };
+const abc_key =    { width: 1.5, level: 0,       label: 'ABC',                               extraClassName: 'non-alpha-key' };
+const backsp_key = { width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'xsi-edit-clear-symbolic', extraClassName: 'non-alpha-key' };
+const hide_key =   { action: 'hide', icon: 'xsi-input-keyboard-symbolic',                        extraClassName: 'hide-key' };
+const return_key = { width: 2, keyval: Clutter.KEY_Return, icon: 'keyboard-enter-symbolic',  extraClassName: 'enter-key' };
+const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                                 extraClassName: 'non-alpha-key'},
+                   { keyval: Clutter.KEY_Up,     label: '↑',                                 extraClassName: 'non-alpha-key' },
+                   { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
+                   { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
+const layout_key = { action: 'next-layout',      icon: 'xsi-input-keyboard-symbolic' };
 
-        this.actor = this._makeKey();
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
+const defaultKeysPre = [
+    [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
+    [[escape_key], [tab_key], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
+    [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [abc_key]],
+    [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [abc_key]],
+];
 
-        this._extended_keys = this._key.get_extended_keys();
-        this._extended_keyboard = null;
+const defaultKeysPost = [
+    [[backsp_key, hide_key],
+     [return_key],
+     [{ width: 1.5, level: 1, right: true, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }],
+     dir_keys],
+    [[backsp_key, hide_key],
+     [return_key],
+     [{ width: 1.5, level: 0, right: true, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }],
+     dir_keys],
+    [[backsp_key, hide_key],
+     [return_key],
+     [{ label: '=/<', width: 1.5, level: 3, right: true, extraClassName: 'non-alpha-key' }],
+     dir_keys],
+    [[backsp_key, hide_key],
+     [return_key],
+     [{ label: '?123', width: 1.5, level: 2, right: true, extraClassName: 'non-alpha-key' }],
+     dir_keys],
+];
 
-        if (this._key.name == 'Control_L' || this._key.name == 'Alt_L')
-            this._key.latch = true;
+var AspectContainer = GObject.registerClass(
+class AspectContainer extends St.Widget {
+    _init(params) {
+        super._init(params);
+        this._ratio = 1;
+    }
 
-        this._key.connect('key-pressed', Lang.bind(this, function ()
-                                                   { this.actor.checked = true }));
-        this._key.connect('key-released', Lang.bind(this, function ()
-                                                    { this.actor.checked = false; }));
+    setRatio(relWidth, relHeight) {
+        this._ratio = relWidth / relHeight;
+        this.queue_relayout();
+    }
 
-        if (this._extended_keys.length > 0) {
-            this._grabbed = false;
-            this._eventCaptureId = 0;
-            this._key.connect('notify::show-subkeys', Lang.bind(this, this._onShowSubkeysChanged));
-            this._boxPointer = new BoxPointer.BoxPointer(St.Side.BOTTOM,
-                                                         { x_fill: true,
-                                                           y_fill: true,
-                                                           x_align: St.Align.START });
-            // Adds style to existing keyboard style to avoid repetition
-            this._boxPointer.actor.add_style_class_name('keyboard-subkeys');
-            this._getExtendedKeys();
-            this.actor._extended_keys = this._extended_keyboard;
-            this._boxPointer.actor.hide();
-            Main.layoutManager.addChrome(this._boxPointer.actor, { visibleInFullscreen: true });
+    vfunc_get_preferred_width(forHeight) {
+        let [min, nat] = super.vfunc_get_preferred_width(forHeight);
+
+        if (forHeight > 0)
+            nat = forHeight * this._ratio;
+
+        return [min, nat];
+    }
+
+    vfunc_get_preferred_height(forWidth) {
+        let [min, nat] = super.vfunc_get_preferred_height(forWidth);
+
+        if (forWidth > 0)
+            nat = forWidth / this._ratio;
+
+        return [min, nat];
+    }
+
+    vfunc_allocate(box, flags) {
+        if (box.get_width() > 0 && box.get_height() > 0) {
+            let sizeRatio = box.get_width() / box.get_height();
+
+            if (sizeRatio >= this._ratio) {
+                /* Restrict horizontally */
+                let width = box.get_height() * this._ratio;
+                let diff = box.get_width() - width;
+
+                box.x1 += Math.floor(diff / 2);
+                box.x2 -= Math.ceil(diff / 2);
+            } else {
+                /* Restrict vertically, align to bottom */
+                let height = box.get_width() / this._ratio;
+                box.y1 = box.y2 - Math.floor(height);
+            }
         }
-    },
 
-    _onDestroy: function() {
+        super.vfunc_allocate(box, flags);
+    }
+});
+
+var KeyContainer = GObject.registerClass(
+class KeyContainer extends St.Widget {
+    _init() {
+        let gridLayout = new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL,
+                                                  column_homogeneous: true,
+                                                  row_homogeneous: true });
+        super._init({
+            layout_manager: gridLayout,
+            x_expand: true,
+            y_expand: true,
+        });
+        this._gridLayout = gridLayout;
+        this._currentRow = 0;
+        this._currentCol = 0;
+        this._maxCols = 0;
+
+        this._currentRow = null;
+        this._rows = [];
+    }
+
+    appendRow() {
+        this._currentRow++;
+        this._currentCol = 0;
+
+        let row = {
+            keys: [],
+            width: 0,
+        };
+        this._rows.push(row);
+    }
+
+    appendKey(key, width = 1, height = 1) {
+        let keyInfo = {
+            key,
+            left: this._currentCol,
+            top: this._currentRow,
+            width,
+            height,
+        };
+
+        let row = this._rows[this._rows.length - 1];
+        row.keys.push(keyInfo);
+        row.width += width;
+
+        this._currentCol += width;
+        this._maxCols = Math.max(this._currentCol, this._maxCols);
+    }
+
+    layoutButtons(container) {
+        let nCol = 0, nRow = 0;
+
+        for (let i = 0; i < this._rows.length; i++) {
+            let row = this._rows[i];
+
+            /* When starting a new row, see if we need some padding */
+            if (nCol == 0) {
+                let diff = this._maxCols - row.width;
+                if (diff >= 1)
+                    nCol = diff * KEY_SIZE / 2;
+                else
+                    nCol = diff * KEY_SIZE;
+            }
+
+            for (let j = 0; j < row.keys.length; j++) {
+                let keyInfo = row.keys[j];
+                let width = keyInfo.width * KEY_SIZE;
+                let height = keyInfo.height * KEY_SIZE;
+
+                this._gridLayout.attach(keyInfo.key, nCol, nRow, width, height);
+                nCol += width;
+            }
+
+            nRow += KEY_SIZE;
+            nCol = 0;
+        }
+
+        if (container)
+            container.setRatio(this._maxCols, this._rows.length);
+    }
+});
+
+var Suggestions = GObject.registerClass(
+class Suggestions extends St.BoxLayout {
+    _init() {
+        super._init({
+            style_class: 'word-suggestions',
+            vertical: false,
+            x_align: Clutter.ActorAlign.CENTER,
+        });
+        this.show();
+    }
+
+    addNew(word, callback) {
+        let button = new St.Button({ label: word });
+        button.connect('clicked', callback);
+        this.add(button);
+    }
+
+    clear() {
+        this.remove_all_children();
+    }
+});
+
+var Key = GObject.registerClass({
+    Signals: {
+        'activated': {},
+        'long-press': {},
+        'pressed': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING] },
+        'released': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING] },
+    },
+}, class Key extends St.BoxLayout {
+    _init(key, extendedKeys, icon = null) {
+        super._init({ style_class: 'vkeyboard-key-container', important: true });
+
+        this.key = key || "";
+        this.keyButton = this._makeKey(this.key, icon);
+
+        /* Add the key in a container, so keys can be padded without losing
+         * logical proportions between those.
+         */
+        this.add_child(this.keyButton);
+        this.connect('destroy', this._onDestroy.bind(this));
+
+        this._extendedKeys = extendedKeys;
+        this._extendedKeyboard = null;
+        this._pressTimeoutId = 0;
+        this._capturedPress = false;
+
+        this._capturedEventId = 0;
+        this._unmapId = 0;
+    }
+
+    updateKey(label, icon = null) {
+        this.key = label || "";
+        this.keyButton.destroy();
+        this.keyButton = this._makeKey(this.key, icon);
+        this.add_child(this.keyButton);
+    }
+
+    _onDestroy() {
         if (this._boxPointer) {
-            this._boxPointer.actor.destroy();
+            this._boxPointer.destroy();
             this._boxPointer = null;
         }
-    },
 
-    _makeKey: function () {
-        let label = GLib.markup_escape_text(this._key.label, -1);
-        let button = new St.Button ({ label: label,
-                                      style_class: 'keyboard-key' });
+        this.cancel();
+    }
 
-        button.key_width = this._key.width;
-        button.connect('button-press-event', Lang.bind(this, function () { this._key.press(); }));
-        button.connect('button-release-event', Lang.bind(this, function () { this._key.release(); }));
+    _ensureExtendedKeysPopup() {
+        if (this._extendedKeys.length === 0)
+            return;
+
+        if (this._boxPointer)
+            return;
+
+        this._boxPointer = new BoxPointer.BoxPointer(St.Side.BOTTOM);
+        this._boxPointer.hide();
+        Main.layoutManager.addChrome(this._boxPointer);
+        this._boxPointer.setPosition(this.keyButton, 0.5);
+
+        // Adds style to existing keyboard style to avoid repetition
+        this._boxPointer.add_style_class_name('vkeyboard-subkeys');
+        this._getExtendedKeys();
+        this.keyButton._extendedKeys = this._extendedKeyboard;
+    }
+
+    _getKeyval(key) {
+        let unicode = key.charCodeAt(0);
+        return Clutter.unicode_to_keysym(unicode);
+    }
+
+    _press(key) {
+        this.emit('activated');
+
+        if (this._extendedKeys.length === 0)
+            this.emit('pressed', this._getKeyval(key), key);
+
+        if (key == this.key) {
+            this._pressTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
+                KEY_LONG_PRESS_TIME,
+                () => {
+                    this._pressTimeoutId = 0;
+
+                    this.emit('long-press');
+
+                    if (this._extendedKeys.length > 0) {
+                        this._touchPressSlot = null;
+                        this._ensureExtendedKeysPopup();
+                        this.keyButton.set_hover(false);
+                        this.keyButton.fake_release();
+                        this._showSubkeys();
+                    }
+
+                    return GLib.SOURCE_REMOVE;
+                });
+        }
+    }
+
+    _release(key) {
+        if (this._pressTimeoutId != 0) {
+            GLib.source_remove(this._pressTimeoutId);
+            this._pressTimeoutId = 0;
+        }
+
+        if (this._extendedKeys.length > 0)
+            this.emit('pressed', this._getKeyval(key), key);
+
+        this.emit('released', this._getKeyval(key), key);
+        this._hideSubkeys();
+    }
+
+    cancel() {
+        if (this._pressTimeoutId != 0) {
+            GLib.source_remove(this._pressTimeoutId);
+            this._pressTimeoutId = 0;
+        }
+        this._touchPressSlot = null;
+        this.keyButton.set_hover(false);
+        this.keyButton.fake_release();
+    }
+
+    _onCapturedEvent(actor, event) {
+        let type = event.type();
+        let press = type == Clutter.EventType.BUTTON_PRESS || type == Clutter.EventType.TOUCH_BEGIN;
+        let release = type == Clutter.EventType.BUTTON_RELEASE || type == Clutter.EventType.TOUCH_END;
+
+        if (event.get_source() == this._boxPointer.bin ||
+            this._boxPointer.bin.contains(event.get_source()))
+            return Clutter.EVENT_PROPAGATE;
+
+        if (press)
+            this._capturedPress = true;
+        else if (release && this._capturedPress)
+            this._hideSubkeys();
+
+        return Clutter.EVENT_STOP;
+    }
+
+    _showSubkeys() {
+        this._boxPointer.open(BoxPointer.PopupAnimation.FULL);
+        this._capturedEventId = global.stage.connect('captured-event',
+                                                     this._onCapturedEvent.bind(this));
+        this._unmapId = this.keyButton.connect('notify::mapped', () => {
+            if (!this.keyButton.is_mapped())
+                this._hideSubkeys();
+        });
+    }
+
+    _hideSubkeys() {
+        if (this._boxPointer)
+            this._boxPointer.close(BoxPointer.PopupAnimation.FULL);
+        if (this._capturedEventId) {
+            global.stage.disconnect(this._capturedEventId);
+            this._capturedEventId = 0;
+        }
+        if (this._unmapId) {
+            this.keyButton.disconnect(this._unmapId);
+            this._unmapId = 0;
+        }
+        this._capturedPress = false;
+    }
+
+    _makeKey(key, icon) {
+        let button = new St.Button({
+            style_class: 'vkeyboard-key',
+            x_expand: true,
+            important: true
+        });
+
+        if (icon) {
+            if (icon instanceof Clutter.Actor) {
+                button.set_child(icon);
+                this._icon = icon;
+            } else {
+                let child = new St.Icon({ icon_name: icon });
+                button.set_child(child);
+                this._icon = child;
+            }
+        } else {
+            let label = GLib.markup_escape_text(key, -1);
+            button.set_label(label);
+        }
+
+        button.keyWidth = 1;
+        button.connect('button-press-event', () => {
+            this._press(key);
+            return Clutter.EVENT_PROPAGATE;
+        });
+        button.connect('button-release-event', () => {
+            this._release(key);
+            return Clutter.EVENT_PROPAGATE;
+        });
+        button.connect('touch-event', (actor, event) => {
+            // We only handle touch events here on wayland. On X11
+            // we do get emulated pointer events, which already works
+            // for single-touch cases. Besides, the X11 passive touch grab
+            // set up by Mutter will make us see first the touch events
+            // and later the pointer events, so it will look like two
+            // unrelated series of events, we want to avoid double handling
+            // in these cases.
+            if (!Meta.is_wayland_compositor())
+                return Clutter.EVENT_PROPAGATE;
+
+            const slot = event.get_event_sequence().get_slot();
+
+            if (!this._touchPressSlot &&
+                event.type() == Clutter.EventType.TOUCH_BEGIN) {
+                this._touchPressSlot = slot;
+                this._press(key);
+            } else if (event.type() === Clutter.EventType.TOUCH_END) {
+                if (!this._touchPressSlot ||
+                    this._touchPressSlot === slot)
+                    this._release(key);
+
+                if (this._touchPressSlot === slot)
+                    this._touchPressSlot = null;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
 
         return button;
-    },
+    }
 
-    _getUnichar: function(key) {
-        let keyval = key.keyval;
-        let unichar = Gdk.keyval_to_unicode(keyval);
-        if (unichar) {
-            return String.fromCharCode(unichar);
+    _getExtendedKeys() {
+        this._extendedKeyboard = new St.BoxLayout({
+            style_class: 'vkeyboard-key-container',
+            vertical: false,
+        });
+        for (let i = 0; i < this._extendedKeys.length; ++i) {
+            let extendedKey = this._extendedKeys[i];
+            let key = this._makeKey(extendedKey);
+
+            key.extendedKey = extendedKey;
+            this._extendedKeyboard.add(key);
+
+            key.set_size(...this.keyButton.allocation.get_size());
+            this.keyButton.connect('notify::allocation',
+                () => key.set_size(...this.keyButton.allocation.get_size()));
+        }
+        this._boxPointer.bin.add_actor(this._extendedKeyboard);
+    }
+
+    get subkeys() {
+        return this._boxPointer;
+    }
+
+    setWidth(width) {
+        this.keyButton.keyWidth = width;
+    }
+
+    setLatched(latched) {
+        if (!this._icon)
+            return;
+
+        if (latched) {
+            this.keyButton.add_style_pseudo_class('latched');
+            this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
         } else {
-            return key.name;
+            this.keyButton.remove_style_pseudo_class('latched');
+            this._icon.icon_name = 'keyboard-shift-filled-symbolic';
         }
-    },
+    }
+});
 
-    _getExtendedKeys: function () {
-        this._extended_keyboard = new St.BoxLayout({ style_class: 'keyboard-layout',
-                                                     vertical: false });
-        for (let i = 0; i < this._extended_keys.length; ++i) {
-            let extended_key = this._extended_keys[i];
-            let label = this._getUnichar(extended_key);
-            let key = new St.Button({ label: label, style_class: 'keyboard-key' });
-            key.extended_key = extended_key;
-            key.connect('button-press-event', Lang.bind(this, function () { extended_key.press(); }));
-            key.connect('button-release-event', Lang.bind(this, function () { extended_key.release(); }));
-            this._extended_keyboard.add(key);
+var ActiveGroupKey = GObject.registerClass({}, class ActiveGroupKey extends Key {
+    _init(controller) {
+        this._controller = controller;
+        let [shortName, icon] = this._controller.getCurrentGroupLabelIcon();
+
+        super._init(shortName, [], icon);
+        this._groupChangedId = this._controller.connect('active-group', this._onGroupChanged.bind(this));
+        this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    _onGroupChanged(id) {
+        let [shortName, icon] = this._controller.getCurrentGroupLabelIcon();
+        this.updateKey(shortName, icon);
+        this.keyButton.add_style_class_name("non-alpha-key");
+    }
+
+    _onDestroy() {
+        if (this._groupChangedId > 0) {
+            this._controller.disconnect(this._groupChangedId);
+            this._groupChangedId = 0;
         }
-        this._boxPointer.bin.add_actor(this._extended_keyboard);
-    },
+    }
+});
 
-    _onEventCapture: function (actor, event) {
-        let source = event.get_source();
-        let type = event.type();
+var KeyboardModel = class {
+    constructor(groupName) {
+        let names = [groupName];
+        if (groupName.includes('+'))
+            names.push(groupName.replace(/\+.*/, ''));
+        names.push('us');
 
-        if ((type == Clutter.EventType.BUTTON_PRESS ||
-             type == Clutter.EventType.BUTTON_RELEASE) &&
-            this._extended_keyboard.contains(source)) {
-            source.extended_key.press();
-            source.extended_key.release();
-            return false;
-        }
-        if (type == Clutter.EventType.BUTTON_PRESS) {
-            this._boxPointer.actor.hide();
-            this._ungrab();
-            return true;
-        }
-        return false;
-    },
-
-    _ungrab: function () {
-        global.stage.disconnect(this._eventCaptureId);
-        this._eventCaptureId = 0;
-        this._grabbed = false;
-        Main.popModal(this.actor);
-    },
-
-    _onShowSubkeysChanged: function () {
-        if (this._key.show_subkeys) {
-            this.actor.fake_release();
-            this._boxPointer.actor.raise_top();
-            this._boxPointer.setPosition(this.actor, 0.5);
-            this._boxPointer.show(true);
-            this.actor.set_hover(false);
-            if (!this._grabbed) {
-                 Main.pushModal(this.actor);
-                 this._eventCaptureId = global.stage.connect('captured-event', Lang.bind(this, this._onEventCapture));
-                 this._grabbed = true;
+        for (let i = 0; i < names.length; i++) {
+            try {
+                this._model = this._loadModel(names[i]);
+                break;
+            } catch (e) {
             }
-            this._key.release();
-        } else {
-            if (this._grabbed)
-                this._ungrab();
-            this._boxPointer.hide(true);
         }
+    }
+
+    _loadModel(groupName) {
+        let file = Gio.File.new_for_uri('resource:///org/cinnamon/osk-layouts/%s.json'.format(groupName));
+        let [success_, contents] = file.load_contents(null);
+        if (contents instanceof Uint8Array)
+            contents = imports.byteArray.toString(contents);
+
+        return JSON.parse(contents);
+    }
+
+    getLevels() {
+        return this._model.levels;
+    }
+
+    getKeysForLevel(levelName) {
+        return this._model.levels.find(level => level == levelName);
     }
 };
 
-function Keyboard() {
-    this._init.apply(this, arguments);
-}
+var FocusTracker = class {
+    constructor() {
+        this._currentWindow = null;
+        this._rect = null;
 
-Keyboard.prototype = {
-    _init: function () {
-        this._impl = Gio.DBusExportedObject.wrapJSObject(CaribouKeyboardIface, this);
-        this._impl.export(Gio.DBus.session, '/org/gnome/Caribou/Keyboard');
+        global.display.connect('notify::focus-window', () => {
+            this._setCurrentWindow(global.display.focus_window);
+            this.emit('window-changed', this._currentWindow);
+        });
 
-        this.actor = null;
-        this.monitorIndex = 0;
-        this._focusInExtendedKeys = false;
-        this._focusNotifyId = 0;
+        global.display.connect('grab-op-begin', (display, window, op) => {
+            if (window == this._currentWindow &&
+                (op == Meta.GrabOp.MOVING || op == Meta.GrabOp.KEYBOARD_MOVING))
+                this.emit('reset');
+        });
 
-        this._timestamp = global.display.get_current_time_roundtrip();
-        Main.layoutManager.connect('monitors-changed', Lang.bind(this, this._redraw));
+        /* Valid for wayland clients */
+        Main.inputMethod.connect('cursor-location-changed', (o, rect) => {
+            let newRect = { x: rect.get_x(), y: rect.get_y(), width: rect.get_width(), height: rect.get_height() };
+            this._setCurrentRect(newRect);
+        });
 
-        this._keyboardSettings = new Gio.Settings({ schema_id: KEYBOARD_SCHEMA });
-        this._keyboardSettings.connect('changed', Lang.bind(this, this._settingsChanged));
-        this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
-        this._a11yApplicationsSettings.connect('changed', Lang.bind(this, this._settingsChanged));
-        this._settingsChanged();
-    },
+        this._ibusManager = IBusManager.getIBusManager();
+        this._ibusManager.connect('set-cursor-location', (manager, rect) => {
+            /* Valid for X11 clients only */
+            if (Main.inputMethod.currentFocus)
+                return;
 
-    init: function () {
-        this._redraw();
-    },
+            this._setCurrentRect(rect);
+        });
+        this._ibusManager.connect('focus-in', () => {
+            this.emit('focus-changed', true);
+        });
+        this._ibusManager.connect('focus-out', () => {
+            this.emit('focus-changed', false);
+        });
+    }
 
-    // _compareTimestamp:
-    //
-    // Compare two timestamps taking into account
-    // CURRENT_TIME (0)
-    _compareTimestamp: function(one, two) {
-        if (one == two)
-            return 0;
-        if (one == Clutter.CURRENT_TIME)
-            return 1;
-        if (two == Clutter.CURRENT_TIME)
-            return -1;
-        return one - two;
-    },
+    get currentWindow() {
+        return this._currentWindow;
+    }
 
-    _settingsChanged: function (settings, key) {
-        this._enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD);
-        this.accessibleMode = this._keyboardSettings.get_string(ACTIVATION_MODE) == "accessible";
-        this.keyboard_size = this._keyboardSettings.get_int(KEYBOARD_SIZE);
-        this.keyboard_position = this._keyboardSettings.get_string(KEYBOARD_POSITION);
+    _setCurrentWindow(window) {
+        this._currentWindow = window;
+    }
 
-        if (!this._enableKeyboard && !this._keyboard)
-            return;
-
-        if (this._enableKeyboard && this._keyboard &&
-            this._keyboard.keyboard_type == this._keyboardSettings.get_string(KEYBOARD_TYPE))
-            return;
-
-        if (this._keyboard)
-            this._destroyKeyboard();
-
-        if (this._enableKeyboard) {
-            // If we've been called because the setting actually just
-            // changed to true (as opposed to being called from
-            // this._init()), then we want to pop up the keyboard.
-            let showKeyboard = (settings != null);
-
-            // However, caribou-gtk-module or this._onKeyFocusChanged
-            // will probably immediately tell us to hide it, so we
-            // have to fake things out so we'll ignore that request.
-            if (showKeyboard)
-                this._timestamp = global.display.get_current_time_roundtrip() + 1;
-            this._setupKeyboard(showKeyboard);
-        } else
-            Main.layoutManager.hideKeyboard(true);
-    },
-
-    _destroyKeyboard: function() {
-        if (this._keyboardNotifyId)
-            this._keyboard.disconnect(this._keyboardNotifyId);
-        if (this._focusNotifyId > 0) {
-            global.stage.disconnect(this._focusNotifyId);
-            this._focusNotifyId = 0;
+    _setCurrentRect(rect) {
+        if (this._currentWindow) {
+            let frameRect = this._currentWindow.get_frame_rect();
+            rect.x -= frameRect.x;
+            rect.y -= frameRect.y;
         }
+
+        if (this._rect &&
+            this._rect.x == rect.x &&
+            this._rect.y == rect.y &&
+            this._rect.width == rect.width &&
+            this._rect.height == rect.height)
+            return;
+
+        this._rect = rect;
+        this.emit('position-changed');
+    }
+
+    getCurrentRect() {
+        let rect = { x: this._rect.x, y: this._rect.y,
+                     width: this._rect.width, height: this._rect.height };
+
+        if (this._currentWindow) {
+            let frameRect = this._currentWindow.get_frame_rect();
+            rect.x += frameRect.x;
+            rect.y += frameRect.y;
+        }
+
+        return rect;
+    }
+};
+Signals.addSignalMethods(FocusTracker.prototype);
+
+var Keypad = GObject.registerClass({
+    Signals: {
+        'keyval': { param_types: [GObject.TYPE_UINT] },
+    },
+}, class Keypad extends AspectContainer {
+    _init() {
+        let keys = [
+            { label: '1', keyval: Clutter.KEY_1, left: 0, top: 0 },
+            { label: '2', keyval: Clutter.KEY_2, left: 1, top: 0 },
+            { label: '3', keyval: Clutter.KEY_3, left: 2, top: 0 },
+            { label: '4', keyval: Clutter.KEY_4, left: 0, top: 1 },
+            { label: '5', keyval: Clutter.KEY_5, left: 1, top: 1 },
+            { label: '6', keyval: Clutter.KEY_6, left: 2, top: 1 },
+            { label: '7', keyval: Clutter.KEY_7, left: 0, top: 2 },
+            { label: '8', keyval: Clutter.KEY_8, left: 1, top: 2 },
+            { label: '9', keyval: Clutter.KEY_9, left: 2, top: 2 },
+            { label: '0', keyval: Clutter.KEY_0, left: 1, top: 3 },
+            { keyval: Clutter.KEY_BackSpace, icon: 'xsi-edit-clear-symbolic', left: 3, top: 0 },
+            { keyval: Clutter.KEY_Return, extraClassName: 'enter-key', icon: 'keyboard-enter-symbolic', left: 3, top: 1, height: 2 },
+        ];
+
+        super._init({
+            layout_manager: new Clutter.BinLayout(),
+            x_expand: true,
+            y_expand: true,
+        });
+
+        let gridLayout = new Clutter.GridLayout({ orientation: Clutter.Orientation.HORIZONTAL,
+                                                  column_homogeneous: true,
+                                                  row_homogeneous: true });
+        this._box = new St.Widget({ layout_manager: gridLayout, x_expand: true, y_expand: true });
+        this.add_child(this._box);
+
+        for (let i = 0; i < keys.length; i++) {
+            let cur = keys[i];
+            let key = new Key(cur.label || "", [], cur.icon);
+
+            if (keys[i].extraClassName)
+                key.keyButton.add_style_class_name(cur.extraClassName);
+
+            let w, h;
+            w = cur.width || 1;
+            h = cur.height || 1;
+            gridLayout.attach(key, cur.left, cur.top, w, h);
+
+            key.connect('released', () => {
+                this.emit('keyval', cur.keyval);
+            });
+        }
+    }
+});
+
+var VirtualKeyboardManager = GObject.registerClass({
+    Signals: { 'enabled-changed': {} }
+}, class VirtualKeyboardManager extends GObject.Object {
+    constructor() {
+        super();
         this._keyboard = null;
-        this.actor.destroy();
-        this.actor = null;
-    },
+        this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
+        this._a11yApplicationsSettings.connect('changed::screen-keyboard-enabled', this._keyboardEnabledChanged.bind(this));
 
-    _setupKeyboard: function(show) {
-        this.actor = new St.BoxLayout({ name: 'keyboard', vertical: true, reactive: true });
-        Main.layoutManager.keyboardBox.add_actor(this.actor);
-        Main.layoutManager.trackChrome(this.actor);
+        this._keyboardSettings = new Gio.Settings({ schema_id: OSK_SETTINGS });
+        this._keyboardSettings.connect('changed', this._keyboardSettingsChanged.bind(this));
 
-        this._keyboard = new Caribou.KeyboardModel({ keyboard_type: this._keyboardSettings.get_string(KEYBOARD_TYPE) });
-        this._groups = {};
-        this._current_page = null;
+        this._seat = Clutter.get_default_backend().get_default_seat();
+        this._seat.connect('notify::touch-mode', this._syncEnabled.bind(this));
 
-        // Initialize keyboard key measurements
-        this._numOfHorizKeys = 0;
-        this._numOfVertKeys = 0;
+        this._lastDevice = null;
+        Meta.get_backend().connect('last-device-changed', (backend, device) => {
+            if (device.device_type === Clutter.InputDeviceType.KEYBOARD_DEVICE)
+                return;
 
-        this._addKeys();
+            this._lastDevice = device;
+            this._syncEnabled();
+        });
+        this._syncEnabled();
+    }
 
-        // Keys should be layout according to the group, not the
-        // locale; as Caribou already provides the expected layout,
-        // this means enforcing LTR for all locales.
-        this.actor.text_direction = Clutter.TextDirection.LTR;
+    _lastDeviceIsTouchscreen() {
+        if (!this._lastDevice)
+            return false;
 
-        //this._keyboardNotifyId = this._keyboard.connect('notify::active-group', Lang.bind(this, this._onGroupChanged));
-        if (this.accessibleMode) {
-            this._focusNotifyId = global.stage.connect('notify::key-focus', Lang.bind(this, this._onKeyFocusChanged));
+        let deviceType = this._lastDevice.get_device_type();
+        return deviceType == Clutter.InputDeviceType.TOUCHSCREEN_DEVICE;
+    }
+
+    _keyboardEnabledChanged() {
+        this._syncEnabled();
+        this.emit('enabled-changed');
+    }
+
+    _keyboardSettingsChanged() {
+        this._destroyKeyboard();
+        this._syncEnabled();
+    }
+
+    _shouldEnable() {
+        let enableKeyboard = this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD_KEY);
+        let autoEnabled = this._seat.get_touch_mode() && this._lastDeviceIsTouchscreen();
+        return enableKeyboard || autoEnabled;
+    }
+
+    _syncEnabled() {
+        let enabled = this._shouldEnable();
+        if (!enabled && !this._keyboard)
+            return;
+
+        if (enabled && !this._keyboard) {
+            this._keyboard = new Keyboard(this._keyboardSettings.get_string(ACTIVATION_MODE_KEY) === "on-demand");
+        } else if (!enabled && this._keyboard) {
+            this._destroyKeyboard();
+        }
+    }
+
+    _destroyKeyboard() {
+        if (this._keyboard == null) {
+            return;
         }
 
-        if (show)
-            this.show();
-    },
+        this._keyboard.destroy();
+        this._keyboard = null;
+        Main.layoutManager.hideKeyboard(true);
+    }
 
-    _onKeyFocusChanged: function () {
+    getKeyboardSize() {
+        return this._keyboardSettings.get_int(KEYBOARD_SIZE_KEY);
+    }
+
+    getKeyboardPosition() {
+        return this._keyboardSettings.get_string(KEYBOARD_POSITION_KEY);
+    }
+
+    get keyboardActor() {
+        return this._keyboard;
+    }
+
+    get visible() {
+        return this._keyboard && this._keyboard.visible;
+    }
+
+    get enabled() {
+        return this._shouldEnable();
+    }
+
+    manualToggle() {
+        if (this.visible) {
+            this.close();
+        } else {
+            this._a11yApplicationsSettings.set_boolean(SHOW_KEYBOARD_KEY, true);
+            this.open(Main.layoutManager.focusIndex);
+        }
+    }
+
+    open(monitor) {
+        if (this._keyboard)
+            this._keyboard.open(monitor);
+    }
+
+    close() {
+        if (this._keyboard)
+            this._keyboard.close();
+    }
+
+    addSuggestion(text, callback) {
+        if (this._keyboard)
+            this._keyboard.addSuggestion(text, callback);
+    }
+
+    resetSuggestions() {
+        if (this._keyboard)
+            this._keyboard.resetSuggestions();
+    }
+
+    shouldTakeEvent(event) {
+        if (!this._keyboard)
+            return false;
+
+        let actor = event.get_source();
+        return Main.layoutManager.keyboardBox.contains(actor) ||
+               !!actor._extendedKeys || !!actor.extendedKey;
+    }
+});
+
+var Keyboard = GObject.registerClass(
+class Keyboard extends St.BoxLayout {
+    _init(onDemand) {
+        super._init({ name: 'virtual-keyboard', vertical: true, important: true });
+        this._focusInExtendedKeys = false;
+        this._onDemand = onDemand;
+
+        this._languagePopup = null;
+        this._currentFocusWindow = null;
+
+        this._latched = false; // current level is latched
+
+        this._suggestions = null;
+
+        if (!this._onDemand) {
+            this._focusTracker = new FocusTracker();
+            // Valid only for X11
+            if (!Meta.is_wayland_compositor()) {
+                this._connectSignal(this._focusTracker, 'focus-changed', (_tracker, focused) => {
+                    if (focused)
+                        this.open(Main.layoutManager.focusIndex);
+                    else
+                        this.close();
+                });
+            }
+        }
+
+        this._showIdleId = 0;
+
+        this._keyboardVisible = false;
+        this._connectSignal(Main.layoutManager, 'keyboard-visible-changed', (_lm, visible) => {
+            this._keyboardVisible = visible;
+        });
+        this._keyboardRequested = false;
+        this._keyboardRestingId = 0;
+
+        this._connectSignal(Main.layoutManager, 'monitors-changed', this._relayout.bind(this));
+
+        this._setupKeyboard();
+
+        this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    _connectSignal(obj, signal, callback) {
+        if (!this._connectionsIDs)
+            this._connectionsIDs = [];
+
+        let id = obj.connect(signal, callback);
+        this._connectionsIDs.push([obj, id]);
+        return id;
+    }
+
+    get visible() {
+        return this._keyboardVisible && super.visible;
+    }
+
+    set visible(visible) {
+        super.visible = visible;
+    }
+
+    _onDestroy() {
+        for (let [obj, id] of this._connectionsIDs)
+            obj.disconnect(id);
+        delete this._connectionsIDs;
+
+        this._clearShowIdle();
+
+        this._keyboardController.destroy();
+
+        Main.layoutManager.untrackChrome(this);
+        Main.layoutManager.keyboardBox.remove_actor(this);
+
+        if (this._languagePopup) {
+            this._languagePopup.destroy();
+            this._languagePopup = null;
+        }
+    }
+
+    _setupKeyboard() {
+        Main.layoutManager.keyboardBox.add_actor(this);
+        Main.layoutManager.trackChrome(this);
+
+        this._keyboardController = new KeyboardController();
+
+        this._groups = {};
+        this._currentPage = null;
+
+        this._suggestions = new Suggestions();
+        this.add_child(this._suggestions);
+        this._suggestions.visible = this._keyboardController.getIbusInputActive();
+
+        this._aspectContainer = new AspectContainer({
+            layout_manager: new Clutter.BinLayout(),
+            y_expand: true,
+        });
+        this.add_child(this._aspectContainer);
+
+        this._keypad = new Keypad();
+        this._connectSignal(this._keypad, 'keyval', (_keypad, keyval) => {
+            this._keyboardController.keyvalPress(keyval);
+            this._keyboardController.keyvalRelease(keyval);
+        });
+        this._aspectContainer.add_child(this._keypad);
+        this._keypad.hide();
+        this._keypadVisible = false;
+
+        this._ensureKeysForGroup(this._keyboardController.getCurrentGroup());
+        this._setActiveLayer(0);
+
+        // Keyboard models are defined in LTR, we must override
+        // the locale setting in order to avoid flipping the
+        // keyboard on RTL locales.
+        this.text_direction = Clutter.TextDirection.LTR;
+
+        this._connectSignal(this._keyboardController, 'active-group',
+            this._onGroupChanged.bind(this));
+        this._connectSignal(this._keyboardController, 'groups-changed',
+            this._onKeyboardGroupsChanged.bind(this));
+        this._connectSignal(this._keyboardController, 'panel-state',
+            this._onKeyboardStateChanged.bind(this));
+        this._connectSignal(this._keyboardController, 'keypad-visible',
+            this._onKeypadVisible.bind(this));
+        if (!this._onDemand) {
+            this._connectSignal(global.stage, 'notify::key-focus',
+                this._onKeyFocusChanged.bind(this));
+        }
+
+        this._relayout();
+    }
+
+    _onKeyFocusChanged() {
         let focus = global.stage.key_focus;
 
         // Showing an extended key popup and clicking a key from the extended keys
         // will grab focus, but ignore that
         let extendedKeysWereFocused = this._focusInExtendedKeys;
-        this._focusInExtendedKeys = focus && (focus._extended_keys || focus.extended_key);
+        this._focusInExtendedKeys = focus && (focus._extendedKeys || focus.extendedKey);
         if (this._focusInExtendedKeys || extendedKeysWereFocused)
             return;
 
-        let time = global.get_current_time();
-        if (focus instanceof Clutter.Text)
-            this.Show(time);
-        else
-            this.Hide(time);
-    },
-
-    _addKeys: function () {
-        let groups = this._keyboard.get_groups();
-        for (let i = 0; i < groups.length; ++i) {
-             let gname = groups[i];
-             let group = this._keyboard.get_group(gname);
-             group.connect('notify::active-level', Lang.bind(this, this._onLevelChanged));
-             let layers = {};
-             let levels = group.get_levels();
-             for (let j = 0; j < levels.length; ++j) {
-                 let lname = levels[j];
-                 let level = group.get_level(lname);
-                 let layout = new St.BoxLayout({ style_class: 'keyboard-layout',
-                                                 vertical: true });
-                 this._loadRows(level, layout);
-                 layers[lname] = layout;
-                 this.actor.add(layout, { x_fill: false });
-
-                 layout.hide();
-             }
-             this._groups[gname] = layers;
-        }
-
-        this._setActiveLayer();
-    },
-
-    _addRows : function (keys, layout) {
-        let keyboard_row = new St.BoxLayout();
-        for (let i = 0; i < keys.length; ++i) {
-            let children = keys[i].get_children();
-
-            // keys can be more or less than a standard key 'width' (like shift, enter keys)
-            // adjusted_children will add these multipliers rather than just 1 for a single key,
-            // in order to get the actual width of all keys together, so we don't overflow the monitor.
-            let adjusted_children = 0;
-            let right_box = new St.BoxLayout({ style_class: 'keyboard-row' });
-            let left_box = new St.BoxLayout({ style_class: 'keyboard-row' });
-            for (let j = 0; j < children.length; ++j) {
-                let key = children[j];
-                let button = new Key(key);
-                // (caribou) key.width is a multiplier, like 1 or 1.5
-                adjusted_children += key.width;
-
-                if (key.align == 'right')
-                    right_box.add(button.actor);
-                else
-                    left_box.add(button.actor);
-                if (key.name == 'Caribou_Prefs') {
-                    key.connect('key-released', Lang.bind(this, this.hide));
-                }
-
-                this._numOfHorizKeys = Math.max(Math.ceil(adjusted_children), this._numOfHorizKeys);
-            }
-            keyboard_row.add(left_box, { expand: true, x_fill: false, x_align: St.Align.START });
-            keyboard_row.add(right_box, { expand: true, x_fill: false, x_align: St.Align.END });
-        }
-        layout.add(keyboard_row);
-    },
-
-    _loadRows : function (level, layout) {
-        let rows = level.get_rows();
-        for (let i = 0; i < rows.length; ++i) {
-            let row = rows[i];
-            this._numOfVertKeys = Math.max(rows.length, this._numOfVertKeys);
-            this._addRows(row.get_columns(), layout);
-        }
-    },
-
-    _redraw: function () {
-        let focus = Main.layoutManager.focusMonitor;
-        let index = Main.layoutManager.focusIndex;
-        if (!this._enableKeyboard || focus == null)
+        if (!(focus instanceof Clutter.Text)) {
+            this.close();
             return;
-
-
-        let panelPadding = 0;
-        let panels = Main.getPanels();
-        if(panels) {
-            let [topPadding, bottomPadding] = Panel.heightsUsedMonitor(index, panels);
-            if(this.keyboard_position == "bottom") {
-                this.actor.style = `padding-bottom: ${ bottomPadding / global.ui_scale }px; padding-top: 0;`;
-                panelPadding = bottomPadding;
-            } else {
-                this.actor.style = `padding-top: ${ topPadding / global.ui_scale }px; padding-bottom: 0;`;
-                panelPadding = topPadding;
-            }
         }
 
-        Main.layoutManager.keyboardBox.set_size(focus.width, -1);
-        this.actor.width = focus.width;
+        if (!this._showIdleId) {
+            this._showIdleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this.open(Main.layoutManager.focusIndex);
+                this._showIdleId = 0;
+                return GLib.SOURCE_REMOVE;
+            });
+            GLib.Source.set_name_by_id(this._showIdleId, '[cinnamon] this.open');
+        }
+    }
 
-        let maxHeight = focus.height / this.keyboard_size;
+    _createLayersForGroup(groupName) {
+        let keyboardModel = new KeyboardModel(groupName);
+        let layers = {};
+        let levels = keyboardModel.getLevels();
+        for (let i = 0; i < levels.length; i++) {
+            let currentLevel = levels[i];
+            /* There are keyboard maps which consist of 3 levels (no uppercase,
+             * basically). We however make things consistent by skipping that
+             * second level.
+             */
+            let level = i >= 1 && levels.length == 3 ? i + 1 : i;
 
-        this.monitorIndex = index;
+            let layout = new KeyContainer();
+            layout.shiftKeys = [];
 
-        let layout = this._current_page;
-        let verticalSpacing = layout.get_theme_node().get_length('spacing') / this.keyboard_size;
-        let vpadding = layout.get_theme_node().get_vertical_padding();
-        let hpadding = layout.get_theme_node().get_horizontal_padding();
+            this._loadRows(currentLevel, level, levels.length, layout);
+            layers[level] = layout;
+            this._aspectContainer.add_child(layout);
+            layout.layoutButtons(this._aspectContainer);
 
-        let box = layout.get_child_at_index(0).get_child_at_index(0);
-        let horizontalSpacing = box.get_theme_node().get_length('spacing') / this.keyboard_size;
-        let allHorizontalSpacing = (this._numOfHorizKeys - 1) * horizontalSpacing;
-        let keyWidth = Math.floor((this.actor.width - allHorizontalSpacing - hpadding) / this._numOfHorizKeys);
+            layout.hide();
+        }
 
-        let allVerticalSpacing = (this._numOfVertKeys - 1) * verticalSpacing;
-        let keyHeight = Math.floor((maxHeight - allVerticalSpacing - vpadding) / this._numOfVertKeys);
+        return layers;
+    }
 
-        let keySize = Math.min(keyWidth, keyHeight);
+    _ensureKeysForGroup(group) {
+        if (!this._groups[group])
+            this._groups[group] = this._createLayersForGroup(group);
+    }
 
-        let rows = this._current_page.get_children();
-        for (let i = 0; i < rows.length; ++i) {
-            let keyboard_row = rows[i];
-            let boxes = keyboard_row.get_children();
-            for (let j = 0; j < boxes.length; ++j) {
-                let keys = boxes[j].get_children();
-                for (let k = 0; k < keys.length; ++k) {
-                    let child = keys[k];
-                    child.width = keySize * child.key_width;
-                    child.height = keySize;
-                    if (child._extended_keys) {
-                        let extended_keys = child._extended_keys.get_children();
-                        for (let n = 0; n < extended_keys.length; ++n) {
-                            let extended_key = extended_keys[n];
-                            extended_key.width = keySize;
-                            extended_key.height = keySize;
-                        }
+    _addRowKeys(keys, layout) {
+        for (let i = 0; i < keys.length; ++i) {
+            let key = keys[i];
+            let button = new Key(key.shift(), key);
+
+            /* Space key gets special width, dependent on the number of surrounding keys */
+            if (button.key == ' ')
+                button.setWidth(keys.length <= 3 ? 6 : 5);
+
+            button.connect('pressed', (actor, keyval, str) => {
+                if (!Main.inputMethod.currentFocus ||
+                    !this._keyboardController.commitString(str, true)) {
+                    if (keyval != 0) {
+                        this._keyboardController.keyvalPress(keyval);
+                        button._keyvalPress = true;
                     }
                 }
+            });
+            button.connect('released', (actor, keyval, _str) => {
+                if (keyval != 0) {
+                    if (button._keyvalPress)
+                        this._keyboardController.keyvalRelease(keyval);
+                    button._keyvalPress = false;
+                }
+
+                if (!this._latched)
+                    this._setActiveLayer(0);
+            });
+
+            layout.appendKey(button, button.keyButton.keyWidth);
+        }
+    }
+
+    _loadDefaultKeys(keys, layout, numLevels, numKeys) {
+        let extraButton;
+        for (let i = 0; i < keys.length; i++) {
+            let key = keys[i];
+            let keyval = key.keyval;
+            let switchToLevel = key.level;
+            let action = key.action;
+            let icon = key.icon;
+
+            if (action === 'next-layout') {
+                let groups = this._keyboardController.getGroups();
+                if (groups.length > 1) {
+                    extraButton = new ActiveGroupKey(this._keyboardController);
+                } else {
+                    continue;
+                }
+            } else {
+                extraButton = new Key(key.label || '', [], icon);
+            }
+
+            // extraButton.keyButton.add_style_class_name('default-key');
+            if (key.extraClassName != null)
+                extraButton.keyButton.add_style_class_name(key.extraClassName);
+            if (key.width != null)
+                extraButton.setWidth(key.width);
+
+            let actor = extraButton.keyButton;
+
+            extraButton.connect('pressed', () => {
+                if (switchToLevel != null) {
+                    this._setActiveLayer(switchToLevel);
+                    // Shift only gets latched on long press
+                    this._latched = switchToLevel != 1;
+                } else if (keyval != null) {
+                    this._keyboardController.keyvalPress(keyval);
+                }
+            });
+            extraButton.connect('released', () => {
+                if (keyval != null)
+                    this._keyboardController.keyvalRelease(keyval);
+                else if (action == 'hide')
+                    this.close();
+                else if (action == 'next-layout')
+                    this._keyboardController.activateNextGroup();
+            });
+
+            if (switchToLevel == 0) {
+                layout.shiftKeys.push(extraButton);
+            } else if (switchToLevel == 1) {
+                extraButton.connect('long-press', () => {
+                    this._latched = true;
+                    this._setCurrentLevelLatched(this._currentPage, this._latched);
+                });
+            }
+
+            /* Fixup default keys based on the number of levels/keys */
+            if (switchToLevel == 1 && numLevels == 3) {
+                // Hide shift key if the keymap has no uppercase level
+                if (key.right) {
+                    /* Only hide the key actor, so the container still takes space */
+                    extraButton.keyButton.hide();
+                } else {
+                    extraButton.hide();
+                }
+                extraButton.setWidth(1.5);
+            } else if (key.right && numKeys > 8) {
+                extraButton.setWidth(2);
+            }
+
+            layout.appendKey(extraButton, extraButton.keyButton.keyWidth);
+        }
+    }
+
+    _updateCurrentPageVisible() {
+        if (this._currentPage)
+            this._currentPage.visible = !this._keypadVisible;
+    }
+
+    _setCurrentLevelLatched(layout, latched) {
+        for (let i = 0; i < layout.shiftKeys.length; i++) {
+            let key = layout.shiftKeys[i];
+            key.setLatched(latched);
+        }
+    }
+
+    _getDefaultKeysForRow(row, numRows, level) {
+        /* The first 2 rows in defaultKeysPre/Post belong together with
+         * the first 2 rows on each keymap. On keymaps that have more than
+         * 4 rows, the last 2 default key rows must be respectively
+         * assigned to the 2 last keymap ones.
+         */
+        if (row < 2) {
+            return [defaultKeysPre[level][row], defaultKeysPost[level][row]];
+        } else if (row >= numRows - 2) {
+            let defaultRow = row - (numRows - 2) + 2;
+            return [defaultKeysPre[level][defaultRow], defaultKeysPost[level][defaultRow]];
+        } else {
+            return [null, null];
+        }
+    }
+
+    _mergeRowKeys(layout, pre, row, post, numLevels) {
+        if (pre != null)
+            this._loadDefaultKeys(pre, layout, numLevels, row.length);
+
+        this._addRowKeys(row, layout);
+
+        if (post != null)
+            this._loadDefaultKeys(post, layout, numLevels, row.length);
+    }
+
+    _loadRows(model, level, numLevels, layout) {
+        let rows = model.rows;
+        for (let i = 0; i < rows.length; ++i) {
+            layout.appendRow();
+            let [pre, post] = this._getDefaultKeysForRow(i, rows.length, level);
+            this._mergeRowKeys(layout, pre, rows[i], post, numLevels);
+        }
+    }
+
+    _getGridSlots() {
+        let numOfHorizSlots = 0, numOfVertSlots;
+        let rows = this._currentPage.get_children();
+        numOfVertSlots = rows.length;
+
+        for (let i = 0; i < rows.length; ++i) {
+            let keyboardRow = rows[i];
+            let keys = keyboardRow.get_children();
+
+            numOfHorizSlots = Math.max(numOfHorizSlots, keys.length);
+        }
+
+        return [numOfHorizSlots, numOfVertSlots];
+    }
+
+    _relayout() {
+        this._suggestions.visible = this._keyboardController.getIbusInputActive();
+
+        let monitor = Main.layoutManager.keyboardMonitor;
+
+        if (!monitor)
+            return;
+
+        let maxHeight = monitor.height / 3;
+        this.width = monitor.width;
+
+        if (monitor.width > monitor.height) {
+            this.height = maxHeight;
+        } else {
+            /* In portrait mode, lack of horizontal space means we won't be
+             * able to make the OSK that big while keeping size ratio, so
+             * we allow the OSK being smaller than 1/3rd of the monitor height
+             * there.
+             */
+            const forWidth = this.get_theme_node().adjust_for_width(monitor.width);
+            const [, natHeight] = this.get_preferred_height(forWidth);
+            this.height = Math.min(maxHeight, natHeight);
+        }
+    }
+
+    _onGroupChanged() {
+        if (this._keyboardController.getIbusInputActive()) {
+            if (!this._suggestions.visible) {
+                this._suggestions.visible = true;
+                this._relayout();
+            }
+        } else {
+            if (this._suggestions.visible) {
+                this._suggestions.visible = false;
+                this._relayout();
             }
         }
 
-        let keyboard_y = 0;
-        if (this.keyboard_position == "bottom") {
-            keyboard_y = focus.y + focus.height - this.actor.height;
+        this._ensureKeysForGroup(this._keyboardController.getCurrentGroup());
+        this._setActiveLayer(0);
+    }
+
+    _onKeyboardGroupsChanged() {
+        let nonGroupActors = [this._keypad];
+        this._aspectContainer.get_children().filter(c => !nonGroupActors.includes(c)).forEach(c => {
+            c.destroy();
+        });
+
+        this._groups = {};
+        this._onGroupChanged();
+    }
+
+    _onKeypadVisible(controller, visible) {
+        if (visible == this._keypadVisible)
+            return;
+
+        this._keypadVisible = visible;
+        this._keypad.visible = this._keypadVisible;
+        this._updateCurrentPageVisible();
+    }
+
+    _onKeyboardStateChanged(controller, state) {
+        let enabled;
+        if (state == Clutter.InputPanelState.OFF)
+            enabled = false;
+        else if (state == Clutter.InputPanelState.ON)
+            enabled = true;
+        else if (state == Clutter.InputPanelState.TOGGLE)
+            enabled = this._keyboardVisible == false;
+        else
+            return;
+
+        if (this._onDemand)
+            return;
+
+        if (enabled)
+            this.open(Main.layoutManager.focusIndex);
+        else
+            this.close();
+    }
+
+    _setActiveLayer(activeLevel) {
+        let activeGroupName = this._keyboardController.getCurrentGroup();
+        let layers = this._groups[activeGroupName];
+        let currentPage = layers[activeLevel];
+
+        if (this._currentPage == currentPage) {
+            this._updateCurrentPageVisible();
+            return;
         }
 
-        Main.layoutManager.keyboardBox.set_position(focus.x, keyboard_y);
-    },
-
-    _onLevelChanged: function () {
-        this._setActiveLayer();
-        this._redraw();
-    },
-
-    _onGroupChanged: function () {
-        this._setActiveLayer();
-        this._redraw();
-    },
-
-    _setActiveLayer: function () {
-        let active_group_name = this._keyboard.active_group;
-        let active_group = this._keyboard.get_group(active_group_name);
-        let active_level = active_group.active_level;
-        let layers = this._groups[active_group_name];
-
-        if (this._current_page != null) {
-            this._current_page.hide();
+        if (this._currentPage != null) {
+            this._setCurrentLevelLatched(this._currentPage, false);
+            this._currentPage.disconnect(this._currentPage._destroyID);
+            this._currentPage.hide();
+            delete this._currentPage._destroyID;
         }
 
-        this._current_page = layers[active_level];
-        this._current_page.show();
-    },
+        this._currentPage = currentPage;
+        this._currentPage._destroyID = this._currentPage.connect('destroy', () => {
+            this._currentPage = null;
+        });
+        this._updateCurrentPageVisible();
+    }
 
-    toggle: function() {
-        if (!this._a11yApplicationsSettings.get_boolean(SHOW_KEYBOARD)) {
-            /* This will show the keyboard also, so we don't need to do a separate call */
-            this._a11yApplicationsSettings.set_boolean (SHOW_KEYBOARD, true);
-        } else {
-            if (Main.layoutManager.keyboardBox.visible)
-                this.hide();
-            else
-                this.show();
+    _clearKeyboardRestTimer() {
+        if (!this._keyboardRestingId)
+            return;
+        GLib.source_remove(this._keyboardRestingId);
+        this._keyboardRestingId = 0;
+    }
+
+    open(monitor) {
+        this._clearShowIdle();
+        this._keyboardRequested = true;
+
+        if (this._keyboardVisible) {
+            if (monitor != Main.layoutManager.keyboardIndex) {
+                Main.layoutManager.keyboardIndex = monitor;
+                this._relayout();
+            }
+            return;
         }
-    },
 
-    show: function () {
-        let needs_redraw = this.monitorIndex != Main.layoutManager.focusIndex;
+        this._clearKeyboardRestTimer();
+        this._keyboardRestingId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
+            KEYBOARD_REST_TIME,
+            () => {
+                this._clearKeyboardRestTimer();
+                this._open(monitor);
+                return GLib.SOURCE_REMOVE;
+            });
+        GLib.Source.set_name_by_id(this._keyboardRestingId, '[cinnamon] this._clearKeyboardRestTimer');
+    }
 
-        if (!Main.layoutManager._keyboardVisible || needs_redraw)
-            this._redraw();
+    _open(monitor) {
+        if (!this._keyboardRequested)
+            return;
 
+        Main.layoutManager.keyboardIndex = monitor;
+        this._relayout();
         Main.layoutManager.showKeyboard();
-    },
+    }
 
-    hide: function () {
-        Main.layoutManager.queueHideKeyboard();
-    },
+    close() {
+        this._clearShowIdle();
+        this._keyboardRequested = false;
 
-    _moveTemporarily: function () {
-        let currentWindow = global.display.focus_window;
-        let rect = currentWindow.get_outer_rect();
-
-        let newX = rect.x;
-        let newY = 3 * this.actor.height / 2;
-        currentWindow.move_frame(true, newX, newY);
-    },
-
-    _setLocation: function (x, y) {
-        if (y >= 2 * this.actor.height)
-            this._moveTemporarily();
-    },
-
-    shouldTakeEvent: function(event) {
-        let actor = event.get_source();
-        return !actor.is_finalized()
-            && (Main.layoutManager.keyboardBox.contains(actor)
-                || actor.maybeGet("_extended_keys")
-                || actor.maybeGet("extended_key"));
-    },
-
-    // D-Bus methods
-    Show: function(timestamp) {
-        if (!this._enableKeyboard || !this.accessibleMode)
+        if (!this._keyboardVisible)
             return;
 
-        if (this._compareTimestamp(timestamp, this._timestamp) < 0)
+        this._clearKeyboardRestTimer();
+        this._keyboardRestingId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
+            KEYBOARD_REST_TIME,
+            () => {
+                this._clearKeyboardRestTimer();
+                this._close();
+                return GLib.SOURCE_REMOVE;
+            });
+        GLib.Source.set_name_by_id(this._keyboardRestingId, '[cinnamon] this._clearKeyboardRestTimer');
+    }
+
+    _close() {
+        if (this._keyboardRequested)
+            return;
+        Main.layoutManager.hideKeyboard();
+    }
+
+    resetSuggestions() {
+        if (this._suggestions)
+            this._suggestions.clear();
+    }
+
+    addSuggestion(text, callback) {
+        if (!this._suggestions)
             return;
 
-        if (timestamp != Clutter.CURRENT_TIME)
-            this._timestamp = timestamp;
-        this.show();
-    },
+        this._suggestions.addNew(text, callback);
+        this._suggestions.show();
+    }
 
-    Hide: function(timestamp) {
-        if (!this._enableKeyboard || !this.accessibleMode)
+    _clearShowIdle() {
+        if (!this._showIdleId)
             return;
+        GLib.source_remove(this._showIdleId);
+        this._showIdleId = 0;
+    }
+});
 
-        if (this._compareTimestamp(timestamp, this._timestamp) < 0)
-            return;
+var KeyboardController = class {
+    constructor() {
+        let seat = Clutter.get_default_backend().get_default_seat();
+        this._virtualDevice = seat.create_virtual_device(Clutter.InputDeviceType.KEYBOARD_DEVICE);
 
-        if (timestamp != Clutter.CURRENT_TIME)
-            this._timestamp = timestamp;
-        this.hide();
-    },
+        this._inputSourceManager = KeyboardManager.getInputSourceManager();
+        this._sourceChangedId = this._inputSourceManager.connect('current-source-changed',
+                                                                 this._onSourceChanged.bind(this));
+        this._sourcesModifiedId = this._inputSourceManager.connect('sources-changed',
+                                                                   this._onSourcesModified.bind(this));
+        this._currentSource = this._inputSourceManager.currentSource;
 
-    SetCursorLocation: function(x, y, w, h) {
-        if (!this._enableKeyboard || !this.accessibleMode)
-            return;
-    },
+        this._notifyContentPurposeId = Main.inputMethod.connect(
+            'notify::content-purpose', this._onContentPurposeHintsChanged.bind(this));
+        this._notifyContentHintsId = Main.inputMethod.connect(
+            'notify::content-hints', this._onContentPurposeHintsChanged.bind(this));
+        this._notifyInputPanelStateId = Main.inputMethod.connect(
+            'input-panel-state', (o, state) => this.emit('panel-state', state));
+    }
 
-    SetEntryLocation: function(x, y, w, h) {
-        if (!this._enableKeyboard || !this.accessibleMode)
-            return;
-    },
+    destroy() {
+        this._inputSourceManager.disconnect(this._sourceChangedId);
+        this._inputSourceManager.disconnect(this._sourcesModifiedId);
+        Main.inputMethod.disconnect(this._notifyContentPurposeId);
+        Main.inputMethod.disconnect(this._notifyContentHintsId);
+        Main.inputMethod.disconnect(this._notifyInputPanelStateId);
 
-    get Name() {
-        return 'cinnamon';
-    },
+        // Make sure any buttons pressed by the virtual device are released
+        // immediately instead of waiting for the next GC cycle
+        this._virtualDevice.run_dispose();
+    }
 
-    get enabled() {
-        return this._enableKeyboard;
+    _onSourcesModified() {
+        this.emit('groups-changed');
+    }
+
+    _onSourceChanged(inputSourceManager, _oldSource) {
+        let source = inputSourceManager.currentSource;
+        this._currentSource = source;
+        this.emit('active-group', source.id);
+    }
+
+    _onContentPurposeHintsChanged(method) {
+        let purpose = method.content_purpose;
+        let keypadVisible = false;
+
+        if (purpose == Clutter.InputContentPurpose.DIGITS ||
+            purpose == Clutter.InputContentPurpose.NUMBER ||
+            purpose == Clutter.InputContentPurpose.PHONE)
+            keypadVisible = true;
+
+        this.emit('keypad-visible', keypadVisible);
+    }
+
+    getGroups() {
+        let inputSources = this._inputSourceManager.inputSources;
+        let groups = [];
+
+        for (let i in inputSources) {
+            let is = inputSources[i];
+            groups[is.index] = is.xkbId;
+        }
+
+        return groups;
+    }
+
+    getCurrentGroup() {
+        return this._currentSource.xkbId;
+    }
+
+    getIbusInputActive() {
+        let inputSources = this._inputSourceManager.inputSources;
+
+        for (let i in inputSources) {
+            if (inputSources[i].type === "ibus")
+                return true;
+        }
+
+        return false;
+    }
+
+    activateNextGroup() {
+        let new_index = this._inputSourceManager.currentSource.index + 1;
+        if (new_index == this._inputSourceManager.numInputSources) {
+            new_index = 0;
+        }
+
+        this._inputSourceManager.activateInputSourceIndex(new_index);
+    }
+
+    getCurrentGroupLabelIcon() {
+        let actor = null;
+
+        if (this._inputSourceManager.showFlags) {
+            actor = this._inputSourceManager.createFlagIcon(this._currentSource, null, 16);
+        }
+
+        if (actor == null) {
+            return [this._currentSource.shortName, null];
+        }
+        return [null, actor];
+    }
+
+    commitString(string, fromKey) {
+        if (string == null)
+            return false;
+        /* Let ibus methods fall through keyval emission */
+        if (fromKey && this._currentSource.type == KeyboardManager.INPUT_SOURCE_TYPE_IBUS)
+            return false;
+
+        Main.inputMethod.commit(string);
+        return true;
+    }
+
+    keyvalPress(keyval) {
+        this._virtualDevice.notify_keyval(Clutter.get_current_event_time(),
+                                          keyval, Clutter.KeyState.PRESSED);
+    }
+
+    keyvalRelease(keyval) {
+        this._virtualDevice.notify_keyval(Clutter.get_current_event_time(),
+                                          keyval, Clutter.KeyState.RELEASED);
     }
 };
+Signals.addSignalMethods(KeyboardController.prototype);
