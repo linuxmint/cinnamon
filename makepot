@@ -1,4 +1,5 @@
 #!/bin/bash
+set -e
 
 xgettext -cTranslators -cTRANSLATORS --keyword=_ --keyword=N_ --from-code=UTF-8 \
 	--files-from=po/POTFILES.in --output=cinnamon.pot

@@ -302,13 +302,13 @@ files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py
 files/usr/share/cinnamon/cinnamon-settings/bin/InputSources.py
 files/usr/share/cinnamon/cinnamon-settings/bin/JsonSettingsWidgets.py
 files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py
+files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingTable.py
 files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py
 files/usr/share/cinnamon/cinnamon-settings/bin/Spices.py
 files/usr/share/cinnamon/cinnamon-settings/bin/TreeListWidgets.py
 files/usr/share/cinnamon/cinnamon-settings/bin/capi.py
 files/usr/share/cinnamon/cinnamon-settings/bin/eyedropper.py
 files/usr/share/cinnamon/cinnamon-settings/bin/imtools.py
-files/usr/share/cinnamon/cinnamon-settings/bin/tweenEquations.py
 files/usr/share/cinnamon/cinnamon-settings/bin/util.py
 files/usr/share/cinnamon/cinnamon-settings/modules/cs_fonts.py
 files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py
