@@ -519,7 +519,7 @@ class KeybindingTable(GObject.Object):
             print(f"KeybindingTable could not establish proxy for org.Cinnamon: {e}")
 
     def _proxy_send_kb_changed(self, keybinding):
-        if keybinding.dbus_info is None:
+        if keybinding.dbus_info.get("uuid", None) is None:
             return
 
         if self._proxy.get_name_owner() is None:
