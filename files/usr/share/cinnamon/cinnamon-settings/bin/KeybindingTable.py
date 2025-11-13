@@ -257,6 +257,7 @@ STATIC_KEYBINDINGS = \
     [
       [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in"],
       [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out"],
+      [_("Reset zoom"), CINNAMON_SCHEMA, "magnifier-zoom-reset"],
       [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader"],
       [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard"],
       [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size"],
