@@ -303,6 +303,14 @@
       <description>Properties of hotcorners, in the form functionality:hover-enabled:hover-delay. The order in which properties are displayed is top left, top right, bottom left, bottom right.</description>
     </key>
 
+    <key name="hotcorner-fullscreen" type="b"> 
+      <default>false</default>
+      <summary>Enable hotcorners in fullscreen</summary>
+      <description>
+        Enable hotcorners in fullscreen
+      </description>
+    </key>
+
     <key name="panel-launchers" type="as">
       <default>["DEPRECATED"]</default>
       <summary>Obsolete - unused</summary>
