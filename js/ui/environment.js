@@ -17,6 +17,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Overrides = imports.ui.overrides;
+const Params = imports.misc.params;
 const SignalTracker = imports.misc.signalTracker;
 
 // We can't import cinnamon JS modules yet, because they may have
@@ -106,6 +107,8 @@ function _getPropertyTarget(actor, propName) {
         return [actor.get_action(name), prop];
     case '@constraints':
         return [actor.get_constraint(name), prop];
+    case '@content':
+        return [actor.content, name];
     case '@effects':
         return [actor.get_effect(name), prop];
     }
@@ -114,24 +117,30 @@ function _getPropertyTarget(actor, propName) {
 }
 
 function _easeActor(actor, params) {
+    params = {
+        repeatCount: 0,
+        autoReverse: false,
+        animationRequired: false,
+        ...params,
+    };
+
     actor.save_easing_state();
 
-    if (params.duration != undefined)
-        actor.set_easing_duration(params.duration);
+    const animationRequired = params.animationRequired;
+    delete params.animationRequired;
+
+    if (params.duration !== undefined)
+        actor.set_easing_duration(params.duration, {animationRequired});
     delete params.duration;
 
-    if (params.delay != undefined)
-        actor.set_easing_delay(params.delay);
+    if (params.delay !== undefined)
+        actor.set_easing_delay(params.delay, {animationRequired});
     delete params.delay;
 
-    let repeatCount = 0;
-    if (params.repeatCount != undefined)
-        repeatCount = params.repeatCount;
+    const repeatCount = params.repeatCount;
     delete params.repeatCount;
 
-    let autoReverse = false;
-    if (params.autoReverse != undefined)
-        autoReverse = params.autoReverse;
+    const autoReverse = params.autoReverse;
     delete params.autoReverse;
 
     // repeatCount doesn't include the initial iteration
@@ -139,11 +148,18 @@ function _easeActor(actor, params) {
     // whether the transition should finish where it started
     const isReversed = autoReverse && numIterations % 2 === 0;
 
-    if (params.mode != undefined)
+    if (params.mode !== undefined)
         actor.set_easing_mode(params.mode);
     delete params.mode;
 
-    let cleanup = () => Meta.enable_unredirect_for_display(global.display);
+    const prepare = () => {
+        Meta.disable_unredirect_for_display(global.display);
+        global.begin_work();
+    };
+    const cleanup = () => {
+        Meta.enable_unredirect_for_display(global.display);
+        global.end_work();
+    };
     let callback = _makeEaseCallback(params, cleanup);
     let updateCallback = _makeFrameCallback(params);
 
@@ -155,16 +171,20 @@ function _easeActor(actor, params) {
         actor.set(params);
     actor.restore_easing_state();
 
-    let transition = animatedProps.map(p => actor.get_transition(p))
-        .find(t => t !== null);
+    const transitions = animatedProps
+        .map(p => actor.get_transition(p))
+        .filter(t => t !== null);
+
+    transitions.forEach(t => t.set({repeatCount, autoReverse}));
+
+    const [transition] = transitions;
 
     if (transition && transition.delay)
-        transition.connect('started', () => Meta.disable_unredirect_for_display(global.display));
+        transition.connect('started', () => prepare());
     else
-        Meta.disable_unredirect_for_display(global.display);
+        prepare();
 
     if (transition) {
-        transition.set({ repeatCount, autoReverse });
         transition.connect('stopped', (t, finished) => callback(finished));
         transition.connect('new-frame', (t, timeIndex) => updateCallback(t, timeIndex));
     } else {
@@ -173,23 +193,32 @@ function _easeActor(actor, params) {
 }
 
 function _easeActorProperty(actor, propName, target, params) {
+    params = {
+        repeatCount: 0,
+        autoReverse: false,
+        animationRequired: false,
+        ...params,
+    };
+
     // Avoid pointless difference with ease()
     if (params.mode)
         params.progress_mode = params.mode;
     delete params.mode;
 
+    const animationRequired = params.animationRequired;
+    delete params.animationRequired;
+
     if (params.duration)
-        params.duration = adjustAnimationTime(params.duration);
+        params.duration = adjustAnimationTime(params.duration, {animationRequired});
     let duration = Math.floor(params.duration || 0);
 
-    let repeatCount = 0;
-    if (params.repeatCount != undefined)
-        repeatCount = params.repeatCount;
+    if (params.delay)
+        params.delay = adjustAnimationTime(params.delay, {animationRequired});
+
+    const repeatCount = params.repeatCount;
     delete params.repeatCount;
 
-    let autoReverse = false;
-    if (params.autoReverse != undefined)
-        autoReverse = params.autoReverse;
+    const autoReverse = params.autoReverse;
     delete params.autoReverse;
 
     // repeatCount doesn't include the initial iteration
@@ -202,42 +231,52 @@ function _easeActorProperty(actor, propName, target, params) {
     if (actor instanceof Clutter.Actor && !actor.mapped)
         duration = 0;
 
-    let cleanup = () => Meta.enable_unredirect_for_display(global.display);
+    const prepare = () => {
+        Meta.disable_unredirect_for_display(global.display);
+        global.begin_work();
+    };
+    const cleanup = () => {
+        Meta.enable_unredirect_for_display(global.display);
+        global.end_work();
+    };
     let callback = _makeEaseCallback(params, cleanup);
+    let updateCallback = _makeFrameCallback(params);
 
     // cancel overwritten transition
     actor.remove_transition(propName);
 
-    if (duration == 0) {
+    if (duration === 0) {
         let [obj, prop] = _getPropertyTarget(actor, propName);
 
         if (!isReversed)
             obj[prop] = target;
 
-        Meta.disable_unredirect_for_display(global.display);
+        prepare();
         callback(true);
 
         return;
     }
 
     let pspec = actor.find_property(propName);
-    let transition = new Clutter.PropertyTransition(Object.assign({
+    let transition = new Clutter.PropertyTransition({
         property_name: propName,
-        interval: new Clutter.Interval({ value_type: pspec.value_type }),
+        interval: new Clutter.Interval({value_type: pspec.value_type}),
         remove_on_complete: true,
         repeat_count: repeatCount,
         auto_reverse: autoReverse,
-    }, params));
+        ...params,
+    });
     actor.add_transition(propName, transition);
 
     transition.set_to(target);
 
     if (transition.delay)
-        transition.connect('started', () => Meta.disable_unredirect_for_display(global.display));
+        transition.connect('started', () => prepare());
     else
-        Meta.disable_unredirect_for_display(global.display);
+        prepare();
 
     transition.connect('stopped', (t, finished) => callback(finished));
+    transition.connect('new-frame', (t, timeIndex) => updateCallback(t, timeIndex));
 }
 
 function init() {
@@ -367,13 +406,13 @@ function init() {
         }
     };
 
-    let origSetEasingDuration = Clutter.Actor.prototype.set_easing_duration;
-    Clutter.Actor.prototype.set_easing_duration = function (msecs) {
-        origSetEasingDuration.call(this, adjustAnimationTime(msecs));
+    const origSetEasingDuration = Clutter.Actor.prototype.set_easing_duration;
+    Clutter.Actor.prototype.set_easing_duration = function (msecs, params = {}) {
+        origSetEasingDuration.call(this, adjustAnimationTime(msecs, params));
     };
-    let origSetEasingDelay = Clutter.Actor.prototype.set_easing_delay;
-    Clutter.Actor.prototype.set_easing_delay = function (msecs) {
-        origSetEasingDelay.call(this, adjustAnimationTime(msecs));
+    const origSetEasingDelay = Clutter.Actor.prototype.set_easing_delay;
+    Clutter.Actor.prototype.set_easing_delay = function (msecs, params = {}) {
+        origSetEasingDelay.call(this, adjustAnimationTime(msecs, params));
     };
 
     Clutter.Actor.prototype.ease = function (props) {
@@ -413,14 +452,17 @@ function init() {
 
 
 // adjustAnimationTime:
-// @msecs: time in milliseconds
-//
+// @msecs - time in milliseconds
+// @params - optional parameters (currently just 'animationRequired' - whether to ignore the enable-animations setting
 // Adjust @msecs to account for St's enable-animations
 // and slow-down-factor settings
-function adjustAnimationTime(msecs) {
-    let settings = St.Settings.get();
+function adjustAnimationTime(msecs, params) {
+    params = Params.parse(params, {
+        animationRequired: false,
+    });
 
-    // if (!settings.enable_animations)
-    //     return 1;
+    const settings = St.Settings.get();
+    if (!settings.animations_enabled && !params.animationRequired)
+        return 0;
     return settings.slow_down_factor * msecs;
 }

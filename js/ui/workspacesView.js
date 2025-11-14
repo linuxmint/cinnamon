@@ -7,10 +7,9 @@ const St = imports.gi.St;
 const Signals = imports.signals;
 
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const Workspace = imports.ui.workspace;
 
-var WORKSPACE_SWITCH_TIME = 0.25;
+var WORKSPACE_SWITCH_TIME = 250;
 
 var SwipeScrollDirection = {
     NONE: 0,
@@ -206,27 +205,27 @@ WorkspacesView.prototype = {
         for (let w = 0; w < this._workspaces.length; w++) {
             let workspace = this._workspaces[w];
 
-            Tweener.removeTweens(workspace.actor);
+            workspace.actor.remove_all_transitions();
 
             let x = (w - active) * (this._width + this._spacing + this._workspaceRatioSpacing);
 
             if (this._animating) {
                 let params = { x: x,
-                               time: WORKSPACE_SWITCH_TIME,
-                               transition: 'easeOutQuad'
+                               duration: WORKSPACE_SWITCH_TIME,
+                               mode: Clutter.AnimationMode.EASE_OUT_QUAD
                              };
                 // we have to call _updateVisibility() once before the
                 // animation and once afterwards - it does not really
                 // matter which tween we use, so we pick the first one ...
                 if (w == 0) {
                     this._updateVisibility();
-                    params.onComplete = Lang.bind(this,
-                        function() {
+                    params.onComplete = () => {
                             this._animating = false;
                             this._updateVisibility();
-                        });
+                    };
                 }
-                Tweener.addTween(workspace.actor, params);
+
+                workspace.actor.ease(params);
             } else if (!workspace.actor.is_finalized()) {
                 workspace.actor.set_position(x, 0);
                 if (w == 0)
@@ -257,14 +256,13 @@ WorkspacesView.prototype = {
         this._animatingScroll = true;
 
         if (showAnimation) {
-            Tweener.addTween(this._scrollAdjustment, {
-               value: index,
-               time: WORKSPACE_SWITCH_TIME,
-               transition: 'easeOutQuad',
-               onComplete: Lang.bind(this,
-                   function() {
-                       this._animatingScroll = false;
-                   })
+            this._scrollAdjustment.ease({
+                value: index,
+                duration: WORKSPACE_SWITCH_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => {
+                    this._animatingScroll = false;
+                }
             });
         } else {
             this._scrollAdjustment.value = index;
@@ -279,7 +277,7 @@ WorkspacesView.prototype = {
         this._workspaces.slice().forEach(function(workspace, i) {
             let metaWorkspace = global.workspace_manager.get_workspace_by_index(i - removedCount);
             if (workspace.metaWorkspace != metaWorkspace) {
-                Tweener.removeTweens(workspace.actor);
+                workspace.actor.remove_all_transitions();
                 workspace.destroy();
                 this._workspaces.splice(i - removedCount, 1);
                 ++removedCount;

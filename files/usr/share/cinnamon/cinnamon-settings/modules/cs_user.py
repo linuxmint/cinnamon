@@ -332,12 +332,19 @@ class PasswordDialog(Gtk.Dialog):
         oldpass = self.current_password.get_text()
         newpass = self.new_password.get_text()
         passwd = pexpect.spawn("/usr/bin/passwd")
-        time.sleep(0.5)
-        passwd.sendline(oldpass)
-        time.sleep(0.5)
-        passwd.sendline(newpass)
-        time.sleep(0.5)
-        passwd.sendline(newpass)
+        # passwd only asks for the old password when there already is one set.
+        if oldpass == "":
+            time.sleep(0.5)
+            passwd.sendline(newpass)
+            time.sleep(0.5)
+            passwd.sendline(newpass)
+        else:
+            time.sleep(0.5)
+            passwd.sendline(oldpass)
+            time.sleep(0.5)
+            passwd.sendline(newpass)
+            time.sleep(0.5)
+            passwd.sendline(newpass)
         time.sleep(0.5)
         passwd.close()
 
@@ -385,25 +392,24 @@ class PasswordDialog(Gtk.Dialog):
 
     def _on_current_password_changed(self, widget, event):
         self.infobar.hide()
-        if self.current_password.get_text() != "":
-            try:
-                self.auth_pam() if pam else self.auth_PyPAM()
-            except PasswordError:
-                self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
-                self.current_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Wrong password"))
-                self.current_password.set_tooltip_text(_("Wrong password"))
-                self.correct_current_password = False
-            except:
-                self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
-                self.current_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Internal Error"))
-                self.current_password.set_tooltip_text(_("Internal Error"))
-                self.correct_current_password = False
-                raise
-            else:
-                self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
-                self.current_password.set_tooltip_text("")
-                self.correct_current_password = True
-                self.check_passwords()
+        try:
+            self.auth_pam() if pam else self.auth_PyPAM()
+        except PasswordError:
+            self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
+            self.current_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Wrong password"))
+            self.current_password.set_tooltip_text(_("Wrong password"))
+            self.correct_current_password = False
+        except:
+            self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
+            self.current_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Internal Error"))
+            self.current_password.set_tooltip_text(_("Internal Error"))
+            self.correct_current_password = False
+            raise
+        else:
+            self.current_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, None)
+            self.current_password.set_tooltip_text("")
+            self.correct_current_password = True
+            self.check_passwords()
 
     # Based on setPasswordStrength() in Mozilla Seamonkey, which is tri-licensed under MPL 1.1, GPL 2.0, and LGPL 2.1.
     # Forked from Ubiquity validation.py

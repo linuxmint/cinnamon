@@ -26,18 +26,15 @@ const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const PopupMenu = imports.ui.popupMenu;
 const SignalManager = imports.misc.signalManager;
-const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 
 const BUTTON_DND_ACTIVATION_TIMEOUT = 250;
 
 const ANIMATED_ICON_UPDATE_TIMEOUT = 100;
-const SPINNER_ANIMATION_TIME = 0.2;
+const AUTOHIDE_ANIMATION_TIME = 200;
+const AUTOHIDE_BOX_FADE_TIME = 100;
 
-const AUTOHIDE_ANIMATION_TIME = 0.2;
 const TIME_DELTA = 1500;
-
-const APPLETS_DROP_ANIMATION_TIME = 0.2;
 
 const PANEL_PEEK_TIME = 1500;
 
@@ -1711,10 +1708,10 @@ PanelContextMenu.prototype = {
         this.actor.hide();
         this.panelId = panelId;
 
-        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel --panel " + panelId, "emblem-system");
+        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel --panel " + panelId, "xsi-cog");
         this.addMenuItem(moreSettingsMenuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets --panel " + panelId, "application-x-addon");
+        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets --panel " + panelId, "xsi-addon");
         this.addMenuItem(applet_settings_item);
 
         let menu = this;
@@ -1739,14 +1736,14 @@ PanelContextMenu.prototype = {
 
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
-        menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "move", St.IconType.SYMBOLIC); // submenu item move panel
+        menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "xsi-move", St.IconType.SYMBOLIC); // submenu item move panel
         menu.movePanelItem.activate = Lang.bind(menu, function() {
             Main.panelManager.movePanelQuery(this.panelId);
             this.close(true);
         });
         menu.addMenuItem(menu.movePanelItem);
 
-        let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
+        let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "xsi-list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
         menuItem.activate = Lang.bind(menu, function() {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?"),
                     function() {
@@ -1756,7 +1753,7 @@ PanelContextMenu.prototype = {
         });
         menu.addMenuItem(menuItem);
 
-        menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add a new panel"), "list-add", St.IconType.SYMBOLIC); // submenu item add panel
+        menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add a new panel"), "xsi-list-add", St.IconType.SYMBOLIC); // submenu item add panel
         menu.addPanelItem.activate = Lang.bind(menu, function() {
             Main.panelManager.addPanelQuery();
             this.close(true);
@@ -1766,14 +1763,14 @@ PanelContextMenu.prototype = {
         // menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
 
-        // menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applets"), "edit-copy", St.IconType.SYMBOLIC);
+        // menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applets"), "xsi-edit-copy", St.IconType.SYMBOLIC);
         // menu.copyAppletItem.activate = Lang.bind(menu, function() {
         //     AppletManager.copyAppletConfiguration(this.panelId);
         //     this.close(true);
         // });
         // menu.addMenuItem(menu.copyAppletItem);  // submenu item copy applet config
 
-        // menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applets"), "edit-paste", St.IconType.SYMBOLIC);
+        // menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applets"), "xsi-edit-paste", St.IconType.SYMBOLIC);
         // menu.pasteAppletItem.activate = Lang.bind(menu, function() {
         //     let dialog = new ModalDialog.ConfirmDialog(
         //             _("Pasting applet configuration will remove all existing applets on this panel. Do you want to continue?") + "\n\n",
@@ -1784,7 +1781,7 @@ PanelContextMenu.prototype = {
         // });
         // menu.addMenuItem(menu.pasteAppletItem); // submenu item paste applet config
 
-        // menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "edit-clear-all", St.IconType.SYMBOLIC);
+        // menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "xsi-edit-clear-all", St.IconType.SYMBOLIC);
         // menu.clearAppletItem.activate = Lang.bind(menu, function() {
         //     let dialog = new ModalDialog.ConfirmDialog(
         //             _("Are you sure you want to clear all applets on this panel?") + "\n\n",
@@ -1811,6 +1808,7 @@ PanelContextMenu.prototype = {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
                     function() {
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
+                        Util.spawnCommandLine("gsettings reset-recursively org.cinnamon.desktop.input-sources");
                         Main.restartCinnamon(true);
                     });
             confirm.open();
@@ -1819,7 +1817,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "preferences-desktop"));
+        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "xsi-tools"));
     },
 
     open: function(animate) {
@@ -2999,7 +2997,7 @@ Panel.prototype = {
 
         if (panelChanged) {
             // remove any tweens that might be active for autohide
-            Tweener.removeTweens(this.actor);
+            this.actor.remove_all_transitions();
 
             this.margin_top = newMarginTop;
             this.margin_bottom = newMarginBottom;
@@ -3813,7 +3811,7 @@ Panel.prototype = {
         this._leavePanel();
         this.actor.ease({
             opacity: 0,
-            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
                 this.actor.hide();
@@ -3831,7 +3829,7 @@ Panel.prototype = {
         this.actor.show();
         this.actor.ease({
             opacity: 255,
-            duration: AUTOHIDE_ANIMATION_TIME * 1000,
+            duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
@@ -3853,8 +3851,8 @@ Panel.prototype = {
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
-        let panelParams = { time: animationTime,
-                            transition: 'easeOutQuad' };
+        let panelParams = { duration: animationTime,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // set up original and destination positions and add tween
         // destination parameter
@@ -3882,23 +3880,20 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to set the actor clip region during animation.
-        panelParams['onUpdateParams'] = [origPos];
-        panelParams['onUpdate'] =
-            Lang.bind(this, function(origPos) { this._setClipRegion(false, origPos); });
-
+        panelParams['onUpdate'] = () => this._setClipRegion(false, origPos);
         // setup boxes tween - fade in as panel slides
         let boxParams = { opacity: 255,
-                          time: animationTime+0.2,
-                          transition: 'easeOutQuad' };
+                          duration: animationTime * 2,
+                          mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // show boxes and add tweens
         this._leftBox.show();
         this._centerBox.show();
         this._rightBox.show();
-        Tweener.addTween(this.actor, panelParams);
-        Tweener.addTween(this._leftBox, boxParams);
-        Tweener.addTween(this._centerBox, boxParams);
-        Tweener.addTween(this._rightBox, boxParams);
+        this.actor.ease(panelParams);
+        this._leftBox.ease(boxParams);
+        this._centerBox.ease(boxParams);
+        this._rightBox.ease(boxParams);
 
         this._hidden = false;
     },
@@ -3922,9 +3917,8 @@ Panel.prototype = {
         // if horizontal panel, animation on y. if vertical, animation on x.
         let isHorizontal = this.panelPosition == PanelLoc.top
                          || this.panelPosition == PanelLoc.bottom;
-        let animationTime = AUTOHIDE_ANIMATION_TIME;
-        let panelParams = { time: animationTime,
-                            transition: 'easeOutQuad' };
+        let panelParams = { duration: AUTOHIDE_ANIMATION_TIME,
+                            mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // setup destination position and add tween destination parameter
         // remember to always leave a vestigial 1px strip or the panel
@@ -3947,28 +3941,24 @@ Panel.prototype = {
         }
 
         // setup onUpdate tween parameter to update the actor clip region during animation
-        panelParams['onUpdateParams'] = [destPos];
-        panelParams['onUpdate'] =
-            Lang.bind(this, function(destPos) { this._setClipRegion(true, destPos); });
-
+        panelParams['onUpdate'] = () => this._setClipRegion(true, destPos);
         // hide boxes after panel slides out
-        panelParams['onComplete'] =
-            Lang.bind(this, function() {
+        panelParams['onComplete'] = () => {
                this._leftBox.hide();
                this._centerBox.hide();
                this._rightBox.hide();
-            });
+        };
 
         // setup boxes tween - fade out as panel slides out
         let boxParams = { opacity: 0,
-                          time: Math.max(0, animationTime - 0.1),
-                          transition: 'easeOutQuad' };
+                          duration: AUTOHIDE_BOX_FADE_TIME,
+                          mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // add all tweens
-        Tweener.addTween(this.actor, panelParams);
-        Tweener.addTween(this._leftBox, boxParams);
-        Tweener.addTween(this._centerBox, boxParams);
-        Tweener.addTween(this._rightBox, boxParams);
+        this.actor.ease(panelParams);
+        this._leftBox.ease(boxParams);
+        this._centerBox.ease(boxParams);
+        this._rightBox.ease(boxParams);
 
         this._hidden = true;
     },

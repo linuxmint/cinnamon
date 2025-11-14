@@ -10,7 +10,7 @@
         "page2": {
             "type": "page",
             "title": "Choosers",
-            "sections": ["section3", "section4", "section6"]
+            "sections": ["section3", "section6"]
         },
         "page3": {
             "type": "page",
@@ -46,11 +46,6 @@
             "type": "section",
             "title": "Menu settings",
             "keys": ["combo-selection", "scale-demo"]
-        },
-        "section4": {
-            "type": "section",
-            "title": "Animation settings",
-            "keys": ["tween-function", "effect-style"]
         },
         "section5": {
             "type": "section",
@@ -139,18 +134,6 @@
         "description" : "Custom Applet Label",
         "dependency" : "use-custom-label",
         "tooltip" : "Set your custom label here.  This field is unavailable unless the switch above is enabled"
-    },
-    "tween-function" : {
-        "type" : "tween",
-        "default" : "EaseNone",
-        "description" : "Animation type",
-        "tooltip": "A tween chooser has as value a string, which you can pass as transition to Tweener.addTween()"
-    },
-    "effect-style" : {
-        "type" : "effect",
-        "description" : "Effect type",
-        "default" : "none",
-        "possible" : ["none", "scale", "fade", "blend", "move", "flyUp", "flyDown", "traditional"]
     },
     "demo-button" : {
         "type" : "button",

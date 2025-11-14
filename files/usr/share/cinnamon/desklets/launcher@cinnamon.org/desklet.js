@@ -1,11 +1,11 @@
 //-*- indent-tabs-mode: nil-*-
 const Cinnamon = imports.gi.Cinnamon;
+const Clutter = imports.gi.Clutter;
 const CMenu = imports.gi.CMenu;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const St = imports.gi.St;
-const Tweener = imports.ui.tweener;
 
 const Desklet = imports.ui.desklet;
 const PopupMenu = imports.ui.popupMenu;
@@ -117,24 +117,23 @@ class CinnamonLauncherDesklet extends Desklet.Desklet {
 
     _animateIcon(step) {
         if (step >= 3) return;
-        Tweener.addTween(this._icon, {
+
+        this._icon.ease({
             width: ANIM_ICON_SIZE * global.ui_scale,
             height: ANIM_ICON_SIZE * global.ui_scale,
-            time: 0.2,
-            transition: 'easeOutQuad',
-            onComplete() {
-                Tweener.addTween(this._icon, {
+            duration: 200,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._icon.ease({
                     width: ICON_SIZE * global.ui_scale,
                     height: ICON_SIZE * global.ui_scale,
-                    time: 0.2,
-                    transition: 'easeOutQuad',
-                    onComplete() {
+                    duration: 200,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
                         this._animateIcon(step + 1);
-                    },
-                    onCompleteScope: this
+                    }
                 });
-            },
-            onCompleteScope: this
+            }
         });
     }
 

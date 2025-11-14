@@ -82,6 +82,7 @@ STANDALONE_MODULES = [
     [_("Firewall"),                   "firewall-config",                      "cs-firewall",               "admin",      _("firewall, block, filter, programs")],
     [_("Languages"),                  "mintlocale",                           "cs-language",               "prefs",      _("language, install, foreign")],
     [_("Input Method"),               "mintlocale-im",                        "cs-input-method",           "prefs",      _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
+    [_("System Information"),         "mintreport",                           "mintreport",                "hardware",   _("info, usb, pci, gpu, bios, report, crash, system")],
     [_("Login Window"),               "pkexec lightdm-settings",              "cs-login",                  "admin",      _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
     [_("Login Window"),               "lightdm-gtk-greeter-settings-pkexec",  "cs-login",                  "admin",      _("login, lightdm, manager, settings, editor")],
     [_("Login Window"),               "gdm-settings",                         "gdm-settings",              "admin",      _("login, gdm, manager, user, startup, switch")],

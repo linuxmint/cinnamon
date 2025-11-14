@@ -163,11 +163,11 @@ class MainWindow(object):
         instance_button_box.get_style_context().add_class("linked")
         toolbutton_box.pack_start(instance_button_box, False, False, 0)
 
-        self.prev_button = Gtk.Button.new_from_icon_name('go-previous-symbolic', Gtk.IconSize.BUTTON)
+        self.prev_button = Gtk.Button.new_from_icon_name('xsi-go-previous-symbolic', Gtk.IconSize.BUTTON)
         self.prev_button.set_tooltip_text(_("Previous instance"))
         instance_button_box.add(self.prev_button)
 
-        self.next_button = Gtk.Button.new_from_icon_name('go-next-symbolic', Gtk.IconSize.BUTTON)
+        self.next_button = Gtk.Button.new_from_icon_name('xsi-go-next-symbolic', Gtk.IconSize.BUTTON)
         self.next_button.set_tooltip_text(_("Next instance"))
         instance_button_box.add(self.next_button)
 
@@ -175,7 +175,7 @@ class MainWindow(object):
         toolbutton_box.set_center_widget(self.stack_switcher)
 
         self.menu_button = Gtk.MenuButton()
-        image = Gtk.Image.new_from_icon_name("open-menu-symbolic", Gtk.IconSize.BUTTON)
+        image = Gtk.Image.new_from_icon_name("xsi-open-menu-symbolic", Gtk.IconSize.BUTTON)
         self.menu_button.add(image)
         self.menu_button.set_tooltip_text(_("More options"))
         toolbutton_box.pack_end(self.menu_button, False, False, 0)

@@ -28,17 +28,15 @@ if get_option('wayland')
 endif
 
 foreach desktop_file : desktop_files
-    desktop = configure_file(
-        input: desktop_file + '.in.in',
-        output: desktop_file + '.in',
-        configuration: desktop_conf,
-    )
-
-    custom_target(
-        desktop_file,
-        input: desktop,
+    i18n.merge_file(
+        type: 'desktop',
+        input: configure_file(
+            input: desktop_file + '.in.in',
+            output: desktop_file + '.in',
+            configuration: desktop_conf,
+        ),
         output: desktop_file,
-        command: [intltool_merge, '-d', '-u', po_dir, '@INPUT@', '@OUTPUT@'],
+        po_dir: po_dir,
         install: true,
         install_dir: desktopdir,
     )
@@ -54,4 +52,13 @@ subdir('services')
 install_data(
     ['org.cinnamon.gschema.xml', 'org.cinnamon.gestures.gschema.xml'],
     install_dir: schemadir,
+)
+
+gnome.compile_resources(
+    'cinnamon-osk-layouts',
+    'cinnamon-osk-layouts.gresource.xml',
+    source_dir: 'osk-layouts',
+    gresource_bundle: true,
+    install: true,
+    install_dir: pkgdatadir
 )

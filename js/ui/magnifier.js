@@ -62,6 +62,7 @@ const CROSS_HAIRS_CLIP_KEY      = 'cross-hairs-clip';
 const KEYBINDING_SCHEMA         = "org.cinnamon.desktop.keybindings"
 const ZOOM_IN_KEY               = "magnifier-zoom-in"
 const ZOOM_OUT_KEY              = "magnifier-zoom-out"
+const ZOOM_RESET_KEY            = "magnifier-zoom-reset"
 
 let magDBusService = null;
 var magInputHandler = null;
@@ -1730,10 +1731,25 @@ MagnifierInputHandler.prototype = {
         this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
         this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
 
-        let kb = this.keybinding_settings.get_strv(ZOOM_IN_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));
-        kb = this.keybinding_settings.get_strv(ZOOM_OUT_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-out", kb, Lang.bind(this, this._zoom_out));
+        global.display.add_keybinding(
+            'magnifier-zoom-in',
+            this.keybinding_settings,
+            Meta.KeyBindingFlags.NONE,
+            this._zoom_in.bind(this)
+        );
+        global.display.add_keybinding(
+            'magnifier-zoom-out',
+            this.keybinding_settings,
+            Meta.KeyBindingFlags.NONE,
+            this._zoom_out.bind(this)
+        );
+
+        global.display.add_keybinding(
+            'magnifier-zoom-reset',
+            this.keybinding_settings,
+            Meta.KeyBindingFlags.NONE,
+            this._zoom_reset.bind(this)
+        );
     },
 
     _disable_zoom: function() {
@@ -1745,8 +1761,9 @@ MagnifierInputHandler.prototype = {
         this._zoom_in_id = 0;
         this._zoom_out_id = 0;
 
-        Main.keybindingManager.removeHotKey("magnifier-zoom-in");
-        Main.keybindingManager.removeHotKey("magnifier-zoom-out");
+        global.display.remove_keybinding("magnifier-zoom-in")
+        global.display.remove_keybinding("magnifier-zoom-out")
+        global.display.remove_keybinding("magnifier-zoom-reset")
     },
 
     _refresh_state: function() {
@@ -1787,6 +1804,20 @@ MagnifierInputHandler.prototype = {
                 this.magnifier.setActive(false);
                 this.zoom_active = false;
             }
+            try {
+                this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
+            } catch (e) {
+                this._refresh_state();
+            }
+        }
+    },
+
+    _zoom_reset: function(display, screen, event, kb, action) {
+        if (this.zoom_active) {
+            this.current_zoom = 1.0
+            this.magnifier.setActive(false);
+            this.zoom_active = false;
+
             try {
                 this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
             } catch (e) {

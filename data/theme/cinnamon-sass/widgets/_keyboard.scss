@@ -1,35 +1,67 @@
-// on screen keyboard
+/* On-screen Keyboard */
 
-#keyboard { background-color: $bg_color; }
+$key_border_radius: $base_border_radius + 3px;
 
-.keyboard {
- &-layout {
-    padding: $base_padding;
-    spacing: $base_padding;
+$default_key_bg_color: $bg_color;
+$non_alpha_key_color: $light_bg_color;
+$shifted_key_color: $lightest_bg_color;
+
+#virtual-keyboard {
+  background-color: $panel_bg;
+}
+
+// the container for individual keys
+.vkeyboard-key-container {
+  padding: $base_margin;
+  spacing: $base_margin;
+}
+
+// the keys
+.vkeyboard-key {
+
+  @include button(normal);
+
+  &:focus { @include button(focus);}
+  &:hover, &:checked { @include button(hover);}
+  &:active { @include button(active); }
+
+  @include fontsize(20px);
+  border-width: 1px;
+  border-style: solid;
+  border-radius: $key_border_radius;
+
+  background-color: $lighter_bg_color;
+
+  &.shift-key-lowercase, &.escape-key, &.hide-key, &.non-alpha-key {
+    background-color: $non_alpha_key_color;
+
+    &:focus { @include button(focus);}
+    &:hover, &:checked { @include button(hover);}
+    &:active { @include button(active); }
+
   }
 
-  &-row { spacing: $base_padding; }
+  &.shift-key-uppercase { background-color: $shifted_key_color }
+  &.enter-key { background-color: $accent_bg_color }
 
-  &-key {
-    @extend %button;
+  StIcon { icon-size: 1.125em; }
+}
 
-    min-height: 2em;
-    min-width: 2em;
-    padding: 0;
-    font-size: 1.2em;
-    font-weight: bold;
+// long press on a key popup
+.vkeyboard-subkeys {
+  color: $fg_color;
+  -arrow-border-radius: $base_border_radius;
+  -arrow-background-color: $bg_color;
+  -arrow-border-width: 1px;
+  -arrow-border-color: lighten($bg_color, 9%);
+  -arrow-base: 20px;
+  -arrow-rise: 10px;
+  -boxpointer-gap: $base_padding;
+}
 
-    &:grayed { @include button(insensitive); }
-  }
-
-  &-subkeys {
-    padding: $base_padding;
-    -arrow-background-color: $bg_color;
-    -arrow-border-width: 1px;
-    -arrow-border-radius: $base_border_radius;
-    -arrow-border-color: lighten($borders_color, 10%);
-    -arrow-base: 20px;
-    -arrow-rise: 10px;
-    -boxpointer-gap: 0;
-  }
+// suggestions
+.word-suggestions {
+  @include fontsize(18px);
+  spacing: 20px;
+  min-height: 20pt;
 }
