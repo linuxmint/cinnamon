@@ -16,7 +16,7 @@ option('build_recorder',
 option('nm_agent',
     type: 'combo',
     choices: ['internal', 'external', 'disabled'],
-    value: 'disabled',
+    value: 'internal',
     description: 'Which network agent to use - internal: use built-in, external: require nm-applet in the session, disabled: not using NetworkManager'
 )
 option('py3modules_dir',
