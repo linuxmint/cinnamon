@@ -33,7 +33,8 @@ JSON_SETTINGS_PROPERTIES_MAP = {
     "icon_categories"  : "icon_categories",
     "default_category" : "default_category",
     "show-seconds"     : "show_seconds",
-    "show-buttons"     : "show_buttons"
+    "show-buttons"     : "show_buttons",
+    "hidden-buttons"   : "hidden_buttons"
 }
 
 OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
