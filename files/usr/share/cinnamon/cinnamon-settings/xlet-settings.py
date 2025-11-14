@@ -136,8 +136,9 @@ class MainWindow(object):
             self.xlet_dir = f"{home}/.local/share/cinnamon/{self.type}s/{self.uuid}"
 
         if os.path.exists(f"{self.xlet_dir}/metadata.json"):
-            raw_data = open(f"{self.xlet_dir}/metadata.json").read()
-            self.xlet_meta = json.loads(raw_data)
+            with open(f"{self.xlet_dir}/metadata.json") as f:
+                raw_data = f.read()
+                self.xlet_meta = json.loads(raw_data)
         else:
             print(f"Could not find {self.type} metadata for uuid {self.uuid} - are you sure it's installed correctly?")
             quit()

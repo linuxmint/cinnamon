@@ -262,7 +262,7 @@ class MainWindow(Gio.Application):
     # Create the UI
     def __init__(self, parsed_args):
         Gio.Application.__init__(self,
-                                 application_id=f"org.cinnamon.Settings_{os.getpid():d}",
+                                 application_id=f"org.cinnamon.Settings_{os.getpid()}",
                                  flags=Gio.ApplicationFlags.NON_UNIQUE | Gio.ApplicationFlags.HANDLES_OPEN)
         self.builder = Gtk.Builder()
         self.builder.set_translation_domain('cinnamon')  # let it translate!
@@ -800,9 +800,9 @@ SORT_TYPE can be specified by number or name as follows:
         if args.module in TABS:
             print(f"Available tabs for '{args.module}':")
             for key in TABS[args.module]:
-                print("    {key}")
+                print(f"    {key}")
         else:
-            print("Module '{args.module}' does not have any tabs.")
+            print(f"Module '{args.module}' does not have any tabs.")
         exit(0)
 
     if args.panel is not None and args.module not in ("applets", "panel"):

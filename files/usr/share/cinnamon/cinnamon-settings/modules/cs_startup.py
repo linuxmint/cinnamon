@@ -629,7 +629,7 @@ class AutostartBox(Gtk.Box):
         max_tries = 100
         while (self.find_app_with_basename(basename) is not None and
                i < max_tries):
-            filename = f"{base_path}-{i:d}.desktop"
+            filename = f"{base_path}-{i}.desktop"
             basename = os.path.basename(filename)
             i += 1
 
@@ -863,7 +863,7 @@ class AppDialog(Gtk.Dialog):
             if error_msg is not None:
                 msg_box = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,
                                             Gtk.ButtonsType.CANCEL,
-                                            f"{error_msg}")
+                                            error_msg)
                 error_msg = None
                 msg_box.run()
                 msg_box.destroy()

@@ -259,7 +259,7 @@ class DefaultAppChooserButton(Gtk.AppChooserButton):
         info = button.get_app_info()
 
         if info:
-            print("{info.get_name()}: ")
+            print(f"{info.get_name()}: ")
 
             supported_mimetypes = info.get_supported_types()
             hardcoded_mimetypes = None

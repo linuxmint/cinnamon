@@ -777,7 +777,7 @@ class ThreadedIconView(Gtk.IconView):
                     else:
                         label = os.path.split(to_load["filename"])[1]
                     if "artist" in to_load:
-                        artist = f"{to_load["artist"]}\n"
+                        artist = f"{to_load['artist']}\n"
                     else:
                         artist = ""
                     dimensions = f"{pix[1]}x{pix[2]}"

@@ -814,7 +814,7 @@ class Module:
             if name is None:
                 name = _("Unknown")
 
-            label = "{name}: "
+            label = f"{name}: "
 
             self.appList[deviceId] = VolumeBar(self.controller.get_vol_max_norm(),
                                          100,

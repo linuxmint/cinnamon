@@ -293,10 +293,10 @@ class Module:
     def id_or_monitor_position_used(self, kept_panels, monitor_layout, panel_id, monitor_id, position):
         for keeper in kept_panels:
             if keeper.panel_id == panel_id:
-                print(f"cs_panel: Ignoring panel definition with an already-used ID: (ID: {panel_id}, Monitor: {monitor_id:d}, Position: {position})")
+                print(f"cs_panel: Ignoring panel definition with an already-used ID: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})")
                 return True
             if monitor_layout[monitor_id].position_used(position):
-                print(f"cs_panel: Ignoring panel definition with an already-used monitor:position: (ID: {panel_id}, Monitor: {monitor_id:d}, Position: {position})")
+                print(f"cs_panel: Ignoring panel definition with an already-used monitor:position: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})")
                 return True
         return False
 
@@ -328,7 +328,7 @@ class Module:
             monitor_id = int(monitor_id)
 
             if monitor_id >= n_mons:
-                print(f"cs_panel: Ignoring panel definition with a monitor out of range: (ID: {panel_id}, Monitor: {monitor_id:d}, Position: {position})")
+                print(f"cs_panel: Ignoring panel definition with a monitor out of range: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})")
             elif self.id_or_monitor_position_used(already_defined_panels, monitor_layout, panel_id, monitor_id, position):
                 removals.append(def_)
                 continue

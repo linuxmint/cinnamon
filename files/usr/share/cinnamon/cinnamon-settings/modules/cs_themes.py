@@ -869,7 +869,7 @@ class Module:
                     theme_name = theme_info['name']
                     theme_path_val = theme_info['path'] # Renamed theme_path to avoid conflict
                     try:
-                        for path_option in [f"{theme_path_val}/{theme_name}/{path_suffix}/thumbnail.png"
+                        for path_option in [f"{theme_path_val}/{theme_name}/{path_suffix}/thumbnail.png",
                                      f"/usr/share/cinnamon/thumbnails/{path_suffix}/{theme_name}.png",
                                      f"/usr/share/cinnamon/thumbnails/{path_suffix}/unknown.png"]:
                             if os.path.exists(path_option):
