@@ -434,21 +434,24 @@ function start() {
     placesManager = new PlacesManager.PlacesManager();
 
     // NM Agent
-    if (Config.BUILT_NM_AGENT && global.settings.get_boolean("enable-nm-agent")) {
-        networkAgent = new NetworkAgent.NetworkAgent();
-        global.log('NetworkManager agent: enabled')
+    if (Config.BUILT_NM_AGENT) {
+        if (global.settings.get_boolean("enable-nm-agent")) {
+            networkAgent = new NetworkAgent.NetworkAgent();
+            global.log('NetworkManager agent: enabled')
+        } else {
+            global.log('NetworkManager agent: disabled by settings')
+        }
     }
     else {
-        global.log('NetworkManager agent: disabled')
+        global.log('NetworkManager agent: disabled in build')
     }
 
     // Polkit Agent
     if (global.settings.get_boolean("enable-polkit-agent")) {
         PolkitAuthenticationAgent.init();
-        global.log('Polkit agent: enabled')
     }
     else {
-        global.log('Polkit agent: disabled')
+        global.log('Polkit agent: disabled by settings')
     }
 
     // SSH Agent
@@ -457,7 +460,7 @@ function start() {
         global.log('SSH agent: enabled')
     }
     else {
-        global.log('SSH agent: disabled')
+        global.log('SSH agent: disabled by settings')
     }
 
     magnifier = new Magnifier.Magnifier();

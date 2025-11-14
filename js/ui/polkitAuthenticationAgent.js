@@ -557,11 +557,16 @@ var AuthenticationAgent = class {
             const csSessionId = session.SessionId;
 
             let procSessionId = this._native.register();
-            if (!Meta.is_wayland_compositor() && procSessionId !== csSessionId) {
+            if (procSessionId !== csSessionId) {
                 global.logWarning("Unable to register as the polkit agent for login session '%s'. Cinnamon is running under '%s'"
                                   .format(csSessionId, procSessionId));
                 this._native.unregister();
                 this._native = null;
+
+                if (Meta.is_wayland_compositor()) {
+                    global.logWarning("Please log out and back in to correct this.")
+                    return;
+                }
 
                 // Starting cinnamon over SSH can be useful when debugging and profiling. Provide a way to prevent a restart.
                 if (!GLib.getenv("CINNAMON_ALLOW_SSH")) {
@@ -569,9 +574,11 @@ var AuthenticationAgent = class {
                     GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 5, () => session.RestartCinnamonLauncherRemote())
                     return;
                 }
+            } else {
+                global.log("Cinnamon registered as the Polkit agent for the active session (%s)".format(procSessionId));
             }
         } catch(e) {
-            global.log('Failed to register Polkit Agent', e);
+            global.logWarning('Failed to register Polkit Agent', e);
         }
         this._currentDialog = null;
     }
