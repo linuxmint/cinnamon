@@ -912,12 +912,8 @@ MessageTray.prototype = {
             else if (!this._notificationsEnabled) {
                 if (notificationsPending) {
                     this._notification = this._notificationQueue.shift();
-                    if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
-                        this.emit('notify-applet-update', this._notification);
-                    } else {
-                        this._notification.destroy(NotificationDestroyedReason.DISMISSED);
-                        this._notification = null;
-                    }
+                    this._notification.destroy(NotificationDestroyedReason.DISMISSED);
+                    this._notification = null;
                 }
             }
         } else if (this._notificationState == State.SHOWN) {
