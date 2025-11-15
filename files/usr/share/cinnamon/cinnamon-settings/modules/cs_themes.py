@@ -826,7 +826,7 @@ class Module:
 
                 with open(icon_cache_path, 'w') as cache_file:
                     for theme_name, icon_path_val in icon_paths.items(): # Renamed icon_path to avoid conflict
-                        cache_file.write(f'{theme_name}:{icon_path_val}\\n')
+                        cache_file.write(f'{theme_name}:{icon_path_val}\n')
 
         else:
             if path_suffix == "cinnamon":
