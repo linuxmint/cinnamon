@@ -145,7 +145,7 @@ cinnamon (6.4.0) xia; urgency=medium
   * theme: Use a margin around the menus
   * theme: Update the thumbnail
   * layout.js: Add a monitorConstraint object
-  * Redesign the workspace swithc OSD
+  * Redesign the workspace switch OSD
   * Redesign the media keys OSD
 
   [ Michael Webster ]
@@ -423,7 +423,7 @@ cinnamon (6.2.0) wilma; urgency=medium
   * power applet: Fix reported battery status (#12053)
 
   [ Michael Webster ]
-  * panel.js: Don't re-declare x_mon when converting panel defs.
+  * panel.js: Don't redeclare x_mon when converting panel defs.
   * cs_panel.py: Fix behavior when there are overlapping definitions.
   * panel.js: Improve handling of invalid/duplicate panel definitions.
 
@@ -576,7 +576,7 @@ cinnamon (6.2.0) wilma; urgency=medium
 cinnamon (6.0.4) virginia; urgency=medium
 
   [ Fabio Fantoni ]
-  * Move gir files to private path (#11999)
+  * Move git files to private path (#11999)
 
   [ FamiliarGecko ]
   * fixing applet tooltips clipping out the top as well. (#11991)
@@ -854,7 +854,7 @@ cinnamon (5.8.4) victoria; urgency=medium
   * cinnamon-close-dialog: Fix dialog text (#11739)
 
   [ kacperpaczos ]
-  * Align labels in rows in the preffered applications to center (#11733)
+  * Align labels in rows in the preferred applications to center (#11733)
 
   [ Anaxímeno Brito ]
   * cinnamon ui: improve overview animation (#11734)
@@ -922,7 +922,7 @@ cinnamon (5.8.2) victoria; urgency=medium
 
   [ Michael Webster ]
   * Improve gesture settings, inform the user about common failure reasons.
-  * cs_gestures.py: Use opacity and not visiblity for hiding/showing the stack switcher.
+  * cs_gestures.py: Use opacity and not visibility for hiding/showing the stack switcher.
 
   [ Clement Lefebvre ]
   * l10n: Update POT
@@ -1005,7 +1005,7 @@ cinnamon (5.8.0) victoria; urgency=medium
   * Use pseudo class 'hover' instead of class ... (#11473)
 
   [ sphh ]
-  * Enables extensions marked to overide version check to be removed. (#11510)
+  * Enables extensions marked to override version check to be removed. (#11510)
 
   [ Rick Calixte ]
   * Remove simple-system-monitor@ariel as a known conflict (#11591)
@@ -1020,7 +1020,7 @@ cinnamon (5.8.0) victoria; urgency=medium
   * cinnamon-desktop-editor: Use a path when setting a panel-launcher icon.
 
   [ Attila Greguss ]
-  * Provide `.gir` files in cinnamon package (#11335)
+  * Provide `.git` files in cinnamon package (#11335)
 
   [ Anaxímeno Brito ]
   * fix: update workspace switcher layout on monitors update signal (#11523)
@@ -1094,7 +1094,7 @@ cinnamon (5.8.0) victoria; urgency=medium
   * Use stage coordinates for cogl_framebuffer_read_pixels().
 
   [ Bobby Rong ]
-  * main.js: re-declare Main.gpu_offload_supported (#11685)
+  * main.js: redeclare Main.gpu_offload_supported (#11685)
 
   [ Florian Wickert ]
   * Save/restore NO_GAIL and NO_AT_BRIDGE environment variables (#11673)
@@ -1754,7 +1754,7 @@ cinnamon (5.4.0) vanessa; urgency=medium
 
   [ Eli Schwartz ]
   * gtkdoc: remove dependencies on custom target files (#10606)
-  * Revert "build: disable gir install via list to pacify meson >= 0.60.2 (#10489)" (#10596)
+  * Revert "build: disable git install via list to pacify meson >= 0.60.2 (#10489)" (#10596)
 
   [ Michael Webster ]
   * cinnamon-app: Don't try to offload PrefersNonDefaultGPU if offloading isn't currently supported.
@@ -1815,7 +1815,7 @@ cinnamon (5.4.0) vanessa; urgency=medium
   * grouped-window-list: spacing between items is now defined by CSS (#10669)
 
   [ Andreas Müller ]
-  * Do not crash on systemd/tzdata reporting Univeral timezone
+  * Do not crash on systemd/tzdata reporting Universal timezone
 
   [ slowscript ]
   * Menu applet: show application actions
@@ -1992,7 +1992,7 @@ cinnamon (5.2.4) una; urgency=medium
 
   [ Michael Webster ]
   * window effects: Fix maximize effect.
-  * notificationDaemon.js: Remove call to non-existant Source method.
+  * notificationDaemon.js: Remove call to non-existent Source method.
 
  -- Clement Lefebvre <root@linuxmint.com>  Tue, 07 Dec 2021 17:44:17 +0000
 
@@ -2007,7 +2007,7 @@ cinnamon (5.2.3) una; urgency=medium
 cinnamon (5.2.2) una; urgency=medium
 
   [ Jan Beich ]
-  * build: disable gir install via list to pacify meson >= 0.60.2 (#10489)
+  * build: disable git install via list to pacify meson >= 0.60.2 (#10489)
 
   [ Michael Webster ]
   * JsonSettingsWidgets.py: Don't escape non-ascii characters when saving the json file.
@@ -2033,7 +2033,7 @@ cinnamon (5.2.1) una; urgency=medium
   * calendar: Don't use the new string format style for translatable strings.
   * calendar applet: Reset the periodic timer when settings change.
   * cinnamon.css: Move height element to affect the events box only.
-  * Make cinnamon-settings a minimal GApplication to accomodate webkit.
+  * Make cinnamon-settings a minimal GApplication to accommodate webkit.
 
   [ Clement Lefebvre ]
   * l10n: Update POT
@@ -2060,7 +2060,7 @@ cinnamon (5.2.0) una; urgency=medium
   * cinnamon-subprocess-wrapper: Set the exception result as bytes, not a string.
 
   [ Joshua Peisach ]
-  * meson girs: Export gir names as a package Fixes an issue with the package tag in the gir not being generated.
+  * meson girs: Export git names as a package Fixes an issue with the package tag in the git not being generated.
 
   [ fredcw ]
   * Change method of making "Clear list" label bold.. (#10178)
@@ -2176,7 +2176,7 @@ cinnamon (5.2.0) una; urgency=medium
   * notifications: Simplify source code (#10144)
 
   [ AxXxB ]
-  * keyboard applet: Remove unneccesary 'if' in offsets calculation (#10168)
+  * keyboard applet: Remove unnecessary 'if' in offsets calculation (#10168)
   * JsonSettingsWidgets.py: remove keyword argument `encoding` (#10458)
   * keyboard applet: Respect "icon-size" when panel is vertical (#10456)
 
@@ -2306,7 +2306,7 @@ cinnamon (5.0.0) uma; urgency=medium
   * power applet: Adjust warning and critical levels to match the correctly colored icons in the set.
   * power applet: Fix handling of the panel info display to filter out non-percentage devices when multi-device is enabled.
   * meson.build: Re-enable build with pointer barriers support.
-  * menu applet: Only count alpha-numeric characters in search matching.
+  * menu applet: Only count alphanumeric characters in search matching.
   * menu applet: sort all search result types equally.
   * power applet: Fix icon style class logic.
   * meson.build: Restore some more missing config definitions from pre-meson builds.
@@ -2404,7 +2404,7 @@ cinnamon (5.0.0) uma; urgency=medium
 
   [ Lurux ]
   * Implement optional "switch categories by clicking" in menu applet
-  * Update settings shema with new "switch categories by hovering" toggle
+  * Update settings schema with new "switch categories by hovering" toggle
 
   [ Lars Mueller ]
   * Fix a flatpak window mismatch
@@ -2447,7 +2447,7 @@ cinnamon (4.8.6) ulyssa; urgency=medium
   * Remove executable from xapp-status applet files (#9820)
 
   [ Michael Webster ]
-  * messageTray.js: Remove call to nonexistant method.
+  * messageTray.js: Remove call to nonexistent method.
 
   [ Clement Lefebvre ]
   * spices: Fix URL timestamp not being used
@@ -2788,7 +2788,7 @@ cinnamon (4.8.0) ulyssa; urgency=medium
 
   [ ronyalaluf ]
   * fix apps being reactive during panel-edit-mode
-  * Fix tooltip lables stuck on after menu cycle
+  * Fix tooltip labels stuck on after menu cycle
 
   [ Lars Mueller ]
   * Improve integration of flatpak apps for side-by-side installations
@@ -2797,7 +2797,7 @@ cinnamon (4.8.0) ulyssa; urgency=medium
   * fix icon getting hidden in panel-edit-mode when toggling show-empty-tray setting
 
   [ Mirko Girgenti ]
-  * [FEAUTURE] [BETTER THEMING] Add applet uuid formatted as style class name (#9677)
+  * [FEATURE] [BETTER THEMING] Add applet uuid formatted as style class name (#9677)
 
   [ Clement Lefebvre ]
   * Icons: Make system settings use preferences-desktop instead of preferences-system
@@ -3044,7 +3044,7 @@ cinnamon (4.6.0) ulyana; urgency=medium
   * hotCorner.js: fix codacy complaints
 
   [ Michael Webster ]
-  * xlet-settings.py: Allow the settings window height to dynamically  increase to accomodate translations.
+  * xlet-settings.py: Allow the settings window height to dynamically  increase to accommodate translations.
 
   [ steve ]
   * calendar@cinnamon.org - add keybinding to show calendar
@@ -3276,7 +3276,7 @@ cinnamon (4.4.0) tricia; urgency=medium
 
   [ Clement Lefebvre ]
   * Panel: Rework context menu
-  * Remove unecessary npm/gulp files
+  * Remove unnecessary npm/gulp files
 
   [ Simon Brown ]
   * panel: minor corrections after context menu change (#8840)
@@ -3468,7 +3468,7 @@ cinnamon (4.4.0) tricia; urgency=medium
   * ExtensionCore.py: generate download spices tab on demand
 
   [ Eli Schwartz ]
-  * Revert the incorrect and problematic addition of overlinking in Cinnamon-0.1.gir (#8972)
+  * Revert the incorrect and problematic addition of overlinking in Cinnamon-0.1.git (#8972)
 
   [ James Ross ]
   * sound-applet: don't error when missing input or output
@@ -3574,7 +3574,7 @@ cinnamon (4.2.0) tina; urgency=medium
   * st-texture-cache: use a slightly more efficient linked list method (#8488)
 
   [ Eli Schwartz ]
-  * PIL: remove unnnecessary version check and code fork (#8496)
+  * PIL: remove unnecessary version check and code fork (#8496)
 
   [ Jason Hicks ]
   * Make the sync method configurable (#8481)
@@ -4179,7 +4179,7 @@ cinnamon (4.0.1) tessa; urgency=medium
   * melange/lookingGlass: better object inspection (#7978)
 
   [ Germán Franco ]
-  * gwl: Remove unnecesary styles that make themes look bad by default (#8005)
+  * gwl: Remove unnecessary styles that make themes look bad by default (#8005)
 
   [ Jason Hicks ]
   * indicatorManager: Fix icons not appearing (#7999)
@@ -4255,7 +4255,7 @@ cinnamon (4.0.0) tessa; urgency=medium
 
   [ Stephen Collins ]
   * Spices.py: don't set permissions on the source files when installing from a local folder via cinnamon-install-spice (#7913)
-  * settings.js: fix updgrade so that settings don't get overwritten by the default (#7915)
+  * settings.js: fix upgrade so that settings don't get overwritten by the default (#7915)
 
   [ Jason Hicks ]
   * Move restart handling to Muffin, reload theme on video memory purged errors (#7908)
@@ -4414,7 +4414,7 @@ cinnamon (4.0.0) tessa; urgency=medium
   [ Jason Hicks ]
   * Misc. clean-up
   * Remove Firefox bookmarks, history, and most visited
-  * gulpfile: Clear the system xlet directory incase of file removal, add some sanity checks
+  * gulpfile: Clear the system xlet directory in case of file removal, add some sanity checks
   * Fix some Codacy issues
   * Add dedicated style classes, remove theme work-arounds
   * Add a specific focus pseudo class for Mint-Y
@@ -4682,7 +4682,7 @@ cinnamon (3.8.2) tara; urgency=medium
 
   [ Stephen Collins ]
   * Spices.py: refactor downloading code for better error handling
-  * Spices.py: fix file permissions durring install
+  * Spices.py: fix file permissions during install
 
   [ Michael Webster ]
   * Spices.py: Handle the cinnamon proxy better regardless of whether cinnamon is running or not.
@@ -4918,7 +4918,7 @@ cinnamon (3.8.0) tara; urgency=medium
   * User settings: Fix a couple of broken things in LMDE 3
 
   [ Mikhail Bodrov ]
-  * Optimize RegExprs in ui serach (#7242)
+  * Optimize RegExprs in ui search (#7242)
   * Optimize appFavorites (#7239)
 
   [ Clement Lefebvre ]
@@ -5290,7 +5290,7 @@ cinnamon (3.6.3) sylvia; urgency=medium
   * add Adwaita-dark thumbnails (#7015)
 
   [ Stephen Collins ]
-  * extesion settings: scan system folder for extensions. While we don't ship with any extensions, other distros may choose to do so
+  * extension settings: scan system folder for extensions. While we don't ship with any extensions, other distros may choose to do so
 
   [ brownsr ]
   * initialise applet position to avoid drag and drop errors in edit mode occasionally the null applet position was being carried through to the writing of the new applet causing apparent drop failures, and to the disappearance of the highlighted drop box.  Much visible weirdness with a very simple solution
@@ -5386,7 +5386,7 @@ cinnamon (3.6.0) sylvia; urgency=medium
   [ itzexor ]
   * main.js: remove obsolete Meta enum member reference
   * workspace.js: use our normal prototype init method
-  * workspace.js: initalize WindowClone._zoomStep to 0
+  * workspace.js: initialize WindowClone._zoomStep to 0
 
   [ NikoKrause ]
   * slideshow-applet: fix translation
@@ -5495,7 +5495,7 @@ cinnamon (3.6.0) sylvia; urgency=medium
   * various: replace deprecated macros
 
   [ Michael Webster ]
-  * recent applet: the visibility check can be distilled into just checking if the recent list is not empty, and clutter_actor_show/_hide do their own visiblity check before doing anything.
+  * recent applet: the visibility check can be distilled into just checking if the recent list is not empty, and clutter_actor_show/_hide do their own visibility check before doing anything.
   * notification applet: don't change the icon when panel-edit mode changes - just show it, whatever its icon.  Also, no need to check for existing visibility, we want it to show regardless.
 
   [ Jason Hicks ]
@@ -5585,7 +5585,7 @@ cinnamon (3.6.0) sylvia; urgency=medium
   * panel.js: use new updateChrome helper from LayoutManager
 
   [ NikoKrause ]
-  * spices about dialog: clearify what the date means ...
+  * spices about dialog: clarify what the date means ...
 
   [ Stephen Collins ]
   * dnd: call handleDragOut on a drop tartget (if available) when leaving the area, and use this function to remove the drag placeholder when dragging an applet. This fixes an issue where the drag placeholder would get stuck after a dnd, leaving an empty space with no applets
@@ -5777,7 +5777,7 @@ cinnamon (3.4.4) sonya; urgency=medium
 
   [ Michael Webster ]
   * classicSwitcher.js: Fix hidpi issues.
-  * KeybindingWidgets.py: fix parsing of accelerators that are shifted but not alpha-numeric characters.
+  * KeybindingWidgets.py: fix parsing of accelerators that are shifted but not alphanumeric characters.
   * xlet-settings.py: Don't crash when an invalid xlet id is provided.
 
   [ itzexor ]
@@ -5866,7 +5866,7 @@ cinnamon (3.4.2) sonya; urgency=medium
   * Remove unused dep
 
   [ Michael Webster ]
-  * osdWindow: get the correct child allocation when calculating the width of the level bar.  If a padding or margin is added to the level-bar style class, it was causing the parent bin to expand to accomodate the child's width plus its required padding.
+  * osdWindow: get the correct child allocation when calculating the width of the level bar.  If a padding or margin is added to the level-bar style class, it was causing the parent bin to expand to accommodate the child's width plus its required padding.
   * Revert "StScrollView: queue redraws whenever the adjustments change, to prevent"
 
  -- Clement Lefebvre <root@linuxmint.com>  Tue, 20 Jun 2017 16:16:34 +0200
@@ -6010,7 +6010,7 @@ cinnamon (3.4.0) sonya; urgency=medium
   * window-list: Don't lose our focus style class when opening the context menu
 
   [ Stephen Collins ]
-  * Settings widgets range: Add an optional argument to show the current value of on the scale widget. This was originally the way it worked in the xlet settings, but with the rework, that functionality wasn't reimplemented. This rendered the settings of several applets less usefull. This pull request reimplements the functionality for applets and also makes it available for cinnamon settings as well.
+  * Settings widgets range: Add an optional argument to show the current value of on the scale widget. This was originally the way it worked in the xlet settings, but with the rework, that functionality wasn't reimplemented. This rendered the settings of several applets less useful. This pull request reimplements the functionality for applets and also makes it available for cinnamon settings as well.
   * Show desktop applet: fix preview being stuck by keyboard-triggered menu open
   * settings.js: Rebuild the settings file if it becomes corrupted. If the settings have already been loaded, we use the latest version we have, otherwise we restore from defaults.
 
@@ -6034,7 +6034,7 @@ cinnamon (3.4.0) sonya; urgency=medium
   * cs_startup.py: Add a "Run now" button for when a row is selected.
 
   [ Stephen Collins ]
-  * Make sure applets that don't support vertical panels don't get droped on a vertical panel. This was happening with at least some applets, causing them to 'disappear', and could only be recovered by removing them from applet settings and readding them again.
+  * Make sure applets that don't support vertical panels don't get dropped on a vertical panel. This was happening with at least some applets, causing them to 'disappear', and could only be recovered by removing them from applet settings and readding them again.
 
   [ JosephMcc ]
   * cinnamon-settings: Fix some sliders being drawn backwards
@@ -6235,7 +6235,7 @@ cinnamon (3.4.0) sonya; urgency=medium
   [ Jason Hicks ]
   * js/ui/tooltip.js: Check if this.mousePosition is defined
   * Move this.mousePosition initial assignment to TooltipBase
-  * Supress CJS mozjs38 warnings in applet, dbusMenu, indicator...
+  * Suppress CJS mozjs38 warnings in applet, dbusMenu, indicator...
   * Correct indentation
 
   [ SteveMoto ]
@@ -6275,12 +6275,12 @@ cinnamon (3.4.0) sonya; urgency=medium
 cinnamon (3.2.8) serena; urgency=medium
 
   [ Michael Webster ]
-  * menu applet: Only construct one context menu for recent files, and re-use it.
-  * cs_screensaver.py: Re-use the Gtk.Socket always - it can hold both Gtk.Plugs and normal Gtk.Widgets, just treat it like a normal bin/container.  This seems to assist on ref-cleanup and child reaping when switching screensavers. (observed on Arch, reported on Arch and Fedora)
+  * menu applet: Only construct one context menu for recent files, and reuse it.
+  * cs_screensaver.py: Reuse the Gtk.Socket always - it can hold both Gtk.Plugs and normal Gtk.Widgets, just treat it like a normal bin/container.  This seems to assist on ref-cleanup and child reaping when switching screensavers. (observed on Arch, reported on Arch and Fedora)
   * menu applet: Don't reconstruct recent files, just re-order, add, remove as required.
-  * menu applet: Fix a couple of minor leaks (actors created but never added to a container - being GInitiallyUnowned, they never get their floating ref sunk, and so can't be unreffed.  Fix a prototype mis-match, and just rename GenericButton to NoRecentDocsButton, since that's the only user of it.
+  * menu applet: Fix a couple of minor leaks (actors created but never added to a container - being GInitiallyUnowned, they never get their floating ref sunk, and so can't be unreffed.  Fix a prototype mismatch, and just rename GenericButton to NoRecentDocsButton, since that's the only user of it.
   * menu applet: Some fixes for previous commits, don't be so destructive when refreshing applications.
-  * Revert "cs_screensaver.py: Re-use the Gtk.Socket always - it can hold both Gtk.Plugs"
+  * Revert "cs_screensaver.py: Reuse the Gtk.Socket always - it can hold both Gtk.Plugs"
   * Fix tuples for python 3.6
   * tooltips.js: add a hide timer to check if a tooltip should hide itself, but for various reasons never got to act on a leave-event (due to vagaries in event reporting).
   * recent applet: Rework to be non-destructive when updating the recent list (this brings a lot of the recent changes to the menu applet over to this one.)
@@ -6473,7 +6473,7 @@ cinnamon (3.2.2) serena; urgency=medium
 cinnamon (3.2.1) serena; urgency=medium
 
   [ kloun ]
-  * rm obsolute and unsupport NEWS file
+  * rm obsolute and unsupported NEWS file
 
   [ Michael Webster ]
   * keyboard applet: Fix positioning of the flag render within its actor.
@@ -6522,7 +6522,7 @@ cinnamon (3.2.0) serena; urgency=medium
   [ Stephen Collins ]
   * Settings: switch gsettings widgets to use new settings backend:
   * Add json settings backend to settings widgets
-  * settings.js: rewrite to simplify code and aviod the use of object.watch() which can be costly on resources
+  * settings.js: rewrite to simplify code and avoid the use of object.watch() which can be costly on resources
   * Revamp the xlet settings: - xlet settings now open in their own window/process - matches new style of cinnamon settings - now supports pages and sections in the settings file - instances are now automatically highlighted in the panel when the instance is selected in the settings window (uses a new 'highlight' pseudoclass) - uses the new JSON backend for easier maintenance and simplification of the code - added support for backendable widgets which were not previously available to the xlet settings api - updated for newer Gtk versions - added a new configure function to applets and desklets
   * Udate some of the applets and desklet to use the new settings api
 
@@ -6634,7 +6634,7 @@ cinnamon (3.2.0) serena; urgency=medium
   * window-list: Allow themes to control spacing between items
 
   [ brownsr ]
-  * vertical panels: put the notification count under the notification symbol This keeps things central in the panel and avoids problems with the panel width being able to accomodate icon+text label unless there is a silly number of notifications.
+  * vertical panels: put the notification count under the notification symbol This keeps things central in the panel and avoids problems with the panel width being able to accommodate icon+text label unless there is a silly number of notifications.
 
   [ Marcus Lundgren ]
   * sound applet: Removed unnecessary call to remove player.
@@ -6932,7 +6932,7 @@ cinnamon (3.2.0) serena; urgency=medium
   * avoid varying space between month and day
 
   [ Clement Lefebvre ]
-  * screensaver setttings: Rephrase some of the msgids
+  * screensaver settings: Rephrase some of the msgids
   * Xlet settings: Add support for alpha colors in ColorChooser
   * Fix JS warning
   * Tooltips: Round coordinates
@@ -7276,7 +7276,7 @@ cinnamon (2.8.4) rosa; urgency=medium
 
   [ Lars Mueller ]
   * Fix a timer issue in TooltipBase In rare cases, two enter events occurred without a leave event in between, leaving an orphaned _showTimer behind
-  * Same fix for the overriden _onEnterEvent in the window list applet as in TooltipBase
+  * Same fix for the overridden _onEnterEvent in the window list applet as in TooltipBase
 
   [ pixunil ]
   * Sound applet: Fetch the status of Loop and Shuffle at the beginning, not just on update
@@ -7336,7 +7336,7 @@ cinnamon (2.8.1) rosa; urgency=medium
   * fixed code execution by replacing os.system() w/ subprocess.call(), pep8 formatting
 
   [ pixunil ]
-  * Panel launchers applet: syncronize with settings with correct variable Caused issues when adding, moving or removing items
+  * Panel launchers applet: synchronize with settings with correct variable Caused issues when adding, moving or removing items
 
   [ Michael Webster ]
   * capi.py: Handle the failure to locate c-c-c modules more gracefully.
