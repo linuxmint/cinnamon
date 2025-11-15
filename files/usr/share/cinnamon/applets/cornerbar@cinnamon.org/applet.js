@@ -84,6 +84,10 @@ class CinnamonBarApplet extends Applet.Applet {
     }
 
     handleDragOver(source, actor, x, y, time){
+        if (global.settings.get_boolean("panel-edit-mode")) {
+            return;
+        }
+
         this.show_desktop();
     }
 

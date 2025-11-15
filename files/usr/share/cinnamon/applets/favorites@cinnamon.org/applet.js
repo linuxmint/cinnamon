@@ -42,7 +42,7 @@ class CinnamonFavoriteApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.set_applet_icon_symbolic_name("xapp-user-favorites-symbolic");
+        this.set_applet_icon_symbolic_name("xsi-user-favorites-symbolic");
         this.set_applet_tooltip(_("Favorites"));
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);

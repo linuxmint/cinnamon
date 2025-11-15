@@ -16,7 +16,6 @@ const Separator = imports.ui.separator;
 const Main = imports.ui.main;
 const Util = imports.misc.util;
 const Mainloop = imports.mainloop;
-const Tweener = imports.ui.tweener;
 const Interfaces = imports.misc.interfaces;
 
 const STATUS_UNKNOWN = 0;
@@ -683,7 +682,7 @@ class EventList {
         let no_events_icon = new St.Icon(
             {
                 style_class: "calendar-events-no-events-icon",
-                icon_name: 'x-office-calendar',
+                icon_name: 'xsi-x-office-calendar',
                 icon_type: St.IconType.SYMBOLIC,
                 icon_size: 48
             }
@@ -977,7 +976,7 @@ class EventRow {
         if (this.use_24h) {
             time_format = "%H:%M";
         } else {
-            time_format = "%l:%M %p";
+            time_format = "%-l:%M %p";
         }
 
         let final_str = "";

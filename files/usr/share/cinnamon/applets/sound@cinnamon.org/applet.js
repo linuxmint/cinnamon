@@ -107,6 +107,16 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
             this.icon = new St.Icon({icon_name: this.app_icon, icon_type: St.IconType.FULLCOLOR, icon_size: 16});
         }
 
+        this.icon.reactive = true;
+        this.icon.track_hover = true;
+        this.icon.connect('button-press-event', (actor, event) => {
+            if (this.stream && event.get_button() === 1) {
+                this.stream.change_is_muted(!this.stream.is_muted);
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+
         this.removeActor(this._slider);
         this.addActor(this.icon, {span: 0});
         this.addActor(this._slider, {span: -1, expand: true});
@@ -562,7 +572,7 @@ class Player extends PopupMenu.PopupMenuSection {
         this._title = _("Unknown Title");
         this.trackInfo = new St.BoxLayout({style_class: 'sound-player-overlay', important: true, vertical: true});
         let artistInfo = new St.BoxLayout();
-        let artistIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "system-users", style_class: 'popup-menu-icon' });
+        let artistIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "xsi-users", style_class: 'popup-menu-icon' });
         this.artistLabel = new St.Label({text:this._artist});
         this.artistLabel.clutterText.line_wrap = true;
         this.artistLabel.clutterText.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
@@ -570,7 +580,7 @@ class Player extends PopupMenu.PopupMenuSection {
         artistInfo.add_actor(artistIcon);
         artistInfo.add_actor(this.artistLabel);
         let titleInfo = new St.BoxLayout();
-        let titleIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "audio-x-generic", style_class: 'popup-menu-icon' });
+        let titleIcon = new St.Icon({ icon_type: St.IconType.SYMBOLIC, icon_name: "xsi-audio-x-generic", style_class: 'popup-menu-icon' });
         this.titleLabel = new St.Label({text:this._title});
         this.titleLabel.clutterText.line_wrap = true;
         this.titleLabel.clutterText.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
@@ -586,16 +596,16 @@ class Player extends PopupMenu.PopupMenuSection {
 
         // Playback controls
         let trackControls = new St.Bin({x_align: St.Align.MIDDLE});
-        this._prevButton = new ControlButton("media-skip-backward",
+        this._prevButton = new ControlButton("xsi-media-skip-backward",
                                              _("Previous"),
                                              () => this._mediaServerPlayer.PreviousRemote());
-        this._playButton = new ControlButton("media-playback-start",
+        this._playButton = new ControlButton("xsi-media-playback-start",
                                              _("Play"),
                                              () => this._mediaServerPlayer.PlayPauseRemote());
-        this._stopButton = new ControlButton("media-playback-stop",
+        this._stopButton = new ControlButton("xsi-media-playback-stop",
                                              _("Stop"),
                                              () => this._mediaServerPlayer.StopRemote());
-        this._nextButton = new ControlButton("media-skip-forward",
+        this._nextButton = new ControlButton("xsi-media-skip-forward",
                                              _("Next"),
                                              () => this._mediaServerPlayer.NextRemote());
         this.trackInfo.add_actor(trackControls);
@@ -610,10 +620,10 @@ class Player extends PopupMenu.PopupMenuSection {
         this.controls.add_actor(this._nextButton.getActor());
         trackControls.set_child(this.controls);
 
-        this._loopButton = new ControlButton("media-playlist-consecutive", _("Consecutive Playing"), () => this._toggleLoopStatus());
+        this._loopButton = new ControlButton("xsi-media-playlist-consecutive", _("Consecutive Playing"), () => this._toggleLoopStatus());
         this.controls.add_actor(this._loopButton.getActor());
 
-        this._shuffleButton = new ControlButton("media-playlist-shuffle", _("No Shuffle"), () => this._toggleShuffle());
+        this._shuffleButton = new ControlButton("xsi-media-playlist-shuffle", _("No Shuffle"), () => this._toggleShuffle());
         this.controls.add_actor(this._shuffleButton.getActor());
 
         // Position slider
@@ -660,7 +670,7 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _showCanRaise() {
-        let btn = new ControlButton("go-up", _("Open Player"), () => {
+        let btn = new ControlButton("xsi-go-up", _("Open Player"), () => {
             if (this._name.toLowerCase() === "spotify") {
                 // Spotify isn't able to raise via Dbus once its main UI is closed
                 Util.spawn(['spotify']);
@@ -674,7 +684,7 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _showCanQuit() {
-        let btn = new ControlButton("window-close", _("Quit Player"), () => {
+        let btn = new ControlButton("xsi-window-close", _("Quit Player"), () => {
             this._mediaServer.QuitRemote();
             this._applet.menu.close();
         }, true);
@@ -809,20 +819,20 @@ class Player extends PopupMenu.PopupMenuSection {
             return;
         this._playerStatus = status;
         if (status == "Playing") {
-            this._playButton.setData("media-playback-pause", _("Pause"));
-            this.playerIcon.set_icon_name("media-playback-start");
+            this._playButton.setData("xsi-media-playback-pause", _("Pause"));
+            this.playerIcon.set_icon_name("xsi-media-playback-start");
             this._applet.setAppletTextIcon(this, true);
             this._seeker.play();
         }
         else if (status == "Paused") {
-            this._playButton.setData("media-playback-start", _("Play"));
-            this.playerIcon.set_icon_name("media-playback-pause");
+            this._playButton.setData("xsi-media-playback-start", _("Play"));
+            this.playerIcon.set_icon_name("xsi-media-playback-pause");
             this._applet.setAppletTextIcon(this, false);
             this._seeker.pause();
         }
         else if (status == "Stopped") {
-            this._playButton.setData("media-playback-start", _("Play"));
-            this.playerIcon.set_icon_name("media-playback-stop");
+            this._playButton.setData("xsi-media-playback-start", _("Play"));
+            this.playerIcon.set_icon_name("xsi-media-playback-stop");
             this._applet.setAppletTextIcon(this, false);
             this._seeker.stop();
         } else {
@@ -847,11 +857,11 @@ class Player extends PopupMenu.PopupMenuSection {
         this._loopButton.actor.visible = this._applet.extendedPlayerControl && this._mediaServerPlayer.LoopStatus;
 
         if(status === "None")
-            this._loopButton.setData("media-playlist-consecutive-symbolic", _("Consecutive Playing"));
+            this._loopButton.setData("xsi-media-playlist-consecutive-symbolic", _("Consecutive Playing"));
         else if(status === "Track")
-            this._loopButton.setData("media-playlist-repeat-song", _("Repeat Single"));
+            this._loopButton.setData("xsi-media-playlist-repeat-song", _("Repeat Single"));
         else if(status === "Playlist")
-            this._loopButton.setData("media-playlist-repeat", _("Repeat All"));
+            this._loopButton.setData("xsi-media-playlist-repeat", _("Repeat All"));
 
         this._loopButton.setActive(status !== "None");
     }
@@ -863,7 +873,7 @@ class Player extends PopupMenu.PopupMenuSection {
     _setShuffle(status) {
         this._shuffleButton.actor.visible = this._applet.extendedPlayerControl && this._mediaServerPlayer.Shuffle;
 
-        this._shuffleButton.setData("media-playlist-shuffle", status? _("Shuffle") : _("No Shuffle"));
+        this._shuffleButton.setData("xsi-media-playlist-shuffle", status? _("Shuffle") : _("No Shuffle"));
         this._shuffleButton.setActive(status);
     }
 
@@ -976,7 +986,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.menuManager.addMenu(this.menu);
         this._setKeybinding();
 
-        this.set_applet_icon_symbolic_name('audio-x-generic');
+        this.set_applet_icon_symbolic_name('xsi-audio-x-generic');
 
         this._players = {};
         this._playerItems = [];
@@ -1040,7 +1050,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this._output = null;
         this._outputMutedId = 0;
-        this._outputIcon = "audio-volume-muted";
+        this._outputIcon = "xsi-audio-volume-muted";
 
         this._input = null;
         this._inputMutedId = 0;
@@ -1051,8 +1061,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this.actor.connect('scroll-event', (...args) => this._onScrollEvent(...args));
 
-        this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "audio-volume-muted", St.IconType.SYMBOLIC);
-        this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "microphone-sensitivity-muted", St.IconType.SYMBOLIC);
+        this.mute_out_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute output"), false, "xsi-audio-volume-muted", St.IconType.SYMBOLIC);
+        this.mute_in_switch = new PopupMenu.PopupSwitchIconMenuItem(_("Mute input"), false, "xsi-microphone-sensitivity-muted", St.IconType.SYMBOLIC);
         this._applet_context_menu.addMenuItem(this.mute_out_switch);
         this._applet_context_menu.addMenuItem(this.mute_in_switch);
         if (this.alwaysShowMuteInput)
@@ -1324,11 +1334,11 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             if (path && player && (player === true || player._playerStatus == 'Playing')) {
                 this.setIcon(path, "player-path");
             } else {
-                this.setIcon('media-optical-cd-audio', 'player-name');
+                this.setIcon('xsi-media-optical-cd-audio', 'player-name');
             }
         }
         else {
-            this.setIcon('audio-x-generic', 'player-name');
+            this.setIcon('xsi-audio-x-generic', 'player-name');
         }
     }
 
@@ -1619,7 +1629,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._outputMutedId = this._output.connect('notify::is-muted', (...args) => this._mutedChanged(...args, '_output'));
             this._mutedChanged (null, null, '_output');
         } else {
-            this.setIcon("audio-volume-muted-symbolic", "output");
+            this.setIcon("xsi-audio-volume-muted-symbolic", "output");
         }
     }
 

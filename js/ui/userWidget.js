@@ -18,7 +18,8 @@ class Avatar extends St.Bin {
         let themeContext = St.ThemeContext.get_for_stage(global.stage);
         params = Params.parse(params, {
             styleClass: 'user-icon',
-            reactive: false,
+            reactive: true,
+            track_hover: true,
             iconSize: AVATAR_ICON_SIZE,
         });
 
@@ -28,6 +29,8 @@ class Avatar extends St.Bin {
             width: params.iconSize * themeContext.scaleFactor,
             height: params.iconSize * themeContext.scaleFactor,
         });
+
+        this.connect('notify::hover', this._onHoverChanged.bind(this));
 
         this.set_important(true);
         this._iconSize = params.iconSize;
@@ -43,6 +46,27 @@ class Avatar extends St.Bin {
             themeContext.connect('notify::scale-factor', this.update.bind(this));
 
         this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    _onHoverChanged() {
+        if (this.hover) {
+            if (this.child) {
+                this.child.add_style_class_name('highlighted');
+            }
+            else {
+                let effect = new Clutter.BrightnessContrastEffect();
+                effect.set_brightness(0.2);
+                effect.set_contrast(0.3);
+                this.add_effect(effect);
+            }
+        } else {
+            if (this.child) {
+                this.child.remove_style_class_name('highlighted');
+            }
+            else {
+                this.clear_effects();
+            }
+        }
     }
 
     vfunc_style_changed() {
@@ -101,7 +125,7 @@ class Avatar extends St.Bin {
         } else {
             this.style = null;
             this.child = new St.Icon({
-                icon_name: 'avatar-default-symbolic',
+                icon_name: 'xsi-avatar-default-symbolic',
                 icon_size: this._iconSize,
             });
         }
@@ -128,7 +152,7 @@ class UserWidget extends St.BoxLayout {
 
         this._avatar = new Avatar(user);
         this._avatar.x_align = Clutter.ActorAlign.CENTER;
-        this.add_child(this._avatar);
+        this.add(this._avatar, { x_fill: false });
 
         this._label = new St.Label({ style_class: 'user-widget-label' });
         this._label.y_align = Clutter.ActorAlign.CENTER;

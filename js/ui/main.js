@@ -56,6 +56,8 @@
  * @systrayManager (Systray.SystrayManager): The systray manager
  * @gesturesManager (GesturesManager.GesturesManager): Gesture support  from ToucheEgg.
  *
+ * @keyboardManager (KeyboardManager.KeyboardManager): Handle keyboard layouts.
+ * 
  * @osdWindow (OsdWindow.OsdWindow): Osd window that pops up when you use media
  * keys.
  * @tracker (Cinnamon.WindowTracker): The window tracker
@@ -78,6 +80,7 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GioUnix = imports.gi.GioUnix;
 const GLib = imports.gi.GLib;
 const Gtk = imports.gi.Gtk;
 const Mainloop = imports.mainloop;
@@ -131,6 +134,7 @@ const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
+const {KeyboardManager} = imports.ui.keyboardManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -166,7 +170,8 @@ var magnifier = null;
 var locatePointer = null;
 var xdndHandler = null;
 var statusIconDispatcher = null;
-var virtualKeyboard = null;
+var virtualKeyboardManager = null;
+var inputMethod = null;
 var layoutManager = null;
 var networkAgent = null;
 var monitorLabeler = null;
@@ -183,6 +188,7 @@ var systrayManager = null;
 var wmSettings = null;
 var pointerSwitcher = null;
 var gesturesManager = null;
+var keyboardManager = null;
 var workspace_names = [];
 
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
@@ -253,6 +259,12 @@ function _initUserSession() {
     });
 }
 
+function _loadOskLayouts() {
+    _oskResource = Gio.Resource.load('%s/cinnamon-osk-layouts.gresource'.format(global.datadir));
+    _oskResource._register();
+    St.TextureCache.get_default().get_icon_theme().add_resource_path('/org/cinnamon/osk-layouts');
+}
+
 function do_shutdown_sequence() {
     panelManager.panels.forEach(function (panel) {
         panel.actor.hide();
@@ -312,9 +324,9 @@ function start() {
     // Chain up async errors reported from C
     global.connect('notify-error', function (global, msg, detail) { notifyError(msg, detail); });
 
-    Gio.DesktopAppInfo.set_desktop_env('X-Cinnamon');
+    GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
 
     new CinnamonPortalHandler();
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
@@ -343,7 +355,6 @@ function start() {
     global.stage.background_color = DEFAULT_BACKGROUND_COLOR;
     global.stage.no_clear_hint = true;
 
-    Gtk.IconTheme.get_default().append_search_path("/usr/share/cinnamon/icons/");
     _defaultCssStylesheet = global.datadir + '/theme/cinnamon.css';
 
     soundManager = new SoundManager.SoundManager();
@@ -404,12 +415,7 @@ function start() {
         layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
-
-    if (Meta.is_wayland_compositor()) {
-        monitorLabeler = new MonitorLabeler();
-    } else {
-        monitorLabeler = null;
-    }
+    monitorLabeler = new MonitorLabeler();
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
@@ -423,27 +429,29 @@ function start() {
 
     wm = new imports.ui.windowManager.WindowManager();
     messageTray = new MessageTray.MessageTray();
-    virtualKeyboard = new VirtualKeyboard.Keyboard();
     notificationDaemon = new NotificationDaemon.NotificationDaemon();
     windowAttentionHandler = new WindowAttentionHandler.WindowAttentionHandler();
     placesManager = new PlacesManager.PlacesManager();
 
     // NM Agent
-    if (Config.BUILT_NM_AGENT && global.settings.get_boolean("enable-nm-agent")) {
-        networkAgent = new NetworkAgent.NetworkAgent();
-        global.log('NetworkManager agent: enabled')
+    if (Config.BUILT_NM_AGENT) {
+        if (global.settings.get_boolean("enable-nm-agent")) {
+            networkAgent = new NetworkAgent.NetworkAgent();
+            global.log('NetworkManager agent: enabled')
+        } else {
+            global.log('NetworkManager agent: disabled by settings')
+        }
     }
     else {
-        global.log('NetworkManager agent: disabled')
+        global.log('NetworkManager agent: disabled in build')
     }
 
     // Polkit Agent
     if (global.settings.get_boolean("enable-polkit-agent")) {
         PolkitAuthenticationAgent.init();
-        global.log('Polkit agent: enabled')
     }
     else {
-        global.log('Polkit agent: disabled')
+        global.log('Polkit agent: disabled by settings')
     }
 
     // SSH Agent
@@ -452,14 +460,13 @@ function start() {
         global.log('SSH agent: enabled')
     }
     else {
-        global.log('SSH agent: disabled')
+        global.log('SSH agent: disabled by settings')
     }
 
     magnifier = new Magnifier.Magnifier();
     locatePointer = new LocatePointer.locatePointer();
 
     layoutManager.init();
-    virtualKeyboard.init();
     overview.init();
     expo.init();
 
@@ -498,6 +505,18 @@ function start() {
     GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
         Meta.register_with_session();
         return GLib.SOURCE_REMOVE;
+    });
+
+    _loadOskLayouts();
+    keyboardManager = new KeyboardManager();
+    inputMethod = new InputMethod.InputMethod();
+    Clutter.get_default_backend().set_input_method(inputMethod);
+    virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
+    virtualKeyboardManager.connect("enabled-changed", () => {
+        if (runDialog !== null) {
+            runDialog.destroy();
+            runDialog = null;
+        }
     });
 
     Promise.all([
@@ -548,11 +567,14 @@ function start() {
         global.connect('shutdown', do_shutdown_sequence);
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
+    }).catch(error => {
+        global.logError(`promise failed: ${error}`);
     });
 }
 
 function updateAnimationsEnabled() {
     animations_enabled = !(software_rendering) && global.settings.get_boolean("desktop-effects-workspace");
+    St.Settings.get().animations_enabled = animations_enabled;
     cinnamonDBusService.notifyAnimationsEnabled();
 }
 

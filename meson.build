@@ -37,7 +37,7 @@ atk = dependency('atk-bridge-2.0')
 gio = dependency('gio-2.0', version: '>= 2.36.0')
 gio_unix = dependency('gio-unix-2.0')
 gl = dependency('gl')
-glib_version = '2.52.0'
+glib_version = '2.79.2'
 glib = dependency('glib-2.0', version: '>= ' + glib_version)
 gtk = dependency('gtk+-3.0', version: '>= 3.12.0')
 muffin = dependency('libmuffin-0', version: '>= 5.2.0')
@@ -79,7 +79,6 @@ message('Building recorder: @0@'.format(get_option('build_recorder')))
 cc = meson.get_compiler('c')
 math = cc.find_library('m', required: false)
 
-intltool_merge = find_program('intltool-merge')
 python = find_program('python3')
 
 # generate config.h
@@ -170,10 +169,18 @@ configure_file(
     install_dir: 'share/cinnamon/js/misc/'
 )
 
+
+excluded_files = []
+if get_option('exclude_info_settings')
+    excluded_files += ['usr/share/applications/cinnamon-settings-info.desktop']
+    excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_info.py']
+endif
+
 install_subdir(
     'files',
     install_dir: '/',
     strip_directory: true,
+    exclude_files : excluded_files
 )
 
 session_files = ['cinnamon.session', 'cinnamon2d.session']

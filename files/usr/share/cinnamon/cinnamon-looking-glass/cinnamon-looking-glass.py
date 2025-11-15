@@ -470,13 +470,13 @@ class MelangeApp(Gtk.Application):
         table.attach(self.notebook, 0, num_columns, 0, 1)
 
         column = 0
-        picker_button = pageutils.ImageButton("color-select-symbolic")
+        picker_button = pageutils.ImageButton("xsi-color-select-symbolic")
         picker_button.set_tooltip_text("Select an actor to inspect")
         picker_button.connect("clicked", self.on_picker_clicked)
         table.attach(picker_button, column, column+1, 1, 2, 0, 0, 2)
         column += 1
 
-        full_gc = pageutils.ImageButton("user-trash-full-symbolic")
+        full_gc = pageutils.ImageButton("xsi-user-trash-full-symbolic")
         full_gc.set_tooltip_text("Invoke garbage collection")
         # ignore signal arg
         full_gc.connect('clicked', lambda source: self.lg_proxy.FullGc())

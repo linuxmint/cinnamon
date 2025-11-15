@@ -118,40 +118,40 @@ function deviceKindToString(kind) {
 function deviceKindToIcon(kind, icon) {
     switch (kind) {
         case UPDeviceKind.MONITOR:
-            return ("video-display");
+            return ("xsi-video-display");
         case UPDeviceKind.MOUSE:
-            return ("input-mouse");
+            return ("xsi-input-mouse");
         case UPDeviceKind.KEYBOARD:
-            return ("input-keyboard");
+            return ("xsi-input-keyboard");
         case UPDeviceKind.PHONE:
         case UPDeviceKind.MEDIA_PLAYER:
-            return ("phone-apple-iphone");
+            return ("xsi-phone-apple-iphone");
         case UPDeviceKind.TABLET:
-            return ("input-tablet");
+            return ("xsi-input-tablet");
         case UPDeviceKind.COMPUTER:
-            return ("computer");
+            return ("xsi-computer");
         case UPDeviceKind.GAMING_INPUT:
-            return ("input-gaming");
+            return ("xsi-input-gaming");
         case UPDeviceKind.TOUCHPAD:
-            return ("input-touchpad");
+            return ("xsi-input-touchpad");
         case UPDeviceKind.HEADSET:
-            return ("audio-headset");
+            return ("xsi-audio-headset");
         case UPDeviceKind.SPEAKERS:
-            return ("audio-speakers");
+            return ("xsi-audio-speakers");
         case UPDeviceKind.HEADPHONES:
-            return ("audio-headphones");
+            return ("xsi-audio-headphones");
         case UPDeviceKind.PRINTER:
-            return ("printer");
+            return ("xsi-printer");
         case UPDeviceKind.SCANNER:
-            return ("scanner");
+            return ("xsi-scanner");
         case UPDeviceKind.CAMERA:
-            return ("camera-photo");
+            return ("xsi-camera-photo");
         default:
             if (icon) {
                 return icon;
             }
             else {
-                return ("battery-full");
+                return ("xsi-battery-level-100");
             }
     }
 }
@@ -473,7 +473,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     _onPanelEditModeChanged() {
         if (global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             if (!this.actor.visible) {
-                this.set_applet_icon_symbolic_name("battery-missing");
+                this.set_applet_icon_symbolic_name("xsi-battery-missing");
                 this.set_applet_enabled(true);
             }
         }
@@ -604,15 +604,15 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         if (icon) {
             if (this.panel_icon_name != icon) {
                 this.panel_icon_name = icon;
-                this.set_applet_icon_symbolic_name('battery-full');
+                this.set_applet_icon_symbolic_name('xsi-battery-level-100');
                 let gicon = Gio.icon_new_for_string(icon);
                 this._applet_icon.gicon = gicon;
             }
         }
         else {
-            if (this.panel_icon_name != 'battery-full') {
-                this.panel_icon_name = 'battery-full';
-                this.set_applet_icon_symbolic_name('battery-full');
+            if (this.panel_icon_name != 'xsi-battery-level-100') {
+                this.panel_icon_name = 'xsi-battery-level-100';
+                this.set_applet_icon_symbolic_name('xsi-battery-level-100');
             }
         }
 
@@ -788,15 +788,15 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         if (icon) {
                             if (icon != this.panel_icon_name) {
                                 this.panel_icon_name = icon;
-                                this.set_applet_icon_symbolic_name('battery-full');
+                                this.set_applet_icon_symbolic_name('xsi-battery-level-100');
                                 let gicon = Gio.icon_new_for_string(icon);
                                 this._applet_icon.gicon = gicon;
                             }
                         }
                         else {
-                            if (this.panel_icon_name != 'battery-full') {
-                                this.panel_icon_name = 'battery-full';
-                                this.set_applet_icon_symbolic_name('battery-full');
+                            if (this.panel_icon_name != 'xsi-battery-level-100') {
+                                this.panel_icon_name = 'xsi-battery-level-100';
+                                this.set_applet_icon_symbolic_name('xsi-battery-level-100');
                             }
                         }
                     }
@@ -806,14 +806,14 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         if (this.brightness.actor.visible) {
                             // Show the brightness info
                             this.set_applet_tooltip(_("Brightness"));
-                            this.panel_icon_name = 'display-brightness';
-                            this.set_applet_icon_symbolic_name('display-brightness');
+                            this.panel_icon_name = 'xsi-display-brightness';
+                            this.set_applet_icon_symbolic_name('xsi-display-brightness');
                         }
                         else if (this.keyboard.actor.visible) {
                             // Show the brightness info
                             this.set_applet_tooltip(_("Keyboard backlight"));
-                            this.panel_icon_name = 'keyboard-brightness';
-                            this.set_applet_icon_symbolic_name('keyboard-brightness');
+                            this.panel_icon_name = 'xsi-keyboard-brightness';
+                            this.set_applet_icon_symbolic_name('xsi-keyboard-brightness');
                         }
                         else {
                             // Disable the applet

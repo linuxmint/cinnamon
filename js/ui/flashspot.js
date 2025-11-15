@@ -1,12 +1,10 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
-
+const Clutter = imports.gi.Clutter;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 
-const FLASHSPOT_ANIMATION_TIME = 0.4; // seconds
+const FLASHSPOT_ANIMATION_TIME = 200; // seconds
 
 var Flashspot = class Flashspot extends Lightbox.Lightbox {
     constructor(area) {
@@ -28,14 +26,15 @@ var Flashspot = class Flashspot extends Lightbox.Lightbox {
    }
 
    fire() {
-      this.actor.opacity = 255;
-      Tweener.addTween(this.actor,
-                      { opacity: 0,
-                        time: this.animation_time,
-                        transition: 'easeOutQuad',
-                        onComplete: Lang.bind(this, this._onFireShowComplete)
-                      });
-      this.actor.show();
+        this.actor.show();
+        this.actor.opacity = 255;
+        this.actor.ease({
+            opacity: 0,
+            duration: this.animation_time,
+            animationRequired: true,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._onFireShowComplete()
+        });
    }
 
    _onFireShowComplete () {

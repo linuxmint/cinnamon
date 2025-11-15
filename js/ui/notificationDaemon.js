@@ -172,10 +172,10 @@ NotificationDaemon.prototype = {
             switch (hints.urgency) {
                 case Urgency.LOW:
                 case Urgency.NORMAL:
-                    stockIcon = 'dialog-information-symbolic';
+                    stockIcon = 'xsi-dialog-information-symbolic';
                     break;
                 case Urgency.CRITICAL:
-                    stockIcon = 'dialog-error-symbolic';
+                    stockIcon = 'xsi-dialog-error-symbolic';
                     break;
             }
             return new St.Icon({ icon_name: stockIcon,

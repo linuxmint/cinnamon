@@ -22,17 +22,17 @@ class CinnamonSettingsApplet extends Applet.IconApplet {
 
         switch (neworientation) {
             case St.Side.LEFT:
-                icon_name = "go-next";
+                icon_name = "xsi-go-next";
                 break;
             case St.Side.RIGHT:
-                icon_name = "go-previous";
+                icon_name = "xsi-go-previous";
                 break;
             case St.Side.TOP:
-                icon_name = "go-down";
+                icon_name = "xsi-go-down";
                 break;
             case St.Side.BOTTOM:
             default:
-                icon_name = "go-up";
+                icon_name = "xsi-go-up";
                 break;
         }
 

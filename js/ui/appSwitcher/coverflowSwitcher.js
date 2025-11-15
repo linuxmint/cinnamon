@@ -1,14 +1,10 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Graphene = imports.gi.Graphene;
 const Config = imports.misc.config;
-
-const Tweener = imports.ui.tweener;
 const AppSwitcher3D = imports.ui.appSwitcher.appSwitcher3D;
 
-const TRANSITION_TYPE = 'easeOutQuad';
 const SIDE_ANGLE = 60;
 const BLEND_OUT_ANGLE = 30;
 
@@ -74,11 +70,10 @@ CoverflowSwitcher.prototype = {
             this._animatePreviewToSide(preview, i, gravity, xOffset, {
                 opacity: 0,
                 rotation_angle_y: angle,
-                time: animation_time,
-                transition: TRANSITION_TYPE,
-                onCompleteParams: [preview, i, gravity],
-                onComplete: this._onFlipIn,
-                onCompleteScope: this,
+                duration: animation_time,
+                animationRequired: true,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => this._onFlipIn(preview, i, gravity)
             });
         }
     },
@@ -103,9 +98,7 @@ CoverflowSwitcher.prototype = {
         preview.rotation_angle_y = angleStart;
         preview.x = xOffsetStart + 50 * (index - this._currentIndex);
         let lastExtraParams = {
-            onCompleteParams: [],
-            onComplete: this._onFlipComplete,
-            onCompleteScope: this
+            onComplete: () => this._onFlipComplete(),
         };
         let oppositeGravity = (gravity == Clutter.Gravity.WEST) ? Clutter.Gravity.EAST : Clutter.Gravity.WEST;
         
@@ -122,8 +115,9 @@ CoverflowSwitcher.prototype = {
             let extraParams = {
                 opacity: 255,
                 rotation_angle_y: angleEnd,
-                time: animation_time,
-                transition: TRANSITION_TYPE
+                animationRequired: true,
+                duration: animation_time,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD
             };
             
             if (preview._cfIsLast)
@@ -141,41 +135,40 @@ CoverflowSwitcher.prototype = {
     },
     
     _animatePreviewToMid: function(preview, oldGravity, animation_time, extraParams) {
-        let rotation_vertex_x = (oldGravity == Clutter.Gravity.EAST) ? preview.width / 2 : -preview.width / 2;
         preview.move_anchor_point_from_gravity(Clutter.Gravity.CENTER);
-        preview.rotation_center_y = new Graphene.Point3D({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
+        preview.set_pivot_point( 0.5, 0.0 );
         preview.raise_top();
-        let tweenParams = {
+        let easeParams = {
             opacity: 255,
             x: this._xOffsetCenter,
             y: this._yOffset,
             width: preview.target_width,
             height: preview.target_height,
             rotation_angle_y: 0.0,
-            time: animation_time,
-            transition: TRANSITION_TYPE
+            animationRequired: true,
+            duration: animation_time,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
         };
         
         if(extraParams)
-            appendParams(tweenParams, extraParams);
+            appendParams(easeParams, extraParams);
         
-        Tweener.addTween(preview, tweenParams);
+        preview.ease(easeParams);
     },
     
     _animatePreviewToSide: function(preview, index, gravity, xOffset, extraParams) {
         preview.move_anchor_point_from_gravity(gravity);
-        preview.rotation_center_y = new Graphene.Point3D({ x: 0.0, y: 0.0, z: 0.0 });
+        preview.set_pivot_point( 0.0, 0.0 );
 
-        let tweenParams = {
+        let easeParams = {
             x: xOffset + 50 * (index - this._currentIndex),
             y: this._yOffset,
             width: Math.max(preview.target_width_side * (10 - Math.abs(index - this._currentIndex)) / 10, 0),
             height: Math.max(preview.target_height_side * (10 - Math.abs(index - this._currentIndex)) / 10, 0),
         };
         
-        appendParams(tweenParams, extraParams);
-        
-        Tweener.addTween(preview, tweenParams);
+        appendParams(easeParams, extraParams);
+        preview.ease(easeParams);
     },
 
     _updateList: function() {
@@ -198,16 +191,18 @@ CoverflowSwitcher.prototype = {
                 this._animatePreviewToSide(preview, i, Clutter.Gravity.WEST, this._xOffsetLeft, {
                     opacity: 255,
                     rotation_angle_y: SIDE_ANGLE,
-                    time: animation_time,
-                    transition: TRANSITION_TYPE
+                    animationRequired: true,
+                    duration: animation_time,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
             } else if (i > this._currentIndex) {
                 preview.lower_bottom();
                 this._animatePreviewToSide(preview, i, Clutter.Gravity.EAST, this._xOffsetRight, {
                     opacity: 255,
                     rotation_angle_y: -SIDE_ANGLE,
-                    time: animation_time,
-                    transition: TRANSITION_TYPE
+                    animationRequired: true,
+                    duration: animation_time,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 });
             }
         }

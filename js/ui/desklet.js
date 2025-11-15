@@ -233,7 +233,7 @@ var Desklet = class Desklet {
 
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {
             this.context_menu_item_configure = new PopupMenu.PopupMenuItem(_("Configure..."));
-            this.context_menu_item_configure.connect("activate", Lang.bind(this, this.configureDesklet));
+            this.context_menu_item_configure.connect("activate", (e) => this.configureDesklet());
             this._menu.addMenuItem(this.context_menu_item_configure);
         }
 
@@ -279,6 +279,7 @@ var Desklet = class Desklet {
     }
 
     configureDesklet(tab=0) {
+        if (typeof tab !== "number") tab = 0;
         Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 }

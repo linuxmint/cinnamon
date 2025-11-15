@@ -12,19 +12,14 @@ const Mainloop = imports.mainloop;
 
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Main = imports.ui.main;
-const Tweener = imports.ui.tweener;
 const WindowUtils = imports.misc.windowUtils;
 
-const INITIAL_DELAY_TIMEOUT = 150;
-const CHECK_DESTROYED_TIMEOUT = 100;
-const TRANSITION_TYPE = 'easeOutQuad';
 const ICON_SIZE = 64;
-const ICON_SIZE_BIG = 128;
 const ICON_TITLE_SPACING = 10;
 const PREVIEW_SCALE = 0.5;
 
 const TITLE_POSITION = 7/8; // percent position
-var ANIMATION_TIME = 0.25; // seconds
+var ANIMATION_TIME = 250; // ms
 const SWITCH_TIME_DELAY = 100; // milliseconds
 const DIM_FACTOR = 0.4; // percent
 
@@ -79,10 +74,10 @@ AppSwitcher3D.prototype = {
 
         Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(false); });
 
-        Tweener.addTween(this._background, {
+        this._background.ease({
             dim_factor: DIM_FACTOR,
-            time: ANIMATION_TIME,
-            transition: TRANSITION_TYPE
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
 
         this._initialDelayTimeoutId = 0;
@@ -108,16 +103,10 @@ AppSwitcher3D.prototype = {
                 continue;
             }
 
-            let rotation_vertex_x = 0.0;
-            if (preview.get_anchor_point_gravity() == Clutter.Gravity.EAST) {
-                rotation_vertex_x = preview.width / 2;
-            } else if (preview.get_anchor_point_gravity() == Clutter.Gravity.WEST) {
-                rotation_vertex_x = -preview.width / 2;
-            }
             preview.move_anchor_point_from_gravity(compositor.get_anchor_point_gravity());
-            preview.rotation_center_y = new Graphene.Point3D({ x: rotation_vertex_x, y: 0.0, z: 0.0 });
+            preview.set_pivot_point( 0.5, 0.0 );
 
-            Tweener.addTween(preview, {
+            preview.ease({
                 opacity: (!metaWin.minimized && metaWin.get_workspace() == currentWorkspace
                     || metaWin.is_on_all_workspaces()) ? endOpacity : 0,
                 x: ((metaWin.minimized) ? 0 : compositor.x) - monitor.x,
@@ -125,9 +114,9 @@ AppSwitcher3D.prototype = {
                 width: (metaWin.minimized) ? 0 : compositor.width,
                 height: (metaWin.minimized) ? 0 : compositor.height,
                 rotation_angle_y: 0.0,
-                time: ANIMATION_TIME,
-                transition: TRANSITION_TYPE,
-                onComplete: Lang.bind(preview, preview.destroy),
+                duration: ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => preview.destroy()
             });
         }
     },
@@ -149,12 +138,12 @@ AppSwitcher3D.prototype = {
         Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(true); });
 
         // background
-        Tweener.removeTweens(this._background);
-        Tweener.addTween(this._background, {
+        this._background.remove_all_transitions();
+        this._background.ease({
             dim_factor: 1.0,
-            time: ANIMATION_TIME,
-            transition: TRANSITION_TYPE,
-            onComplete: Lang.bind(this, this._destroyActors),
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._destroyActors()
         });
         this._disableMonitorFix();
     },
@@ -236,11 +225,13 @@ AppSwitcher3D.prototype = {
 
         // window title label
         if (this._windowTitle) {
-            Tweener.addTween(this._windowTitle, {
+            let oldWindowTitle = this._windowTitle;
+
+            this._windowTitle.ease({
                 opacity: 0,
-                time: ANIMATION_TIME,
-                transition: TRANSITION_TYPE,
-                onComplete: Lang.bind(this.actor, this.actor.remove_actor, this._windowTitle),
+                duration: ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => this.actor.remove_actor(oldWindowTitle)
             });
         }
 
@@ -255,12 +246,12 @@ AppSwitcher3D.prototype = {
         this._windowTitle.clutter_text.ellipsize = Pango.EllipsizeMode.END;
 
         this.actor.add_actor(this._windowTitle);
-        Tweener.addTween(this._windowTitle, {
+        this._windowTitle.ease({
             opacity: 255,
-            time: ANIMATION_TIME,
-            transition: TRANSITION_TYPE,
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
-        
+
         let cx = Math.round((monitor.width + (ICON_SIZE * global.ui_scale) + (ICON_TITLE_SPACING * global.ui_scale)) / 2);
         let cy = Math.round(monitor.height * TITLE_POSITION);
         
@@ -269,11 +260,12 @@ AppSwitcher3D.prototype = {
 
         // window icon
         if (this._applicationIconBox) {
-            Tweener.addTween(this._applicationIconBox, {
+            let oldIconBox = this._applicationIconBox;
+            this._applicationIconBox.ease({
                 opacity: 0,
-                time: ANIMATION_TIME,
-                transition: TRANSITION_TYPE,
-                onComplete: Lang.bind(this.actor, this.actor.remove_actor, this._applicationIconBox),
+                duration: ANIMATION_TIME,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                onComplete: () => this.actor.remove_actor(oldIconBox)
             });
         }
 
@@ -297,10 +289,11 @@ AppSwitcher3D.prototype = {
 
         this._applicationIconBox.add_actor(this._icon);
         this.actor.add_actor(this._applicationIconBox);
-        Tweener.addTween(this._applicationIconBox, {
+
+        this._applicationIconBox.ease({
             opacity: 255,
-            time: ANIMATION_TIME,
-            transition: TRANSITION_TYPE,
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
 

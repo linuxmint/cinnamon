@@ -5,10 +5,6 @@ sudo mv /usr/share/cinnamon/js /usr/share/cinnamon/js-backup
 sudo cp -R debian/tmp/usr/share/cinnamon/js /usr/share/cinnamon/
 sudo cp -R js /usr/share/cinnamon/
 
-sudo rm -rf /usr/share/cinnamon/theme-backup
-sudo mv /usr/share/cinnamon/theme /usr/share/cinnamon/theme-backup
-sudo cp -R data/theme /usr/share/cinnamon/
-
 sudo rm -rf /usr/lib/cinnamon-settings
 sudo rm -rf /usr/lib/cinnamon-menu-editor
 sudo cp -R files/usr /
@@ -16,3 +12,8 @@ sudo cp -R files/etc /
 
 sudo cp data/org.cinnamon.gschema.xml /usr/share/glib-2.0/schemas/
 sudo glib-compile-schemas /usr/share/glib-2.0/schemas/
+
+mkdir -p tmp
+meson setup tmp
+meson compile -C tmp cinnamon_css
+sudo cp tmp/data/theme/cinnamon-sass/cinnamon.css /usr/share/cinnamon/theme/

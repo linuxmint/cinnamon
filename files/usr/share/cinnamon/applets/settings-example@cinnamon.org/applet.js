@@ -1,10 +1,10 @@
 const Applet = imports.ui.applet;
+const Clutter = imports.gi.Clutter;
 const Lang = imports.lang;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Settings = imports.ui.settings;  // Needed for settings API
 const Gio = imports.gi.Gio;
-const Tweener = imports.ui.tweener;
 const Main = imports.ui.main;
 
 class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
@@ -31,7 +31,6 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
         this.settings.bind("combo-selection", "combo_choice", this.on_settings_changed);
         this.settings.bind("use-custom-label",  "use_custom", this.on_settings_changed);
         this.settings.bind("custom-label", "custom_label", this.on_settings_changed);
-        this.settings.bind("tween-function", "tween_function", this.on_settings_changed);
         this.settings.bind("keybinding-test", "keybinding", this.on_keybinding_changed);
 
         this.settings.connect("changed::signal-test", Lang.bind(this, this.on_signal_test_fired));
@@ -100,19 +99,17 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
             this.on_settings_changed();
         }));
 
-        //animate icon
-        Tweener.addTween(this._applet_icon, {
+        this._applet_icon.ease({
             margin_left: 10,
-            time: 0.5,
-            transition: this.tween_function,
-            onComplete() {
-                Tweener.addTween(this._applet_icon, {
+            duration: 500,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._applet_icon.ease({
                     margin_left: 0,
-                    time: 0.5,
-                    transition: this.tween_function
+                    duration: 500,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
                 });
-            },
-            onCompleteScope: this
+            }
         });
     }
 

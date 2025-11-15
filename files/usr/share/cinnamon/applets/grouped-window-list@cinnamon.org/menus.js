@@ -171,26 +171,6 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         if (this.state.settings.showRecent) {
-            // Places
-            if (this.groupState.appId === 'nemo.desktop' || this.groupState.appId === 'nemo-home.desktop') {
-                const subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Places'));
-                this.addMenuItem(subMenu);
-
-                const defualtPlaces = this.listDefaultPlaces();
-                const bookmarks = this.listBookmarks();
-                const devices = this.listDevices();
-                const places = [...defualtPlaces, ...bookmarks, ...devices];
-                const handlePlaceLaunch = (item, i) => {
-                    this.signals.connect(item, 'activate', () => places[i].launch());
-                };
-                for (let i = 0, len = places.length; i < len; i++) {
-                    item = createMenuItem({label: _(places[i].name), icon: 'folder'});
-                    handlePlaceLaunch(item, i);
-                    subMenu.menu.addMenuItem(item);
-                }
-                this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            }
-
             // Recent Files
             const recentItems = this.state.trigger('getRecentItems');
             const items = [];
@@ -424,39 +404,6 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 }, 2000);
             }
         });
-    }
-
-    listDefaultPlaces(pattern) {
-        const defaultPlaces = Main.placesManager.getDefaultPlaces();
-        const res = [];
-        for (let i = 0, len = defaultPlaces.length; i < len; i++) {
-            if (!pattern || defaultPlaces[i].name.toLowerCase().indexOf(pattern) !== -1) {
-                res.push(defaultPlaces[i]);
-            }
-        }
-        return res;
-    }
-
-    listBookmarks(pattern) {
-        const bookmarks = Main.placesManager.getBookmarks();
-        const res = [];
-        for (let i = 0, len = bookmarks.length; i < len; i++) {
-            if (!pattern || bookmarks[i].name.toLowerCase().indexOf(pattern) !== -1) {
-                res.push(bookmarks[i]);
-            }
-        }
-        return res;
-    }
-
-    listDevices(pattern) {
-        const devices = Main.placesManager.getMounts();
-        const res = [];
-        for (let i = 0, len = devices.length; i < len; i++) {
-            if (!pattern || devices[i].name.toLowerCase().indexOf(pattern) !== -1) {
-                res.push(devices[i]);
-            }
-        }
-        return res;
     }
 
     destroy() {

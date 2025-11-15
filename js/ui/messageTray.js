@@ -16,11 +16,10 @@ const GnomeSession = imports.misc.gnomeSession;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Params = imports.misc.params;
-const Tweener = imports.ui.tweener;
 const Util = imports.misc.util;
 const AppletManager = imports.ui.appletManager;
 
-var ANIMATION_TIME = 0.2;
+var ANIMATION_TIME = 200;
 var NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET = 10;
 var SUMMARY_TIMEOUT = 1;
 var LONGER_SUMMARY_TIMEOUT = 4;
@@ -310,7 +309,7 @@ var Notification = class Notification {
 
         // notification dismiss button
         let icon = new St.Icon({
-            icon_name: 'window-close',
+            icon_name: 'xsi-window-close',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: 16
         });
@@ -913,40 +912,14 @@ MessageTray.prototype = {
             else if (!this._notificationsEnabled) {
                 if (notificationsPending) {
                     this._notification = this._notificationQueue.shift();
-                    if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
-                        this.emit('notify-applet-update', this._notification);
-                    } else {
-                        this._notification.destroy(NotificationDestroyedReason.DISMISSED);
-                        this._notification = null;
-                    }
+                    this._notification.destroy(NotificationDestroyedReason.DISMISSED);
+                    this._notification = null;
                 }
             }
         } else if (this._notificationState == State.SHOWN) {
             if (notificationExpired)
                 this._hideNotification();
         }
-    },
-
-    _tween: function (actor, statevar, value, params) {
-        let onComplete = params.onComplete;
-        let onCompleteScope = params.onCompleteScope;
-        let onCompleteParams = params.onCompleteParams;
-
-        params.onComplete = this._tweenComplete;
-        params.onCompleteScope = this;
-        params.onCompleteParams = [statevar, value, onComplete, onCompleteScope, onCompleteParams];
-
-        Tweener.addTween(actor, params);
-
-        let valuing = (value == State.SHOWN) ? State.SHOWING : State.HIDING;
-        this[statevar] = valuing;
-    },
-
-    _tweenComplete: function (statevar, value, onComplete, onCompleteScope, onCompleteParams) {
-        this[statevar] = value;
-        if (onComplete)
-            onComplete.apply(onCompleteScope, onCompleteParams);
-        this._updateState();
     },
 
     _showNotification: function () {
@@ -1027,18 +1000,18 @@ MessageTray.prototype = {
     },
 
     _updateShowingNotification: function () {
-        Tweener.removeTweens(this._notificationBin);
-        let tweenParams = {
+        this._notificationBin.remove_all_transitions();
+        this._notificationState = State.SHOWING;
+        this._notificationBin.ease({
             opacity: 255,
-            time: ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: this._showNotificationCompleted,
-            onCompleteScope: this
-        };
-        this._tween(this._notificationBin, '_notificationState', State.SHOWN, tweenParams);
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._showNotificationCompleted(),
+        });
     },
 
     _showNotificationCompleted: function () {
+        this._notificationState = State.SHOWN;
         this._updateNotificationTimeout(0);
         this.notificationDuration = this.settings.get_int("notification-duration");
 
@@ -1088,17 +1061,18 @@ MessageTray.prototype = {
             y += Main.layoutManager.primaryMonitor.height - this._notificationBin.height;
         }
 
-        this._tween(this._notificationBin, '_notificationState', State.HIDDEN, {
-            y,
+        this._notificationState = State.HIDING;
+        this._notificationBin.ease({
+            y: y,
             opacity: 0,
-            time: ANIMATION_TIME,
-            transition: 'easeOutQuad',
-            onComplete: this._hideNotificationCompleted,
-            onCompleteScope: this
+            duration: ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._hideNotificationCompleted()
         });
     },
 
     _hideNotificationCompleted: function () {
+        this._notificationState = State.HIDDEN;
         this._notificationBin.hide();
         this._notificationBin.child = null;
         let notification = this._notification;
@@ -1131,7 +1105,7 @@ SystemNotificationSource.prototype = {
 
     createNotificationIcon: function () {
         return new St.Icon({
-            icon_name: 'dialog-information',
+            icon_name: 'xsi-dialog-information',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: this.ICON_SIZE
         });
