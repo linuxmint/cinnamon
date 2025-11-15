@@ -195,22 +195,22 @@ Expo.prototype = {
         // when it is next shown.
         this.hide();
 
-        let current = Main.layoutManager.currentMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
         let contentY = 0;
-        let contentHeight = current.height;
+        let contentHeight = monitorSetting.height;
 
-        this._group.set_position(current.x, current.y);
-        this._group.set_size(current.width, current.height);
+        this._group.set_position(monitorSetting.x, monitorSetting.y);
+        this._group.set_size(monitorSetting.width, monitorSetting.height);
 
         this._gradient.set_position(0, 0);
-        this._gradient.set_size(current.width, current.height);
+        this._gradient.set_size(monitorSetting.width, monitorSetting.height);
 
         this._coverPane.set_position(0, 0);
-        this._coverPane.set_size(current.width, contentHeight);
+        this._coverPane.set_size(monitorSetting.width, contentHeight);
 
-        let viewWidth = current.width - this._spacing;
+        let viewWidth = monitorSetting.width - this._spacing;
         let viewHeight = contentHeight - 2 * this._spacing;
         let viewY = contentY + this._spacing;
         let viewX = rtl ? 0 : this._spacing;
@@ -224,34 +224,34 @@ Expo.prototype = {
         this._windowCloseArea.width = node.get_length('width');
 
         this._expo.actor.set_position(0, 0);
-        this._expo.actor.set_size((current.width - buttonWidth), current.height);
+        this._expo.actor.set_size((monitorSetting.width - buttonWidth), monitorSetting.height);
 
-        let buttonY = (current.height - buttonHeight) / 2;
+        let buttonY = (monitorSetting.height - buttonHeight) / 2;
 
-        this._addWorkspaceButton.set_position((current.width - buttonWidth), buttonY);
+        this._addWorkspaceButton.set_position((monitorSetting.width - buttonWidth), buttonY);
         this._addWorkspaceButton.set_size(buttonWidth, buttonHeight);
         if (this._addWorkspaceButton.get_theme_node().get_background_image() == null)
             this._addWorkspaceButton.set_style('background-image: url("/usr/share/cinnamon/theme/add-workspace.png");');
 
-        this._windowCloseArea.set_position((current.width - this._windowCloseArea.width) / 2 , current.height);
+        this._windowCloseArea.set_position((monitorSetting.width - this._windowCloseArea.width) / 2 , monitorSetting.height);
         this._windowCloseArea.set_size(this._windowCloseArea.width, this._windowCloseArea.height);
         this._windowCloseArea.raise_top();
     },
 
     _showCloseArea : function() {
-        let current = Main.layoutManager.currentMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
         this._windowCloseArea.show();
         this._windowCloseArea.ease({
-            y: current.height - this._windowCloseArea.height,
+            y: monitorSetting.height - this._windowCloseArea.height,
             duration: Main.animations_enabled ? ANIMATION_TIME : 0,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
     },
 
     _hideCloseArea : function() {
-        let current = Main.layoutManager.currentMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
         this._windowCloseArea.ease({
-            y: current.height,
+            y: monitorSetting.height,
             duration: Main.animations_enabled ? ANIMATION_TIME : 0,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
@@ -303,6 +303,7 @@ Expo.prototype = {
 
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
 
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
@@ -319,15 +320,15 @@ Expo.prototype = {
             Main.layoutManager.monitors.forEach(function(monitor,index) {
                 let clone = clones[index];
                 clone.ease({
-                    x: Main.layoutManager.currentMonitor.x + activeWorkspaceActor.allocation.x1,
-                    y: Main.layoutManager.currentMonitor.y + activeWorkspaceActor.allocation.y1,
+                    x: monitorSetting.x + activeWorkspaceActor.allocation.x1,
+                    y: monitorSetting.y + activeWorkspaceActor.allocation.y1,
                     scale_x: activeWorkspaceActor.get_scale()[0] ,
                     scale_y: activeWorkspaceActor.get_scale()[1],
                     duration: Main.animations_enabled ? ANIMATION_TIME : 0,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     onUpdate: (t, timeIndex) => {
-                        clone.get_transition("x")?.set_to(Main.layoutManager.currentMonitor.x + activeWorkspaceActor.allocation.x1);
-                        clone.get_transition("y")?.set_to(Main.layoutManager.currentMonitor.y + activeWorkspaceActor.allocation.y1);
+                        clone.get_transition("x")?.set_to(monitorSetting.x + activeWorkspaceActor.allocation.x1);
+                        clone.get_transition("y")?.set_to(monitorSetting.y + activeWorkspaceActor.allocation.y1);
                         clone.get_transition("scale-x")?.set_to(activeWorkspaceActor.get_scale()[0]);
                         clone.get_transition("scale-y")?.set_to(activeWorkspaceActor.get_scale()[1]);
                     },
@@ -428,6 +429,8 @@ Expo.prototype = {
         this._hideInProgress = true;
 
         let activeWorkspaceActor = activeWorkspace.actor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
+
         Main.layoutManager.monitors.forEach(function(monitor,index) {
             let cover = new Clutter.Group();
             global.overlay_group.add_actor(cover);
@@ -436,7 +439,7 @@ Expo.prototype = {
 
             let clone = new Clutter.Clone({source: activeWorkspaceActor});
             cover.add_actor(clone);
-            clone.set_position(Main.layoutManager.currentMonitor.x + activeWorkspaceActor.allocation.x1, Main.layoutManager.currentMonitor.y + activeWorkspaceActor.allocation.y1);
+            clone.set_position(monitorSetting.x + activeWorkspaceActor.allocation.x1, monitorSetting.y + activeWorkspaceActor.allocation.y1);
             clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
             clone.set_scale(activeWorkspaceActor.get_scale()[0], activeWorkspaceActor.get_scale()[1]);
 
