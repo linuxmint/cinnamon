@@ -592,14 +592,19 @@ XletSettingsBase.prototype = {
         for (let key in this.settingsData) {
             if (!this.settingsData[key]
                 || this.settingsData[key].value === undefined
+                || this.settingsData[key].type === undefined
                 || !oldSettings[key]
-                || oldSettings[key].value === undefined) continue;
+                || oldSettings[key].value === undefined
+                || oldSettings[key].type === undefined) continue;
 
             let oldValue = oldSettings[key].value;
             let value = this.settingsData[key].value;
-            if (value == oldValue) continue;
-
+            let oldValueType = oldSettings[key].type;
+            let valueType = this.settingsData[key].type;
+            if (this._isValueChanged(value, valueType, oldValue, oldValueType)) continue;
+            
             changed = true;
+
             if (key in this.bindings) {
                 for (let info of this.bindings[key]) {
                     // if the property had a save function, it is gone now and we need to re-add it
@@ -630,6 +635,50 @@ XletSettingsBase.prototype = {
         if (changed) {
             this.emit("settings-changed");
         }
+    },
+
+    /**
+     * _isValueChanged:
+     * @value: current value
+     * @valueType: current value setting type
+     * @oldValue: previous value
+     * @oldValueType: previous value setting type
+     *
+     * Checks whether two setting values are the same
+     */
+    _isValueChanged: function(value, valueType, oldValue, oldValueType) {
+        let equal = false;
+        // Some setting values are objects, in such case every property needs to be checked 
+
+        if(oldValueType === valueType
+            && (valueType === "timechooser" || valueType === "datechooser")) {
+
+            if (value.length !== oldValue.length) return false;
+
+            equal = Object.keys(value).every(
+                key => oldValue.hasOwnProperty(key)
+                && value[key] === oldValue[key]);
+            
+
+        } else if (valueType === "list" && oldValueType === valueType) { 
+
+            if (value.length !== oldValue.length) return false;
+
+            // Each row of the list needs to be checked
+            equal = Object.keys(value).every(row => {
+                if(value[row].length === oldValue[row].length) {
+                    return Object.keys(value[row]).every(
+                        key => oldValue[row].hasOwnProperty(key)
+                        && value[row][key] === oldValue[row][key]
+                    );
+                };
+            });    
+              
+        } else {
+            equal = value === oldValue;
+        }
+            
+        return equal;
     },
 
     _loadTemplate: function(checksum) {
