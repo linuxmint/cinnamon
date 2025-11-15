@@ -38,7 +38,7 @@ class Module:
             switch = GSettingsSwitch(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid")
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Show Expo view on the current monitor"), "org.cinnamon", "workspace-expo-view-current-monitor")
+            switch = GSettingsSwitch(_("Always show Expo on the primary monitor"), "org.cinnamon", "workspace-expo-primary-monitor")
             settings.add_row(switch)
 
             # Edge Flip doesn't work well, so it's there in gsettings, but we don't show it to users yet

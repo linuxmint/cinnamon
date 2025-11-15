@@ -353,11 +353,11 @@
       </description>
     </key>
 
-    <key name="workspace-expo-view-current-monitor" type="b">
-      <default>false</default>
-      <summary>Show the Expo view on the current monitor</summary>
+    <key name="workspace-expo-primary-monitor" type="b">
+      <default>true</default>
+      <summary>Show the Expo view on the primary monitor</summary>
       <description>
-        When enabled the Expo view will be displayed on the current monitor rather than the primary monitor.
+        When enabled the Expo view will be displayed on the primary monitor rather than the current monitor.
       </description>
     </key>
 

@@ -195,7 +195,7 @@ Expo.prototype = {
         // when it is next shown.
         this.hide();
 
-        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
         let contentY = 0;
@@ -239,7 +239,7 @@ Expo.prototype = {
     },
 
     _showCloseArea : function() {
-        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
         this._windowCloseArea.show();
         this._windowCloseArea.ease({
             y: monitorSetting.height - this._windowCloseArea.height,
@@ -249,7 +249,7 @@ Expo.prototype = {
     },
 
     _hideCloseArea : function() {
-        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
         this._windowCloseArea.ease({
             y: monitorSetting.height,
             duration: Main.animations_enabled ? ANIMATION_TIME : 0,
@@ -303,7 +303,7 @@ Expo.prototype = {
 
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let activeWorkspaceActor = activeWorkspace.actor;
-        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
 
         //We need to allocate activeWorkspace before we begin its clone animation
         let allocateID = this._expo.connect('allocated', Lang.bind(this, function() {
@@ -429,7 +429,7 @@ Expo.prototype = {
         this._hideInProgress = true;
 
         let activeWorkspaceActor = activeWorkspace.actor;
-        let monitorSetting = global.settings.get_boolean('workspace-expo-view-current-monitor') ? Main.layoutManager.currentMonitor : Main.layoutManager.primaryMonitor;
+        let monitorSetting = global.settings.get_boolean('workspace-expo-view-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
 
         Main.layoutManager.monitors.forEach(function(monitor,index) {
             let cover = new Clutter.Group();
