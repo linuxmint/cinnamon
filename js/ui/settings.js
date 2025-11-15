@@ -601,7 +601,7 @@ XletSettingsBase.prototype = {
             let value = this.settingsData[key].value;
             let oldValueType = oldSettings[key].type;
             let valueType = this.settingsData[key].type;
-            if (this._isValueChanged(value, valueType, oldValue, oldValueType)) continue;
+            if (this._isValueUnchanged(value, valueType, oldValue, oldValueType)) continue;
             
             changed = true;
 
@@ -638,7 +638,7 @@ XletSettingsBase.prototype = {
     },
 
     /**
-     * _isValueChanged:
+     * _isValueUnchanged:
      * @value: current value
      * @valueType: current value setting type
      * @oldValue: previous value
@@ -646,11 +646,11 @@ XletSettingsBase.prototype = {
      *
      * Checks whether two setting values are the same
      */
-    _isValueChanged: function(value, valueType, oldValue, oldValueType) {
+    _isValueUnchanged: function(value, valueType, oldValue, oldValueType) {
         let equal = false;
         // Some setting values are objects, in such case every property needs to be checked 
 
-        if(oldValueType === valueType
+        if (oldValueType === valueType
             && (valueType === "timechooser" || valueType === "datechooser")) {
 
             if (value.length !== oldValue.length) return false;
@@ -675,7 +675,7 @@ XletSettingsBase.prototype = {
             });    
               
         } else {
-            equal = value === oldValue;
+            equal = (value === oldValue);
         }
             
         return equal;
