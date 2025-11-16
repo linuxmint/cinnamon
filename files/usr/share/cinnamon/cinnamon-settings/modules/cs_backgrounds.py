@@ -366,7 +366,7 @@ class Module:
 
     def format_source(self, type, path):
         # returns 'type://path'
-        return "%s://%s" % (type, path)
+        return f"{type}://{path}"
 
     def get_initial_path(self):
         try:
@@ -484,7 +484,7 @@ class Module:
                 if folder[STORE_PATH] == first_path:
                     continue
                 else:
-                    file_data += "%s\n" % folder[STORE_PATH]
+                    file_data += f"{folder[STORE_PATH]}\n"
 
         with open(path, "w") as f:
             f.write(file_data)
@@ -565,7 +565,7 @@ class Module:
                             res.append(wallpaperData)
             return res
         except Exception as detail:
-            print("Could not parse %s!" % filename)
+            print(f"Could not parse {filename}!")
             print(detail)
             return []
 
@@ -644,11 +644,11 @@ class PixCache(object):
                         with open(cache_filename, "wb") as cache_file:
                             pickle.dump([png_bytes.getvalue(), width, height], cache_file, PICKLE_PROTOCOL_VERSION)
                     except Exception as detail:
-                        print("Failed to save cache file: %s: %s" % (cache_filename, detail))
+                        print(f"Failed to save cache file: {cache_filename}: {detail}")
 
                     pix = [self._image_to_pixbuf(img), width, height]
             except Exception as detail:
-                print("Failed to convert %s: %s" % (filename, detail))
+                print(f"Failed to convert {filename}: {detail}")
                 pix = None
             if pix:
                 self._data[filename][size] = pix
@@ -777,13 +777,13 @@ class ThreadedIconView(Gtk.IconView):
                     else:
                         label = os.path.split(to_load["filename"])[1]
                     if "artist" in to_load:
-                        artist = "%s\n" % to_load["artist"]
+                        artist = f"{to_load['artist']}\n"
                     else:
                         artist = ""
-                    dimensions = "%dx%d" % (pix[1], pix[2])
+                    dimensions = f"{pix[1]}x{pix[2]}"
 
                     self._loaded_data_lock.acquire()
-                    self._loaded_data.append((to_load, pix[0], "<b>%s</b>\n<small>%s%s</small>" % (label, artist, dimensions), path))
+                    self._loaded_data.append((to_load, pix[0], f"<b>{label}</b>\n<small>{artist}{dimensions}</small>", path))
                     self._loaded_data_lock.release()
 
         self._loading_lock.acquire()
@@ -803,8 +803,8 @@ class ThreadedIconView(Gtk.IconView):
                                 if len(staticNode) > 0 and staticNode[-1].tag == "size":
                                     return staticNode[-1].text
                                 return staticNode.text
-            print("Could not find filename in %s" % filename)
+            print(f"Could not find filename in {filename}")
             return None
         except Exception as detail:
-            print("Failed to read filename from %s: %s" % (filename, detail))
+            print(f"Failed to read filename from {filename}: {detail}")
             return None

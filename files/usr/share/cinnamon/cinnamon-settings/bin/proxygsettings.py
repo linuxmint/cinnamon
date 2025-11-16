@@ -71,14 +71,14 @@ def proxy_url_from_settings(scheme, gsettings):
     proxy_url = ""
     if username is not None:
         if pwd is not None:
-            proxy_url = "%s:%s@%s:%d" % (username,pwd,host,port)
+            proxy_url = f"{username}:{pwd}@{host}:{port:d}"
         else:
-            proxy_url = "%s@%s:%d" % (username,host,port)
+            proxy_url = f"{username}@{host}:{port:d}"
     else:
-        proxy_url =  "%s:%d" % (host,port)
+        proxy_url =  f"{host}:{port:d}"
 
     if protocol is not None:
-        proxy_url = "%s://%s" % (protocol, proxy_url)
+        proxy_url = f"{protocol}://{proxy_url}"
 
     return proxy_url
 

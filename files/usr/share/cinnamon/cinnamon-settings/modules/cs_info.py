@@ -250,7 +250,7 @@ class Module:
             subproc.wait_check_async(None, self.on_subprocess_complete, spinner)
             spinner.start()
         except GLib.Error as e:
-            print("upload-system-info failed to run: %s" % e.message)
+            print(f"upload-system-info failed to run: {e.message}")
 
     def on_subprocess_complete(self, subproc, result, spinner):
         spinner.stop()
@@ -258,4 +258,4 @@ class Module:
         try:
             success = subproc.wait_check_finish(result)
         except GLib.Error as e:
-            print("upload-system-info failed: %s" % e.message)
+            print(f"upload-system-info failed: {e.message}")
