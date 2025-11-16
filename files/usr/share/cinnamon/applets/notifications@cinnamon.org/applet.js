@@ -27,6 +27,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
         this.settings.bind("keyClear", "keyClear", this._setKeybinding);
         this.settings.bind("showNotificationCount", "showNotificationCount", this.update_list);
+        this.settings.bind("showNewestFirst", "showNewestFirst", this.update_list);
         this._setKeybinding();
 
         // Layout
@@ -167,6 +168,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 this.actor.show();
                 this.clear_action.actor.show();
                 this.set_applet_label(count.toString());
+                this._reorderNotifications();
                 // Find max urgency and derive list icon.
                 let max_urgency = -1;
                 for (let i = 0; i < count; i++) {
@@ -223,6 +225,25 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         }
         this.notifications = [];
         this.update_list();
+    }
+
+    _reorderNotifications() {
+        let orderedNotifications = this.notifications.slice();
+
+        if (this.showNewestFirst) {
+            orderedNotifications.reverse();
+        }
+
+        // Remove all children without destroying them.
+        let children = this._notificationbin.get_children();
+        for (let i = 0; i < children.length; i++) {
+            this._notificationbin.remove_child(children[i]);
+        }
+
+        // Add them back in desired order.
+        for (let i = 0; i < orderedNotifications.length; i++) {
+            this._notificationbin.add_child(orderedNotifications[i].actor);
+        }
     }
 
     _show_hide_tray() { // Show or hide the notification tray.

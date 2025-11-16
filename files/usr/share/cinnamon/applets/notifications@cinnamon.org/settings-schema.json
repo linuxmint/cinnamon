@@ -24,6 +24,11 @@
         "default": true,
         "description": "Show the number of notifications"
     },
+    "showNewestFirst": {
+        "type": "switch",
+        "default": false,
+        "description": "Show newest notifications first"
+    },
     "section3": {
         "type": "section",
         "description": "Keyboard shortcuts"
