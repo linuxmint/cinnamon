@@ -353,6 +353,14 @@
       </description>
     </key>
 
+    <key name="workspace-expo-primary-monitor" type="b">
+      <default>true</default>
+      <summary>Show the Expo view on the primary monitor</summary>
+      <description>
+        When enabled the Expo view will be displayed on the primary monitor rather than the current monitor.
+      </description>
+    </key>
+
     <key name="disabled-open-search-providers" type="as">
       <default>[]</default>
       <summary>disabled OpenSearch providers</summary>
@@ -410,7 +418,7 @@
     <key type="b" name="alttab-switcher-show-current-monitor">
       <default>false</default>
       <summary>Show windows from current monitor only</summary>
-    </key>  
+    </key>
 
     <key type="b" name="alttab-minimized-aware">
     <default>true</default>
