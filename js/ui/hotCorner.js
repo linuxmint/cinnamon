@@ -11,6 +11,7 @@ const Mainloop = imports.mainloop;
 
 const HOT_CORNER_ACTIVATION_TIMEOUT = 500; // Milliseconds
 const OVERVIEW_CORNERS_KEY = 'hotcorner-layout';
+const CORNERS_FULLSCREEN_KEY = 'hotcorner-fullscreen';
 
 const CORNER_FENCE_LENGTH = 10;
 const CORNER_ACTOR_SIZE = 2;
@@ -25,7 +26,7 @@ const LRC = 3;
 // This class manages a "hot corner" that can toggle switching to
 // overview.
 class HotCorner {
-    constructor(corner_type) {
+    constructor(corner_type, is_fullscreen) {
         this.action = null; // The action to activate when hot corner is triggered
         this.hover_delay = 0; // Hover delay activation
         this.hover_delay_id = 0; // Hover delay timer ID
@@ -44,7 +45,12 @@ class HotCorner {
             reactive: true
         });
 
-        Main.layoutManager.addChrome(this.actor)
+        if(is_fullscreen) {
+            Main.layoutManager.addChrome(this.actor, {visibleInFullscreen:true});
+        } else {
+            Main.layoutManager.addChrome(this.actor);
+        }
+
         this.actor.raise_top();
         switch (corner_type) {
             case ULC:
@@ -320,11 +326,14 @@ var HotCornerManager = class {
     constructor() {
         this.corners = {};
         global.settings.connect('changed::' + OVERVIEW_CORNERS_KEY, () => this.update());
+        global.settings.connect('changed::' + CORNERS_FULLSCREEN_KEY, () => this.update());
         this.update();
     }
 
     update() {
         let options = global.settings.get_strv(OVERVIEW_CORNERS_KEY);
+        let is_fullscreen = global.settings.get_boolean(CORNERS_FULLSCREEN_KEY);
+
         if (options.length != 4) {
             global.logError(_("Invalid overview options: Incorrect number of corners"));
             return false;
@@ -346,7 +355,11 @@ var HotCornerManager = class {
                     elements.unshift(cmd);
                 }
 
-                this.corners[i] = new HotCorner(i);
+                if(is_fullscreen === true) {
+                    this.corners[i] = new HotCorner(i, true);
+                } else {
+                    this.corners[i] = new HotCorner(i);
+                }
                 this.corners[i].setProperties(elements);
             }
         }
