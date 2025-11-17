@@ -632,8 +632,15 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
     }
 
     _onWindowsStateChanged(state) {
-        let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
-        button.update({ state: state });
+        if (this._focusWindow && this._focusWindow.is_on_all_workspaces()) {
+            for (let button of this.buttons) {
+                button.update({ state });
+            }
+        } else {
+            let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
+            button.update({ state });
+        }
+        
     }
 
     on_applet_removed_from_panel() {
