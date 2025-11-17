@@ -388,14 +388,14 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
             case "add_to_favorites":
                 AppFavorites.getAppFavorites().addFavorite(this._appButton.app.get_id());
                 this.label.set_text(_("Remove from favorites"));
-                this.icon.icon_name = "starred";
+                this.icon.icon_name = "xsi-starred";
                 this._action = "remove_from_favorites";
                 closeMenu = false;
                 break;
             case "remove_from_favorites":
                 AppFavorites.getAppFavorites().removeFavorite(this._appButton.app.get_id());
                 this.label.set_text(_("Add to favorites"));
-                this.icon.icon_name = "non-starred";
+                this.icon.icon_name = "xsi-non-starred";
                 this._action = "add_to_favorites";
                 closeMenu = false;
                 break;
