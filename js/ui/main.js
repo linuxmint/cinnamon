@@ -573,8 +573,13 @@ function start() {
 }
 
 function updateAnimationsEnabled() {
-    animations_enabled = !(software_rendering) && global.settings.get_boolean("desktop-effects-workspace");
+    let settings_enabled = global.settings.get_boolean("desktop-effects-workspace");
+    animations_enabled = (!software_rendering) && settings_enabled;
     St.Settings.get().animations_enabled = animations_enabled;
+    global.log(
+        `Animations: ${animations_enabled ? "enabled" : "disabled"} ` +
+        `(${software_rendering ? "software rendering" : "hardware rendering"}, ` +
+        `${settings_enabled ? "enabled" : "disabled"} in settings)`);
     cinnamonDBusService.notifyAnimationsEnabled();
 }
 
