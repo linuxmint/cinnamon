@@ -579,6 +579,12 @@ XletSettingsBase.prototype = {
         }
     },
 
+
+    /**
+     * _checkSettings:
+     *
+     * Checks whether any settings have been changed and handles callbacks/signals if they have.
+     */
     _checkSettings: function() {
         let oldSettings = this.settingsData;
         try {
@@ -601,7 +607,8 @@ XletSettingsBase.prototype = {
             let value = this.settingsData[key].value;
             let oldValueType = oldSettings[key].type;
             let valueType = this.settingsData[key].type;
-            if (this._isValueUnchanged(value, valueType, oldValue, oldValueType)) continue;
+
+            if (!this._hasSettingChanged(value, valueType, oldValue, oldValueType)) continue;
             
             changed = true;
 
@@ -638,31 +645,30 @@ XletSettingsBase.prototype = {
     },
 
     /**
-     * _isValueUnchanged:
+     * _hasSettingChanged:
      * @value: current value
      * @valueType: current value setting type
      * @oldValue: previous value
      * @oldValueType: previous value setting type
      *
-     * Checks whether two setting values are the same
+     * Checks whether a setting has changed by comparing is current value to the previous one
      */
-    _isValueUnchanged: function(value, valueType, oldValue, oldValueType) {
+    _hasSettingChanged: function(value, valueType, oldValue, oldValueType) {
+        // It's easy to evaluate whether strings or ints changes, but
+        // some settings are objects in such case every property needs to be checked 
+        
+        // If settings differ in length or are somehow different types they definitely changed
+        if (oldValueType !== valueType) return true;
+        if (value.length !== oldValue.length) return true;
+        
         let equal = false;
-        // Some setting values are objects, in such case every property needs to be checked 
-
-        if (oldValueType === valueType
-            && (valueType === "timechooser" || valueType === "datechooser")) {
-
-            if (value.length !== oldValue.length) return false;
+        if (valueType === "timechooser" || valueType === "datechooser") {
 
             equal = Object.keys(value).every(
                 key => oldValue.hasOwnProperty(key)
                 && value[key] === oldValue[key]);
-            
 
-        } else if (valueType === "list" && oldValueType === valueType) { 
-
-            if (value.length !== oldValue.length) return false;
+        } else if (valueType === "list") { 
 
             // Each row of the list needs to be checked
             equal = Object.keys(value).every(row => {
@@ -678,7 +684,7 @@ XletSettingsBase.prototype = {
             equal = (value === oldValue);
         }
             
-        return equal;
+        return !equal;
     },
 
     _loadTemplate: function(checksum) {
