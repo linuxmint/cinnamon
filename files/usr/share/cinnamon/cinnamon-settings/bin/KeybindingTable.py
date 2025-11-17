@@ -859,12 +859,38 @@ class KeybindingTable(GObject.Object):
         self._proxy_send_kb_changed(current_keybinding)
         return True
 
+    def _filter_duplicate_applet_keybindings(self, keybindings):
+        all_same = False
+        by_uuids = {}
+
+        ret = []
+
+        for keybinding in keybindings:
+            uuid = keybinding.dbus_info.get("uuid", None)
+            if uuid is None:
+                ret.append(keybinding)
+                continue
+
+            try:
+                by_uuids[uuid].append(keybinding)
+            except KeyError:
+                by_uuids[uuid] = [keybinding]
+
+        for uuid in by_uuids.keys():
+            ret.append(by_uuids[uuid][-1])
+
+        return ret
+
     def check_for_collisions(self):
         dupes = [dupe for dupe in self._collision_table.keys() if len(self._collision_table[dupe]) > 1]
 
         if len(dupes) == 0:
             return
         for accel_string in dupes:
+            bindings = self._filter_duplicate_applet_keybindings(self._collision_table[accel_string])
+            if len(bindings) < 2:
+                continue
+
             key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
             if (key == 0 and len(codes) == 0):
                 if accel_string == "XF86Keyboard":
@@ -884,8 +910,8 @@ class KeybindingTable(GObject.Object):
             msg += _("Choose the assignment you wish to keep. The others will be cleared.")
             dialog.set_markup(msg % {'combination': escape(label)})
 
-            for i in range(len(self._collision_table[accel_string])):
-                keybinding = self._collision_table[accel_string][i]
+            for i in range(len(bindings)):
+                keybinding = bindings[i]
                 dialog.add_button(keybinding.label, i)
 
             dialog.show_all()
@@ -893,8 +919,8 @@ class KeybindingTable(GObject.Object):
             dialog.destroy()
 
             try:
-                keep_keybinding = self._collision_table[accel_string][response]
-                for keybinding in self._collision_table[accel_string]:
+                keep_keybinding = bindings[response]
+                for keybinding in bindings:
                     if keybinding != keep_keybinding:
                         for i in range(len(keybinding.entries)):
                             if keybinding.entries[i] == accel_string:
