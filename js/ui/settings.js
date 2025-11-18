@@ -600,15 +600,13 @@ XletSettingsBase.prototype = {
                 || this.settingsData[key].value === undefined
                 || this.settingsData[key].type === undefined
                 || !oldSettings[key]
-                || oldSettings[key].value === undefined
-                || oldSettings[key].type === undefined) continue;
+                || oldSettings[key].value === undefined) continue;
 
             let oldValue = oldSettings[key].value;
             let value = this.settingsData[key].value;
-            let oldValueType = oldSettings[key].type;
             let valueType = this.settingsData[key].type;
 
-            if (!this._hasSettingChanged(value, valueType, oldValue, oldValueType)) continue;
+            if (!this._hasSettingChanged(value, valueType, oldValue)) continue;
             
             changed = true;
 
@@ -649,16 +647,14 @@ XletSettingsBase.prototype = {
      * @value: current value
      * @valueType: current value setting type
      * @oldValue: previous value
-     * @oldValueType: previous value setting type
      *
      * Checks whether a setting has changed by comparing is current value to the previous one
      */
-    _hasSettingChanged: function(value, valueType, oldValue, oldValueType) {
+    _hasSettingChanged: function(value, valueType, oldValue) {
         // It's easy to evaluate whether strings or ints changes, but
         // some settings are objects in such case every property needs to be checked 
         
-        // If settings differ in length or are somehow different types they definitely changed
-        if (oldValueType !== valueType) return true;
+        // If settings differ in length they definitely changed
         if (value.length !== oldValue.length) return true;
         
         let equal = false;
