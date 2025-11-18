@@ -1677,7 +1677,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let action = global.display.get_keybinding_action(keyCode, modifierState);
 
         if (action == Meta.KeyBindingAction.CUSTOM) {
-            return true;
+            return Clutter.EVENT_STOP;
         }
 
         let ctrlKey = modifierState & Clutter.ModifierType.CONTROL_MASK;
@@ -1709,11 +1709,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     break;
             }
             if (!continueNavigation)
-                return true;
+                return Clutter.EVENT_STOP;
         }
 
         if (this._activeContainer === null) {
             this._setKeyFocusToCurrentCategoryButton();
+        }
+
+        if (this._activeContainer === null) {
+            // Likely there are no categories or apps visible due to a bad search, let the key event
+            // event continue to the search entry.
+            return Clutter.EVENT_PROPAGATE;
         }
 
         let iter = this._activeContainer._vis_iter;
@@ -1771,24 +1777,24 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             case Clutter.KEY_KP_Enter:
                 if (ctrlKey && this._activeContainer === this.applicationsBox) {
                     this.toggleContextMenu(active._delegate);
-                    return true;
+                    return Clutter.EVENT_STOP;
                 }
                 else {
                     active._delegate.activate();
-                    return true;
+                    return Clutter.EVENT_STOP;
                 }
                 break;
             case Clutter.KEY_Menu:
                 if (this._activeContainer === this.applicationsBox) {
                     this.toggleContextMenu(active._delegate);
-                    return true;
+                    return Clutter.EVENT_STOP;
                 }
             default:
                 break;
         }
 
         if (!item_actor || item_actor === this.searchEntry) {
-            return false;
+            return Clutter.EVENT_PROPAGATE;
         }
 
         if (item_actor._delegate instanceof CategoryButton)
@@ -1799,7 +1805,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._scrollToButton(item_actor._delegate, this.applicationsScrollView);
 
         this._buttonEnterEvent(item_actor._delegate);
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     _buttonEnterEvent(button) {
