@@ -682,6 +682,14 @@ var NetworkAgent = class {
             return;
         }
 
+        source.createNotificationIcon = () => {
+            return new St.Icon({
+                icon_name: "xsi-dialog-password-symbolic",
+                icon_type: St.IconType.SYMBOLIC,
+                icon_size: source.ICON_SIZE
+            });
+        }
+
         let notification = new MessageTray.Notification(source, title, body);
 
         notification.connect('clicked', () => {
