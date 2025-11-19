@@ -21,7 +21,7 @@
 #include "st-password-entry.h"
 #include "st-icon.h"
 
-#define BLACK_CIRCLE 9679
+#define BULLET 8226
 
 enum
 {
@@ -167,7 +167,7 @@ st_password_entry_init (StPasswordEntry *entry)
   priv->show_peek_icon = TRUE;
 
   clutter_text = st_entry_get_clutter_text (ST_ENTRY (entry));
-  clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), BLACK_CIRCLE);
+  clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), BULLET);
 
   g_signal_connect (clutter_text, "notify::password-char",
                     G_CALLBACK (clutter_text_password_char_cb), entry);
@@ -261,7 +261,7 @@ st_password_entry_set_password_visible (StPasswordEntry *entry,
     }
   else
     {
-      clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), BLACK_CIRCLE);
+      clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), BULLET);
       st_icon_set_icon_name (ST_ICON (priv->peek_password_icon), "xsi-view-conceal-symbolic");
     }
 
