@@ -654,9 +654,6 @@ XletSettingsBase.prototype = {
         // It's easy to evaluate whether strings or ints changes, but
         // some settings are objects in such case every property needs to be checked 
         
-        // If settings differ in length they definitely changed
-        if (value.length !== oldValue.length) return true;
-        
         let equal = false;
         if (valueType === "timechooser" || valueType === "datechooser") {
 
@@ -665,6 +662,9 @@ XletSettingsBase.prototype = {
                 && value[key] === oldValue[key]);
 
         } else if (valueType === "list") { 
+
+            // If lists differ in length they definitely changed
+            if (value.length !== oldValue.length) return true;
 
             // Each row of the list needs to be checked
             equal = Object.keys(value).every(row => {
