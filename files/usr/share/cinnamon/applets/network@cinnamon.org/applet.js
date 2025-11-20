@@ -1825,7 +1825,7 @@ CinnamonNetworkApplet.prototype = {
     },
 
     _setKeybinding() {
-        Main.keybindingManager.addHotKey("network-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+        Main.keybindingManager.addXletHotKey(this, "network-open", this.keyOpen, Lang.bind(this, this._openMenu));
     },
 
     _clientGot: function(obj, result) {
@@ -2670,7 +2670,7 @@ CinnamonNetworkApplet.prototype = {
 
     on_applet_removed_from_panel: function() {
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
-        Main.keybindingManager.removeHotKey("network-open-" + this.instance_id);
+        Main.keybindingManager.removeXletHotKey(this, "network-open");
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
         }

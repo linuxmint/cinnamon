@@ -174,7 +174,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     _setKeybinding() {
-        Main.keybindingManager.addHotKey("calendar-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+        Main.keybindingManager.addXletHotKey(this, "calendar-open", this.keyOpen, Lang.bind(this, this._openMenu));
     }
 
     _clockNotify(obj, pspec, data) {
@@ -307,7 +307,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     }
 
     on_applet_removed_from_panel() {
-        Main.keybindingManager.removeHotKey("calendar-open-" + this.instance_id);
+        Main.keybindingManager.removeXletHotKey(this, "calendar-open");
         if (this.clock_notify_id > 0) {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;

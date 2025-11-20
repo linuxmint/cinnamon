@@ -434,10 +434,10 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
     }
 
     _setKeybinding() {
-        Main.keybindingManager.addHotKey("inhibit-power-" + this.instance_id,
+        Main.keybindingManager.addXletHotKey(this, "inhibit-power",
             this.keyPower,
             Lang.bind(this, this.toggle_inhibit_power));
-        Main.keybindingManager.addHotKey("inhibit-notifications-" + this.instance_id,
+        Main.keybindingManager.addXletHotKey(this, "inhibit-notifications",
             this.keyNotifications,
             Lang.bind(this, this.toggle_inhibit_notifications));
     }
@@ -455,8 +455,8 @@ class CinnamonInhibitApplet extends Applet.IconApplet {
     }
 
     on_applet_removed_from_panel() {
-        Main.keybindingManager.removeHotKey("inhibit-power-" + this.instance_id);
-        Main.keybindingManager.removeHotKey("inhibit-notifications-" + this.instance_id);
+        Main.keybindingManager.removeXletHotKey(this, "inhibit-power");
+        Main.keybindingManager.removeXletHotKey(this, "inhibit-notifications");
         this.inhibitSwitch.kill();
     }
 

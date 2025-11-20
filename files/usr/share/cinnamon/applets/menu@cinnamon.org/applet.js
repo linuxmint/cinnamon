@@ -1236,7 +1236,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     _updateKeybinding() {
-        Main.keybindingManager.addHotKey("overlay-key-" + this.instance_id, this.overlayKey, () => {
+        Main.keybindingManager.addXletHotKey(this, "overlay-key", this.overlayKey, () => {
             if (!Main.overview.visible && !Main.expo.visible) {
                 if (this.forceShowPanel && !this.isOpen) {
                     this.panel.peekPanel();
@@ -1359,7 +1359,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel () {
-        Main.keybindingManager.removeHotKey("overlay-key-" + this.instance_id);
+        Main.keybindingManager.removeXletHotKey(this, "overlay-key");
     }
 
     // settings button callbacks

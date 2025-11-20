@@ -289,7 +289,11 @@ MyApplet.prototype =
 
     on_launch_shortcut_changed: function()
     {
-        Main.keybindingManager.addHotKey("finder_launch", this.launch_shortcut, Lang.bind(this, this.launch));
+        Main.keybindingManager.addXletHotKey(this, "finder_launch", this.launch_shortcut, Lang.bind(this, this.launch));
+    },
+
+    on_applet_removed_from_panel () {
+        Main.keybindingManager.removeXletHotKey(this, "finder_launch");
     },
 
     _onSearchTextChanged: function(se, prop)

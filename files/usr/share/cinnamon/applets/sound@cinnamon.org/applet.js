@@ -1111,7 +1111,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     _setKeybinding() {
-        Main.keybindingManager.addHotKey("sound-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
+        Main.keybindingManager.addXletHotKey(this, "sound-open", this.keyOpen, Lang.bind(this, this._openMenu));
     }
 
     _on_overamplification_change () {
@@ -1141,7 +1141,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel () {
-        Main.keybindingManager.removeHotKey("sound-open-" + this.instance_id);
+        Main.keybindingManager.removeXletHotKey(this, "sound-open");
         if (this.hideSystray)
             this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {

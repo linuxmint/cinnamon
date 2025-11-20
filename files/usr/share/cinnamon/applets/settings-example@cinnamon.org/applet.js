@@ -53,7 +53,7 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
     }
 
     on_keybinding_changed() {
-        Main.keybindingManager.addHotKey("must-be-unique-id", this.keybinding, Lang.bind(this, this.on_hotkey_triggered));
+        Main.keybindingManager.addXletHotKey(this, "must-be-unique-id", this.keybinding, Lang.bind(this, this.on_hotkey_triggered));
     }
 
     on_settings_changed() {
@@ -129,6 +129,7 @@ class CinnamonSettingsExampleApplet extends Applet.TextIconApplet {
         this.settings.finalize();    // This is called when a user removes the applet from the panel.. we want to
                                      // Remove any connections and file listeners here, which our settings object
                                      // has a few of
+        Main.keybindingManager.removeXletHotKey(this, "must-be-unique-id");
     }
 }
 

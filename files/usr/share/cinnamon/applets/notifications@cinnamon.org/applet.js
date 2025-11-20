@@ -47,13 +47,13 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _setKeybinding() {
-        Main.keybindingManager.addHotKey("notification-open-" + this.instance_id, this.keyOpen, Lang.bind(this, this._openMenu));
-        Main.keybindingManager.addHotKey("notification-clear-" + this.instance_id, this.keyClear, Lang.bind(this, this._clear_all));
+        Main.keybindingManager.addXletHotKey(this, "notification-open", this.keyOpen, Lang.bind(this, this._openMenu));
+        Main.keybindingManager.addXletHotKey(this, "notification-clear", this.keyClear, Lang.bind(this, this._clear_all));
     }
 
     on_applet_removed_from_panel () {
-        Main.keybindingManager.removeHotKey("notification-open-" + this.instance_id);
-        Main.keybindingManager.removeHotKey("notification-clear-" + this.instance_id);
+        Main.keybindingManager.removeXletHotKey(this, "notification-open");
+        Main.keybindingManager.removeXletHotKey(this, "notification-clear");
         global.settings.disconnect(this.panelEditModeHandler);
     }
 
