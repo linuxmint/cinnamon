@@ -42,7 +42,7 @@ OPERATIONS = ['<=', '>=', '<', '>', '!=', '=']
 OPERATIONS_MAP = {'<': operator.lt, '<=': operator.le, '>': operator.gt, '>=': operator.ge, '!=': operator.ne, '=': operator.eq}
 
 class JSONSettingsHandler(object):
-    def __init__(self, filepath, notify_callback=None):
+    def __init__(self, filepath, uuid = None, instance_id = None, notify_callback=None):
         super(JSONSettingsHandler, self).__init__()
 
         self.notify_callback = notify_callback
@@ -54,6 +54,8 @@ class JSONSettingsHandler(object):
         self.bindings = {}
         self.listeners = {}
         self.deps = {}
+        self.uuid = uuid
+        self.instance_id = instance_id
 
         self.timeout_id = 0
         self.file_monitor_id = 0
@@ -320,6 +322,7 @@ class JSONSettingsBackend(object):
 def json_settings_factory(subclass):
     class NewClass(globals()[subclass], JSONSettingsBackend):
         def __init__(self, key, settings, properties):
+            self.backend = "json"
             self.key = key
             self.settings = settings
 

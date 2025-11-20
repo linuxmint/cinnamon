@@ -281,8 +281,9 @@ class MainWindow(object):
                 if not instance_exists:
                     continue
 
-            settings = JSONSettingsHandler(os.path.join(path if item in new_items else old_path, item), self.notify_dbus)
-            settings.instance_id = instance_id
+            settings = JSONSettingsHandler(
+                os.path.join(path if item in new_items else old_path, item), self.uuid, instance_id, self.notify_dbus
+            )
             instance_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             self.instance_stack.add_named(instance_box, instance_id)
 

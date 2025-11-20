@@ -938,10 +938,20 @@ class KeybindingTable(GObject.Object):
         keybinding.resetDefaults()
         self._proxy_send_kb_changed(keybinding)
 
-    def find_keybinding_by_label(self, label):
-        for cat in self.main_store:
+    def lookup_gsettings_keybinding(self, schema_id, key):
+        for cat in self._static_store + self._custom_store:
             for keybinding in cat.keybindings:
-                if keybinding.label == label:
+                if keybinding.schema == schema_id and keybinding.key == key:
+                    return keybinding
+        return None
+
+    def lookup_json_keybinding(self, uuid, instance_id, key):
+        for cat in self._spice_store:
+            cat_uuid = cat.int_name.split("_")[0]
+            if cat_uuid != uuid:
+                continue
+            for keybinding in cat.keybindings:
+                if instance_id == keybinding.dbus_info["config_id"] and keybinding.key == key:
                     return keybinding
         return None
 
