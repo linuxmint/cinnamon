@@ -1,9 +1,12 @@
 const Signals = imports.signals;
 const Main = imports.ui.main;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
+const AppletManager = imports.ui.appletManager;
+const DeskletManager = imports.ui.deskletManager;
 
 const MK = imports.gi.CDesktopEnums.MediaKeyType;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
@@ -52,6 +55,7 @@ KeybindingManager.prototype = {
          * This dict will contain [name, bindings, callback] and keyed on the id returned by
          * add_custom_keybinding. */
         this.bindings = new Map();
+        this.applet_bindings = new Map();
         this.kb_schema = Gio.Settings.new(CUSTOM_KEYS_PARENT_SCHEMA);
         this.setup_custom_keybindings();
         this.kb_schema.connect("changed::custom-list", Lang.bind(this, this.on_customs_changed));
@@ -70,6 +74,171 @@ KeybindingManager.prototype = {
         if (!bindings_string)
             return false;
         return this.addHotKeyArray(name, bindings_string.split("::"), callback);
+    },
+
+    _makeXletKey: function(xlet, name, binding) {
+        return `${xlet._uuid}::${name}::${binding}`;
+    },
+
+    _uuidFromXletKey: function(xlet_key) {
+        return xlet_key.split("::")[0];
+    },
+
+    /*  Menu applet example
+     *
+     *  uuid: menu@cinnamon.org
+     *  binding name: overlay-key
+     *    instances:
+     *      49: super-l, super-r
+     *      52: super-l, ctrl-shift-f7
+     *
+     *  is in applet_bindings as:
+     *
+     *  {
+     *      "menu@cinnamon.org::overlay-key:super-l" : {
+     *          "49": callback49,
+     *          "52": callback52
+     *      },
+     *      "menu@cinnamon.org::overlay-key:super-r" : {
+     *          "49": callback49
+     *      },
+     *      "menu@cinnamon.org::overlay-key:ctrl-shift-f7" : {
+     *          "52": callback52
+     *      }
+     *  }
+     */
+
+    addXletHotKey: function(xlet, name, bindings_string, callback) {
+        this._removeMatchingXletBindings(xlet, name);
+
+        if (!bindings_string)
+            return false;
+
+        let xlet_set = null;
+        const instanceId = xlet.instance_id || 0; // extensions == undefined
+        const binding_array = bindings_string.split("::");
+
+        for (const binding of binding_array) {
+            const xlet_key = this._makeXletKey(xlet, name, binding);
+            xlet_set = this.applet_bindings.get(xlet_key);
+
+            if (xlet_set === undefined) {
+                xlet_set = new Map([
+                    ["commitTimeoutId", 0]
+                ]);
+                this.applet_bindings.set(xlet_key, xlet_set);
+            }
+
+            xlet_set.set(instanceId, callback);
+
+            this._queueCommitXletHotKey(xlet_key, binding, xlet_set);
+        }
+    },
+
+    _removeMatchingXletBindings: function(xlet, name) {
+        // This sucks, but since the individual binding string is part of the name
+        // name we send to muffin, we can't just call display.remove_keybinding(name),
+        // and need to iterate thru the list finding our matching uuid and instance ids.
+        const key_prefix = `${xlet._uuid}::${name}::`;
+        const instanceId = xlet.instance_id || 0;
+        const iter = this.applet_bindings.keys();
+
+        for (const xlet_key of iter) {
+            if (xlet_key.startsWith(key_prefix)) {
+                const xlet_set = this.applet_bindings.get(xlet_key);
+                if (xlet_set.has(instanceId)) {
+                    xlet_set.delete(instanceId);
+                    if (xlet_set.size === 1) { // only commitTimeoutId left
+                        this.applet_bindings.delete(xlet_key);
+                        this.removeHotKey(xlet_key);
+                    }
+                }
+            }
+        }
+    },
+
+    _xletCallback: function(lookup_key, display, window, kb, action) {
+        const xlet_set = this.applet_bindings.get(lookup_key);
+        if (!xlet_set) {
+            return;
+        }
+
+        /* This should catch extensions also. The minimum size is 2 - 1 will be a
+         * binding, plus the commitTimeoutId. */
+        if (xlet_set.size === 2) {
+            const iter = xlet_set.keys();
+            for (const instanceId of iter) {
+                if (instanceId === "commitTimeoutId") {
+                    continue;
+                }
+                const callback = xlet_set.get(instanceId);
+                callback(display, window, kb, action);
+                break;
+            }
+            return;
+        }
+
+        const iter = xlet_set.keys();
+        const uuid = this._uuidFromXletKey(lookup_key);
+        const currentMonitor = Main.layoutManager.currentMonitor.index;
+
+        let xlet = null
+        let xletMonitor = 0;
+        let primary_callback = null;
+        let current_callback = null;
+
+        for (instanceId of iter) {
+            current_callback = xlet_set.get(instanceId);
+
+            xlet = AppletManager.get_object_for_uuid(uuid, instanceId);
+
+            if (!xlet) {
+                xlet = DeskletManager.get_object_for_uuid(uuid, instanceId);
+            }
+
+            if (xlet) {
+                const actor = xlet.actor;
+                if (actor) {
+                    xletMonitor = Main.layoutManager.findMonitorIndexForActor(actor);
+
+                    if (xletMonitor === Main.layoutManager.primaryMonitor.index) {
+                        primary_callback = current_callback;
+                    }
+                    if (xletMonitor == currentMonitor) {
+                        current_callback(display, window, kb, action);
+                        return;
+                    }
+                }
+            }
+        }
+
+        // No match... more monitors than instances? Prefer the primary monitor's if we encountered it.
+        if (primary_callback) {
+            primary_callback(display, window, kb, action);
+        } else {
+            // Fallback to the last one we looked at otherwise.
+            current_callback(display, window, kb, action);
+        }
+    },
+
+    removeXletHotKey: function(xlet, name) {
+        this._removeMatchingXletBindings(xlet, name);
+    },
+
+    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set) {
+        let id = xlet_set.get("commitTimeoutId") ?? 0;
+
+        if (id > 0) {
+            GLib.source_remove(id);
+        }
+
+        id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key));
+            xlet_set.set("commitTimeoutId", 0);
+            return GLib.SOURCE_REMOVE;
+        });
+
+        xlet_set.set("commitTimeoutId", id);
     },
 
     _lookupEntry: function(name) {
