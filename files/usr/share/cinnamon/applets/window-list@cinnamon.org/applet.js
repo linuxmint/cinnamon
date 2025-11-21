@@ -864,7 +864,7 @@ class AppMenuButton {
     }
 
     updateNotificationsBadge() {
-        if (this.notifications.length > 0) {
+        if (this.notifications.length > 0 && this._applet.enableNotifications) {
             this.notificationsBadgeLabel.text = this.notifications.length.toString();
             this.notificationsBadge.show();
         } else {
@@ -1099,6 +1099,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("window-hover", "windowHover", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
+        this.settings.bind("enable-notifications", "enableNotifications", this._updateAllNotificationBadges);
         this.settings.bind("last-window-order", "lastWindowOrder", null);
 
         this.signals.connect(global.display, 'window-created', this._onWindowAddedAsync, this);
@@ -1616,6 +1617,10 @@ class CinnamonWindowListApplet extends Applet.Applet {
             }
             return false;
         });
+    }
+
+    _updateAllNotificationBadges() {
+        this._windows.forEach(window => window.updateNotificationsBadge());
     }
 
      _destroyAllNotifications() {
