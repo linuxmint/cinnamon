@@ -333,7 +333,7 @@ class Workspace {
 
     calcAllWindowNumbers() {
         this.appGroups.forEach( appGroup => {
-            appGroup.calcWindowNumber(appGroup.groupState.metaWindows);
+            appGroup.calcWindowNumber();
         });
     }
 
