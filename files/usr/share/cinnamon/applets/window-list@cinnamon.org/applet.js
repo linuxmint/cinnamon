@@ -63,6 +63,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
+const MessageTray = imports.ui.messageTray;
 const WindowUtils = imports.misc.windowUtils;
 
 const MAX_TEXT_LENGTH = 1000;
@@ -309,6 +310,27 @@ class AppMenuButton {
         this._label = new St.Label();
         this.actor.add_actor(this._label);
 
+        this.notificationsBadge = new St.BoxLayout({
+            style_class: 'grouped-window-list-notifications-badge',
+            important: true,
+            x_align: St.Align.MIDDLE,
+            y_align: St.Align.MIDDLE,
+            show_on_set_parent: false,
+        });
+        this.notificationsBadgeLabel = new St.Label({
+            style_class: 'grouped-window-list-notifications-badge-label',
+            important: true,
+            text: ''
+        });
+        this.notificationsBadgeLabel.clutter_text.ellipsize = false;
+        this.notificationsBadge.add(this.notificationsBadgeLabel, {
+            x_align: St.Align.START,
+            y_align: St.Align.START,
+        });
+        this.actor.add_child(this.notificationsBadge);
+        this.notificationsBadge.set_text_direction(St.TextDirection.LTR);
+        this.notificationsBadge.show();
+
         this.updateLabelVisible();
 
         this._visible = true;
@@ -362,6 +384,11 @@ class AppMenuButton {
         this.onScrollModeChanged();
         this._needsAttention = false;
 
+        this.app = this._getApp();
+        this.appId = this.app ? this.app.get_id() : null;
+        this.notifications = [];
+        this._applet.copyNotifications(this);
+        this.updateNotificationsBadge();
         this.setDisplayTitle();
         this.onFocus();
         this.setIcon();
@@ -507,10 +534,7 @@ class AppMenuButton {
 
     setDisplayTitle() {
         let title   = this.metaWindow.get_title();
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
-
-        if (!title) title = app ? app.get_name() : '?';
+        if (!title) title = this.app ? this.app.get_name() : '?';
 
         /* Sanitize the window title to prevent dodgy window titles such as
          * "); DROP TABLE windows; --. Turn all whitespaces into " " because
@@ -525,6 +549,18 @@ class AppMenuButton {
             this._tooltip.set_text(title);
 
         this._label.set_text(title);
+    }
+
+    _getApp() {
+        const tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(this.metaWindow);
+        if (!app) {
+          app = tracker.get_app_from_pid(this.metaWindow.get_pid());
+        }
+        if (!app) {
+          app = tracker.get_app_from_pid(this.metaWindow.get_client_pid());
+        }
+        return app;
     }
 
     destroy() {
@@ -717,6 +753,20 @@ class AppMenuButton {
         }
         this._iconBox.allocate(childBox, flags);
 
+        // Update notifications badge text size.
+        const badgeTextSize = Math.round(Math.min(this._iconBox.width, this._iconBox.height) / 2.5 / global.ui_scale);
+        const badgePadding = Math.round(badgeTextSize / 4);
+        const sizeStyle = `font-size: ${badgeTextSize}px; padding: 0px ${badgePadding}px;`;
+        this.notificationsBadgeLabel.set_style(sizeStyle);
+
+        // Set notifications badge position
+        childBox.x2 = this._iconBox.x + this._iconBox.width;
+        childBox.x1 = childBox.x2 - this.notificationsBadgeLabel.width;
+        childBox.y1 = box.y1;
+        childBox.y2 = childBox.y1 + this.notificationsBadgeLabel.height;
+
+        this.notificationsBadge.allocate(childBox, flags);
+
         if (this.drawLabel) {
             [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
 
@@ -763,13 +813,10 @@ class AppMenuButton {
     }
 
     setIcon() {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
-
         this.icon_size = this._applet.icon_size;
 
-        let icon = app ?
-            app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
+        let icon = this.app ?
+            this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
             new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
@@ -814,6 +861,15 @@ class AppMenuButton {
             }
             return continueFlashing;
         });
+    }
+
+    updateNotificationsBadge() {
+        if (this.notifications.length > 0) {
+            this.notificationsBadgeLabel.text = this.notifications.length.toString();
+            this.notificationsBadge.show();
+        } else {
+            this.notificationsBadge.hide();
+        }
     }
 };
 
@@ -1052,6 +1108,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.signals.connect(Main.panelManager, 'monitors-changed', this._updateWatchedMonitors, this);
         this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
         this.signals.connect(Cinnamon.WindowTracker.get_default(), "window-app-changed", this._onWindowAppChanged, this);
+        this.signals.connect(Main.messageTray, 'notify-applet-update', this._onNotificationReceived, this);
 
         this.signals.connect(this.actor, 'style-changed', Lang.bind(this, this._updateSpacing));
 
@@ -1064,11 +1121,16 @@ class CinnamonWindowListApplet extends Applet.Applet {
     on_applet_added_to_panel(userEnabled) {
         this._updateSpacing();
         this.appletEnabled = true;
+        MessageTray.extensionsHandlingNotifications++;
     }
 
     on_applet_removed_from_panel() {
         this.signals.disconnectAllSignals();
         this.settings.finalize();
+        MessageTray.extensionsHandlingNotifications--;
+        if (MessageTray.extensionsHandlingNotifications === 0) {
+            this._destroyAllNotifications();
+        }
     }
 
     on_applet_instances_changed() {
@@ -1506,6 +1568,65 @@ class CinnamonWindowListApplet extends Applet.Applet {
             Mainloop.source_remove(this._tooltipErodeTimer);
             this._tooltipErodeTimer = null;
         }
+    }
+
+    _onNotificationReceived(mtray, notification) {
+        let appId = notification.source.app?.get_id();
+
+        if (!appId) {
+            return;
+        }
+
+        // Add notification to all appMenuButton's with appId
+        let notificationAdded = false;
+        this._windows.forEach(window => {
+            if (appId === window.appId) {
+                window.notifications.push(notification);
+                notificationAdded = true;
+                window.updateNotificationsBadge();
+            }
+        });
+
+        if (notificationAdded) {
+            notification.appId = appId;
+            notification.connect('destroy',  () => this._onNotificationDestroyed(notification));
+        }
+    }
+
+    _onNotificationDestroyed(notification) {
+        this._windows.forEach(window => {
+            if (notification.appId === window.appId) {
+                const index = window.notifications.indexOf(notification);
+                if (index > -1) {
+                    window.notifications.splice(index, 1)
+                    window.updateNotificationsBadge();
+                }
+            }
+        });
+    }
+
+    copyNotifications(newAppWindow) {
+        if (!newAppWindow.appId) return;
+
+        // Copy notifications from any existing appWindow with the same appId.
+        this._windows.some(window => {
+            if (window.appId === newAppWindow.appId) {
+                newAppWindow.notifications = window.notifications.slice(); // Shallow copy.
+                return true;
+            }
+            return false;
+        });
+    }
+
+     _destroyAllNotifications() {
+        this._windows.forEach(window => {            
+            let i;
+            // Iterate backwards due to in place element deletion.
+            for (i = window.notifications.length - 1; i >= 0; i--) {
+                window.notifications[i].destroy();
+            }
+            
+        });
     }
 }
 
