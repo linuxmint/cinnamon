@@ -87,6 +87,11 @@
       },
       "dependency": "window-hover=thumbnail"
   },
+  "enable-notifications": {
+      "type": "switch",
+      "default": true,
+      "description": "Show notification badges"
+  },
   "last-window-order": {
       "type": "generic",
       "default": ""
