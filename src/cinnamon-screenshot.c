@@ -141,9 +141,10 @@ _draw_cursor_image (cairo_surface_t       *surface,
   cairo_surface_t *cursor_surface;
   cairo_region_t *screenshot_region;
   cairo_t *cr;
-  graphene_point_t coords;
+  int x, y;
   int xhot, yhot;
   double xscale, yscale;
+  graphene_point_t point;
 
   display = cinnamon_global_get_display (cinnamon_global_get ());
   tracker = meta_cursor_tracker_get_for_display (display);
@@ -153,9 +154,11 @@ _draw_cursor_image (cairo_surface_t       *surface,
     return;
 
   screenshot_region = cairo_region_create_rectangle (&area);
-  meta_cursor_tracker_get_pointer (tracker, &coords, NULL);
+  meta_cursor_tracker_get_pointer (tracker, &point, NULL);
+  x = point.x;
+  y = point.y;
 
-  if (!cairo_region_contains_point (screenshot_region, (int) coords.x, (int) coords.y))
+  if (!cairo_region_contains_point (screenshot_region, point.x, point.y))
     {
       cairo_region_destroy (screenshot_region);
       return;
