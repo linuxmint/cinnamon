@@ -813,12 +813,14 @@ class CategoryButton extends SimpleMenuItem {
             symbolic = true;
             if (typeof icon !== 'string')
                 icon = icon.get_names()[0]
-            if (icon.startsWith("applications-"))
-                icon = "xsi-" + icon
+            if (icon.startsWith("applications-") || icon === "folder-recent")
+                icon = "xsi-" + icon;
+            else if (icon == "xapp-user-favorites")
+                icon = "xsi-user-favorites-symbolic";
             else if (icon == "preferences-system")
-                icon = "xsi-applications-administration"
+                icon = "xsi-applications-administration";
             else if (icon == "preferences-desktop")
-                icon = "xsi-applications-preferences"
+                icon = "xsi-applications-preferences";
         }
 
         if (typeof icon === 'string')
