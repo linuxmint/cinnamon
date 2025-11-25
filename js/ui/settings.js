@@ -579,6 +579,12 @@ XletSettingsBase.prototype = {
         }
     },
 
+
+    /**
+     * _checkSettings:
+     *
+     * Checks whether any settings have been changed and handles callbacks/signals if they have.
+     */
     _checkSettings: function() {
         let oldSettings = this.settingsData;
         try {
@@ -592,14 +598,18 @@ XletSettingsBase.prototype = {
         for (let key in this.settingsData) {
             if (!this.settingsData[key]
                 || this.settingsData[key].value === undefined
+                || this.settingsData[key].type === undefined
                 || !oldSettings[key]
                 || oldSettings[key].value === undefined) continue;
 
             let oldValue = oldSettings[key].value;
             let value = this.settingsData[key].value;
-            if (value == oldValue) continue;
+            let valueType = this.settingsData[key].type;
 
+            if (!this._hasSettingChanged(value, valueType, oldValue)) continue;
+            
             changed = true;
+
             if (key in this.bindings) {
                 for (let info of this.bindings[key]) {
                     // if the property had a save function, it is gone now and we need to re-add it
@@ -630,6 +640,49 @@ XletSettingsBase.prototype = {
         if (changed) {
             this.emit("settings-changed");
         }
+    },
+
+    /**
+     * _hasSettingChanged:
+     * @value: current value
+     * @valueType: current value setting type
+     * @oldValue: previous value
+     *
+     * Checks whether a setting has changed by comparing is current value to the previous one
+     */
+    _hasSettingChanged: function(value, valueType, oldValue) {
+        // It's easy to evaluate whether strings or ints changes, but
+        // some settings are objects in such case every property needs to be checked 
+        
+        let equal = false;
+        if (valueType === "timechooser" || valueType === "datechooser") {
+
+            equal = Object.keys(value).every(
+                key => oldValue.hasOwnProperty(key)
+                && value[key] === oldValue[key]);
+
+        } else if (valueType === "list") { 
+
+            // If lists differ in length they definitely changed
+            if (value.length !== oldValue.length) return true;
+
+            // Each row of the list needs to be checked
+            equal = Object.keys(value).every(row => {
+                if (value[row].length === oldValue[row].length) {
+                    return Object.keys(value[row]).every(
+                        key => oldValue[row].hasOwnProperty(key)
+                        && value[row][key] === oldValue[row][key]
+                    );
+                } else {
+                    return false;
+                }
+            });    
+              
+        } else {
+            equal = (value === oldValue);
+        }
+            
+        return !equal;
     },
 
     _loadTemplate: function(checksum) {
