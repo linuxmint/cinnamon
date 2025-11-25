@@ -431,7 +431,7 @@ class WorkspaceGraph extends WorkspaceButton {
     update(options = {}) {
         const state = options.state;
 
-        if ((state == "position-changed" || state == "size-changed") &&
+        if ((state === "position-changed" || state === "size-changed") &&
             this.focusGraph && this.focusGraph.metaWindow.has_focus()
         ) {
             this.focusGraph.update(options);
@@ -640,7 +640,6 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
             button.update({ state });
         }
-        
     }
 
     on_applet_removed_from_panel() {
