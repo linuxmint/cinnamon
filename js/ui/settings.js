@@ -668,12 +668,14 @@ XletSettingsBase.prototype = {
 
             // Each row of the list needs to be checked
             equal = Object.keys(value).every(row => {
-                if(value[row].length === oldValue[row].length) {
+                if (value[row].length === oldValue[row].length) {
                     return Object.keys(value[row]).every(
                         key => oldValue[row].hasOwnProperty(key)
                         && value[row][key] === oldValue[row][key]
                     );
-                };
+                } else {
+                    return false;
+                }
             });    
               
         } else {
