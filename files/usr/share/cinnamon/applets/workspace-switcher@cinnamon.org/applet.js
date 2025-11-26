@@ -145,14 +145,13 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowGraph {
-    constructor(workspaceGraph, metaWindow, tracker, iconEnabled, iconSize) {
+    constructor(workspaceGraph, metaWindow, iconEnabled, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
-        this.tracker = tracker;
-        this.iconEnabled = iconEnabled;
+        this._iconEnabled = iconEnabled;
         this._iconSize = iconSize;
-        this._iconScaledSize = this._iconSize * global.ui_scale;
-        this._halvedIconScaledSize = this._iconScaledSize * 0.5;
+        this._iconScaledSize = Math.round(this._iconSize * global.ui_scale);
+        this._halvedIconScaledSize = Math.round(this._iconScaledSize * 0.5);
 
         this.drawingArea = new St.DrawingArea({
             style_class: 'windows',
@@ -164,31 +163,58 @@ class WindowGraph {
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
         this._icon = null;
-
-        if (this.iconEnabled)
-            this.updateIcon(this.intersectionRect());
+        if (this._iconEnabled) {
+            this._icon = this._getWindowIcon();
+            const rect = this.intersectionRect();
+            this.updateIconState(rect);
+        }
     }
 
-    get icon() {
-        if (!this._icon)
-            this._icon = this.createIcon();
-        return this._icon;
+    setIconSize(size) {
+        const augmentingSize = (size > this._iconSize);
+
+        this._iconSize = size;
+        this._iconScaledSize = Math.round(this._iconSize * global.ui_scale);
+        this._halvedIconScaledSize = Math.round(this._iconScaledSize * 0.5);
+
+        if (this._icon) {
+            // Recreate the icon actor to reflect the new size, this is needed for
+            // when the new size is greater than the old one.
+            if (augmentingSize) {
+                this._icon.destroy();
+                this._icon = this._getWindowIcon();
+            } else {
+                this._icon.set_size(this._iconScaledSize, this._iconScaledSize);
+            }
+
+            const rect = this.intersectionRect();
+            this.updateIconState(rect);
+        }
     }
 
-    calcIconPos(rect) {
+    setIconEnabled(enabled) {
+        this._iconEnabled = enabled;
+        if (this._iconEnabled && !this._icon) {
+            this._icon = this._getWindowIcon();
+            const rect = this.intersectionRect();
+            this.updateIconState(rect);
+        }
+    }
+
+    calcIconPosition(rect) {
         const x = Math.round(rect.x + rect.width / 2 - this._halvedIconScaledSize);
         const y = Math.round(rect.y + rect.height / 2 - this._halvedIconScaledSize);
         return [x, y];
     }
 
-    updateIcon(rect) {
-        if (this.iconEnabled) {
-            const [x, y] = this.calcIconPos(rect);
-            this.icon.set_position(x, y);
+    updateIconState(rect) {
+        if (this._icon) {
+            const [x, y] = this.calcIconPosition(rect);
+            this._icon.set_position(x, y);
             if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
-                this.icon.set_opacity(0);
+                this._icon.set_opacity(0);
             } else {
-                this.icon.set_opacity(255);
+                this._icon.set_opacity(255);
             }
         }
     }
@@ -238,7 +264,9 @@ class WindowGraph {
         cr.fill();
         cr.$dispose();
 
-        this.updateIcon(rect);
+        if (this._iconEnabled) {
+            this.updateIconState(rect);
+        }
     }
 
     getWinThemeColors() {
@@ -256,9 +284,9 @@ class WindowGraph {
         return [windowBackgroundColor, windowBorderColor];
     }
 
-    createIcon() {
+    _getWindowIcon() {
         let iconActor = null;
-        let app = this.tracker.get_window_app(this.metaWindow);
+        let app = this.workspaceGraph.windowTracker.get_window_app(this.metaWindow);
 
         if (app) {
             iconActor = app.create_icon_texture_for_window(
@@ -283,7 +311,6 @@ class WindowGraph {
             this._icon.destroy();
             this._icon = null;
         }
-
         this.drawingArea.destroy();
         this.drawingArea = null;
     }
@@ -294,9 +321,8 @@ class WindowGraph {
 
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
-
-        if (this.iconEnabled) {
-            this.workspaceGraph.graphArea.add_child(this.icon);
+        if (this._iconEnabled && this._icon) {
+            this.workspaceGraph.graphArea.add_child(this._icon);
         }
     }
 }
@@ -314,13 +340,14 @@ class WorkspaceGraph extends WorkspaceButton {
                                   important: true });
 
         this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
+        this.windowTracker = Cinnamon.WindowTracker.get_default();
         this.actor.add_actor(this.graphArea);
 
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint', this.onRepaint.bind(this));
 
         this.focusGraph = null;
-        this.windowsGraphs = [];
+        this.windowGraphsMap = new Map();
 
         this.height = 1;
         this.width = 1;
@@ -358,7 +385,6 @@ class WorkspaceGraph extends WorkspaceButton {
 
         if (this.applet.orientation == St.Side.LEFT ||
             this.applet.orientation == St.Side.RIGHT) {
-
             this.width = this.applet._panelHeight -
                 this.getSizeAdjustment(this.applet.actor, true) -
                 this.getSizeAdjustment(this.actor, true);
@@ -398,23 +424,47 @@ class WorkspaceGraph extends WorkspaceButton {
         windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
-        this.graphArea.remove_all_children();
-
-        if (this.windowsGraphs) this.windowsGraphs.forEach(e => e.destroy());
-
-        this.windowsGraphs = [];
+        const iconSize = this.applet.window_icon_size == -1 
+            ? this.getIdealIconSize() 
+            : this.applet.window_icon_size;
 
         const iconEnabled = this.applet.show_window_icons;
-        const iconSize = this.applet.window_icon_size == -1 ? this.getIdealIconSize() : this.applet.window_icon_size;
-        const tracker = Cinnamon.WindowTracker.get_default();
 
-        this.focusGraph = null;
+        let currentGraphs = [];
+        let windowsIds = [];
         for (const window of windows) {
-            const graph = new WindowGraph(this, window, tracker, iconEnabled, iconSize);
+            const windowId = window.get_id();
 
-            this.windowsGraphs.push(graph);
+            let graph;
+            if (this.windowGraphsMap.has(windowId)) {
+                graph = this.windowGraphsMap.get(windowId);
+                graph.setIconSize(iconSize);
+                graph.setIconEnabled(iconEnabled);
+                // global.log("[WS] Reused graph for window ID " + windowId);
+            } else {
+                graph = new WindowGraph(this, window, iconEnabled, iconSize);
+                this.windowGraphsMap.set(windowId, graph);
+                // global.log("[WS] Created graph for window ID " + windowId);
+            }
 
-            if (window.has_focus()) {
+            currentGraphs.push(graph);
+            windowsIds.push(windowId);
+        }
+
+        for (const windowId of this.windowGraphsMap.keys()) {
+            if (!windowsIds.includes(windowId)) {
+                const graph = this.windowGraphsMap.get(windowId);
+                graph.destroy();
+                this.windowGraphsMap.delete(windowId);
+                // global.log("[WS] Destroyed graph for window ID " + windowId);
+            }
+        }
+
+        this.graphArea.remove_all_children();
+        this.focusGraph = null;
+
+        for (const graph of currentGraphs) {
+            if (graph.metaWindow.has_focus()) {
                 this.focusGraph = graph;
             } else {
                 graph.show();
@@ -449,8 +499,13 @@ class WorkspaceGraph extends WorkspaceButton {
 
     destroy() {
         this.focusGraph = null;
-        this.windowsGraphs.forEach(e => e.destroy());
-        this.windowsGraphs = [];
+        for (const graph of this.windowGraphsMap.values()) {
+            graph.destroy();
+        }
+        this.windowGraphsMap.clear();
+        this.windowGraphsMap = null;
+        this.graphArea.destroy();
+        this.graphArea = null;
         super.destroy();
     }
 }
@@ -633,7 +688,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
     _onWindowsStateChanged(state) {
         if (this._focusWindow && this._focusWindow.is_on_all_workspaces()) {
-            for (let button of this.buttons) {
+            for (const button of this.buttons) {
                 button.update({ state });
             }
         } else {
