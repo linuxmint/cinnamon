@@ -9,30 +9,6 @@
             "Simple buttons": "buttons"
         }
     },
-    "show-window-icons": {
-        "type": "switch",
-        "default": false,
-        "dependency": "display-type=visual",
-        "description": "Display window icons",
-        "tooltip": "Display window icon in the center of its window representation when space allows."
-    },
-    "window-icon-size": {
-        "type": "combobox",
-        "default": -1,
-        "options": {
-            "Auto adjust": -1,
-            "8px": 8,
-            "12px": 12,
-            "16px": 16,
-            "18px": 18,
-            "22px": 22,
-            "24px": 24,
-            "32px": 32
-        },
-        "description": "Window icon size",
-        "dependency": "display-type=visual",
-        "tooltip": "Icons may appear blurry due to scaling. If an icon is too large relative to the window representation, it may not be displayed at all."
-    },
     "scroll-behavior": {
         "type": "combobox",
         "default": "normal",

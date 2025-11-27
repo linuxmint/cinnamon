@@ -147,10 +147,9 @@ class SimpleButton extends WorkspaceButton {
 
 
 class WindowGraph {
-    constructor(workspaceGraph, metaWindow, iconEnabled, iconSize) {
+    constructor(workspaceGraph, metaWindow, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
-        this._iconEnabled = iconEnabled;
         this._iconSize = iconSize;
         this._iconScaledSize = Math.round(this._iconSize * global.ui_scale);
         this._halvedIconScaledSize = Math.round(this._iconScaledSize * 0.5);
@@ -161,46 +160,32 @@ class WindowGraph {
             height: this.workspaceGraph.height,
             important: true,
         });
-
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
-        this._icon = null;
-        if (this._iconEnabled) {
-            this._icon = this._getWindowIcon();
-            const rect = this.intersectionRect();
-            this.updateIconState(rect);
-        }
+        this._icon = this._getWindowIcon();
+
+        const rect = this.intersectionRect();
+        this.updateIconState(rect);
     }
 
     setIconSize(size) {
-        const augmentingSize = (size > this._iconSize);
+        const sizeDiff = size - this._iconSize;
 
         this._iconSize = size;
         this._iconScaledSize = Math.round(this._iconSize * global.ui_scale);
         this._halvedIconScaledSize = Math.round(this._iconScaledSize * 0.5);
 
-        if (this._icon) {
-            // Recreate the icon actor to reflect the new size, this is needed for
-            // when the new size is greater than the old one.
-            if (augmentingSize) {
-                this._icon.destroy();
-                this._icon = this._getWindowIcon();
-            } else {
-                this._icon.set_size(this._iconScaledSize, this._iconScaledSize);
-            }
-
-            const rect = this.intersectionRect();
-            this.updateIconState(rect);
-        }
-    }
-
-    setIconEnabled(enabled) {
-        this._iconEnabled = enabled;
-        if (this._iconEnabled && !this._icon) {
+        // Recreate the icon actor to reflect the new size if the new size is greater
+        // than the old one. This is needed because upscaling doesn't seem to be supported.
+        if (sizeDiff > 0) {
+            this._icon.destroy();
             this._icon = this._getWindowIcon();
-            const rect = this.intersectionRect();
-            this.updateIconState(rect);
+        } else if (sizeDiff < 0) {
+            this._icon.set_size(this._iconScaledSize, this._iconScaledSize);
         }
+
+        const rect = this.intersectionRect();
+        this.updateIconState(rect);
     }
 
     calcIconPosition(rect) {
@@ -210,17 +195,15 @@ class WindowGraph {
     }
 
     updateIconState(rect) {
-        if (this._icon) {
-            const [x, y] = this.calcIconPosition(rect);
-            this._icon.set_position(x, y);
-            // Hide the icon if either the width or height of the rectangle
-            // is smaller than the icon's scaled size. This prevents the icon from being
-            // displayed when it cannot fully fit in the available space.
-            if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
-                this._icon.set_opacity(0);
-            } else {
-                this._icon.set_opacity(255);
-            }
+        const [x, y] = this.calcIconPosition(rect);
+        this._icon.set_position(x, y);
+        // Hide the icon if either the width or height of the rectangle
+        // is smaller than the icon's scaled size. This prevents the icon from being
+        // displayed when it cannot fully fit in the available space.
+        if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
+            this._icon.set_opacity(0);
+        } else {
+            this._icon.set_opacity(255);
         }
     }
 
@@ -269,9 +252,7 @@ class WindowGraph {
         cr.fill();
         cr.$dispose();
 
-        if (this._iconEnabled) {
-            this.updateIconState(rect);
-        }
+        this.updateIconState(rect);
     }
 
     getWinThemeColors() {
@@ -312,10 +293,8 @@ class WindowGraph {
     }
 
     destroy() {
-        if (this._icon) {
-            this._icon.destroy();
-            this._icon = null;
-        }
+        this._icon.destroy();
+        this._icon = null;
         this.drawingArea.destroy();
         this.drawingArea = null;
     }
@@ -326,9 +305,7 @@ class WindowGraph {
 
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
-        if (this._iconEnabled && this._icon) {
-            this.workspaceGraph.graphArea.add_child(this._icon);
-        }
+        this.workspaceGraph.graphArea.add_child(this._icon);
     }
 }
 
@@ -429,12 +406,7 @@ class WorkspaceGraph extends WorkspaceButton {
         windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
-        // -1 => auto-adjust
-        const iconSize = this.applet.window_icon_size == -1 
-            ? this.getIdealIconSize() 
-            : this.applet.window_icon_size;
-
-        const iconEnabled = this.applet.show_window_icons;
+        const iconSize = this.getIdealIconSize();
 
         let currentGraphs = [];
         let windowsIds = [];
@@ -445,10 +417,9 @@ class WorkspaceGraph extends WorkspaceButton {
             if (this.windowGraphsMap.has(windowId)) {
                 graph = this.windowGraphsMap.get(windowId);
                 graph.setIconSize(iconSize);
-                graph.setIconEnabled(iconEnabled);
                 // global.log("[WS] Reused graph for window ID " + windowId);
             } else {
-                graph = new WindowGraph(this, window, iconEnabled, iconSize);
+                graph = new WindowGraph(this, window, iconSize);
                 this.windowGraphsMap.set(windowId, graph);
                 // global.log("[WS] Created graph for window ID " + windowId);
             }
@@ -534,8 +505,6 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
         this.settings.bind("scroll-behavior", "scroll_behavior");
-        this.settings.bind("show-window-icons", "show_window_icons", this.updateButtons);
-        this.settings.bind("window-icon-size", "window_icon_size", this.updateButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
@@ -637,10 +606,6 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             Mainloop.idle_add(Lang.bind(this, this._createButtons));
             this.createButtonsQueued = true;
         }
-    }
-
-    updateButtons() {
-        this.buttons.forEach(btn => btn.update());
     }
 
     _createButtons() {
