@@ -581,6 +581,7 @@ SwitcherList.prototype = {
     },
 
     _onItemClicked: function (index) {
+        this._itemEntered(index);
         this._itemActivated(index);
     },
 
