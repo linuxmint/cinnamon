@@ -15,6 +15,8 @@ const Cinnamon = imports.gi.Cinnamon;
 
 const MIN_SWITCH_INTERVAL_MS = 220;
 
+const ICON_AUTO_SIZE_RATIO = 0.55;
+
 const DEFAULT_ICON_SIZES = [8, 12, 16, 18, 22, 24, 32];
 
 
@@ -136,7 +138,7 @@ class SimpleButton extends WorkspaceButton {
         }
     }
 
-    update(options = {}) {
+    update() {
         let windows = this.workspace.list_windows();
         let used = windows.some(Main.isInteresting);
         this.shade(used);
@@ -211,6 +213,9 @@ class WindowGraph {
         if (this._icon) {
             const [x, y] = this.calcIconPosition(rect);
             this._icon.set_position(x, y);
+            // Hide the icon if either the width or height of the rectangle
+            // is smaller than the icon's scaled size. This prevents the icon from being
+            // displayed when it cannot fully fit in the available space.
             if (rect.width < this._iconScaledSize || rect.height < this._iconScaledSize) {
                 this._icon.set_opacity(0);
             } else {
@@ -369,7 +374,7 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     getIdealIconSize() {
-        const maxAllowed = (Math.min(this.width, this.height) * 0.55) / global.ui_scale;
+        const maxAllowed = (Math.min(this.width, this.height) * ICON_AUTO_SIZE_RATIO) / global.ui_scale;
 
         for (let i = DEFAULT_ICON_SIZES.length - 1; i >= 0; i--) {
             if (DEFAULT_ICON_SIZES[i] <= maxAllowed) {
@@ -424,6 +429,7 @@ class WorkspaceGraph extends WorkspaceButton {
         windows = windows.filter(this.filterWindows);
         windows.sort(this.sortWindowsByUserTime);
 
+        // -1 => auto-adjust
         const iconSize = this.applet.window_icon_size == -1 
             ? this.getIdealIconSize() 
             : this.applet.window_icon_size;
@@ -454,8 +460,8 @@ class WorkspaceGraph extends WorkspaceButton {
         for (const windowId of this.windowGraphsMap.keys()) {
             if (!windowsIds.includes(windowId)) {
                 const graph = this.windowGraphsMap.get(windowId);
-                graph.destroy();
                 this.windowGraphsMap.delete(windowId);
+                graph.destroy();
                 // global.log("[WS] Destroyed graph for window ID " + windowId);
             }
         }
@@ -681,8 +687,8 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", () => this._onWindowsStateChanged("position-changed"), this);
-        this.signals.connect(this._focusWindow, "size-changed", () => this._onWindowsStateChanged("size-changed"), this);
+        this.signals.connect(this._focusWindow, "position-changed", this._onWindowPositionChanged, this);
+        this.signals.connect(this._focusWindow, "size-changed", this._onWindowSizeChanged, this);
         this._onWindowsStateChanged("focus-changed");
     }
 
@@ -695,6 +701,14 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
             button.update({ state });
         }
+    }
+
+    _onWindowPositionChanged() {
+        this._onWindowsStateChanged("position-changed");
+    }
+
+    _onWindowSizeChanged() {
+        this._onWindowsStateChanged("size-changed");
     }
 
     on_applet_removed_from_panel() {
