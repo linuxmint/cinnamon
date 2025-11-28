@@ -82,7 +82,7 @@ class WorkspaceButton {
         }
     }
 
-    update(options = {}) {
+    update() {
         // defined in subclass
     }
 
@@ -138,7 +138,7 @@ class SimpleButton extends WorkspaceButton {
         }
     }
 
-    update(options = {}) {
+    update() {
         let windows = this.workspace.list_windows();
         let used = windows.some(Main.isInteresting);
         this.shade(used);
@@ -150,6 +150,9 @@ class WindowGraph {
     constructor(workspaceGraph, metaWindow, iconSize) {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
+
+        this._minimize_signal_id = this.metaWindow.connect('notify::minimized', this.update.bind(this));
+
         this._iconSize = iconSize;
         this._iconScaledSize = Math.round(this._iconSize * global.ui_scale);
         this._halvedIconScaledSize = Math.round(this._iconScaledSize * 0.5);
@@ -293,13 +296,24 @@ class WindowGraph {
     }
 
     destroy() {
+        if (this._minimize_signal_id > 0) {
+            this.metaWindow.disconnect(this._minimize_signal_id);
+        }
+        this._minimize_signal_id = 0;
         this._icon.destroy();
         this._icon = null;
         this.drawingArea.destroy();
         this.drawingArea = null;
     }
 
-    update(options = {}) {
+    update() {
+        if (this.metaWindow.minimized) {
+            this.drawingArea.hide();
+            this._icon.hide();
+            return;
+        }
+        this.drawingArea.show();
+        this._icon.show();
         this.drawingArea.queue_repaint();
     }
 
@@ -441,7 +455,7 @@ class WorkspaceGraph extends WorkspaceButton {
         }
     }
 
-    update(options = {}) {
+    update() {
         this.graphArea.queue_repaint();
     }
 
@@ -629,31 +643,31 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
             return;
 
         this._focusWindow = global.display.focus_window;
-        this.signals.connect(this._focusWindow, "position-changed", this._onWindowPositionChanged, this);
-        this.signals.connect(this._focusWindow, "size-changed", this._onWindowSizeChanged, this);
-        this._onWindowsStateChanged("focus-changed");
+        this.signals.connect(this._focusWindow, "position-changed", this._onWindowsStateChanged, this);
+        this.signals.connect(this._focusWindow, "size-changed", this._onWindowsStateChanged, this);
+        this._onWindowsStateChanged();
     }
 
-    _onWindowsStateChanged(state) {
+    _onWindowsStateChanged() {
         if (this._focusWindow && this._focusWindow.is_on_all_workspaces()) {
             for (const button of this.buttons) {
-                button.update({ state });
+                button.update();
             }
         } else {
             let button = this.buttons[global.workspace_manager.get_active_workspace_index()];
-            button.update({ state });
+            button.update();
         }
     }
 
-    _onWindowPositionChanged() {
-        this._onWindowsStateChanged("position-changed");
-    }
-
-    _onWindowSizeChanged() {
-        this._onWindowsStateChanged("size-changed");
-    }
-
     on_applet_removed_from_panel() {
+        this.destroy();
+    }
+
+    destroy() {
+        for (let i = 0; i < this.buttons.length; ++i) {
+            this.buttons[i].destroy();
+        }
+        this.buttons = [];
         this.signals.disconnectAllSignals();
     }
 }
