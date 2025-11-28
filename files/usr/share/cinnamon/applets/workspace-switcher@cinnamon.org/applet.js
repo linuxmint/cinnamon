@@ -138,7 +138,7 @@ class SimpleButton extends WorkspaceButton {
         }
     }
 
-    update() {
+    update(options = {}) {
         let windows = this.workspace.list_windows();
         let used = windows.some(Main.isInteresting);
         this.shade(used);
@@ -328,7 +328,6 @@ class WorkspaceGraph extends WorkspaceButton {
         this.graphArea.set_size(1, 1);
         this.graphArea.connect('repaint', this.onRepaint.bind(this));
 
-        this.focusGraph = null;
         this.windowGraphsMap = new Map();
 
         this.height = 1;
@@ -391,9 +390,7 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     filterWindows(win) {
-        return Main.isInteresting(win) &&
-            !win.is_skip_taskbar()     &&
-            !win.minimized;
+        return Main.isInteresting(win) && !win.is_skip_taskbar();
     }
 
     onRepaint(area) {
@@ -401,10 +398,9 @@ class WorkspaceGraph extends WorkspaceButton {
         // accurate measurements until everything is added to the stage
         if (this.scaleFactor === 0) this.setGraphSize();
 
-        // construct a list with all windows
-        let windows = this.workspace.list_windows();
+        // construct a list with all visible windows
+        let windows = this.workspace.list_unobscured_windows();
         windows = windows.filter(this.filterWindows);
-        windows.sort(this.sortWindowsByUserTime);
 
         const iconSize = this.getIdealIconSize();
 
@@ -438,33 +434,15 @@ class WorkspaceGraph extends WorkspaceButton {
         }
 
         this.graphArea.remove_all_children();
-        this.focusGraph = null;
 
         for (const graph of currentGraphs) {
-            if (graph.metaWindow.has_focus()) {
-                this.focusGraph = graph;
-            } else {
-                graph.show();
-                graph.update();
-            }
-        }
-
-        if (this.focusGraph) {
-            this.focusGraph.show();
-            this.focusGraph.update();
+            graph.show();
+            graph.update();
         }
     }
 
     update(options = {}) {
-        const state = options.state;
-
-        if ((state === "position-changed" || state === "size-changed") &&
-            this.focusGraph && this.focusGraph.metaWindow.has_focus()
-        ) {
-            this.focusGraph.update(options);
-        } else {
-            this.graphArea.queue_repaint();
-        }
+        this.graphArea.queue_repaint();
     }
 
     activate(active) {
@@ -475,7 +453,6 @@ class WorkspaceGraph extends WorkspaceButton {
     }
 
     destroy() {
-        this.focusGraph = null;
         for (const graph of this.windowGraphsMap.values()) {
             graph.destroy();
         }
