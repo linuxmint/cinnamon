@@ -162,6 +162,7 @@ class WindowGraph {
             width: this.workspaceGraph.width,
             height: this.workspaceGraph.height,
             important: true,
+            track_hover: false,
         });
         this.drawingArea.connect('repaint', this.onRepaint.bind(this));
 
@@ -333,7 +334,8 @@ class WorkspaceGraph extends WorkspaceButton {
         this.actor = new St.Bin({ reactive: applet._draggable.inhibit,
                                   style_class: 'workspace',
                                   y_fill: true,
-                                  important: true });
+                                  track_hover: false,
+                                  important: true, });
 
         this.graphArea = new St.DrawingArea({ style_class: 'windows', important: true });
         this.windowTracker = Cinnamon.WindowTracker.get_default();
@@ -524,6 +526,9 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.removeWorkspaceMenuItem.connect('activate', this.removeCurrentWorkspace.bind(this));
         this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
         this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
+
+        // Avoid triggering a whole refresh on mouse hover
+        this.actor.set_track_hover(false);
     }
 
     onWorkspacesUpdated() {
