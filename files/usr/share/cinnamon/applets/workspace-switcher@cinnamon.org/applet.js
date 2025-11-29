@@ -151,7 +151,7 @@ class WindowGraph {
         this.workspaceGraph = workspaceGraph;
         this.metaWindow = metaWindow;
 
-        this._minimize_signal_id = this.metaWindow.connect('notify::minimized', this.update.bind(this));
+        this._minimize_signal_id = this.metaWindow.connect('notify::minimized', this.on_minimize.bind(this));
 
         this._iconSize = iconSize;
         this._iconScaledSize = Math.round(this._iconSize * global.ui_scale);
@@ -308,19 +308,23 @@ class WindowGraph {
     }
 
     update() {
-        if (this.metaWindow.minimized) {
-            this.drawingArea.hide();
-            this._icon.hide();
-            return;
-        }
-        this.drawingArea.show();
-        this._icon.show();
         this.drawingArea.queue_repaint();
     }
 
     show() {
         this.workspaceGraph.graphArea.add_child(this.drawingArea);
         this.workspaceGraph.graphArea.add_child(this._icon);
+    }
+
+    on_minimize() {
+        if (this.metaWindow.minimized) {
+            // If the window is minimized, we need to trigger a repaint of the workspace graph
+            // from here because there's an edge case where if this window is minimized out
+            // of focus (i.e. while it isn't the focused window), the graph won't update properly
+            // update to reflect the minimized state of other underlying windows.
+            this.workspaceGraph.graphArea.queue_repaint();
+            return;
+        }
     }
 }
 
