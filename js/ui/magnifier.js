@@ -1715,6 +1715,7 @@ MagnifierInputHandler.prototype = {
 
         this._zoom_in_id = 0;
         this._zoom_out_id = 0;
+        this._zoom_enabled = false;
 
         this.a11y_settings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
         this.a11y_settings.connect("changed::" + SHOW_KEY, Lang.bind(this, this._refresh_state));
@@ -1750,6 +1751,8 @@ MagnifierInputHandler.prototype = {
             Meta.KeyBindingFlags.NONE,
             this._zoom_reset.bind(this)
         );
+
+        this._zoom_enabled = true;
     },
 
     _disable_zoom: function() {
@@ -1764,6 +1767,8 @@ MagnifierInputHandler.prototype = {
         global.display.remove_keybinding("magnifier-zoom-in")
         global.display.remove_keybinding("magnifier-zoom-out")
         global.display.remove_keybinding("magnifier-zoom-reset")
+
+        this._zoom_enabled = false;
     },
 
     _refresh_state: function() {
@@ -1775,10 +1780,13 @@ MagnifierInputHandler.prototype = {
             this.current_zoom = zr.getMagFactor()[0];
         }
 
-        if (this.a11y_settings.get_boolean(SHOW_KEY))
+        let should_enable = this.a11y_settings.get_boolean(SHOW_KEY);
+
+        if (should_enable && !this._zoom_enabled) {
             this._enable_zoom();
-        else
+        } else if (!should_enable && this._zoom_enabled) {
             this._disable_zoom();
+        }
     },
 
     _zoom_in: function(display, screen, event, kb, action) {
