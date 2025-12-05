@@ -162,7 +162,10 @@ class Module:
 
 
     def _on_face_browse_menuitem_activated(self, menuitem):
-        dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN,
+            (_("Cancel"), Gtk.ResponseType.CANCEL,
+             _("Open"), Gtk.ResponseType.OK)
+        )
         dialog.set_current_folder(self.accountService.get_home_dir())
         filter = Gtk.FileFilter()
         filter.set_name(_("Images"))

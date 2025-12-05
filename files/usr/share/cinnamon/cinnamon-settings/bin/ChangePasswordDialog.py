@@ -28,15 +28,17 @@ class ChangePasswordDialog(Gtk.Dialog):
         table.set_col_spacings(8)
 
         label = Gtk.Label(label=_("New password"), halign=Gtk.Align.END)
+        label.get_style_context().add_class("dim-label")
         label.set_alignment(1, 0.5)
         table.attach(label, 0, 1, 0, 1, xoptions=Gtk.AttachOptions.FILL)
 
         label = Gtk.Label(label=_("Confirm password"), halign=Gtk.Align.END)
+        label.get_style_context().add_class("dim-label")
         label.set_alignment(1, 0.5)
         table.attach(label, 0, 1, 2, 3, xoptions=Gtk.AttachOptions.FILL)
 
         self.new_password = Gtk.Entry()
-        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "view-refresh-symbolic")
+        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-view-refresh-symbolic")
         self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
         self.new_password.set_tooltip_text(_("Generate a password"))
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
@@ -75,7 +77,7 @@ class ChangePasswordDialog(Gtk.Dialog):
         content.add(self.infobar_label)
         table.attach(self.infobar, 0, 3, 4, 5)
 
-        self.add_buttons(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL, _("Change"), Gtk.ResponseType.OK)
+        self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("Change"), Gtk.ResponseType.OK)
 
         self.set_passwords_visibility()
         self.set_response_sensitive(Gtk.ResponseType.OK, False)
@@ -169,7 +171,7 @@ class ChangePasswordDialog(Gtk.Dialog):
         confirm_password = self.confirm_password.get_text()
         strength = self.password_strength(new_password)
         if new_password != confirm_password:
-            self.confirm_password.set_icon_from_stock(Gtk.EntryIconPosition.SECONDARY, Gtk.STOCK_DIALOG_WARNING)
+            self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic")
             self.confirm_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Passwords do not match"))
             self.confirm_password.set_tooltip_text(_("Passwords do not match"))
         else:
