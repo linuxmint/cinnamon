@@ -899,6 +899,8 @@ class AppDialog(Gtk.Dialog):
 
         if response == Gtk.ResponseType.ACCEPT:
             name = chooser.get_filename()
+            if " " in name:
+                name = '"' + name + '"'
             self.command_entry.set_text(name)
 
         chooser.destroy()
