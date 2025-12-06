@@ -9,6 +9,7 @@ const Applet = imports.ui.applet;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
+const MessageTray = imports.ui.messageTray;
 const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
@@ -254,7 +255,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             cycleWindows: (e, source) => this.handleScroll(e, source),
             openAbout: () => this.openAbout(),
             configureApplet: () => this.configureApplet(),
-            removeApplet: (event) => this.confirmRemoveApplet(event),
+            removeApplet: (event) => this.confirmRemoveApplet(event)
         });
 
         this.settings = new AppletSettings(this.state.settings, metadata.uuid, instance_id);
@@ -291,6 +292,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.display, 'window-created', (...args) => this.onWindowCreated(...args));
         this.signals.connect(global.settings, 'changed::panel-edit-mode', (...args) => this.on_panel_edit_mode_changed(...args));
         this.signals.connect(Main.themeManager, 'theme-set', (...args) => this.refreshCurrentWorkspace(...args));
+        this.signals.connect(Main.messageTray, 'notify-applet-update', this._onNotificationReceived.bind(this));
     }
 
     bindSettings() {
@@ -307,7 +309,8 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'super-num-hotkeys', value: 'SuperNumHotkeys', cb: this.bindAppKeys},
             {key: 'title-display', value: 'titleDisplay', cb: this.updateTitleDisplay},
             {key: 'launcher-animation-effect', value: 'launcherAnimationEffect', cb: null},
-            {key: 'number-display', value: 'numDisplay', cb: this.updateWindowNumberState},
+            {key: 'enable-window-count-badges', value: 'enableWindowCountBadges', cb: this.onEnableWindowCountBadgeChange},
+            {key: 'enable-notification-badges', value: 'enableNotificationBadges', cb: this.onEnableNotificationsChange},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
@@ -357,6 +360,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         }
         this.bindAppKeys();
         this.state.set({appletReady: true});
+        MessageTray.extensionsHandlingNotifications++;
     }
 
     _updateState(initialUpdate) {
@@ -424,6 +428,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         });
         this.settings.finalize();
         unref(this, RESERVE_KEYS);
+        MessageTray.extensionsHandlingNotifications--;
     }
 
     on_panel_icon_size_changed(iconSize) {
@@ -584,7 +589,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         });
     }
 
-    updateWindowNumberState() {
+    onEnableWindowCountBadgeChange() {
         this.workspaces.forEach(
             workspace => workspace.calcAllWindowNumbers()
         );
@@ -1021,6 +1026,57 @@ class GroupedWindowListApplet extends Applet.Applet {
     onUIScaleChange() {
         this.state.set({thumbnailCloseButtonOffset: global.ui_scale > 1 ? -10 : 0});
         this.refreshAllWorkspaces();
+    }
+
+     _onNotificationReceived(mtray, notification) {
+        let appId = notification.source.app?.get_id();
+      
+        if (!appId) {
+            return;
+        }
+
+        // Add notification to all appgroups with appId.
+        let notificationAdded = false;
+
+        this.workspaces.forEach(workspace => {
+            if (!workspace) return;
+            workspace.appGroups.forEach(appGroup => {
+                if (!appGroup || !appGroup.groupState || appGroup.groupState.willUnmount) return;
+                if (appId === appGroup.groupState.appId) {
+                    notificationAdded = true;
+                    appGroup.updateNotificationsBadge();
+                }
+            });
+        });
+
+        if (notificationAdded) {
+            notification.appId = appId;
+            notification.connect('destroy',  () => this._onNotificationDestroyed(notification));
+        }
+    }
+
+    _onNotificationDestroyed(notification) {
+        if (!this.workspaces) return;
+        
+        this.workspaces.forEach(workspace => {
+            if (!workspace) return;
+            workspace.appGroups.forEach(appGroup => {
+                if (!appGroup || !appGroup.groupState || appGroup.groupState.willUnmount) return;
+                if (notification.appId === appGroup.groupState.appId) {
+                    appGroup.updateNotificationsBadge();
+                }
+            });
+        });
+    }
+
+    onEnableNotificationsChange() {
+        this.workspaces.forEach(workspace => {
+            if (!workspace) return;
+            workspace.appGroups.forEach(appGroup => {
+                if (!appGroup || !appGroup.groupState || appGroup.groupState.willUnmount) return;
+                appGroup.updateNotificationsBadge();
+            });
+        });
     }
 }
 

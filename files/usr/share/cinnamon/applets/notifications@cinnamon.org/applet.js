@@ -7,6 +7,7 @@ const PopupMenu = imports.ui.popupMenu;
 const St = imports.gi.St;
 const Mainloop = imports.mainloop;
 const Urgency = imports.ui.messageTray.Urgency;
+const MessageTray = imports.ui.messageTray;
 const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyedReason;
 const Settings = imports.ui.settings;
 const Gettext = imports.gettext.domain("cinnamon-applets");
@@ -55,6 +56,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         Main.keybindingManager.removeXletHotKey(this, "notification-open");
         Main.keybindingManager.removeXletHotKey(this, "notification-clear");
         global.settings.disconnect(this.panelEditModeHandler);
+        
+        MessageTray.extensionsHandlingNotifications--;
+        if (MessageTray.extensionsHandlingNotifications === 0) {
+            this._clear_all();
+        }
     }
 
     _openMenu() {
@@ -266,6 +272,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
     on_applet_added_to_panel() {
         this.on_orientation_changed(this._orientation);
+        MessageTray.extensionsHandlingNotifications++;
     }
 
     on_orientation_changed (orientation) {
