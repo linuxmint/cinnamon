@@ -165,7 +165,10 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                 if (canHibernate) {
                     this.addButton({
                         label: _("Hibernate"),
-                        action: this._dialogProxy.HibernateRemote.bind(this._dialogProxy)
+                        action: () => {
+                            this._dialogProxy.HibernateRemote();
+                            this.close();
+                        }
                     });
                 }
 
