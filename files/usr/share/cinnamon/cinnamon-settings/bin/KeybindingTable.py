@@ -355,11 +355,17 @@ class KeyBinding(GObject.Object):
 
     def load_json_settings(self, *args):
         del self.entries[:]
-        self.entries = self.getConfigSettings()
+        settings = self.getConfigSettings()
+        if settings is None:
+            return
+        self.entries = settings
         self.json_timeout_id = 0
         self.emit_changed()
 
     def getConfigSettings(self):
+        if not Path(self.schema).exists():
+            self.settings_monitor.cancel()
+            return
         with open(self.schema, encoding="utf-8") as config_file:
             config = json.load(config_file)
             keybinds = config[self.key]["value"].split("::")
@@ -496,6 +502,11 @@ class KeybindingTable(GObject.Object):
         self._collision_check_done = False
         self._collision_table = {}
 
+        self._config_monitors = {
+            OLD_SETTINGS_DIR: {},
+            SETTINGS_DIR: {}
+        }
+
         self._load_static_store()
         self._load_custom_store()
         self._load_spice_store()
@@ -597,7 +608,6 @@ class KeybindingTable(GObject.Object):
 
     def _on_enabled_spices_changed(self, settings, key, data=None):
         self._load_spice_store()
-        self.emit("spices-changed")
 
     def _load_spice_store(self):
         try:
@@ -611,7 +621,11 @@ class KeybindingTable(GObject.Object):
             settings.connect("changed::enabled-extensions", self._on_enabled_spices_changed)
 
         enabled_extensions = set()
-        enabled_spices = set()
+        enabled_spices = {
+            "applets": {},
+            "desklets": {},
+            "extensions": {}
+        }
 
         for applets in settings.get_strv("enabled-applets"):
             p, pos, order, applet_uuid, *extra = applets.split(":")
@@ -619,123 +633,166 @@ class KeybindingTable(GObject.Object):
                 instance_id = extra[0]
             else:
                 instance_id = None
-            enabled_spices.add((applet_uuid, 'applets', instance_id))
-
+            enabled_spices["applets"].setdefault(applet_uuid, set()).add(instance_id)
         for desklets in settings.get_strv("enabled-desklets"):
             desklet_uuid, instance_id, x, y = desklets.split(":")
-            enabled_spices.add((desklet_uuid, 'desklets', instance_id))
+            enabled_spices["desklets"].setdefault(desklet_uuid, set()).add(instance_id)
 
         for extension in settings.get_strv("enabled-extensions"):
             enabled_extensions.add(extension)
-            enabled_spices.add((extension, 'extensions', None))
-
-        keyboard_spices = sorted(enabled_spices)
+            enabled_spices["extensions"].setdefault(extension, set()).add(None)
         spice_keybinds = {}
         spice_properties = {}
 
-        for uuid, _type, instance_id in keyboard_spices:
-            for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
-                config_path = Path.joinpath(settings_dir, uuid)
-                if Path.exists(config_path):
-                    configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
-                    # If we encounted numbered and non-numbered, config files, filter out the uuid-named one 
-                    if not all(x.split(".json")[0].isdigit() for x in configs) and any(x.split(".json")[0].isdigit() for x in configs):
-                        for index, value in enumerate(configs):
-                            if not value.split(".json")[0].isdigit():
-                                configs.pop(index)
-                    for config in configs:
-                        config_json = Path.joinpath(config_path, config)
-                        _id = config.split(".json")[0]
-                        key_name = f"{uuid}_{_id}" if _id.isdigit() else uuid
-                        with open(config_json, encoding="utf-8") as config_file:
-                            _config = json.load(config_file)
+        def set_properties(_type, uuid, config_path, configs):
+            for config in configs:
+                config_json = Path.joinpath(config_path, config)
+                _id = config.split(".json")[0]
+                key_name = f"{uuid}_{_id}" if _id.isdigit() else uuid
+                with open(config_json, encoding="utf-8") as config_file:
+                    _config = json.load(config_file)
 
-                            for key, val in _config.items():
-                                if isinstance(val, dict) and val.get("type") == "keybinding":
-                                    spice_properties.setdefault(key_name, {})
-                                    spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
-                                    spice_properties[key_name]["path"] = str(config_json)
-                                    spice_properties[key_name]["type"] = _type
-                                    spice_properties[key_name]["uuid"] = uuid
-                                    spice_properties[key_name]["instance_id"] = instance_id
-                                    spice_properties[key_name]["config_id"] = _id
-                                    spice_keybinds.setdefault(key_name, {})
-                                    spice_keybinds[key_name].setdefault(key, {})
-                                    spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
+                    for key, val in _config.items():
+                        if isinstance(val, dict) and val.get("type") == "keybinding":
+                            spice_properties.setdefault(key_name, {})
+                            spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
+                            spice_properties[key_name]["path"] = str(config_json)
+                            spice_properties[key_name]["type"] = _type
+                            spice_properties[key_name]["uuid"] = uuid
+                            spice_properties[key_name]["instance_id"] = _id
+                            spice_properties[key_name]["config_id"] = _id
+                            spice_keybinds.setdefault(key_name, {})
+                            spice_keybinds[key_name].setdefault(key, {})
+                            spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
 
-        self._spice_categories = {}
-        self._spice_store = []
 
-        new_categories = []
-        new_keybindings = []
+        def on_dir_changed(monitor, file, other_file, event_type, _type, uuid, config_path, get_configs):
+            if event_type != Gio.FileMonitorEvent.CHANGES_DONE_HINT:
+                return
+            monitor.cancel()
+            del self._config_monitors[config_path.parent][uuid]
+            set_properties(_type, uuid, config_path, get_configs(config_path))
+            resume()
 
-        for spice, bindings in spice_keybinds.items():
-            uuid, *_id = spice.split("_")
 
-            spice_props = spice_properties[spice]
-            _type = spice_props["type"]
-            local_metadata_path = Path.home() / '.local/share/cinnamon' / _type / uuid / 'metadata.json'
-            if local_metadata_path.exists():
-                gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
-                gettext.textdomain(uuid)
-                with open(local_metadata_path, encoding="utf-8") as metadata:
-                    json_data = json.load(metadata)
-                    category_label = _(json_data["name"])
-            else:
-                system_metadata_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
-                if system_metadata_path.exists():
-                    with open(system_metadata_path, encoding="utf-8") as metadata:
+        def has_monitors():
+            for value in self._config_monitors.values():
+                if len(value):
+                    return True
+            return False
+
+
+        def resume():
+            if has_monitors():
+                return
+            finish_load()
+            
+        
+        for _type, value in enabled_spices.items():
+            for uuid, instance_ids in value.items():
+                for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
+                    config_path = Path.joinpath(settings_dir, uuid)
+                    if not Path.exists(config_path):
+                        continue
+
+                    def get_configs(config_path):
+                        configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
+                        # If we encounted numbered and non-numbered, config files, filter out the uuid-named one 
+                        if not all(x.split(".json")[0].isdigit() for x in configs) and any(x.split(".json")[0].isdigit() for x in configs):
+                            for index, value in enumerate(configs):
+                                if not value.split(".json")[0].isdigit():
+                                    configs.pop(index)
+                        return configs
+
+                    configs = get_configs(config_path)
+                    # Must wait until config file is created/deleted
+                    if len(configs) != len(instance_ids):
+                        g_config_dir = Gio.File.new_for_path(str(config_path))
+                        monitor = g_config_dir.monitor_directory(Gio.FileMonitorFlags.NONE, None)
+                        monitor.connect("changed", on_dir_changed, _type, uuid, config_path, get_configs)
+                        self._config_monitors[settings_dir][uuid] = monitor
+                        continue
+
+                    set_properties(_type, uuid, config_path, configs)
+        
+        def finish_load():
+            self._spice_categories = {}
+            self._spice_store = []
+
+            new_categories = []
+            new_keybindings = []
+
+            for spice, bindings in spice_keybinds.items():
+                uuid, *_id = spice.split("_")
+
+                spice_props = spice_properties[spice]
+                _type = spice_props["type"]
+                local_metadata_path = Path.home() / '.local/share/cinnamon' / _type / uuid / 'metadata.json'
+                if local_metadata_path.exists():
+                    gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
+                    gettext.textdomain(uuid)
+                    with open(local_metadata_path, encoding="utf-8") as metadata:
                         json_data = json.load(metadata)
                         category_label = _(json_data["name"])
-            if not _id:
-                cat_label = category_label if category_label else uuid
-                new_categories.append([cat_label, uuid, "spices", None, spice_props])
-                instance_num = 1
-            elif len(new_categories) == 0 or uuid != new_categories[-1][2]:
-                cat_label = category_label if category_label else uuid
-                new_categories.append([cat_label, uuid, "spices", None, {}])
-                instance_num = 1
-                label = _("Instance") + f" {instance_num}"
-                new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
-                instance_num = 2
-            elif len(new_categories) > 0 and uuid == new_categories[-1][2]:
-                label = _("Instance") + f" {instance_num}"
-                new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
-                instance_num += 1
-
-            dbus_info = {}
-            dbus_info["highlight"] = spice_props["highlight"]
-            dbus_info["uuid"] = spice_props["uuid"]
-            dbus_info["instance_id"] = spice_props["instance_id"]
-            dbus_info["config_id"] = spice_props["config_id"]
-            for binding_key, binding_values in bindings.items():
-                if "@cinnamon.org" in uuid:
-                    binding_label = _(list(binding_values.keys())[0])
                 else:
-                    home = os.path.expanduser("~")
-                    gettext.bindtextdomain(uuid, f"{home}/.local/share/locale")
-                    gettext.textdomain(uuid)
-                    binding_label = gettext.gettext(list(binding_values.keys())[0])
-                binding_schema = spice_properties[spice]["path"]
-                binding_category = f"{uuid}_{instance_num - 1}" if _id else uuid
-                new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
-                self._spice_categories[binding_category] = category_label
+                    system_metadata_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
+                    if system_metadata_path.exists():
+                        with open(system_metadata_path, encoding="utf-8") as metadata:
+                            json_data = json.load(metadata)
+                            category_label = _(json_data["name"])
+                if not _id:
+                    cat_label = category_label if category_label else uuid
+                    new_categories.append([cat_label, uuid, "spices", None, spice_props])
+                    instance_num = 1
+                elif len(new_categories) == 0 or uuid != new_categories[-1][2]:
+                    cat_label = category_label if category_label else uuid
+                    new_categories.append([cat_label, uuid, "spices", None, {}])
+                    instance_num = 1
+                    label = _("Instance") + f" {instance_num}"
+                    new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
+                    instance_num = 2
+                elif len(new_categories) > 0 and uuid == new_categories[-1][2]:
+                    label = _("Instance") + f" {instance_num}"
+                    new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
+                    instance_num += 1
 
-        cat_lookup = {}
+                dbus_info = {}
+                dbus_info["highlight"] = spice_props["highlight"]
+                dbus_info["uuid"] = spice_props["uuid"]
+                dbus_info["instance_id"] = spice_props["instance_id"]
+                dbus_info["config_id"] = spice_props["config_id"]
+                for binding_key, binding_values in bindings.items():
+                    if "@cinnamon.org" in uuid:
+                        binding_label = _(list(binding_values.keys())[0])
+                    else:
+                        home = os.path.expanduser("~")
+                        gettext.bindtextdomain(uuid, f"{home}/.local/share/locale")
+                        gettext.textdomain(uuid)
+                        binding_label = gettext.gettext(list(binding_values.keys())[0])
+                    binding_schema = spice_properties[spice]["path"]
+                    binding_category = f"{uuid}_{instance_num - 1}" if _id else uuid
+                    new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
+                    self._spice_categories[binding_category] = category_label
 
-        for cat in new_categories:
-            cat_lookup[cat[1]] = cat[0]
-            self._spice_store.append(KeyBindingCategory(cat[0], cat[1], cat[2], cat[3], cat[4]))
+            cat_lookup = {}
 
-        for binding in new_keybindings:
-            self._spice_categories.setdefault(binding[3], cat_lookup[binding[3]])
-            for category in self._spice_store:
-                if category.int_name == binding[3]:
-                    kb = KeyBinding(binding[0], binding[1], binding[2], binding[3], self.settings_by_schema_id, binding[4])
-                    kb.connect("changed", self._on_kb_changed)
+            for cat in new_categories:
+                cat_lookup[cat[1]] = cat[0]
+                self._spice_store.append(KeyBindingCategory(cat[0], cat[1], cat[2], cat[3], cat[4]))
 
-                    self._add_to_collision_table(kb)
-                    category.add(kb)
+            for binding in new_keybindings:
+                self._spice_categories.setdefault(binding[3], cat_lookup[binding[3]])
+                for category in self._spice_store:
+                    if category.int_name == binding[3]:
+                        kb = KeyBinding(binding[0], binding[1], binding[2], binding[3], self.settings_by_schema_id, binding[4])
+                        kb.connect("changed", self._on_kb_changed)
+
+                        self._add_to_collision_table(kb)
+                        category.add(kb)
+            self.emit("spices-changed")
+
+        resume()
+
 
     def _load_custom_store(self):
         settings = self._get_settings_for_schema(CUSTOM_KEYS_PARENT_SCHEMA)

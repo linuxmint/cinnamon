@@ -17,6 +17,7 @@ import argparse
 import importlib.util
 import traceback
 from pathlib import Path
+from bin import KeybindingTable
 
 from JsonSettingsWidgets import *
 from ExtensionCore import find_extension_subdir
@@ -105,11 +106,15 @@ class MainWindow(object):
         self.monitors = {}
         self.g_directories = []
         self.custom_modules = {}
-        if self.type == "applet": changed_key = "enabled-applets"
-        elif self.type == "desklet": changed_key = "enabled-desklets"
-        else: changed_key = None
+        if self.type == "applet":
+            changed_key = "enabled-applets"
+        elif self.type == "desklet":
+            changed_key = "enabled-desklets"
+        else:
+            changed_key = None
         if changed_key:
-            self.gsettings.connect("changed::" + changed_key, lambda *args: self.on_enabled_xlets_changed(changed_key, *args))
+            kb_table = KeybindingTable.get_default()
+            kb_table.connect('spices-changed', lambda *args: self.on_enabled_xlets_changed(*args, changed_key))
 
         self.load_xlet_data()
         self.build_window()
@@ -518,11 +523,8 @@ class MainWindow(object):
         nextIndex = (start + step) % instances_length
         self.set_instance(self.instance_info[nextIndex])
 
-    def on_enabled_xlets_changed(self, key, *args):
-        """
-        Args:
-            key ("enabled-applets"|"enabled-desklets")
-        """
+    def on_enabled_xlets_changed(self, *args):
+        key = args[-1] # "enabled-applets" | "enabled-desklets"
         current_ids = {info["id"] for info in self.instance_info}
         new_ids = set()
         for definition in self.gsettings.get_strv(key):
@@ -544,7 +546,8 @@ class MainWindow(object):
             if info["id"] in new_ids:
                 continue
             removed_indices.append(i)
-            if info == self.selected_instance: selected_removed_index = i
+            if info == self.selected_instance:
+                selected_removed_index = i
 
         for id in added_ids:
             for dir in self.g_directories:
@@ -565,7 +568,8 @@ class MainWindow(object):
             self.instance_stack.remove(self.instance_stack.get_child_by_name(self.instance_info[index]["id"]))
             self.instance_info.pop(index)
 
-        if not self.has_multiple_instances(): self.hide_prev_next_buttons()
+        if not self.has_multiple_instances():
+            self.hide_prev_next_buttons()
 
     def on_config_file_added(self, *args):
         file, event_type = args[1], args[-1]
@@ -574,7 +578,8 @@ class MainWindow(object):
             return
         if instance not in self.monitors:
             return
-        for monitor in self.monitors[instance]: monitor.cancel()
+        for monitor in self.monitors[instance]:
+            monitor.cancel()
         del self.monitors[instance]
         self.create_new_settings_page(file.get_path())
 
