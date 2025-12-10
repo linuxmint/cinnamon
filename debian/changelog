@@ -1,3 +1,412 @@
+cinnamon (6.6.0) zena; urgency=medium
+
+  [ Matt Turnbull ]
+  * Move sass compilation to its own custom target so it shows up in the build log. Support both pysassc and sassc. (#12588)
+
+  [ Michael Webster ]
+  * cinnamon-calendar-server.py: Refresh remote calendars when the event list is opened.
+  * windowManager.js: Fix cleanup of WorkspaceOsd instances.
+  * build: Improve variable names for NetworkManager options.
+  * st-entry.c: Fix argument order for _st_paint_shadow_with_opacity().
+
+  [ Ilham Ifham ]
+  * Fixed issue with grouped-window-list-thumbnail-menu hover (#12666)
+
+  [ JosephMcc ]
+  * gestures: Show the OSD when using gestures to change volume (#12731)
+
+  [ Timothy Feierabend ]
+  * Bugfix for Cinnamon issue 12707 (#12734)
+
+  [ Shixian Sheng ]
+  * Update control (#12742)
+
+  [ Clement Lefebvre ]
+  * Revert "Update control (#12742)"
+
+  [ JosephMcc ]
+  * st-label: Don't guard against NULL text (#12605)
+  * st-theme-node: Add support for css 'auto' (#12606)
+  * Port dis/connectObj from gnome shell (#12607)
+
+  [ Michael Webster ]
+  * end-session: Fix end-session dialog cleanup after a failure.
+
+  [ Leigh Scott ]
+  * croco: Use g_string_free() return value (#12630)
+  * croco: Remove unused and dodgy function (#12631)
+  * st-bin: Remove unused foreach implementation (#12633)
+
+  [ UnFefeSauvage ]
+  * notificationDaemon: Fix handling of `image-path` hint (#12778)
+
+  [ claudiux ]
+  * workspace-switcher@cinnamon.org: Workspaces will be always displayed as empty when they are
+
+  [ Michael Webster ]
+  * st: Print the js stack for a couple of critical warnings that can be difficult to track down.
+  * cs_mouse.py: Don't try to use the 'value_nick' property of gi enum values.
+  * cs_display.py: Expose option to choose fractional scaling direction.
+  * cinnamon-settings: Clean up commandline argument handling.
+  * cinnamon-setting, xlet-settings: Fix minor regressions.
+  * polkitAuthenticationAgent.js: Allow root authentication if there (#12849) are no admin users
+
+  [ Clement Lefebvre ]
+  * cs_themes.py: Add AdwaitaLegacy to blocklist
+
+  [ Michael Webster ]
+  * js/ui/applet.js: Fix callback arguments for configureApplet().
+
+  [ Michael Schuster ]
+  * nightlight: Add schedule mode option 'always' (#12660)
+
+  [ Michael Webster ]
+  * cs_nightlight.py: Improve option label.
+  * Allow building Cinnamon without any NetworkManager requirements.
+
+  [ Hilyxx ]
+  * Merge cs_tiling module with cs_windows module (#12880)
+
+  [ Michael Webster ]
+  * cinnamon-settings: Give tiling its own tab in the windows module.
+  * polkitAuthenticationAgent.js: Handle system accounts properly. (#12865)
+
+  [ fredcw ]
+  * settings.js: remove file monitor (#12819)
+  * messageTray.js: Fix image not showing in... (#12623)
+
+  [ Michael Webster ]
+  * cs_themes.py: Fix minor regression in module from 769a754001ff4c
+  * polkitAuthenticationAgent.js: Ensure Cinnamon is part of the (#12887)
+  * cinnamon-slideshow.py: Stop using python dbus.
+  * build: Restore dbus build dependency.
+
+  [ kovacsIVgabor ]
+  * cornerbar applet: (#12722)
+
+  [ Petermhen ]
+  * Have alt+tab show windows from the current monitor only (#12665)
+
+  [ rmarker ]
+  * Calender: Fix issue with with custom tooltip not updating seconds. (#12786)
+
+  [ fredcw ]
+  * cs_keyboard.py: use expected logic for xlet location (#12850)
+  * PopupResizeHandler: recheck for restricted size after applet resized (#12815)
+  * PopupResizeHandler: return correct popup size bugfix (#12804)
+
+  [ Lanchon ]
+  * power: Add suspend option to battery-critial actions (#12680)
+
+  [ claudiux ]
+  * xlet-settings-ref.xml: Updates datechooser, timechooser and layout (#12864)
+  * Add nightlight@cinnamon.org applet (#12562)
+
+  [ Michael Webster ]
+  * menu applet: Remove dead code.
+  * panel.js: Fix launch args for 'Panel settings' menu entry.
+
+  [ Timothy Feierabend ]
+  * Add sidePage name to titlebar when entering (#12709)
+
+  [ Arne Einecke ]
+  * desklet-photoframe: change image size to guarantee keeping the ratio (#12717)
+
+  [ Timothy Feierabend ]
+  * Implement Thunderbolt settings module (#12762)
+
+  [ Rylen L ]
+  * Handle typed user input into the night light module (manual schedule) (#12826)
+
+  [ Çağdaş Alagöz ]
+  * Add 'wallpaper' keyword to backgrounds.deskop kewords. (#12944)
+
+  [ Michael Webster ]
+  * build: Fix include names for mutter->muffin.
+  * cinnamon-settings.py: Fix loading c-c-c modules via commandline.
+
+  [ Kacper Paczos ]
+  * feat(themes): Implement categorized theme menus and debug tools (#12905)
+
+  [ Michael Webster ]
+  * cs_themes: Don't show the 'Other themes' menu label, fix row logic.
+
+  [ fredcw ]
+  * cs_backgrounds.py: properly encode filename URI (#12945)
+  * panel.js: always show panel when highlighted (#12929)
+
+  [ Michael Webster ]
+  * cinnamon-settings.py: Handle SIGINT so unmap/destroy handlers in cs_applets and cs_panels can unhighlight any panels if terminated this way.
+  * python3-harvester.py: Fix some debug messages.
+  * cinnamon-settings.py: Add fingwit to standalone modules.
+  * notificationDaemon.js: Cleanup notification app_icon and icon-path handling.
+  * notificationDaemon.js: Improve notification error handling.
+  * debian/control: add mate-polkit agent as an alternative to gnome's.
+  * data/icons: Make cs_thunderbolt icon consistent with other Mint-X-like module icons.
+  * cinnamon-launcher: Launch a polkit agent for the fallback session, refactor launch/cleanup of session helpers.
+
+  [ Marco Trevisan (Treviño) ]
+  * js: Use DesktopAppInfo form GioUnix, not Gio
+  * meson: Build dependency on 2.79.2
+
+  [ Michael Webster ]
+  * cs_themes.py: Fix regression from 1c21371a608b, do not escape newlines when writing icon cache file.
+  * cs_default.py: Don't import gi.repository.*
+  * placesManager.js: a new Gio.MountOperation takes no arguments.
+  * Modernize keyboard handling
+
+  [ tutralex ]
+  * _menus.scss: fix spontaneous increase size of the pop-up menu when left-clicking on some items
+  * _calendar.scss: enable backlight for calendar-today-home-button
+
+  [ Michael Webster ]
+  * Add gir.1.2-graphene-1.0 to depends.
+  * monitorLabeler.js (wayland): Fix error and label behavior after applying a new configuration.
+  * eventView.js (calendar): Format 12h time without leading padding for event start- and end-times.
+  * monitor labeler: Use in both x11 and wayland, don't rely on the theme to display it properly.
+
+  [ JosephMcc ]
+  * userWidget: Don't stretch the avatar to fit long user names
+
+  [ Clement Lefebvre ]
+  * placesManager: Improve mounts
+  * GWL: Don't show places
+  * st/scroll-view-fade: Don't assume fade area at (0,0) The shader code currently only accounts for padding for the bottom and right fades, but not for top and left.
+  * st/scroll-view-fade: Fix vertical top fading The fade for the vertical top edge was calculating the fade ratio for a larger height (up to where the bottom fade starts) than it was displaying.
+  * st/scroll-view-fade: Simplify shader a bit The shader was using too many ALU instructions for Intel 945GM hardware, so simplify it a bit. The resulting math is the same, but a few redundant operations have been removed.
+  * test: Don't overwrite theme with non-compiled CSS
+
+  [ JosephMcc ]
+  * menu: Redesign applet
+  * menu: Increase the POLL_INTERVAL
+
+  [ Clement Lefebvre ]
+  * menu: Shorten path info for recents
+  * menu: Simplify path buttons
+  * menu: Don't show devices
+  * menu: Remove unnecessary code
+  * menu: Fix apps using icon-names not on the theme
+  * menu: Modernize JS code
+  * menu: Simplify applet
+  * menu: Toggle between symbolics or fullcolor for categories
+  * menu: Color system buttons on hover
+  * menu: Move system buttons to the top
+  * menu: Make places/bookmarks configurable
+  * menu: Hide scrollbars in sidebar/categories
+  * menu: Disable vfade on sidebar/categories
+  * menu: Use new CSS names
+  * menu: Launch account settings on avatar click
+  * menu: Make the avatar optional
+  * avatar: Apply a clutter effect on hover
+
+  [ Michael Webster ]
+  * lookingGlass.js: Improve display of actor position and name when in 'pick' mode.
+  * virtual keyboard: Improve theme support, clean up fixed-element definitions, remove emoji support, fix suggestions visibility.
+  * virtual keyboard: Add layout switch button.
+  * virtualKeyboard.js: Misc fixes.
+  * on-screen-keyboard@cinnamon.org: Add a shortcut to the keyboard accessibility settings in the context menu.
+  * virtualKeyboard: Add an osk layout test script.
+  * virtualKeyboard.js: Only show the layout button if there are other layouts.
+  * keyboard: Fix background color, layout button style.
+  * misc: Improve osk layout tester, remove some never-used css.
+  * layout.js: Fix flash when hiding the keyboard, and allow the keyboard to become chrome when there's an upper panel.
+  * virtualKeyboard.js: Fix extended keys when interacting with clutter entries.
+
+  [ Clement Lefebvre ]
+  * menu: Further improvements
+  * Switch to XApp symbolic icons
+
+  [ Rick Calixte ]
+  * debian/control: Add IBus runtime dependency (#13144)
+
+  [ Michael Webster ]
+  * keyboard@cinnamon.org: Move settings to the context menu, disable layout preview when the layout is not xkb.
+
+  [ Nitin ]
+  * js: refactor portalHandlers.js for better code quality and performance (#12993)
+
+  [ Anaxímeno Brito ]
+  * desklet: Fix open config window menu action not working (#13153)
+
+  [ Clement Lefebvre ]
+  * meson: Allow info settings to be excluded
+  * cinnamon-settings: Add support for mintreport
+  * Switch to xapp-symbolic-icons (XSI)
+
+  [ Michael Webster ]
+  * keyboard layouts: Add shortcuts to switch directly to a layout.
+  * keybindings: Refactor python keybinding management.
+  * cinnamon-dbus-command: Make more effort to identify argument types correctly.
+
+  [ hduelme ]
+  * fix high cpu usage in shortcut view (#12923)
+
+  [ Michael Webster ]
+  * scrollbar-test-widget.glade: add a heading for the gibberish.
+  * virtualKeyboard.js: remove setCursorLocation handler, add fade in/out when hiding and showing the keyboard.
+  * photoframe@cinnamon.org: Fix aspect ratio issues, potential blocking, transitions, more.
+  * st-texture-cache.c: Don't try to access pixbuf if there was an error.
+  * environment.js: Backport some fixes to easing wrappers.
+  * alt-tab: Use easing instead of Tweener.
+  * various: Use easing instead of Tweener.
+  * applets, desklets: Use easing instead of Tweener.
+  * misc: Cleanup unused js imports, tween/effect settings, obsolete files.
+  * windowManager.js: Remove sec->ms conversions for easing durations, some cleanup.
+
+  [ Clement Lefebvre ]
+  * menu: Show special categories at the bottom
+  * menu: Switch category icons to XSI
+
+  [ ykla ]
+  * chore: Rename 'Linux Kernel' to 'Kernel' in system info (#12980)
+
+  [ prairienerd-18 ]
+  * cs_user.py: allow current_password to be blank(#12981) (#13027)
+
+  [ JAYADITYA ]
+  * sound applet: fix volume icon toggle to restore last volume when muted using the icon. (#13054)
+
+  [ Michael Webster ]
+  * popupMenu.js: In PopupSliderMenuItem, only clicks on the slider itself should affect the position.
+
+  [ Bobby Rong ]
+  * _ibus-popup.scss: Do not darken un-selected candidates (#13191)
+
+  [ Michael Webster ]
+  * st-texture-cache: add can_load_mime_type() method and use it in the photoframe desklet.
+
+  [ Vladimir Galtsev ]
+  * nm-applet: make visible multiple active vpn connection (#12930)
+
+  [ Michael Webster ]
+  * menu applet: Fix systemBox reparenting warnings at startup.
+  * cinnamon-global.c: Add the capability to print the js stack when a C critical or warning occurs.
+
+  [ Samuel Wilton ]
+  * Fix bug which prevented xlet-settings from opening when clicking configure from context menu of desklet. (#13033)
+  * Fixed bug which causes this._panelZoneSizes is null error when toggling panel edit mode when these applets were removed from a panel and that panel was removed. (#13034)
+
+  [ Kevin Langman ]
+  * Fix usage of deprecated rotation_center_y in 3D AppSwitchers (#13067)
+
+  [ Đoàn Trần Công Danh ]
+  * build: drop intltool requirement (#13157)
+
+  [ Michael Webster ]
+  * po/POTFILES.in: Update for new and removed files, have makepot abort on any errors.
+
+  [ Mikhail ]
+  * misc: remove needless filter method in expoThumbnail (#12933)
+
+  [ Julian Groß ]
+  * Fix only showing printer applet "while printing". (#13039)
+
+  [ Michael Webster ]
+  * debian/control: Remove gnome-pkg-tools and intltool.
+  * Add 'reset zoom' keyboard shortcut.
+  * KeybindingTable.py: Fix exception when updating non-spice keybindings.
+
+  [ claudiux ]
+  * Cinnamon: Adds hidden-buttons to list in applet settings (#13171)
+
+  [ Michael Webster ]
+  * cornerbar applet: Ignore drag-over events when panel-edit-mode is enabled.
+
+  [ Anaxímeno Brito ]
+  * menu: Fix misclick on user avatar area when resizing the menu (#13154)
+
+  [ Michael Webster ]
+  * messageTray.js: Discard notifications when they are disabled.
+  * meson_options.txt: Restore old default value for building the NetworkManager agent.
+  * startup: Improve some messaging and error handling when initializing polkit, network and ssh agents.
+
+  [ Kevin Langman ]
+  * Call on_applet_reloaded() for all instances of an Applet (#13103)
+  * Fix an issue preventing reloading/upgrading multi-instance applets (#13101)
+
+  [ Mikhail ]
+  * misc: Simplified filter on disconnect signal (#12932)
+  * misc: optimized requestProperties in dbudMenu (#12934)
+
+  [ Rylen L ]
+  * expo.js: Force expo to show on the monitor that the mouse is on (#13051)
+
+  [ Vladimir Pakhomchik ]
+  * notifications@cinnamon.org - add option to show newest notifications first (#13080)
+
+  [ Allen ]
+  * mod(cinnamon-settings): use fstrings (#13074)
+
+  [ Michael Webster ]
+  * KeybindingTable.py: Ignore duplicate bindings that belong to the same applet.
+
+  [ baronleonardo ]
+  * settings: Add an option to enable hot corners in fullscreen (#13196)
+
+  [ Cagdas Alagoz ]
+  * menu: Prevent context menu from closing when favorites add/remove is clicked (#12941)
+
+  [ Michael Webster ]
+  * menu applet: Fix icon names from a9cae55fd6 changes.
+  * main.js: Report animations state at startup and when it changes.
+  * menu@cinnamon.org: Handle another condition in the key-press-event handler.
+  * networkAgent.js: Fix failed notification when reminding the user about some required authentication.
+  * st-password-entry.c: Use a 'bullet' character for password masking.
+  * keybindings.js: Add dedicated xlet keybinding methods to improve multi-instance xlet handling.
+  * applets: Use new keybinding api for xlets.
+  * keybinding settings: Fix keybinding lookup for standalone widgets.
+
+  [ fredcw ]
+  * GWL: Refresh all workspaces when change group/ungroup option (#13210)
+
+  [ Michael Webster ]
+  * menu@cinnamon.org: Fix symbolic icon names for favorites and recents.
+
+  [ Samuel Wilton ]
+  * Fix bug which caused duplicate applet orders when dropping them in the same position. (#13057)
+
+  [ NotSirius-A ]
+  * Fixed an xlet-settings issue causing invalid callback/signal triggers with some setting types (#13199)
+
+  [ fredcw ]
+  * Fix mouse on autohide panel not being correctly determined. (#13214)
+
+  [ Michael Webster ]
+  * cs_power.py: Discover suspend/hibernate capabilities from cinnamon- session.
+
+  [ AndrewTrumenov ]
+  * alt-tab: On click, launch the clicked app, not the active one (#12430)
+
+  [ baronleonardo ]
+  * cinnamon-settings: add Gnome Left option to Windows buttons layout (#13225)
+
+  [ Michael Webster ]
+  * magnifier.js: Don't try to disable keybindings unless they've been enabled.
+
+  [ Anaxímeno Brito ]
+  * workspace switcher: Add option to display window icons (#12202)
+
+  [ Michael Webster ]
+  * sound applet: Fix album-art never reappearing after changing volume.
+
+  [ Anaxímeno Brito ]
+  * endSessionDialog: Fix hibernate action (#13243)
+
+  [ Oliver Kästner ]
+  * cs_startup: fix custom commands with spaces in path (#13229)
+
+  [ fredcw ]
+  * GWL: add notification badges (#12569)
+  * window-list applet: Add notification badges (#13209)
+
+  [ Clement Lefebvre ]
+  * window lists: Tune badges look
+  * l10n: Generate modules
+  * l10n: Generate files
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 10 Dec 2025 14:23:53 +0000
+
 cinnamon (6.4.6) xia; urgency=medium
 
   * theme: Give the endSessionDialog a min-width
