@@ -89,24 +89,23 @@
   &-button-label { padding-left: 4px;}
 
   &-number-label {
-    font-size: 10px;
-    z-index: 99;
+    font-size: 12px;
   }
 
   &-badge {
-    border-radius: 9999px;
+    border-radius: 99px;
     background-color: $bg_color;
+    color: $fg_color;
   }
 
   &-notifications-badge {
-    border-radius: 9999px;
+    border-radius: 99px;
     background-color: $notification_badge_bg_color;
     color: $fg_color;
-    font-size: 13px;
   }
 
   &-notifications-badge-label {
-    z-index: 99;
+    font-size: 12px;
   }
 }
 
