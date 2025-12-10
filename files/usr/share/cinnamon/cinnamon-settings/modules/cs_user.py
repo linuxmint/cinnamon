@@ -374,13 +374,23 @@ class PasswordDialog(Gtk.Dialog):
     def _on_show_password_toggled(self, widget):
         self.set_passwords_visibility()
 
+    def _get_pam_service(self):
+        import os
+        if os.path.exists('/etc/pam.d/system-auth'):
+            return 'system-auth'
+        elif os.path.exists('/etc/pam.d/common-auth'):
+            return 'common-auth'
+        else:
+            return 'login'
+
     def auth_pam(self):
-        if not pam.pam().authenticate(GLib.get_user_name(), self.current_password.get_text(), 'passwd'):
+        service = self._get_pam_service()
+        if not pam.pam().authenticate(GLib.get_user_name(), self.current_password.get_text(), service):
             raise PasswordError("Invalid password")
 
     def auth_PyPAM(self):
         auth = PAM.pam()
-        auth.start('passwd')
+        auth.start(self._get_pam_service())
         auth.set_item(PAM.PAM_USER, GLib.get_user_name())
         auth.set_item(PAM.PAM_CONV, self.pam_conv)
         try:
