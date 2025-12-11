@@ -28,7 +28,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
         this.settings.bind("keyClear", "keyClear", this._setKeybinding);
         this.settings.bind("showNotificationCount", "showNotificationCount", this.update_list);
-        this.settings.bind("showNewestFirst", "showNewestFirst", this.update_list);
+        this.settings.bind("showNewestFirst", "showNewestFirst", null);
         this._setKeybinding();
 
         // Layout
@@ -65,6 +65,18 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
     _openMenu() {
         this._update_timestamp();
+
+        this._notificationbin.remove_all_children();
+        if (this.showNewestFirst) {
+            for (let i = this.notifications.length - 1; i >= 0; i--) {
+                global.reparentActor(this.notifications[i].actor, this._notificationbin);
+            }
+        } else {
+            this.notifications.forEach(notification => {
+                global.reparentActor(notification.actor, this._notificationbin);
+            });
+        }
+
         this.menu.toggle();
     }
 
@@ -138,8 +150,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             if (notification._destroyed) {
                 this.notifications.splice(existing_index, 1);
             } else {
-                notification._inNotificationBin = true;
-                global.reparentActor(notification.actor, this._notificationbin);
                 notification._timeLabel.show();
             }
             this.update_list();
@@ -148,11 +158,8 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             return;
         }
         // Add notification to list.
-        notification._inNotificationBin = true;
         this.notifications.push(notification);
-        // Steal the notification panel.
-        this._notificationbin.add(notification.actor);
-        notification.actor._parent_container = this._notificationbin;
+
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
         notification.connect('scrolling-changed', (notif, scrolling) => { this.menu.passEvents = scrolling });
@@ -174,7 +181,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 this.actor.show();
                 this.clear_action.actor.show();
                 this.set_applet_label(count.toString());
-                this._reorderNotifications();
                 // Find max urgency and derive list icon.
                 let max_urgency = -1;
                 for (let i = 0; i < count; i++) {
@@ -231,25 +237,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         }
         this.notifications = [];
         this.update_list();
-    }
-
-    _reorderNotifications() {
-        let orderedNotifications = this.notifications.slice();
-
-        if (this.showNewestFirst) {
-            orderedNotifications.reverse();
-        }
-
-        // Remove all children without destroying them.
-        let children = this._notificationbin.get_children();
-        for (let i = 0; i < children.length; i++) {
-            this._notificationbin.remove_child(children[i]);
-        }
-
-        // Add them back in desired order.
-        for (let i = 0; i < orderedNotifications.length; i++) {
-            this._notificationbin.add_child(orderedNotifications[i].actor);
-        }
     }
 
     _show_hide_tray() { // Show or hide the notification tray.
