@@ -12,7 +12,7 @@ function perform_search(pattern){
 
         let awns = (Math.round(solution * 10000) / 10000).toString();
         if (awns != pattern) {
-            let default_icon_app = Cinnamon.AppSystem.get_default().lookup_app("galculator.desktop");
+            let default_icon_app = Cinnamon.AppSystem.get_default().lookup_app("org.gnome.Calculator.desktop");
             let result = {
                 id: awns,
                 label: _("Solution: %s").format(awns),
