@@ -478,30 +478,11 @@ var InputSourceManager = class {
 
         this._currentSource = null;
 
-        this._kb_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.keybindings.wm" });
         this._interface_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.interface" });
 
-        global.display.add_keybinding(
-            'switch-input-source',
-            this._kb_settings,
-            Meta.KeyBindingFlags.NONE,
-            this._switchInputSource.bind(this)
-        );
-        global.display.add_keybinding(
-            'switch-input-source-backward',
-            this._kb_settings,
-            Meta.KeyBindingFlags.NONE,
-            this._switchInputSource.bind(this)
-        );
-        for (let i = 0; i <= 3; i++) {
-            const name = `switch-input-source-${i}`;
-            global.display.add_keybinding(
-                name,
-                this._kb_settings,
-                Meta.KeyBindingFlags.NONE,
-                () => this.activateInputSourceIndex(i)
-            );
-        }
+        this._kb_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.keybindings.wm" });
+        this._setupKeybindings();
+        this._kb_settings.connect("changed", () => this._setupKeybindings());
 
         this._settings = new InputSourceSettings();
         this._settings.connect('input-sources-changed', this._inputSourcesChanged.bind(this));
@@ -545,6 +526,19 @@ var InputSourceManager = class {
         this._inputSourcesChanged();
     }
 
+    _setupKeybindings() {
+        let kb = this._kb_settings.get_strv("switch-input-source");
+        Main.keybindingManager.addHotKeyArray("switch-input-source", kb, () => this._modifiersSwitcher(false));
+        kb = this._kb_settings.get_strv("switch-input-source-backward");
+        Main.keybindingManager.addHotKeyArray("switch-input-source-backward", kb, () => this._modifiersSwitcher(true));
+
+        for (let i = 0; i <= 3; i++) {
+            const name = `switch-input-source-${i}`;
+            kb = this._kb_settings.get_strv(name);
+            Main.keybindingManager.addHotKeyArray(name, kb, () => this.activateInputSourceIndex(i));
+        }
+    }
+
     _modifiersSwitcher(reverse=false) {
         let sourceIndexes = Object.keys(this._inputSources);
         if (sourceIndexes.length == 0) {
@@ -578,11 +572,6 @@ var InputSourceManager = class {
         is = this._inputSources[nextIndex];
         is.activate();
         return true;
-    }
-
-    _switchInputSource(display, window, binding, action) {
-        const reversed = binding.get_name() === "switch-input-source-backward";
-        this._modifiersSwitcher(reversed);
     }
 
     _keyboardOptionsChanged() {
