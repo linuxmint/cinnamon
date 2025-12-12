@@ -1,9 +1,10 @@
 #!/bin/bash
 set -e
+POT="cinnamon.pot"
+xgettext -o $POT --language=C --keyword=_ --keyword=N_  src/*.c src/*/*.c
+xgettext -o $POT --join-existing --language=glade --from-code=UTF-8 $(find files/usr/share/cinnamon -name "*.ui")
+xgettext -o $POT --join-existing --language=javascript -cTranslators --keyword=_ --keyword=N_ --from-code=UTF-8 js/*/*.js files/usr/share/cinnamon/*/*/*.js
+xgettext -o $POT --join-existing --language=python -c --keyword=_ generate_additional_files.py files/usr/share/cinnamon/*/*.py files/usr/share/cinnamon/*/*/*.py files/usr/bin/*
 
-xgettext -cTranslators -cTRANSLATORS --keyword=_ --keyword=N_ --from-code=UTF-8 \
-	--files-from=po/POTFILES.in --output=cinnamon.pot
-xgettext -c --language=Python --keyword=_ --output=cinnamon.pot --join-existing files/usr/bin/*
-
-files/usr/bin/cinnamon-xlet-makepot -j -p -m -o cinnamon.pot files/usr/share/cinnamon/applets/
-files/usr/bin/cinnamon-xlet-makepot -j -p -m -o cinnamon.pot files/usr/share/cinnamon/desklets/
+files/usr/bin/cinnamon-xlet-makepot -o $POT -p -m -j files/usr/share/cinnamon/applets/
+files/usr/bin/cinnamon-xlet-makepot -o $POT -p -m -j files/usr/share/cinnamon/desklets/
