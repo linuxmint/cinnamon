@@ -13,24 +13,24 @@ from setproctitle import setproctitle
 import PIL
 from PIL import Image
 import gi
+
 gi.require_version("Gtk", "3.0")
 gi.require_version("AccountsService", "1.0")
 from gi.repository import Gtk, GObject, Gio, GdkPixbuf, AccountsService, GLib
 
 gettext.install("cinnamon", "/usr/share/locale")
 
+
 class PrivHelper(object):
     """A helper for performing temporary privilege drops. Necessary for
     security when accessing user controlled files as root."""
 
     def __init__(self):
-
         self.orig_uid = os.getuid()
         self.orig_gid = os.getgid()
         self.orig_groups = os.getgroups()
 
     def drop_privs(self, user):
-
         uid = user.get_uid()
         # the user's main group id
         gid = pwd.getpwuid(uid).pw_gid
@@ -41,18 +41,19 @@ class PrivHelper(object):
         os.seteuid(uid)
 
     def restore_privs(self):
-
         os.seteuid(self.orig_uid)
         os.setegid(self.orig_gid)
         os.setgroups(self.orig_groups)
+
 
 priv_helper = PrivHelper()
 
 (INDEX_USER_OBJECT, INDEX_USER_PICTURE, INDEX_USER_DESCRIPTION) = range(3)
 (INDEX_GID, INDEX_GROUPNAME) = range(2)
 
-class GroupDialog (Gtk.Dialog):
-    def __init__ (self, label, value, parent = None):
+
+class GroupDialog(Gtk.Dialog):
+    def __init__(self, label, value, parent=None):
         super(GroupDialog, self).__init__(None, parent)
 
         try:
@@ -75,7 +76,12 @@ class GroupDialog (Gtk.Dialog):
             box.add(table)
             self.show_all()
 
-            self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("OK"), Gtk.ResponseType.OK, )
+            self.add_buttons(
+                _("Cancel"),
+                Gtk.ResponseType.CANCEL,
+                _("OK"),
+                Gtk.ResponseType.OK,
+            )
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
         except Exception as detail:
@@ -84,8 +90,13 @@ class GroupDialog (Gtk.Dialog):
     def _on_entry_changed(self, entry):
         name = entry.get_text()
         if " " in name or name.lower() != name:
-            entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic")
-            entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("The group name cannot contain upper-case or space characters"))
+            entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic"
+            )
+            entry.set_icon_tooltip_text(
+                Gtk.EntryIconPosition.SECONDARY,
+                _("The group name cannot contain upper-case or space characters"),
+            )
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
         else:
             entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
@@ -94,8 +105,9 @@ class GroupDialog (Gtk.Dialog):
         if entry.get_text() == "":
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
-class DimmedTable (Gtk.Table):
-    def __init__ (self):
+
+class DimmedTable(Gtk.Table):
+    def __init__(self):
         super(DimmedTable, self).__init__()
         self.set_border_width(6)
         self.set_row_spacings(8)
@@ -108,27 +120,30 @@ class DimmedTable (Gtk.Table):
                 label = Gtk.Label(text)
                 label.set_alignment(1, 0.5)
                 label.get_style_context().add_class("dim-label")
-                self.attach(label, 0, 1, row, row+1, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+                self.attach(
+                    label,
+                    0,
+                    1,
+                    row,
+                    row + 1,
+                    xoptions=Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
+                )
             row = row + 1
 
     def add_controls(self, controls):
         row = 0
         for control in controls:
-            self.attach(control, 1, 2, row, row+1)
+            self.attach(control, 1, 2, row, row + 1)
             row = row + 1
 
 
-class EditableEntry (Gtk.Notebook):
-
-    __gsignals__ = {
-        'changed': (GObject.SignalFlags.RUN_FIRST, None,
-                    (str,))
-    }
+class EditableEntry(Gtk.Notebook):
+    __gsignals__ = {"changed": (GObject.SignalFlags.RUN_FIRST, None, (str,))}
 
     PAGE_BUTTON = 0
     PAGE_ENTRY = 1
 
-    def __init__ (self):
+    def __init__(self):
         super(EditableEntry, self).__init__()
 
         self.label = Gtk.Label()
@@ -180,9 +195,9 @@ class EditableEntry (Gtk.Notebook):
     def get_text(self):
         return self.entry.get_text()
 
-class PasswordDialog(Gtk.Dialog):
 
-    def __init__ (self, user, password_mask, group_mask, parent = None):
+class PasswordDialog(Gtk.Dialog):
+    def __init__(self, user, password_mask, group_mask, parent=None):
         super(PasswordDialog, self).__init__(None, parent)
 
         self.user = user
@@ -198,20 +213,35 @@ class PasswordDialog(Gtk.Dialog):
         table.add_labels([_("New password"), None, _("Confirm password")])
 
         self.new_password = Gtk.Entry()
-        self.new_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-view-refresh-symbolic")
-        self.new_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Generate a password"))
+        self.new_password.set_icon_from_icon_name(
+            Gtk.EntryIconPosition.SECONDARY, "xsi-view-refresh-symbolic"
+        )
+        self.new_password.set_icon_tooltip_text(
+            Gtk.EntryIconPosition.SECONDARY, _("Generate a password")
+        )
         self.new_password.connect("icon-release", self._on_new_password_icon_released)
         self.new_password.connect("changed", self._on_passwords_changed)
         table.attach(self.new_password, 1, 3, 0, 1)
 
         self.strengh_indicator = Gtk.ProgressBar()
-        self.strengh_indicator.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
+        self.strengh_indicator.set_tooltip_text(
+            _("Your new password needs to be at least 8 characters long")
+        )
         self.strengh_indicator.set_fraction(0.0)
-        table.attach(self.strengh_indicator, 1, 2, 1, 2, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+        table.attach(
+            self.strengh_indicator,
+            1,
+            2,
+            1,
+            2,
+            xoptions=Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
+        )
         self.strengh_indicator.set_size_request(-1, 1)
 
         self.strengh_label = Gtk.Label()
-        self.strengh_label.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
+        self.strengh_label.set_tooltip_text(
+            _("Your new password needs to be at least 8 characters long")
+        )
         self.strengh_label.set_alignment(1, 0.5)
         table.attach(self.strengh_label, 2, 3, 1, 2)
 
@@ -220,7 +250,7 @@ class PasswordDialog(Gtk.Dialog):
         table.attach(self.confirm_password, 1, 3, 2, 3)
 
         self.show_password = Gtk.CheckButton(_("Show password"))
-        self.show_password.connect('toggled', self._on_show_password_toggled)
+        self.show_password.connect("toggled", self._on_show_password_toggled)
         table.attach(self.show_password, 1, 3, 3, 4)
 
         self.set_border_width(6)
@@ -236,7 +266,12 @@ class PasswordDialog(Gtk.Dialog):
         content.add(label)
         table.attach(self.infobar, 0, 3, 4, 5)
 
-        self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("Change"), Gtk.ResponseType.OK, )
+        self.add_buttons(
+            _("Cancel"),
+            Gtk.ResponseType.CANCEL,
+            _("Change"),
+            Gtk.ResponseType.OK,
+        )
 
         self.set_passwords_visibility()
         self.set_response_sensitive(Gtk.ResponseType.OK, False)
@@ -255,12 +290,14 @@ class PasswordDialog(Gtk.Dialog):
         self.user.set_password(newpass, "")
         mask = self.group_mask.get_text()
         if "nopasswdlogin" in mask:
-            subprocess.call(["gpasswd", "-d", self.user.get_user_name(), "nopasswdlogin"])
+            subprocess.call(
+                ["gpasswd", "-d", self.user.get_user_name(), "nopasswdlogin"]
+            )
             mask = mask.split(", ")
             mask.remove("nopasswdlogin")
             mask = ", ".join(mask)
             self.group_mask.set_text(mask)
-            self.password_mask.set_text('\u2022\u2022\u2022\u2022\u2022\u2022')
+            self.password_mask.set_text("\u2022\u2022\u2022\u2022\u2022\u2022")
         self.destroy()
 
     def set_passwords_visibility(self):
@@ -273,8 +310,8 @@ class PasswordDialog(Gtk.Dialog):
         self.show_password.set_active(True)
         characters = "0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ_-"
         newpass = ""
-        for i in range (8):
-            index = randint(0, len(characters) -1)
+        for i in range(8):
+            index = randint(0, len(characters) - 1)
             newpass = newpass + characters[index]
 
         self.new_password.set_text(newpass)
@@ -299,15 +336,13 @@ class PasswordDialog(Gtk.Dialog):
                 symbol += 1
         length = len(password)
 
-        length = min(length,4)
-        digit = min(digit,3)
-        upper = min(upper,3)
-        symbol = min(symbol,3)
+        length = min(length, 4)
+        digit = min(digit, 3)
+        upper = min(upper, 3)
+        symbol = min(symbol, 3)
         strength = (
-            ((length * 0.1) - 0.2) +
-            (digit * 0.1) +
-            (symbol * 0.15) +
-            (upper * 0.1))
+            ((length * 0.1) - 0.2) + (digit * 0.1) + (symbol * 0.15) + (upper * 0.1)
+        )
         if strength > 1:
             strength = 1
         if strength < 0:
@@ -320,10 +355,16 @@ class PasswordDialog(Gtk.Dialog):
         confirm_password = self.confirm_password.get_text()
         strength = self.password_strength(new_password)
         if new_password != confirm_password:
-            self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic")
-            self.confirm_password.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Passwords do not match"))
+            self.confirm_password.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic"
+            )
+            self.confirm_password.set_icon_tooltip_text(
+                Gtk.EntryIconPosition.SECONDARY, _("Passwords do not match")
+            )
         else:
-            self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+            self.confirm_password.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, None
+            )
         if len(new_password) < 8:
             self.strengh_label.set_text(_("Too short"))
             self.strengh_indicator.set_fraction(0.0)
@@ -350,9 +391,9 @@ class PasswordDialog(Gtk.Dialog):
         else:
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
-class NewUserDialog(Gtk.Dialog):
 
-    def __init__ (self, parent = None):
+class NewUserDialog(Gtk.Dialog):
+    def __init__(self, parent=None):
         super(NewUserDialog, self).__init__(None, parent)
 
         try:
@@ -374,7 +415,9 @@ class NewUserDialog(Gtk.Dialog):
 
             table = DimmedTable()
             table.add_labels([_("Account Type"), _("Full Name"), _("Username")])
-            table.add_controls([self.account_type_combo, self.realname_entry, self.username_entry])
+            table.add_controls(
+                [self.account_type_combo, self.realname_entry, self.username_entry]
+            )
 
             self.set_border_width(6)
 
@@ -382,7 +425,12 @@ class NewUserDialog(Gtk.Dialog):
             box.add(table)
             self.show_all()
 
-            self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("Add"), Gtk.ResponseType.OK, )
+            self.add_buttons(
+                _("Cancel"),
+                Gtk.ResponseType.CANCEL,
+                _("Add"),
+                Gtk.ResponseType.OK,
+            )
             self.set_response_sensitive(Gtk.ResponseType.OK, False)
 
         except Exception as detail:
@@ -401,24 +449,35 @@ class NewUserDialog(Gtk.Dialog):
         fullname = self.realname_entry.get_text()
         username = self.username_entry.get_text()
         valid = True
-        if re.search('[^a-z0-9_-]', username):
-            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic")
-            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("Invalid username"))
+        if re.search("[^a-z0-9_-]", username):
+            self.username_entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic"
+            )
+            self.username_entry.set_icon_tooltip_text(
+                Gtk.EntryIconPosition.SECONDARY, _("Invalid username")
+            )
             valid = False
         elif self.user_exists(username):
-            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic")
-            self.username_entry.set_icon_tooltip_text(Gtk.EntryIconPosition.SECONDARY, _("A user with the name '%s' already exists.") % username)
+            self.username_entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, "xsi-dialog-warning-symbolic"
+            )
+            self.username_entry.set_icon_tooltip_text(
+                Gtk.EntryIconPosition.SECONDARY,
+                _("A user with the name '%s' already exists.") % username,
+            )
             valid = False
         else:
-            self.username_entry.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
+            self.username_entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, None
+            )
         if username == "" or fullname == "":
             valid = False
 
         self.set_response_sensitive(Gtk.ResponseType.OK, valid)
 
-class GroupsDialog(Gtk.Dialog):
 
-    def __init__ (self, username, parent = None):
+class GroupsDialog(Gtk.Dialog):
+    def __init__(self, username, parent=None):
         super(GroupsDialog, self).__init__(None, parent)
 
         try:
@@ -448,7 +507,12 @@ class GroupsDialog(Gtk.Dialog):
             box.pack_start(scrolled, True, True, 0)
             self.show_all()
 
-            self.add_buttons(_("Cancel"), Gtk.ResponseType.CANCEL, _("OK"), Gtk.ResponseType.OK, )
+            self.add_buttons(
+                _("Cancel"),
+                Gtk.ResponseType.CANCEL,
+                _("OK"),
+                Gtk.ResponseType.OK,
+            )
 
         except Exception as detail:
             print(detail)
@@ -460,12 +524,15 @@ class GroupsDialog(Gtk.Dialog):
                 groups.append(checkbox.get_label())
         return groups
 
+
 class Module:
     def __init__(self):
         try:
             self.builder = Gtk.Builder()
-            self.builder.set_translation_domain('cinnamon') # let it translate!
-            self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui")
+            self.builder.set_translation_domain("cinnamon")  # let it translate!
+            self.builder.add_from_file(
+                "/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui"
+            )
             self.window = self.builder.get_object("main_window")
             self.window.connect("destroy", Gtk.main_quit)
 
@@ -473,11 +540,21 @@ class Module:
             self.builder.get_object("label_users").set_label(_("Users"))
             self.builder.get_object("label_groups").set_label(_("Groups"))
 
-            self.builder.get_object("button_add_user").connect("clicked", self.on_user_addition)
-            self.builder.get_object("button_delete_user").connect("clicked", self.on_user_deletion)
-            self.builder.get_object("button_add_group").connect("clicked", self.on_group_addition)
-            self.builder.get_object("button_edit_group").connect("clicked", self.on_group_edition)
-            self.builder.get_object("button_delete_group").connect("clicked", self.on_group_deletion)
+            self.builder.get_object("button_add_user").connect(
+                "clicked", self.on_user_addition
+            )
+            self.builder.get_object("button_delete_user").connect(
+                "clicked", self.on_user_deletion
+            )
+            self.builder.get_object("button_add_group").connect(
+                "clicked", self.on_group_addition
+            )
+            self.builder.get_object("button_edit_group").connect(
+                "clicked", self.on_group_edition
+            )
+            self.builder.get_object("button_delete_group").connect(
+                "clicked", self.on_group_deletion
+            )
 
             self.users = Gtk.TreeStore(object, GdkPixbuf.Pixbuf, str)
             self.users.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -490,26 +567,30 @@ class Module:
 
             self.groups_treeview = self.builder.get_object("treeview_groups")
 
-            self.users_treeview.get_selection().connect("changed", self.on_user_selection)
-            self.groups_treeview.get_selection().connect("changed", self.on_group_selection)
+            self.users_treeview.get_selection().connect(
+                "changed", self.on_user_selection
+            )
+            self.groups_treeview.get_selection().connect(
+                "changed", self.on_group_selection
+            )
 
             column = Gtk.TreeViewColumn()
             cell = Gtk.CellRendererPixbuf()
             column.pack_start(cell, True)
-            column.add_attribute(cell, 'pixbuf', INDEX_USER_PICTURE)
-            cell.set_property('ypad', 1)
+            column.add_attribute(cell, "pixbuf", INDEX_USER_PICTURE)
+            cell.set_property("ypad", 1)
             self.users_treeview.append_column(column)
 
             column = Gtk.TreeViewColumn()
             cell = Gtk.CellRendererText()
             column.pack_start(cell, True)
-            column.add_attribute(cell, 'markup', INDEX_USER_DESCRIPTION)
+            column.add_attribute(cell, "markup", INDEX_USER_DESCRIPTION)
             self.users_treeview.append_column(column)
 
             column = Gtk.TreeViewColumn()
             cell = Gtk.CellRendererText()
             column.pack_start(cell, True)
-            column.add_attribute(cell, 'text', INDEX_GROUPNAME)
+            column.add_attribute(cell, "text", INDEX_GROUPNAME)
             column.set_sort_column_id(1)
             self.groups_treeview.append_column(column)
 
@@ -529,7 +610,9 @@ class Module:
 
             separator = Gtk.SeparatorMenuItem()
             face_browse_menuitem = Gtk.MenuItem(_("Browse for more pictures..."))
-            face_browse_menuitem.connect('activate', self._on_face_browse_menuitem_activated)
+            face_browse_menuitem.connect(
+                "activate", self._on_face_browse_menuitem_activated
+            )
             self.face_button.connect("button-release-event", self.menu_display)
 
             row = 0
@@ -543,19 +626,21 @@ class Module:
                         path = os.path.join(face_dir, picture)
                         file = Gio.File.new_for_path(path)
                         file_icon = Gio.FileIcon.new(file)
-                        image = Gtk.Image.new_from_gicon (file_icon, Gtk.IconSize.DIALOG)
+                        image = Gtk.Image.new_from_gicon(file_icon, Gtk.IconSize.DIALOG)
                         menuitem = Gtk.MenuItem()
                         menuitem.add(image)
-                        menuitem.connect('activate', self._on_face_menuitem_activated, path)
-                        self.menu.attach(menuitem, col, col+1, row, row+1)
-                        col = (col+1) % num_cols
+                        menuitem.connect(
+                            "activate", self._on_face_menuitem_activated, path
+                        )
+                        self.menu.attach(menuitem, col, col + 1, row, row + 1)
+                        col = (col + 1) % num_cols
                         if col == 0:
                             row = row + 1
 
             row = row + 1
 
-            self.menu.attach(separator, 0, 4, row, row+1)
-            self.menu.attach(face_browse_menuitem, 0, 4, row+2, row+3)
+            self.menu.attach(separator, 0, 4, row, row + 1)
+            self.menu.attach(face_browse_menuitem, 0, 4, row + 2, row + 3)
 
             self.account_type_combo = Gtk.ComboBoxText()
             self.account_type_combo.append_text(_("Standard"))
@@ -572,8 +657,8 @@ class Module:
             self.password_button.add(self.password_mask)
             self.password_button.set_relief(Gtk.ReliefStyle.NONE)
             self.password_button.set_tooltip_text(_("Click to change the password"))
-            self.password_button.connect('activate', self._on_password_button_clicked)
-            self.password_button.connect('released', self._on_password_button_clicked)
+            self.password_button.connect("activate", self._on_password_button_clicked)
+            self.password_button.connect("released", self._on_password_button_clicked)
 
             self.groups_label = Gtk.Label()
             self.groups_label.set_line_wrap(True)
@@ -588,13 +673,25 @@ class Module:
             box.pack_start(self.face_button, False, False, 0)
 
             table = DimmedTable()
-            table.add_labels([_("Picture"), _("Account Type"), _("Name"), _("Password"), _("Groups")])
-            table.add_controls([box, self.account_type_combo, self.realname_entry, self.password_button, self.groups_button])
+            table.add_labels(
+                [_("Picture"), _("Account Type"), _("Name"), _("Password"), _("Groups")]
+            )
+            table.add_controls(
+                [
+                    box,
+                    self.account_type_combo,
+                    self.realname_entry,
+                    self.password_button,
+                    self.groups_button,
+                ]
+            )
 
             self.builder.get_object("box_users").add(table)
 
             self.accountService = AccountsService.UserManager.get_default()
-            self.accountService.connect('notify::is-loaded', self.on_accounts_service_loaded)
+            self.accountService.connect(
+                "notify::is-loaded", self.on_accounts_service_loaded
+            )
 
             self.load_groups()
 
@@ -609,7 +706,9 @@ class Module:
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            dialog = PasswordDialog(user, self.password_mask, self.groups_label, self.window)
+            dialog = PasswordDialog(
+                user, self.password_mask, self.groups_label, self.window
+            )
             response = dialog.run()
 
     def _on_groups_button_clicked(self, widget):
@@ -620,7 +719,9 @@ class Module:
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
                 groups = dialog.get_selected_groups()
-                subprocess.call(["usermod", user.get_user_name(), "-G", ",".join(groups)])
+                subprocess.call(
+                    ["usermod", user.get_user_name(), "-G", ",".join(groups)]
+                )
                 groups.sort()
                 self.groups_label.set_text(", ".join(groups))
             dialog.destroy()
@@ -646,14 +747,22 @@ class Module:
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             user.set_real_name(text)
-            description = "<b>%s</b>\n%s" % (GLib.markup_escape_text(text), GLib.markup_escape_text(user.get_user_name()))
+            description = "<b>%s</b>\n%s" % (
+                GLib.markup_escape_text(text),
+                GLib.markup_escape_text(user.get_user_name()),
+            )
             model.set_value(treeiter, INDEX_USER_DESCRIPTION, description)
 
     def _on_face_browse_menuitem_activated(self, menuitem):
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            dialog = Gtk.FileChooserDialog(None, None, Gtk.FileChooserAction.OPEN, (_("Cancel"), Gtk.ResponseType.CANCEL, _("Open"), Gtk.ResponseType.OK))
+            dialog = Gtk.FileChooserDialog(
+                None,
+                None,
+                Gtk.FileChooserAction.OPEN,
+                (_("Cancel"), Gtk.ResponseType.CANCEL, _("Open"), Gtk.ResponseType.OK),
+            )
             filter = Gtk.FileFilter()
             filter.set_name(_("Images"))
             filter.add_mime_type("image/*")
@@ -692,12 +801,16 @@ class Module:
                     priv_helper.restore_privs()
                 user.set_icon_file(face_path)
                 self.face_image.set_from_file(face_path)
-                model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(face_path, 48, 48))
+                model.set_value(
+                    treeiter,
+                    INDEX_USER_PICTURE,
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(face_path, 48, 48),
+                )
                 model.row_changed(model.get_path(treeiter), treeiter)
 
             dialog.destroy()
 
-    def update_preview_cb (self, dialog, preview):
+    def update_preview_cb(self, dialog, preview):
         # Different widths make the dialog look really crappy as it resizes -
         # constrain the width and adjust the height to keep perspective.
         filename = dialog.get_preview_filename()
@@ -710,7 +823,10 @@ class Module:
                         self.frame.show()
                         return
                 except GLib.Error as e:
-                    print("Unable to generate preview for file '%s' - %s\n" % (filename, e.message))
+                    print(
+                        "Unable to generate preview for file '%s' - %s\n"
+                        % (filename, e.message)
+                    )
 
         preview.clear()
         self.frame.hide()
@@ -732,16 +848,26 @@ class Module:
                     shutil.copy(path, face_path)
                 finally:
                     priv_helper.restore_privs()
-                model.set_value(treeiter, INDEX_USER_PICTURE, GdkPixbuf.Pixbuf.new_from_file_at_size(path, 48, 48))
+                model.set_value(
+                    treeiter,
+                    INDEX_USER_PICTURE,
+                    GdkPixbuf.Pixbuf.new_from_file_at_size(path, 48, 48),
+                )
                 model.row_changed(model.get_path(treeiter), treeiter)
-
 
     def menu_display(self, widget, event):
         if event.button == 1:
-            self.menu.popup(None, None, self.popup_menu_below_button, self.face_button, event.button, event.time)
+            self.menu.popup(
+                None,
+                None,
+                self.popup_menu_below_button,
+                self.face_button,
+                event.button,
+                event.time,
+            )
             self.menu.show_all()
 
-    def popup_menu_below_button (self, *args):
+    def popup_menu_below_button(self, *args):
         # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
         # this is a workaround to make sure we get the menu and the widget
         menu = args[0]
@@ -759,7 +885,7 @@ class Module:
         # now move the menu below the button
         y += widget.get_allocation().height
 
-        push_in = True # push_in is True so all menu is always inside screen
+        push_in = True  # push_in is True so all menu is always inside screen
         return x, y, push_in
 
     def on_accounts_service_loaded(self, user, param):
@@ -770,9 +896,13 @@ class Module:
         users = self.accountService.list_users()
         for user in users:
             if os.path.exists(user.get_icon_file()):
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(user.get_icon_file(), 48, 48)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    user.get_icon_file(), 48, 48
+                )
             else:
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
+                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                    "/usr/share/cinnamon/faces/user-generic.png", 48, 48
+                )
 
             real_name = GLib.markup_escape_text(user.get_real_name())
             user_name = GLib.markup_escape_text(user.get_user_name())
@@ -788,7 +918,7 @@ class Module:
             piter = self.groups.append(None, [gr_gid, gr_name])
         self.groups_treeview.set_model(self.groups)
 
-#USER CALLBACKS
+    # USER CALLBACKS
 
     def on_user_selection(self, selection):
         self.password_button.set_sensitive(True)
@@ -801,7 +931,7 @@ class Module:
             self.realname_entry.set_text(user.get_real_name())
 
             if user.get_password_mode() == AccountsService.UserPasswordMode.REGULAR:
-                self.password_mask.set_text('\u2022\u2022\u2022\u2022\u2022\u2022')
+                self.password_mask.set_text("\u2022\u2022\u2022\u2022\u2022\u2022")
             elif user.get_password_mode() == AccountsService.UserPasswordMode.NONE:
                 self.password_mask.set_markup("<b>%s</b>" % _("No password set"))
             else:
@@ -826,9 +956,14 @@ class Module:
                 if pixbuf is not None:
                     if pixbuf.get_height() > 96 or pixbuf.get_width() > 96:
                         try:
-                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 96, 96)
+                            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                                path, 96, 96
+                            )
                         except GLib.Error as e:
-                            message = "Could not scale pixbuf from '%s': %s" % (path, e.message)
+                            message = "Could not scale pixbuf from '%s': %s" % (
+                                path,
+                                e.message,
+                            )
                             error = True
 
             if pixbuf:
@@ -836,7 +971,9 @@ class Module:
             else:
                 if message != "":
                     print(message)
-                self.face_image.set_from_file("/usr/share/cinnamon/faces/user-generic.png")
+                self.face_image.set_from_file(
+                    "/usr/share/cinnamon/faces/user-generic.png"
+                )
 
             groups = []
             for group in grp.getgrall():
@@ -847,17 +984,27 @@ class Module:
             self.builder.get_object("box_users").show()
 
             # Count the number of connections for the currently logged-in user
-            connections = int(subprocess.check_output(["w", "-h", user.get_user_name()]).decode("utf-8").count("\n"))
+            connections = int(
+                subprocess.check_output(["w", "-h", user.get_user_name()])
+                .decode("utf-8")
+                .count("\n")
+            )
             if connections > 0:
                 self.builder.get_object("button_delete_user").set_sensitive(False)
-                self.builder.get_object("button_delete_user").set_tooltip_text(_("This user is currently logged in"))
+                self.builder.get_object("button_delete_user").set_tooltip_text(
+                    _("This user is currently logged in")
+                )
             else:
                 self.builder.get_object("button_delete_user").set_sensitive(True)
                 self.builder.get_object("button_delete_user").set_tooltip_text("")
 
             if os.path.exists("/home/.ecryptfs/%s" % user.get_user_name()):
                 self.password_button.set_sensitive(False)
-                self.password_button.set_tooltip_text(_("The user's home directory is encrypted. To preserve access to the encrypted directory, only the user should change this password."))
+                self.password_button.set_tooltip_text(
+                    _(
+                        "The user's home directory is encrypted. To preserve access to the encrypted directory, only the user should change this password."
+                    )
+                )
 
         else:
             self.builder.get_object("button_delete_user").set_sensitive(False)
@@ -867,12 +1014,19 @@ class Module:
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
-            message = _("Are you sure you want to permanently delete %s and all the files associated with this user?") % user.get_user_name()
-            d = Gtk.MessageDialog(self.window,
-                                  Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                  Gtk.MessageType.QUESTION,
-                                  Gtk.ButtonsType.YES_NO,
-                                  message)
+            message = (
+                _(
+                    "Are you sure you want to permanently delete %s and all the files associated with this user?"
+                )
+                % user.get_user_name()
+            )
+            d = Gtk.MessageDialog(
+                self.window,
+                Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                Gtk.MessageType.QUESTION,
+                Gtk.ButtonsType.YES_NO,
+                message,
+            )
             d.set_markup(message)
             d.set_default_response(Gtk.ResponseType.NO)
             r = d.run()
@@ -895,23 +1049,34 @@ class Module:
             username = dialog.username_entry.get_text()
             new_user = self.accountService.create_user(username, fullname, account_type)
             new_user.set_password_mode(AccountsService.UserPasswordMode.NONE)
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
-            description = "<b>%s</b>\n%s" % (GLib.markup_escape_text(fullname), GLib.markup_escape_text(username))
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(
+                "/usr/share/cinnamon/faces/user-generic.png", 48, 48
+            )
+            description = "<b>%s</b>\n%s" % (
+                GLib.markup_escape_text(fullname),
+                GLib.markup_escape_text(username),
+            )
             piter = self.users.append(None, [new_user, pixbuf, description])
             # Add the user to his/her own group and sudo if Administrator was selected
             if dialog.account_type_combo.get_active() == 1:
-                subprocess.call(["usermod", username, "-G", "%s,sudo,nopasswdlogin" % username])
+                subprocess.call(
+                    ["usermod", username, "-G", "%s,sudo,nopasswdlogin" % username]
+                )
             else:
-                subprocess.call(["usermod", username, "-G", "%s,nopasswdlogin" % username])
+                subprocess.call(
+                    ["usermod", username, "-G", "%s,nopasswdlogin" % username]
+                )
             self.load_groups()
         dialog.destroy()
 
     def on_user_edition(self, event):
         model, treeiter = self.users_treeview.get_selection().get_selected()
         if treeiter is not None:
-            print("Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name())
+            print(
+                "Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name()
+            )
 
-# GROUPS CALLBACKS
+    # GROUPS CALLBACKS
 
     def on_group_selection(self, selection):
         model, treeiter = selection.get_selected()
@@ -925,7 +1090,9 @@ class Module:
                 primary_group = grp.getgrgid(p[3])[0]
                 if primary_group == group:
                     self.builder.get_object("button_delete_group").set_sensitive(False)
-                    self.builder.get_object("button_delete_group").set_tooltip_text(_("This group is set as %s's primary group") % username)
+                    self.builder.get_object("button_delete_group").set_tooltip_text(
+                        _("This group is set as %s's primary group") % username
+                    )
                     break
 
         else:
@@ -938,11 +1105,13 @@ class Module:
         if treeiter is not None:
             group = model[treeiter][INDEX_GROUPNAME]
             message = _("Are you sure you want to permanently delete %s?") % group
-            d = Gtk.MessageDialog(self.window,
-                                  Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                  Gtk.MessageType.QUESTION,
-                                  Gtk.ButtonsType.YES_NO,
-                                  message)
+            d = Gtk.MessageDialog(
+                self.window,
+                Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                Gtk.MessageType.QUESTION,
+                Gtk.ButtonsType.YES_NO,
+                message,
+            )
             d.set_markup(message)
             d.set_default_response(Gtk.ResponseType.NO)
             r = d.run()
@@ -966,7 +1135,9 @@ class Module:
             dialog = GroupDialog(_("Group Name"), group, self.window)
             response = dialog.run()
             if response == Gtk.ResponseType.OK:
-                subprocess.call(["groupmod", group, "-n", dialog.entry.get_text().lower()])
+                subprocess.call(
+                    ["groupmod", group, "-n", dialog.entry.get_text().lower()]
+                )
                 self.load_groups()
             dialog.destroy()
 

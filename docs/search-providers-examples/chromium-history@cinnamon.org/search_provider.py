@@ -16,7 +16,12 @@ if __name__ == "__main__":
     if len(sys.argv) > 1:
         fd, temp_filename = tempfile.mkstemp()
         os.close(fd)
-        shutil.copyfile(os.path.join(os.getenv("HOME"), ".config", "chromium", "Default", "History"), temp_filename)
+        shutil.copyfile(
+            os.path.join(
+                os.getenv("HOME"), ".config", "chromium", "Default", "History"
+            ),
+            temp_filename,
+        )
 
         conn = sqlite3.Connection(temp_filename)
         cur = conn.cursor()
@@ -24,7 +29,11 @@ if __name__ == "__main__":
         words = []
         for i in sys.argv[1:]:
             words += i.split()
-        query = "SELECT url, title FROM urls WHERE " + " AND ".join(len(words) * ["(url LIKE ? OR title LIKE ?)"]) + " ORDER BY last_visit_time DESC, visit_count DESC LIMIT 10"
+        query = (
+            "SELECT url, title FROM urls WHERE "
+            + " AND ".join(len(words) * ["(url LIKE ? OR title LIKE ?)"])
+            + " ORDER BY last_visit_time DESC, visit_count DESC LIMIT 10"
+        )
         params = []
         for word in words:
             params.append("%" + word + "%")
@@ -35,17 +44,19 @@ if __name__ == "__main__":
         domains_list = []
         for url, title in cur.fetchall():
             url_parsed = urllib.parse.urlparse(url)
-            domain = url_parsed.scheme + '://' + url_parsed.netloc
+            domain = url_parsed.scheme + "://" + url_parsed.netloc
             if domain not in domains_list:
                 domains_list.append(domain)
             if url and title:
-                results.append({
-                    "id": url,
-                    "url": url,
-                    "domain": domain,
-                    "description": url,
-                    "label": title
-                })
+                results.append(
+                    {
+                        "id": url,
+                        "url": url,
+                        "domain": domain,
+                        "description": url,
+                        "label": title,
+                    }
+                )
 
         cur.close()
         os.unlink(temp_filename)
@@ -55,7 +66,12 @@ if __name__ == "__main__":
 
         fd, temp_filename = tempfile.mkstemp()
         os.close(fd)
-        shutil.copyfile(os.path.join(os.getenv("HOME"), ".config", "chromium", "Default", "Favicons"), temp_filename)
+        shutil.copyfile(
+            os.path.join(
+                os.getenv("HOME"), ".config", "chromium", "Default", "Favicons"
+            ),
+            temp_filename,
+        )
 
         conn = sqlite3.Connection(temp_filename)
         cur = conn.cursor()
@@ -66,7 +82,7 @@ if __name__ == "__main__":
             for favicon_id, url in cur.fetchall():
                 filename = os.path.join(FAVICON_CACHE_DIR, str(favicon_id))
                 if not os.path.exists(filename):
-                    subprocess.check_call(['wget', '-O', filename, url])
+                    subprocess.check_call(["wget", "-O", filename, url])
                 if os.path.exists(filename):
                     domains_to_favicons[domain] = filename
 
@@ -74,7 +90,7 @@ if __name__ == "__main__":
         os.unlink(temp_filename)
 
         for i in range(len(results)):
-            if results[i]['domain'] in domains_to_favicons:
-                results[i]['icon_filename'] = domains_to_favicons[results[i]['domain']]
+            if results[i]["domain"] in domains_to_favicons:
+                results[i]["icon_filename"] = domains_to_favicons[results[i]["domain"]]
 
         print(json.dumps(results))

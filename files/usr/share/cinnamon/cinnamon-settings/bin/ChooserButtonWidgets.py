@@ -1,13 +1,14 @@
 #!/usr/bin/python3
 
 from gi.repository import Gtk, GObject, GLib, Gdk, GdkPixbuf, Gio
-import os
 import gettext
 import datetime
+
 gettext.install("cinnamon", "/usr/share/locale")
 
+
 class BaseChooserButton(Gtk.Button):
-    def __init__ (self, has_button_label=False, frame=False):
+    def __init__(self, has_button_label=False, frame=False):
         super(BaseChooserButton, self).__init__()
         self.has_button_label = has_button_label
         self.frame = frame
@@ -29,7 +30,7 @@ class BaseChooserButton(Gtk.Button):
         self.add(self.button_box)
         self.connect("button-release-event", self._on_button_clicked)
 
-    def popup_menu_below_button (self, *args):
+    def popup_menu_below_button(self, *args):
         # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
         # this is a workaround to make sure we get the menu and the widget
         menu = args[0]
@@ -57,16 +58,27 @@ class BaseChooserButton(Gtk.Button):
         elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
             y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
 
-        push_in = True # push_in is True so all menu is always inside screen
+        push_in = True  # push_in is True so all menu is always inside screen
         return x, y, push_in
 
     def _on_button_clicked(self, widget, event):
         if event.button == 1:
             self.menu.show_all()
-            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
+            self.menu.popup(
+                None, None, self.popup_menu_below_button, self, event.button, event.time
+            )
+
 
 class PictureChooserButton(BaseChooserButton):
-    def __init__ (self, num_cols=4, button_picture_width=24, menu_picture_width=24, has_button_label=False, keep_square=False, frame=False):
+    def __init__(
+        self,
+        num_cols=4,
+        button_picture_width=24,
+        menu_picture_width=24,
+        has_button_label=False,
+        keep_square=False,
+        frame=False,
+    ):
         super(PictureChooserButton, self).__init__(has_button_label, frame)
         self.num_cols = num_cols
         self.scale = self.get_scale_factor()
@@ -82,7 +94,9 @@ class PictureChooserButton(BaseChooserButton):
 
         self.button_image.set_valign(Gtk.Align.CENTER)
         if self.keep_square:
-            self.button_image.set_size_request(button_picture_width / self.scale, button_picture_width / self.scale)
+            self.button_image.set_size_request(
+                button_picture_width / self.scale, button_picture_width / self.scale
+            )
         else:
             self.button_image.set_size_request(button_picture_width / self.scale, -1)
 
@@ -96,7 +110,7 @@ class PictureChooserButton(BaseChooserButton):
         context = widget.get_style_context()
         c = context.get_background_color(Gtk.StateFlags.SELECTED)
 
-        max_length = box.width * .6
+        max_length = box.width * 0.6
         start = (box.width - max_length) / 2
         y = box.height - 5
 
@@ -133,7 +147,7 @@ class PictureChooserButton(BaseChooserButton):
             print(f"Could not load thumbnail file '{path}': {e.message}")
         return None
 
-    def set_picture_from_file (self, path):
+    def set_picture_from_file(self, path):
         surface = self.create_scaled_surface(path)
         if surface:
             self.button_image.set_from_surface(surface)
@@ -180,7 +194,9 @@ class PictureChooserButton(BaseChooserButton):
 
         menuitem = Gtk.MenuItem()
         if title is not None:
-            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, valign=Gtk.Align.END)
+            vbox = Gtk.Box(
+                orientation=Gtk.Orientation.VERTICAL, spacing=2, valign=Gtk.Align.END
+            )
             vbox.add(menu_image)
             label = Gtk.Label()
             label.set_text(title)
@@ -189,11 +205,11 @@ class PictureChooserButton(BaseChooserButton):
         else:
             menuitem.add(menu_image)
         if id is not None:
-            menuitem.connect('activate', self._on_picture_selected, path, callback, id)
+            menuitem.connect("activate", self._on_picture_selected, path, callback, id)
         else:
-            menuitem.connect('activate', self._on_picture_selected, path, callback)
-        self.menu.attach(menuitem, self.col, self.col+1, self.row, self.row+1)
-        self.col = (self.col+1) % self.num_cols
+            menuitem.connect("activate", self._on_picture_selected, path, callback)
+        self.menu.attach(menuitem, self.col, self.col + 1, self.row, self.row + 1)
+        self.col = (self.col + 1) % self.num_cols
         if self.col == 0:
             self.row = self.row + 1
 
@@ -221,12 +237,13 @@ class PictureChooserButton(BaseChooserButton):
             self.row = self.row + 1
             self.col = 0
 
-        self.menu.attach(menuitem, 0, self.num_cols, self.row, self.row+1)
+        self.menu.attach(menuitem, 0, self.num_cols, self.row, self.row + 1)
         self.row = self.row + 1
+
 
 class DateChooserButton(Gtk.Button):
     __gsignals__ = {
-        'date-changed': (GObject.SignalFlags.RUN_FIRST, None, (int,int,int))
+        "date-changed": (GObject.SignalFlags.RUN_FIRST, None, (int, int, int))
     }
 
     def __init__(self, follow_current=False, date=None):
@@ -243,11 +260,17 @@ class DateChooserButton(Gtk.Button):
         self.connect("clicked", self.on_button_clicked)
 
     def on_button_clicked(self, *args):
-        self.dialog = Gtk.Dialog(transient_for=self.get_toplevel(),
-                                 title=_("Select a date"),
-                                 flags=Gtk.DialogFlags.MODAL,
-                                 buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                          Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        self.dialog = Gtk.Dialog(
+            transient_for=self.get_toplevel(),
+            title=_("Select a date"),
+            flags=Gtk.DialogFlags.MODAL,
+            buttons=(
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OK,
+                Gtk.ResponseType.OK,
+            ),
+        )
 
         content = self.dialog.get_content_area()
         content.props.margin_start = 20
@@ -262,13 +285,14 @@ class DateChooserButton(Gtk.Button):
 
         calendar = Gtk.Calendar()
         content.pack_start(calendar, True, True, 0)
-        calendar.select_month(self.date.month-1, self.date.year)
+        calendar.select_month(self.date.month - 1, self.date.year)
         calendar.select_day(self.date.day)
 
         def select_today(*args):
             date = datetime.date.today()
             calendar.select_month(date.month - 1, date.year)
             calendar.select_day(date.day)
+
         today.connect("clicked", select_today)
 
         content.show_all()
@@ -277,7 +301,9 @@ class DateChooserButton(Gtk.Button):
 
         if response == Gtk.ResponseType.OK:
             date = calendar.get_date()
-            self.set_date(datetime.date(date[0], date[1]+1, date[2])) # Gtk.Calendar uses 0 based month
+            self.set_date(
+                datetime.date(date[0], date[1] + 1, date[2])
+            )  # Gtk.Calendar uses 0 based month
             self.emit("date-changed", self.date.year, self.date.month, self.date.day)
 
         self.dialog.destroy()
@@ -300,7 +326,9 @@ class DateChooserButton(Gtk.Button):
         elif isinstance(date, tuple):
             self.date = datetime.date(*date)
         else:
-            raise ValueError('Invalid date format. Date must be of type datetime.date, datetime.datetime, or a tuple of the form (year, month, day)')
+            raise ValueError(
+                "Invalid date format. Date must be of type datetime.date, datetime.datetime, or a tuple of the form (year, month, day)"
+            )
 
         # Translators: This is the date which appears in the calendar
         # applet, as a tooltip and as a title header inside the applet.
@@ -313,26 +341,29 @@ class DateChooserButton(Gtk.Button):
         date_string = self.date.strftime(_("%A, %B %-e, %Y"))
         self.set_label(date_string)
 
+
 class TimeChooserButton(Gtk.Button):
     __gsignals__ = {
-        'time-changed': (GObject.SignalFlags.RUN_FIRST, None, (int,int,int))
+        "time-changed": (GObject.SignalFlags.RUN_FIRST, None, (int, int, int))
     }
 
-    def __init__(self, follow_current=False, time=None, show_seconds='default'):
+    def __init__(self, follow_current=False, time=None, show_seconds="default"):
         super(TimeChooserButton, self).__init__()
 
-        if show_seconds == 'default':
+        if show_seconds == "default":
             self.show_seconds_override_default = False
         else:
             self.show_seconds_override_default = True
-            if show_seconds == 'true':
+            if show_seconds == "true":
                 self.show_seconds = True
-            elif show_seconds == 'false':
+            elif show_seconds == "false":
                 self.show_seconds = False
             else:
-                raise ValueError('Invalid argument: show_seconds must be default, true, or false')
+                raise ValueError(
+                    "Invalid argument: show_seconds must be default, true, or false"
+                )
 
-        self.settings = Gio.Settings.new('org.cinnamon.desktop.interface')
+        self.settings = Gio.Settings.new("org.cinnamon.desktop.interface")
 
         if not follow_current and time is not None:
             self.set_time(time)
@@ -342,22 +373,29 @@ class TimeChooserButton(Gtk.Button):
         if follow_current:
             GLib.timeout_add_seconds(1, self.update_time)
 
-        self.connect('clicked', self.on_button_clicked)
+        self.connect("clicked", self.on_button_clicked)
 
     def get_uses_seconds(self):
         if self.show_seconds_override_default:
             return self.show_seconds
         else:
-            return self.settings.get_boolean('clock-show-seconds')
+            return self.settings.get_boolean("clock-show-seconds")
 
     def on_button_clicked(self, *args):
-        dialog = TimeChooserDialog(self.time, self.get_toplevel(), self.get_uses_seconds(), self.settings.get_boolean('clock-use-24h'))
+        dialog = TimeChooserDialog(
+            self.time,
+            self.get_toplevel(),
+            self.get_uses_seconds(),
+            self.settings.get_boolean("clock-use-24h"),
+        )
 
         response = dialog.run()
 
         if response == Gtk.ResponseType.OK:
             self.set_time(dialog.get_time())
-            self.emit("time-changed", self.time.hour, self.time.minute, self.time.second)
+            self.emit(
+                "time-changed", self.time.hour, self.time.minute, self.time.second
+            )
 
         dialog.destroy()
 
@@ -379,33 +417,42 @@ class TimeChooserButton(Gtk.Button):
         elif isinstance(time, tuple):
             self.time = datetime.time(*time)
         else:
-            raise ValueError('Invalid time format. Must be of type datetime.time, datetime.datetime, or a tuple of the form (hour, minute[, second])')
+            raise ValueError(
+                "Invalid time format. Must be of type datetime.time, datetime.datetime, or a tuple of the form (hour, minute[, second])"
+            )
 
         self.update_label()
 
     def update_label(self):
-        if self.settings.get_boolean('clock-use-24h'):
+        if self.settings.get_boolean("clock-use-24h"):
             if self.get_uses_seconds():
-                format_code = gettext.dgettext('cinnamon-desktop', '%R:%S')
+                format_code = gettext.dgettext("cinnamon-desktop", "%R:%S")
             else:
-                format_code = gettext.dgettext('cinnamon-desktop', '%R')
+                format_code = gettext.dgettext("cinnamon-desktop", "%R")
         else:
             if self.get_uses_seconds():
-                format_code = gettext.dgettext('cinnamon-desktop', '%l:%M:%S %p')
+                format_code = gettext.dgettext("cinnamon-desktop", "%l:%M:%S %p")
             else:
-                format_code = gettext.dgettext('cinnamon-desktop', '%l:%M %p')
+                format_code = gettext.dgettext("cinnamon-desktop", "%l:%M %p")
         time_string = self.time.strftime(format_code)
         self.set_label(time_string)
 
+
 class TimeChooserDialog(Gtk.Dialog):
     def __init__(self, time, window, use_seconds, use24hour):
-        super(TimeChooserDialog, self).__init__(title = _("Select a time"),
-                                                transient_for = window,
-                                                flags = Gtk.DialogFlags.MODAL,
-                                                buttons = (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                                         Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        super(TimeChooserDialog, self).__init__(
+            title=_("Select a time"),
+            transient_for=window,
+            flags=Gtk.DialogFlags.MODAL,
+            buttons=(
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OK,
+                Gtk.ResponseType.OK,
+            ),
+        )
 
-        self.time = {'hour': time.hour, 'minute': time.minute, 'second': time.second}
+        self.time = {"hour": time.hour, "minute": time.minute, "second": time.second}
         self.use_seconds = use_seconds
         self.use24hour = use24hour
         self.markup = lambda text: f'<span weight="bold" size="xx-large">{text}</span>'
@@ -416,38 +463,48 @@ class TimeChooserDialog(Gtk.Dialog):
         content.pack_start(grid, False, False, 0)
 
         grid.attach(Gtk.Label(self.markup(_("Hour")), use_markup=True), 0, 0, 1, 1)
-        grid.attach(Gtk.Label(self.markup(':'), use_markup=True), 1, 2, 1, 1)
+        grid.attach(Gtk.Label(self.markup(":"), use_markup=True), 1, 2, 1, 1)
         grid.attach(Gtk.Label(self.markup(_("Minute")), use_markup=True), 2, 0, 1, 1)
 
-        unit_defs = [('hour', 0), ('minute', 2)]
+        unit_defs = [("hour", 0), ("minute", 2)]
 
         if self.use_seconds:
-            grid.attach(Gtk.Label(self.markup(':'), use_markup=True), 3, 2, 1, 1)
-            grid.attach(Gtk.Label(self.markup(_("Second")), use_markup=True), 4, 0, 1, 1)
-            unit_defs.append(('second', 4))
+            grid.attach(Gtk.Label(self.markup(":"), use_markup=True), 3, 2, 1, 1)
+            grid.attach(
+                Gtk.Label(self.markup(_("Second")), use_markup=True), 4, 0, 1, 1
+            )
+            unit_defs.append(("second", 4))
 
         self.labels = {}
         for ttype, column in unit_defs:
-            self.labels[ttype] = Gtk.Label(self.markup(self.time[ttype]), use_markup=True)
+            self.labels[ttype] = Gtk.Label(
+                self.markup(self.time[ttype]), use_markup=True
+            )
             grid.attach(self.labels[ttype], column, 2, 1, 1)
 
-            up_button = Gtk.Button.new_from_icon_name('xsi-pan-up-symbolic', Gtk.IconSize.DIALOG)
-            down_button = Gtk.Button.new_from_icon_name('xsi-pan-down-symbolic', Gtk.IconSize.DIALOG)
+            up_button = Gtk.Button.new_from_icon_name(
+                "xsi-pan-up-symbolic", Gtk.IconSize.DIALOG
+            )
+            down_button = Gtk.Button.new_from_icon_name(
+                "xsi-pan-down-symbolic", Gtk.IconSize.DIALOG
+            )
             up_button.set_relief(Gtk.ReliefStyle.NONE)
             down_button.set_relief(Gtk.ReliefStyle.NONE)
             grid.attach(up_button, column, 1, 1, 1)
             grid.attach(down_button, column, 3, 1, 1)
-            up_button.connect('clicked', self.shift_time, ttype, 1)
-            down_button.connect('clicked', self.shift_time, ttype, -1)
+            up_button.connect("clicked", self.shift_time, ttype, 1)
+            down_button.connect("clicked", self.shift_time, ttype, -1)
 
         content.show_all()
 
     def shift_time(self, button, ttype, offset):
         self.time[ttype] += offset
-        self.time['hour'] = self.time['hour'] % 24
-        self.time['minute'] = self.time['minute'] % 60
-        self.time['second'] = self.time['second'] % 60
+        self.time["hour"] = self.time["hour"] % 24
+        self.time["minute"] = self.time["minute"] % 60
+        self.time["second"] = self.time["second"] % 60
         self.labels[ttype].set_label(self.markup(self.time[ttype]))
 
     def get_time(self):
-        return datetime.time(self.time['hour'], self.time['minute'], self.time['second'])
+        return datetime.time(
+            self.time["hour"], self.time["minute"], self.time["second"]
+        )

@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-import sys
 import json
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk
 
 from SettingsWidgets import SidePage
@@ -27,6 +27,7 @@ class Monitor:
             return self.left != -1
         elif position == "right":
             return self.right != -1
+
 
 class PanelSettingsPage(SettingsPage):
     def __init__(self, panel_id, settings, position):
@@ -57,20 +58,67 @@ class PanelSettingsPage(SettingsPage):
 
         self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-        options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
-        widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=self.size_group)
+        options = [
+            ["true", _("Auto hide panel")],
+            ["false", _("Always show panel")],
+            ["intel", _("Intelligently hide panel")],
+        ]
+        widget = PanelComboBox(
+            _("Auto-hide panel"),
+            "org.cinnamon",
+            "panels-autohide",
+            self.panel_id,
+            options,
+            size_group=self.size_group,
+        )
         section.add_row(widget)
 
-        widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
-        section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
+        widget = PanelSpinButton(
+            _("Show delay"),
+            "org.cinnamon",
+            "panels-show-delay",
+            self.panel_id,
+            _("milliseconds"),
+            0,
+            2000,
+            50,
+            200,
+        )  # , dep_key="org.cinnamon/panels-autohide")
+        section.add_reveal_row(
+            widget, "org.cinnamon", "panels-autohide", check_func=can_show
+        )
 
-        widget = PanelSpinButton(_("Hide delay"), "org.cinnamon", "panels-hide-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
-        section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
+        widget = PanelSpinButton(
+            _("Hide delay"),
+            "org.cinnamon",
+            "panels-hide-delay",
+            self.panel_id,
+            _("milliseconds"),
+            0,
+            2000,
+            50,
+            200,
+        )  # , dep_key="org.cinnamon/panels-autohide")
+        section.add_reveal_row(
+            widget, "org.cinnamon", "panels-autohide", check_func=can_show
+        )
 
         section = SettingsSection(_("Customize"))
         self.add(section)
 
-        widget = PanelRange(dimension_text, "org.cinnamon", "panels-height", self.panel_id, _("Smaller"), _("Larger"), mini=20, maxi=60, digits=0, step=1.0, show_value=True)
+        widget = PanelRange(
+            dimension_text,
+            "org.cinnamon",
+            "panels-height",
+            self.panel_id,
+            _("Smaller"),
+            _("Larger"),
+            mini=20,
+            maxi=60,
+            digits=0,
+            step=1.0,
+            show_value=True,
+        )
         widget.set_rounding(0)
         section.add_row(widget)
 
@@ -83,7 +131,10 @@ class PanelSettingsPage(SettingsPage):
         switcher_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, border_width=5)
         zones_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=5)
 
-        stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT, transition_duration=150)
+        stack = Gtk.Stack(
+            transition_type=Gtk.StackTransitionType.SLIDE_LEFT_RIGHT,
+            transition_duration=150,
+        )
         switcher = Gtk.StackSwitcher(stack=stack, halign=Gtk.Align.CENTER)
 
         section.add_row(switcher_box)
@@ -95,12 +146,14 @@ class PanelSettingsPage(SettingsPage):
         zone_infos = [
             [left_switcher_label, "left"],
             [center_switcher_label, "center"],
-            [right_switcher_label, "right"]
+            [right_switcher_label, "right"],
         ]
 
-        for [zone, label] in (["left", left_switcher_label],
-                              ["center", center_switcher_label],
-                              ["right", right_switcher_label]):
+        for [zone, label] in (
+            ["left", left_switcher_label],
+            ["center", center_switcher_label],
+            ["right", right_switcher_label],
+        ):
             page = self.create_zone_page(zone)
             page.show_all()
 
@@ -116,41 +169,63 @@ class PanelSettingsPage(SettingsPage):
     def create_zone_page(self, zone):
         zone_page = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
 
-        text_options = [
-            [0, _("Allow theme to determine font size")]
-        ]
+        text_options = [[0, _("Allow theme to determine font size")]]
 
         points = 6.0
         while points <= 16.0:
             text_options.append([points, "%.1fpt" % points])
             points += 0.5
 
-        widget = PanelJSONComboBox(_("Font size"),
-                                     "org.cinnamon", "panel-zone-text-sizes",
-                                     self.panel_id, zone, text_options, valtype=float, size_group=self.size_group)
+        widget = PanelJSONComboBox(
+            _("Font size"),
+            "org.cinnamon",
+            "panel-zone-text-sizes",
+            self.panel_id,
+            zone,
+            text_options,
+            valtype=float,
+            size_group=self.size_group,
+        )
         zone_page.pack_start(widget, False, False, 0)
 
         fullcolor_options = [
             [-1, _("Scale to panel size exactly")],
             [0, _("Scale to panel size optimally")],
-            [16, '16px'],
-            [22, '22px'],
-            [24, '24px'],
-            [32, '32px'],
-            [48, '48px']
+            [16, "16px"],
+            [22, "22px"],
+            [24, "24px"],
+            [32, "32px"],
+            [48, "48px"],
         ]
 
-        widget = PanelJSONComboBox(_("Colored icon size"),
-                                   "org.cinnamon", "panel-zone-icon-sizes",
-                                   self.panel_id, zone, fullcolor_options, valtype=int, size_group=self.size_group)
+        widget = PanelJSONComboBox(
+            _("Colored icon size"),
+            "org.cinnamon",
+            "panel-zone-icon-sizes",
+            self.panel_id,
+            zone,
+            fullcolor_options,
+            valtype=int,
+            size_group=self.size_group,
+        )
         zone_page.pack_start(widget, False, False, 0)
 
-        widget = PanelJSONSpinButton(_("Symbolic icon size"),
-                                     "org.cinnamon", "panel-zone-symbolic-icon-sizes",
-                                     self.panel_id, zone, _("px"), 10, 50, 1, 0)
+        widget = PanelJSONSpinButton(
+            _("Symbolic icon size"),
+            "org.cinnamon",
+            "panel-zone-symbolic-icon-sizes",
+            self.panel_id,
+            zone,
+            _("px"),
+            10,
+            50,
+            1,
+            0,
+        )
         zone_page.pack_start(widget, False, False, 0)
 
         return zone_page
+
 
 class Module:
     name = "panel"
@@ -159,7 +234,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("panel, height, bottom, top, autohide, size, layout")
-        self.sidePage = SidePage(_("Panel"), "cs-panel", keywords, content_box, module=self)
+        self.sidePage = SidePage(
+            _("Panel"), "cs-panel", keywords, content_box, module=self
+        )
 
     def on_module_selected(self):
         if not self.loaded:
@@ -171,7 +248,9 @@ class Module:
                 if config.PARSED_ARGS.panel is not None:
                     self.panel_id = config.PARSED_ARGS.panel
                 else:
-                    self.panel_id = self.settings.get_strv("panels-enabled")[0].split(":")[0]
+                    self.panel_id = self.settings.get_strv("panels-enabled")[0].split(
+                        ":"
+                    )[0]
             except:
                 self.panel_id = ""
 
@@ -210,11 +289,22 @@ class Module:
             buttons.pack_start(self.add_panel_button, False, False, 2)
             toggle_button = Gtk.ToggleButton(label=_("Panel edit mode"))
 
-            self.settings.bind("panel-edit-mode", toggle_button, "active", Gio.SettingsBindFlags.DEFAULT)
+            self.settings.bind(
+                "panel-edit-mode",
+                toggle_button,
+                "active",
+                Gio.SettingsBindFlags.DEFAULT,
+            )
             buttons.pack_end(toggle_button, False, False, 2)
             section.add_row(buttons)
 
-            section.add_row(GSettingsSwitch(_("Allow the pointer to pass through the edges of panels"), "org.cinnamon", "no-adjacent-panel-barriers"))
+            section.add_row(
+                GSettingsSwitch(
+                    _("Allow the pointer to pass through the edges of panels"),
+                    "org.cinnamon",
+                    "no-adjacent-panel-barriers",
+                )
+            )
 
             self.add_panel_button.set_sensitive(False)
 
@@ -223,15 +313,24 @@ class Module:
             self.proxy = None
 
             try:
-                Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                          "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)
+                Gio.DBusProxy.new_for_bus(
+                    Gio.BusType.SESSION,
+                    Gio.DBusProxyFlags.NONE,
+                    None,
+                    "org.Cinnamon",
+                    "/org/Cinnamon",
+                    "org.Cinnamon",
+                    None,
+                    self._on_proxy_ready,
+                    None,
+                )
             except GLib.Error as e:
                 print(e.message)
                 self.proxy = None
 
         self.on_panel_list_changed()
 
-    def _on_proxy_ready (self, object, result, data=None):
+    def _on_proxy_ready(self, object, result, data=None):
         self.proxy = Gio.DBusProxy.new_for_bus_finish(result)
 
         if not self.proxy.get_name_owner():
@@ -244,7 +343,7 @@ class Module:
             self.add_panel_button.connect("clicked", self.on_add_panel)
 
             if self.panel_id is not None:
-                self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
+                self.proxy.highlightPanel("(ib)", int(self.panel_id), True)
 
     def on_add_panel(self, widget):
         if self.proxy:
@@ -252,7 +351,7 @@ class Module:
 
     def on_previous_panel(self, widget):
         if self.panel_id and self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
+            self.proxy.highlightPanel("(ib)", int(self.panel_id), False)
 
         current = self.panels.index(self.current_panel)
 
@@ -266,13 +365,13 @@ class Module:
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_RIGHT)
 
         if self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
+            self.proxy.highlightPanel("(ib)", int(self.panel_id), True)
 
         self.config_stack.set_visible_child(self.current_panel)
 
     def on_next_panel(self, widget):
         if self.panel_id and self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
+            self.proxy.highlightPanel("(ib)", int(self.panel_id), False)
 
         current = self.panels.index(self.current_panel)
 
@@ -286,17 +385,23 @@ class Module:
         self.config_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT)
 
         if self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
+            self.proxy.highlightPanel("(ib)", int(self.panel_id), True)
 
         self.config_stack.set_visible_child(self.current_panel)
 
-    def id_or_monitor_position_used(self, kept_panels, monitor_layout, panel_id, monitor_id, position):
+    def id_or_monitor_position_used(
+        self, kept_panels, monitor_layout, panel_id, monitor_id, position
+    ):
         for keeper in kept_panels:
             if keeper.panel_id == panel_id:
-                print(f"cs_panel: Ignoring panel definition with an already-used ID: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})")
+                print(
+                    f"cs_panel: Ignoring panel definition with an already-used ID: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})"
+                )
                 return True
             if monitor_layout[monitor_id].position_used(position):
-                print(f"cs_panel: Ignoring panel definition with an already-used monitor:position: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})")
+                print(
+                    f"cs_panel: Ignoring panel definition with an already-used monitor:position: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})"
+                )
                 return True
         return False
 
@@ -328,8 +433,12 @@ class Module:
             monitor_id = int(monitor_id)
 
             if monitor_id >= n_mons:
-                print(f"cs_panel: Ignoring panel definition with a monitor out of range: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})")
-            elif self.id_or_monitor_position_used(already_defined_panels, monitor_layout, panel_id, monitor_id, position):
+                print(
+                    f"cs_panel: Ignoring panel definition with a monitor out of range: (ID: {panel_id}, Monitor: {monitor_id}, Position: {position})"
+                )
+            elif self.id_or_monitor_position_used(
+                already_defined_panels, monitor_layout, panel_id, monitor_id, position
+            ):
                 removals.append(def_)
                 continue
 
@@ -365,7 +474,12 @@ class Module:
 
         # Index the panels for the next/previous buttons
         for monitor in monitor_layout:
-            for panel_page in (monitor.top, monitor.bottom, monitor.left, monitor.right):
+            for panel_page in (
+                monitor.top,
+                monitor.bottom,
+                monitor.left,
+                monitor.right,
+            ):
                 if panel_page != -1:
                     self.panels.append(panel_page)
 
@@ -416,18 +530,21 @@ class Module:
         self.updating = False
 
         if self.proxy:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), True)
+            self.proxy.highlightPanel("(ib)", int(self.panel_id), True)
 
     def restore_panels(self, widget):
         self.proxy.destroyDummyPanels()
         if self.panel_id:
-            self.proxy.highlightPanel('(ib)', int(self.panel_id), False)
+            self.proxy.highlightPanel("(ib)", int(self.panel_id), False)
+
 
 class PanelWidgetBackend(object):
     def connect_to_settings(self, schema, key):
         self.key = key
         self.settings = Gio.Settings.new(schema)
-        self.settings_changed_id = self.settings.connect("changed::"+self.key, self.on_setting_changed)
+        self.settings_changed_id = self.settings.connect(
+            "changed::" + self.key, self.on_setting_changed
+        )
         self.connect("destroy", self.on_destroy)
         self.on_setting_changed()
 
@@ -460,6 +577,7 @@ class PanelWidgetBackend(object):
     def on_destroy(self, *args):
         self.settings.disconnect(self.settings_changed_id)
 
+
 class PanelSwitch(Switch, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
@@ -486,6 +604,7 @@ class PanelSwitch(Switch, PanelWidgetBackend):
         if self.get_value() != active:
             self.set_value(active)
 
+
 class PanelSpinButton(SpinButton, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
         self.panel_id = panel_id
@@ -510,6 +629,7 @@ class PanelSpinButton(SpinButton, PanelWidgetBackend):
         value = self.get_value()
         if value is not None and value != int(self.content_widget.get_value()):
             self.content_widget.set_value(value)
+
 
 class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
@@ -536,7 +656,7 @@ class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
     def set_value(self, value):
         vals = json.loads(self.settings[self.key])
         for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
+            if obj["panelId"] != int(self.panel_id):
                 continue
             for key, val in obj.items():
                 if key == self.zone:
@@ -549,12 +669,13 @@ class PanelJSONSpinButton(SpinButton, PanelWidgetBackend):
         vals = self.settings[self.key]
         vals = json.loads(vals)
         for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
+            if obj["panelId"] != int(self.panel_id):
                 continue
             for key, val in obj.items():
                 if key == self.zone:
                     return int(val)
-        return 0 # prevent warnings if key is reset
+        return 0  # prevent warnings if key is reset
+
 
 class PanelComboBox(ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):
@@ -568,6 +689,7 @@ class PanelComboBox(ComboBox, PanelWidgetBackend):
 
     def unstringify(self, value):
         return value
+
 
 class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, zone, *args, **kwargs):
@@ -586,7 +708,7 @@ class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
     def set_value(self, value):
         vals = json.loads(self.settings[self.key])
         for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
+            if obj["panelId"] != int(self.panel_id):
                 continue
             for key, val in obj.items():
                 if key == self.zone:
@@ -599,11 +721,12 @@ class PanelJSONComboBox(ComboBox, PanelWidgetBackend):
         vals = self.settings[self.key]
         vals = json.loads(vals)
         for obj in vals:
-            if obj['panelId'] != int(self.panel_id):
+            if obj["panelId"] != int(self.panel_id):
                 continue
             for key, val in obj.items():
                 if key == self.zone:
                     return self.valtype(val)
+
 
 class PanelRange(Range, PanelWidgetBackend):
     def __init__(self, label, schema, key, panel_id, *args, **kwargs):

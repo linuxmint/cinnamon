@@ -4,6 +4,7 @@ import os
 from gi.repository import Gtk, Gdk
 import pageutils
 
+
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(str, str, str, str, str, str, str, bool, str)
@@ -21,15 +22,15 @@ class ModulePage(pageutils.BaseListView):
 
         self.popup = Gtk.Menu()
 
-        self.view_source = Gtk.MenuItem('View Source')
+        self.view_source = Gtk.MenuItem("View Source")
         self.view_source.connect("activate", self.on_view_source)
         self.popup.append(self.view_source)
 
-        reload_code = Gtk.MenuItem('Reload Code')
+        reload_code = Gtk.MenuItem("Reload Code")
         reload_code.connect("activate", self.on_reload_code)
         self.popup.append(reload_code)
 
-        self.view_web_page = Gtk.MenuItem('View Web Page')
+        self.view_web_page = Gtk.MenuItem("View Web Page")
         self.view_web_page.connect("activate", self.on_view_web_page)
         self.popup.append(self.view_web_page)
 
@@ -40,7 +41,7 @@ class ModulePage(pageutils.BaseListView):
     def on_view_source(self, menu_item):
         tree_iter = self.store.get_iter(self.selected_path)
         folder = self.store.get_value(tree_iter, 5)
-        os.system("xdg-open \"" + folder + "\" &")
+        os.system('xdg-open "' + folder + '" &')
 
     def on_reload_code(self, menu_item):
         tree_iter = self.store.get_iter(self.selected_path)
@@ -51,7 +52,7 @@ class ModulePage(pageutils.BaseListView):
     def on_view_web_page(self, menu_item):
         tree_iter = self.store.get_iter(self.selected_path)
         url = self.store.get_value(tree_iter, 6)
-        os.system("xdg-open \"" + url + "\" &")
+        os.system('xdg-open "' + url + '" &')
 
     def on_button_press_event(self, treeview, event):
         x = int(event.x)
@@ -89,12 +90,16 @@ class ModulePage(pageutils.BaseListView):
         if success:
             self.store.clear()
             for item in data:
-                self.store.append([item["status"],
-                                   item["type"],
-                                   item["name"],
-                                   item["description"],
-                                   item["uuid"],
-                                   item["folder"],
-                                   item["url"],
-                                   item["error"] == "true",
-                                   item["error_message"]])
+                self.store.append(
+                    [
+                        item["status"],
+                        item["type"],
+                        item["name"],
+                        item["description"],
+                        item["uuid"],
+                        item["folder"],
+                        item["url"],
+                        item["error"] == "true",
+                        item["error_message"],
+                    ]
+                )

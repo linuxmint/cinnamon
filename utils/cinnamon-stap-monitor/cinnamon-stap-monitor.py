@@ -2,15 +2,18 @@
 
 import sys
 import signal
+
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 import _thread
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('Gdk', '3.0')
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("Gdk", "3.0")
 from gi.repository import Gdk, Gtk, GObject, GLib, Pango
 
 import time
 from datetime import timedelta
+
 
 class Main:
     def __init__(self):
@@ -106,7 +109,7 @@ class Main:
 
         elapsed = now - self.start_time
 
-        time_passed = timedelta(seconds=int(elapsed + .5))
+        time_passed = timedelta(seconds=int(elapsed + 0.5))
 
         self.timer_label.set_text("Elapsed time: {}".format(time_passed))
 
@@ -160,7 +163,6 @@ class Main:
 
         return [True, self.model.insert_before(None, None)]
 
-
     # def selection_changed(self):
     #     model, treeiter = self.treeview.get_selection().get_selected()
     #     if treeiter:
@@ -195,7 +197,7 @@ class Main:
             iter = buf.get_end_iter()
             buf.insert(iter, char)
             iter = buf.get_end_iter()
-            self.output.scroll_to_iter(iter, .2, False, 0, 0)
+            self.output.scroll_to_iter(iter, 0.2, False, 0, 0)
             # adj = self.output.get_vadjustment()
             # if adj.get_value() >= adj.get_upper() - adj.get_page_size() - 200.0:
             # adj.set_value(adj.get_upper())
@@ -208,14 +210,16 @@ class Main:
         iter = buf.get_end_iter()
         buf.insert(iter, string)
         iter = buf.get_end_iter()
-        self.output.scroll_to_iter(iter, .2, False, 0, 0)
+        self.output.scroll_to_iter(iter, 0.2, False, 0, 0)
 
     def ask(self, msg):
-        dialog = Gtk.MessageDialog(None,
-                                   Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   Gtk.MessageType.QUESTION,
-                                   Gtk.ButtonsType.YES_NO,
-                                   None)
+        dialog = Gtk.MessageDialog(
+            None,
+            Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.QUESTION,
+            Gtk.ButtonsType.YES_NO,
+            None,
+        )
         dialog.set_default_size(400, 200)
         dialog.set_markup(msg)
         dialog.show_all()
@@ -224,11 +228,13 @@ class Main:
         return response == Gtk.ResponseType.YES
 
     def inform_error(self, msg, detail):
-        dialog = Gtk.MessageDialog(None,
-                                   Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   Gtk.MessageType.ERROR,
-                                   Gtk.ButtonsType.OK,
-                                   None)
+        dialog = Gtk.MessageDialog(
+            None,
+            Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.ERROR,
+            Gtk.ButtonsType.OK,
+            None,
+        )
         dialog.set_default_size(400, 200)
         dialog.set_markup(msg)
         dialog.format_secondary_markup(detail)
@@ -238,11 +244,13 @@ class Main:
         return
 
     def inform(self, msg, detail):
-        dialog = Gtk.MessageDialog(None,
-                                   Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                   Gtk.MessageType.INFO,
-                                   Gtk.ButtonsType.OK,
-                                   None)
+        dialog = Gtk.MessageDialog(
+            None,
+            Gtk.DialogFlags.DESTROY_WITH_PARENT,
+            Gtk.MessageType.INFO,
+            Gtk.ButtonsType.OK,
+            None,
+        )
         dialog.set_default_size(400, 200)
         dialog.set_markup(msg)
         dialog.format_secondary_markup(detail)
@@ -250,6 +258,7 @@ class Main:
         response = dialog.run()
         dialog.destroy()
         return
+
 
 if __name__ == "__main__":
     Main()

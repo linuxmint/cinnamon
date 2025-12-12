@@ -11,7 +11,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("workspace, osd, expo, monitor")
-        sidePage = SidePage(_("Workspaces"), "cs-workspaces", keywords, content_box, module=self)
+        sidePage = SidePage(
+            _("Workspaces"), "cs-workspaces", keywords, content_box, module=self
+        )
         self.sidePage = sidePage
 
     def shouldLoad(self):
@@ -26,19 +28,37 @@ class Module:
 
             settings = page.add_section(_("Workspace Options"))
 
-            switch = GSettingsSwitch(_("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible")
+            switch = GSettingsSwitch(
+                _("Enable workspace OSD"), "org.cinnamon", "workspace-osd-visible"
+            )
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Allow cycling through workspaces"), "org.cinnamon.muffin", "workspace-cycle")
+            switch = GSettingsSwitch(
+                _("Allow cycling through workspaces"),
+                "org.cinnamon.muffin",
+                "workspace-cycle",
+            )
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Only use workspaces on primary monitor (requires Cinnamon restart)"), "org.cinnamon.muffin", "workspaces-only-on-primary")
+            switch = GSettingsSwitch(
+                _("Only use workspaces on primary monitor (requires Cinnamon restart)"),
+                "org.cinnamon.muffin",
+                "workspaces-only-on-primary",
+            )
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Display Expo view as a grid"), "org.cinnamon", "workspace-expo-view-as-grid")
+            switch = GSettingsSwitch(
+                _("Display Expo view as a grid"),
+                "org.cinnamon",
+                "workspace-expo-view-as-grid",
+            )
             settings.add_row(switch)
 
-            switch = GSettingsSwitch(_("Always show Expo on the primary monitor"), "org.cinnamon", "workspace-expo-primary-monitor")
+            switch = GSettingsSwitch(
+                _("Always show Expo on the primary monitor"),
+                "org.cinnamon",
+                "workspace-expo-primary-monitor",
+            )
             settings.add_row(switch)
 
             # Edge Flip doesn't work well, so it's there in gsettings, but we don't show it to users yet

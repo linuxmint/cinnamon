@@ -29,32 +29,41 @@ COLOR_MAP = [255] * 128 + [0] * 128
 WWW_CACHE = {}
 
 EXT_BY_FORMATS = {
-    'JPEG': ['JPG', 'JPEG', 'JPE'],
-    'TIFF': ['TIF', 'TIFF'],
-    'SVG': ['SVG', 'SVGZ'],
+    "JPEG": ["JPG", "JPEG", "JPE"],
+    "TIFF": ["TIF", "TIFF"],
+    "SVG": ["SVG", "SVGZ"],
 }
 FORMATS_BY_EXT = {}
 for format, exts in EXT_BY_FORMATS.items():
     for ext in exts:
         FORMATS_BY_EXT[ext] = format
 
-CROSS = 'Cross'
-ROUNDED = 'Rounded'
-SQUARE = 'Square'
+CROSS = "Cross"
+ROUNDED = "Rounded"
+SQUARE = "Square"
 
 CORNERS = [ROUNDED, SQUARE, CROSS]
-CORNER_ID = 'rounded_corner_r%d_f%d'
+CORNER_ID = "rounded_corner_r%d_f%d"
 CROSS_POS = (CROSS, CROSS, CROSS, CROSS)
 ROUNDED_POS = (ROUNDED, ROUNDED, ROUNDED, ROUNDED)
-ROUNDED_RECTANGLE_ID = 'rounded_rectangle_r%d_f%d_s%s_p%s'
+ROUNDED_RECTANGLE_ID = "rounded_rectangle_r%d_f%d_s%s_p%s"
+
 
 class InvalidWriteFormatError(Exception):
     pass
 
 
-def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
-                background_color=(255, 255, 255, 0), shadow_color=0x444444,
-                border=8, shadow_blur=3, force_background_color=False, cache=None):
+def drop_shadow(
+    image,
+    horizontal_offset=5,
+    vertical_offset=5,
+    background_color=(255, 255, 255, 0),
+    shadow_color=0x444444,
+    border=8,
+    shadow_blur=3,
+    force_background_color=False,
+    cache=None,
+):
     """Add a gaussian blur drop shadow to an image.
 
     :param image: The image to overlay on top of the shadow.
@@ -80,127 +89,159 @@ def drop_shadow(image, horizontal_offset=5, vertical_offset=5,
     if cache is None:
         cache = {}
 
-    if has_transparency(image) and image.mode != 'RGBA':
+    if has_transparency(image) and image.mode != "RGBA":
         # Make sure 'LA' and 'P' with transparency are handled
-        image = image.convert('RGBA')
+        image = image.convert("RGBA")
 
-    #get info
+    # get info
     size = image.size
     mode = image.mode
 
     back = None
 
-    #assert image is RGBA
-    if mode != 'RGBA':
-        if mode != 'RGB':
-            image = image.convert('RGB')
-            mode = 'RGB'
-        #create cache id
-        id = ''.join([str(x) for x in ['shadow_', size,
-                                       horizontal_offset, vertical_offset, border, shadow_blur,
-                                       background_color, shadow_color]])
+    # assert image is RGBA
+    if mode != "RGBA":
+        if mode != "RGB":
+            image = image.convert("RGB")
+            mode = "RGB"
+        # create cache id
+        id = "".join(
+            [
+                str(x)
+                for x in [
+                    "shadow_",
+                    size,
+                    horizontal_offset,
+                    vertical_offset,
+                    border,
+                    shadow_blur,
+                    background_color,
+                    shadow_color,
+                ]
+            ]
+        )
 
-        #look up in cache
+        # look up in cache
         if id in cache:
-            #retrieve from cache
+            # retrieve from cache
             back, back_size = cache[id]
 
     if back is None:
-        #size of backdrop
-        back_size = (size[0] + abs(horizontal_offset) + 2 * border,
-                     size[1] + abs(vertical_offset) + 2 * border)
+        # size of backdrop
+        back_size = (
+            size[0] + abs(horizontal_offset) + 2 * border,
+            size[1] + abs(vertical_offset) + 2 * border,
+        )
 
-        #create shadow mask
-        if mode == 'RGBA':
+        # create shadow mask
+        if mode == "RGBA":
             image_mask = get_alpha(image)
-            shadow = Image.new('L', back_size, 0)
+            shadow = Image.new("L", back_size, 0)
         else:
             image_mask = Image.new(mode, size, shadow_color)
             shadow = Image.new(mode, back_size, background_color)
 
         shadow_left = border + max(horizontal_offset, 0)
         shadow_top = border + max(vertical_offset, 0)
-        paste(shadow, image_mask, (shadow_left, shadow_top,
-                                   shadow_left + size[0], shadow_top + size[1]))
+        paste(
+            shadow,
+            image_mask,
+            (shadow_left, shadow_top, shadow_left + size[0], shadow_top + size[1]),
+        )
         del image_mask  # free up memory
 
-        #blur shadow mask
+        # blur shadow mask
 
-        #Apply the filter to blur the edges of the shadow.  Since a small
-        #kernel is used, the filter must be applied repeatedly to get a decent
-        #blur.
+        # Apply the filter to blur the edges of the shadow.  Since a small
+        # kernel is used, the filter must be applied repeatedly to get a decent
+        # blur.
         n = 0
         while n < shadow_blur:
             shadow = shadow.filter(ImageFilter.BLUR)
             n += 1
 
-        #create back
-        if mode == 'RGBA':
-            back = Image.new('RGBA', back_size, shadow_color)
+        # create back
+        if mode == "RGBA":
+            back = Image.new("RGBA", back_size, shadow_color)
             back.putalpha(shadow)
             del shadow  # free up memory
         else:
             back = shadow
             cache[id] = back, back_size
 
-    #Paste the input image onto the shadow backdrop
+    # Paste the input image onto the shadow backdrop
     image_left = border - min(horizontal_offset, 0)
     image_top = border - min(vertical_offset, 0)
-    if mode == 'RGBA':
+    if mode == "RGBA":
         paste(back, image, (image_left, image_top), image)
         if force_background_color:
             mask = get_alpha(back)
-            paste(back, Image.new('RGB', back.size, background_color),
-                  (0, 0), ImageChops.invert(mask))
+            paste(
+                back,
+                Image.new("RGB", back.size, background_color),
+                (0, 0),
+                ImageChops.invert(mask),
+            )
             back.putalpha(mask)
     else:
         paste(back, image, (image_left, image_top))
 
     return back
 
-def round_image(image, cache={}, round_all=True, rounding_type=None,
-                radius=100, opacity=255, pos=ROUNDED_POS, back_color='#FFFFFF'):
 
-    if image.mode != 'RGBA':
-        image = image.convert('RGBA')
+def round_image(
+    image,
+    cache={},
+    round_all=True,
+    rounding_type=None,
+    radius=100,
+    opacity=255,
+    pos=ROUNDED_POS,
+    back_color="#FFFFFF",
+):
+    if image.mode != "RGBA":
+        image = image.convert("RGBA")
 
     if round_all:
-        pos = 4 * (rounding_type, )
+        pos = 4 * (rounding_type,)
 
     mask = create_rounded_rectangle(image.size, cache, radius, opacity, pos)
 
-    paste(image, Image.new('RGB', image.size, back_color), (0, 0),
-          ImageChops.invert(mask))
+    paste(
+        image, Image.new("RGB", image.size, back_color), (0, 0), ImageChops.invert(mask)
+    )
     image.putalpha(mask)
     return image
 
-def create_rounded_rectangle(size=(600, 400), cache={}, radius=100,
-                             opacity=255, pos=ROUNDED_POS):
-    #rounded_rectangle
+
+def create_rounded_rectangle(
+    size=(600, 400), cache={}, radius=100, opacity=255, pos=ROUNDED_POS
+):
+    # rounded_rectangle
     im_x, im_y = size
     rounded_rectangle_id = ROUNDED_RECTANGLE_ID % (radius, opacity, size, pos)
     if rounded_rectangle_id in cache:
         return cache[rounded_rectangle_id]
     else:
-        #cross
+        # cross
         cross_id = ROUNDED_RECTANGLE_ID % (radius, opacity, size, CROSS_POS)
         if cross_id in cache:
             cross = cache[cross_id]
         else:
-            cross = cache[cross_id] = Image.new('L', size, 0)
+            cross = cache[cross_id] = Image.new("L", size, 0)
             draw = ImageDraw.Draw(cross)
             draw.rectangle((radius, 0, im_x - radius, im_y), fill=opacity)
             draw.rectangle((0, radius, im_x, im_y - radius), fill=opacity)
         if pos == CROSS_POS:
             return cross
-        #corner
+        # corner
         corner_id = CORNER_ID % (radius, opacity)
         if corner_id in cache:
             corner = cache[corner_id]
         else:
             corner = cache[corner_id] = create_corner(radius, opacity)
-        #rounded rectangle
-        rectangle = Image.new('L', (radius, radius), 255)
+        # rounded rectangle
+        rectangle = Image.new("L", (radius, radius), 255)
         rounded_rectangle = cross.copy()
         for index, angle in enumerate(pos):
             if angle == CROSS:
@@ -223,13 +264,16 @@ def create_rounded_rectangle(size=(600, 400), cache={}, radius=100,
         cache[rounded_rectangle_id] = rounded_rectangle
         return rounded_rectangle
 
+
 def create_corner(radius=100, opacity=255, factor=2):
-    corner = Image.new('L', (factor * radius, factor * radius), 0)
+    corner = Image.new("L", (factor * radius, factor * radius), 0)
     draw = ImageDraw.Draw(corner)
-    draw.pieslice((0, 0, 2 * factor * radius, 2 * factor * radius),
-                  180, 270, fill=opacity)
+    draw.pieslice(
+        (0, 0, 2 * factor * radius, 2 * factor * radius), 180, 270, fill=opacity
+    )
     corner = corner.resize((radius, radius), Image.LANCZOS)
     return corner
+
 
 def get_format(ext):
     """Guess the image format by the file extension.
@@ -247,8 +291,9 @@ def get_format(ext):
     >>> get_format('jpg')
     'JPEG'
     """
-    ext = ext.lstrip('.').upper()
+    ext = ext.lstrip(".").upper()
     return FORMATS_BY_EXT.get(ext, ext)
+
 
 def open_image_data(data):
     """Open image from format data.
@@ -283,6 +328,7 @@ class _ByteCounter:
     >>> bc.bytes
     5
     """
+
     def __init__(self):
         self.bytes = 0
 
@@ -337,7 +383,7 @@ def get_quality(im, size, format, down=0, up=100, delta=1000, options=None):
     """
     if options is None:
         options = {}
-    q = options['quality'] = (down + up) / 2
+    q = options["quality"] = (down + up) / 2
     if q == down or q == up:
         return max(q, 1)
     s = get_size(im, format, **options)
@@ -359,36 +405,44 @@ def fill_background_color(image, color):
     :returns: filled image
     :rtype: pil.Image
     """
-    if image.mode == 'LA':
-        image = image.convert('RGBA')
-    elif image.mode != 'RGBA' and\
-            not (image.mode == 'P' and 'transparency' in image.info):
+    if image.mode == "LA":
+        image = image.convert("RGBA")
+    elif image.mode != "RGBA" and not (
+        image.mode == "P" and "transparency" in image.info
+    ):
         return image
     if len(color) == 4 and color[-1] != 255:
-        mode = 'RGBA'
+        mode = "RGBA"
     else:
-        mode = 'RGB'
+        mode = "RGB"
     back = Image.new(mode, image.size, color)
-    if image.mode == 'P' and mode == 'RGBA':
-        image = image.convert('RGBA')
+    if image.mode == "P" and mode == "RGBA":
+        image = image.convert("RGBA")
     if has_alpha(image):
         paste(back, image, mask=image)
-    elif image.mode == 'P':
+    elif image.mode == "P":
         palette = image.getpalette()
-        index = image.info['transparency']
-        palette[index * 3: index * 3 + 3] = color[:3]
+        index = image.info["transparency"]
+        palette[index * 3 : index * 3 + 3] = color[:3]
         image.putpalette(palette)
-        del image.info['transparency']
+        del image.info["transparency"]
         back = image
     else:
         paste(back, image)
     return back
 
 
-def generate_layer(image_size, mark, method,
-                   horizontal_offset, vertical_offset,
-                   horizontal_justification, vertical_justification,
-                   orientation, opacity):
+def generate_layer(
+    image_size,
+    mark,
+    method,
+    horizontal_offset,
+    vertical_offset,
+    horizontal_justification,
+    vertical_justification,
+    orientation,
+    opacity,
+):
     """Generate new layer for backgrounds or watermarks on which a given
     image ``mark`` can be positioned, scaled or repeated.
 
@@ -418,25 +472,29 @@ def generate_layer(image_size, mark, method,
     mark = convert_safe_mode(open_image(mark))
     opacity /= 100.0
     mark = reduce_opacity(mark, opacity)
-    layer = Image.new('RGBA', image_size, (0, 0, 0, 0))
-    if method == 'Tile':
+    layer = Image.new("RGBA", image_size, (0, 0, 0, 0))
+    if method == "Tile":
         for y in range(0, image_size[1], mark.size[1]):
             for x in range(0, image_size[0], mark.size[0]):
                 paste(layer, mark, (x, y))
-    elif method == 'Scale':
+    elif method == "Scale":
         # scale, but preserve the aspect ratio
-        ratio = min(float(image_size[0]) / mark.size[0],
-                    float(image_size[1]) / mark.size[1])
+        ratio = min(
+            float(image_size[0]) / mark.size[0], float(image_size[1]) / mark.size[1]
+        )
         w = int(mark.size[0] * ratio)
         h = int(mark.size[1] * ratio)
         mark = mark.resize((w, h))
-        paste(layer, mark, ((image_size[0] - w) / 2,
-                            (image_size[1] - h) / 2))
-    elif method == 'By Offset':
+        paste(layer, mark, ((image_size[0] - w) / 2, (image_size[1] - h) / 2))
+    elif method == "By Offset":
         location = calculate_location(
-            horizontal_offset, vertical_offset,
-            horizontal_justification, vertical_justification,
-            image_size, mark.size)
+            horizontal_offset,
+            vertical_offset,
+            horizontal_justification,
+            vertical_justification,
+            image_size,
+            mark.size,
+        )
         if orientation:
             orientation_value = getattr(Image, orientation)
             mark = mark.transpose(orientation_value)
@@ -483,15 +541,14 @@ def blend(im1, im2, amount, color=None):
     else:
         if color is None:
             expanded = Image.new(im2.mode, im2.size)
-        elif im2.mode in ('1', 'L') and type(color) != int:
+        elif im2.mode in ("1", "L") and type(color) != int:
             expanded = Image.new(im2.mode, im2.size, color[0])
         else:
             expanded = Image.new(im2.mode, im2.size, color)
         im1 = im1.convert(expanded.mode)
         we, he = expanded.size
         wi, hi = im1.size
-        paste(expanded, im1, ((we - wi) / 2, (he - hi) / 2),
-              im1.convert('RGBA'))
+        paste(expanded, im1, ((we - wi) / 2, (he - hi) / 2), im1.convert("RGBA"))
         im1 = expanded
     return Image.blend(im1, im2, amount)
 
@@ -520,9 +577,14 @@ def reduce_opacity(im, opacity):
     return im
 
 
-def calculate_location(horizontal_offset, vertical_offset,
-                       horizontal_justification, vertical_justification,
-                       canvas_size, image_size):
+def calculate_location(
+    horizontal_offset,
+    vertical_offset,
+    horizontal_justification,
+    vertical_justification,
+    canvas_size,
+    image_size,
+):
     """Calculate location based on offset and justification. Offsets
     can be positive and negative.
 
@@ -556,22 +618,21 @@ def calculate_location(horizontal_offset, vertical_offset,
         vertical_offset += canvas_height
 
     # check justifications
-    if horizontal_justification == 'Left':
+    if horizontal_justification == "Left":
         horizontal_delta = 0
-    elif horizontal_justification == 'Middle':
+    elif horizontal_justification == "Middle":
         horizontal_delta = -image_width / 2
-    elif horizontal_justification == 'Right':
+    elif horizontal_justification == "Right":
         horizontal_delta = -image_width
 
-    if vertical_justification == 'Top':
+    if vertical_justification == "Top":
         vertical_delta = 0
-    elif vertical_justification == 'Middle':
+    elif vertical_justification == "Middle":
         vertical_delta = -image_height / 2
-    elif vertical_justification == 'Bottom':
+    elif vertical_justification == "Bottom":
         vertical_delta = -image_height
 
-    return horizontal_offset + horizontal_delta, \
-        vertical_offset + vertical_delta
+    return horizontal_offset + horizontal_delta, vertical_offset + vertical_delta
 
 
 ####################################
@@ -603,7 +664,7 @@ def has_alpha(image):
     :returns: True or False
     :rtype: boolean
     """
-    return image.mode.endswith('A')
+    return image.mode.endswith("A")
 
 
 def has_transparency(image):
@@ -615,8 +676,7 @@ def has_transparency(image):
     :returns: True or False
     :rtype: boolean
     """
-    return (image.mode == 'P' and 'transparency' in image.info) or\
-        has_alpha(image)
+    return (image.mode == "P" and "transparency" in image.info) or has_alpha(image)
 
 
 def get_alpha(image):
@@ -630,10 +690,10 @@ def get_alpha(image):
     """
     if has_alpha(image):
         return image.split()[-1]
-    if image.mode == 'P' and 'transparency' in image.info:
-        return image.convert('RGBA').split()[-1]
+    if image.mode == "P" and "transparency" in image.info:
+        return image.convert("RGBA").split()[-1]
     # No alpha layer, create one.
-    return Image.new('L', image.size, 255)
+    return Image.new("L", image.size, 255)
 
 
 def get_format_data(image, format):
@@ -687,8 +747,8 @@ def get_used_palette_colors(image):
     :rtype: sequence of (r, g, b) tuples
     """
     used_indices = get_used_palette_indices(image)
-    if 'transparency' in image.info:
-        used_indices -= set([image.info['transparency']])
+    if "transparency" in image.info:
+        used_indices -= set([image.info["transparency"]])
     n = len(used_indices)
     palette = image.resize((n, 1))
     palette.putdata(used_indices)
@@ -726,13 +786,13 @@ def fit_color_in_palette(image, color):
     if index > -1:
         # Check if it is not the transparent index, as that doesn't qualify.
         try:
-            transparent = index == image.info['transparency']
+            transparent = index == image.info["transparency"]
         except KeyError:
             transparent = False
         # If transparent, look further
         if transparent:
             try:
-                index = palette[index + 1:].index(color) + index + 1
+                index = palette[index + 1 :].index(color) + index + 1
             except ValueError:
                 index = -1
     if index == -1:
@@ -758,8 +818,8 @@ def put_palette(image_to, image_from, palette=None):
     if palette is None:
         palette = get_palette(image_from)
     image_to.putpalette(flatten(palette))
-    if 'transparency' in image_from.info:
-        image_to.info['transparency'] = image_from.info['transparency']
+    if "transparency" in image_from.info:
+        image_to.info["transparency"] = image_from.info["transparency"]
 
 
 def put_alpha(image, alpha):
@@ -770,10 +830,10 @@ def put_alpha(image, alpha):
     :param alpha: the alpha band to copy
     :type alpha: single band image object
     """
-    if image.mode in ['CMYK', 'YCbCr', 'P']:
-        image = image.convert('RGBA')
-    elif image.mode in ['1', 'F']:
-        image = image.convert('RGBA')
+    if image.mode in ["CMYK", "YCbCr", "P"]:
+        image = image.convert("RGBA")
+    elif image.mode in ["1", "F"]:
+        image = image.convert("RGBA")
     image.putalpha(alpha)
 
 
@@ -786,19 +846,19 @@ def remove_alpha(image):
     :returns: the input image after removing the alpha band or transparency
     :rtype: PIL image object
     """
-    if image.mode == 'RGBA':
-        return image.convert('RGB')
-    if image.mode == 'LA':
-        return image.convert('L')
-    if image.mode == 'P' and 'transparency' in image.info:
-        img = image.convert('RGB')
-        del img.info['transparency']
+    if image.mode == "RGBA":
+        return image.convert("RGB")
+    if image.mode == "LA":
+        return image.convert("L")
+    if image.mode == "P" and "transparency" in image.info:
+        img = image.convert("RGB")
+        del img.info["transparency"]
         return img
     return image
 
 
 def paste(destination, source, box=(0, 0), mask=None, force=False):
-    """"Pastes the source image into the destination image while using an
+    """ "Pastes the source image into the destination image while using an
     alpha channel if available.
 
     :param destination: destination image
@@ -837,8 +897,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
     if mask and source == mask:
         if has_alpha(source):
             # invert_alpha = the transparant pixels of the destination
-            if has_alpha(destination) and (destination.size == source.size
-                                           or force):
+            if has_alpha(destination) and (destination.size == source.size or force):
                 invert_alpha = ImageOps.invert(get_alpha(destination))
                 if invert_alpha.size != source.size:
                     # if sizes are not the same be careful!
@@ -902,29 +961,27 @@ def convert(image, mode, *args, **keyw):
     :returns: the converted image
     :rtype: PIL image object
     """
-    if mode == 'P':
-        if image.mode == 'P':
+    if mode == "P":
+        if image.mode == "P":
             return image
-        if image.mode in ['1', 'F']:
-            return image.convert('L').convert(mode, *args, **keyw)
-        if image.mode in ['RGBA', 'LA']:
+        if image.mode in ["1", "F"]:
+            return image.convert("L").convert(mode, *args, **keyw)
+        if image.mode in ["RGBA", "LA"]:
             alpha = get_alpha(image)
-            output = image.convert('RGB').convert(
-                mode, colors=255, *args, **keyw)
-            paste(output,
-                  255, alpha.point(COLOR_MAP))
-            output.info['transparency'] = 255
+            output = image.convert("RGB").convert(mode, colors=255, *args, **keyw)
+            paste(output, 255, alpha.point(COLOR_MAP))
+            output.info["transparency"] = 255
             return output
-        return image.convert('RGB').convert(mode, *args, **keyw)
-    if image.mode == 'P' and mode == 'LA':
+        return image.convert("RGB").convert(mode, *args, **keyw)
+    if image.mode == "P" and mode == "LA":
         # A workaround for a PIL bug.
         # Converting from P to LA directly doesn't work.
-        return image.convert('RGBA').convert('LA', *args, **keyw)
-    if has_transparency(image) and (mode not in ['RGBA', 'LA']):
-        if image.mode == 'P':
-            image = image.convert('RGBA')
-            del image.info['transparency']
-        #image = fill_background_color(image, (255, 255, 255, 255))
+        return image.convert("RGBA").convert("LA", *args, **keyw)
+    if has_transparency(image) and (mode not in ["RGBA", "LA"]):
+        if image.mode == "P":
+            image = image.convert("RGBA")
+            del image.info["transparency"]
+        # image = fill_background_color(image, (255, 255, 255, 255))
         image = image.convert(mode, *args, **keyw)
         return image
     return image.convert(mode, *args, **keyw)
@@ -938,14 +995,14 @@ def convert_safe_mode(image):
     :returns: the converted image
     :rtype: PIL image object
     """
-    if image.mode in ['1', 'F']:
-        return image.convert('L')
-    if image.mode == 'P' and 'transparency' in image.info:
-        img = image.convert('RGBA')
-        del img.info['transparency']
+    if image.mode in ["1", "F"]:
+        return image.convert("L")
+    if image.mode == "P" and "transparency" in image.info:
+        img = image.convert("RGBA")
+        del img.info["transparency"]
         return img
-    if image.mode in ['P', 'YCbCr', 'CMYK', 'RGBX']:
-        return image.convert('RGB')
+    if image.mode in ["P", "YCbCr", "CMYK", "RGBX"]:
+        return image.convert("RGB")
     return image
 
 
@@ -959,83 +1016,83 @@ def convert_save_mode_by_format(image, format):
     :returns: the converted image
     :rtype: PIL image object
     """
-    #TODO: Extend this helper function to support other formats as well
-    if image.mode == 'P':
+    # TODO: Extend this helper function to support other formats as well
+    if image.mode == "P":
         # Make sure P is handled correctly
-        if format not in ['GIF', 'PNG', 'TIFF', 'IM', 'PCX']:
+        if format not in ["GIF", "PNG", "TIFF", "IM", "PCX"]:
             image = remove_alpha(image)
-    if format == 'JPEG':
-        if image.mode in ['RGBA', 'P']:
-            return image.convert('RGB')
-        if image.mode in ['LA']:
-            return image.convert('L')
-    elif format == 'BMP':
-        if image.mode in ['LA']:
-            return image.convert('L')
-        if image.mode in ['P', 'RGBA', 'YCbCr', 'CMYK']:
-            return image.convert('RGB')
-    elif format == 'DIB':
-        if image.mode in ['YCbCr', 'CMYK']:
-            return image.convert('RGB')
-    elif format == 'EPS':
-        if image.mode in ['1', 'LA']:
-            return image.convert('L')
-        if image.mode in ['P', 'RGBA', 'YCbCr']:
-            return image.convert('RGB')
-    elif format == 'GIF':
-        return convert(image, 'P', palette=Image.ADAPTIVE)
-    elif format == 'PBM':
-        if image.mode != '1':
-            return image.convert('1')
-    elif format == 'PCX':
-        if image.mode in ['RGBA', 'CMYK', 'YCbCr']:
-            return image.convert('RGB')
-        if image.mode in ['LA', '1']:
-            return image.convert('L')
-    elif format == 'PDF':
-        if image.mode in ['LA']:
-            return image.convert('L')
-        if image.mode in ['RGBA', 'YCbCr']:
-            return image.convert('RGB')
-    elif format == 'PGM':
-        if image.mode != 'L':
-            return image.convert('L')
-    elif format == 'PPM':
-        if image.mode in ['P', 'CMYK', 'YCbCr']:
-            return image.convert('RGB')
-        if image.mode in ['LA']:
-            return image.convert('L')
-    elif format == 'PS':
-        if image.mode in ['1', 'LA']:
-            return image.convert('L')
-        if image.mode in ['P', 'RGBA', 'YCbCr']:
-            return image.convert('RGB')
-    elif format == 'XBM':
-        if image.mode not in ['1']:
-            return image.convert('1')
-    elif format == 'TIFF':
-        if image.mode in ['YCbCr']:
-            return image.convert('RGB')
-    elif format == 'PNG':
-        if image.mode in ['CMYK', 'YCbCr']:
-            return image.convert('RGB')
-    #for consistency return a copy! (thumbnail.py depends on it)
+    if format == "JPEG":
+        if image.mode in ["RGBA", "P"]:
+            return image.convert("RGB")
+        if image.mode in ["LA"]:
+            return image.convert("L")
+    elif format == "BMP":
+        if image.mode in ["LA"]:
+            return image.convert("L")
+        if image.mode in ["P", "RGBA", "YCbCr", "CMYK"]:
+            return image.convert("RGB")
+    elif format == "DIB":
+        if image.mode in ["YCbCr", "CMYK"]:
+            return image.convert("RGB")
+    elif format == "EPS":
+        if image.mode in ["1", "LA"]:
+            return image.convert("L")
+        if image.mode in ["P", "RGBA", "YCbCr"]:
+            return image.convert("RGB")
+    elif format == "GIF":
+        return convert(image, "P", palette=Image.ADAPTIVE)
+    elif format == "PBM":
+        if image.mode != "1":
+            return image.convert("1")
+    elif format == "PCX":
+        if image.mode in ["RGBA", "CMYK", "YCbCr"]:
+            return image.convert("RGB")
+        if image.mode in ["LA", "1"]:
+            return image.convert("L")
+    elif format == "PDF":
+        if image.mode in ["LA"]:
+            return image.convert("L")
+        if image.mode in ["RGBA", "YCbCr"]:
+            return image.convert("RGB")
+    elif format == "PGM":
+        if image.mode != "L":
+            return image.convert("L")
+    elif format == "PPM":
+        if image.mode in ["P", "CMYK", "YCbCr"]:
+            return image.convert("RGB")
+        if image.mode in ["LA"]:
+            return image.convert("L")
+    elif format == "PS":
+        if image.mode in ["1", "LA"]:
+            return image.convert("L")
+        if image.mode in ["P", "RGBA", "YCbCr"]:
+            return image.convert("RGB")
+    elif format == "XBM":
+        if image.mode not in ["1"]:
+            return image.convert("1")
+    elif format == "TIFF":
+        if image.mode in ["YCbCr"]:
+            return image.convert("RGB")
+    elif format == "PNG":
+        if image.mode in ["CMYK", "YCbCr"]:
+            return image.convert("RGB")
+    # for consistency return a copy! (thumbnail.py depends on it)
     return image.copy()
 
 
 def save_check_mode(image, filename, **options):
-    #save image with pil
+    # save image with pil
     save(image, filename, **options)
-    #verify saved file
+    # verify saved file
     try:
         image_file = Image.open(filename)
         image_file.verify()
     except IOError:
         # We can't verify the image mode with PIL, so issue no warnings.
-        return ''
+        return ""
     if image.mode != image_file.mode:
         return image_file.mode
-    return ''
+    return ""
 
 
 def save_safely(image, filename):
@@ -1076,34 +1133,30 @@ def get_exif_transposition(orientation):
     :returns: (transposition methods, reverse transpostion methods)
     :rtype: tuple
     """
-    #see EXIF.py
+    # see EXIF.py
     if orientation == 1:
         transposition = transposition_reverse = ()
     elif orientation == 2:
-        transposition = Image.FLIP_LEFT_RIGHT,
-        transposition_reverse = Image.FLIP_LEFT_RIGHT,
+        transposition = (Image.FLIP_LEFT_RIGHT,)
+        transposition_reverse = (Image.FLIP_LEFT_RIGHT,)
     elif orientation == 3:
-        transposition = Image.ROTATE_180,
-        transposition_reverse = Image.ROTATE_180,
+        transposition = (Image.ROTATE_180,)
+        transposition_reverse = (Image.ROTATE_180,)
     elif orientation == 4:
-        transposition = Image.FLIP_TOP_BOTTOM,
-        transposition_reverse = Image.FLIP_TOP_BOTTOM,
+        transposition = (Image.FLIP_TOP_BOTTOM,)
+        transposition_reverse = (Image.FLIP_TOP_BOTTOM,)
     elif orientation == 5:
-        transposition = Image.FLIP_LEFT_RIGHT, \
-            Image.ROTATE_90
-        transposition_reverse = Image.ROTATE_270, \
-            Image.FLIP_LEFT_RIGHT
+        transposition = Image.FLIP_LEFT_RIGHT, Image.ROTATE_90
+        transposition_reverse = Image.ROTATE_270, Image.FLIP_LEFT_RIGHT
     elif orientation == 6:
-        transposition = Image.ROTATE_270,
-        transposition_reverse = Image.ROTATE_90,
+        transposition = (Image.ROTATE_270,)
+        transposition_reverse = (Image.ROTATE_90,)
     elif orientation == 7:
-        transposition = Image.FLIP_LEFT_RIGHT, \
-            Image.ROTATE_270
-        transposition_reverse = Image.ROTATE_90, \
-            Image.FLIP_LEFT_RIGHT
+        transposition = Image.FLIP_LEFT_RIGHT, Image.ROTATE_270
+        transposition_reverse = Image.ROTATE_90, Image.FLIP_LEFT_RIGHT
     elif orientation == 8:
-        transposition = Image.ROTATE_90,
-        transposition_reverse = Image.ROTATE_270,
+        transposition = (Image.ROTATE_90,)
+        transposition_reverse = (Image.ROTATE_270,)
     else:
         transposition = transposition_reverse = ()
     return transposition, transposition_reverse
@@ -1117,7 +1170,7 @@ def get_exif_orientation(image):
     :returns: orientation
     :rtype: int
     """
-    if not hasattr(image, '_getexif'):
+    if not hasattr(image, "_getexif"):
         return 1
     try:
         _exif = image._getexif()
@@ -1189,9 +1242,11 @@ def checkboard(size, delta=8, fg=(128, 128, 128), bg=(204, 204, 204)):
 
         image = Image.new("RGB", size, bg)
         draw_square = ImageDraw.Draw(image).rectangle
-        squares = (square(i, j)
-                   for i_start, j in zip(cycle((0, 1)), range(n))
-                   for i in range(i_start, n, 2))
+        squares = (
+            square(i, j)
+            for i_start, j in zip(cycle((0, 1)), range(n))
+            for i in range(i_start, n, 2)
+        )
         for sq in squares:
             draw_square(sq, fill=fg)
         CHECKBOARD[size] = image
@@ -1199,7 +1254,7 @@ def checkboard(size, delta=8, fg=(128, 128, 128), bg=(204, 204, 204)):
 
 
 def add_checkboard(image):
-    """"If the image has a transparent mask, a RGB checkerboard will be
+    """ "If the image has a transparent mask, a RGB checkerboard will be
     drawn in the background.
 
     .. note::
@@ -1213,10 +1268,9 @@ def add_checkboard(image):
     :returns: image, with checkboard if transparent
     :rtype: pil.Image
     """
-    if (image.mode == 'P' and 'transparency' in image.info) or\
-            image.mode.endswith('A'):
-        #transparent image
-        image = image.convert('RGBA')
+    if (image.mode == "P" and "transparency" in image.info) or image.mode.endswith("A"):
+        # transparent image
+        image = image.convert("RGBA")
         image_bg = checkboard(image.size)
         paste(image_bg, image, (0, 0), image)
         return image_bg

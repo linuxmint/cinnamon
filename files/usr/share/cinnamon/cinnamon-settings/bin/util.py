@@ -3,8 +3,10 @@
 import os
 
 import gi
-gi.require_version('GSound', '1.0')
+
+gi.require_version("GSound", "1.0")
 from gi.repository import GSound
+
 
 def strip_syspath_locals():
     import sys
@@ -21,6 +23,7 @@ def strip_syspath_locals():
 
 gsound_context = None
 
+
 def _get_gsound_context() -> GSound.Context:
     global gsound_context
     if gsound_context is None:
@@ -28,17 +31,20 @@ def _get_gsound_context() -> GSound.Context:
         gsound_context.init()
     return gsound_context
 
-def play_sound_name(name, channel = None) -> None:
+
+def play_sound_name(name, channel=None) -> None:
     params = {GSound.ATTR_EVENT_ID: name, GSound.ATTR_MEDIA_ROLE: "test"}
     if channel is not None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)
 
-def play_sound_file(path, channel = None) -> None:
+
+def play_sound_file(path, channel=None) -> None:
     params = {GSound.ATTR_MEDIA_FILENAME: path, GSound.ATTR_MEDIA_ROLE: "test"}
     if channel is not None:
         params[GSound.ATTR_CANBERRA_FORCE_CHANNEL] = channel
     _get_gsound_context().play_simple(params)
+
 
 def get_session_type():
     try:

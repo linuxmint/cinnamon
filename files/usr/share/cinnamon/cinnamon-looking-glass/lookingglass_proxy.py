@@ -5,21 +5,28 @@ from gi.repository import Gio, GObject
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
 LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
 
+
 class LookingGlassProxy(GObject.Object):
     __gsignals__ = {
-        'status-changed': (GObject.SignalFlags.RUN_LAST, None, (bool, )),
-        "signal": (GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.DETAILED, None, ())
+        "status-changed": (GObject.SignalFlags.RUN_LAST, None, (bool,)),
+        "signal": (
+            GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.DETAILED,
+            None,
+            (),
+        ),
     }
 
     def __init__(self):
         GObject.Object.__init__(self)
         self._proxy = None
         self.state = False
-        Gio.bus_watch_name(Gio.BusType.SESSION,
-                           LG_DBUS_NAME,
-                           Gio.BusNameWatcherFlags.NONE,
-                           self.on_bus_connect,
-                           self.on_bus_disconnect)
+        Gio.bus_watch_name(
+            Gio.BusType.SESSION,
+            LG_DBUS_NAME,
+            Gio.BusNameWatcherFlags.NONE,
+            self.on_bus_connect,
+            self.on_bus_disconnect,
+        )
 
     def refresh_status(self):
         self.set_status(self.get_is_ready())
@@ -55,17 +62,22 @@ class LookingGlassProxy(GObject.Object):
 
     def init_proxy(self):
         try:
-            self._proxy = Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION,
-                                                    Gio.DBusProxyFlags.NONE,
-                                                    None,
-                                                    LG_DBUS_NAME,
-                                                    LG_DBUS_PATH,
-                                                    LG_DBUS_NAME,
-                                                    None,
-                                                    self.on_proxy_ready,
-                                                    None)
+            self._proxy = Gio.DBusProxy.new_for_bus(
+                Gio.BusType.SESSION,
+                Gio.DBusProxyFlags.NONE,
+                None,
+                LG_DBUS_NAME,
+                LG_DBUS_PATH,
+                LG_DBUS_NAME,
+                None,
+                self.on_proxy_ready,
+                None,
+            )
         except GLib.Error as e:
-            print("Could not establish proxy with Cinnamon looking-glass interface: %s" % e.message)
+            print(
+                "Could not establish proxy with Cinnamon looking-glass interface: %s"
+                % e.message
+            )
             self._proxy = None
 
     def on_proxy_ready(self, obj, result, data=None):
@@ -73,18 +85,18 @@ class LookingGlassProxy(GObject.Object):
         self._proxy.connect("g-signal", self.on_signal)
         self.refresh_status()
 
-# Proxy Methods:
+    # Proxy Methods:
     def Eval(self, code):
         if self._proxy:
             try:
-                self._proxy.Eval('(s)', code)
+                self._proxy.Eval("(s)", code)
             except Exception:
                 pass
 
     def GetResults(self):
         if self._proxy:
             try:
-                return self._proxy.GetResults('()')
+                return self._proxy.GetResults("()")
             except Exception:
                 pass
         return False, ""
@@ -92,14 +104,18 @@ class LookingGlassProxy(GObject.Object):
     def AddResult(self, code):
         if self._proxy:
             try:
-                self._proxy.AddResult('(s)', code)
+                self._proxy.AddResult("(s)", code)
             except Exception:
                 pass
 
     def GetErrorStack(self, result_cb):
         if self._proxy:
             try:
-                self._proxy.GetErrorStack('()', result_handler=result_cb, error_handler=self._get_error_stack_error_cb)
+                self._proxy.GetErrorStack(
+                    "()",
+                    result_handler=result_cb,
+                    error_handler=self._get_error_stack_error_cb,
+                )
             except Exception:
                 pass
 
@@ -109,7 +125,7 @@ class LookingGlassProxy(GObject.Object):
     def GetMemoryInfo(self):
         if self._proxy:
             try:
-                return self._proxy.GetMemoryInfo('()')
+                return self._proxy.GetMemoryInfo("()")
             except Exception:
                 pass
         return False, 0, {}
@@ -117,14 +133,20 @@ class LookingGlassProxy(GObject.Object):
     def FullGc(self):
         if self._proxy:
             try:
-                self._proxy.FullGc('()')
+                self._proxy.FullGc("()")
             except Exception:
                 pass
 
     def Inspect(self, code, result_cb, user_data=None):
         if self._proxy:
             try:
-                self._proxy.Inspect('(s)', code, result_handler=result_cb, error_handler=self._inspect_error_cb, user_data=user_data)
+                self._proxy.Inspect(
+                    "(s)",
+                    code,
+                    result_handler=result_cb,
+                    error_handler=self._inspect_error_cb,
+                    user_data=user_data,
+                )
             except Exception as e:
                 print(e)
 
@@ -134,7 +156,7 @@ class LookingGlassProxy(GObject.Object):
     def GetLatestWindowList(self):
         if self._proxy:
             try:
-                return self._proxy.GetLatestWindowList('()')
+                return self._proxy.GetLatestWindowList("()")
             except Exception:
                 pass
         return False, ""
@@ -142,14 +164,14 @@ class LookingGlassProxy(GObject.Object):
     def StartInspector(self):
         if self._proxy:
             try:
-                self._proxy.StartInspector('()')
+                self._proxy.StartInspector("()")
             except Exception:
                 pass
 
     def GetExtensionList(self):
         if self._proxy:
             try:
-                return self._proxy.GetExtensionList('()')
+                return self._proxy.GetExtensionList("()")
             except Exception:
                 pass
         return False, ""
@@ -157,7 +179,7 @@ class LookingGlassProxy(GObject.Object):
     def ReloadExtension(self, uuid, xlet_type):
         if self._proxy:
             try:
-                return self._proxy.ReloadExtension('(ss)', uuid, xlet_type)
+                return self._proxy.ReloadExtension("(ss)", uuid, xlet_type)
             except Exception:
                 pass
         return False, ""

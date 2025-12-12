@@ -1,22 +1,17 @@
 #!/usr/bin/python3
-import os
 import sys
 import setproctitle
-import locale
-import gettext
-import functools
-import logging
-import time
 from setproctitle import setproctitle
 import signal
 
 import gi
-gi.require_version('EDataServer', '1.2')
-gi.require_version('ECal', '2.0')
-gi.require_version('ICal', '3.0')
-gi.require_version('Cinnamon', '0.1')
+
+gi.require_version("EDataServer", "1.2")
+gi.require_version("ECal", "2.0")
+gi.require_version("ICal", "3.0")
+gi.require_version("Cinnamon", "0.1")
 from gi.repository import GLib, Gio, GObject
-from gi.repository import EDataServer, ECal, ICal, ICalGLib
+from gi.repository import EDataServer, ECal, ICalGLib
 from gi.repository import Cinnamon
 
 BUS_NAME = "org.cinnamon.CalendarServer"
@@ -26,10 +21,12 @@ STATUS_UNKNOWN = 0
 STATUS_NO_CALENDARS = 1
 STATUS_HAS_CALENDARS = 2
 
+
 class CalendarInfo(GObject.Object):
     __gsignals__ = {
         "color-changed": (GObject.SignalFlags.RUN_LAST, None, ()),
     }
+
     def __init__(self, source, client):
         super(CalendarInfo, self).__init__()
         # print(source, client)
@@ -40,12 +37,16 @@ class CalendarInfo(GObject.Object):
 
         self.extension = source.get_extension(EDataServer.SOURCE_EXTENSION_CALENDAR)
         self.color = self.extension.get_color()
-        self.color_prop_listener_id = self.extension.connect("notify::color", self.ext_color_prop_changed)
+        self.color_prop_listener_id = self.extension.connect(
+            "notify::color", self.ext_color_prop_changed
+        )
 
         # This process generally won't stay running for more than 30 seconds or so,
         # but enabling refresh lets us force a timeout and re-poll.
         if self.client.check_capability(ECal.STATIC_CAPABILITY_REFRESH_SUPPORTED):
-            self.refresh = self.source.get_extension(EDataServer.SOURCE_EXTENSION_REFRESH)
+            self.refresh = self.source.get_extension(
+                EDataServer.SOURCE_EXTENSION_REFRESH
+            )
             self.refresh.set_enabled(True)
             self.refresh.set_interval_minutes(1)
             self.source.refresh_add_timeout(None, self.on_refresh_timeout)
@@ -71,7 +72,10 @@ class CalendarInfo(GObject.Object):
         try:
             self.client.refresh_finish(result)
         except GLib.Error as e:
-            print(f"Error refreshing calendar '{self.source.get_display_name()}':", e.message)
+            print(
+                f"Error refreshing calendar '{self.source.get_display_name()}':",
+                e.message,
+            )
 
         self.syncing = False
 
@@ -92,18 +96,22 @@ class CalendarInfo(GObject.Object):
         self.color = self.extension.get_color()
         self.emit("color-changed")
 
+
 class Event:
     def __init__(self, uid, color, summary, all_day, start_timet, end_timet, mod_timet):
         self.__dict__.update(locals())
 
+
 class CalendarServer(Gio.Application):
     def __init__(self, hold=False):
-        Gio.Application.__init__(self,
-                                 application_id=BUS_NAME,
-                                 inactivity_timeout=20000,
-                                 flags=Gio.ApplicationFlags.REPLACE |
-                                       Gio.ApplicationFlags.ALLOW_REPLACEMENT |
-                                       Gio.ApplicationFlags.IS_SERVICE)
+        Gio.Application.__init__(
+            self,
+            application_id=BUS_NAME,
+            inactivity_timeout=20000,
+            flags=Gio.ApplicationFlags.REPLACE
+            | Gio.ApplicationFlags.ALLOW_REPLACEMENT
+            | Gio.ApplicationFlags.IS_SERVICE,
+        )
         self._hold = hold
         self.bus_connection = None
         self.interface = None
@@ -164,10 +172,16 @@ class CalendarServer(Gio.Application):
 
         self.update_status()
 
-        self.registry_watcher = EDataServer.SourceRegistryWatcher.new(self.registry, None)
+        self.registry_watcher = EDataServer.SourceRegistryWatcher.new(
+            self.registry, None
+        )
 
-        self.client_appeared_id = self.registry_watcher.connect("appeared", self.source_appeared)
-        self.client_disappeared_id = self.registry_watcher.connect("disappeared", self.source_disappeared)
+        self.client_appeared_id = self.registry_watcher.connect(
+            "appeared", self.source_appeared
+        )
+        self.client_disappeared_id = self.registry_watcher.connect(
+            "disappeared", self.source_disappeared
+        )
         self.registry_watcher.connect("filter", self.is_relevant_source)
 
         # This forces the watcher to notify about all pre-existing sources (so
@@ -181,9 +195,17 @@ class CalendarServer(Gio.Application):
         print("Discovered calendar: ", source.get_display_name())
 
         self.hold()
-        ECal.Client.connect(source, ECal.ClientSourceType.EVENTS, 10, None, self.ecal_client_connected, source)
+        ECal.Client.connect(
+            source,
+            ECal.ClientSourceType.EVENTS,
+            10,
+            None,
+            self.ecal_client_connected,
+            source,
+        )
 
         # ??? should be (self, source, res) but we get the client instead
+
     def ecal_client_connected(self, c, res, source):
         self.release()
 
@@ -192,7 +214,9 @@ class CalendarServer(Gio.Application):
             client.set_default_timezone(self.zone)
 
             calendar = CalendarInfo(source, client)
-            calendar.owner_color_signal_id = calendar.connect("color-changed", self.source_color_changed)
+            calendar.owner_color_signal_id = calendar.connect(
+                "color-changed", self.source_color_changed
+            )
             self.calendars[source.get_uid()] = calendar
 
             self.update_status()
@@ -224,7 +248,9 @@ class CalendarServer(Gio.Application):
     def update_status(self):
         status = STATUS_NO_CALENDARS
 
-        enabled_sources = self.registry.list_enabled(EDataServer.SOURCE_EXTENSION_CALENDAR)
+        enabled_sources = self.registry.list_enabled(
+            EDataServer.SOURCE_EXTENSION_CALENDAR
+        )
         for source in enabled_sources:
             if self.is_relevant_source(None, source):
                 status = STATUS_HAS_CALENDARS
@@ -235,18 +261,30 @@ class CalendarServer(Gio.Application):
             self.exit()
 
     def is_relevant_source(self, watcher, source):
-        relevant = source.has_extension(EDataServer.SOURCE_EXTENSION_CALENDAR) and \
-                   source.get_extension(EDataServer.SOURCE_EXTENSION_CALENDAR).get_selected()
+        relevant = (
+            source.has_extension(EDataServer.SOURCE_EXTENSION_CALENDAR)
+            and source.get_extension(
+                EDataServer.SOURCE_EXTENSION_CALENDAR
+            ).get_selected()
+        )
         return relevant
 
     def handle_set_time_range(self, iface, inv, time_since, time_until, force_reload):
-        print("SET TIME: from %s to %s" % (GLib.DateTime.new_from_unix_local(time_since).format_iso8601(),
-                            GLib.DateTime.new_from_unix_local(time_until).format_iso8601()))
+        print(
+            "SET TIME: from %s to %s"
+            % (
+                GLib.DateTime.new_from_unix_local(time_since).format_iso8601(),
+                GLib.DateTime.new_from_unix_local(time_until).format_iso8601(),
+            )
+        )
 
         self.hold()
         self.release()
 
-        if time_since == self.current_month_start and time_until == self.current_month_end:
+        if (
+            time_since == self.current_month_start
+            and time_until == self.current_month_end
+        ):
             if not force_reload:
                 self.interface.complete_set_time_range(inv)
                 return True
@@ -288,10 +326,15 @@ class CalendarServer(Gio.Application):
         calendar.start = self.current_month_start
         calendar.end = self.current_month_end
 
-        query = "occur-in-time-range? (make-time \"%s\") (make-time \"%s\") \"%s\"" %\
-                 (from_iso, to_iso, self.zone.get_location())
+        query = 'occur-in-time-range? (make-time "%s") (make-time "%s") "%s"' % (
+            from_iso,
+            to_iso,
+            self.zone.get_location(),
+        )
 
-        calendar.client.get_view(query, calendar.view_cancellable, self.got_calendar_view, calendar)
+        calendar.client.get_view(
+            query, calendar.view_cancellable, self.got_calendar_view, calendar
+        )
 
     def got_calendar_view(self, client, res, calendar):
         self.release()
@@ -332,19 +375,19 @@ class CalendarServer(Gio.Application):
         events = []
 
         for ical_comp in objects:
-
             if ical_comp.get_uid() is None:
                 continue
 
-            if (not ECal.util_component_is_instance (ical_comp)) and \
-              ECal.util_component_has_recurrences(ical_comp):
+            if (
+                not ECal.util_component_is_instance(ical_comp)
+            ) and ECal.util_component_has_recurrences(ical_comp):
                 calendar.client.generate_instances_for_object(
                     ical_comp,
                     calendar.start,
                     calendar.end,
                     calendar.view_cancellable,
                     self.recurrence_generated,
-                    calendar
+                    calendar,
                 )
             else:
                 comp = ECal.Component.new_from_icalcomponent(ical_comp)
@@ -354,18 +397,28 @@ class CalendarServer(Gio.Application):
                 else:
                     summary = ""
 
-                dts_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.DTSTART_PROPERTY)
+                dts_prop = ical_comp.get_first_property(
+                    ICalGLib.PropertyKind.DTSTART_PROPERTY
+                )
                 ical_time_start = dts_prop.get_dtstart()
-                start_timet = self.ical_time_get_timet(calendar.client, ical_time_start, dts_prop)
+                start_timet = self.ical_time_get_timet(
+                    calendar.client, ical_time_start, dts_prop
+                )
                 all_day = ical_time_start.is_date()
 
-                dte_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.DTEND_PROPERTY)
+                dte_prop = ical_comp.get_first_property(
+                    ICalGLib.PropertyKind.DTEND_PROPERTY
+                )
 
                 if dte_prop is not None:
                     ical_time_end = dte_prop.get_dtend()
-                    end_timet = self.ical_time_get_timet(calendar.client, ical_time_end, dte_prop)
+                    end_timet = self.ical_time_get_timet(
+                        calendar.client, ical_time_end, dte_prop
+                    )
                 else:
-                    end_timet = start_timet + (60 * 30) # Default to 30m if the end time is bad.
+                    end_timet = start_timet + (
+                        60 * 30
+                    )  # Default to 30m if the end time is bad.
 
                 mod_timet = self.get_mod_timet(ical_comp)
 
@@ -376,7 +429,7 @@ class CalendarServer(Gio.Application):
                     all_day,
                     start_timet,
                     end_timet,
-                    mod_timet
+                    mod_timet,
                 )
 
                 events.append(event)
@@ -385,7 +438,9 @@ class CalendarServer(Gio.Application):
 
         self.release()
 
-    def recurrence_generated(self, ical_comp, instance_start, instance_end, calendar, cancellable):
+    def recurrence_generated(
+        self, ical_comp, instance_start, instance_end, calendar, cancellable
+    ):
         if calendar.view_cancellable.is_cancelled():
             return False
 
@@ -420,7 +475,7 @@ class CalendarServer(Gio.Application):
             all_day,
             start_timet,
             end_timet,
-            mod_timet
+            mod_timet,
         )
 
         self.emit_events_added_or_updated(calendar, [event])
@@ -432,7 +487,10 @@ class CalendarServer(Gio.Application):
         all_events = GLib.VariantBuilder(GLib.VariantType.new("a(sssbxxx)"))
 
         for event in events:
-            if event.end_timet <= (calendar.start - 1) and event.start_timet >= calendar.end:
+            if (
+                event.end_timet <= (calendar.start - 1)
+                and event.start_timet >= calendar.end
+            ):
                 continue
 
             event_var = GLib.Variant(
@@ -444,8 +502,8 @@ class CalendarServer(Gio.Application):
                     event.all_day,
                     event.start_timet,
                     event.end_timet,
-                    event.mod_timet
-                ]
+                    event.mod_timet,
+                ],
             )
 
             all_events.add_value(event_var)
@@ -459,12 +517,16 @@ class CalendarServer(Gio.Application):
         # in the applet.
         mod_timet = 0
 
-        mod_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY)
+        mod_prop = ical_comp.get_first_property(
+            ICalGLib.PropertyKind.LASTMODIFIED_PROPERTY
+        )
         if mod_prop is not None:
             ical_time_modified = mod_prop.get_lastmodified()
             mod_timet = ical_time_modified.as_timet()
         else:
-            created_prop = ical_comp.get_first_property(ICalGLib.PropertyKind.CREATED_PROPERTY)
+            created_prop = ical_comp.get_first_property(
+                ICalGLib.PropertyKind.CREATED_PROPERTY
+            )
             if created_prop is not None:
                 ical_time_created = created_prop.get_created()
                 mod_timet = ical_time_created.as_timet()
@@ -472,7 +534,7 @@ class CalendarServer(Gio.Application):
         return mod_timet
 
     def ical_time_get_timet(self, client, ical_time, prop):
-        tzid  = prop.get_first_parameter(ICalGLib.ParameterKind.TZID_PARAMETER)
+        tzid = prop.get_first_parameter(ICalGLib.ParameterKind.TZID_PARAMETER)
         if tzid:
             timezone = ECal.TimezoneCache.get_timezone(client, tzid.get_tzid())
         elif ical_time.is_utc():
@@ -522,6 +584,7 @@ class CalendarServer(Gio.Application):
 
         GLib.idle_add(self.quit)
 
+
 def main():
     setproctitle("cinnamon-calendar-server")
 
@@ -539,6 +602,7 @@ def main():
     # complain the IS_SERVICE flag doesn't support arguments.
     server.run([sys.argv[0]])
     return 0
+
 
 if __name__ == "__main__":
     main()

@@ -4,7 +4,8 @@ import os
 import subprocess
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, GObject, GLib
 
 from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
@@ -19,10 +20,12 @@ settings_objects = {}
 
 CAN_BACKEND = ["SoundFileChooser", "DateChooser", "TimeChooser", "Keybinding"]
 
+
 class BinFileMonitor(GObject.GObject):
     __gsignals__ = {
-        'changed': (GObject.SignalFlags.RUN_LAST, None, ()),
+        "changed": (GObject.SignalFlags.RUN_LAST, None, ()),
     }
+
     def __init__(self):
         super(BinFileMonitor, self).__init__()
 
@@ -55,7 +58,9 @@ class BinFileMonitor(GObject.GObject):
 
         self.changed_id = GLib.idle_add(self._emit_changed)
 
+
 file_monitor = None
+
 
 def get_file_monitor():
     global file_monitor
@@ -65,9 +70,19 @@ def get_file_monitor():
 
     return file_monitor
 
+
 class DependencyCheckInstallButton(Gtk.Box):
-    def __init__(self, checking_text, install_button_text, binfiles, final_widget=None, satisfied_cb=None):
-        super(DependencyCheckInstallButton, self).__init__(orientation=Gtk.Orientation.HORIZONTAL)
+    def __init__(
+        self,
+        checking_text,
+        install_button_text,
+        binfiles,
+        final_widget=None,
+        satisfied_cb=None,
+    ):
+        super(DependencyCheckInstallButton, self).__init__(
+            orientation=Gtk.Orientation.HORIZONTAL
+        )
 
         self.binfiles = binfiles
         self.satisfied_cb = satisfied_cb
@@ -100,7 +115,9 @@ class DependencyCheckInstallButton(Gtk.Box):
         self.progress_source_id = 0
 
         self.file_listener = get_file_monitor()
-        self.file_listener_id = self.file_listener.connect("changed", self.on_file_listener_ping)
+        self.file_listener_id = self.file_listener.connect(
+            "changed", self.on_file_listener_ping
+        )
 
         self.connect("destroy", self.on_destroy)
 
@@ -151,8 +168,11 @@ class DependencyCheckInstallButton(Gtk.Box):
         self.file_listener.disconnect(self.file_listener_id)
         self.file_listener_id = 0
 
+
 class GSettingsDependencySwitch(SettingsWidget):
-    def __init__(self, label, schema=None, key=None, dep_key=None, binfiles=None, packages=None):
+    def __init__(
+        self, label, schema=None, key=None, dep_key=None, binfiles=None, packages=None
+    ):
         super(GSettingsDependencySwitch, self).__init__(dep_key=dep_key)
 
         self.binfiles = binfiles
@@ -173,18 +193,34 @@ class GSettingsDependencySwitch(SettingsWidget):
                 pkg_string += ", "
             pkg_string += pkg
 
-        self.dep_button = DependencyCheckInstallButton(_("Checking dependencies"),
-                                                       _("Please install: %s") % pkg_string,
-                                                       binfiles,
-                                                       self.switch)
+        self.dep_button = DependencyCheckInstallButton(
+            _("Checking dependencies"),
+            _("Please install: %s") % pkg_string,
+            binfiles,
+            self.switch,
+        )
         self.content_widget.add(self.dep_button)
 
         if schema:
             self.settings = self.get_settings(schema)
-            self.settings.bind(key, self.switch, "active", Gio.SettingsBindFlags.DEFAULT)
+            self.settings.bind(
+                key, self.switch, "active", Gio.SettingsBindFlags.DEFAULT
+            )
+
 
 class SidePage(object):
-    def __init__(self, name, icon, keywords, content_box = None, size = None, is_c_mod = False, is_standalone = False, exec_name = None, module=None):
+    def __init__(
+        self,
+        name,
+        icon,
+        keywords,
+        content_box=None,
+        size=None,
+        is_c_mod=False,
+        is_standalone=False,
+        exec_name=None,
+        module=None,
+    ):
         self.name = name
         self.icon = icon
         self.content_box = content_box
@@ -192,7 +228,7 @@ class SidePage(object):
         self.is_c_mod = is_c_mod
         self.is_standalone = is_standalone
         self.exec_name = exec_name
-        self.module = module # Optionally set by the module so we can call on_module_selected() on it when we show it.
+        self.module = module  # Optionally set by the module so we can call on_module_selected() on it when we show it.
         self.keywords = keywords
         self.size = size
         self.topWindow = None
@@ -220,7 +256,7 @@ class SidePage(object):
 
         # Add our own widgets
         for widget in self.widgets:
-            if hasattr(widget, 'expand'):
+            if hasattr(widget, "expand"):
                 self.content_box.pack_start(widget, True, True, 2)
             else:
                 self.content_box.pack_start(widget, False, False, 2)
@@ -269,14 +305,25 @@ class SidePage(object):
             # Look for a stack recursively
             recursively_iterate(child)
 
+
 class CCModule:
     def __init__(self, label, mod_id, icon, category, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, content_box, size=-1, is_c_mod=True, is_standalone=False, exec_name=mod_id, module=None)
+        sidePage = SidePage(
+            label,
+            icon,
+            keywords,
+            content_box,
+            size=-1,
+            is_c_mod=True,
+            is_standalone=False,
+            exec_name=mod_id,
+            module=None,
+        )
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
 
-    def process (self, c_manager):
+    def process(self, c_manager):
         if c_manager.lookup_c_module(self.name):
             c_box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             c_box.set_vexpand(False)
@@ -286,18 +333,22 @@ class CCModule:
         else:
             return False
 
+
 class SAModule:
     def __init__(self, label, mod_id, icon, category, keywords, content_box):
-        sidePage = SidePage(label, icon, keywords, content_box, False, False, True, mod_id)
+        sidePage = SidePage(
+            label, icon, keywords, content_box, False, False, True, mod_id
+        )
         self.sidePage = sidePage
         self.name = mod_id
         self.category = category
 
-    def process (self):
+    def process(self):
         name = self.name.replace("pkexec ", "")
         name = name.split()[0]
 
         return GLib.find_program_in_path(name) is not None
+
 
 def walk_directories(dirs, filter_func, return_directories=False):
     # If return_directories is False: returns a list of valid subdir names
@@ -314,8 +365,9 @@ def walk_directories(dirs, filter_func, return_directories=False):
                             valid.append(t)
     except:
         pass
-        #logging.critical("Error parsing directories", exc_info=True)
+        # logging.critical("Error parsing directories", exc_info=True)
     return valid
+
 
 class LabelRow(SettingsWidget):
     def __init__(self, text=None, tooltip=None):
@@ -327,10 +379,13 @@ class LabelRow(SettingsWidget):
         self.label.set_markup(text)
         self.set_tooltip_text(tooltip)
 
+
 class SoundFileChooser(SettingsWidget):
     bind_dir = None
 
-    def __init__(self, label, event_sounds=True, size_group=None, dep_key=None, tooltip=""):
+    def __init__(
+        self, label, event_sounds=True, size_group=None, dep_key=None, tooltip=""
+    ):
         super(SoundFileChooser, self).__init__(dep_key=dep_key)
 
         self.event_sounds = event_sounds
@@ -357,7 +412,11 @@ class SoundFileChooser(SettingsWidget):
         self.pack_end(self.content_widget, False, False, 0)
 
         self.play_button = Gtk.Button()
-        self.play_button.set_image(Gtk.Image.new_from_icon_name("xsi-media-playback-start-symbolic", Gtk.IconSize.BUTTON))
+        self.play_button.set_image(
+            Gtk.Image.new_from_icon_name(
+                "xsi-media-playback-start-symbolic", Gtk.IconSize.BUTTON
+            )
+        )
         self.play_button.connect("clicked", self.on_play_clicked)
         self.content_widget.pack_start(self.play_button, False, False, 0)
 
@@ -370,16 +429,22 @@ class SoundFileChooser(SettingsWidget):
         util.play_sound_file(self.get_value())
 
     def on_picker_clicked(self, widget):
-        dialog = Gtk.FileChooserDialog(title=self.label.get_text(),
-                                       action=Gtk.FileChooserAction.OPEN,
-                                       transient_for=self.get_toplevel(),
-                                       buttons=(_("_Cancel"), Gtk.ResponseType.CANCEL,
-                                                _("_Open"), Gtk.ResponseType.ACCEPT))
+        dialog = Gtk.FileChooserDialog(
+            title=self.label.get_text(),
+            action=Gtk.FileChooserAction.OPEN,
+            transient_for=self.get_toplevel(),
+            buttons=(
+                _("_Cancel"),
+                Gtk.ResponseType.CANCEL,
+                _("_Open"),
+                Gtk.ResponseType.ACCEPT,
+            ),
+        )
 
         if os.path.exists(self.get_value()):
             dialog.set_filename(self.get_value())
         else:
-            dialog.set_current_folder('/usr/share/sounds')
+            dialog.set_current_folder("/usr/share/sounds")
 
         sound_filter = Gtk.FileFilter()
         if self.event_sounds:
@@ -407,6 +472,7 @@ class SoundFileChooser(SettingsWidget):
 
     def connect_widget_handlers(self, *args):
         pass
+
 
 class DateChooser(SettingsWidget):
     bind_dir = None
@@ -437,6 +503,7 @@ class DateChooser(SettingsWidget):
     def connect_widget_handlers(self, *args):
         self.content_widget.connect("date-changed", self.on_date_changed)
 
+
 class TimeChooser(SettingsWidget):
     bind_dir = None
 
@@ -466,6 +533,7 @@ class TimeChooser(SettingsWidget):
     def connect_widget_handlers(self, *args):
         self.content_widget.connect("time-changed", self.on_time_changed)
 
+
 class Keybinding(SettingsWidget):
     bind_dir = None
 
@@ -477,9 +545,13 @@ class Keybinding(SettingsWidget):
         self.kb_label = label
 
         if self.backend == "gsettings":
-            self.keybinding = self.kb_table.lookup_gsettings_keybinding(self.settings.props.schema_id, self.key)
+            self.keybinding = self.kb_table.lookup_gsettings_keybinding(
+                self.settings.props.schema_id, self.key
+            )
         else:
-            self.keybinding = self.kb_table.lookup_json_keybinding(self.settings.uuid, self.settings.instance_id, self.key)
+            self.keybinding = self.kb_table.lookup_json_keybinding(
+                self.settings.uuid, self.settings.instance_id, self.key
+            )
 
         self.keybinding.connect("changed", self.on_kb_table_entry_changed)
 
@@ -517,7 +589,9 @@ class Keybinding(SettingsWidget):
 
     def on_kb_changed(self, button, accel_string, accel_label):
         if self.keybinding:
-            if not self.kb_table.maybe_update_binding(self.keybinding, accel_string, accel_label, button.position):
+            if not self.kb_table.maybe_update_binding(
+                self.keybinding, accel_string, accel_label, button.position
+            ):
                 self.on_kb_table_entry_changed(self.keybinding)
 
     def on_kb_cleared(self, button):
@@ -537,6 +611,7 @@ class Keybinding(SettingsWidget):
     def connect_widget_handlers(self, *args):
         pass
 
+
 def g_settings_factory(subclass):
     class NewClass(globals()[subclass], PXGSettingsBackend):
         def __init__(self, label, schema, key, *args, **kwargs):
@@ -555,7 +630,9 @@ def g_settings_factory(subclass):
 
             super(NewClass, self).__init__(label, *args, **kwargs)
             self.bind_settings()
+
     return NewClass
 
+
 for widget in CAN_BACKEND:
-    globals()["GSettings"+widget] = g_settings_factory(widget)
+    globals()["GSettings" + widget] = g_settings_factory(widget)

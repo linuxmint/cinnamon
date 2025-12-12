@@ -5,35 +5,44 @@ import subprocess
 
 import cairo
 import gi
+
 gi.require_version("Gtk", "3.0")
 gi.require_version("CinnamonDesktop", "3.0")
-gi.require_version('IBus', '1.0')
+gi.require_version("IBus", "1.0")
 from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus
 
 from SettingsWidgets import GSettingsKeybinding
 from xapp.SettingsWidgets import SettingsPage
-from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
+from xapp.GSettingsWidgets import GSettingsSwitch
 
 import AddKeyboardLayout
 
 MAX_LAYOUTS_PER_GROUP = 4
+
 
 class InputSourceSettingsPage(SettingsPage):
     def __init__(self):
         super().__init__()
 
         builder = Gtk.Builder()
-        builder.set_translation_domain('cinnamon')
-        builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
+        builder.set_translation_domain("cinnamon")
+        builder.add_from_file(
+            "/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui"
+        )
 
         box = builder.get_object("input_sources_list_box")
         self.pack_start(box, False, False, 0)
 
         self.input_sources_list = builder.get_object("input_sources_list")
-        self.source_activate_handler = self.input_sources_list.connect("row-activated", self.on_input_source_activated)
+        self.source_activate_handler = self.input_sources_list.connect(
+            "row-activated", self.on_input_source_activated
+        )
         self.current_input_sources_model = CurrentInputSourcesModel()
         self.current_input_sources_model.connect("items-changed", self.on_model_updated)
-        self.input_sources_list.bind_model(self.current_input_sources_model, self.current_input_sources_model.create_row)
+        self.input_sources_list.bind_model(
+            self.current_input_sources_model,
+            self.current_input_sources_model.create_row,
+        )
         self.input_sources_list.set_header_func(self.row_separator_func)
 
         self.test_layout_button = builder.get_object("test_layout")
@@ -52,30 +61,36 @@ class InputSourceSettingsPage(SettingsPage):
         self.move_layout_up_button = builder.get_object("move_layout_up")
         self.move_layout_up_button.connect("clicked", self.on_move_layout_up_clicked)
         self.move_layout_down_button = builder.get_object("move_layout_down")
-        self.move_layout_down_button.connect("clicked", self.on_move_layout_down_clicked)
+        self.move_layout_down_button.connect(
+            "clicked", self.on_move_layout_down_clicked
+        )
 
         self.update_widgets()
 
         section = self.add_section(_("Options"))
         widget = GSettingsSwitch(
             _("Remember the last layout used for each window"),
-            "org.cinnamon.desktop.input-sources", "per-window"
+            "org.cinnamon.desktop.input-sources",
+            "per-window",
         )
         section.add_row(widget)
 
         widget = GSettingsSwitch(
             _("Use a country flag, if available, to represent keyboard layouts"),
-            "org.cinnamon.desktop.interface", "keyboard-layout-show-flags"
+            "org.cinnamon.desktop.interface",
+            "keyboard-layout-show-flags",
         )
         section.add_row(widget)
         widget = GSettingsSwitch(
             _("Use the layout name, not the group name, to represent a layout"),
-            "org.cinnamon.desktop.interface", "keyboard-layout-prefer-variant-names"
+            "org.cinnamon.desktop.interface",
+            "keyboard-layout-prefer-variant-names",
         )
         section.add_row(widget)
         widget = GSettingsSwitch(
             _("Use upper-case when using text to represent a layout"),
-            "org.cinnamon.desktop.interface", "keyboard-layout-use-upper"
+            "org.cinnamon.desktop.interface",
+            "keyboard-layout-use-upper",
         )
         section.add_row(widget)
 
@@ -89,34 +104,33 @@ class InputSourceSettingsPage(SettingsPage):
         widget = GSettingsKeybinding(
             _("Switch to previous layout"),
             "org.cinnamon.desktop.keybindings.wm",
-            "switch-input-source-backward"
+            "switch-input-source-backward",
         )
         section.add_row(widget)
         widget = GSettingsKeybinding(
             _("Switch to first layout"),
             "org.cinnamon.desktop.keybindings.wm",
-            "switch-input-source-0"
+            "switch-input-source-0",
         )
         section.add_row(widget)
         widget = GSettingsKeybinding(
             _("Switch to second layout"),
             "org.cinnamon.desktop.keybindings.wm",
-            "switch-input-source-1"
+            "switch-input-source-1",
         )
         section.add_row(widget)
         widget = GSettingsKeybinding(
             _("Switch to third layout"),
             "org.cinnamon.desktop.keybindings.wm",
-            "switch-input-source-2"
+            "switch-input-source-2",
         )
         section.add_row(widget)
         widget = GSettingsKeybinding(
             _("Switch to fourth layout"),
             "org.cinnamon.desktop.keybindings.wm",
-            "switch-input-source-3"
+            "switch-input-source-3",
         )
         section.add_row(widget)
-
 
     def row_separator_func(self, row, before, data=None):
         if before is None:
@@ -173,7 +187,9 @@ class InputSourceSettingsPage(SettingsPage):
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
 
-        args = AddKeyboardLayout.make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
+        args = AddKeyboardLayout.make_gkbd_keyboard_args(
+            source.xkb_layout, source.xkb_variant
+        )
         subprocess.Popen(args)
 
     def on_engine_config_clicked(self, button, data=None):
@@ -189,10 +205,14 @@ class InputSourceSettingsPage(SettingsPage):
         source = self._get_selected_source()
         if source is not None:
             self.test_layout_button.set_sensitive(source.type == "xkb")
-            self.engine_config_button.set_sensitive(source.type == "ibus" and source.preferences != '')
+            self.engine_config_button.set_sensitive(
+                source.type == "ibus" and source.preferences != ""
+            )
             index = self.current_input_sources_model.get_item_index(source)
             self.move_layout_up_button.set_sensitive(index > 0)
-            self.move_layout_down_button.set_sensitive(index < self.current_input_sources_model.get_n_items() - 1)
+            self.move_layout_down_button.set_sensitive(
+                index < self.current_input_sources_model.get_n_items() - 1
+            )
             self.remove_layout_button.set_sensitive(n_items > 1)
         else:
             self.test_layout_button.set_sensitive(False)
@@ -200,6 +220,7 @@ class InputSourceSettingsPage(SettingsPage):
             self.move_layout_up_button.set_sensitive(False)
             self.move_layout_down_button.set_sensitive(False)
             self.remove_layout_button.set_sensitive(False)
+
 
 class LayoutIcon(Gtk.Overlay):
     def __init__(self, file, dupe_id):
@@ -211,7 +232,7 @@ class LayoutIcon(Gtk.Overlay):
         flag = Gtk.Image.new_from_gicon(fi, Gtk.IconSize.DND)
         self.add(flag)
         self.drawing = Gtk.DrawingArea(halign=Gtk.Align.FILL, valign=Gtk.Align.FILL)
-        self.drawing.connect('draw', self.draw_subscript)
+        self.drawing.connect("draw", self.draw_subscript)
         self.add_overlay(self.drawing)
 
     def draw_subscript(self, area, cr, data=None):
@@ -239,38 +260,63 @@ class LayoutIcon(Gtk.Overlay):
         dupe_str = str(self.dupe_id)
 
         ext = cr.text_extents(dupe_str)
-        cr.move_to((x + (width / 2.0) - (ext.width / 2.0)),
-                   (y + (height / 2.0) + (ext.height / 2.0)))
+        cr.move_to(
+            (x + (width / 2.0) - (ext.width / 2.0)),
+            (y + (height / 2.0) + (ext.height / 2.0)),
+        )
         cr.show_text(dupe_str)
+
 
 class CurrentInputSource(GObject.GObject):
     __gtype_name__ = "CurrentInputSource"
+
     def __init__(self, item):
         super().__init__()
-        self.type, self.id, self.index,         \
-            self.display_name, self.short_name, \
-            self.flag_name, self.xkbid,         \
-            self.xkb_layout, self.xkb_variant,  \
-            self.preferences,                   \
-            self.dupe_id, self.active           \
-                 = item
+        (
+            self.type,
+            self.id,
+            self.index,
+            self.display_name,
+            self.short_name,
+            self.flag_name,
+            self.xkbid,
+            self.xkb_layout,
+            self.xkb_variant,
+            self.preferences,
+            self.dupe_id,
+            self.active,
+        ) = item
         if self.preferences is None:
-            self.preferences = ''
+            self.preferences = ""
+
 
 class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
-    __gtype_name__ = 'CurrentInputSourcesModel'
+    __gtype_name__ = "CurrentInputSourcesModel"
 
     def __init__(self):
         super().__init__()
         self._proxy = None
         self._sources = []
-        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
+        self.interface_settings = Gio.Settings(
+            schema_id="org.cinnamon.desktop.interface"
+        )
         self.interface_settings.connect("changed", self.on_interface_settings_changed)
-        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+        self.input_source_settings = Gio.Settings(
+            schema_id="org.cinnamon.desktop.input-sources"
+        )
 
         try:
-            Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
-                                      "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None, self._on_proxy_ready, None)
+            Gio.DBusProxy.new_for_bus(
+                Gio.BusType.SESSION,
+                Gio.DBusProxyFlags.NONE,
+                None,
+                "org.Cinnamon",
+                "/org/Cinnamon",
+                "org.Cinnamon",
+                None,
+                self._on_proxy_ready,
+                None,
+            )
         except GLib.Error as e:
             print(e.message)
             self._proxy = None
@@ -334,13 +380,25 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
 
             for type_, id_ in sources:
                 if type_ == "xkb":
-                    got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(id_)
+                    got, display_name, short_name, layout, variant = (
+                        self.xkb_info.get_layout_info(id_)
+                    )
                     if got:
                         layouts.append(
-                            (type_, id_, index, display_name,
-                             None, None, id_,
-                             layout, variant, None,
-                             0, False)
+                            (
+                                type_,
+                                id_,
+                                index,
+                                display_name,
+                                None,
+                                None,
+                                id_,
+                                layout,
+                                variant,
+                                None,
+                                0,
+                                False,
+                            )
                         )
                 else:
                     engines = self._ibus.get_engines_by_names([id_])
@@ -348,10 +406,20 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
                         engine = engines[0]
                         display_name = AddKeyboardLayout.make_ibus_display_name(engine)
                         layouts.append(
-                            (type_, id_, index, display_name,
-                             None, None, id_,
-                             engine.get_layout(), engine.get_layout_variant(), engine.get_setup(),
-                             0, False)
+                            (
+                                type_,
+                                id_,
+                                index,
+                                display_name,
+                                None,
+                                None,
+                                id_,
+                                engine.get_layout(),
+                                engine.get_layout_variant(),
+                                engine.get_setup(),
+                                0,
+                                False,
+                            )
                         )
 
                 index += 1
@@ -395,7 +463,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
                     indicator_done = True
 
             if not indicator_done:
-                markup = f"<span size='x-large' weight='bold'>{source.short_name}</span>"
+                markup = (
+                    f"<span size='x-large' weight='bold'>{source.short_name}</span>"
+                )
                 label = Gtk.Label(xalign=0.0, label=markup, use_markup=True)
                 self.column_size_group.add_widget(label)
                 row.pack_end(label, False, False, 0)
@@ -432,7 +502,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
             new_sources.append(source_info)
 
         new_sources.append((type_, layout_id))
-        self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
+        self.input_source_settings.set_value(
+            "sources", GLib.Variant("a(ss)", new_sources)
+        )
 
     def remove_layout(self, source):
         raw_sources = self.input_source_settings.get_value("sources")
@@ -449,7 +521,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
                 continue
             new_sources.append(source_info)
 
-        self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
+        self.input_source_settings.set_value(
+            "sources", GLib.Variant("a(ss)", new_sources)
+        )
 
     def move_layout_up(self, source):
         raw_sources = self.input_source_settings.get_value("sources")
@@ -466,7 +540,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
                 return
             element = new_sources.pop(idx)
             new_sources.insert(idx - 1, element)
-            self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
+            self.input_source_settings.set_value(
+                "sources", GLib.Variant("a(ss)", new_sources)
+            )
         except Exception as e:
             print("Could not move layout", e)
 
@@ -485,6 +561,8 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
                 return
             element = new_sources.pop(idx)
             new_sources.insert(idx + 1, element)
-            self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", new_sources))
+            self.input_source_settings.set_value(
+                "sources", GLib.Variant("a(ss)", new_sources)
+            )
         except Exception as e:
             print("Could not move layout", e)

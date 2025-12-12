@@ -53,7 +53,7 @@ from gen_lib import *
 files = []
 objects = {}
 
-ROOT_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + '/../../../'
+ROOT_DIR = os.path.abspath(os.path.dirname(sys.argv[0])) + "/../../../"
 if len(sys.argv) > 1:
     ROOT_DIR = sys.argv[1]
 
@@ -61,23 +61,23 @@ if len(sys.argv) > 2:
     DEST_DIR = sys.argv[2]
     os.chdir(DEST_DIR)
 
-JS_UI_DIR = os.path.join(ROOT_DIR, 'js/ui/')
-JS_MISC_DIR = os.path.join(ROOT_DIR, 'js/misc/')
+JS_UI_DIR = os.path.join(ROOT_DIR, "js/ui/")
+JS_MISC_DIR = os.path.join(ROOT_DIR, "js/misc/")
 
 # Allow types like "object/string"
-COMMENT_REGEX = re.compile(r'/\*([^*]|(\*[^/]))*\*+/')
-RETURNS_REGEX = re.compile(r'^Returns\s*\(?(\w*\.?\w+/?\w*\.?\w*)?\)?:(.*)')
-INHERITS_REGEX = re.compile(r'^Inherits:\s*(\w*\.?\w+/?\w*\.?\w*)\s*$')
-PROPERTY_REGEX = re.compile(r'^@(\w+)\s*\(?(\w*\.?\w+/?\w*\.?\w*)?\)?:(.*)')
-FILE_NAME_REGEX = re.compile(r'FILE:\s*(\w+\.js):?')
-SIGNAL_NAME_REGEX = re.compile(r'SIGNAL:\s*([\w-]+):?')
-ENUM_NAME_REGEX = re.compile(r'ENUM:\s*(\w+):?')
-FUNCTION_NAME_REGEX = re.compile(r'^(\w+):?\s*$')
+COMMENT_REGEX = re.compile(r"/\*([^*]|(\*[^/]))*\*+/")
+RETURNS_REGEX = re.compile(r"^Returns\s*\(?(\w*\.?\w+/?\w*\.?\w*)?\)?:(.*)")
+INHERITS_REGEX = re.compile(r"^Inherits:\s*(\w*\.?\w+/?\w*\.?\w*)\s*$")
+PROPERTY_REGEX = re.compile(r"^@(\w+)\s*\(?(\w*\.?\w+/?\w*\.?\w*)?\)?:(.*)")
+FILE_NAME_REGEX = re.compile(r"FILE:\s*(\w+\.js):?")
+SIGNAL_NAME_REGEX = re.compile(r"SIGNAL:\s*([\w-]+):?")
+ENUM_NAME_REGEX = re.compile(r"ENUM:\s*(\w+):?")
+FUNCTION_NAME_REGEX = re.compile(r"^(\w+):?\s*$")
 
-OBJECT_NAME_REGEX = re.compile(r'^#(\w+):?\s*$')
-FILE_REGEX = re.compile(r'\w*\.js')
-COMMENT_START_REGEX = re.compile(r'^\s*\* ?')
-BLOCK_START_REGEX = re.compile(r'^\s*/\*\*\s*$')
+OBJECT_NAME_REGEX = re.compile(r"^#(\w+):?\s*$")
+FILE_REGEX = re.compile(r"\w*\.js")
+COMMENT_START_REGEX = re.compile(r"^\s*\* ?")
+BLOCK_START_REGEX = re.compile(r"^\s*/\*\*\s*$")
 STRING_REGEX = re.compile(r'\'[^\']*\'|"[^"]*"')
 
 STATE_NORMAL = 0
@@ -106,13 +106,13 @@ for _file in _files:
     if not FILE_REGEX.match(parts[-1]):
         continue
 
-    file_obj = open(_file, 'r', encoding="utf-8")
+    file_obj = open(_file, "r", encoding="utf-8")
 
     curr_file = JSFile(parts[-2], parts[-1][:-3])
 
     files.append(curr_file)
 
-    bracket_count = 0 # no. of '{' - no. of '}'
+    bracket_count = 0  # no. of '{' - no. of '}'
 
     # The current object - it is either the top-level file or the JSObject we
     # are parsing.
@@ -127,7 +127,7 @@ for _file in _files:
 
     state = STATE_NORMAL
 
-    scope = ''
+    scope = ""
 
     for line in file_obj:
         ################################################################################
@@ -135,44 +135,45 @@ for _file in _files:
         ################################################################################
 
         # Strip ' * ' at the beginning of each long comment block
-        if state == STATE_PROPERTY    or \
-           state == STATE_DESCRIPTION or \
-           state == STATE_RETURN      or \
-           state == STATE_INIT:
-
-            line = COMMENT_START_REGEX.sub('', line)
-            if len(line) > 0 and line[0] == '/':
+        if (
+            state == STATE_PROPERTY
+            or state == STATE_DESCRIPTION
+            or state == STATE_RETURN
+            or state == STATE_INIT
+        ):
+            line = COMMENT_START_REGEX.sub("", line)
+            if len(line) > 0 and line[0] == "/":
                 state = STATE_NORMAL
                 curr_item = None
                 continue
 
         # If we are in a (useless) comment, skip unless comment ends in this row
         elif state == STATE_COMMENT:
-            if line.find('*/') == -1:
+            if line.find("*/") == -1:
                 continue
             else:
-                line = line[line.find('*/') + 2:]
+                line = line[line.find("*/") + 2 :]
                 state = STATE_NORMAL
 
         # In normal cases, strip comments if necessary, unless it is the
         # beginning of a doc block, in which case we set the STATE_INIT state
         else:
-            if '//' in line:
-                line = line[:line.find(r'//')]
+            if "//" in line:
+                line = line[: line.find(r"//")]
 
-            if '/*' in line:
+            if "/*" in line:
                 # Strip all in-line comments, eg. 'asdf /* asdf */ asdf'
-                line = COMMENT_REGEX.sub('', line)
+                line = COMMENT_REGEX.sub("", line)
                 if BLOCK_START_REGEX.match(line):
                     state = STATE_INIT
                     continue
-                if '/*' in line:
-                    line = line[:line.find(r'/*')]
+                if "/*" in line:
+                    line = line[: line.find(r"/*")]
                     state = STATE_COMMENT
 
-################################################################################
-#                         Process actual useful content                        #
-################################################################################
+        ################################################################################
+        #                         Process actual useful content                        #
+        ################################################################################
 
         if state == STATE_INIT:
             if FILE_NAME_REGEX.match(line) and bracket_count == 0:
@@ -184,26 +185,28 @@ for _file in _files:
             elif OBJECT_NAME_REGEX.match(line) and bracket_count == 0:
                 curr_item = JSObject(OBJECT_NAME_REGEX.match(line).group(1))
                 curr_obj = curr_item
-                objects[curr_file.name + '.' + curr_obj.name] = curr_item
+                objects[curr_file.name + "." + curr_obj.name] = curr_item
                 curr_file.add_object(curr_item)
                 state = STATE_PROPERTY
 
-            elif FUNCTION_NAME_REGEX.match(line) and \
-                ((bracket_count == 1 and curr_obj != curr_file) or \
-                 (bracket_count == 0 and curr_obj == curr_file)):
+            elif FUNCTION_NAME_REGEX.match(line) and (
+                (bracket_count == 1 and curr_obj != curr_file)
+                or (bracket_count == 0 and curr_obj == curr_file)
+            ):
                 curr_item = JSFunction(FUNCTION_NAME_REGEX.match(line).group(1))
                 curr_obj.add_function(curr_item)
                 state = STATE_PROPERTY
 
-            elif SIGNAL_NAME_REGEX.match(line) and \
-                    (bracket_count > 0 and curr_obj != curr_file):
+            elif SIGNAL_NAME_REGEX.match(line) and (
+                bracket_count > 0 and curr_obj != curr_file
+            ):
                 curr_item = JSSignal(SIGNAL_NAME_REGEX.match(line).group(1))
                 curr_obj.add_signal(curr_item)
                 state = STATE_PROPERTY
 
             elif ENUM_NAME_REGEX.match(line) and bracket_count == 0:
                 curr_item = JSEnum(ENUM_NAME_REGEX.match(line).group(1))
-                objects[curr_file.name + '.' + curr_item.name] = curr_item
+                objects[curr_file.name + "." + curr_item.name] = curr_item
                 curr_file.add_enum(curr_item)
                 state = STATE_PROPERTY
             else:
@@ -235,7 +238,7 @@ for _file in _files:
         if state == STATE_DESCRIPTION:
             if RETURNS_REGEX.match(line):
                 state = STATE_RETURN
-                curr_prop = JSProperty('Returns', *RETURNS_REGEX.match(line).groups())
+                curr_prop = JSProperty("Returns", *RETURNS_REGEX.match(line).groups())
                 curr_item.set_return(curr_prop)
             elif INHERITS_REGEX.match(line):
                 # Anything after the inherit line shouldn't be there
@@ -264,14 +267,15 @@ for _file in _files:
             # Don't count the brackets inside strings. STRING_REGEX recognizes
             # ' and " but doesn't know if they are escaped. So replace away all
             # escaped quotes
-            line = STRING_REGEX.sub('', line.replace("\\'", "").replace('\\"', ''))
+            line = STRING_REGEX.sub("", line.replace("\\'", "").replace('\\"', ""))
 
-            bracket_count += line.count('{') - line.count('}')
+            bracket_count += line.count("{") - line.count("}")
 
             if bracket_count == 0:
                 # Cinnamon-style objects and Lang.Class objects
-                if curr_obj.orig_name + '.prototype' in scope or \
-                   re.match(curr_obj.orig_name + r'\s*=\s*Lang\.Class', scope):
+                if curr_obj.orig_name + ".prototype" in scope or re.match(
+                    curr_obj.orig_name + r"\s*=\s*Lang\.Class", scope
+                ):
                     curr_obj = curr_file
                     curr_item = curr_file
 
@@ -284,12 +288,12 @@ for _file in _files:
 write_chapters_file(files)
 
 try:
-    os.mkdir('ui')
+    os.mkdir("ui")
 except OSError:
     pass
 
 try:
-    os.mkdir('misc')
+    os.mkdir("misc")
 except OSError:
     pass
 

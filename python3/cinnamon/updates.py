@@ -5,7 +5,7 @@ import gi
 
 from . import harvester
 
-gi.require_version('Gtk', '3.0')
+gi.require_version("Gtk", "3.0")
 
 gettext.install("cinnamon", "/usr/share/locale", names=["ngettext"])
 
@@ -15,8 +15,14 @@ SPICE_TYPE_THEME = "theme"
 SPICE_TYPE_EXTENSION = "extension"
 SPICE_TYPE_ACTION = "action"
 
-SPICE_TYPES = [SPICE_TYPE_APPLET, SPICE_TYPE_DESKLET, SPICE_TYPE_THEME,
-               SPICE_TYPE_EXTENSION, SPICE_TYPE_ACTION]
+SPICE_TYPES = [
+    SPICE_TYPE_APPLET,
+    SPICE_TYPE_DESKLET,
+    SPICE_TYPE_THEME,
+    SPICE_TYPE_EXTENSION,
+    SPICE_TYPE_ACTION,
+]
+
 
 class UpdateManager:
     def __init__(self):

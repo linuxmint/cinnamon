@@ -1,28 +1,26 @@
 #!/usr/bin/python3
 
 import gettext
-import os
 import subprocess
 
-import cairo
 import gi
+
 gi.require_version("Gtk", "3.0")
 gi.require_version("CinnamonDesktop", "3.0")
-gi.require_version('IBus', '1.0')
-gi.require_version('Pango', '1.0')
-from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus, Pango
+gi.require_version("IBus", "1.0")
+gi.require_version("Pango", "1.0")
+from gi.repository import GLib, Gio, Gtk, CinnamonDesktop, IBus, Pango
 
-from SettingsWidgets import Keybinding
-from xapp.SettingsWidgets import SettingsPage
-from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
 MAX_LAYOUTS_PER_GROUP = 4
+
 
 def make_gkbd_keyboard_args(layout, variant):
     if variant:
         return ["gkbd-keyboard-display", "-l", f"{layout}\t{variant}"]
     else:
         return ["gkbd-keyboard-display", "-l", layout]
+
 
 def make_ibus_display_name(engine):
     name = engine.get_longname()
@@ -34,20 +32,26 @@ def make_ibus_display_name(engine):
     display_name = f"{language} ({name})"
     return display_name
 
+
 LAYOUT_ID_COLUMN = 0
 LAYOUT_DISPLAY_NAME_COLUMN = 1
 LAYOUT_TYPE_COLUMN = 2
 LAYOUT_LAYOUT_COLUMN = 3
 LAYOUT_VARIANT_COLUMN = 4
 
-class AddKeyboardLayoutDialog():
+
+class AddKeyboardLayoutDialog:
     def __init__(self, used_ids):
-        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+        self.input_source_settings = Gio.Settings(
+            schema_id="org.cinnamon.desktop.input-sources"
+        )
         self.used_ids = set(used_ids)
 
         builder = Gtk.Builder()
-        builder.set_translation_domain('cinnamon')
-        builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
+        builder.set_translation_domain("cinnamon")
+        builder.add_from_file(
+            "/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui"
+        )
 
         self.dialog = builder.get_object("add_layout_dialog")
         self.add_button = builder.get_object("add_button")
@@ -63,11 +67,13 @@ class AddKeyboardLayoutDialog():
         self.layouts_view.get_selection().connect("changed", self._on_row_selected)
 
         #                                 (layout_id, layout_display_name, layout_type, layout_layout, layout_variant)
-        self.layouts_store = Gtk.ListStore(str,       str,                 str,         str,           str)
+        self.layouts_store = Gtk.ListStore(str, str, str, str, str)
         self.layouts_filter_store = Gtk.TreeModelFilter(child_model=self.layouts_store)
         self.layouts_filter_store.set_visible_func(self.search_filter_func)
         self.layouts_sort_store = Gtk.TreeModelSort(model=self.layouts_filter_store)
-        self.layouts_sort_store.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN, Gtk.SortType.ASCENDING)
+        self.layouts_sort_store.set_sort_column_id(
+            LAYOUT_DISPLAY_NAME_COLUMN, Gtk.SortType.ASCENDING
+        )
         self.layouts_view.set_model(self.layouts_sort_store)
 
         column = Gtk.TreeViewColumn(title=_("Name"))
@@ -141,7 +147,9 @@ class AddKeyboardLayoutDialog():
         iter = self.get_selected_iter()
         assert iter is not None
 
-        display_name = self.layouts_sort_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
+        display_name = self.layouts_sort_store.get_value(
+            iter, LAYOUT_DISPLAY_NAME_COLUMN
+        )
         layout_layout = self.layouts_sort_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
         layout_variant = self.layouts_sort_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
         args = make_gkbd_keyboard_args(layout_layout, layout_variant)
@@ -172,7 +180,9 @@ class AddKeyboardLayoutDialog():
         normalized = GLib.utf8_normalize(display_name, -1, GLib.NormalizeMode.DEFAULT)
         row_text = GLib.utf8_casefold(normalized, -1)
 
-        normalized = GLib.utf8_normalize(search_entry_text, -1, GLib.NormalizeMode.DEFAULT)
+        normalized = GLib.utf8_normalize(
+            search_entry_text, -1, GLib.NormalizeMode.DEFAULT
+        )
         search_text = GLib.utf8_casefold(normalized, -1)
 
         return search_text in row_text or search_text in layout_type
@@ -205,7 +215,9 @@ class AddKeyboardLayoutDialog():
 
         self.used_ids.add(layout_id)
 
-        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
+        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(
+            layout_id
+        )
         if got:
             self.layouts_store.append((layout_id, display_name, "xkb", layout, variant))
 
@@ -220,4 +232,12 @@ class AddKeyboardLayoutDialog():
         self.used_ids.add(layout_id)
 
         display_name = make_ibus_display_name(ibus_info)
-        self.layouts_store.append((layout_id, display_name, "ibus", ibus_info.get_layout(), ibus_info.get_layout_variant()))
+        self.layouts_store.append(
+            (
+                layout_id,
+                display_name,
+                "ibus",
+                ibus_info.get_layout(),
+                ibus_info.get_layout_variant(),
+            )
+        )

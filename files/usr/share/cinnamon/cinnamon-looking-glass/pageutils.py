@@ -2,6 +2,7 @@
 
 from gi.repository import Gtk
 
+
 # truncate a string to single line 121 char max with ellipsis
 def shorten_value(value):
     changed = False
@@ -19,10 +20,12 @@ def shorten_value(value):
 
     return value
 
+
 class ResultTextDialog(Gtk.Dialog):
     def __init__(self, title, text):
-        Gtk.Dialog.__init__(self, title, None, 0,
-                            (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE))
+        Gtk.Dialog.__init__(
+            self, title, None, 0, (Gtk.STOCK_CLOSE, Gtk.ResponseType.CLOSE)
+        )
 
         self.set_default_size(350, 70)
 
@@ -41,6 +44,7 @@ class ResultTextDialog(Gtk.Dialog):
 
     def on_response(self, response_id, data=None):
         self.destroy()
+
 
 class BaseListView(Gtk.ScrolledWindow):
     def __init__(self, store):
@@ -61,6 +65,7 @@ class BaseListView(Gtk.ScrolledWindow):
         self.tree_view.append_column(column)
         return column
 
+
 class WindowAndActionBars(Gtk.Table):
     def __init__(self, window):
         Gtk.Table.__init__(self, 2, 2, False)
@@ -69,8 +74,18 @@ class WindowAndActionBars(Gtk.Table):
         self.left = Gtk.VBox()
 
         self.attach(window, 1, 2, 0, 1)
-        self.attach(self.left, 0, 1, 0, 1, 0, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        self.attach(self.bottom, 0, 2, 1, 2, Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL, 0)
+        self.attach(
+            self.left, 0, 1, 0, 1, 0, Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL
+        )
+        self.attach(
+            self.bottom,
+            0,
+            2,
+            1,
+            2,
+            Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
+            0,
+        )
 
     def add_to_left_bar(self, widget, padding=0):
         self.left.set_border_width(2)
@@ -80,12 +95,14 @@ class WindowAndActionBars(Gtk.Table):
         self.bottom.set_border_width(2)
         self.bottom.pack_start(widget, False, False, padding)
 
+
 class ImageButton(Gtk.Button):
     def __init__(self, icon_name, size=Gtk.IconSize.MENU):
         Gtk.Button.__init__(self)
 
         image = Gtk.Image.new_from_icon_name(icon_name, size)
         self.add(image)
+
 
 class ImageToggleButton(Gtk.ToggleButton):
     def __init__(self, icon_name, size=Gtk.IconSize.MENU):

@@ -1,7 +1,8 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('Notify', '0.7')
+
+gi.require_version("Notify", "0.7")
 from gi.repository import Gio, Notify
 
 from SettingsWidgets import SidePage
@@ -25,7 +26,7 @@ aliquam ullamcorper.
 NOTIFICATION_DISPLAY_SCREENS = [
     ("primary-screen", _("Primary monitor")),
     ("active-screen", _("Active monitor")),
-    ("fixed-screen", _("The monitor specified below"))
+    ("fixed-screen", _("The monitor specified below")),
 ]
 
 
@@ -36,7 +37,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("notifications")
-        sidePage = SidePage(_("Notifications"), "cs-notifications", keywords, content_box, module=self)
+        sidePage = SidePage(
+            _("Notifications"), "cs-notifications", keywords, content_box, module=self
+        )
         self.sidePage = sidePage
 
     def on_module_selected(self):
@@ -52,37 +55,98 @@ class Module:
 
         settings = page.add_section(_("Notification settings"))
 
-        switch = GSettingsSwitch(_("Enable notifications"), "org.cinnamon.desktop.notifications", "display-notifications")
+        switch = GSettingsSwitch(
+            _("Enable notifications"),
+            "org.cinnamon.desktop.notifications",
+            "display-notifications",
+        )
         settings.add_row(switch)
 
-        switch = GSettingsSwitch(_("Remove notifications after their timeout is reached"), "org.cinnamon.desktop.notifications", "remove-old")
-        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+        switch = GSettingsSwitch(
+            _("Remove notifications after their timeout is reached"),
+            "org.cinnamon.desktop.notifications",
+            "remove-old",
+        )
+        settings.add_reveal_row(
+            switch, "org.cinnamon.desktop.notifications", "display-notifications"
+        )
 
-        switch = GSettingsSwitch(_("Show notifications on the bottom side of the screen"), "org.cinnamon.desktop.notifications", "bottom-notifications")
-        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+        switch = GSettingsSwitch(
+            _("Show notifications on the bottom side of the screen"),
+            "org.cinnamon.desktop.notifications",
+            "bottom-notifications",
+        )
+        settings.add_reveal_row(
+            switch, "org.cinnamon.desktop.notifications", "display-notifications"
+        )
 
-        combo = GSettingsComboBox(_("Monitor to use for displaying notifications"), "org.cinnamon.desktop.notifications", "notification-screen-display", NOTIFICATION_DISPLAY_SCREENS)
-        settings.add_reveal_row(combo, "org.cinnamon.desktop.notifications", "display-notifications")
+        combo = GSettingsComboBox(
+            _("Monitor to use for displaying notifications"),
+            "org.cinnamon.desktop.notifications",
+            "notification-screen-display",
+            NOTIFICATION_DISPLAY_SCREENS,
+        )
+        settings.add_reveal_row(
+            combo, "org.cinnamon.desktop.notifications", "display-notifications"
+        )
 
-        spin = GSettingsSpinButton(_("Monitor"), "org.cinnamon.desktop.notifications", "notification-fixed-screen", None, 1, 13, 1)
+        spin = GSettingsSpinButton(
+            _("Monitor"),
+            "org.cinnamon.desktop.notifications",
+            "notification-fixed-screen",
+            None,
+            1,
+            13,
+            1,
+        )
         settings.add_reveal_row(spin)
         spin.revealer.settings = Gio.Settings("org.cinnamon.desktop.notifications")
-        spin.revealer.settings.bind_with_mapping("notification-screen-display", spin.revealer, "reveal-child", Gio.SettingsBindFlags.GET, lambda option: option == "fixed-screen", None)
+        spin.revealer.settings.bind_with_mapping(
+            "notification-screen-display",
+            spin.revealer,
+            "reveal-child",
+            Gio.SettingsBindFlags.GET,
+            lambda option: option == "fixed-screen",
+            None,
+        )
 
-        switch = GSettingsSwitch(_("Display notifications over fullscreen windows"), "org.cinnamon.desktop.notifications", "fullscreen-notifications")
-        settings.add_reveal_row(switch, "org.cinnamon.desktop.notifications", "display-notifications")
+        switch = GSettingsSwitch(
+            _("Display notifications over fullscreen windows"),
+            "org.cinnamon.desktop.notifications",
+            "fullscreen-notifications",
+        )
+        settings.add_reveal_row(
+            switch, "org.cinnamon.desktop.notifications", "display-notifications"
+        )
 
-        spin = GSettingsSpinButton(_("Notification duration"), "org.cinnamon.desktop.notifications", "notification-duration", _("seconds"), 1, 60, 1, 1)
-        settings.add_reveal_row(spin, "org.cinnamon.desktop.notifications", "display-notifications")
+        spin = GSettingsSpinButton(
+            _("Notification duration"),
+            "org.cinnamon.desktop.notifications",
+            "notification-duration",
+            _("seconds"),
+            1,
+            60,
+            1,
+            1,
+        )
+        settings.add_reveal_row(
+            spin, "org.cinnamon.desktop.notifications", "display-notifications"
+        )
 
         button = Button(_("Display a test notification"), self.send_test)
-        settings.add_reveal_row(button, "org.cinnamon.desktop.notifications", "display-notifications")
+        settings.add_reveal_row(
+            button, "org.cinnamon.desktop.notifications", "display-notifications"
+        )
 
         settings = page.add_section(_("Media keys OSD"))
 
-        switch = GSettingsSwitch(_("Show media keys OSD"), "org.cinnamon", "show-media-keys-osd")
+        switch = GSettingsSwitch(
+            _("Show media keys OSD"), "org.cinnamon", "show-media-keys-osd"
+        )
         settings.add_row(switch)
 
     def send_test(self, widget):
-        n = Notify.Notification.new("This is a test notification", content, "dialog-warning")
+        n = Notify.Notification.new(
+            "This is a test notification", content, "dialog-warning"
+        )
         n.show()

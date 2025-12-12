@@ -22,7 +22,7 @@ class TestParseSingleKey(unittest.TestCase):
         self.assertEqual(cldr2json.parse_single_key("\\u{200D}"), "\u200d")
 
     def test_decode_threechars(self):
-        self.assertEqual(cldr2json.parse_single_key("ज\\u{94D}ञ"), "ज\u094Dञ")
+        self.assertEqual(cldr2json.parse_single_key("ज\\u{94D}ञ"), "ज\u094dञ")
 
 
 class TestParseRow(unittest.TestCase):
@@ -62,41 +62,31 @@ class TestParseRow(unittest.TestCase):
         </keyMap>
         """
         xml_tree = xml.etree.ElementTree.XML(xml_string)
-        json = [[
-                 ['a', 'à', 'â', '%', 'æ', 'á', 'ä', 'ã', 'å', 'ā', 'ª'],
-                 ['z'],
-                 ['e', 'é', 'è', 'ê', 'ë', '%', 'ę', 'ė', 'ē'],
-                 ['r'],
-                 ['t'],
-                 ['y', '%', 'ÿ'],
-                 ['u', 'ù', 'û', '%', 'ü', 'ú', 'ū'],
-                 ['i', 'î', '%', 'ï', 'ì', 'í', 'į', 'ī'],
-                 ['o', 'ô', 'œ', '%', 'ö', 'ò', 'ó', 'õ', 'ø', 'ō', 'º'],
-                 ['p']
-                ], [
-                 ['q'],
-                 ['s'],
-                 ['d'],
-                 ['f'],
-                 ['g'],
-                 ['h'],
-                 ['j'],
-                 ['k'],
-                 ['l'],
-                 ['m']
-                ], [
-                 ['w'],
-                 ['x'],
-                 ['c', 'ç', 'ć', 'č'],
-                 ['v'],
-                 ['b'],
-                 ['n'],
-                 ["'", '‘', '’', '‹', '›']
-                ], [
-                 [','],
-                 [' '],
-                 ['.', '#', '!', ',', '?', '-', ':', "'", '@']
-                ]]
+        json = [
+            [
+                ["a", "à", "â", "%", "æ", "á", "ä", "ã", "å", "ā", "ª"],
+                ["z"],
+                ["e", "é", "è", "ê", "ë", "%", "ę", "ė", "ē"],
+                ["r"],
+                ["t"],
+                ["y", "%", "ÿ"],
+                ["u", "ù", "û", "%", "ü", "ú", "ū"],
+                ["i", "î", "%", "ï", "ì", "í", "į", "ī"],
+                ["o", "ô", "œ", "%", "ö", "ò", "ó", "õ", "ø", "ō", "º"],
+                ["p"],
+            ],
+            [["q"], ["s"], ["d"], ["f"], ["g"], ["h"], ["j"], ["k"], ["l"], ["m"]],
+            [
+                ["w"],
+                ["x"],
+                ["c", "ç", "ć", "č"],
+                ["v"],
+                ["b"],
+                ["n"],
+                ["'", "‘", "’", "‹", "›"],
+            ],
+            [[","], [" "], [".", "#", "!", ",", "?", "-", ":", "'", "@"]],
+        ]
         self.assertEqual(cldr2json.parse_rows(xml_tree), json)
 
 
@@ -125,46 +115,46 @@ class TestConvertXml(unittest.TestCase):
         """
         xml_tree = xml.etree.ElementTree.XML(xml_string)
         json = {
-          "locale": "fr",
-          "name": "French",
-          "levels": [
-            {
-              "level": "",
-              "mode": "default",
-              "rows": [
-                [
-                  ['a', 'à', 'â', '%', 'æ', 'á', 'ä', 'ã', 'å', 'ā', 'ª'],
-                ]
-              ]
-            },
-            {
-              "level": "shift",
-              "mode": "latched",
-              "rows": [
-                [
-                  ['A', 'À', 'Â', '%', 'Æ', 'Á', 'Ä', 'Ã', 'Å', 'Ā', 'ª'],
-                ]
-              ]
-            },
-            {
-              "level": "opt",
-              "mode": "locked",
-              "rows": [
-                [
-                  ["1", "¹", "½", "⅓", "¼", "⅛"],
-                ]
-              ]
-            },
-            {
-              "level": "opt+shift",
-              "mode": "locked",
-              "rows": [
-                [
-                  ["~"],
-                ]
-              ]
-            }
-          ]
+            "locale": "fr",
+            "name": "French",
+            "levels": [
+                {
+                    "level": "",
+                    "mode": "default",
+                    "rows": [
+                        [
+                            ["a", "à", "â", "%", "æ", "á", "ä", "ã", "å", "ā", "ª"],
+                        ]
+                    ],
+                },
+                {
+                    "level": "shift",
+                    "mode": "latched",
+                    "rows": [
+                        [
+                            ["A", "À", "Â", "%", "Æ", "Á", "Ä", "Ã", "Å", "Ā", "ª"],
+                        ]
+                    ],
+                },
+                {
+                    "level": "opt",
+                    "mode": "locked",
+                    "rows": [
+                        [
+                            ["1", "¹", "½", "⅓", "¼", "⅛"],
+                        ]
+                    ],
+                },
+                {
+                    "level": "opt+shift",
+                    "mode": "locked",
+                    "rows": [
+                        [
+                            ["~"],
+                        ]
+                    ],
+                },
+            ],
         }
         self.assertEqual(cldr2json.convert_xml(xml_tree), json)
 
@@ -182,21 +172,18 @@ class TestConvertFile(unittest.TestCase):
 
 class TestLocaleToXKB(unittest.TestCase):
     def test_simple(self):
-        self.assertEqual(cldr2json.locale_to_xkb("fr", "French"),
-                         "fr")
+        self.assertEqual(cldr2json.locale_to_xkb("fr", "French"), "fr")
 
     def test_fallback(self):
-        self.assertEqual(cldr2json.locale_to_xkb("nb", "Norwegian Bokmål"),
-                         "no")
+        self.assertEqual(cldr2json.locale_to_xkb("nb", "Norwegian Bokmål"), "no")
 
     def test_fallback2(self):
-        self.assertEqual(cldr2json.locale_to_xkb("km", "Khmer"),
-                         "kh")
+        self.assertEqual(cldr2json.locale_to_xkb("km", "Khmer"), "kh")
 
     def test_override(self):
-        self.assertEqual(cldr2json.locale_to_xkb("en-GB",
-                                                 "English Great Britain"),
-                         "uk")
+        self.assertEqual(
+            cldr2json.locale_to_xkb("en-GB", "English Great Britain"), "uk"
+        )
 
 
 class LoadXKBMapplings(unittest.TestCase):
@@ -208,5 +195,5 @@ class LoadXKBMapplings(unittest.TestCase):
         self.assertEqual(mapping["French"], "fr")
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     unittest.main()

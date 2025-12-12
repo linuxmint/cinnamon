@@ -1,28 +1,29 @@
 #!/usr/bin/python3
 
 import gettext
-import json
-import os
-import subprocess
 
-from pathlib import Path
 from html import escape
 
 import gi
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import Gdk, Gio, Gtk
+from gi.repository import Gdk, Gtk
 
 from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
-from SettingsWidgets import SidePage, Keybinding
-from bin import util
+from SettingsWidgets import SidePage
 from bin import InputSources
 from bin import KeybindingTable
 from xapp.GSettingsWidgets import *
 
 gettext.install("cinnamon", "/usr/share/locale")
 
-MASKS = [Gdk.ModifierType.CONTROL_MASK, Gdk.ModifierType.MOD1_MASK,
-         Gdk.ModifierType.SHIFT_MASK, Gdk.ModifierType.SUPER_MASK]
+MASKS = [
+    Gdk.ModifierType.CONTROL_MASK,
+    Gdk.ModifierType.MOD1_MASK,
+    Gdk.ModifierType.SHIFT_MASK,
+    Gdk.ModifierType.SUPER_MASK,
+]
+
 
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
@@ -31,7 +32,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("keyboard, shortcut, hotkey")
-        sidePage = SidePage(_("Keyboard"), "cs-keyboard", keywords, content_box, size=550, module=self)
+        sidePage = SidePage(
+            _("Keyboard"), "cs-keyboard", keywords, content_box, size=550, module=self
+        )
         self.sidePage = sidePage
         self.current_category = None
         self.last_selected_category = None
@@ -70,35 +73,90 @@ class Module:
 
             self.sidePage.stack.add_titled(page, "typing", _("Typing"))
 
-            switch = GSettingsSwitch(_("Enable key repeat"), "org.cinnamon.desktop.peripherals.keyboard", "repeat")
+            switch = GSettingsSwitch(
+                _("Enable key repeat"),
+                "org.cinnamon.desktop.peripherals.keyboard",
+                "repeat",
+            )
             settings.add_row(switch)
 
-            slider = GSettingsRange(_("Repeat delay:"), "org.cinnamon.desktop.peripherals.keyboard", "delay", _("Short"), _("Long"), 100, 2000, show_value=False)
-            settings.add_reveal_row(slider, "org.cinnamon.desktop.peripherals.keyboard", "repeat")
+            slider = GSettingsRange(
+                _("Repeat delay:"),
+                "org.cinnamon.desktop.peripherals.keyboard",
+                "delay",
+                _("Short"),
+                _("Long"),
+                100,
+                2000,
+                show_value=False,
+            )
+            settings.add_reveal_row(
+                slider, "org.cinnamon.desktop.peripherals.keyboard", "repeat"
+            )
 
-            slider = GSettingsRange(_("Repeat speed:"), "org.cinnamon.desktop.peripherals.keyboard", "repeat-interval", _("Slow"), _("Fast"), 20, 2000, log=True, show_value=False, flipped=True)
-            settings.add_reveal_row(slider, "org.cinnamon.desktop.peripherals.keyboard", "repeat")
+            slider = GSettingsRange(
+                _("Repeat speed:"),
+                "org.cinnamon.desktop.peripherals.keyboard",
+                "repeat-interval",
+                _("Slow"),
+                _("Fast"),
+                20,
+                2000,
+                log=True,
+                show_value=False,
+                flipped=True,
+            )
+            settings.add_reveal_row(
+                slider, "org.cinnamon.desktop.peripherals.keyboard", "repeat"
+            )
 
             settings = page.add_section(_("Text cursor"))
 
-            switch = GSettingsSwitch(_("Text cursor blinks"), "org.cinnamon.desktop.interface", "cursor-blink")
+            switch = GSettingsSwitch(
+                _("Text cursor blinks"),
+                "org.cinnamon.desktop.interface",
+                "cursor-blink",
+            )
             settings.add_row(switch)
 
-            slider = GSettingsRange(_("Blink speed:"), "org.cinnamon.desktop.interface", "cursor-blink-time", _("Slow"), _("Fast"), 100, 2500, show_value=False, flipped=True)
-            settings.add_reveal_row(slider, "org.cinnamon.desktop.interface", "cursor-blink")
+            slider = GSettingsRange(
+                _("Blink speed:"),
+                "org.cinnamon.desktop.interface",
+                "cursor-blink-time",
+                _("Slow"),
+                _("Fast"),
+                100,
+                2500,
+                show_value=False,
+                flipped=True,
+            )
+            settings.add_reveal_row(
+                slider, "org.cinnamon.desktop.interface", "cursor-blink"
+            )
 
             vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
             vbox.set_border_width(6)
             vbox.set_spacing(6)
             self.sidePage.stack.add_titled(vbox, "shortcuts", _("Shortcuts"))
-            self.sidePage.stack.connect("notify::visible-child-name", self.stack_page_changed)
+            self.sidePage.stack.connect(
+                "notify::visible-child-name", self.stack_page_changed
+            )
 
             headingbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
             mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
             headingbox.pack_start(mainbox, True, True, 2)
-            headingbox.pack_end(Gtk.Label.new(_("To edit a keyboard binding, click it and press the new keys, or press backspace to clear it.")), False, False, 1)
+            headingbox.pack_end(
+                Gtk.Label.new(
+                    _(
+                        "To edit a keyboard binding, click it and press the new keys, or press backspace to clear it."
+                    )
+                ),
+                False,
+                False,
+                1,
+            )
 
-            paned = Gtk.Paned(orientation = Gtk.Orientation.HORIZONTAL)
+            paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL)
             paned.set_wide_handle(True)
 
             left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 2)
@@ -111,15 +169,21 @@ class Module:
             paned.add2(right_box)
 
             # Text entry search field
-            self.kb_search_entry = Gtk.Entry(placeholder_text=_("Type to search shortcuts"))
-            self.kb_search_handler_id = self.kb_search_entry.connect("changed", self.on_kb_search_changed)
+            self.kb_search_entry = Gtk.Entry(
+                placeholder_text=_("Type to search shortcuts")
+            )
+            self.kb_search_handler_id = self.kb_search_entry.connect(
+                "changed", self.on_kb_search_changed
+            )
 
             # Binding entry search field
             self.kb_search_frame = Gtk.Frame()
             self.kb_search_frame.set_shadow_type(Gtk.ShadowType.IN)
             frame_style = self.kb_search_frame.get_style_context()
             frame_style.add_class("view")
-            self.color_found, self.placeholder_rgba = frame_style.lookup_color("placeholder_text_color")
+            self.color_found, self.placeholder_rgba = frame_style.lookup_color(
+                "placeholder_text_color"
+            )
             self.kb_search_frame.set_no_show_all(True)
             self.kb_search_binding = ButtonKeybinding()
             self.kb_search_binding.set_valign(Gtk.Align.CENTER)
@@ -129,15 +193,16 @@ class Module:
             text_string = _("Click to search by accelerator")
             self.kb_search_binding.keybinding_cell.text_string = text_string
             if self.color_found:
-                self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", self.placeholder_rgba)
-            self.kb_search_binding.connect('accel-edited', self.onSearchBindingChanged)
-            self.kb_search_binding.connect('accel-cleared', self.onSearchBindingCleared)
+                self.kb_search_binding.keybinding_cell.set_property(
+                    "foreground-rgba", self.placeholder_rgba
+                )
+            self.kb_search_binding.connect("accel-edited", self.onSearchBindingChanged)
+            self.kb_search_binding.connect("accel-cleared", self.onSearchBindingCleared)
             self.kb_search_frame.add(self.kb_search_binding)
 
             # Search option dropdown
             self.kb_search_type = Gtk.ComboBox()
-            options = [(_("Shortcuts"), "shortcuts"),
-                       (_("Bindings"), "bindings")]
+            options = [(_("Shortcuts"), "shortcuts"), (_("Bindings"), "bindings")]
             model = Gtk.ListStore(str, str)
             for option in options:
                 model.append(option)
@@ -170,27 +235,29 @@ class Module:
 
             right_vbox.pack_start(kb_name_scroller, True, True, 2)
             right_vbox.pack_start(entry_scroller, True, True, 2)
-            kb_name_scroller.set_property('min-content-height', 150)
+            kb_name_scroller.set_property("min-content-height", 150)
             self.cat_tree = Gtk.TreeView(enable_search=False, search_column=-1)
             self.kb_tree = Gtk.TreeView(enable_search=False, search_column=-1)
             self.entry_tree = Gtk.TreeView(enable_search=False, search_column=-1)
 
-            self.kb_tree.connect('row-activated', self.onCustomKeyBindingEdited)
-            self.kb_tree.connect('button-release-event', self.onContextMenuPopup)
-            self.kb_tree.connect('key-release-event', self.onContextMenuPopup)
-            self.kb_tree.connect('map', self.bindingHighlightOnMap)
-            self.kb_tree.connect('focus-in-event', self.bindingHighlightOnMap)
-            self.kb_tree.connect('unmap', self.bindingHighlightOnUnmap)
-            self.kb_tree.connect('focus-out-event', self.bindingHighlightOnUnmap)
-            self.kb_tree.connect('destroy', self.bindingHighlightOff)
+            self.kb_tree.connect("row-activated", self.onCustomKeyBindingEdited)
+            self.kb_tree.connect("button-release-event", self.onContextMenuPopup)
+            self.kb_tree.connect("key-release-event", self.onContextMenuPopup)
+            self.kb_tree.connect("map", self.bindingHighlightOnMap)
+            self.kb_tree.connect("focus-in-event", self.bindingHighlightOnMap)
+            self.kb_tree.connect("unmap", self.bindingHighlightOnUnmap)
+            self.kb_tree.connect("focus-out-event", self.bindingHighlightOnUnmap)
+            self.kb_tree.connect("destroy", self.bindingHighlightOff)
 
-            self.entry_tree.connect('focus-in-event', self.bindingHighlightOnMap)
-            self.entry_tree.connect('focus-out-event', self.bindingHighlightOnUnmap)
+            self.entry_tree.connect("focus-in-event", self.bindingHighlightOnMap)
+            self.entry_tree.connect("focus-out-event", self.bindingHighlightOnUnmap)
 
             left_vbox.pack_start(category_scroller, True, True, 2)
 
             category_scroller.add(self.cat_tree)
-            category_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+            category_scroller.set_policy(
+                Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC
+            )
             kb_name_scroller.add(self.kb_tree)
             kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
             entry_scroller.add(self.entry_tree)
@@ -198,10 +265,14 @@ class Module:
 
             buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
             self.add_custom_button = Gtk.Button.new_with_label(_("Add custom shortcut"))
-            self.add_custom_button.connect('clicked', self.onAddCustomButtonClicked)
-            self.remove_custom_button = Gtk.Button.new_with_label(_("Remove custom shortcut"))
-            self.remove_custom_button.connect('clicked', self.onRemoveCustomButtonClicked)
-            self.remove_custom_button.set_property('sensitive', False)
+            self.add_custom_button.connect("clicked", self.onAddCustomButtonClicked)
+            self.remove_custom_button = Gtk.Button.new_with_label(
+                _("Remove custom shortcut")
+            )
+            self.remove_custom_button.connect(
+                "clicked", self.onRemoveCustomButtonClicked
+            )
+            self.remove_custom_button.set_property("sensitive", False)
             buttonbox.pack_start(self.add_custom_button, False, False, 2)
             buttonbox.pack_start(self.remove_custom_button, False, False, 2)
 
@@ -209,12 +280,16 @@ class Module:
 
             mainbox.pack_start(paned, True, True, 2)
 
-            self.cat_store = Gtk.TreeStore(str,     # Icon name or None
-                                           str,     # The category name
-                                           object)  # The category object
+            self.cat_store = Gtk.TreeStore(
+                str,  # Icon name or None
+                str,  # The category name
+                object,
+            )  # The category object
 
-            self.kb_root_store = Gtk.ListStore(str,     # Keybinding name
-                                               object)  # The keybinding object
+            self.kb_root_store = Gtk.ListStore(
+                str,  # Keybinding name
+                object,
+            )  # The keybinding object
 
             self.kb_store = Gtk.TreeModelFilter(child_model=self.kb_root_store)
             self.kb_store.set_visible_func(self.kb_store_visible_func)
@@ -231,7 +306,7 @@ class Module:
             cat_column.add_attribute(cell, "text", 1)
 
             cat_column.set_alignment(0)
-            cat_column.set_property('min-width', 200)
+            cat_column.set_property("min-width", 200)
 
             self.cat_tree.append_column(cat_column)
             self.cat_tree.connect("cursor-changed", self.onCategoryChanged)
@@ -243,22 +318,26 @@ class Module:
             self.cat_tree.connect("destroy", self.categoryHighlightOff)
 
             kb_name_cell = Gtk.CellRendererText()
-            kb_name_cell.set_alignment(.5, .5)
-            kb_column = Gtk.TreeViewColumn(_("Keyboard shortcuts"), kb_name_cell, text=0)
+            kb_name_cell.set_alignment(0.5, 0.5)
+            kb_column = Gtk.TreeViewColumn(
+                _("Keyboard shortcuts"), kb_name_cell, text=0
+            )
             kb_column.set_cell_data_func(kb_name_cell, self.kb_name_cell_data_func)
-            kb_column.set_alignment(.5)
+            kb_column.set_alignment(0.5)
             self.kb_tree.append_column(kb_column)
             self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
 
             entry_cell = CellRendererKeybinding(self.entry_tree)
-            entry_cell.set_alignment(.5, .5)
-            entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
-            entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
-            entry_cell.set_property('editable', True)
+            entry_cell.set_alignment(0.5, 0.5)
+            entry_cell.connect("accel-edited", self.onEntryChanged, self.entry_store)
+            entry_cell.connect("accel-cleared", self.onEntryCleared, self.entry_store)
+            entry_cell.set_property("editable", True)
 
-            entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, accel_string=0)
+            entry_column = Gtk.TreeViewColumn(
+                _("Keyboard bindings"), entry_cell, accel_string=0
+            )
             entry_column.connect("clicked", self.bindingHighlightOnMap)
-            entry_column.set_alignment(.5)
+            entry_column.set_alignment(0.5)
             self.entry_tree.append_column(entry_column)
 
             self.entry_tree.set_tooltip_text(CellRendererKeybinding.TOOLTIP_TEXT)
@@ -274,10 +353,16 @@ class Module:
                 if not category.parent:
                     cat_iters[category.int_name] = self.cat_store.append(None)
                 else:
-                    cat_iters[category.int_name] = self.cat_store.append(cat_iters[category.parent])
+                    cat_iters[category.int_name] = self.cat_store.append(
+                        cat_iters[category.parent]
+                    )
                 if category.icon:
-                    self.cat_store.set_value(cat_iters[category.int_name], 0, category.icon)
-                self.cat_store.set_value(cat_iters[category.int_name], 1, category.label)
+                    self.cat_store.set_value(
+                        cat_iters[category.int_name], 0, category.icon
+                    )
+                self.cat_store.set_value(
+                    cat_iters[category.int_name], 1, category.label
+                )
                 self.cat_store.set_value(cat_iters[category.int_name], 2, category)
                 if len(category.label) > len(longest_cat_label):
                     longest_cat_label = category.label
@@ -294,7 +379,9 @@ class Module:
             self.populate_kb_tree()
             self.kb_table.connect("binding-changed", self.on_kb_changed)
             self.kb_table.connect("spices-changed", lambda table: self.reload_spices())
-            self.kb_table.connect("customs-changed", lambda table: self.reload_customs())
+            self.kb_table.connect(
+                "customs-changed", lambda table: self.reload_customs()
+            )
 
             vbox.pack_start(headingbox, True, True, 0)
 
@@ -360,7 +447,9 @@ class Module:
                 self.current_category = category
                 self.kb_store.refilter()
 
-                self.remove_custom_button.set_property("sensitive", category.int_name == "custom")
+                self.remove_custom_button.set_property(
+                    "sensitive", category.int_name == "custom"
+                )
 
     def on_kb_search_changed(self, entry, data=None):
         self.cat_tree.get_selection().unselect_all()
@@ -427,7 +516,10 @@ class Module:
 
         while tree_iter:
             keybinding = self.kb_root_store.get_value(tree_iter, 1)
-            if keybinding.category not in (*self.kb_table.static_categories.keys(), "custom"):
+            if keybinding.category not in (
+                *self.kb_table.static_categories.keys(),
+                "custom",
+            ):
                 if not self.kb_root_store.remove(tree_iter):
                     break
                 continue
@@ -441,7 +533,11 @@ class Module:
     def kb_name_cell_data_func(self, column, cell, model, tree_iter, data=None):
         binding = model.get_value(tree_iter, 1)
 
-        if binding and self.kb_search_entry.get_text() or self.kb_search_binding.get_accel_string():
+        if (
+            binding
+            and self.kb_search_entry.get_text()
+            or self.kb_search_binding.get_accel_string()
+        ):
             category = escape(self.kb_table.binding_categories[binding.category])
             __, *num = binding.category.split("_")
             _id = f" {num[0]}" if num else ""
@@ -462,20 +558,26 @@ class Module:
             if search:
                 return search in keybinding.label.lower().strip()
 
-            if self.current_category and hasattr(self.current_category, 'int_name'):
+            if self.current_category and hasattr(self.current_category, "int_name"):
                 return keybinding.category == self.current_category.int_name
         else:
-            if not self.current_category and not self.kb_search_binding.get_accel_string():
+            if (
+                not self.current_category
+                and not self.kb_search_binding.get_accel_string()
+            ):
                 return False
 
             keybinding = self.kb_root_store.get_value(tree_iter, 1)
 
             search = self.kb_search_binding.get_accel_string()
             if search:
-                entries = [Gtk.accelerator_parse_with_keycode(entry) for entry in keybinding.entries]
+                entries = [
+                    Gtk.accelerator_parse_with_keycode(entry)
+                    for entry in keybinding.entries
+                ]
                 return Gtk.accelerator_parse_with_keycode(search) in entries
 
-            if self.current_category and hasattr(self.current_category, 'int_name'):
+            if self.current_category and hasattr(self.current_category, "int_name"):
                 return keybinding.category == self.current_category.int_name
 
     def onKeyBindingChanged(self, tree):
@@ -483,12 +585,23 @@ class Module:
 
         if tree.get_selection():
             keybindings, tree_iter = tree.get_selection().get_selected()
-            if tree_iter and self.search_choice == "bindings" and self.kb_search_binding.accel_string:
+            if (
+                tree_iter
+                and self.search_choice == "bindings"
+                and self.kb_search_binding.accel_string
+            ):
                 pass
-            elif tree_iter and self.search_choice == "bindings" and self.last_accel_string and self.kb_search_binding.accel_string:
+            elif (
+                tree_iter
+                and self.search_choice == "bindings"
+                and self.last_accel_string
+                and self.kb_search_binding.accel_string
+            ):
                 if self.last_accel_string != self.kb_search_binding.accel_string:
                     if self.color_found:
-                        self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", self.placeholder_rgba)
+                        self.kb_search_binding.keybinding_cell.set_property(
+                            "foreground-rgba", self.placeholder_rgba
+                        )
                     self.last_accel_string = self.kb_search_binding.accel_string
                     self.kb_search_binding.keybinding_cell.set_value(None)
                     self.kb_search_binding.accel_string = ""
@@ -499,7 +612,10 @@ class Module:
                 for entry in keybinding.entries:
                     if entry != "_invalid_":
                         self.entry_store.append((entry,))
-                self.remove_custom_button.set_property('sensitive', isinstance(keybinding, KeybindingTable.CustomKeyBinding))
+                self.remove_custom_button.set_property(
+                    "sensitive",
+                    isinstance(keybinding, KeybindingTable.CustomKeyBinding),
+                )
 
             if self.search_choice == "bindings" and self.kb_search_binding.accel_string:
                 self.last_accel_string = self.kb_search_binding.accel_string
@@ -509,7 +625,9 @@ class Module:
         if kb_iter:
             current_keybinding = keybindings.get_value(kb_iter, 1)
 
-        self.kb_table.maybe_update_binding(current_keybinding, accel_string, accel_label, int(path))
+        self.kb_table.maybe_update_binding(
+            current_keybinding, accel_string, accel_label, int(path)
+        )
 
         self.entry_tree.get_selection().select_path(path)
 
@@ -531,7 +649,9 @@ class Module:
 
     def onSearchBindingCleared(self, cell):
         if self.color_found:
-            self.kb_search_binding.keybinding_cell.set_property("foreground-rgba", self.placeholder_rgba)
+            self.kb_search_binding.keybinding_cell.set_property(
+                "foreground-rgba", self.placeholder_rgba
+            )
         self.kb_search_binding.keybinding_cell.set_value(None)
         self.kb_search_binding.accel_string = ""
         self.kb_search_binding.load_model()
@@ -546,8 +666,9 @@ class Module:
             dialog.destroy()
             return
 
-        self.kb_table.add_custom_keybinding(dialog.name_entry.get_text(),
-                                            dialog.command_entry.get_text())
+        self.kb_table.add_custom_keybinding(
+            dialog.name_entry.get_text(), dialog.command_entry.get_text()
+        )
 
         self.reload_customs()
         self.kb_store.refilter()
@@ -590,23 +711,31 @@ class Module:
                 dialog.destroy()
                 return
 
-            self.kb_table.update_custom_keybinding_details(keybinding, dialog.name_entry.get_text(), dialog.command_entry.get_text())
+            self.kb_table.update_custom_keybinding_details(
+                keybinding,
+                dialog.name_entry.get_text(),
+                dialog.command_entry.get_text(),
+            )
 
             self.reload_customs()
             self.kb_store.refilter()
 
             for index, cat in enumerate(self.cat_store):
                 if cat[2].int_name == "custom":
-                    self.cat_tree.set_cursor(str(index), self.cat_tree.get_column(0), False)
+                    self.cat_tree.set_cursor(
+                        str(index), self.cat_tree.get_column(0), False
+                    )
             for index, keybinding in enumerate(self.kb_store):
                 if keybinding[0] == dialog.name_entry.get_text():
-                    self.kb_tree.set_cursor(str(index), self.kb_tree.get_column(0), False)
+                    self.kb_tree.set_cursor(
+                        str(index), self.kb_tree.get_column(0), False
+                    )
 
             dialog.destroy()
 
     def onContextMenuPopup(self, tree, event=None):
         for mask in MASKS:
-            if hasattr(event, 'state') and event.state & mask == mask:
+            if hasattr(event, "state") and event.state & mask == mask:
                 return
         model, tree_iter = tree.get_selection().get_selected()
         binding = model.get_value(tree_iter, 1) if tree_iter else None
@@ -626,12 +755,13 @@ class Module:
             else:
                 for category in self.kb_table.main_store:
                     if category.int_name == binding.category:
-                        cat_iter = self.recurseCatTree(self.cat_store.get_iter_first(), binding.category)
+                        cat_iter = self.recurseCatTree(
+                            self.cat_store.get_iter_first(), binding.category
+                        )
                         _path = self.cat_store.get_path(cat_iter)
                         self.cat_tree.expand_to_path(_path)
                         self.cat_tree.set_cursor(_path)
                         break
-
 
         if not self.current_category:
             for cat in self.kb_table.main_store:
@@ -640,7 +770,11 @@ class Module:
                     break
 
         if binding == self.last_selected_binding:
-            if event and event.type != Gdk.EventType.BUTTON_RELEASE or event.button != 3:
+            if (
+                event
+                and event.type != Gdk.EventType.BUTTON_RELEASE
+                or event.button != 3
+            ):
                 return Gdk.EVENT_PROPAGATE
 
         self.last_selected_binding = binding
@@ -673,7 +807,7 @@ class Module:
             popup_reset_item = Gtk.MenuItem(_("Reset to default"))
             popup_reset_item.show()
             popup.append(popup_reset_item)
-            popup_reset_item.connect('activate', self.onResetToDefault, binding)
+            popup_reset_item.connect("activate", self.onResetToDefault, binding)
             popup.popup(None, None, None, None, button, event_time)
 
             return True
@@ -749,31 +883,40 @@ class Module:
 
         self.last_selected_binding = None
 
+
 class AddCustomDialog(Gtk.Dialog):
     def __init__(self, edit_mode):
         if edit_mode:
             ok_button_label = _("Update")
         else:
             ok_button_label = _("Add")
-        super(AddCustomDialog, self).__init__(_("Add custom shortcut"),
-                                              None,
-                                              0,
-                                              (ok_button_label, Gtk.ResponseType.OK,
-                                               _("Cancel"), Gtk.ResponseType.CANCEL))
+        super(AddCustomDialog, self).__init__(
+            _("Add custom shortcut"),
+            None,
+            0,
+            (
+                ok_button_label,
+                Gtk.ResponseType.OK,
+                _("Cancel"),
+                Gtk.ResponseType.CANCEL,
+            ),
+        )
         self.set_default_size(350, 100)
         name_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
         command_box = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
         name_box.pack_start(Gtk.Label.new(_("Name:")), False, False, 2)
         command_box.pack_start(Gtk.Label.new(_("Command:")), False, False, 2)
         self.name_entry = Gtk.Entry()
-        self.name_entry.connect('changed', self.onEntriesChanged)
+        self.name_entry.connect("changed", self.onEntriesChanged)
         self.command_entry = Gtk.Entry()
-        self.command_entry.connect('changed', self.onEntriesChanged)
+        self.command_entry.connect("changed", self.onEntriesChanged)
         name_box.pack_start(self.name_entry, True, True, 2)
         command_box.pack_start(self.command_entry, True, True, 2)
 
-        self.file_picker = Gtk.FileChooserButton(_("Select a file"), Gtk.FileChooserAction.OPEN)
-        self.file_picker.connect('file-set', self.onFilePicked)
+        self.file_picker = Gtk.FileChooserButton(
+            _("Select a file"), Gtk.FileChooserAction.OPEN
+        )
+        self.file_picker.connect("file-set", self.onFilePicked)
         command_box.pack_start(self.file_picker, False, False, 2)
 
         self.vbox.pack_start(name_box, True, True, 2)
@@ -786,5 +929,7 @@ class AddCustomDialog(Gtk.Dialog):
         self.command_entry.set_text(file.get_path().replace(" ", r"\ "))
 
     def onEntriesChanged(self, widget):
-        ok_enabled = self.name_entry.get_text().strip() and self.command_entry.get_text().strip()
+        ok_enabled = (
+            self.name_entry.get_text().strip() and self.command_entry.get_text().strip()
+        )
         self.set_response_sensitive(Gtk.ResponseType.OK, ok_enabled)

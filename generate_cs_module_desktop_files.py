@@ -12,20 +12,20 @@ import traceback
 DOMAIN = "cinnamon"
 PATH = "/usr/share/locale"
 
-os.environ['LANGUAGE'] = "en_US.UTF-8"
+os.environ["LANGUAGE"] = "en_US.UTF-8"
 gettext.install(DOMAIN, PATH)
 
 try:
-    sys.path.append('files/usr/share/cinnamon/cinnamon-settings')
-    sys.path.append('files/usr/share/cinnamon/cinnamon-settings/modules')
-    sys.path.append('files/usr/share/cinnamon/cinnamon-settings/bin')
-    mod_files = glob.glob('files/usr/share/cinnamon/cinnamon-settings/modules/*.py')
+    sys.path.append("files/usr/share/cinnamon/cinnamon-settings")
+    sys.path.append("files/usr/share/cinnamon/cinnamon-settings/modules")
+    sys.path.append("files/usr/share/cinnamon/cinnamon-settings/bin")
+    mod_files = glob.glob("files/usr/share/cinnamon/cinnamon-settings/modules/*.py")
     mod_files.sort()
     if len(mod_files) == 0:
         print("No settings modules found!!")
         sys.exit(1)
 
-    mod_files = [x.split('/')[-1].split('.')[0] for x in mod_files]
+    mod_files = [x.split("/")[-1].split(".")[0] for x in mod_files]
 
     for mod_file in mod_files:
         if mod_file[0:3] != "cs_":
@@ -62,9 +62,19 @@ Exec=cinnamon-settings %(module)s
 Type=Application
 OnlyShowIn=X-Cinnamon;
 Categories=Settings;
-""" % {'module': mod.name, 'category': category, 'icon': mod.sidePage.icon}
+""" % {"module": mod.name, "icon": mod.sidePage.icon}
 
-        additionalfiles.generate(DOMAIN, PATH, "files/usr/share/applications/cinnamon-settings-%s.desktop" % name, prefix, mod.sidePage.name, mod.comment, "", None, mod.sidePage.keywords)
+        additionalfiles.generate(
+            DOMAIN,
+            PATH,
+            "files/usr/share/applications/cinnamon-settings-%s.desktop" % name,
+            prefix,
+            mod.sidePage.name,
+            mod.comment,
+            "",
+            None,
+            mod.sidePage.keywords,
+        )
 
     except Exception:
         print("Failed to load module %s" % module)

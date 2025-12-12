@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 import pageutils
 
+
 class ModulePage(pageutils.BaseListView):
     def __init__(self, parent):
         store = Gtk.ListStore(int, str, str, str, str, str)
@@ -33,7 +34,7 @@ class ModulePage(pageutils.BaseListView):
             self._changed = False
 
     def cell_data_func_id(self, column, cell, model, tree_iter, data=None):
-        cell.set_property("text", "r(%d)" %  model.get_value(tree_iter, 0))
+        cell.set_property("text", "r(%d)" % model.get_value(tree_iter, 0))
 
     def on_row_activated(self, treeview, path, view_column):
         tree_iter = self.store.get_iter(path)
@@ -42,7 +43,9 @@ class ModulePage(pageutils.BaseListView):
         obj_type = self.store.get_value(tree_iter, 2)
         value = self.store.get_value(tree_iter, 5)
 
-        self.parent.pages["inspect"].inspect_element("r(%d)" % result_id, obj_type, name, value)
+        self.parent.pages["inspect"].inspect_element(
+            "r(%d)" % result_id, obj_type, name, value
+        )
 
     def on_status_change(self, proxy, online):
         if online:
@@ -54,12 +57,16 @@ class ModulePage(pageutils.BaseListView):
         if success:
             try:
                 for item in data:
-                    self.store.append([int(item["index"]),
-                                       item["command"],
-                                       item["type"],
-                                       pageutils.shorten_value(item["object"]),
-                                       item["tooltip"],
-                                       item["object"]])
+                    self.store.append(
+                        [
+                            int(item["index"]),
+                            item["command"],
+                            item["type"],
+                            pageutils.shorten_value(item["object"]),
+                            item["tooltip"],
+                            item["object"],
+                        ]
+                    )
                 self._changed = True
             except Exception as exc:
                 print(exc)

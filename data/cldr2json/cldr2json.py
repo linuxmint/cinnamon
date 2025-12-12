@@ -28,55 +28,55 @@ import sys
 import xml.etree.ElementTree
 
 import gi
-gi.require_version('GnomeDesktop', '3.0')   # NOQA: E402
+
+gi.require_version("GnomeDesktop", "3.0")  # NOQA: E402
 from gi.repository import GnomeDesktop
 
-ESCAPE_PATTERN = re.compile(r'\\u\{([0-9A-Fa-f]+?)\}')
-ISO_PATTERN = re.compile(r'[A-E]([0-9]+)')
+ESCAPE_PATTERN = re.compile(r"\\u\{([0-9A-Fa-f]+?)\}")
+ISO_PATTERN = re.compile(r"[A-E]([0-9]+)")
 
 LOCALE_TO_XKB_OVERRIDES = {
-    'af':    'za',
-    'en':    'us',
-    'en-GB': 'uk',
-    'es-US': 'latam',
-    'fr-CA': 'ca',
-    'hi':    'in+bolnagri',
-    'ky':    'kg',
-    'nl-BE': 'be',
-    'zu':    None
+    "af": "za",
+    "en": "us",
+    "en-GB": "uk",
+    "es-US": "latam",
+    "fr-CA": "ca",
+    "hi": "in+bolnagri",
+    "ky": "kg",
+    "nl-BE": "be",
+    "zu": None,
 }
 
 
 def parse_single_key(value):
     def unescape(m):
         return chr(int(m.group(1), 16))
+
     value = ESCAPE_PATTERN.sub(unescape, value)
     return value
 
 
 def parse_rows(keymap):
     unsorted_rows = {}
-    for _map in keymap.iter('map'):
-        value = _map.get('to')
+    for _map in keymap.iter("map"):
+        value = _map.get("to")
         key = [parse_single_key(value)]
-        iso = _map.get('iso')
+        iso = _map.get("iso")
         if not ISO_PATTERN.match(iso):
-            sys.stderr.write('invalid ISO key name: %s\n' % iso)
+            sys.stderr.write("invalid ISO key name: %s\n" % iso)
             continue
-        if not iso[0] in unsorted_rows:
+        if iso[0] not in unsorted_rows:
             unsorted_rows[iso[0]] = []
         unsorted_rows[iso[0]].append((int(iso[1:]), key))
         # add subkeys
-        longPress = _map.get('longPress')
+        longPress = _map.get("longPress")
         if longPress:
-            for value in longPress.split(' '):
+            for value in longPress.split(" "):
                 subkey = parse_single_key(value)
                 key.append(subkey)
 
     rows = []
-    for k, v in sorted(list(unsorted_rows.items()),
-                       key=lambda x: x[0],
-                       reverse=True):
+    for k, v in sorted(list(unsorted_rows.items()), key=lambda x: x[0], reverse=True):
         row = []
         for key in sorted(v, key=lambda x: x):
             row.append(key[1])
@@ -96,17 +96,17 @@ def convert_xml(tree):
     root["name"] = name
     root["levels"] = []
     # parse levels
-    for index, keymap in enumerate(tree.iter('keyMap')):
+    for index, keymap in enumerate(tree.iter("keyMap")):
         # FIXME: heuristics here
-        modifiers = keymap.get('modifiers')
+        modifiers = keymap.get("modifiers")
         if not modifiers:
-            mode = 'default'
-            modifiers = ''
-        elif 'shift' in modifiers.split(' '):
-            mode = 'latched'
-            modifiers = 'shift'
+            mode = "default"
+            modifiers = ""
+        elif "shift" in modifiers.split(" "):
+            mode = "latched"
+            modifiers = "shift"
         else:
-            mode = 'locked'
+            mode = "locked"
         level = {}
         level["level"] = modifiers
         level["mode"] = mode
@@ -118,34 +118,40 @@ def convert_xml(tree):
 def locale_to_xkb(locale, name):
     if locale in sorted(LOCALE_TO_XKB_OVERRIDES.keys()):
         xkb = LOCALE_TO_XKB_OVERRIDES[locale]
-        logging.debug("override for %s → %s",
-                      locale, xkb)
+        logging.debug("override for %s → %s", locale, xkb)
         if xkb:
             return xkb
         else:
-            raise KeyError("layout %s explicitely disabled in overrides"
-                           % locale)
+            raise KeyError("layout %s explicitely disabled in overrides" % locale)
     xkb_names = sorted(name_to_xkb.keys())
     if name in xkb_names:
         return name_to_xkb[name]
     else:
         logging.debug("name %s failed" % name)
-    for sub_name in name.split(' '):
+    for sub_name in name.split(" "):
         if sub_name in xkb_names:
             xkb = name_to_xkb[sub_name]
-            logging.debug("dumb mapping failed but match with locale word: "
-                          "%s (%s) → %s (%s)",
-                          locale, name, xkb, sub_name)
+            logging.debug(
+                "dumb mapping failed but match with locale word: %s (%s) → %s (%s)",
+                locale,
+                name,
+                xkb,
+                sub_name,
+            )
             return xkb
         else:
             logging.debug("sub_name failed")
     for xkb_name in xkb_names:
-        for xkb_sub_name in xkb_name.split(' '):
-            if xkb_sub_name.strip('()') == name:
+        for xkb_sub_name in xkb_name.split(" "):
+            if xkb_sub_name.strip("()") == name:
                 xkb = name_to_xkb[xkb_name]
-                logging.debug("dumb mapping failed but match with xkb word: "
-                              "%s (%s) → %s (%s)",
-                              locale, name, xkb, xkb_name)
+                logging.debug(
+                    "dumb mapping failed but match with xkb word: %s (%s) → %s (%s)",
+                    locale,
+                    name,
+                    xkb,
+                    xkb_name,
+                )
                 return xkb
     raise KeyError("failed to find XKB mapping for %s" % locale)
 
@@ -166,9 +172,9 @@ def convert_file(source_file, destination_path):
     destination_file = os.path.join(destination_path, xkb_name + ".json")
 
     try:
-        with open(destination_file, 'x', encoding="utf-8") as dest_fd:
+        with open(destination_file, "x", encoding="utf-8") as dest_fd:
             json.dump(root, dest_fd, ensure_ascii=False, indent=2, sort_keys=True)
-    except FileExistsError as e:
+    except FileExistsError:
         logging.info("File %s exists, not updating", destination_file)
         return False
 

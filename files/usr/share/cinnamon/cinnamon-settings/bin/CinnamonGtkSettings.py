@@ -1,7 +1,6 @@
 #!/usr/bin/python3
 
 import os.path
-import signal
 
 try:
     import tinycss2
@@ -9,14 +8,16 @@ except:
     pass
 
 import gi
+
 gi.require_version("Gtk", "3.0")
-from gi.repository import GLib, Gtk, Gio, GObject
+from gi.repository import GLib, Gtk, Gio
 
 from xapp.SettingsWidgets import SettingsWidget, Range, Switch
 
 SETTINGS_GROUP_NAME = "Settings"
 
 ini_instance = None
+
 
 def get_ini_editor():
     global ini_instance
@@ -26,13 +27,13 @@ def get_ini_editor():
 
     return ini_instance
 
+
 class GtkSettingsEditor:
     def __init__(self):
-        self._path = os.path.join(GLib.get_user_config_dir(),
-                                  "gtk-3.0",
-                                  "settings.ini")
+        self._path = os.path.join(GLib.get_user_config_dir(), "gtk-3.0", "settings.ini")
 
         self.default_settings = Gtk.Settings.get_default()
+
     def _get_keyfile(self):
         keyfile = None
         try:
@@ -62,6 +63,7 @@ class GtkSettingsEditor:
         except:
             raise
 
+
 class GtkSettingsSwitch(Switch):
     def __init__(self, markup, setting_name=None):
         self.setting_name = setting_name
@@ -74,7 +76,9 @@ class GtkSettingsSwitch(Switch):
     def on_switch_active_changed(self, switch, pspec, data=None):
         self.settings.set_boolean(self.setting_name, self.content_widget.get_active())
 
+
 css_instance = None
+
 
 def get_css_editor(selector=None):
     global css_instance
@@ -84,18 +88,20 @@ def get_css_editor(selector=None):
 
     return css_instance
 
+
 class CSSSettingsException(Exception):
     pass
 
+
 class GtkCssEditor:
     def __init__(self, selector):
-        self._path = os.path.join(GLib.get_user_config_dir(),
-                                  "gtk-3.0",
-                                  "gtk.css")
+        self._path = os.path.join(GLib.get_user_config_dir(), "gtk-3.0", "gtk.css")
 
         self.selector = selector
 
-        self.rule_separator = f"/***** {self.selector} - cinnamon-settings-generated - do not edit *****/"
+        self.rule_separator = (
+            f"/***** {self.selector} - cinnamon-settings-generated - do not edit *****/"
+        )
         rules = []
 
         file = Gio.File.new_for_path(self._path)
@@ -115,7 +121,9 @@ class GtkCssEditor:
                 self._contents = ""
                 self.stylesheet = rules
             else:
-                raise PermissionError("Could not load ~/.config/gtk-3.0/gtk.css file, check permissions")
+                raise PermissionError(
+                    "Could not load ~/.config/gtk-3.0/gtk.css file, check permissions"
+                )
 
     def sanitize_contents(self):
         in_lines = self._contents.split("\n")
@@ -212,8 +220,9 @@ class GtkCssEditor:
         if rs.content:
             prefix = rs.content[0].value
 
-        component_values = tinycss2.parse_component_value_list(prefix + decl_name +
-                                                               ": " + value_as_str + ";")
+        component_values = tinycss2.parse_component_value_list(
+            prefix + decl_name + ": " + value_as_str + ";"
+        )
         for component_value in component_values:
             self.stylesheet[idx].content.append(component_value)
 
@@ -226,12 +235,17 @@ class GtkCssEditor:
         new_content = []
         for component_value in content:
             idx += 1
-            if len(content) != idx and isinstance(content[idx], tinycss2.ast.IdentToken) and \
-               content[idx].value == declaration.name and \
-               isinstance(component_value, tinycss2.ast.WhitespaceToken):
+            if (
+                len(content) != idx
+                and isinstance(content[idx], tinycss2.ast.IdentToken)
+                and content[idx].value == declaration.name
+                and isinstance(component_value, tinycss2.ast.WhitespaceToken)
+            ):
                 continue
-            if isinstance(component_value, tinycss2.ast.IdentToken) and \
-               component_value.value == declaration.name:
+            if (
+                isinstance(component_value, tinycss2.ast.IdentToken)
+                and component_value.value == declaration.name
+            ):
                 found_ident = True
                 continue
             if found_ident:
@@ -239,12 +253,16 @@ class GtkCssEditor:
                     if ident_idx == 0 or done:
                         done = False
                         continue
-                if len(declaration.value) - 1 == ident_idx and \
-                   component_value == declaration.value[ident_idx]:
+                if (
+                    len(declaration.value) - 1 == ident_idx
+                    and component_value == declaration.value[ident_idx]
+                ):
                     done = True
                     continue
-                if component_value == declaration.value[ident_idx] and \
-                   content[idx] == declaration.value[ident_idx + 1]:
+                if (
+                    component_value == declaration.value[ident_idx]
+                    and content[idx] == declaration.value[ident_idx + 1]
+                ):
                     ident_idx += 1
                     continue
             new_content.append(component_value)
@@ -261,7 +279,9 @@ class GtkCssEditor:
 
         for declaration in declarations:
             if decl_name == declaration.name:
-                new_content = self._remove_declaration_from_content(declaration, rs.content)
+                new_content = self._remove_declaration_from_content(
+                    declaration, rs.content
+                )
 
                 if not new_content:
                     self.stylesheet.remove(rs)
@@ -297,6 +317,7 @@ class GtkCssEditor:
         except PermissionError as e:
             print(e)
 
+
 class CssOverrideSwitch(Switch):
     def __init__(self, markup, setting_name=None):
         self.setting_name = setting_name
@@ -304,13 +325,26 @@ class CssOverrideSwitch(Switch):
 
         self.content_widget.set_active(False)
 
+
 class CssRange(Range):
-    def __init__(self, markup, selector, decl_names, mini, maxi, units="", tooltip="", switch_widget=None):
+    def __init__(
+        self,
+        markup,
+        selector,
+        decl_names,
+        mini,
+        maxi,
+        units="",
+        tooltip="",
+        switch_widget=None,
+    ):
         # we override get_range() on the SettingsWidget, these properties need to exist before super()
         self.mini = mini
         self.maxi = maxi
 
-        super(CssRange, self).__init__(markup, units=units, mini=mini, maxi=maxi, step=1, tooltip=tooltip)
+        super(CssRange, self).__init__(
+            markup, units=units, mini=mini, maxi=maxi, step=1, tooltip=tooltip
+        )
 
         self.units = units
 
@@ -373,6 +407,7 @@ class CssRange(Range):
 
             editor.save_stylesheet()
             self.timer = 0
+
         if self.timer > 0:
             GLib.source_remove(self.timer)
         self.timer = GLib.timeout_add(300, apply, self)
@@ -380,21 +415,28 @@ class CssRange(Range):
     def get_range(self):
         return [self.mini, self.maxi]
 
+
 class PreviewWidget(SettingsWidget):
     def __init__(self):
         super(PreviewWidget, self).__init__()
 
         self.builder = Gtk.Builder()
-        self.builder.set_translation_domain('cinnamon')
-        self.builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/scrollbar-test-widget.glade")
+        self.builder.set_translation_domain("cinnamon")
+        self.builder.add_from_file(
+            "/usr/share/cinnamon/cinnamon-settings/bin/scrollbar-test-widget.glade"
+        )
 
         self.content_widget = self.builder.get_object("content_box")
         self.content_widget.set_valign(Gtk.Align.CENTER)
         self.scrolled_window = self.builder.get_object("scrolled_window")
         self.pack_start(self.content_widget, True, True, 0)
 
-        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
-        self.interface_settings.connect("changed::gtk-overlay-scrollbars", self.on_overlay_scrollbars_changed)
+        self.interface_settings = Gio.Settings(
+            schema_id="org.cinnamon.desktop.interface"
+        )
+        self.interface_settings.connect(
+            "changed::gtk-overlay-scrollbars", self.on_overlay_scrollbars_changed
+        )
         self.update_overlay_state()
 
     def update_overlay_state(self):
@@ -405,6 +447,7 @@ class PreviewWidget(SettingsWidget):
 
     def on_overlay_scrollbars_changed(self, settings, key, data=None):
         self.update_overlay_state()
+
 
 class Gtk2ScrollbarSizeEditor:
     def __init__(self, ui_scale):
@@ -447,7 +490,9 @@ class Gtk2ScrollbarSizeEditor:
 
         if size > 0:
             style_prop = f"GtkScrollbar::slider-width = {size:d}"
-            final_contents = c[:self.style_prop_start] + style_prop + c[self.style_prop_start:]
+            final_contents = (
+                c[: self.style_prop_start] + style_prop + c[self.style_prop_start :]
+            )
         else:
             final_contents = self._contents
 
@@ -457,11 +502,9 @@ class Gtk2ScrollbarSizeEditor:
             # If a path is specified through GTK2_RC_FILES, ensure it exists
             if not self._file.get_parent().query_exists():
                 self._file.get_parent().make_directory_with_parents()
-            self._file.replace_contents(final_contents.encode("utf-8"),
-                                        None,
-                                        False,
-                                        0,
-                                        None)
+            self._file.replace_contents(
+                final_contents.encode("utf-8"), None, False, 0, None
+            )
         except GLib.Error as e:
             print(f"Could not save .gtkrc-2.0 file: {e.message}")
 
@@ -499,7 +542,9 @@ class "GtkScrollbar" style "cs-scrollbar-style"
                     while i < len(c):
                         if c[i] == "}":
                             close_bracket = i
-                            self._contents = c[:open_bracket] + "\n\n" + c[close_bracket:]
+                            self._contents = (
+                                c[:open_bracket] + "\n\n" + c[close_bracket:]
+                            )
                             self.style_prop_start = open_bracket + 1
                             return True
                         i += 1
@@ -574,4 +619,4 @@ class "GtkScrollbar" style "cs-scrollbar-style"
                 self.number_end = i
                 break
 
-        self._contents = c[:self.style_prop_start] + c[self.number_end:]
+        self._contents = c[: self.style_prop_start] + c[self.number_end :]

@@ -1,20 +1,26 @@
 #!/usr/bin/python3
-#-*-indent-tabs-mode: nil-*-
+# -*-indent-tabs-mode: nil-*-
 
 import sys
 import os.path
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gio, GLib
 
 SCHEMAS = "org.cinnamon.desklets.launcher"
 LAUNCHER_KEY = "launcher-list"
 
-HOME_DIR = os.path.expanduser("~")+"/"
-CUSTOM_LAUNCHERS_PATH = os.path.join(GLib.get_user_data_dir(), "cinnamon", "panel-launchers")
+HOME_DIR = os.path.expanduser("~") + "/"
+CUSTOM_LAUNCHERS_PATH = os.path.join(
+    GLib.get_user_data_dir(), "cinnamon", "panel-launchers"
+)
 OLD_CUSTOM_LAUNCHERS_PATH = HOME_DIR + ".cinnamon/panel-launchers/"
-EDITOR_DIALOG_UI_PATH = "/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui"
+EDITOR_DIALOG_UI_PATH = (
+    "/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui"
+)
+
 
 class EditorDialog:
     def __init__(self, desklet_id=-1):
@@ -23,7 +29,7 @@ class EditorDialog:
         self.name = ""
         self.desklet_id = desklet_id
 
-        if desklet_id != - 1:
+        if desklet_id != -1:
             launcher_list = self.launcher_settings.get_strv(LAUNCHER_KEY)
             launcher = ""
             for item in launcher_list:
@@ -36,7 +42,7 @@ class EditorDialog:
                 self.launcher_type = "Custom Application"
 
         self.tree = Gtk.Builder()
-        self.tree.set_translation_domain('cinnamon') # let it translate!
+        self.tree.set_translation_domain("cinnamon")  # let it translate!
         self.tree.add_from_file(EDITOR_DIALOG_UI_PATH)
 
         self.dialog = self.tree.get_object("dialog")
@@ -50,9 +56,14 @@ class EditorDialog:
         self.name_entry.set_text(self.name)
 
         self.model = self.launcher_type_combo_box.get_model()
-        self.citer = [self.model.get_iter_from_string("0"),self.model.get_iter_from_string("1")]
+        self.citer = [
+            self.model.get_iter_from_string("0"),
+            self.model.get_iter_from_string("1"),
+        ]
 
-        self.launcher_type_combo_box.set_active_iter(self.citer[self.launcher_type_to_index(self.launcher_type)])
+        self.launcher_type_combo_box.set_active_iter(
+            self.citer[self.launcher_type_to_index(self.launcher_type)]
+        )
         self.update_sensitivity()
         self.set_fields_by_name()
         self.on_icon_changed(self.icon_name_entry.get_text())
@@ -64,7 +75,7 @@ class EditorDialog:
         self.dialog.connect("key_release_event", self.on_key_release_event)
         Gtk.main()
 
-    def launcher_type_to_index(self,launcher_type):
+    def launcher_type_to_index(self, launcher_type):
         if launcher_type == "Application":
             return 0
         elif launcher_type == "Custom Application":
@@ -104,7 +115,7 @@ class EditorDialog:
             self.icon_name_entry.set_text(application.icon_name)
 
     def on_key_release_event(self, widget, event):
-        if event.keyval == 65293: # Enter button
+        if event.keyval == 65293:  # Enter button
             self.on_edit_ok_clicked(widget)
 
     def on_edit_close_clicked(self, widget):
@@ -120,7 +131,7 @@ class EditorDialog:
 
         enabled_desklets = None
 
-        if self.desklet_id == -1: # Add new launcher
+        if self.desklet_id == -1:  # Add new launcher
             settings = Gio.Settings.new("org.cinnamon")
             self.desklet_id = settings.get_int("next-desklet-id")
             settings.set_int("next-desklet-id", self.desklet_id + 1)
@@ -151,7 +162,7 @@ class EditorDialog:
 
         i = 1
         while True:
-            name = 'cinnamon-custom-launcher-' + str(i) + '.desktop'
+            name = "cinnamon-custom-launcher-" + str(i) + ".desktop"
             path = os.path.join(CUSTOM_LAUNCHERS_PATH, name)
             oldPath = os.path.join(OLD_CUSTOM_LAUNCHERS_PATH, name)
             if not os.path.exists(path) and not os.path.exists(oldPath):
@@ -165,9 +176,15 @@ class EditorDialog:
         title = self.title_entry.get_text()
         command = self.command_entry.get_text()
         icon_name = self.icon_name_entry.get_text()
-        _file = open(file_path,"w+")
+        _file = open(file_path, "w+")
 
-        write_list=["[Desktop Entry]\n","Type=Application\n", "Name=" + title + "\n","Exec=" + command + "\n","Icon=" + icon_name + "\n"]
+        write_list = [
+            "[Desktop Entry]\n",
+            "Type=Application\n",
+            "Name=" + title + "\n",
+            "Exec=" + command + "\n",
+            "Icon=" + icon_name + "\n",
+        ]
 
         _file.writelines(write_list)
         _file.close()
@@ -196,17 +213,26 @@ class Application:
             self._file = open(self._path, "r")
             while self._file:
                 line = self._file.readline()
-                if len(line)==0:
+                if len(line) == 0:
                     break
 
                 if line.find("Name") == 0 and ("[" not in line):
-                    self.title = line.replace("Name","").replace("=","").replace("\n","")
+                    self.title = (
+                        line.replace("Name", "").replace("=", "").replace("\n", "")
+                    )
 
                 if line.find("Icon") == 0:
-                    self.icon_name = line.replace("Icon","").replace(" ","").replace("=","").replace("\n","")
+                    self.icon_name = (
+                        line.replace("Icon", "")
+                        .replace(" ", "")
+                        .replace("=", "")
+                        .replace("\n", "")
+                    )
 
                 if line.find("Exec") == 0:
-                    self.command = line.replace("Exec","").replace("=","").replace("\n","")
+                    self.command = (
+                        line.replace("Exec", "").replace("=", "").replace("\n", "")
+                    )
 
                 if self.icon_name and self.title and self.command:
                     break
@@ -218,6 +244,7 @@ class Application:
             if not self.command:
                 self.command = ""
             self._file.close()
+
 
 if __name__ == "__main__":
     if len(sys.argv) > 1:

@@ -9,6 +9,7 @@ import os
 from pathlib import Path
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, Gio, GObject, GLib
 
@@ -37,235 +38,643 @@ SETTINGS_DIR = Path.joinpath(Path.home(), ".config/cinnamon/spices/")
     ]
   ]
 """
-STATIC_KEYBINDINGS = \
-[
-  [_("General"), "general", None, "preferences-desktop-keyboard-shortcuts",
+STATIC_KEYBINDINGS = [
     [
-      [_("Pointer"), "pointer", "general", None, [],
+        _("General"),
+        "general",
+        None,
+        "preferences-desktop-keyboard-shortcuts",
         [
-          [_("Move pointer to the next monitor"), CINNAMON_SCHEMA, "pointer-next-monitor"],
-          [_("Move pointer to the previous monitor"), CINNAMON_SCHEMA, "pointer-previous-monitor"]
-        ]
-      ],
-      [_("Troubleshooting"), "trouble", "general", None, [],
+            [
+                _("Pointer"),
+                "pointer",
+                "general",
+                None,
+                [],
+                [
+                    [
+                        _("Move pointer to the next monitor"),
+                        CINNAMON_SCHEMA,
+                        "pointer-next-monitor",
+                    ],
+                    [
+                        _("Move pointer to the previous monitor"),
+                        CINNAMON_SCHEMA,
+                        "pointer-previous-monitor",
+                    ],
+                ],
+            ],
+            [
+                _("Troubleshooting"),
+                "trouble",
+                "general",
+                None,
+                [],
+                [
+                    [
+                        _("Toggle Looking Glass"),
+                        CINNAMON_SCHEMA,
+                        "looking-glass-keybinding",
+                    ]
+                ],
+            ],
+        ],
         [
-          [_("Toggle Looking Glass"), CINNAMON_SCHEMA, "looking-glass-keybinding"]
-        ]
-      ]
+            [
+                _("Show the window selection screen"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-to-workspace-down",
+            ],
+            [
+                _("Show the workspace selection screen"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-to-workspace-up",
+            ],
+            [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop"],
+            [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets"],
+            [
+                _("Cycle through open windows"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-windows",
+            ],
+            [
+                _("Cycle backwards through open windows"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-windows-backward",
+            ],
+            [
+                _("Cycle through windows from all workspaces"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-panels",
+            ],
+            [
+                _("Cycle backwards through windows from all workspaces"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-panels-backward",
+            ],
+            [
+                _("Cycle through open windows of the same application"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-group",
+            ],
+            [
+                _("Cycle backwards through open windows of the same application"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-group-backward",
+            ],
+            [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog"],
+        ],
     ],
     [
-      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down"],
-      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up"],
-      [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop"],
-      [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets"],
-      [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows"],
-      [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward"],
-      [_("Cycle through windows from all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-panels"],
-      [_("Cycle backwards through windows from all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-panels-backward"],
-      [_("Cycle through open windows of the same application"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-group"],
-      [_("Cycle backwards through open windows of the same application"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-group-backward"],
-      [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog"]
-    ]
-  ],
-  [_("Keyboard"), "keyboard", None, "input-keyboard", [],
-    [
-      [_("Switch to next layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source"],
-      [_("Switch to previous layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-backward"],
-      [_("Switch to first layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-0"],
-      [_("Switch to second layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-1"],
-      [_("Switch to third layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-2"],
-      [_("Switch to fourth layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-3"]
-    ]
-  ],
-  [_("Windows"), "windows", None, "preferences-system-windows",
-    [
-      [_("Positioning"), "win-position", "windows", None, [],
+        _("Keyboard"),
+        "keyboard",
+        None,
+        "input-keyboard",
+        [],
         [
-          [_("Resize window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-resize"],
-          [_("Move window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-move"],
-          [_("Center window in screen"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-center"],
-          [_("Move window to upper-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-ne"],
-          [_("Move window to upper-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-nw"],
-          [_("Move window to lower-right"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-se"],
-          [_("Move window to lower-left"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-corner-sw"],
-          [_("Move window to right edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-e"],
-          [_("Move window to top edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-n"],
-          [_("Move window to bottom edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-s"],
-          [_("Move window to left edge"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-side-w"]
-        ]
-      ],
-      [_("Tiling and Snapping"), "win-tiling", "windows", None, [],
-        [
-          [_("Push tile left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-left"],
-          [_("Push tile right"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-right"],
-          [_("Push tile up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-up"],
-          [_("Push tile down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-down"]
-        ]
-      ],
-      [_("Inter-workspace"), "win-workspaces", "windows", None, [],
-        [
-          [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new"],
-          [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left"],
-          [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right"],
-          [_("Move window to workspace above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-up"],
-          [_("Move window to workspace below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-down"],
-          [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1"],
-          [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2"],
-          [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3"],
-          [_("Move window to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-4"],
-          [_("Move window to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-5"],
-          [_("Move window to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-6"],
-          [_("Move window to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-7"],
-          [_("Move window to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-8"],
-          [_("Move window to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-9"],
-          [_("Move window to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-10"],
-          [_("Move window to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-11"],
-          [_("Move window to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-12"]
-        ]
-      ],
-      [_("Inter-monitor"), "win-monitors", "windows", None, [],
-        [
-          [_("Move window to left monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-left"],
-          [_("Move window to right monitor"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-right"],
-          [_("Move window to monitor above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-up"],
-          [_("Move window to monitor below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-monitor-down"]
-        ]
-      ]
+            [
+                _("Switch to next layout"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-input-source",
+            ],
+            [
+                _("Switch to previous layout"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-input-source-backward",
+            ],
+            [
+                _("Switch to first layout"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-input-source-0",
+            ],
+            [
+                _("Switch to second layout"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-input-source-1",
+            ],
+            [
+                _("Switch to third layout"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-input-source-2",
+            ],
+            [
+                _("Switch to fourth layout"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-input-source-3",
+            ],
+        ],
     ],
     [
-      [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize"],
-      [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize"],
-      [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize"],
-      [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close"],
-      [_("Activate window menu"), MUFFIN_KEYBINDINGS_SCHEMA, "activate-window-menu"],
-      [_("Raise window"), MUFFIN_KEYBINDINGS_SCHEMA, "raise"],
-      [_("Lower window"), MUFFIN_KEYBINDINGS_SCHEMA, "lower"],
-      [_("Toggle maximization state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-maximized"],
-      [_("Toggle fullscreen state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-fullscreen"],
-      [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded"],
-      [_("Toggle always on top"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-above"],
-      [_("Toggle showing window on all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-on-all-workspaces"],
-      [_("Increase opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "increase-opacity"],
-      [_("Decrease opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "decrease-opacity"],
-      [_("Toggle vertical maximization"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-vertically"],
-      [_("Toggle horizontal maximization"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally"]
-    ]
-  ],
-  [_("Workspaces"), "workspaces", None, "video-display",
-    [
-      [_("Direct Navigation"), "ws-navi", "workspaces", None, [],
+        _("Windows"),
+        "windows",
+        None,
+        "preferences-system-windows",
         [
-          [_("Switch to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-1"],
-          [_("Switch to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-2"],
-          [_("Switch to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-3"],
-          [_("Switch to workspace 4"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-4"],
-          [_("Switch to workspace 5"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-5"],
-          [_("Switch to workspace 6"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-6"],
-          [_("Switch to workspace 7"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-7"],
-          [_("Switch to workspace 8"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-8"],
-          [_("Switch to workspace 9"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-9"],
-          [_("Switch to workspace 10"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-10"],
-          [_("Switch to workspace 11"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-11"],
-          [_("Switch to workspace 12"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-12"]
-        ]
-      ]
+            [
+                _("Positioning"),
+                "win-position",
+                "windows",
+                None,
+                [],
+                [
+                    [_("Resize window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-resize"],
+                    [_("Move window"), MUFFIN_KEYBINDINGS_SCHEMA, "begin-move"],
+                    [
+                        _("Center window in screen"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-center",
+                    ],
+                    [
+                        _("Move window to upper-right"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-corner-ne",
+                    ],
+                    [
+                        _("Move window to upper-left"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-corner-nw",
+                    ],
+                    [
+                        _("Move window to lower-right"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-corner-se",
+                    ],
+                    [
+                        _("Move window to lower-left"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-corner-sw",
+                    ],
+                    [
+                        _("Move window to right edge"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-side-e",
+                    ],
+                    [
+                        _("Move window to top edge"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-side-n",
+                    ],
+                    [
+                        _("Move window to bottom edge"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-side-s",
+                    ],
+                    [
+                        _("Move window to left edge"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-side-w",
+                    ],
+                ],
+            ],
+            [
+                _("Tiling and Snapping"),
+                "win-tiling",
+                "windows",
+                None,
+                [],
+                [
+                    [_("Push tile left"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-left"],
+                    [
+                        _("Push tile right"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "push-tile-right",
+                    ],
+                    [_("Push tile up"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-up"],
+                    [_("Push tile down"), MUFFIN_KEYBINDINGS_SCHEMA, "push-tile-down"],
+                ],
+            ],
+            [
+                _("Inter-workspace"),
+                "win-workspaces",
+                "windows",
+                None,
+                [],
+                [
+                    [
+                        _("Move window to new workspace"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-new",
+                    ],
+                    [
+                        _("Move window to left workspace"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-left",
+                    ],
+                    [
+                        _("Move window to right workspace"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-right",
+                    ],
+                    [
+                        _("Move window to workspace above"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-up",
+                    ],
+                    [
+                        _("Move window to workspace below"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-down",
+                    ],
+                    [
+                        _("Move window to workspace 1"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-1",
+                    ],
+                    [
+                        _("Move window to workspace 2"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-2",
+                    ],
+                    [
+                        _("Move window to workspace 3"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-3",
+                    ],
+                    [
+                        _("Move window to workspace 4"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-4",
+                    ],
+                    [
+                        _("Move window to workspace 5"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-5",
+                    ],
+                    [
+                        _("Move window to workspace 6"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-6",
+                    ],
+                    [
+                        _("Move window to workspace 7"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-7",
+                    ],
+                    [
+                        _("Move window to workspace 8"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-8",
+                    ],
+                    [
+                        _("Move window to workspace 9"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-9",
+                    ],
+                    [
+                        _("Move window to workspace 10"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-10",
+                    ],
+                    [
+                        _("Move window to workspace 11"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-11",
+                    ],
+                    [
+                        _("Move window to workspace 12"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-workspace-12",
+                    ],
+                ],
+            ],
+            [
+                _("Inter-monitor"),
+                "win-monitors",
+                "windows",
+                None,
+                [],
+                [
+                    [
+                        _("Move window to left monitor"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-monitor-left",
+                    ],
+                    [
+                        _("Move window to right monitor"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-monitor-right",
+                    ],
+                    [
+                        _("Move window to monitor above"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-monitor-up",
+                    ],
+                    [
+                        _("Move window to monitor below"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "move-to-monitor-down",
+                    ],
+                ],
+            ],
+        ],
+        [
+            [_("Maximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize"],
+            [_("Unmaximize window"), MUFFIN_KEYBINDINGS_SCHEMA, "unmaximize"],
+            [_("Minimize window"), MUFFIN_KEYBINDINGS_SCHEMA, "minimize"],
+            [_("Close window"), MUFFIN_KEYBINDINGS_SCHEMA, "close"],
+            [
+                _("Activate window menu"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "activate-window-menu",
+            ],
+            [_("Raise window"), MUFFIN_KEYBINDINGS_SCHEMA, "raise"],
+            [_("Lower window"), MUFFIN_KEYBINDINGS_SCHEMA, "lower"],
+            [
+                _("Toggle maximization state"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "toggle-maximized",
+            ],
+            [
+                _("Toggle fullscreen state"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "toggle-fullscreen",
+            ],
+            [_("Toggle shaded state"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-shaded"],
+            [_("Toggle always on top"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-above"],
+            [
+                _("Toggle showing window on all workspaces"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "toggle-on-all-workspaces",
+            ],
+            [_("Increase opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "increase-opacity"],
+            [_("Decrease opacity"), MUFFIN_KEYBINDINGS_SCHEMA, "decrease-opacity"],
+            [
+                _("Toggle vertical maximization"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "maximize-vertically",
+            ],
+            [
+                _("Toggle horizontal maximization"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "maximize-horizontally",
+            ],
+        ],
     ],
     [
-      [_("Switch to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-left"],
-      [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right"]
-    ]
-  ],
-  [_("System"), "system", None, "preferences-system",
-    [
-      [_("Hardware"), "sys-hw", "system", None, [],
+        _("Workspaces"),
+        "workspaces",
+        None,
+        "video-display",
         [
-          [_("Switch monitor configurations"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-monitor"],
-          [_("Rotate display"), MUFFIN_KEYBINDINGS_SCHEMA, "rotate-monitor"],
-          [_("Orientation Lock"), MEDIA_KEYS_SCHEMA, "video-rotation-lock"],
-          [_("Increase screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-up"],
-          [_("Decrease screen brightness"), MEDIA_KEYS_SCHEMA, "screen-brightness-down"],
-          [_("Toggle keyboard backlight"), MEDIA_KEYS_SCHEMA, "kbd-brightness-toggle"],
-          [_("Increase keyboard backlight level"), MEDIA_KEYS_SCHEMA, "kbd-brightness-up"],
-          [_("Decrease keyboard backlight level"), MEDIA_KEYS_SCHEMA, "kbd-brightness-down"],
-          [_("Toggle touchpad state"), MEDIA_KEYS_SCHEMA, "touchpad-toggle"],
-          [_("Turn touchpad on"), MEDIA_KEYS_SCHEMA, "touchpad-on"],
-          [_("Turn touchpad off"), MEDIA_KEYS_SCHEMA, "touchpad-off"],
-          [_("Show power statistics"), MEDIA_KEYS_SCHEMA, "battery"]
-        ]
-      ],
-      [_("Screenshots and Recording"), "sys-screen", "system", None, [],
+            [
+                _("Direct Navigation"),
+                "ws-navi",
+                "workspaces",
+                None,
+                [],
+                [
+                    [
+                        _("Switch to workspace 1"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-1",
+                    ],
+                    [
+                        _("Switch to workspace 2"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-2",
+                    ],
+                    [
+                        _("Switch to workspace 3"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-3",
+                    ],
+                    [
+                        _("Switch to workspace 4"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-4",
+                    ],
+                    [
+                        _("Switch to workspace 5"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-5",
+                    ],
+                    [
+                        _("Switch to workspace 6"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-6",
+                    ],
+                    [
+                        _("Switch to workspace 7"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-7",
+                    ],
+                    [
+                        _("Switch to workspace 8"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-8",
+                    ],
+                    [
+                        _("Switch to workspace 9"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-9",
+                    ],
+                    [
+                        _("Switch to workspace 10"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-10",
+                    ],
+                    [
+                        _("Switch to workspace 11"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-11",
+                    ],
+                    [
+                        _("Switch to workspace 12"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-to-workspace-12",
+                    ],
+                ],
+            ]
+        ],
         [
-          [_("Take a screenshot of an area"), MEDIA_KEYS_SCHEMA, "area-screenshot"],
-          [_("Copy a screenshot of an area to clipboard"), MEDIA_KEYS_SCHEMA, "area-screenshot-clip"],
-          [_("Take a screenshot"), MEDIA_KEYS_SCHEMA, "screenshot"],
-          [_("Copy a screenshot to clipboard"), MEDIA_KEYS_SCHEMA, "screenshot-clip"],
-          [_("Take a screenshot of a window"), MEDIA_KEYS_SCHEMA, "window-screenshot"],
-          [_("Copy a screenshot of a window to clipboard"), MEDIA_KEYS_SCHEMA, "window-screenshot-clip"],
-          [_("Toggle recording desktop (must restart Cinnamon)"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-recording"]
-        ]
-      ]
+            [
+                _("Switch to left workspace"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-to-workspace-left",
+            ],
+            [
+                _("Switch to right workspace"),
+                MUFFIN_KEYBINDINGS_SCHEMA,
+                "switch-to-workspace-right",
+            ],
+        ],
     ],
     [
-      [_("Log out"), MEDIA_KEYS_SCHEMA, "logout"],
-      [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown"],
-      [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver"],
-      [_("Suspend"), MEDIA_KEYS_SCHEMA, "suspend"],
-      [_("Hibernate"), MEDIA_KEYS_SCHEMA, "hibernate"],
-      [_("Restart Cinnamon"), MEDIA_KEYS_SCHEMA, "restart-cinnamon"]
-    ]
-  ],
-  [_("Launchers"), "launchers", None, "applications-utilities", [],
-    [
-      [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal"],
-      [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help"],
-      [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator"],
-      [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email"],
-      [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www"],
-      [_("Home folder"), MEDIA_KEYS_SCHEMA, "home"],
-      [_("Search"), MEDIA_KEYS_SCHEMA, "search"]
-    ]
-  ],
-  [_("Sound and Media"), "media", None, "applications-multimedia",
-    [
-      [_("Quiet Keys"), "media-quiet", "media", None, [],
+        _("System"),
+        "system",
+        None,
+        "preferences-system",
         [
-          [_("Volume mute (Quiet)"), MEDIA_KEYS_SCHEMA, "mute-quiet"],
-          [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down-quiet"],
-          [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up-quiet"]
-        ]
-      ]
+            [
+                _("Hardware"),
+                "sys-hw",
+                "system",
+                None,
+                [],
+                [
+                    [
+                        _("Switch monitor configurations"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "switch-monitor",
+                    ],
+                    [_("Rotate display"), MUFFIN_KEYBINDINGS_SCHEMA, "rotate-monitor"],
+                    [_("Orientation Lock"), MEDIA_KEYS_SCHEMA, "video-rotation-lock"],
+                    [
+                        _("Increase screen brightness"),
+                        MEDIA_KEYS_SCHEMA,
+                        "screen-brightness-up",
+                    ],
+                    [
+                        _("Decrease screen brightness"),
+                        MEDIA_KEYS_SCHEMA,
+                        "screen-brightness-down",
+                    ],
+                    [
+                        _("Toggle keyboard backlight"),
+                        MEDIA_KEYS_SCHEMA,
+                        "kbd-brightness-toggle",
+                    ],
+                    [
+                        _("Increase keyboard backlight level"),
+                        MEDIA_KEYS_SCHEMA,
+                        "kbd-brightness-up",
+                    ],
+                    [
+                        _("Decrease keyboard backlight level"),
+                        MEDIA_KEYS_SCHEMA,
+                        "kbd-brightness-down",
+                    ],
+                    [_("Toggle touchpad state"), MEDIA_KEYS_SCHEMA, "touchpad-toggle"],
+                    [_("Turn touchpad on"), MEDIA_KEYS_SCHEMA, "touchpad-on"],
+                    [_("Turn touchpad off"), MEDIA_KEYS_SCHEMA, "touchpad-off"],
+                    [_("Show power statistics"), MEDIA_KEYS_SCHEMA, "battery"],
+                ],
+            ],
+            [
+                _("Screenshots and Recording"),
+                "sys-screen",
+                "system",
+                None,
+                [],
+                [
+                    [
+                        _("Take a screenshot of an area"),
+                        MEDIA_KEYS_SCHEMA,
+                        "area-screenshot",
+                    ],
+                    [
+                        _("Copy a screenshot of an area to clipboard"),
+                        MEDIA_KEYS_SCHEMA,
+                        "area-screenshot-clip",
+                    ],
+                    [_("Take a screenshot"), MEDIA_KEYS_SCHEMA, "screenshot"],
+                    [
+                        _("Copy a screenshot to clipboard"),
+                        MEDIA_KEYS_SCHEMA,
+                        "screenshot-clip",
+                    ],
+                    [
+                        _("Take a screenshot of a window"),
+                        MEDIA_KEYS_SCHEMA,
+                        "window-screenshot",
+                    ],
+                    [
+                        _("Copy a screenshot of a window to clipboard"),
+                        MEDIA_KEYS_SCHEMA,
+                        "window-screenshot-clip",
+                    ],
+                    [
+                        _("Toggle recording desktop (must restart Cinnamon)"),
+                        MUFFIN_KEYBINDINGS_SCHEMA,
+                        "toggle-recording",
+                    ],
+                ],
+            ],
+        ],
+        [
+            [_("Log out"), MEDIA_KEYS_SCHEMA, "logout"],
+            [_("Shut down"), MEDIA_KEYS_SCHEMA, "shutdown"],
+            [_("Lock screen"), MEDIA_KEYS_SCHEMA, "screensaver"],
+            [_("Suspend"), MEDIA_KEYS_SCHEMA, "suspend"],
+            [_("Hibernate"), MEDIA_KEYS_SCHEMA, "hibernate"],
+            [_("Restart Cinnamon"), MEDIA_KEYS_SCHEMA, "restart-cinnamon"],
+        ],
     ],
     [
-      [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute"],
-      [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down"],
-      [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up"],
-      [_("Mic mute"), MEDIA_KEYS_SCHEMA, "mic-mute"],
-      [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media"],
-      [_("Play"), MEDIA_KEYS_SCHEMA, "play"],
-      [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause"],
-      [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop"],
-      [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous"],
-      [_("Next track"), MEDIA_KEYS_SCHEMA, "next"],
-      [_("Eject"), MEDIA_KEYS_SCHEMA, "eject"],
-      [_("Rewind"), MEDIA_KEYS_SCHEMA, "audio-rewind"],
-      [_("Fast-forward"), MEDIA_KEYS_SCHEMA, "audio-forward"],
-      [_("Repeat"), MEDIA_KEYS_SCHEMA, "audio-repeat"],
-      [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random"]
-    ]
-  ],
-  [_("Universal Access"), "accessibility", None, "preferences-desktop-accessibility", [],
+        _("Launchers"),
+        "launchers",
+        None,
+        "applications-utilities",
+        [],
+        [
+            [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal"],
+            [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help"],
+            [_("Launch calculator"), MEDIA_KEYS_SCHEMA, "calculator"],
+            [_("Launch email client"), MEDIA_KEYS_SCHEMA, "email"],
+            [_("Launch web browser"), MEDIA_KEYS_SCHEMA, "www"],
+            [_("Home folder"), MEDIA_KEYS_SCHEMA, "home"],
+            [_("Search"), MEDIA_KEYS_SCHEMA, "search"],
+        ],
+    ],
     [
-      [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in"],
-      [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out"],
-      [_("Reset zoom"), CINNAMON_SCHEMA, "magnifier-zoom-reset"],
-      [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader"],
-      [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard"],
-      [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size"],
-      [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size"],
-      [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"]
-    ]
-  ],
-  [_("Spices"), "spices", None, "cinnamon", [], []]
+        _("Sound and Media"),
+        "media",
+        None,
+        "applications-multimedia",
+        [
+            [
+                _("Quiet Keys"),
+                "media-quiet",
+                "media",
+                None,
+                [],
+                [
+                    [_("Volume mute (Quiet)"), MEDIA_KEYS_SCHEMA, "mute-quiet"],
+                    [_("Volume down (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-down-quiet"],
+                    [_("Volume up (Quiet)"), MEDIA_KEYS_SCHEMA, "volume-up-quiet"],
+                ],
+            ]
+        ],
+        [
+            [_("Volume mute"), MEDIA_KEYS_SCHEMA, "volume-mute"],
+            [_("Volume down"), MEDIA_KEYS_SCHEMA, "volume-down"],
+            [_("Volume up"), MEDIA_KEYS_SCHEMA, "volume-up"],
+            [_("Mic mute"), MEDIA_KEYS_SCHEMA, "mic-mute"],
+            [_("Launch media player"), MEDIA_KEYS_SCHEMA, "media"],
+            [_("Play"), MEDIA_KEYS_SCHEMA, "play"],
+            [_("Pause playback"), MEDIA_KEYS_SCHEMA, "pause"],
+            [_("Stop playback"), MEDIA_KEYS_SCHEMA, "stop"],
+            [_("Previous track"), MEDIA_KEYS_SCHEMA, "previous"],
+            [_("Next track"), MEDIA_KEYS_SCHEMA, "next"],
+            [_("Eject"), MEDIA_KEYS_SCHEMA, "eject"],
+            [_("Rewind"), MEDIA_KEYS_SCHEMA, "audio-rewind"],
+            [_("Fast-forward"), MEDIA_KEYS_SCHEMA, "audio-forward"],
+            [_("Repeat"), MEDIA_KEYS_SCHEMA, "audio-repeat"],
+            [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random"],
+        ],
+    ],
+    [
+        _("Universal Access"),
+        "accessibility",
+        None,
+        "preferences-desktop-accessibility",
+        [],
+        [
+            [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in"],
+            [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out"],
+            [_("Reset zoom"), CINNAMON_SCHEMA, "magnifier-zoom-reset"],
+            [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader"],
+            [
+                _("Turn on-screen keyboard on or off"),
+                MEDIA_KEYS_SCHEMA,
+                "on-screen-keyboard",
+            ],
+            [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size"],
+            [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size"],
+            [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"],
+        ],
+    ],
+    [_("Spices"), "spices", None, "cinnamon", [], []],
 ]
 
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
@@ -274,11 +683,13 @@ STATIC_KEYBINDINGS = \
 # Use a dummy entry to trigger this by alternately adding and removing it to the list.
 DUMMY_CUSTOM_ENTRY = "__dummy__"
 
+
 def ensureCustomListChanges(custom_list):
     if DUMMY_CUSTOM_ENTRY in custom_list:
         custom_list.remove(DUMMY_CUSTOM_ENTRY)
     else:
         custom_list.append(DUMMY_CUSTOM_ENTRY)
+
 
 class KeyBindingCategory:
     def __init__(self, label, int_name, parent, icon, dbus_info={}):
@@ -295,10 +706,12 @@ class KeyBindingCategory:
     def clear(self):
         del self.keybindings[:]
 
+
 class KeyBinding(GObject.Object):
     __gsignals__ = {
-        'changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
     }
+
     def __init__(self, label, schema, key, category, settings_dict, dbus_info={}):
         super().__init__()
         self.key = key
@@ -322,7 +735,9 @@ class KeyBinding(GObject.Object):
             self.settings = schema
             self.load_json_settings()
             self.settings_file = Gio.File.new_for_path(self.settings)
-            self.settings_monitor = self.settings_file.monitor_file(Gio.FileMonitorFlags.WATCH_MOVES, None)
+            self.settings_monitor = self.settings_file.monitor_file(
+                Gio.FileMonitorFlags.WATCH_MOVES, None
+            )
             self.resume_json_monitor()
 
     def emit_changed(self):
@@ -341,7 +756,9 @@ class KeyBinding(GObject.Object):
             self.json_monitor_id = 0
 
     def resume_json_monitor(self):
-        self.json_monitor_id = self.settings_monitor.connect("changed", self.json_settings_changed)
+        self.json_monitor_id = self.settings_monitor.connect(
+            "changed", self.json_settings_changed
+        )
 
     def json_settings_changed(self, *args):
         if self.json_timeout_id > 0:
@@ -421,10 +838,12 @@ class KeyBinding(GObject.Object):
             self.json_settings_changed()
         self.emit_changed()
 
+
 class CustomKeyBinding(GObject.Object):
     __gsignals__ = {
-        'changed': (GObject.SignalFlags.RUN_FIRST, None, ()),
+        "changed": (GObject.SignalFlags.RUN_FIRST, None, ()),
     }
+
     def __init__(self, path, label, action, binding):
         super().__init__()
         self.category = "custom"
@@ -453,7 +872,7 @@ class CustomKeyBinding(GObject.Object):
         self.writeSettings(False)
 
     def writeSettings(self, emit_changed=False):
-        custom_path = CUSTOM_KEYS_BASENAME+"/"+self.path+"/"
+        custom_path = CUSTOM_KEYS_BASENAME + "/" + self.path + "/"
         settings = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
 
         settings.set_string("name", self.label)
@@ -474,12 +893,22 @@ class CustomKeyBinding(GObject.Object):
         if emit_changed:
             self.emit("changed")
 
+
 class KeybindingTable(GObject.Object):
     __gsignals__ = {
-        'binding-changed': (GObject.SignalFlags.RUN_FIRST, None, ()), # modify any actual keybinding
-        'customs-changed': (GObject.SignalFlags.RUN_FIRST, None, ()), # add/remove/edit customs (but *not* their bindings)
-        'spices-changed': (GObject.SignalFlags.RUN_FIRST, None, ()) # enabled spices
+        "binding-changed": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (),
+        ),  # modify any actual keybinding
+        "customs-changed": (
+            GObject.SignalFlags.RUN_FIRST,
+            None,
+            (),
+        ),  # add/remove/edit customs (but *not* their bindings)
+        "spices-changed": (GObject.SignalFlags.RUN_FIRST, None, ()),  # enabled spices
     }
+
     def __init__(self):
         super().__init__()
         self.settings_by_schema_id = {}
@@ -506,8 +935,12 @@ class KeybindingTable(GObject.Object):
                 Gio.BusType.SESSION,
                 Gio.DBusProxyFlags.NONE,
                 None,
-                "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon",
-                None, self._on_proxy_ready, None
+                "org.Cinnamon",
+                "/org/Cinnamon",
+                "org.Cinnamon",
+                None,
+                self._on_proxy_ready,
+                None,
             )
         except GLib.Error as e:
             print(e)
@@ -526,11 +959,11 @@ class KeybindingTable(GObject.Object):
             return
 
         self._proxy.updateSetting(
-            '(ssss)',
+            "(ssss)",
             keybinding.dbus_info["uuid"],
             keybinding.dbus_info["config_id"],
             keybinding.key,
-            json.dumps(keybinding.entries)
+            json.dumps(keybinding.entries),
         )
 
     def _add_to_collision_table(self, keybinding):
@@ -538,7 +971,7 @@ class KeybindingTable(GObject.Object):
             return
 
         for entry in keybinding.entries:
-            if entry == '':
+            if entry == "":
                 continue
             try:
                 existing = self._collision_table[entry]
@@ -560,7 +993,11 @@ class KeybindingTable(GObject.Object):
 
     @property
     def binding_categories(self):
-        return {**self._static_categories, **self._custom_categories, **self._spice_categories}
+        return {
+            **self._static_categories,
+            **self._custom_categories,
+            **self._spice_categories,
+        }
 
     @property
     def static_categories(self):
@@ -587,7 +1024,13 @@ class KeybindingTable(GObject.Object):
                 _load_category(subcat)
 
             for binding in cat[5]:
-                kb = KeyBinding(binding[0], binding[1], binding[2], cat[1], self.settings_by_schema_id)
+                kb = KeyBinding(
+                    binding[0],
+                    binding[1],
+                    binding[2],
+                    cat[1],
+                    self.settings_by_schema_id,
+                )
                 kb.connect("changed", self._on_kb_changed)
                 self._add_to_collision_table(kb)
                 category.add(kb)
@@ -606,9 +1049,15 @@ class KeybindingTable(GObject.Object):
             settings = Gio.Settings(schema_id=ENABLED_SCHEMA)
             self.settings_by_schema_id[ENABLED_SCHEMA] = settings
 
-            settings.connect("changed::enabled-applets", self._on_enabled_spices_changed)
-            settings.connect("changed::enabled-desklets", self._on_enabled_spices_changed)
-            settings.connect("changed::enabled-extensions", self._on_enabled_spices_changed)
+            settings.connect(
+                "changed::enabled-applets", self._on_enabled_spices_changed
+            )
+            settings.connect(
+                "changed::enabled-desklets", self._on_enabled_spices_changed
+            )
+            settings.connect(
+                "changed::enabled-extensions", self._on_enabled_spices_changed
+            )
 
         enabled_extensions = set()
         enabled_spices = set()
@@ -619,15 +1068,15 @@ class KeybindingTable(GObject.Object):
                 instance_id = extra[0]
             else:
                 instance_id = None
-            enabled_spices.add((applet_uuid, 'applets', instance_id))
+            enabled_spices.add((applet_uuid, "applets", instance_id))
 
         for desklets in settings.get_strv("enabled-desklets"):
             desklet_uuid, instance_id, x, y = desklets.split(":")
-            enabled_spices.add((desklet_uuid, 'desklets', instance_id))
+            enabled_spices.add((desklet_uuid, "desklets", instance_id))
 
         for extension in settings.get_strv("enabled-extensions"):
             enabled_extensions.add(extension)
-            enabled_spices.add((extension, 'extensions', None))
+            enabled_spices.add((extension, "extensions", None))
 
         keyboard_spices = sorted(enabled_spices)
         spice_keybinds = {}
@@ -637,9 +1086,13 @@ class KeybindingTable(GObject.Object):
             for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
                 config_path = Path.joinpath(settings_dir, uuid)
                 if Path.exists(config_path):
-                    configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
-                    # If we encounted numbered and non-numbered, config files, filter out the uuid-named one 
-                    if not all(x.split(".json")[0].isdigit() for x in configs) and any(x.split(".json")[0].isdigit() for x in configs):
+                    configs = [
+                        x for x in os.listdir(config_path) if x.endswith(".json")
+                    ]
+                    # If we encounted numbered and non-numbered, config files, filter out the uuid-named one
+                    if not all(x.split(".json")[0].isdigit() for x in configs) and any(
+                        x.split(".json")[0].isdigit() for x in configs
+                    ):
                         for index, value in enumerate(configs):
                             if not value.split(".json")[0].isdigit():
                                 configs.pop(index)
@@ -651,17 +1104,30 @@ class KeybindingTable(GObject.Object):
                             _config = json.load(config_file)
 
                             for key, val in _config.items():
-                                if isinstance(val, dict) and val.get("type") == "keybinding":
+                                if (
+                                    isinstance(val, dict)
+                                    and val.get("type") == "keybinding"
+                                ):
                                     spice_properties.setdefault(key_name, {})
-                                    spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
-                                    spice_properties[key_name]["path"] = str(config_json)
+                                    spice_properties[key_name]["highlight"] = (
+                                        uuid not in enabled_extensions
+                                    )
+                                    spice_properties[key_name]["path"] = str(
+                                        config_json
+                                    )
                                     spice_properties[key_name]["type"] = _type
                                     spice_properties[key_name]["uuid"] = uuid
-                                    spice_properties[key_name]["instance_id"] = instance_id
+                                    spice_properties[key_name]["instance_id"] = (
+                                        instance_id
+                                    )
                                     spice_properties[key_name]["config_id"] = _id
                                     spice_keybinds.setdefault(key_name, {})
                                     spice_keybinds[key_name].setdefault(key, {})
-                                    spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
+                                    spice_keybinds[key_name][key] = {
+                                        val.get("description"): val.get("value").split(
+                                            "::"
+                                        )
+                                    }
 
         self._spice_categories = {}
         self._spice_store = []
@@ -674,15 +1140,19 @@ class KeybindingTable(GObject.Object):
 
             spice_props = spice_properties[spice]
             _type = spice_props["type"]
-            local_metadata_path = Path.home() / '.local/share/cinnamon' / _type / uuid / 'metadata.json'
+            local_metadata_path = (
+                Path.home() / ".local/share/cinnamon" / _type / uuid / "metadata.json"
+            )
             if local_metadata_path.exists():
-                gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
+                gettext.bindtextdomain(uuid, str(Path.home() / ".local/share/locale"))
                 gettext.textdomain(uuid)
                 with open(local_metadata_path, encoding="utf-8") as metadata:
                     json_data = json.load(metadata)
                     category_label = _(json_data["name"])
             else:
-                system_metadata_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
+                system_metadata_path = (
+                    Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
+                )
                 if system_metadata_path.exists():
                     with open(system_metadata_path, encoding="utf-8") as metadata:
                         json_data = json.load(metadata)
@@ -696,11 +1166,15 @@ class KeybindingTable(GObject.Object):
                 new_categories.append([cat_label, uuid, "spices", None, {}])
                 instance_num = 1
                 label = _("Instance") + f" {instance_num}"
-                new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
+                new_categories.append(
+                    [label, f"{uuid}_{instance_num}", uuid, None, spice_props]
+                )
                 instance_num = 2
             elif len(new_categories) > 0 and uuid == new_categories[-1][2]:
                 label = _("Instance") + f" {instance_num}"
-                new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
+                new_categories.append(
+                    [label, f"{uuid}_{instance_num}", uuid, None, spice_props]
+                )
                 instance_num += 1
 
             dbus_info = {}
@@ -718,20 +1192,37 @@ class KeybindingTable(GObject.Object):
                     binding_label = gettext.gettext(list(binding_values.keys())[0])
                 binding_schema = spice_properties[spice]["path"]
                 binding_category = f"{uuid}_{instance_num - 1}" if _id else uuid
-                new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
+                new_keybindings.append(
+                    [
+                        binding_label,
+                        binding_schema,
+                        binding_key,
+                        binding_category,
+                        dbus_info,
+                    ]
+                )
                 self._spice_categories[binding_category] = category_label
 
         cat_lookup = {}
 
         for cat in new_categories:
             cat_lookup[cat[1]] = cat[0]
-            self._spice_store.append(KeyBindingCategory(cat[0], cat[1], cat[2], cat[3], cat[4]))
+            self._spice_store.append(
+                KeyBindingCategory(cat[0], cat[1], cat[2], cat[3], cat[4])
+            )
 
         for binding in new_keybindings:
             self._spice_categories.setdefault(binding[3], cat_lookup[binding[3]])
             for category in self._spice_store:
                 if category.int_name == binding[3]:
-                    kb = KeyBinding(binding[0], binding[1], binding[2], binding[3], self.settings_by_schema_id, binding[4])
+                    kb = KeyBinding(
+                        binding[0],
+                        binding[1],
+                        binding[2],
+                        binding[3],
+                        self.settings_by_schema_id,
+                        binding[4],
+                    )
                     kb.connect("changed", self._on_kb_changed)
 
                     self._add_to_collision_table(kb)
@@ -744,19 +1235,23 @@ class KeybindingTable(GObject.Object):
         self._custom_store = []
         self._custom_categories = {}
 
-        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "cinnamon-panel-launcher")
+        cat = KeyBindingCategory(
+            _("Custom Shortcuts"), "custom", None, "cinnamon-panel-launcher"
+        )
         self._custom_store.append(cat)
 
         for entry in custom_list:
             if entry == DUMMY_CUSTOM_ENTRY:
                 continue
 
-            custom_path = CUSTOM_KEYS_BASENAME+"/"+entry+"/"
+            custom_path = CUSTOM_KEYS_BASENAME + "/" + entry + "/"
             schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path)
-            custom_kb = CustomKeyBinding(entry,
-                                         schema.get_string("name"),
-                                         schema.get_string("command"),
-                                         schema.get_strv("binding"))
+            custom_kb = CustomKeyBinding(
+                entry,
+                schema.get_string("name"),
+                schema.get_string("command"),
+                schema.get_strv("binding"),
+            )
             custom_kb.connect("changed", self._on_kb_changed)
 
             cat = self._custom_store[0]
@@ -829,7 +1324,9 @@ class KeybindingTable(GObject.Object):
         keybinding.setDetails(new_name, new_command)
         self.emit("customs-changed")
 
-    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
+    def maybe_update_binding(
+        self, current_keybinding, accel_string, accel_label, position
+    ):
         new_accel = Gtk.accelerator_parse_with_keycode(accel_string)
 
         for cat in self.main_store:
@@ -837,21 +1334,36 @@ class KeybindingTable(GObject.Object):
                 for entry in keybinding.entries:
                     if new_accel == Gtk.accelerator_parse_with_keycode(entry):
                         if keybinding.label != current_keybinding.label:
-                            dialog = Gtk.MessageDialog(None,
-                                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                                       Gtk.MessageType.QUESTION,
-                                                       Gtk.ButtonsType.YES_NO,
-                                                       None)
+                            dialog = Gtk.MessageDialog(
+                                None,
+                                Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                Gtk.MessageType.QUESTION,
+                                Gtk.ButtonsType.YES_NO,
+                                None,
+                            )
                             dialog.set_default_size(400, 125)
-                            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
-                            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
+                            msg = _(
+                                "This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  "
+                            )
+                            msg += _(
+                                "If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n"
+                            )
                             msg += _("Do you want to continue with this operation?")
-                            dialog.set_markup(msg % {'combination': escape(accel_label), 'old': escape(keybinding.label), 'new': escape(current_keybinding.label)})
+                            dialog.set_markup(
+                                msg
+                                % {
+                                    "combination": escape(accel_label),
+                                    "old": escape(keybinding.label),
+                                    "new": escape(current_keybinding.label),
+                                }
+                            )
                             dialog.show_all()
                             response = dialog.run()
                             dialog.destroy()
                             if response == Gtk.ResponseType.YES:
-                                keybinding.setBinding(keybinding.entries.index(entry), None)
+                                keybinding.setBinding(
+                                    keybinding.entries.index(entry), None
+                                )
                                 self._proxy_send_kb_changed(keybinding)
                             else:
                                 return False
@@ -882,33 +1394,47 @@ class KeybindingTable(GObject.Object):
         return ret
 
     def check_for_collisions(self):
-        dupes = [dupe for dupe in self._collision_table.keys() if len(self._collision_table[dupe]) > 1]
+        dupes = [
+            dupe
+            for dupe in self._collision_table.keys()
+            if len(self._collision_table[dupe]) > 1
+        ]
 
         if len(dupes) == 0:
             return
         for accel_string in dupes:
-            bindings = self._filter_duplicate_applet_keybindings(self._collision_table[accel_string])
+            bindings = self._filter_duplicate_applet_keybindings(
+                self._collision_table[accel_string]
+            )
             if len(bindings) < 2:
                 continue
 
             key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
-            if (key == 0 and len(codes) == 0):
+            if key == 0 and len(codes) == 0:
                 if accel_string == "XF86Keyboard":
                     label = "Keyboard"
                 else:
                     label = accel_string
             else:
-                label = Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+                label = Gtk.accelerator_get_label_with_keycode(
+                    Gdk.Display.get_default(), key, codes[0], mods
+                )
 
-            dialog = Gtk.MessageDialog(None,
-                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                       Gtk.MessageType.QUESTION,
-                                       0,
-                                       None)
+            dialog = Gtk.MessageDialog(
+                None,
+                Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                Gtk.MessageType.QUESTION,
+                0,
+                None,
+            )
             dialog.set_default_size(400, 125)
-            msg = _("This key combination, <b>%(combination)s</b> is currently assigned to multiple actions. ")
-            msg += _("Choose the assignment you wish to keep. The others will be cleared.")
-            dialog.set_markup(msg % {'combination': escape(label)})
+            msg = _(
+                "This key combination, <b>%(combination)s</b> is currently assigned to multiple actions. "
+            )
+            msg += _(
+                "Choose the assignment you wish to keep. The others will be cleared."
+            )
+            dialog.set_markup(msg % {"combination": escape(label)})
 
             for i in range(len(bindings)):
                 keybinding = bindings[i]
@@ -951,7 +1477,10 @@ class KeybindingTable(GObject.Object):
             if cat_uuid != uuid:
                 continue
             for keybinding in cat.keybindings:
-                if instance_id == keybinding.dbus_info["config_id"] and keybinding.key == key:
+                if (
+                    instance_id == keybinding.dbus_info["config_id"]
+                    and keybinding.key == key
+                ):
                     return keybinding
         return None
 
@@ -959,11 +1488,11 @@ class KeybindingTable(GObject.Object):
         if self._proxy.get_name_owner() is None:
             return
 
-        self._proxy.highlightXlet(
-            '(ssb)', uuid, str(instance_id), highlight
-        )
+        self._proxy.highlightXlet("(ssb)", uuid, str(instance_id), highlight)
+
 
 instance = None
+
 
 def get_default():
     global instance

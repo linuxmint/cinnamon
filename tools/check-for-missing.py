@@ -6,7 +6,10 @@
 # was changed to no longer do anything useful, which made that
 # too challenging to be worthwhile.
 
-import fnmatch, os, subprocess, sys
+import fnmatch
+import os
+import subprocess
+import sys
 
 srcdir = sys.argv[1]
 distdir = sys.argv[2]
@@ -16,9 +19,10 @@ os.chdir(srcdir)
 
 status = 0
 for f in subprocess.Popen(["git", "ls-files"], stdout=subprocess.PIPE).stdout:
-    f = f.decode('utf-8').strip()
-    if (not os.path.exists(os.path.join(distdir, f)) and
-            not any((fnmatch.fnmatch(f, p) for p in excludes))):
+    f = f.decode("utf-8").strip()
+    if not os.path.exists(os.path.join(distdir, f)) and not any(
+        (fnmatch.fnmatch(f, p) for p in excludes)
+    ):
         print("File missing from distribution:", f)
         status = 1
 

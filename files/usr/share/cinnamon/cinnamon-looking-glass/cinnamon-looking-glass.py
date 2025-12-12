@@ -17,7 +17,8 @@ import signal
 import sys
 import pyinotify
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, GObject, Gdk, GLib
 from setproctitle import setproctitle
 
@@ -42,6 +43,7 @@ melange_xml = """
 """
 interface_node_info = Gio.DBusNodeInfo.new_for_xml(melange_xml)
 
+
 class MenuButton(Gtk.Button):
     def __init__(self, text):
         Gtk.Button.__init__(self, text)
@@ -53,7 +55,7 @@ class MenuButton(Gtk.Button):
 
     def on_clicked(self, widget):
         x, y, w, h = self.get_screen_coordinates()
-        self.menu.popup(None, None, lambda menu, data: (x, y+h, True), None, 1, 0)
+        self.menu.popup(None, None, lambda menu, data: (x, y + h, True), None, 1, 0)
 
     def get_screen_coordinates(self):
         parent = self.get_parent_window()
@@ -62,10 +64,13 @@ class MenuButton(Gtk.Button):
         h = parent.get_height()
         extents = parent.get_frame_extents()
         allocation = self.get_allocation()
-        return (x + (extents.width-w)//2 + allocation.x,
-                y + (extents.height-h)-(extents.width-w)//2 + allocation.y,
-                allocation.width,
-                allocation.height)
+        return (
+            x + (extents.width - w) // 2 + allocation.x,
+            y + (extents.height - h) - (extents.width - w) // 2 + allocation.y,
+            allocation.width,
+            allocation.height,
+        )
+
 
 class CommandLine(Gtk.Entry):
     def __init__(self, exec_cb):
@@ -75,13 +80,13 @@ class CommandLine(Gtk.Entry):
         self.history = self.settings.get_strv("looking-glass-history")
         self.history_position = -1
         self.last_text = ""
-        self.connect('key-press-event', self.on_key_press)
+        self.connect("key-press-event", self.on_key_press)
         self.connect("populate-popup", self.populate_popup)
 
     def populate_popup(self, view, menu):
         menu.append(Gtk.SeparatorMenuItem())
         clear = Gtk.MenuItem("Clear History")
-        clear.connect('activate', self.history_clear)
+        clear.connect("activate", self.history_clear)
         menu.append(clear)
         menu.show_all()
         return False
@@ -119,7 +124,7 @@ class CommandLine(Gtk.Entry):
         if self.history_position == -1:
             return
         num = len(self.history)
-        if self.history_position == num-1:
+        if self.history_position == num - 1:
             self.history_position = -1
             self.set_text(self.last_text)
         else:
@@ -132,7 +137,7 @@ class CommandLine(Gtk.Entry):
         command = self.get_text()
         if command != "":
             num = len(self.history)
-            if num == 0 or self.history[num-1] != command:
+            if num == 0 or self.history[num - 1] != command:
                 self.history.append(command)
             self.set_text("")
             self.settings.set_strv("looking-glass-history", self.history)
@@ -142,15 +147,26 @@ class CommandLine(Gtk.Entry):
 
 class NewLogDialog(Gtk.Dialog):
     def __init__(self, parent):
-        Gtk.Dialog.__init__(self, "Add a new file watcher", parent, 0,
-                            (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                             Gtk.STOCK_OK, Gtk.ResponseType.OK))
+        Gtk.Dialog.__init__(
+            self,
+            "Add a new file watcher",
+            parent,
+            0,
+            (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OK,
+                Gtk.ResponseType.OK,
+            ),
+        )
 
         self.set_default_size(150, 100)
 
         label = Gtk.Label("")
-        label.set_markup("<span size='large'>Add File Watch:</span>\n\n" +
-                         "Please select a file to watch and a name for the tab\n")
+        label.set_markup(
+            "<span size='large'>Add File Watch:</span>\n\n"
+            + "Please select a file to watch and a name for the tab\n"
+        )
 
         box = self.get_content_area()
         box.add(label)
@@ -190,9 +206,11 @@ class NewLogDialog(Gtk.Dialog):
             return False
 
     def is_valid(self):
-        return (self.entry.get_text() != "" and
-                self.filename is not None and
-                os.path.isfile(os.path.expanduser(self.filename)))
+        return (
+            self.entry.get_text() != ""
+            and self.filename is not None
+            and os.path.isfile(os.path.expanduser(self.filename))
+        )
 
     def get_file(self):
         return os.path.expanduser(self.filename)
@@ -201,10 +219,17 @@ class NewLogDialog(Gtk.Dialog):
         return self.entry.get_text()
 
     def select_file(self):
-        dialog = Gtk.FileChooserDialog("Please select a log file", self,
-                                       Gtk.FileChooserAction.OPEN,
-                                       (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                        Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
+        dialog = Gtk.FileChooserDialog(
+            "Please select a log file",
+            self,
+            Gtk.FileChooserAction.OPEN,
+            (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OPEN,
+                Gtk.ResponseType.OK,
+            ),
+        )
 
         filter_text = Gtk.FileFilter()
         filter_text.set_name("Text files")
@@ -224,6 +249,7 @@ class NewLogDialog(Gtk.Dialog):
 
         return result
 
+
 class FileWatchHandler(pyinotify.ProcessEvent):
     def my_init(self, view):
         self.view = view
@@ -239,6 +265,7 @@ class FileWatchHandler(pyinotify.ProcessEvent):
 
     def process_IN_MODIFY(self, event):
         self.view.get_updates()
+
 
 class FileWatcherView(Gtk.ScrolledWindow):
     def __init__(self, filename):
@@ -262,10 +289,15 @@ class FileWatcherView(Gtk.ScrolledWindow):
         handler = FileWatchHandler(view=self)
         watch_manager = pyinotify.WatchManager()
         self.notifier = pyinotify.ThreadedNotifier(watch_manager, handler)
-        watch_manager.add_watch(filename, (pyinotify.IN_CLOSE_WRITE |
-                                           pyinotify.IN_CREATE |
-                                           pyinotify.IN_DELETE |
-                                           pyinotify.IN_MODIFY))
+        watch_manager.add_watch(
+            filename,
+            (
+                pyinotify.IN_CLOSE_WRITE
+                | pyinotify.IN_CREATE
+                | pyinotify.IN_DELETE
+                | pyinotify.IN_MODIFY
+            ),
+        )
         self.notifier.start()
         self.connect("destroy", self.on_destroy)
         self.connect("size-allocate", self.on_size_changed)
@@ -289,15 +321,19 @@ class FileWatcherView(Gtk.ScrolledWindow):
             self.update_id = GLib.timeout_add(500, self.update)
 
     def update(self):
-        self.changed = 2 # on_size_changed will be called twice, but only the second time is final
-        self.textbuffer.set_text(open(self.filename, 'r').read())
+        self.changed = (
+            2  # on_size_changed will be called twice, but only the second time is final
+        )
+        self.textbuffer.set_text(open(self.filename, "r").read())
         self.update_id = 0
         return False
+
 
 class ClosableTabLabel(Gtk.Box):
     __gsignals__ = {
         "close-clicked": (GObject.SignalFlags.RUN_FIRST, GObject.TYPE_NONE, ()),
     }
+
     def __init__(self, label_text):
         Gtk.Box.__init__(self)
         self.set_orientation(Gtk.Orientation.HORIZONTAL)
@@ -318,13 +354,16 @@ class ClosableTabLabel(Gtk.Box):
     def button_clicked(self, button, data=None):
         self.emit("close-clicked")
 
+
 class MelangeApp(Gtk.Application):
     def __init__(self):
-        Gtk.Application.__init__(self,
-                                 application_id="org.Cinnamon.Melange",
-                                 register_session=True,
-                                 flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
-                                 inactivity_timeout=10 * 1000)
+        Gtk.Application.__init__(
+            self,
+            application_id="org.Cinnamon.Melange",
+            register_session=True,
+            flags=Gio.ApplicationFlags.HANDLES_COMMAND_LINE,
+            inactivity_timeout=10 * 1000,
+        )
 
         self.window = None
         self._minimized = False
@@ -334,11 +373,7 @@ class MelangeApp(Gtk.Application):
 
     def do_dbus_register(self, connection, path):
         self.reg_id = connection.register_object(
-            path,
-            interface_node_info.interfaces[0],
-            self._method_cb,
-            None,
-            None
+            path, interface_node_info.interfaces[0], self._method_cb, None, None
         )
 
         return Gio.Application.do_dbus_register(self, connection, path)
@@ -350,7 +385,17 @@ class MelangeApp(Gtk.Application):
 
         Gio.Application.do_dbus_unregister(self, connection, path)
 
-    def _method_cb(self, connection, sender, path, interface, method, parameters, invocation, user_data=None):
+    def _method_cb(
+        self,
+        connection,
+        sender,
+        path,
+        interface,
+        method,
+        parameters,
+        invocation,
+        user_data=None,
+    ):
         if method == "show":
             self._remote_show()
             invocation.return_value(None)
@@ -368,7 +413,7 @@ class MelangeApp(Gtk.Application):
             if self.startup_mode == "inspect":
                 self.inspect()
             else:
-                pass # daemon, no activation
+                pass  # daemon, no activation
 
             self.startup_mode = None
             return
@@ -396,7 +441,7 @@ class MelangeApp(Gtk.Application):
             self.add_window(self.window)
 
     def update_status_from_proxy(self, proxy, online):
-        self.status_label.set_visible (not online)
+        self.status_label.set_visible(not online)
         if online and self.init_activation:
             self.init_activation = False
             self.handle_commandline_action()
@@ -473,34 +518,38 @@ class MelangeApp(Gtk.Application):
         picker_button = pageutils.ImageButton("xsi-color-select-symbolic")
         picker_button.set_tooltip_text("Select an actor to inspect")
         picker_button.connect("clicked", self.on_picker_clicked)
-        table.attach(picker_button, column, column+1, 1, 2, 0, 0, 2)
+        table.attach(picker_button, column, column + 1, 1, 2, 0, 0, 2)
         column += 1
 
         full_gc = pageutils.ImageButton("xsi-user-trash-full-symbolic")
         full_gc.set_tooltip_text("Invoke garbage collection")
         # ignore signal arg
-        full_gc.connect('clicked', lambda source: self.lg_proxy.FullGc())
-        table.attach(full_gc, column, column+1, 1, 2, 0, 0, 2)
+        full_gc.connect("clicked", lambda source: self.lg_proxy.FullGc())
+        table.attach(full_gc, column, column + 1, 1, 2, 0, 0, 2)
         column += 1
 
         self.command_line = CommandLine(self.lg_proxy.Eval)
         self.command_line.set_tooltip_text("Evaluate javascript")
-        table.attach(self.command_line,
-                     column,
-                     column + 1,
-                     1,
-                     2,
-                     Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
-                     0,
-                     3,
-                     2)
+        table.attach(
+            self.command_line,
+            column,
+            column + 1,
+            1,
+            2,
+            Gtk.AttachOptions.EXPAND | Gtk.AttachOptions.FILL,
+            0,
+            3,
+            2,
+        )
         column += 1
 
         self.status_label = Gtk.Label(label="Status")
-        self.status_label.set_markup(" <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> ")
+        self.status_label.set_markup(
+            " <span foreground='red'>[ Cinnamon is OFFLINE! ]</span> "
+        )
         self.status_label.set_tooltip_text("The connection to cinnamon is broken")
         self.status_label.set_no_show_all(True)
-        table.attach(self.status_label, column, column+1, 1, 2, 0, 0, 1)
+        table.attach(self.status_label, column, column + 1, 1, 2, 0, 0, 1)
         column += 1
 
         box = Gtk.HBox()
@@ -520,7 +569,7 @@ class MelangeApp(Gtk.Application):
         action_button = self.create_action_button()
         box.pack_start(action_button, False, False, 3)
 
-        table.attach(box, column, column+1, 1, 2, 0, 0, 1)
+        table.attach(box, column, column + 1, 1, 2, 0, 0, 1)
 
         self.status_label.hide()
         self.window.set_focus(self.command_line)
@@ -531,20 +580,24 @@ class MelangeApp(Gtk.Application):
         return item
 
     def create_action_button(self):
-        restart_func = lambda junk: os.system("nohup cinnamon --replace > /dev/null 2>&1 &")
+        restart_func = lambda junk: os.system(
+            "nohup cinnamon --replace > /dev/null 2>&1 &"
+        )
         crash_func = lambda junk: self.lg_proxy.Eval("global.segfault()")
 
         menu = Gtk.Menu()
-        menu.append(self.create_menu_item('Add File Watcher', self.on_add_file_watcher))
+        menu.append(self.create_menu_item("Add File Watcher", self.on_add_file_watcher))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('Restart Cinnamon', restart_func))
-        menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
-        menu.append(self.create_menu_item('Reset Cinnamon Settings', self.on_reset_clicked))
+        menu.append(self.create_menu_item("Restart Cinnamon", restart_func))
+        menu.append(self.create_menu_item("Crash Cinnamon", crash_func))
+        menu.append(
+            self.create_menu_item("Reset Cinnamon Settings", self.on_reset_clicked)
+        )
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('Quit', self.on_delete))
+        menu.append(self.create_menu_item("Quit", self.on_delete))
         menu.show_all()
 
-        button = Gtk.MenuButton(label="Actions \u25BE")
+        button = Gtk.MenuButton(label="Actions \u25be")
         button.set_popup(menu)
         return button
 
@@ -559,7 +612,7 @@ class MelangeApp(Gtk.Application):
             label.connect("close-clicked", self.on_close_tab, content)
             self.custom_pages[label] = content
             self.notebook.append_page(content, label)
-            self.notebook.set_current_page(self.notebook.get_n_pages()-1)
+            self.notebook.set_current_page(self.notebook.get_n_pages() - 1)
 
         dialog.destroy()
 
@@ -569,9 +622,13 @@ class MelangeApp(Gtk.Application):
         del self.custom_pages[label]
 
     def on_reset_clicked(self, menu_item):
-        dialog = Gtk.MessageDialog(self.window, 0,
-                                   Gtk.MessageType.WARNING, Gtk.ButtonsType.YES_NO,
-                                   "Reset all cinnamon settings to default?")
+        dialog = Gtk.MessageDialog(
+            self.window,
+            0,
+            Gtk.MessageType.WARNING,
+            Gtk.ButtonsType.YES_NO,
+            "Reset all cinnamon settings to default?",
+        )
         dialog.set_title("Warning: Trying to reset all cinnamon settings!")
 
         response = dialog.run()
@@ -620,6 +677,7 @@ class MelangeApp(Gtk.Application):
         self.window.destroy()
         self.lg_proxy = None
         Gtk.Application.do_shutdown(self)
+
 
 if __name__ == "__main__":
     setproctitle("cinnamon-looking-glass")

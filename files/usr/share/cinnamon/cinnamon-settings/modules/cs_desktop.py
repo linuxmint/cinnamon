@@ -20,8 +20,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("desktop, home, button, trash")
-        sidePage = SidePage(_("Desktop"), "cs-desktop", keywords, content_box,
-                            module=self)
+        sidePage = SidePage(
+            _("Desktop"), "cs-desktop", keywords, content_box, module=self
+        )
         self.sidePage = sidePage
 
     def _loadCheck(self):
@@ -29,7 +30,8 @@ class Module:
 
         try:
             import gi
-            gi.require_version('Nemo', '3.0')
+
+            gi.require_version("Nemo", "3.0")
 
             from gi.repository import Nemo
 

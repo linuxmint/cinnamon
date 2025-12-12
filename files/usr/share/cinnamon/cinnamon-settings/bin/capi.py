@@ -24,12 +24,14 @@ from gi.repository import Gio, GObject
 
 class CManager:
     def __init__(self):
-        self.extension_point = Gio.io_extension_point_register ("cinnamon-control-center-1")
+        self.extension_point = Gio.io_extension_point_register(
+            "cinnamon-control-center-1"
+        )
         self.modules = []
 
         # get the arch-specific triplet, e.g. 'x86_64-linux-gnu' or 'arm-linux-gnueabihf'
         # see also: https://wiki.debian.org/Python/MultiArch
-        triplet = sysconfig.get_config_var('MULTIARCH')
+        triplet = sysconfig.get_config_var("MULTIARCH")
         paths = ["/usr/lib", "/usr/lib64", f"/usr/lib/{triplet}"]
 
         # On x86 archs, iterate through multiple paths
@@ -47,14 +49,18 @@ class CManager:
                 path = os.path.join(path, "cinnamon-control-center-1/panels")
                 if os.path.exists(path):
                     try:
-                        self.modules = self.modules + Gio.io_modules_load_all_in_directory(path)
+                        self.modules = (
+                            self.modules + Gio.io_modules_load_all_in_directory(path)
+                        )
                     except Exception as e:
                         print(f"capi failed to load multiarch modules from {path}: ", e)
 
     def get_c_widget(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)
         if extension is None:
-            print(f"Could not load {mod_id} module; is the cinnamon-control-center package installed?")
+            print(
+                f"Could not load {mod_id} module; is the cinnamon-control-center package installed?"
+            )
             return None
         panel_type = extension.get_type()
         return GObject.new(panel_type)
@@ -62,7 +68,9 @@ class CManager:
     def lookup_c_module(self, mod_id):
         extension = self.extension_point.get_extension_by_name(mod_id)
         if extension is None:
-            print(f"Could not find {mod_id} module; is the cinnamon-control-center package installed?")
+            print(
+                f"Could not find {mod_id} module; is the cinnamon-control-center package installed?"
+            )
             return False
         else:
             return True

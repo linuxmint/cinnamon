@@ -1,20 +1,16 @@
 #!/usr/bin/python3
 
-import subprocess
 from functools import cmp_to_key
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk
 
 from SettingsWidgets import SidePage, SettingsWidget
 from xapp.GSettingsWidgets import *
 
 SCHEMA = "org.cinnamon.gestures"
-NON_GESTURE_KEYS = [
-    "enabled",
-    "swipe-percent-threshold",
-    "pinch-percent-threshold"
-]
+NON_GESTURE_KEYS = ["enabled", "swipe-percent-threshold", "pinch-percent-threshold"]
 
 ACTIONS = [
     # Action, Label, Allow phase selection, extra widget type [entry|slider|none], default custom val
@@ -48,14 +44,21 @@ ACTIONS = [
     ["EXEC", _("Run a command"), True, "entry", ""],
 ]
 
-[ACTION_ID_COL, ACTION_LABEL_COL, ACTION_ALLOW_PHASE_SELECT_COL, ACTION_EXTRA_WIDGET_TYPE_COL, ACTION_DEFAULT_CUSTOM_VALUE_COL] = range(0, 5)
+[
+    ACTION_ID_COL,
+    ACTION_LABEL_COL,
+    ACTION_ALLOW_PHASE_SELECT_COL,
+    ACTION_EXTRA_WIDGET_TYPE_COL,
+    ACTION_DEFAULT_CUSTOM_VALUE_COL,
+] = range(0, 5)
 
 PHASES = [
     ["start", _("Trigger at gesture start")],
-    ["end", _("Trigger at gesture end")]
+    ["end", _("Trigger at gesture end")],
 ]
 
 [PHASE_ID_COL, PHASE_LABEL_COL] = range(0, 2)
+
 
 def parse_setting(string):
     pieces = string.split("::")
@@ -67,6 +70,7 @@ def parse_setting(string):
     else:
         return ["", "", ""]
 
+
 def setting_to_string(action="", command=None, phase="end"):
     if action == "":
         return ""
@@ -76,6 +80,7 @@ def setting_to_string(action="", command=None, phase="end"):
     else:
         return f"{action}::{phase}"
 
+
 class Module:
     name = "gestures"
     category = "prefs"
@@ -83,7 +88,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("gesture, swipe, pinch, touch")
-        sidePage = SidePage(_("Gestures"), "cs-gestures", keywords, content_box, 560, module=self)
+        sidePage = SidePage(
+            _("Gestures"), "cs-gestures", keywords, content_box, 560, module=self
+        )
         self.sidePage = sidePage
 
         self.gesture_settings = None
@@ -111,24 +118,45 @@ class Module:
 
             page.set_spacing(10)
 
-            box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10, valign=Gtk.Align.START, margin_top=150)
+            box = Gtk.Box(
+                orientation=Gtk.Orientation.VERTICAL,
+                spacing=10,
+                valign=Gtk.Align.START,
+                margin_top=150,
+            )
             page.pack_start(box, True, True, 0)
-            image = Gtk.Image(icon_name="xsi-touch-disabled-symbolic", icon_size=Gtk.IconSize.DIALOG)
+            image = Gtk.Image(
+                icon_name="xsi-touch-disabled-symbolic", icon_size=Gtk.IconSize.DIALOG
+            )
             box.pack_start(image, False, False, 0)
 
             self.disabled_label = Gtk.Label(expand=True)
             box.pack_start(self.disabled_label, False, False, 0)
 
-            self.disabled_page_switch = Gtk.Switch(active=self.gesture_settings.get_boolean("enabled"), no_show_all=True, halign=Gtk.Align.CENTER)
-            self.disabled_page_switch.connect("notify::active", self.enabled_switch_changed)
+            self.disabled_page_switch = Gtk.Switch(
+                active=self.gesture_settings.get_boolean("enabled"),
+                no_show_all=True,
+                halign=Gtk.Align.CENTER,
+            )
+            self.disabled_page_switch.connect(
+                "notify::active", self.enabled_switch_changed
+            )
             box.pack_start(self.disabled_page_switch, False, False, 0)
 
-            self.disabled_retry_button = Gtk.Button(label=_("Check again"), no_show_all=True, halign=Gtk.Align.CENTER)
-            self.disabled_retry_button.connect("clicked", lambda w: self.on_module_selected())
+            self.disabled_retry_button = Gtk.Button(
+                label=_("Check again"), no_show_all=True, halign=Gtk.Align.CENTER
+            )
+            self.disabled_retry_button.connect(
+                "clicked", lambda w: self.on_module_selected()
+            )
             box.pack_start(self.disabled_retry_button, False, False, 0)
 
-            self.disabled_page_disable_button = Gtk.Button(label=_("Disable"), no_show_all=True, halign=Gtk.Align.CENTER)
-            self.disabled_page_disable_button.connect("clicked", lambda w: self.gesture_settings.set_boolean("enabled", False))
+            self.disabled_page_disable_button = Gtk.Button(
+                label=_("Disable"), no_show_all=True, halign=Gtk.Align.CENTER
+            )
+            self.disabled_page_disable_button.connect(
+                "clicked", lambda w: self.gesture_settings.set_boolean("enabled", False)
+            )
             box.pack_start(self.disabled_page_disable_button, False, False, 0)
 
             ssource = Gio.SettingsSchemaSource.get_default()
@@ -152,7 +180,10 @@ class Module:
                     return 1
                 return 0
 
-            keys = sorted([key for key in all_keys if key not in NON_GESTURE_KEYS], key=cmp_to_key(sort_by_direction))
+            keys = sorted(
+                [key for key in all_keys if key not in NON_GESTURE_KEYS],
+                key=cmp_to_key(sort_by_direction),
+            )
 
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "swipe", _("Swipe"))
@@ -165,7 +196,9 @@ class Module:
                 if not label:
                     continue
 
-                widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                widget = GestureComboBox(
+                    label, self.gesture_settings, key, size_group=size_group
+                )
                 section.add_row(widget)
 
             section = page.add_section(_("Swipe with 3 fingers"))
@@ -175,7 +208,9 @@ class Module:
                 if not label:
                     continue
 
-                widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                widget = GestureComboBox(
+                    label, self.gesture_settings, key, size_group=size_group
+                )
                 section.add_row(widget)
 
             section = page.add_section(_("Swipe with 4 fingers"))
@@ -185,7 +220,9 @@ class Module:
                 if not label:
                     continue
 
-                widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                widget = GestureComboBox(
+                    label, self.gesture_settings, key, size_group=size_group
+                )
                 section.add_row(widget)
 
             section = page.add_section(_("Swipe with 5 fingers"), _("Touchscreen only"))
@@ -195,7 +232,9 @@ class Module:
                 if not label:
                     continue
 
-                widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                widget = GestureComboBox(
+                    label, self.gesture_settings, key, size_group=size_group
+                )
                 section.add_row(widget)
 
             page = SettingsPage()
@@ -210,7 +249,9 @@ class Module:
                     if not label:
                         continue
 
-                    widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                    widget = GestureComboBox(
+                        label, self.gesture_settings, key, size_group=size_group
+                    )
                     section.add_row(widget)
 
             section = page.add_section(_("Pinch with 5 fingers"), _("Touchscreen only"))
@@ -221,7 +262,9 @@ class Module:
                 if not label:
                     continue
 
-                widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                widget = GestureComboBox(
+                    label, self.gesture_settings, key, size_group=size_group
+                )
                 section.add_row(widget)
 
             page = SettingsPage()
@@ -237,7 +280,9 @@ class Module:
                     if not label:
                         continue
 
-                    widget = GestureComboBox(label, self.gesture_settings, key, size_group=size_group)
+                    widget = GestureComboBox(
+                        label, self.gesture_settings, key, size_group=size_group
+                    )
                     section.add_row(widget)
 
             page = SettingsPage()
@@ -246,16 +291,39 @@ class Module:
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
             section = page.add_section(_("General"))
-            widget = GSettingsSwitch(_("Enable gestures"), "org.cinnamon.gestures", "enabled")
+            widget = GSettingsSwitch(
+                _("Enable gestures"), "org.cinnamon.gestures", "enabled"
+            )
             section.add_row(widget)
 
-            section = page.add_section(_("Activation thresholds"),
-                                       _("In percentage of the touch surface"))
+            section = page.add_section(
+                _("Activation thresholds"), _("In percentage of the touch surface")
+            )
 
-            widget = GSettingsRange(_("Swipe"), "org.cinnamon.gestures", "swipe-percent-threshold", _("20%"), _("80%"), 20, 80, step=5, show_value=True)
+            widget = GSettingsRange(
+                _("Swipe"),
+                "org.cinnamon.gestures",
+                "swipe-percent-threshold",
+                _("20%"),
+                _("80%"),
+                20,
+                80,
+                step=5,
+                show_value=True,
+            )
             widget.add_mark(60, Gtk.PositionType.TOP, None)
             section.add_row(widget)
-            widget = GSettingsRange(_("Pinch"), "org.cinnamon.gestures", "pinch-percent-threshold", _("20%"), _("80%"), 20, 80, step=5, show_value=True)
+            widget = GSettingsRange(
+                _("Pinch"),
+                "org.cinnamon.gestures",
+                "pinch-percent-threshold",
+                _("20%"),
+                _("80%"),
+                20,
+                80,
+                step=5,
+                show_value=True,
+            )
             widget.add_mark(40, Gtk.PositionType.TOP, None)
             section.add_row(widget)
 
@@ -291,8 +359,12 @@ class Module:
         else:
             Gio.Application.get_default().stack_switcher.set_opacity(1.0)
 
-        self.sidePage.stack.set_visible_child_full(page, Gtk.StackTransitionType.CROSSFADE)
-        self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
+        self.sidePage.stack.set_visible_child_full(
+            page, Gtk.StackTransitionType.CROSSFADE
+        )
+        self.sidePage.stack.set_transition_type(
+            Gtk.StackTransitionType.SLIDE_LEFT_RIGHT
+        )
 
     def enabled_switch_changed(self, widget, pspec):
         self.gesture_settings.set_boolean("enabled", widget.get_active())
@@ -315,9 +387,14 @@ class Module:
         if gtype != parts[0]:
             return None
 
-        gesture_directions = {"left": _("Left"), "right": _("Right"),
-                              "up": _("Up"), "down": _("Down"),
-                              "in": _("In"), "out": _("Out")}
+        gesture_directions = {
+            "left": _("Left"),
+            "right": _("Right"),
+            "up": _("Up"),
+            "down": _("Down"),
+            "in": _("In"),
+            "out": _("Out"),
+        }
         if gtype in ("swipe", "pinch"):
             if int(parts[2]) != fingers:
                 return None
@@ -332,9 +409,12 @@ class Module:
 
     def test_daemon_alive(self):
         try:
-            conn = Gio.DBusConnection.new_for_address_sync("unix:abstract=touchegg",
-                                                           Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT,
-                                                           None, None)
+            conn = Gio.DBusConnection.new_for_address_sync(
+                "unix:abstract=touchegg",
+                Gio.DBusConnectionFlags.AUTHENTICATION_CLIENT,
+                None,
+                None,
+            )
             conn.close_sync(None)
             return True
         except GLib.Error:
@@ -365,9 +445,14 @@ class Module:
                             action_string = val
 
                         if custom_string == "":
-                            self.gesture_settings.set_string(key, f"{action_string}::end")
+                            self.gesture_settings.set_string(
+                                key, f"{action_string}::end"
+                            )
                         else:
-                            self.gesture_settings.set_string(key, f"{action_string}::{custom_string}::end")
+                            self.gesture_settings.set_string(
+                                key, f"{action_string}::{custom_string}::end"
+                            )
+
 
 class NonScrollingComboBox(Gtk.ComboBox):
     def __init__(self, *args, **kwargs):
@@ -380,6 +465,7 @@ class NonScrollingComboBox(Gtk.ComboBox):
         # prevents unintentional combobox changes, but also breaks
         # any scrollable parents when passing over the combobox.
         Gtk.Widget.do_scroll_event(self, event)
+
 
 class GestureComboBox(SettingsWidget):
     def __init__(self, label, settings=None, key=None, size_group=None):
@@ -419,11 +505,15 @@ class GestureComboBox(SettingsWidget):
 
         controls_vbox.pack_start(self.action_combo, False, False, 0)
 
-        self.custom_entry = Gtk.Entry(placeholder_text=_("Enter a command"), visible=True)
-        self.custom_revealer = Gtk.Revealer(child=self.custom_entry,
-                                            transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
-                                            transition_duration=150,
-                                            no_show_all=True)
+        self.custom_entry = Gtk.Entry(
+            placeholder_text=_("Enter a command"), visible=True
+        )
+        self.custom_revealer = Gtk.Revealer(
+            child=self.custom_entry,
+            transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
+            transition_duration=150,
+            no_show_all=True,
+        )
 
         controls_vbox.pack_start(self.custom_revealer, False, False, 0)
 
@@ -432,21 +522,27 @@ class GestureComboBox(SettingsWidget):
         self.phase_combo.pack_start(renderer_text, True)
         self.phase_combo.add_attribute(renderer_text, "text", PHASE_LABEL_COL)
 
-        self.phase_revealer = Gtk.Revealer(child=self.phase_combo,
-                                           transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
-                                           transition_duration=150,
-                                           no_show_all=True)
+        self.phase_revealer = Gtk.Revealer(
+            child=self.phase_combo,
+            transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
+            transition_duration=150,
+            no_show_all=True,
+        )
 
         controls_vbox.pack_start(self.phase_revealer, False, False, 0)
 
-        self.adjust_range = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -50, 50, 2)
+        self.adjust_range = Gtk.Scale.new_with_range(
+            Gtk.Orientation.HORIZONTAL, -50, 50, 2
+        )
         self.adjust_range.add_mark(0, Gtk.PositionType.TOP, None)
-        self.adjust_range.set_properties(visible=True,
-                                         inverted=True,
-                                         digits=0,
-                                         has_origin=False,
-                                         draw_value=False,
-                                         value_pos=Gtk.PositionType.BOTTOM)
+        self.adjust_range.set_properties(
+            visible=True,
+            inverted=True,
+            digits=0,
+            has_origin=False,
+            draw_value=False,
+            value_pos=Gtk.PositionType.BOTTOM,
+        )
 
         range_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
         range_label = Gtk.Label(label=_("Sensitivity"))
@@ -463,10 +559,12 @@ class GestureComboBox(SettingsWidget):
         range_box.pack_start(range_hbox, False, False, 0)
         range_box.show_all()
 
-        self.range_revealer = Gtk.Revealer(child=range_box,
-                                           transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
-                                           transition_duration=150,
-                                           no_show_all=True)
+        self.range_revealer = Gtk.Revealer(
+            child=range_box,
+            transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
+            transition_duration=150,
+            no_show_all=True,
+        )
 
         controls_vbox.pack_start(self.range_revealer, False, False, 0)
 
@@ -491,8 +589,12 @@ class GestureComboBox(SettingsWidget):
         if tree_iter is not None:
             if widget == self.action_combo:
                 self.action_value = self.action_model[tree_iter][ACTION_ID_COL]
-                custom_type = self.action_model[self.action_combo.get_active_iter()][ACTION_EXTRA_WIDGET_TYPE_COL]
-                default_val = self.action_model[self.action_combo.get_active_iter()][ACTION_DEFAULT_CUSTOM_VALUE_COL]
+                custom_type = self.action_model[self.action_combo.get_active_iter()][
+                    ACTION_EXTRA_WIDGET_TYPE_COL
+                ]
+                default_val = self.action_model[self.action_combo.get_active_iter()][
+                    ACTION_DEFAULT_CUSTOM_VALUE_COL
+                ]
                 if custom_type == "slider":
                     self.adjust_range.set_value(int(default_val))
                 elif custom_type == "entry":
@@ -514,7 +616,9 @@ class GestureComboBox(SettingsWidget):
             self.range_revealer.hide()
             return
 
-        phase_combo_visible = self.action_model[self.action_combo.get_active_iter()][ACTION_ALLOW_PHASE_SELECT_COL]
+        phase_combo_visible = self.action_model[self.action_combo.get_active_iter()][
+            ACTION_ALLOW_PHASE_SELECT_COL
+        ]
         self.phase_revealer.set_visible(phase_combo_visible)
         self.phase_revealer.set_reveal_child(phase_combo_visible)
 
@@ -522,7 +626,12 @@ class GestureComboBox(SettingsWidget):
         self.custom_revealer.set_visible(custom_entry_visible)
         self.custom_revealer.set_reveal_child(custom_entry_visible)
 
-        range_visible = self.action_model[self.action_combo.get_active_iter()][ACTION_EXTRA_WIDGET_TYPE_COL] == "slider"
+        range_visible = (
+            self.action_model[self.action_combo.get_active_iter()][
+                ACTION_EXTRA_WIDGET_TYPE_COL
+            ]
+            == "slider"
+        )
         self.range_revealer.set_visible(range_visible)
         self.range_revealer.set_reveal_child(range_visible)
 
@@ -560,7 +669,9 @@ class GestureComboBox(SettingsWidget):
 
         self.updating_from_setting = True
 
-        self.action_value, self.custom_value, self.phase_value = parse_setting(settings.get_string(key))
+        self.action_value, self.custom_value, self.phase_value = parse_setting(
+            settings.get_string(key)
+        )
 
         if self.action_value == "EXEC":
             if self.custom_value != "":
@@ -579,13 +690,17 @@ class GestureComboBox(SettingsWidget):
         except:
             self.phase_combo.set_active_iter(self.phase_map["end"])
 
-        custom_type = self.action_model[self.action_combo.get_active_iter()][ACTION_EXTRA_WIDGET_TYPE_COL]
+        custom_type = self.action_model[self.action_combo.get_active_iter()][
+            ACTION_EXTRA_WIDGET_TYPE_COL
+        ]
 
         if custom_type == "entry":
             self.custom_entry.set_text(self.custom_value)
         elif custom_type == "slider":
             if self.custom_value == "":
-                default_value = self.action_model[self.action_combo.get_active_iter()][ACTION_DEFAULT_CUSTOM_VALUE_COL]
+                default_value = self.action_model[self.action_combo.get_active_iter()][
+                    ACTION_DEFAULT_CUSTOM_VALUE_COL
+                ]
                 val = int(default_value)
             else:
                 val = int(self.custom_value)

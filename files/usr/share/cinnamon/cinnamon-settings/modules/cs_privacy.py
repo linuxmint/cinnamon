@@ -1,10 +1,18 @@
 #!/usr/bin/python3
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk
 
 from SettingsWidgets import SidePage
-from xapp.GSettingsWidgets import GSettingsSwitch, SettingsLabel, SettingsPage, SettingsRevealer, SettingsWidget, Switch
+from xapp.GSettingsWidgets import (
+    GSettingsSwitch,
+    SettingsLabel,
+    SettingsPage,
+    SettingsRevealer,
+    SettingsWidget,
+    Switch,
+)
 
 PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy"
 GTK_RECENT_ENABLE_KEY = "remember-recent-files"
@@ -18,19 +26,22 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("privacy, recent, gtk, private")
-        sidePage = SidePage(_("Privacy"), "cs-privacy", keywords, content_box, module=self)
+        sidePage = SidePage(
+            _("Privacy"), "cs-privacy", keywords, content_box, module=self
+        )
         self.sidePage = sidePage
         self.settings = Gio.Settings(schema=PRIVACY_SCHEMA)
         self.nm_client = None
 
     def _init_nm_client(self):
         try:
-            gi.require_version('NM', '1.0')
+            gi.require_version("NM", "1.0")
             from gi.repository import NM
+
             nm_client = NM.Client.new()
 
             # we need libnm >=1.10
-            if hasattr(nm_client, 'connectivity_check_get_available'):
+            if hasattr(nm_client, "connectivity_check_get_available"):
                 self.nm_client = nm_client
         except ValueError:
             pass
@@ -47,10 +58,14 @@ class Module:
             switch.fill_row()
             page.add(switch)
 
-            settings = page.add_reveal_section(_("Recent files"), PRIVACY_SCHEMA, GTK_RECENT_ENABLE_KEY)
+            settings = page.add_reveal_section(
+                _("Recent files"), PRIVACY_SCHEMA, GTK_RECENT_ENABLE_KEY
+            )
 
             self.indefinite_switch = Switch(_("Never forget old files"))
-            self.indefinite_switch.content_widget.connect("notify::active", self.on_indefinite_toggled)
+            self.indefinite_switch.content_widget.connect(
+                "notify::active", self.on_indefinite_toggled
+            )
             settings.add_row(self.indefinite_switch)
 
             widget = SettingsWidget()
@@ -80,30 +95,49 @@ class Module:
             else:
                 self.indefinite_switch.content_widget.set_active(False)
                 self.revealer.set_reveal_child(True)
-                if start_age == 0:  # Shouldn't happen, unless someone manually sets the value
+                if (
+                    start_age == 0
+                ):  # Shouldn't happen, unless someone manually sets the value
                     self.settings.set_int(GTK_RECENT_MAX_AGE, 30)
                 self.bind_spinner()
 
             self._init_nm_client()
 
-            if self.nm_client is not None and self.nm_client.connectivity_check_get_available():
+            if (
+                self.nm_client is not None
+                and self.nm_client.connectivity_check_get_available()
+            ):
                 section = page.add_section(_("Internet connectivity"))
                 connectivity_switch = Switch(_("Check connectivity"))
-                connectivity_switch.content_widget.set_active(self.nm_client.connectivity_check_get_enabled())
-                connectivity_switch.content_widget.connect("notify::active", self.on_connectivity_toggled)
+                connectivity_switch.content_widget.set_active(
+                    self.nm_client.connectivity_check_get_enabled()
+                )
+                connectivity_switch.content_widget.connect(
+                    "notify::active", self.on_connectivity_toggled
+                )
                 section.add_row(connectivity_switch)
-                section.add_note(_("Check that network connections can reach the Internet. This makes it possible to detect captive portals, but also generates periodic network traffic."))
+                section.add_note(
+                    _(
+                        "Check that network connections can reach the Internet. This makes it possible to detect captive portals, but also generates periodic network traffic."
+                    )
+                )
 
     def bind_spinner(self):
-        self.settings.bind(GTK_RECENT_MAX_AGE, self.spinner, "value", Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind(
+            GTK_RECENT_MAX_AGE, self.spinner, "value", Gio.SettingsBindFlags.DEFAULT
+        )
 
     def unbind_spinner(self):
         # This should have self.settings.unbind or something.. but unbind is broken via introspection
         # in more than one glib version.  This achieves the same thing (preventing updates to the spinner)
         # by overwriting the .DEFAULT binding with a .GET_NO_CHANGES which only fetches the settings value
         # once at binding time.
-        self.settings.bind(GTK_RECENT_MAX_AGE, self.spinner, "value",
-                           Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.GET_NO_CHANGES)
+        self.settings.bind(
+            GTK_RECENT_MAX_AGE,
+            self.spinner,
+            "value",
+            Gio.SettingsBindFlags.GET | Gio.SettingsBindFlags.GET_NO_CHANGES,
+        )
 
     def on_indefinite_toggled(self, widget, gparam):
         active = widget.get_active()

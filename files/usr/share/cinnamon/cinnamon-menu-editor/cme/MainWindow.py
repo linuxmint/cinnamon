@@ -18,8 +18,9 @@
 #   Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('CMenu', '3.0')
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("CMenu", "3.0")
 from gi.repository import Gtk, GObject, Gdk, CMenu
 import html
 import os
@@ -27,6 +28,7 @@ import gettext
 import subprocess
 
 from cme import config
+
 gettext.bindtextdomain(config.GETTEXT_PACKAGE, config.localedir)
 gettext.textdomain(config.GETTEXT_PACKAGE)
 
@@ -34,9 +36,10 @@ _ = gettext.gettext
 from cme.MenuEditor import MenuEditor
 from cme import util
 
+
 class MainWindow(object):
     timer = None
-    #hack to make editing menu properties work
+    # hack to make editing menu properties work
     edit_pool = []
 
     def __init__(self, datadir, version):
@@ -44,10 +47,12 @@ class MainWindow(object):
         self.version = version
         self.editor = MenuEditor()
         self.editor.tree.connect("changed", self.menuChanged)
-        Gtk.Window.set_default_icon_name('alacarte')
+        Gtk.Window.set_default_icon_name("alacarte")
         self.tree = Gtk.Builder()
         self.tree.set_translation_domain(config.GETTEXT_PACKAGE)
-        self.tree.add_from_file('/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui')
+        self.tree.add_from_file(
+            "/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui"
+        )
         self.tree.connect_signals(self)
         self.setupMenuTree()
         self.setupItemTree()
@@ -79,7 +84,7 @@ class MainWindow(object):
         self.cut_copy_buffer = None
         self.file_id = None
         self.last_tree = None
-        self.main_window = self.tree.get_object('mainwindow')
+        self.main_window = self.tree.get_object("mainwindow")
 
         self.tree.get_object("action_box").set_layout(Gtk.ButtonBoxStyle.EDGE)
 
@@ -92,8 +97,8 @@ class MainWindow(object):
         self.loadUpdates()
 
     def loadUpdates(self):
-        menu_tree = self.tree.get_object('menu_tree')
-        item_tree = self.tree.get_object('item_tree')
+        menu_tree = self.tree.get_object("menu_tree")
+        item_tree = self.tree.get_object("item_tree")
         items, iter = item_tree.get_selection().get_selected()
         update_items = False
         update_type = None
@@ -119,30 +124,37 @@ class MainWindow(object):
                 menu_id = menus[iter][3].get_menu_id()
             update_menus = True
         self.loadMenus()
-        #find current menu in new tree
+        # find current menu in new tree
         if update_menus:
             menu_tree.get_model().foreach(self.findMenu, menu_id)
             menus, iter = menu_tree.get_selection().get_selected()
             if iter:
                 self.on_menu_tree_cursor_changed(menu_tree)
-        #find current item in new list
+        # find current item in new list
         if update_items:
             i = 0
             for item in item_tree.get_model():
                 found = False
                 if update_type != CMenu.TreeItemType.SEPARATOR:
-                    if isinstance (item[3], CMenu.TreeEntry) and item[3].get_desktop_file_id() == item_id:
+                    if (
+                        isinstance(item[3], CMenu.TreeEntry)
+                        and item[3].get_desktop_file_id() == item_id
+                    ):
                         found = True
-                    if isinstance (item[3], CMenu.TreeDirectory) and item[3].get_desktop_file_path() and update_type == CMenu.TreeItemType.DIRECTORY:
+                    if (
+                        isinstance(item[3], CMenu.TreeDirectory)
+                        and item[3].get_desktop_file_path()
+                        and update_type == CMenu.TreeItemType.DIRECTORY
+                    ):
                         if os.path.split(item[3].get_desktop_file_path())[1] == item_id:
                             found = True
                 if isinstance(item[3], CMenu.TreeSeparator):
                     if not isinstance(item_id, tuple):
-                        #we may not skip the increment via "continue"
+                        # we may not skip the increment via "continue"
                         i += 1
                         continue
-                    #separators have no id, have to find them manually
-                    #probably won't work with two separators together
+                    # separators have no id, have to find them manually
+                    # probably won't work with two separators together
                     if (item_id[0] - 1,) == (i,):
                         found = True
                     elif (item_id[0] + 1,) == (i,):
@@ -159,39 +171,41 @@ class MainWindow(object):
     def findMenu(self, menus, path, iter, menu_id):
         if not menus[path][3].get_desktop_file_path():
             if menu_id == menus[path][3].get_menu_id():
-                menu_tree = self.tree.get_object('menu_tree')
+                menu_tree = self.tree.get_object("menu_tree")
                 menu_tree.expand_to_path(path)
                 menu_tree.get_selection().select_path(path)
                 return True
             return False
         if os.path.split(menus[path][3].get_desktop_file_path())[1] == menu_id:
-            menu_tree = self.tree.get_object('menu_tree')
+            menu_tree = self.tree.get_object("menu_tree")
             menu_tree.expand_to_path(path)
             menu_tree.get_selection().select_path(path)
             return True
 
     def setupMenuTree(self):
-        self.menu_store = Gtk.TreeStore(object, str, bool, object) # bool is unused, just a placeholder
-        menus = self.tree.get_object('menu_tree')                            # so object is the same index for
-        column = Gtk.TreeViewColumn(_("Name"))                               # the menu tree and item tree
+        self.menu_store = Gtk.TreeStore(
+            object, str, bool, object
+        )  # bool is unused, just a placeholder
+        menus = self.tree.get_object("menu_tree")  # so object is the same index for
+        column = Gtk.TreeViewColumn(_("Name"))  # the menu tree and item tree
         column.set_spacing(4)
         cell = Gtk.CellRendererPixbuf()
         column.pack_start(cell, False)
         column.set_cell_data_func(cell, self.icon_data_func, 0)
         cell = Gtk.CellRendererText()
         column.pack_start(cell, True)
-        column.add_attribute(cell, 'markup', 1)
+        column.add_attribute(cell, "markup", 1)
         menus.append_column(column)
         menus.get_selection().set_mode(Gtk.SelectionMode.BROWSE)
 
     def setupItemTree(self):
-        items = self.tree.get_object('item_tree')
+        items = self.tree.get_object("item_tree")
         column = Gtk.TreeViewColumn(_("Show"))
         cell = Gtk.CellRendererToggle()
-        cell.connect('toggled', self.on_item_tree_show_toggled)
+        cell.connect("toggled", self.on_item_tree_show_toggled)
         column.pack_start(cell, True)
-        column.add_attribute(cell, 'active', 0)
-        #hide toggle for separators
+        column.add_attribute(cell, "active", 0)
+        # hide toggle for separators
         column.set_cell_data_func(cell, self._cell_data_toggle_func)
         items.append_column(column)
         column = Gtk.TreeViewColumn(_("Item"))
@@ -201,7 +215,7 @@ class MainWindow(object):
         column.set_cell_data_func(cell, self.icon_data_func, 1)
         cell = Gtk.CellRendererText()
         column.pack_start(cell, True)
-        column.add_attribute(cell, 'markup', 2)
+        column.add_attribute(cell, "markup", 2)
         items.append_column(column)
         self.item_store = Gtk.ListStore(bool, object, str, object)
         items.set_model(self.item_store)
@@ -213,15 +227,15 @@ class MainWindow(object):
 
     def _cell_data_toggle_func(self, tree_column, renderer, model, treeiter, data=None):
         if isinstance(model[treeiter][3], CMenu.TreeSeparator):
-            renderer.set_property('visible', False)
+            renderer.set_property("visible", False)
         else:
-            renderer.set_property('visible', True)
+            renderer.set_property("visible", True)
 
     def loadMenus(self):
         self.menu_store.clear()
-        self.loadMenu({ None: None })
+        self.loadMenu({None: None})
 
-        menu_tree = self.tree.get_object('menu_tree')
+        menu_tree = self.tree.get_object("menu_tree")
         menu_tree.set_model(self.menu_store)
         for menu in self.menu_store:
             menu_tree.expand_to_path(menu.path)
@@ -235,7 +249,9 @@ class MainWindow(object):
                 name = "<small><i>%s</i></small>" % (name,)
 
             icon = util.getIcon(menu, self.main_window)
-            iters[menu] = self.menu_store.append(iters[parent], (icon, name, False, menu))
+            iters[menu] = self.menu_store.append(
+                iters[parent], (icon, name, False, menu)
+            )
             self.loadMenu(iters, menu)
 
     def loadItems(self, menu):
@@ -247,9 +263,9 @@ class MainWindow(object):
             elif isinstance(item, CMenu.TreeEntry):
                 name = item.get_app_info().get_display_name()
             elif isinstance(item, CMenu.TreeSeparator):
-                name = '---'
+                name = "---"
             else:
-                assert False, 'should not be reached'
+                assert False, "should not be reached"
 
             name = html.escape(name)
             if not show:
@@ -257,8 +273,8 @@ class MainWindow(object):
 
             self.item_store.append((show, icon, name, item))
 
-    #this is a little timeout callback to insert new items after
-    #gnome-desktop-item-edit has finished running
+    # this is a little timeout callback to insert new items after
+    # gnome-desktop-item-edit has finished running
     def waitForNewItemProcess(self, process, parent_id, file_path):
         if process.poll() is not None:
             if os.path.isfile(file_path):
@@ -273,7 +289,7 @@ class MainWindow(object):
             return False
         return True
 
-    #this callback keeps you from editing the same item twice
+    # this callback keeps you from editing the same item twice
     def waitForEditProcess(self, process, file_path):
         if process.poll() is not None:
             self.edit_pool.remove(file_path)
@@ -281,7 +297,7 @@ class MainWindow(object):
         return True
 
     def on_new_menu_button_clicked(self, button):
-        menu_tree = self.tree.get_object('menu_tree')
+        menu_tree = self.tree.get_object("menu_tree")
         menus, iter = menu_tree.get_selection().get_selected()
         if not iter:
             parent = menus[(0,)][3]
@@ -289,12 +305,19 @@ class MainWindow(object):
             menu_tree.get_selection().select_path((0,))
         else:
             parent = menus[iter][3]
-        file_path = os.path.join(util.getUserDirectoryPath(), util.getUniqueFileId('alacarte-made', '.directory'))
-        process = subprocess.Popen(['cinnamon-desktop-editor', '-mdirectory', '-o' + file_path], env=os.environ)
-        GObject.timeout_add(100, self.waitForNewMenuProcess, process, parent.get_menu_id(), file_path)
+        file_path = os.path.join(
+            util.getUserDirectoryPath(),
+            util.getUniqueFileId("alacarte-made", ".directory"),
+        )
+        process = subprocess.Popen(
+            ["cinnamon-desktop-editor", "-mdirectory", "-o" + file_path], env=os.environ
+        )
+        GObject.timeout_add(
+            100, self.waitForNewMenuProcess, process, parent.get_menu_id(), file_path
+        )
 
     def on_new_item_button_clicked(self, button):
-        menu_tree = self.tree.get_object('menu_tree')
+        menu_tree = self.tree.get_object("menu_tree")
         menus, iter = menu_tree.get_selection().get_selected()
         if not iter:
             parent = menus[(0,)][3]
@@ -302,12 +325,18 @@ class MainWindow(object):
             menu_tree.get_selection().select_path((0,))
         else:
             parent = menus[iter][3]
-        file_path = os.path.join(util.getUserItemPath(), util.getUniqueFileId('alacarte-made', '.desktop'))
-        process = subprocess.Popen(['cinnamon-desktop-editor', '-mlauncher', '-o' + file_path], env=os.environ)
-        GObject.timeout_add(100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path)
+        file_path = os.path.join(
+            util.getUserItemPath(), util.getUniqueFileId("alacarte-made", ".desktop")
+        )
+        process = subprocess.Popen(
+            ["cinnamon-desktop-editor", "-mlauncher", "-o" + file_path], env=os.environ
+        )
+        GObject.timeout_add(
+            100, self.waitForNewItemProcess, process, parent.get_menu_id(), file_path
+        )
 
     def on_edit_delete_activate(self, menu):
-        item_tree = self.tree.get_object('item_tree')
+        item_tree = self.tree.get_object("item_tree")
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
             return
@@ -325,23 +354,28 @@ class MainWindow(object):
         if not iter:
             return
         item = items[iter][3]
-        if not isinstance(item, CMenu.TreeEntry) and not isinstance(item, CMenu.TreeDirectory):
+        if not isinstance(item, CMenu.TreeEntry) and not isinstance(
+            item, CMenu.TreeDirectory
+        ):
             return
 
         if isinstance(item, CMenu.TreeEntry):
-            file_type = 'launcher'
+            file_type = "launcher"
         elif isinstance(item, CMenu.TreeDirectory):
-            file_type = 'directory'
+            file_type = "directory"
 
         file_path = item.get_desktop_file_path()
 
         if file_path not in self.edit_pool:
             self.edit_pool.append(file_path)
-            process = subprocess.Popen(['cinnamon-desktop-editor', '-m' + file_type, '-o' + file_path], env=os.environ)
+            process = subprocess.Popen(
+                ["cinnamon-desktop-editor", "-m" + file_type, "-o" + file_path],
+                env=os.environ,
+            )
             GObject.timeout_add(100, self.waitForEditProcess, process, file_path)
 
     def on_edit_cut_activate(self, menu):
-        item_tree = self.tree.get_object('item_tree')
+        item_tree = self.tree.get_object("item_tree")
         items, iter = item_tree.get_selection().get_selected()
         item = items[iter][3]
         if not iter:
@@ -351,7 +385,7 @@ class MainWindow(object):
         (self.cut_copy_buffer, self.file_id) = self.editor.cutItem(item)
 
     def on_edit_copy_activate(self, menu):
-        item_tree = self.tree.get_object('item_tree')
+        item_tree = self.tree.get_object("item_tree")
         items, iter = item_tree.get_selection().get_selected()
         item = items[iter][3]
         if not iter:
@@ -361,10 +395,10 @@ class MainWindow(object):
         (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
 
     def on_edit_paste_activate(self, menu):
-        item_tree = self.tree.get_object('item_tree')
+        item_tree = self.tree.get_object("item_tree")
         items, iter = item_tree.get_selection().get_selected()
         if not iter:
-            menu_tree = self.tree.get_object('menu_tree')
+            menu_tree = self.tree.get_object("menu_tree")
             items, iter = menu_tree.get_selection().get_selected()
             if not iter:
                 return
@@ -388,7 +422,7 @@ class MainWindow(object):
 
         menu_path = menus.get_path(iter)
 
-        item_tree = self.tree.get_object('item_tree')
+        item_tree = self.tree.get_object("item_tree")
         item_tree.get_selection().unselect_all()
         self.loadItems(self.menu_store[menu_path][3])
         self.set_cut_sensitive(False)
@@ -396,12 +430,14 @@ class MainWindow(object):
         self.set_delete_sensitive(False)
         self.set_properties_sensitive(True)
 
-        can_paste = isinstance(menu, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
+        can_paste = (
+            isinstance(menu, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
+        )
         self.set_paste_sensitive(can_paste)
 
         index = menus.get_path(iter).get_indices()[menus.get_path(iter).get_depth() - 1]
         parent_iter = menus.iter_parent(iter)
-        count =  menus.iter_n_children(parent_iter)
+        count = menus.iter_n_children(parent_iter)
         can_go_up = index > 0 and isinstance(menu, CMenu.TreeDirectory)
         can_go_down = index < count - 1 and isinstance(menu, CMenu.TreeDirectory)
         self.last_tree = "menu_tree"
@@ -434,7 +470,9 @@ class MainWindow(object):
         self.set_cut_sensitive(can_cut_copy)
         self.set_copy_sensitive(can_cut_copy)
 
-        can_paste = isinstance(item, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
+        can_paste = (
+            isinstance(item, CMenu.TreeDirectory) and self.cut_copy_buffer is not None
+        )
         self.set_paste_sensitive(can_paste)
 
         index = items.get_path(iter).get_indices()[0]
@@ -468,7 +506,7 @@ class MainWindow(object):
     def on_item_tree_popup_menu(self, item_tree, event=None):
         model, iter = item_tree.get_selection().get_selected()
         if event:
-            #don't show if it's not the right mouse button
+            # don't show if it's not the right mouse button
             if event.button != 3:
                 return
             button = event.button
@@ -485,13 +523,13 @@ class MainWindow(object):
             item_tree.grab_focus()
             item_tree.set_cursor(path, item_tree.get_columns()[0], 0)
         self.popup_menu.popup(None, None, None, None, button, event_time)
-        #without this shift-f10 won't work
+        # without this shift-f10 won't work
         return True
 
     def on_menu_tree_popup_menu(self, menu_tree, event=None):
         model, iter = menu_tree.get_selection().get_selected()
         if event:
-            #don't show if it's not the right mouse button
+            # don't show if it's not the right mouse button
             if event.button != 3:
                 return
             button = event.button
@@ -507,9 +545,9 @@ class MainWindow(object):
             event_time = 0
             menu_tree.grab_focus()
             menu_tree.set_cursor(path, menu_tree.get_columns()[0], 0)
-        popup = self.tree.get_object('edit_menu')
+        popup = self.tree.get_object("edit_menu")
         popup.popup(None, None, None, None, button, event_time)
-        #without this shift-f10 won't work
+        # without this shift-f10 won't work
         return True
 
     def on_item_tree_key_press_event(self, item_tree, event):
@@ -543,13 +581,15 @@ class MainWindow(object):
         if not iter:
             return
         item = items[iter][3]
-        if not isinstance(item, CMenu.TreeEntry) and not isinstance(item, CMenu.TreeDirectory):
+        if not isinstance(item, CMenu.TreeEntry) and not isinstance(
+            item, CMenu.TreeDirectory
+        ):
             return
 
         if isinstance(item, CMenu.TreeEntry):
-            file_type = 'launcher'
+            file_type = "launcher"
         elif isinstance(item, CMenu.TreeDirectory):
-            file_type = 'directory'
+            file_type = "directory"
 
         file_path = item.get_desktop_file_path()
 

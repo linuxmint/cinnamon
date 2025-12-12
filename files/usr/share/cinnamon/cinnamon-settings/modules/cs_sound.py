@@ -1,8 +1,9 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('Cvc', '1.0')
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Cvc", "1.0")
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Cvc, Gdk, GdkPixbuf, Gio, Pango
 from SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
@@ -12,40 +13,107 @@ CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
 OVERAMPLIFICATION_KEY = "allow-amplified-volume"
 
-DECAY_STEP = .15
+DECAY_STEP = 0.15
 
 EFFECT_LIST = [
-    {"label": _("Starting Cinnamon"),           "schema": CINNAMON_SOUNDS,         "file": "login-file",        "enabled": "login-enabled"},
-    {"label": _("Leaving Cinnamon"),            "schema": CINNAMON_SOUNDS,         "file": "logout-file",       "enabled": "logout-enabled"},
-    {"label": _("Switching workspace"),         "schema": CINNAMON_SOUNDS,         "file": "switch-file",       "enabled": "switch-enabled"},
-    {"label": _("Opening new windows"),         "schema": CINNAMON_SOUNDS,         "file": "map-file",          "enabled": "map-enabled"},
-    {"label": _("Closing windows"),             "schema": CINNAMON_SOUNDS,         "file": "close-file",        "enabled": "close-enabled"},
-    {"label": _("Minimizing windows"),          "schema": CINNAMON_SOUNDS,         "file": "minimize-file",     "enabled": "minimize-enabled"},
-    {"label": _("Maximizing windows"),          "schema": CINNAMON_SOUNDS,         "file": "maximize-file",     "enabled": "maximize-enabled"},
-    {"label": _("Unmaximizing windows"),        "schema": CINNAMON_SOUNDS,         "file": "unmaximize-file",   "enabled": "unmaximize-enabled"},
-    {"label": _("Tiling and snapping windows"), "schema": CINNAMON_SOUNDS,         "file": "tile-file",         "enabled": "tile-enabled"},
-    {"label": _("Inserting a device"),          "schema": CINNAMON_SOUNDS,         "file": "plug-file",         "enabled": "plug-enabled"},
-    {"label": _("Removing a device"),           "schema": CINNAMON_SOUNDS,         "file": "unplug-file",       "enabled": "unplug-enabled"},
-    {"label": _("Showing notifications"),       "schema": CINNAMON_SOUNDS,         "file": "notification-file", "enabled": "notification-enabled"},
-    {"label": _("Changing the sound volume"),   "schema": CINNAMON_DESKTOP_SOUNDS, "file": "volume-sound-file", "enabled": "volume-sound-enabled"}
+    {
+        "label": _("Starting Cinnamon"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "login-file",
+        "enabled": "login-enabled",
+    },
+    {
+        "label": _("Leaving Cinnamon"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "logout-file",
+        "enabled": "logout-enabled",
+    },
+    {
+        "label": _("Switching workspace"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "switch-file",
+        "enabled": "switch-enabled",
+    },
+    {
+        "label": _("Opening new windows"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "map-file",
+        "enabled": "map-enabled",
+    },
+    {
+        "label": _("Closing windows"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "close-file",
+        "enabled": "close-enabled",
+    },
+    {
+        "label": _("Minimizing windows"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "minimize-file",
+        "enabled": "minimize-enabled",
+    },
+    {
+        "label": _("Maximizing windows"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "maximize-file",
+        "enabled": "maximize-enabled",
+    },
+    {
+        "label": _("Unmaximizing windows"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "unmaximize-file",
+        "enabled": "unmaximize-enabled",
+    },
+    {
+        "label": _("Tiling and snapping windows"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "tile-file",
+        "enabled": "tile-enabled",
+    },
+    {
+        "label": _("Inserting a device"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "plug-file",
+        "enabled": "plug-enabled",
+    },
+    {
+        "label": _("Removing a device"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "unplug-file",
+        "enabled": "unplug-enabled",
+    },
+    {
+        "label": _("Showing notifications"),
+        "schema": CINNAMON_SOUNDS,
+        "file": "notification-file",
+        "enabled": "notification-enabled",
+    },
+    {
+        "label": _("Changing the sound volume"),
+        "schema": CINNAMON_DESKTOP_SOUNDS,
+        "file": "volume-sound-file",
+        "enabled": "volume-sound-enabled",
+    },
 ]
 
 SOUND_TEST_MAP = [
     #  name,             position,        icon name,                  row,  col,   pa id
-    [_("Front Left"),    "front-left",    "audio-speaker-left",         0,   0,      1],
-    [_("Front Right"),   "front-right",   "audio-speaker-right",        0,   2,      2],
-    [_("Front Center"),  "front-center",  "audio-speaker-center",       0,   1,      3],
-    [_("Rear Left"),     "rear-left",     "audio-speaker-left-back",    2,   0,      5],
-    [_("Rear Right"),    "rear-right",    "audio-speaker-right-back",   2,   2,      6],
-    [_("Rear Center"),   "rear-center",   "audio-speaker-center-back",  2,   1,      4],
-    [_("Subwoofer"),     "lfe",           "audio-subwoofer",            1,   1,      7],
-    [_("Side Left"),     "side-left",     "audio-speaker-left-side",    1,   0,      10],
-    [_("Side Right"),    "side-right",    "audio-speaker-right-side",   1,   2,      11]
+    [_("Front Left"), "front-left", "audio-speaker-left", 0, 0, 1],
+    [_("Front Right"), "front-right", "audio-speaker-right", 0, 2, 2],
+    [_("Front Center"), "front-center", "audio-speaker-center", 0, 1, 3],
+    [_("Rear Left"), "rear-left", "audio-speaker-left-back", 2, 0, 5],
+    [_("Rear Right"), "rear-right", "audio-speaker-right-back", 2, 2, 6],
+    [_("Rear Center"), "rear-center", "audio-speaker-center-back", 2, 1, 4],
+    [_("Subwoofer"), "lfe", "audio-subwoofer", 1, 1, 7],
+    [_("Side Left"), "side-left", "audio-speaker-left-side", 1, 0, 10],
+    [_("Side Right"), "side-right", "audio-speaker-right-side", 1, 2, 11],
 ]
+
 
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
         row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
+
 
 class SoundBox(Gtk.Box):
     def __init__(self, title):
@@ -69,7 +137,7 @@ class SoundBox(Gtk.Box):
 
         scw = Gtk.ScrolledWindow()
         scw.expand = True
-        scw.set_min_content_height (450)
+        scw.set_min_content_height(450)
         scw.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
         scw.set_shadow_type(Gtk.ShadowType.NONE)
         main_box.pack_start(scw, True, True, 0)
@@ -84,8 +152,22 @@ class SoundBox(Gtk.Box):
     def add_row(self, row):
         self.list_box.add(row)
 
+
 class Slider(SettingsWidget):
-    def __init__(self, title, minLabel, maxLabel, minValue, maxValue, sizeGroup, step=None, page=None, value=0, gicon=None, iconName=None):
+    def __init__(
+        self,
+        title,
+        minLabel,
+        maxLabel,
+        minValue,
+        maxValue,
+        sizeGroup,
+        step=None,
+        page=None,
+        value=0,
+        gicon=None,
+        iconName=None,
+    ):
         super(Slider, self).__init__()
         self.set_orientation(Gtk.Orientation.VERTICAL)
         self.set_spacing(5)
@@ -128,7 +210,7 @@ class Slider(SettingsWidget):
         self.slider = Gtk.Scale.new(Gtk.Orientation.HORIZONTAL, self.adjustment)
         self.slider.props.draw_value = False
 
-        min_label= Gtk.Label()
+        min_label = Gtk.Label()
         max_label = Gtk.Label()
         min_label.set_alignment(1.0, 0.75)
         max_label.set_alignment(0.0, 0.75)
@@ -150,8 +232,11 @@ class Slider(SettingsWidget):
     def setMark(self, val):
         self.slider.add_mark(val, Gtk.PositionType.TOP, "")
 
+
 class VolumeBar(Slider):
-    def __init__(self, normVolume, maxPercent, title=_("Volume: "), gicon=None, sizeGroup=None):
+    def __init__(
+        self, normVolume, maxPercent, title=_("Volume: "), gicon=None, sizeGroup=None
+    ):
         self.normVolume = normVolume
         self.volume = 0
         self.isMuted = False
@@ -162,14 +247,18 @@ class VolumeBar(Slider):
         self.mutedHandlerId = 0
         self.volumeHandlerId = 0
 
-        super(VolumeBar, self).__init__(title, _("Softer"), _("Louder"), 0, maxPercent, sizeGroup, 1, 5, 0, gicon)
+        super(VolumeBar, self).__init__(
+            title, _("Softer"), _("Louder"), 0, maxPercent, sizeGroup, 1, 5, 0, gicon
+        )
         self.set_spacing(0)
         self.set_border_width(2)
         self.set_margin_left(23)
         self.set_margin_right(23)
         self.slider.set_sensitive(False)
 
-        self.muteImage = Gtk.Image.new_from_icon_name("xsi-audio-volume-muted-symbolic", 1)
+        self.muteImage = Gtk.Image.new_from_icon_name(
+            "xsi-audio-volume-muted-symbolic", 1
+        )
         self.muteSwitch = Gtk.ToggleButton()
         self.muteSwitch.set_image(self.muteImage)
         self.muteSwitch.set_relief(Gtk.ReliefStyle.NONE)
@@ -182,7 +271,9 @@ class VolumeBar(Slider):
             self.setMark(100)
 
         self.muteSwitchHandlerId = self.muteSwitch.connect("clicked", self.toggleMute)
-        self.adjustmentHandlerId = self.adjustment.connect("value-changed", self.onVolumeChanged)
+        self.adjustmentHandlerId = self.adjustment.connect(
+            "value-changed", self.onVolumeChanged
+        )
 
     def connectStream(self):
         self.mutedHandlerId = self.stream.connect("notify::is-muted", self.setVolume)
@@ -263,8 +354,9 @@ class VolumeBar(Slider):
             self.label.set_label(self.baseTitle + str(self.volume) + "%")
             self.muteSwitch.set_tooltip_text(_("Click to mute"))
 
+
 class BalanceBar(Slider):
-    def __init__(self, settingType, minVal = -1, norm = 1, sizeGroup=None):
+    def __init__(self, settingType, minVal=-1, norm=1, sizeGroup=None):
         self.type = settingType
         self.norm = norm
         self.value = 0
@@ -282,7 +374,9 @@ class BalanceBar(Slider):
             minLabel = _("Soft")
             maxLabel = _("Loud")
 
-        super(BalanceBar, self).__init__(title, minLabel, maxLabel, minVal, 1, sizeGroup, (1-minVal)/20.)
+        super(BalanceBar, self).__init__(
+            title, minLabel, maxLabel, minVal, 1, sizeGroup, (1 - minVal) / 20.0
+        )
 
         self.setMark(0)
         self.slider.props.has_origin = False
@@ -292,11 +386,11 @@ class BalanceBar(Slider):
     def setChannelMap(self, channelMap):
         self.channelMap = channelMap
         self.channelMap.connect("volume-changed", self.getLevel)
-        self.set_sensitive(getattr(self.channelMap, "can_"+self.type)())
+        self.set_sensitive(getattr(self.channelMap, "can_" + self.type)())
         self.getLevel()
 
     def getLevel(self, a=None, b=None):
-        value = round(getattr(self.channelMap, "get_"+self.type)(), 3)
+        value = round(getattr(self.channelMap, "get_" + self.type)(), 3)
         if self.type == "lfe":
             value = value / self.norm
         if value == self.value:
@@ -311,7 +405,8 @@ class BalanceBar(Slider):
         self.value = value
         if self.type == "lfe":
             value = value * self.norm
-        getattr(self.channelMap, "set_"+self.type)(value)
+        getattr(self.channelMap, "set_" + self.type)(value)
+
 
 class VolumeLevelBar(SettingsWidget):
     def __init__(self, sizeGroup):
@@ -356,6 +451,7 @@ class VolumeLevelBar(SettingsWidget):
 
         self.levelBar.set_value(value)
 
+
 class ProfileSelector(SettingsWidget):
     def __init__(self, controller):
         super(ProfileSelector, self).__init__()
@@ -397,6 +493,7 @@ class ProfileSelector(SettingsWidget):
     def testSpeakers(self, a):
         SoundTest(a.get_toplevel(), self.controller.get_default_sink())
 
+
 class Effect(GSettingsSoundFileChooser):
     def __init__(self, info, sizeGroup):
         super(Effect, self).__init__(info["label"], info["schema"], info["file"])
@@ -409,7 +506,13 @@ class Effect(GSettingsSoundFileChooser):
 
         sizeGroup.add_widget(self.content_widget)
 
-        self.settings.bind(self.enabled_key, self.enabled_switch, "active", Gio.SettingsBindFlags.DEFAULT)
+        self.settings.bind(
+            self.enabled_key,
+            self.enabled_switch,
+            "active",
+            Gio.SettingsBindFlags.DEFAULT,
+        )
+
 
 class SoundTest(Gtk.Dialog):
     def __init__(self, parent, stream):
@@ -438,7 +541,7 @@ class SoundTest(Gtk.Dialog):
             box.pack_start(icon, False, False, 0)
             box.pack_start(Gtk.Label(position[0]), False, False, 0)
 
-            info = {"index":index, "icon":icon, "button":button}
+            info = {"index": index, "icon": icon, "button": button}
 
             button.connect("clicked", self.test, info)
             container.add(button)
@@ -467,7 +570,7 @@ class SoundTest(Gtk.Dialog):
         if position[1] == "lfe":
             sound = "audio-test-signal"
         else:
-            sound = "audio-channel-"+position[1]
+            sound = "audio-channel-" + position[1]
 
         try:
             util.play_sound_name(sound, position[1])
@@ -483,6 +586,7 @@ class SoundTest(Gtk.Dialog):
             else:
                 position["button"].hide()
 
+
 class Module:
     name = "sound"
     category = "hardware"
@@ -490,24 +594,30 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("sound, media, music, speakers, audio, microphone, headphone")
-        self.sidePage = SidePage(_("Sound"), "cs-sound", keywords, content_box, module=self)
+        self.sidePage = SidePage(
+            _("Sound"), "cs-sound", keywords, content_box, module=self
+        )
         self.sound_settings = Gio.Settings(CINNAMON_DESKTOP_SOUNDS)
 
     def on_module_selected(self):
         if not self.loaded:
             print("Loading Sound module")
 
-            self.outputDeviceList = Gtk.ListStore(str, # name
-                                                  str, # device
-                                                  bool, # active
-                                                  int, # id
-                                                  GdkPixbuf.Pixbuf) # icon
+            self.outputDeviceList = Gtk.ListStore(
+                str,  # name
+                str,  # device
+                bool,  # active
+                int,  # id
+                GdkPixbuf.Pixbuf,
+            )  # icon
 
-            self.inputDeviceList = Gtk.ListStore(str, # name
-                                                 str, # device
-                                                 bool, # active
-                                                 int, # id
-                                                 GdkPixbuf.Pixbuf) # icon
+            self.inputDeviceList = Gtk.ListStore(
+                str,  # name
+                str,  # device
+                bool,  # active
+                int,  # id
+                GdkPixbuf.Pixbuf,
+            )  # icon
 
             self.appList = {}
 
@@ -540,7 +650,9 @@ class Module:
         self.scale = self.sidePage.stack.get_scale_factor()
 
         # output volume
-        self.outVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
+        self.outVolume = VolumeBar(
+            self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup
+        )
         devSettings.add_row(self.outVolume)
 
         # balance
@@ -548,12 +660,18 @@ class Module:
         devSettings.add_row(self.balance)
         self.fade = BalanceBar("fade", sizeGroup=sizeGroup)
         devSettings.add_row(self.fade)
-        self.woofer = BalanceBar("lfe", 0, self.controller.get_vol_max_norm(), sizeGroup=sizeGroup)
+        self.woofer = BalanceBar(
+            "lfe", 0, self.controller.get_vol_max_norm(), sizeGroup=sizeGroup
+        )
         devSettings.add_row(self.woofer)
 
         # overamplification
-        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_KEY)
-        switch.set_tooltip_text(_("Allow the volume to exceed 100%, with reduced sound quality."))
+        switch = GSettingsSwitch(
+            _("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_KEY
+        )
+        switch.set_tooltip_text(
+            _("Allow the volume to exceed 100%, with reduced sound quality.")
+        )
         devSettings.add_row(switch)
 
         ## Input page
@@ -575,7 +693,9 @@ class Module:
         sizeGroup = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
         # input volume
-        self.inVolume = VolumeBar(self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup)
+        self.inVolume = VolumeBar(
+            self.controller.get_vol_max_norm(), 100, sizeGroup=sizeGroup
+        )
         devSettings.add_row(self.inVolume)
 
         # input level
@@ -585,7 +705,9 @@ class Module:
 
         noInputsMessage = Gtk.Box()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        image = Gtk.Image.new_from_icon_name("xsi-sign-forbidden-symbolic", Gtk.IconSize.DIALOG)
+        image = Gtk.Image.new_from_icon_name(
+            "xsi-sign-forbidden-symbolic", Gtk.IconSize.DIALOG
+        )
         image.set_pixel_size(96)
         box.pack_start(image, False, False, 0)
         box.set_valign(Gtk.Align.CENTER)
@@ -623,7 +745,9 @@ class Module:
 
         noAppsMessage = Gtk.Box()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
-        image = Gtk.Image.new_from_icon_name("xsi-sign-forbidden-symbolic", Gtk.IconSize.DIALOG)
+        image = Gtk.Image.new_from_icon_name(
+            "xsi-sign-forbidden-symbolic", Gtk.IconSize.DIALOG
+        )
         image.set_pixel_size(96)
         box.pack_start(image, False, False, 0)
         box.set_valign(Gtk.Align.CENTER)
@@ -632,7 +756,9 @@ class Module:
         noAppsMessage.pack_start(box, True, True, 0)
         self.appStack.add_named(noAppsMessage, "noAppsMessage")
 
-        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_KEY}", self.onOverAmplificationChanged)
+        self.sound_settings.connect(
+            f"changed::{OVERAMPLIFICATION_KEY}", self.onOverAmplificationChanged
+        )
         self.onOverAmplificationChanged()
 
     def onOverAmplificationChanged(self, settings=None, key=None):
@@ -645,7 +771,7 @@ class Module:
             self.outVolume.adjustment.set_upper(100)
 
     def inializeController(self):
-        self.controller = Cvc.MixerControl(name = "cinnamon")
+        self.controller = Cvc.MixerControl(name="cinnamon")
         self.controller.connect("state-changed", self.setChannelMap)
         self.controller.connect("output-added", self.deviceAdded, "output")
         self.controller.connect("input-added", self.deviceAdded, "input")
@@ -682,9 +808,9 @@ class Module:
         ren.set_property("wrap-width", 120)
         ren.set_property("alignment", Pango.Alignment.CENTER)
         ren.set_property("xalign", 0.5)
-        
+
         select.connect("selection-changed", self.setActiveDevice, direction)
-        
+
         return select
 
     def setActiveDevice(self, view, direction):
@@ -694,13 +820,13 @@ class Module:
 
         model = view.get_model()
         newDeviceId = model.get_value(model.get_iter(selected[0]), 3)
-        newDevice = getattr(self.controller, "lookup_"+direction+"_id")(newDeviceId)
-        if newDevice is not None and newDeviceId != getattr(self, direction+"Id"):
-            getattr(self.controller, "change_"+direction)(newDevice)
+        newDevice = getattr(self.controller, "lookup_" + direction + "_id")(newDeviceId)
+        if newDevice is not None and newDeviceId != getattr(self, direction + "Id"):
+            getattr(self.controller, "change_" + direction)(newDevice)
             self.profile.setDevice(newDevice)
 
     def deviceAdded(self, c, deviceId, direction):
-        device = getattr(self.controller, "lookup_"+direction+"_id")(deviceId)
+        device = getattr(self.controller, "lookup_" + direction + "_id")(deviceId)
 
         icon_size = 32 * self.scale
 
@@ -722,13 +848,21 @@ class Module:
             else:
                 icon = iconTheme.load_icon("sound", icon_size, 0)
 
-        getattr(self, direction+"DeviceList").append([device.get_description() + "\n" +  device.get_origin(), "", False, deviceId, icon])
+        getattr(self, direction + "DeviceList").append(
+            [
+                device.get_description() + "\n" + device.get_origin(),
+                "",
+                False,
+                deviceId,
+                icon,
+            ]
+        )
 
         if direction == "input":
             self.checkInputState()
 
     def deviceRemoved(self, c, deviceId, direction):
-        store = getattr(self, direction+"DeviceList")
+        store = getattr(self, direction + "DeviceList")
         for row in store:
             if row[3] == deviceId:
                 store.remove(row.iter)
@@ -796,11 +930,13 @@ class Module:
 
             # FIXME: We use to filter out by PA_PROP_APPLICATION_ID.  But
             # most streams report this as null now... why??
-            if name in ("cinnamon-settings.py",
-                        "speech-dispatcher",
-                        "speech-dispatcher-dummy",
-                        "libcanberra",
-                        "Muffin"):
+            if name in (
+                "cinnamon-settings.py",
+                "speech-dispatcher",
+                "speech-dispatcher-dummy",
+                "libcanberra",
+                "Muffin",
+            ):
                 # cinnamon-settings.py: test sounds
                 # speech-dispatcher[-dummy]: orca/speechd/spd-say
                 # libcanberra: cinnamon effects, test sounds - don't think this is needed any more?
@@ -816,10 +952,9 @@ class Module:
 
             label = f"{name}: "
 
-            self.appList[deviceId] = VolumeBar(self.controller.get_vol_max_norm(),
-                                         100,
-                                         label,
-                                         stream.get_gicon())
+            self.appList[deviceId] = VolumeBar(
+                self.controller.get_vol_max_norm(), 100, label, stream.get_gicon()
+            )
             self.appList[deviceId].setStream(stream)
             self.appSettings.add_row(self.appList[deviceId])
             self.appSettings.list_box.invalidate_headers()

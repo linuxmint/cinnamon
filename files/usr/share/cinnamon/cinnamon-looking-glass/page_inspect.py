@@ -3,6 +3,7 @@
 from gi.repository import Gtk
 import pageutils
 
+
 class InspectView(pageutils.BaseListView):
     def __init__(self, module):
         self.module = module
@@ -58,11 +59,16 @@ class InspectView(pageutils.BaseListView):
         self.store.clear()
         data.sort(key=lambda item: item["name"])
         for item in data:
-            self.store.append([item["name"],
-                               item["type"],
-                               pageutils.shorten_value(item["value"]),
-                               item["value"],
-                               path + "['" + item["name"] + "']"])
+            self.store.append(
+                [
+                    item["name"],
+                    item["type"],
+                    pageutils.shorten_value(item["value"]),
+                    item["value"],
+                    path + "['" + item["name"] + "']",
+                ]
+            )
+
 
 class ModulePage(pageutils.WindowAndActionBars):
     def __init__(self, parent):
@@ -117,7 +123,6 @@ class ModulePage(pageutils.WindowAndActionBars):
         else:
             self.parent.activate_page("results")
 
-
     def pop_inspection_element(self):
         if len(self.stack) > 0:
             self.update_inspector(*self.stack.pop())
@@ -142,11 +147,17 @@ class ModulePage(pageutils.WindowAndActionBars):
             self.name_label.set_text(name)
 
             self.parent.activate_page("inspect")
-            self.parent.lg_proxy.Inspect(path, result_cb=self.inspect_finish_cb, user_data=path)
+            self.parent.lg_proxy.Inspect(
+                path, result_cb=self.inspect_finish_cb, user_data=path
+            )
         elif obj_type in ("undefined", "null"):
-            pageutils.ResultTextDialog("Value for '" + name + "'", "Value is <" + obj_type + ">")
+            pageutils.ResultTextDialog(
+                "Value for '" + name + "'", "Value is <" + obj_type + ">"
+            )
         else:
-            pageutils.ResultTextDialog("Value for " + obj_type + " '" + name + "'", value)
+            pageutils.ResultTextDialog(
+                "Value for " + obj_type + " '" + name + "'", value
+            )
 
     def inspect_finish_cb(self, proxy, result, path):
         [success, data] = result

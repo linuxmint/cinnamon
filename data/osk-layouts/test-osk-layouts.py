@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 import gi
-gi.require_version('Gtk', '3.0')
-gi.require_version('XApp', '1.0')
+
+gi.require_version("Gtk", "3.0")
+gi.require_version("XApp", "1.0")
 from gi.repository import Gio, GLib, GObject, Gtk
-import sys
 import subprocess
 import signal
 import json
@@ -16,6 +16,7 @@ signal.signal(signal.SIGINT, signal.SIG_DFL)
 DBUS_NAME = "org.x.StatusIcon"
 DBUS_PATH = "/org/x/StatusIcon"
 
+
 class LayoutRow(GObject.Object):
     def __init__(self, shortname, json_info):
         super(LayoutRow, self).__init__()
@@ -24,15 +25,16 @@ class LayoutRow(GObject.Object):
         self.name = json_info["name"]
         self.locale = json_info["locale"]
 
-class OskLayoutTester():
+
+class OskLayoutTester:
     def __init__(self):
         self.window = None
         self.window = Gtk.Window()
         self.window.set_default_size(300, 400)
         self.window.connect("destroy", self.on_window_destroy)
-        self.main_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL,
-                                margin=6,
-                                spacing=0)
+        self.main_box = Gtk.Box(
+            orientation=Gtk.Orientation.VERTICAL, margin=6, spacing=0
+        )
 
         # list stuff
         sw_frame = Gtk.Frame()
@@ -56,7 +58,9 @@ class OskLayoutTester():
         self.window.add(self.main_box)
         self.window.show_all()
 
-        self.input_source_settings = Gio.Settings.new("org.cinnamon.desktop.input-sources")
+        self.input_source_settings = Gio.Settings.new(
+            "org.cinnamon.desktop.input-sources"
+        )
         print("Saving original sources")
         self.orig_sources = self.input_source_settings.get_value("sources")
 
@@ -88,12 +92,16 @@ class OskLayoutTester():
     def new_row_widget(self, item, data=None):
         box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=2)
 
-        label = Gtk.Label(label=f"<b>{item.shortname}</b>", visible=True, xalign=0, use_markup=True)
+        label = Gtk.Label(
+            label=f"<b>{item.shortname}</b>", visible=True, xalign=0, use_markup=True
+        )
         self.shortname_size_group.add_widget(label)
         box.pack_start(label, False, False, 6)
         label = Gtk.Label(label=item.name, visible=True, xalign=0)
         box.pack_start(label, True, True, 0)
-        label = Gtk.Label(label=f"<b>{item.locale}</b>", visible=True, xalign=0, use_markup=True)
+        label = Gtk.Label(
+            label=f"<b>{item.locale}</b>", visible=True, xalign=0, use_markup=True
+        )
         box.pack_end(label, False, False, 6)
 
         row = Gtk.ListBoxRow()
@@ -103,7 +111,9 @@ class OskLayoutTester():
         return row
 
     def on_row_activated(self, box, row, data=None):
-        self.input_source_settings.set_value("sources", GLib.Variant("a(ss)", [("xkb", row.name)]))
+        self.input_source_settings.set_value(
+            "sources", GLib.Variant("a(ss)", [("xkb", row.name)])
+        )
 
     def on_window_destroy(self, widget, data=None):
         self.quit()
@@ -115,6 +125,7 @@ class OskLayoutTester():
 
         Gtk.main_quit()
 
-if __name__ == '__main__':
+
+if __name__ == "__main__":
     test = OskLayoutTester()
     Gtk.main()

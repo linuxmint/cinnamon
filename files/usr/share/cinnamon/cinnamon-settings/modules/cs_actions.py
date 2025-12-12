@@ -9,6 +9,7 @@ from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 from gi.repository import GLib
 
+
 class Module:
     comment = _("Manage your actions")
     name = "actions"
@@ -34,8 +35,9 @@ class ActionsViewSidePage(SidePage):
         self.RemoveString = ""
         keywords = _("action")
 
-        super().__init__(_("Actions"), "cs-actions", keywords,
-                         content_box, module=module)
+        super().__init__(
+            _("Actions"), "cs-actions", keywords, content_box, module=module
+        )
 
     def load(self, window):
         self.window = window
@@ -47,10 +49,12 @@ class ActionsViewSidePage(SidePage):
         self.stack.expand = True
 
         manage_extensions_page = ManageActionsPage(self, self.spices, self.window)
-        self.stack.add_titled(manage_extensions_page, 'installed', _("Manage"))
+        self.stack.add_titled(manage_extensions_page, "installed", _("Manage"))
 
-        download_actions_page = DownloadSpicesPage(self, self.collection_type, self.spices, self.window)
-        self.stack.add_titled(download_actions_page, 'more', _("Download"))
+        download_actions_page = DownloadSpicesPage(
+            self, self.collection_type, self.spices, self.window
+        )
+        self.stack.add_titled(download_actions_page, "more", _("Download"))
 
         if GLib.find_program_in_path("nemo-action-layout-editor"):
             for dir in GLib.get_system_data_dirs():
@@ -59,12 +63,15 @@ class ActionsViewSidePage(SidePage):
                     sys.path.append(str(path))
                     try:
                         import nemo_action_layout_editor
-                        editor = nemo_action_layout_editor.NemoActionsOrganizer(self.window)
+
+                        editor = nemo_action_layout_editor.NemoActionsOrganizer(
+                            self.window
+                        )
                         editor.props.margin_start = 80
                         editor.props.margin_end = 80
                         editor.props.margin_top = 15
                         editor.props.margin_bottom = 30
-                        self.stack.add_titled(editor, 'editor', _("Layout"))
+                        self.stack.add_titled(editor, "editor", _("Layout"))
 
                         def on_window_delete(window, event, data=None):
                             if not editor.quit():
@@ -74,6 +81,7 @@ class ActionsViewSidePage(SidePage):
                     except Exception as e:
                         print(e)
                     break
+
 
 class ManageActionsPage(ManageSpicesPage):
     directories = [f"{GLib.get_home_dir()}/.local/share/nemo/actions"]

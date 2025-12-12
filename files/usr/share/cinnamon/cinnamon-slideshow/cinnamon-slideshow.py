@@ -2,7 +2,8 @@
 
 import random
 import signal
-import os, locale
+import os
+import locale
 from xml.etree import ElementTree
 from setproctitle import setproctitle
 
@@ -15,7 +16,7 @@ BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
 
 # D-Bus interface XML definition
-DBUS_INTERFACE_XML = '''
+DBUS_INTERFACE_XML = """
 <node>
     <interface name="org.Cinnamon.Slideshow">
         <method name="begin" />
@@ -23,17 +24,21 @@ DBUS_INTERFACE_XML = '''
         <method name="getNextImage" />
     </interface>
 </node>
-'''
+"""
+
 
 class CinnamonSlideshowApplication(Gio.Application):
     def __init__(self):
         super().__init__(
-            application_id=SLIDESHOW_DBUS_NAME,
-            flags=Gio.ApplicationFlags.IS_SERVICE
+            application_id=SLIDESHOW_DBUS_NAME, flags=Gio.ApplicationFlags.IS_SERVICE
         )
 
-        self.slideshow_settings = Gio.Settings(schema="org.cinnamon.desktop.background.slideshow")
-        self.background_settings = Gio.Settings(schema="org.cinnamon.desktop.background")
+        self.slideshow_settings = Gio.Settings(
+            schema="org.cinnamon.desktop.background.slideshow"
+        )
+        self.background_settings = Gio.Settings(
+            schema="org.cinnamon.desktop.background"
+        )
 
         if self.slideshow_settings.get_boolean("slideshow-paused"):
             self.slideshow_settings.set_boolean("slideshow-paused", False)
@@ -67,7 +72,7 @@ class CinnamonSlideshowApplication(Gio.Application):
                 iface_info.interfaces[0],
                 self.handle_method_call,
                 None,  # get_property
-                None   # set_property
+                None,  # set_property
             )
         except Exception as e:
             print(f"Failed to export slideshow service: {e}")
@@ -85,7 +90,16 @@ class CinnamonSlideshowApplication(Gio.Application):
     def do_activate(self):
         self.setup_slideshow()
 
-    def handle_method_call(self, connection, sender, object_path, interface_name, method_name, parameters, invocation):
+    def handle_method_call(
+        self,
+        connection,
+        sender,
+        object_path,
+        interface_name,
+        method_name,
+        parameters,
+        invocation,
+    ):
         try:
             if method_name == "begin":
                 self.begin()
@@ -100,13 +114,11 @@ class CinnamonSlideshowApplication(Gio.Application):
                 invocation.return_error_literal(
                     Gio.dbus_error_quark(),
                     Gio.DBusError.UNKNOWN_METHOD,
-                    f"Unknown method: {method_name}"
+                    f"Unknown method: {method_name}",
                 )
         except Exception as e:
             invocation.return_error_literal(
-                Gio.dbus_error_quark(),
-                Gio.DBusError.FAILED,
-                str(e)
+                Gio.dbus_error_quark(), Gio.DBusError.FAILED, str(e)
             )
 
     def begin(self):
@@ -150,14 +162,22 @@ class CinnamonSlideshowApplication(Gio.Application):
             self.collection_path = os.path.expanduser(self.collection_path)
 
     def connect_signals(self):
-        self.slideshow_settings.connect("changed::image-source", self.on_slideshow_source_changed)
-        self.slideshow_settings.connect("changed::random-order", self.on_random_order_changed)
-        self.background_settings.connect("changed::picture-uri", self.on_picture_uri_changed)
+        self.slideshow_settings.connect(
+            "changed::image-source", self.on_slideshow_source_changed
+        )
+        self.slideshow_settings.connect(
+            "changed::random-order", self.on_random_order_changed
+        )
+        self.background_settings.connect(
+            "changed::picture-uri", self.on_picture_uri_changed
+        )
 
     def connect_folder_monitor(self):
         folder_path = Gio.file_new_for_path(self.collection_path)
         self.folder_monitor = folder_path.monitor_directory(0, None)
-        self.folder_monitor_id = self.folder_monitor.connect("changed", self.on_monitored_folder_changed)
+        self.folder_monitor_id = self.folder_monitor.connect(
+            "changed", self.on_monitored_folder_changed
+        )
 
     def disconnect_folder_monitor(self):
         if self.folder_monitor_id > 0:
@@ -169,12 +189,14 @@ class CinnamonSlideshowApplication(Gio.Application):
             folder_at_path = Gio.file_new_for_path(self.collection_path)
 
             if folder_at_path.query_exists(None):
-                folder_at_path.enumerate_children_async("standard::name,standard::type,standard::content-type",
-                                                        Gio.FileQueryInfoFlags.NONE,
-                                                        GLib.PRIORITY_LOW,
-                                                        None,
-                                                        self.gather_images_cb,
-                                                        None)
+                folder_at_path.enumerate_children_async(
+                    "standard::name,standard::type,standard::content-type",
+                    Gio.FileQueryInfoFlags.NONE,
+                    GLib.PRIORITY_LOW,
+                    None,
+                    self.gather_images_cb,
+                    None,
+                )
 
         elif self.collection_type == BACKGROUND_COLLECTION_TYPE_XML:
             pictures = self.parse_xml_backgrounds_list(self.collection_path)
@@ -185,17 +207,22 @@ class CinnamonSlideshowApplication(Gio.Application):
     def gather_images_cb(self, obj, res, user_data):
         all_files = []
         enumerator = obj.enumerate_children_finish(res)
+
         def on_next_file_complete(obj, res, user_data=all_files):
             files = obj.next_files_finish(res)
             file_list = all_files
             if len(files) != 0:
                 file_list = file_list.extend(files)
-                enumerator.next_files_async(100, GLib.PRIORITY_LOW, None, on_next_file_complete, None)
+                enumerator.next_files_async(
+                    100, GLib.PRIORITY_LOW, None, on_next_file_complete, None
+                )
             else:
                 enumerator.close(None)
                 self.ensure_file_is_image(file_list)
 
-        enumerator.next_files_async(100, GLib.PRIORITY_LOW, None, on_next_file_complete, all_files)
+        enumerator.next_files_async(
+            100, GLib.PRIORITY_LOW, None, on_next_file_complete, all_files
+        )
 
     def ensure_file_is_image(self, file_list):
         for item in file_list:
@@ -203,7 +230,9 @@ class CinnamonSlideshowApplication(Gio.Application):
             if file_type is not Gio.FileType.DIRECTORY:
                 file_contents = item.get_content_type()
                 if file_contents.startswith("image"):
-                    self.add_image_to_playlist(self.collection_path + "/" + item.get_name())
+                    self.add_image_to_playlist(
+                        self.collection_path + "/" + item.get_name()
+                    )
 
     def add_image_to_playlist(self, file_path):
         image = Gio.file_new_for_path(file_path)
@@ -246,7 +275,11 @@ class CinnamonSlideshowApplication(Gio.Application):
 
             if event_type == Gio.FileMonitorEvent.CREATED:
                 file_path = file1.get_path()
-                file_info = file1.query_info("standard::type,standard::content-type", Gio.FileQueryInfoFlags.NONE, None)
+                file_info = file1.query_info(
+                    "standard::type,standard::content-type",
+                    Gio.FileQueryInfoFlags.NONE,
+                    None,
+                )
                 file_type = file_info.get_file_type()
                 if file_type is not Gio.FileType.DIRECTORY:
                     file_contents = file_info.get_content_type()
@@ -273,7 +306,9 @@ class CinnamonSlideshowApplication(Gio.Application):
         if not self.images_ready:
             self.update_id = GLib.timeout_add_seconds(1, self.start_mainloop)
         else:
-            if self.loop_counter >= self.slideshow_settings.get_int("delay") and not self.slideshow_settings.get_boolean("slideshow-paused"):
+            if self.loop_counter >= self.slideshow_settings.get_int(
+                "delay"
+            ) and not self.slideshow_settings.get_boolean("slideshow-paused"):
                 self.loop_counter = 1
                 self.update_background()
                 self.update_id = GLib.timeout_add_seconds(60, self.start_mainloop)
@@ -319,8 +354,7 @@ class CinnamonSlideshowApplication(Gio.Application):
             self.image_playlist.sort()
         self.used_image_playlist = []
 
-
-########### TAKEN FROM CS_BACKGROUND
+    ########### TAKEN FROM CS_BACKGROUND
     def splitLocaleCode(self, localeCode):
         loc = localeCode.partition("_")
         loc = (loc[0], loc[2])
@@ -353,7 +387,10 @@ class CinnamonSlideshowApplication(Gio.Application):
             f.close()
             if rootNode.tag == "wallpapers":
                 for wallpaperNode in rootNode:
-                    if wallpaperNode.tag == "wallpaper" and wallpaperNode.get("deleted") != "true":
+                    if (
+                        wallpaperNode.tag == "wallpaper"
+                        and wallpaperNode.get("deleted") != "true"
+                    ):
                         wallpaperData = {"metadataFile": filename}
                         names = []
                         for prop in wallpaperNode:
@@ -363,18 +400,30 @@ class CinnamonSlideshowApplication(Gio.Application):
                                 else:
                                     propAttr = prop.attrib
                                     wpName = prop.text
-                                    locName = self.splitLocaleCode(propAttr.get(locAttrName)) if locAttrName in propAttr else ("", "")
+                                    locName = (
+                                        self.splitLocaleCode(propAttr.get(locAttrName))
+                                        if locAttrName in propAttr
+                                        else ("", "")
+                                    )
                                     names.append((locName, wpName))
                         wallpaperData["name"] = self.getLocalWallpaperName(names, loc)
 
-                        if "filename" in wallpaperData and wallpaperData["filename"] != "" and os.path.exists(wallpaperData["filename"]) and os.access(wallpaperData["filename"], os.R_OK):
+                        if (
+                            "filename" in wallpaperData
+                            and wallpaperData["filename"] != ""
+                            and os.path.exists(wallpaperData["filename"])
+                            and os.access(wallpaperData["filename"], os.R_OK)
+                        ):
                             if wallpaperData["name"] == "":
-                                wallpaperData["name"] = os.path.basename(wallpaperData["filename"])
+                                wallpaperData["name"] = os.path.basename(
+                                    wallpaperData["filename"]
+                                )
                             res.append(wallpaperData)
             return res
         except Exception as detail:
             print(detail)
             return []
+
 
 if __name__ == "__main__":
     setproctitle("cinnamon-slideshow")

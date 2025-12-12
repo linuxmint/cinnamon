@@ -1,23 +1,33 @@
 #!/usr/bin/python3
 
 import gi
+
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, GObject
 from PIL import Image
 
+
 class EyeDropper(Gtk.HBox):
     __gsignals__ = {
-        'color-picked': (GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_STRING,))
+        "color-picked": (GObject.SignalFlags.RUN_LAST, None, (GObject.TYPE_STRING,))
     }
 
     def __init__(self):
-        Gtk.HBox.__init__ (self)
+        Gtk.HBox.__init__(self)
 
         self.button = Gtk.Button("")
-        self.button.set_tooltip_text(_("Click the eyedropper, then click a color anywhere on your screen to select that color"))
-        self.button.set_image(Gtk.Image().new_from_stock(Gtk.STOCK_COLOR_PICKER, Gtk.IconSize.BUTTON))
-        self.button.get_property('image').show()
-        self.button.set_events(Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK)
+        self.button.set_tooltip_text(
+            _(
+                "Click the eyedropper, then click a color anywhere on your screen to select that color"
+            )
+        )
+        self.button.set_image(
+            Gtk.Image().new_from_stock(Gtk.STOCK_COLOR_PICKER, Gtk.IconSize.BUTTON)
+        )
+        self.button.get_property("image").show()
+        self.button.set_events(
+            Gdk.EventMask.POINTER_MOTION_MASK | Gdk.EventMask.POINTER_MOTION_HINT_MASK
+        )
 
         self.pack_start(self.button, False, False, 2)
 
@@ -38,7 +48,11 @@ class EyeDropper(Gtk.HBox):
         self.grab_widget.move(-100, -100)
         self.grab_widget.show()
 
-        self.grab_widget.add_events(Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK)
+        self.grab_widget.add_events(
+            Gdk.EventMask.BUTTON_RELEASE_MASK
+            | Gdk.EventMask.BUTTON_PRESS_MASK
+            | Gdk.EventMask.POINTER_MOTION_MASK
+        )
         toplevel = widget.get_toplevel()
 
         if isinstance(toplevel, Gtk.Window):
@@ -49,16 +63,25 @@ class EyeDropper(Gtk.HBox):
 
         picker_cursor = Gdk.Cursor(screen.get_display(), Gdk.CursorType.CROSSHAIR)
 
-        grab_status = self.device.grab(window, Gdk.GrabOwnership.APPLICATION, False,
-                                       Gdk.EventMask.BUTTON_RELEASE_MASK | Gdk.EventMask.BUTTON_PRESS_MASK | Gdk.EventMask.POINTER_MOTION_MASK,
-                                       picker_cursor, self.time)
+        grab_status = self.device.grab(
+            window,
+            Gdk.GrabOwnership.APPLICATION,
+            False,
+            Gdk.EventMask.BUTTON_RELEASE_MASK
+            | Gdk.EventMask.BUTTON_PRESS_MASK
+            | Gdk.EventMask.POINTER_MOTION_MASK,
+            picker_cursor,
+            self.time,
+        )
 
         if grab_status != Gdk.GrabStatus.SUCCESS:
             return
 
         Gtk.device_grab_add(self.grab_widget, self.device, True)
 
-        self.bp_handler = self.grab_widget.connect("button-press-event", self.mouse_press)
+        self.bp_handler = self.grab_widget.connect(
+            "button-press-event", self.mouse_press
+        )
         self.kp_handler = self.grab_widget.connect("key-press-event", self.key_press)
 
     def mouse_press(self, widget, event):
@@ -72,7 +95,13 @@ class EyeDropper(Gtk.HBox):
         if event.keyval == Gdk.KEY_Escape:
             self.ungrab(self.device)
             return True
-        elif event.keyval in (Gdk.KEY_space, Gdk.KEY_Return, Gdk.KEY_ISO_Enter, Gdk.KEY_KP_Enter, Gdk.KEY_KP_Space):
+        elif event.keyval in (
+            Gdk.KEY_space,
+            Gdk.KEY_Return,
+            Gdk.KEY_ISO_Enter,
+            Gdk.KEY_KP_Enter,
+            Gdk.KEY_KP_Space,
+        ):
             self.grab_color_at_pointer(event, screen, x_root, y_root)
             return True
         return False
@@ -96,7 +125,7 @@ class EyeDropper(Gtk.HBox):
         color.red = r / 255.0
         color.green = g / 255.0
         color.blue = b / 255.0
-        self.emit('color-picked', color.to_string())
+        self.emit("color-picked", color.to_string())
         self.ungrab(device)
 
     def ungrab(self, device):
@@ -106,6 +135,7 @@ class EyeDropper(Gtk.HBox):
         self.grab_widget.handler_disconnect(self.br_handler)
         self.grab_widget.handler_disconnect(self.kp_handler)
 
+
 def pixbuf2Image(pb):
-    width,height = pb.get_width(),pb.get_height()
-    return Image.fromstring("RGB",(width,height),pb.get_pixels() )
+    width, height = pb.get_width(), pb.get_height()
+    return Image.fromstring("RGB", (width, height), pb.get_pixels())

@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 from SettingsWidgets import SidePage
-from bin import util
 from xapp.GSettingsWidgets import *
 
 COLOR_SCHEMA = "org.cinnamon.settings-daemon.plugins.color"
+
 
 class Module:
     name = "nightlight"
@@ -13,7 +13,9 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("redshift, color, blue, light, filter, temperature")
-        sidePage = SidePage(_("Night Light"), "cs-nightlight", keywords, content_box, module=self)
+        sidePage = SidePage(
+            _("Night Light"), "cs-nightlight", keywords, content_box, module=self
+        )
         self.sidePage = sidePage
 
     def on_module_selected(self):
@@ -24,8 +26,14 @@ class Module:
             self.sidePage.add_widget(page)
             section = page.add_section()
 
-            switch = GSettingsSwitch(_("Enable night light"), COLOR_SCHEMA, "night-light-enabled")
-            switch.set_tooltip_text(_("This feature makes the screen color warmer in the evening and during the night. By reducing blue light, it can prevent eye strain, headaches and improve sleep quality."))
+            switch = GSettingsSwitch(
+                _("Enable night light"), COLOR_SCHEMA, "night-light-enabled"
+            )
+            switch.set_tooltip_text(
+                _(
+                    "This feature makes the screen color warmer in the evening and during the night. By reducing blue light, it can prevent eye strain, headaches and improve sleep quality."
+                )
+            )
             section.add_row(switch)
 
             range_css = """
@@ -40,8 +48,18 @@ class Module:
     background-image: linear-gradient(to right, mix(@bg_color, @ORANGE_100, 0.5), @ORANGE_500);
 }
 """
-            temp_range = GSettingsRange(_("Color temperature"), COLOR_SCHEMA, "night-light-temperature", "", "",
-                                        mini=1700, maxi=4700, step=100, invert=True, show_value=False)
+            temp_range = GSettingsRange(
+                _("Color temperature"),
+                COLOR_SCHEMA,
+                "night-light-temperature",
+                "",
+                "",
+                mini=1700,
+                maxi=4700,
+                step=100,
+                invert=True,
+                show_value=False,
+            )
             section.add_row(temp_range)
             temp_range.content_widget.set_has_origin(False)
             temp_range.content_widget.add_mark(2700, Gtk.PositionType.TOP, None)
@@ -58,11 +76,26 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            options = ["auto", _("Automatic")], ["manual", _("Specify start and end times")], ["always", _("Always on")]
-            widget = GSettingsComboBox(_("Schedule"), COLOR_SCHEMA, "night-light-schedule-mode", options, size_group=size_group)
+            options = (
+                ["auto", _("Automatic")],
+                ["manual", _("Specify start and end times")],
+                ["always", _("Always on")],
+            )
+            widget = GSettingsComboBox(
+                _("Schedule"),
+                COLOR_SCHEMA,
+                "night-light-schedule-mode",
+                options,
+                size_group=size_group,
+            )
             section.add_row(widget)
             section.need_separator = False
-            section.add_reveal_row(ScheduleWidget(size_group), COLOR_SCHEMA, "night-light-schedule-mode", values=["manual"])
+            section.add_reveal_row(
+                ScheduleWidget(size_group),
+                COLOR_SCHEMA,
+                "night-light-schedule-mode",
+                values=["manual"],
+            )
 
     def preview_night_light(self, button):
         proxy = Gio.DBusProxy.new_sync(
@@ -72,7 +105,8 @@ class Module:
             "org.cinnamon.SettingsDaemon.Color",
             "/org/cinnamon/SettingsDaemon/Color",
             "org.cinnamon.SettingsDaemon.Color",
-            None)
+            None,
+        )
 
         proxy.NightLightPreview("(u)", 10)
 
@@ -83,10 +117,14 @@ class TimeSpinButton(Gtk.SpinButton):
         self.set_wrap(True)
         self.set_digits(2)
         self.props.width_chars = 10
-        self.props.update_policy=Gtk.SpinButtonUpdatePolicy.IF_VALID
+        self.props.update_policy = Gtk.SpinButtonUpdatePolicy.IF_VALID
 
-        self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
-        self.locale_format = "%R" if self.interface_settings.get_boolean("clock-use-24h") else "%I:%M %p"
+        self.interface_settings = Gio.Settings(
+            schema_id="org.cinnamon.desktop.interface"
+        )
+        self.locale_format = (
+            "%R" if self.interface_settings.get_boolean("clock-use-24h") else "%I:%M %p"
+        )
 
         self.connect("focus-out-event", self.label_to_value)
         self.formatter_handle = self.connect("output", self.value_to_label)
@@ -97,10 +135,10 @@ class TimeSpinButton(Gtk.SpinButton):
             adjustment = self.get_adjustment()
             input_hours, input_minutes = self.input_to_frac(text)
             if input_hours is not None and input_minutes is not None:
-                adjustment.set_value(float(input_hours + input_minutes/60))
+                adjustment.set_value(float(input_hours + input_minutes / 60))
                 t = GLib.DateTime.new_local(2000, 1, 1, input_hours, input_minutes, 0)
                 self.set_text(t.format(self.locale_format))
-        return 0 # Prevents setting night light to minimum value
+        return 0  # Prevents setting night light to minimum value
 
     def input_to_frac(self, value):
         pm = False
@@ -144,6 +182,7 @@ class TimeSpinButton(Gtk.SpinButton):
         adjustment = self.get_adjustment()
         return adjustment.get_value()
 
+
 class ScheduleWidget(SettingsWidget):
     def __init__(self, size_group):
         super(ScheduleWidget, self).__init__()
@@ -158,23 +197,35 @@ class ScheduleWidget(SettingsWidget):
         start_frac = self.color_settings.get_double("night-light-schedule-from")
         end_frac = self.color_settings.get_double("night-light-schedule-to")
 
-        adjust = Gtk.Adjustment(value=start_frac, lower=0, upper=23.75, step_increment=.25)
-        self.start_hr = TimeSpinButton(adjustment=adjust, orientation=Gtk.Orientation.VERTICAL)
+        adjust = Gtk.Adjustment(
+            value=start_frac, lower=0, upper=23.75, step_increment=0.25
+        )
+        self.start_hr = TimeSpinButton(
+            adjustment=adjust, orientation=Gtk.Orientation.VERTICAL
+        )
         adjust.connect("value-changed", self.from_spinner_values_changed, self.start_hr)
         self.content_widget.pack_start(self.start_hr, True, True, 0)
 
         label = Gtk.Label(label=_("to"))
         self.content_widget.pack_start(label, False, False, 4)
 
-        adjust = Gtk.Adjustment(value=end_frac, lower=0, upper=23.75, step_increment=.25)
-        self.end_hr = TimeSpinButton(adjustment=adjust, orientation=Gtk.Orientation.VERTICAL)
+        adjust = Gtk.Adjustment(
+            value=end_frac, lower=0, upper=23.75, step_increment=0.25
+        )
+        self.end_hr = TimeSpinButton(
+            adjustment=adjust, orientation=Gtk.Orientation.VERTICAL
+        )
         adjust.connect("value-changed", self.to_spinner_values_changed, self.end_hr)
         self.content_widget.pack_start(self.end_hr, True, True, 0)
 
         self.show_all()
 
     def from_spinner_values_changed(self, adjustment, spinner):
-        self.color_settings.set_double("night-light-schedule-from", spinner.get_time_fraction())
+        self.color_settings.set_double(
+            "night-light-schedule-from", spinner.get_time_fraction()
+        )
 
     def to_spinner_values_changed(self, adjustment, spinner):
-        self.color_settings.set_double("night-light-schedule-to", spinner.get_time_fraction())
+        self.color_settings.set_double(
+            "night-light-schedule-to", spinner.get_time_fraction()
+        )

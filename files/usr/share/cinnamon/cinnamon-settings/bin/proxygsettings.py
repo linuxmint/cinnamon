@@ -59,7 +59,7 @@ def proxy_url_from_settings(scheme, gsettings):
     protocol, host, username, pwd = parse_proxy_hostspec(gsettings[scheme + ".host"])
     # if the user did not set a proxy for a type (http/https/ftp) we should
     # return None to ensure that it is not used
-    if host == '':
+    if host == "":
         return None
 
     port = gsettings[scheme + ".port"]
@@ -75,16 +75,17 @@ def proxy_url_from_settings(scheme, gsettings):
         else:
             proxy_url = f"{username}@{host}:{port:d}"
     else:
-        proxy_url =  f"{host}:{port:d}"
+        proxy_url = f"{host}:{port:d}"
 
     if protocol is not None:
         proxy_url = f"{protocol}://{proxy_url}"
 
     return proxy_url
 
+
 def get_proxy_settings():
     """Parse the proxy settings as returned by the gsettings executable
-       and return a dictionary with a proxy URL for each scheme ."""
+    and return a dictionary with a proxy URL for each scheme ."""
     output = subprocess.check_output(GSETTINGS_CMDLINE.split()).decode("utf-8")
     gsettings = {}
     base_len = len("org.gnome.system.proxy.")
@@ -96,10 +97,10 @@ def get_proxy_settings():
             continue
         if value.startswith("'"):
             parsed_value = value[1:-1]
-        elif value.startswith(('[', '@')):
+        elif value.startswith(("[", "@")):
             parsed_value = value
-        elif value in ('true', 'false'):
-            parsed_value = (value == 'true')
+        elif value in ("true", "false"):
+            parsed_value = value == "true"
         elif value.isdigit():
             parsed_value = int(value)
         else:

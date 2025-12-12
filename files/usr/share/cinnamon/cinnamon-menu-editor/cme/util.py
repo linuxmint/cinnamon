@@ -31,6 +31,7 @@ from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
+
 def fillKeyFile(keyfile, items) -> None:
     for key, item in items.items():
         if item is None:
@@ -43,93 +44,112 @@ def fillKeyFile(keyfile, items) -> None:
         elif isinstance(item, Sequence):
             keyfile.set_string_list(DESKTOP_GROUP, key, item)
 
+
 def getNameFromKeyFile(keyfile):
     return keyfile.get_string(DESKTOP_GROUP, "Name")
 
+
 def getUniqueFileId(name, extension):
     while 1:
-        filename = name + '-' + str(uuid.uuid1()) + extension
-        if extension == '.desktop':
+        filename = name + "-" + str(uuid.uuid1()) + extension
+        if extension == ".desktop":
             path = getUserItemPath()
-            if not os.path.isfile(os.path.join(path, filename)) and not getItemPath(filename):
+            if not os.path.isfile(os.path.join(path, filename)) and not getItemPath(
+                filename
+            ):
                 break
-        elif extension == '.directory':
+        elif extension == ".directory":
             path = getUserDirectoryPath()
-            if not os.path.isfile(os.path.join(path, filename)) and not getDirectoryPath(filename):
+            if not os.path.isfile(
+                os.path.join(path, filename)
+            ) and not getDirectoryPath(filename):
                 break
     return filename
 
+
 def getUniqueRedoFile(filepath) -> str:
     while 1:
-        new_filepath = filepath + '.redo-' + str(uuid.uuid1())
+        new_filepath = filepath + ".redo-" + str(uuid.uuid1())
         if not os.path.isfile(new_filepath):
             break
     return new_filepath
 
+
 def getUniqueUndoFile(filepath) -> str:
-    filename, extension = os.path.split(filepath)[1].rsplit('.', 1)
+    filename, extension = os.path.split(filepath)[1].rsplit(".", 1)
     while 1:
-        if extension == 'desktop':
+        if extension == "desktop":
             path = getUserItemPath()
-        elif extension == 'directory':
+        elif extension == "directory":
             path = getUserDirectoryPath()
-        elif extension == 'menu':
+        elif extension == "menu":
             path = getUserMenuPath()
-        new_filepath = os.path.join(path, filename + '.' + extension + '.undo-' + str(uuid.uuid1()))
+        new_filepath = os.path.join(
+            path, filename + "." + extension + ".undo-" + str(uuid.uuid1())
+        )
         if not os.path.isfile(new_filepath):
             break
     return new_filepath
+
 
 def getItemPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
-        file_path = os.path.join(path, 'applications', file_id)
+        file_path = os.path.join(path, "applications", file_id)
         if os.path.isfile(file_path):
             return file_path
     return None
 
+
 def getUserItemPath() -> str:
-    item_dir = os.path.join(GLib.get_user_data_dir(), 'applications')
+    item_dir = os.path.join(GLib.get_user_data_dir(), "applications")
     if not os.path.isdir(item_dir):
         os.makedirs(item_dir)
     return item_dir
 
+
 def getDirectoryPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
-        file_path = os.path.join(path, 'desktop-directories', file_id)
+        file_path = os.path.join(path, "desktop-directories", file_id)
         if os.path.isfile(file_path):
             return file_path
     return None
 
+
 def getUserDirectoryPath() -> str:
-    menu_dir = os.path.join(GLib.get_user_data_dir(), 'desktop-directories')
+    menu_dir = os.path.join(GLib.get_user_data_dir(), "desktop-directories")
     if not os.path.isdir(menu_dir):
         os.makedirs(menu_dir)
     return menu_dir
 
+
 def getUserMenuPath() -> str:
-    menu_dir = os.path.join(GLib.get_user_config_dir(), 'menus')
+    menu_dir = os.path.join(GLib.get_user_config_dir(), "menus")
     if not os.path.isdir(menu_dir):
         os.makedirs(menu_dir)
     return menu_dir
+
 
 def getSystemMenuPath(file_id) -> Optional[str]:
     for path in GLib.get_system_config_dirs():
-        file_path = os.path.join(path, 'menus', file_id)
+        file_path = os.path.join(path, "menus", file_id)
         if os.path.isfile(file_path):
             return file_path
     return None
+
 
 def getUserMenuXml(tree) -> str:
     system_file = getSystemMenuPath(os.path.basename(tree.get_canonical_menu_path()))
     name = tree.get_root_directory().get_menu_id()
     menu_xml = "<!DOCTYPE Menu PUBLIC '-//freedesktop//DTD Menu 1.0//EN' 'http://standards.freedesktop.org/menu-spec/menu-1.0.dtd'>\n"
     menu_xml += "<Menu>\n  <Name>" + name + "</Name>\n  "
-    menu_xml += "<MergeFile type=\"parent\">" + system_file +    "</MergeFile>\n</Menu>\n"
+    menu_xml += '<MergeFile type="parent">' + system_file + "</MergeFile>\n</Menu>\n"
     return menu_xml
+
 
 class SurfaceWrapper:
     def __init__(self, surface):
         self.surface = surface
+
 
 def getIcon(item, widget) -> SurfaceWrapper:
     wrapper = SurfaceWrapper(None)
@@ -162,8 +182,11 @@ def getIcon(item, widget) -> SurfaceWrapper:
     if pixbuf.get_width() != size or pixbuf.get_height() != size:
         pixbuf = pixbuf.scale_simple(size, size, GdkPixbuf.InterpType.HYPER)
 
-    wrapper.surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, widget.get_scale_factor(), widget.get_window())
+    wrapper.surface = Gdk.cairo_surface_create_from_pixbuf(
+        pixbuf, widget.get_scale_factor(), widget.get_window()
+    )
     return wrapper
+
 
 def removeWhitespaceNodes(node) -> None:
     remove_list = []
@@ -177,9 +200,11 @@ def removeWhitespaceNodes(node) -> None:
     for node in remove_list:
         node.parentNode.removeChild(node)
 
+
 def menuSortKey(node):
     prefCats = ["administration", "preferences"]
     key = node.get_menu_id().lower()
     name = node.get_name().lower()
-    if key in prefCats: name = "zzzz" + name # Hack for prefCats to be sorted at the end
+    if key in prefCats:
+        name = "zzzz" + name  # Hack for prefCats to be sorted at the end
     return name

@@ -6,14 +6,15 @@ import glob
 import shutil
 
 import gi
-gi.require_version('Gtk', '3.0')
+
+gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib, Pango
 
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 try:
-    ENVIRON = os.environ['XDG_CURRENT_DESKTOP']
+    ENVIRON = os.environ["XDG_CURRENT_DESKTOP"]
 except:
     ENVIRON = ""
 
@@ -25,27 +26,28 @@ KEYFILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS and GLib.KeyFileFlags.KEEP_TRANS
 
 DELAY_GROUP = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
+
 def list_header_func(row, before, user_data):
     if before and not row.get_header():
         row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
 
 def get_appname(filename):
-    """ Get the desktop basename without the .desktop """
+    """Get the desktop basename without the .desktop"""
     basename = os.path.basename(filename)
-    if basename.endswith('.desktop'):
-        basename = basename[:-len('.desktop')]
+    if basename.endswith(".desktop"):
+        basename = basename[: -len(".desktop")]
     return basename
 
 
 def get_blacklisted_apps():
     source = Gio.SettingsSchemaSource.get_default()
-    schema = source.lookup('org.cinnamon.SessionManager', True)
-    if not schema or not schema.has_key('autostart-blacklist'):  # noqa
+    schema = source.lookup("org.cinnamon.SessionManager", True)
+    if not schema or not schema.has_key("autostart-blacklist"):  # noqa
         return {}
 
-    cs_settings = Gio.Settings('org.cinnamon.SessionManager')
-    return set(cs_settings['autostart-blacklist'])
+    cs_settings = Gio.Settings("org.cinnamon.SessionManager")
+    return set(cs_settings["autostart-blacklist"])
 
 
 class Module:
@@ -55,7 +57,13 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("startup, programs, boot, init, session, autostart, apps")
-        sidePage = SidePage(_("Startup Applications"), "cs-startup-programs", keywords, content_box, module=self)
+        sidePage = SidePage(
+            _("Startup Applications"),
+            "cs-startup-programs",
+            keywords,
+            content_box,
+            module=self,
+        )
         self.sidePage = sidePage
 
     def on_module_selected(self):
@@ -74,7 +82,12 @@ class Module:
             self.gather_apps()
 
             for app in AUTOSTART_APPS.values():
-                if app.key_file_loaded and app.shown and not app.no_display and not app.hidden:
+                if (
+                    app.key_file_loaded
+                    and app.shown
+                    and not app.no_display
+                    and not app.hidden
+                ):
                     row = AutostartRow(app)
                     settings.add_row(row)
 
@@ -91,7 +104,9 @@ class Module:
 
         blacklisted_apps = get_blacklisted_apps()
 
-        user_files = glob.glob(os.path.join(GLib.get_user_config_dir(), "autostart", "*.desktop"))
+        user_files = glob.glob(
+            os.path.join(GLib.get_user_config_dir(), "autostart", "*.desktop")
+        )
         for app in user_files:
             key = get_appname(app)
             if key in blacklisted_apps:
@@ -108,8 +123,10 @@ class Module:
             if key in AUTOSTART_APPS:
                 AUTOSTART_APPS[key].system_position = os.path.dirname(sys_app)
             else:
-                AUTOSTART_APPS[key] = AutostartApp(sys_app,
-                                                   system_position=os.path.dirname(sys_app))
+                AUTOSTART_APPS[key] = AutostartApp(
+                    sys_app, system_position=os.path.dirname(sys_app)
+                )
+
 
 class AutostartApp:
     def __init__(self, app, user_position=None, system_position=None):
@@ -137,15 +154,29 @@ class AutostartApp:
         self.basename = os.path.basename(self.app)
         self.dir = os.path.dirname(self.app)
 
-        self.hidden = self.get_boolean(self.key_file, GLib.KEY_FILE_DESKTOP_KEY_HIDDEN, False)
-        self.no_display = self.get_boolean(self.key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False)
+        self.hidden = self.get_boolean(
+            self.key_file, GLib.KEY_FILE_DESKTOP_KEY_HIDDEN, False
+        )
+        self.no_display = self.get_boolean(
+            self.key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False
+        )
         self.shown = self.get_shown(self.key_file)
-        self.name = self.get_locale_string(self.key_file, GLib.KEY_FILE_DESKTOP_KEY_NAME, _("Unavailable"))
-        self.comment = self.get_locale_string(self.key_file, GLib.KEY_FILE_DESKTOP_KEY_COMMENT, _("No description"))
+        self.name = self.get_locale_string(
+            self.key_file, GLib.KEY_FILE_DESKTOP_KEY_NAME, _("Unavailable")
+        )
+        self.comment = self.get_locale_string(
+            self.key_file, GLib.KEY_FILE_DESKTOP_KEY_COMMENT, _("No description")
+        )
         self.delay = self.get_string(self.key_file, "X-GNOME-Autostart-Delay", "0")
-        self.enabled = self.get_boolean(self.key_file, "X-GNOME-Autostart-enabled", True)
-        self.command = self.get_string(self.key_file, GLib.KEY_FILE_DESKTOP_KEY_EXEC, "")
-        self.icon = self.get_locale_string(self.key_file, GLib.KEY_FILE_DESKTOP_KEY_ICON, DEFAULT_ICON)
+        self.enabled = self.get_boolean(
+            self.key_file, "X-GNOME-Autostart-enabled", True
+        )
+        self.command = self.get_string(
+            self.key_file, GLib.KEY_FILE_DESKTOP_KEY_EXEC, ""
+        )
+        self.icon = self.get_locale_string(
+            self.key_file, GLib.KEY_FILE_DESKTOP_KEY_ICON, DEFAULT_ICON
+        )
 
     def get_string(self, key_file, key, default_value=None):
         try:
@@ -173,21 +204,25 @@ class AutostartApp:
 
     def get_shown(self, key_file):
         try:
-            only_show_in = key_file.get_string_list(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_ONLY_SHOW_IN)
+            only_show_in = key_file.get_string_list(
+                D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_ONLY_SHOW_IN
+            )
         except:
             only_show_in = False
 
         if only_show_in:
             found = False
             for i in only_show_in:
-                if i in ('GNOME', 'X-Cinnamon'):
+                if i in ("GNOME", "X-Cinnamon"):
                     found = True
                     break
             if not found:
                 return False
 
         try:
-            not_show_in = key_file.get_string_list(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NOT_SHOW_IN)
+            not_show_in = key_file.get_string_list(
+                D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NOT_SHOW_IN
+            )
         except:
             not_show_in = False
 
@@ -221,9 +256,13 @@ class AutostartApp:
             key_file = GLib.KeyFile.new()
 
             if self.user_position is None:
-                self.user_position = os.path.join(GLib.get_user_config_dir(), "autostart")
+                self.user_position = os.path.join(
+                    GLib.get_user_config_dir(), "autostart"
+                )
                 self.path = os.path.join(self.user_position, self.basename)
-                key_file.load_from_file(os.path.join(self.system_position, self.basename), KEYFILE_FLAGS)
+                key_file.load_from_file(
+                    os.path.join(self.system_position, self.basename), KEYFILE_FLAGS
+                )
             else:
                 key_file.load_from_file(self.path, KEYFILE_FLAGS)
         except Exception as e:
@@ -235,7 +274,9 @@ class AutostartApp:
             key_file.set_boolean(D_GROUP, "X-GNOME-Autostart-enabled", self.enabled)
 
         if "no-display" in self.save_mask.contents:
-            key_file.set_boolean(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, self.no_display)
+            key_file.set_boolean(
+                D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, self.no_display
+            )
 
         if "hidden" in self.save_mask.contents:
             key_file.set_boolean(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_HIDDEN, self.hidden)
@@ -243,16 +284,22 @@ class AutostartApp:
         if "name" in self.save_mask.contents:
             locale = self.get_locale()
             if locale:
-                key_file.set_locale_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NAME, locale, self.name)
+                key_file.set_locale_string(
+                    D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NAME, locale, self.name
+                )
             else:
                 key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_NAME, self.name)
 
         if "comment" in self.save_mask.contents:
             locale = self.get_locale()
             if locale:
-                key_file.set_locale_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_COMMENT, locale, self.comment)
+                key_file.set_locale_string(
+                    D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_COMMENT, locale, self.comment
+                )
             else:
-                key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_COMMENT, self.comment)
+                key_file.set_string(
+                    D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_COMMENT, self.comment
+                )
 
         if "command" in self.save_mask.contents:
             key_file.set_string(D_GROUP, GLib.KEY_FILE_DESKTOP_KEY_EXEC, self.command)
@@ -325,18 +372,31 @@ class AutostartApp:
         if not key_file.load_from_file(path, GLib.KeyFileFlags.NONE):
             return False
 
-        if (self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_HIDDEN, False) != self.hidden or
-            self.get_boolean(key_file, "X-GNOME-Autostart-enabled", True) != self.enabled or
-                self.get_shown(key_file) != self.shown):
+        if (
+            self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_HIDDEN, False)
+            != self.hidden
+            or self.get_boolean(key_file, "X-GNOME-Autostart-enabled", True)
+            != self.enabled
+            or self.get_shown(key_file) != self.shown
+        ):
             return False
 
-        if self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False) != self.no_display:
+        if (
+            self.get_boolean(key_file, GLib.KEY_FILE_DESKTOP_KEY_NO_DISPLAY, False)
+            != self.no_display
+        ):
             return False
 
-        if self.get_locale_string(key_file, GLib.KEY_FILE_DESKTOP_KEY_NAME) != self.name:
+        if (
+            self.get_locale_string(key_file, GLib.KEY_FILE_DESKTOP_KEY_NAME)
+            != self.name
+        ):
             return False
 
-        if self.get_locale_string(key_file, GLib.KEY_FILE_DESKTOP_KEY_COMMENT) != self.comment:
+        if (
+            self.get_locale_string(key_file, GLib.KEY_FILE_DESKTOP_KEY_COMMENT)
+            != self.comment
+        ):
             return False
 
         if self.get_string(key_file, GLib.KEY_FILE_DESKTOP_KEY_EXEC) != self.command:
@@ -345,7 +405,12 @@ class AutostartApp:
         if self.get_string(key_file, "X-GNOME-Autostart-Delay", "0") != self.delay:
             return False
 
-        if self.get_locale_string(key_file, GLib.KEY_FILE_DESKTOP_KEY_ICON, DEFAULT_ICON) != self.icon:
+        if (
+            self.get_locale_string(
+                key_file, GLib.KEY_FILE_DESKTOP_KEY_ICON, DEFAULT_ICON
+            )
+            != self.icon
+        ):
             return False
 
         return True
@@ -360,10 +425,19 @@ class AutostartApp:
 
         return current_locale
 
+
 class SaveMask:
     def __init__(self):
         self.contents = []
-        self.all = ["enabled", "no-display", "hidden", "name", "comment", "command", "delay"]
+        self.all = [
+            "enabled",
+            "no-display",
+            "hidden",
+            "name",
+            "comment",
+            "command",
+            "delay",
+        ]
 
     def add_item(self, item):
         if item == "all":
@@ -374,6 +448,7 @@ class SaveMask:
     def clear_items(self):
         for item in self.contents:
             self.contents.remove(item)
+
 
 class AutostartBox(Gtk.Box):
     def __init__(self, title):
@@ -410,7 +485,9 @@ class AutostartBox(Gtk.Box):
         self.box.add(self.list_box)
 
         button_toolbar = Gtk.Toolbar.new()
-        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(button_toolbar), "inline-toolbar")
+        Gtk.StyleContext.add_class(
+            Gtk.Widget.get_style_context(button_toolbar), "inline-toolbar"
+        )
         self.add(button_toolbar)
 
         button_holder = Gtk.ToolItem()
@@ -421,27 +498,35 @@ class AutostartBox(Gtk.Box):
         box.set_halign(Gtk.Align.CENTER)
         button_holder.add(box)
 
-        self.add_button = Gtk.Button.new_from_icon_name("xsi-list-add-symbolic", Gtk.IconSize.BUTTON)
+        self.add_button = Gtk.Button.new_from_icon_name(
+            "xsi-list-add-symbolic", Gtk.IconSize.BUTTON
+        )
         self.add_button.set_tooltip_text(_("Add"))
         self.add_button.connect("clicked", self.on_add_button_clicked)
         button_group.add_widget(self.add_button)
         box.add(self.add_button)
 
-        self.edit_button = Gtk.Button.new_from_icon_name("xsi-document-edit-symbolic", Gtk.IconSize.BUTTON)
+        self.edit_button = Gtk.Button.new_from_icon_name(
+            "xsi-document-edit-symbolic", Gtk.IconSize.BUTTON
+        )
         self.edit_button.set_tooltip_text(_("Edit"))
         self.edit_button.connect("clicked", self.on_edit_button_clicked)
         button_group.add_widget(self.edit_button)
         self.edit_button.set_sensitive(False)
         box.add(self.edit_button)
 
-        self.remove_button = Gtk.Button.new_from_icon_name("xsi-list-remove-symbolic", Gtk.IconSize.BUTTON)
+        self.remove_button = Gtk.Button.new_from_icon_name(
+            "xsi-list-remove-symbolic", Gtk.IconSize.BUTTON
+        )
         self.remove_button.set_tooltip_text(_("Remove"))
         self.remove_button.connect("clicked", self.on_remove_button_clicked)
         button_group.add_widget(self.remove_button)
         self.remove_button.set_sensitive(False)
         box.add(self.remove_button)
 
-        self.run_button = Gtk.Button.new_from_icon_name("xsi-media-playback-start-symbolic", Gtk.IconSize.BUTTON)
+        self.run_button = Gtk.Button.new_from_icon_name(
+            "xsi-media-playback-start-symbolic", Gtk.IconSize.BUTTON
+        )
         self.run_button.set_tooltip_text(_("Run now"))
         self.run_button.connect("clicked", self.on_run_button_clicked)
         button_group.add_widget(self.run_button)
@@ -477,13 +562,17 @@ class AutostartBox(Gtk.Box):
         row = self.list_box.get_selected_row()
         app = row.app
         try:
-            appinfo = Gio.AppInfo.create_from_commandline(app.command, None, Gio.AppInfoCreateFlags.SUPPORTS_STARTUP_NOTIFICATION)
+            appinfo = Gio.AppInfo.create_from_commandline(
+                app.command, None, Gio.AppInfoCreateFlags.SUPPORTS_STARTUP_NOTIFICATION
+            )
             appinfo.launch(None, None)
         except GLib.Error as e:
             warning = Gtk.InfoBar()
             warning.set_message_type(Gtk.MessageType.ERROR)
 
-            label = Gtk.Label(_("Could not execute '%s'\n%s") % (app.command, e.message))
+            label = Gtk.Label(
+                _("Could not execute '%s'\n%s") % (app.command, e.message)
+            )
             warning.get_content_area().add(label)
 
             warning.add_button(Gtk.STOCK_OK, Gtk.ResponseType.OK)
@@ -576,7 +665,9 @@ class AutostartBox(Gtk.Box):
         if response == Gtk.ResponseType.OK:
             selected_app = app_dialog.get_selected_app()
             desktop_file_dir = selected_app.get_filename()
-            desktop_file_name = self.find_free_basename(os.path.basename(desktop_file_dir))
+            desktop_file_name = self.find_free_basename(
+                os.path.basename(desktop_file_dir)
+            )
             if desktop_file_name is None:
                 return
             user_autostart_dir = os.path.join(GLib.get_user_config_dir(), "autostart")
@@ -586,7 +677,9 @@ class AutostartBox(Gtk.Box):
             except IOError:
                 print(f"Failed to copy desktop file {desktop_file_name}")
 
-            app = AutostartApp(user_desktop_file, user_position=os.path.dirname(user_desktop_file))
+            app = AutostartApp(
+                user_desktop_file, user_position=os.path.dirname(user_desktop_file)
+            )
             key = get_appname(user_desktop_file)
             AUTOSTART_APPS[key] = app
 
@@ -617,18 +710,21 @@ class AutostartBox(Gtk.Box):
 
     def find_free_basename(self, suggested_name):
         if suggested_name.endswith(".desktop"):
-            basename_no_ext = suggested_name[:len(suggested_name) - len(".desktop")]
-            base_path = os.path.join(GLib.get_user_config_dir(), "autostart", basename_no_ext)
+            basename_no_ext = suggested_name[: len(suggested_name) - len(".desktop")]
+            base_path = os.path.join(
+                GLib.get_user_config_dir(), "autostart", basename_no_ext
+            )
         else:
-            base_path = os.path.join(GLib.get_user_config_dir(), "autostart", suggested_name)
+            base_path = os.path.join(
+                GLib.get_user_config_dir(), "autostart", suggested_name
+            )
 
         filename = f"{base_path}.desktop"
         basename = os.path.basename(filename)
 
         i = 1
         max_tries = 100
-        while (self.find_app_with_basename(basename) is not None and
-               i < max_tries):
+        while self.find_app_with_basename(basename) is not None and i < max_tries:
             filename = f"{base_path}-{i}.desktop"
             basename = os.path.basename(filename)
             i += 1
@@ -642,7 +738,7 @@ class AutostartBox(Gtk.Box):
         key = get_appname(basename)
         return AUTOSTART_APPS.get(key)
 
-    def popup_menu_below_button (self, *args):
+    def popup_menu_below_button(self, *args):
         # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
         # this is a workaround to make sure we get the menu and the widget
         menu = args[0]
@@ -658,6 +754,7 @@ class AutostartBox(Gtk.Box):
 
         push_in = True
         return x, y, push_in
+
 
 class AutostartRow(Gtk.ListBoxRow):
     def __init__(self, app):
@@ -675,12 +772,18 @@ class AutostartRow(Gtk.ListBoxRow):
         if self.app.icon:
             try:
                 if GLib.path_is_absolute(self.app.icon):
-                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(self.app.icon, 24, 24, True)
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                        self.app.icon, 24, 24, True
+                    )
                     img = Gtk.Image.new_from_pixbuf(pixbuf)
                 else:
-                    img = Gtk.Image.new_from_icon_name(self.app.icon, Gtk.IconSize.LARGE_TOOLBAR)
+                    img = Gtk.Image.new_from_icon_name(
+                        self.app.icon, Gtk.IconSize.LARGE_TOOLBAR
+                    )
             except:
-                img = Gtk.Image.new_from_icon_name(DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR)
+                img = Gtk.Image.new_from_icon_name(
+                    DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR
+                )
         else:
             img = Gtk.Image.new_from_icon_name(DEFAULT_ICON, Gtk.IconSize.LARGE_TOOLBAR)
 
@@ -761,6 +864,7 @@ class AutostartRow(Gtk.ListBoxRow):
             self.app.set_enabled(False)
             self.desc_box.set_sensitive(False)
             self.delay_box.set_sensitive(False)
+
 
 class AppDialog(Gtk.Dialog):
     def __init__(self, app=None):
@@ -861,9 +965,9 @@ class AppDialog(Gtk.Dialog):
                         error_msg = _("The startup command is not valid")
 
             if error_msg is not None:
-                msg_box = Gtk.MessageDialog(self, 0, Gtk.MessageType.ERROR,
-                                            Gtk.ButtonsType.CANCEL,
-                                            error_msg)
+                msg_box = Gtk.MessageDialog(
+                    self, 0, Gtk.MessageType.ERROR, Gtk.ButtonsType.CANCEL, error_msg
+                )
                 error_msg = None
                 msg_box.run()
                 msg_box.destroy()
@@ -889,11 +993,17 @@ class AppDialog(Gtk.Dialog):
         self.response(Gtk.ResponseType.OK)
 
     def on_browse_button_clicked(self, button):
-        chooser = Gtk.FileChooserDialog(_("Select Command"),
-                                        self,
-                                        Gtk.FileChooserAction.OPEN,
-                                        (Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
-                                         Gtk.STOCK_OPEN, Gtk.ResponseType.ACCEPT))
+        chooser = Gtk.FileChooserDialog(
+            _("Select Command"),
+            self,
+            Gtk.FileChooserAction.OPEN,
+            (
+                Gtk.STOCK_CANCEL,
+                Gtk.ResponseType.CANCEL,
+                Gtk.STOCK_OPEN,
+                Gtk.ResponseType.ACCEPT,
+            ),
+        )
 
         response = chooser.run()
 
@@ -904,6 +1014,7 @@ class AppDialog(Gtk.Dialog):
             self.command_entry.set_text(name)
 
         chooser.destroy()
+
 
 class AppChooserDialog(Gtk.Dialog):
     def __init__(self):
@@ -954,7 +1065,7 @@ class AppChooserDialog(Gtk.Dialog):
         self.get_content_area().set_border_width(6)
         self.get_content_area().pack_start(frame, True, True, 0)
         self.set_modal(True)
-        self.set_size_request(400,300)
+        self.set_size_request(400, 300)
 
         self.list_box = list_box
 
@@ -986,15 +1097,23 @@ class AppChooserDialog(Gtk.Dialog):
             try:
                 if GLib.path_is_absolute(icon.to_string()):
                     iconfile = icon.to_string()
-                    shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(iconfile, 24, 24, True)
+                    shown_icon = GdkPixbuf.Pixbuf.new_from_file_at_scale(
+                        iconfile, 24, 24, True
+                    )
                     img = Gtk.Image.new_from_pixbuf(shown_icon)
                 else:
-                    pixbuf = icon_theme.load_icon(icon.to_string(), 24, Gtk.IconLookupFlags.FORCE_SIZE)
+                    pixbuf = icon_theme.load_icon(
+                        icon.to_string(), 24, Gtk.IconLookupFlags.FORCE_SIZE
+                    )
                     img = Gtk.Image.new_from_pixbuf(pixbuf)
             except:
-                img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
+                img = Gtk.Image.new_from_gicon(
+                    Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR
+                )
         else:
-            img = Gtk.Image.new_from_gicon(Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR)
+            img = Gtk.Image.new_from_gicon(
+                Gio.ThemedIcon.new(DEFAULT_ICON), Gtk.IconSize.LARGE_TOOLBAR
+            )
         grid.attach(img, 0, 0, 1, 1)
         img.props.hexpand = False
 
