@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-10 14:14+0000\n"
+"POT-Creation-Date: 2025-12-12 11:29+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -7387,17 +7387,9 @@ msgstr ""
 msgid "Use a custom icon and label"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->menu-custom->tooltip
-msgid "Check this to specify a custom icon and label"
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->menu-icon->description
 #. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
 msgid "Icon"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon->tooltip
-msgid "Select an icon to show in the panel."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->menu-icon-size->description
@@ -7408,17 +7400,9 @@ msgstr ""
 msgid "Text"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->menu-label->tooltip
-msgid "Enter custom text to show in the panel."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->symbolic-category-
 #. icons->description
 msgid "Use symbolic icons for categories"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->symbolic-category-icons->tooltip
-msgid "Choose whether or not to use symbolic icons for categories."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->category-icon-size->description
@@ -7433,68 +7417,28 @@ msgstr ""
 msgid "Sidebar"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->show-sidebar->tooltip
-msgid "Choose whether or not to show the left pane of the menu."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->show-avatar->description
 msgid "Avatar"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-avatar->tooltip
-msgid "Choose whether or not to show the avatar."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-home->tooltip
-msgid "Choose whether or not to show the home directory."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-desktop->tooltip
-msgid "Choose whether or not to show the desktop."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->show-documents->description
 msgid "Documents"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->show-documents->tooltip
-msgid "Choose whether or not to show the documents folder."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->show-downloads->description
 msgid "Downloads"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-downloads->tooltip
-msgid "Choose whether or not to show the downloads folder."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-music->tooltip
-msgid "Choose whether or not to show the music folder."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->show-pictures->description
 msgid "Pictures"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->show-pictures->tooltip
-msgid "Choose whether or not to show the pictures folder."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->show-videos->description
 msgid "Videos"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->show-videos->tooltip
-msgid "Choose whether or not to show the videos folder."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->show-bookmarks->description
 msgid "Other bookmarks"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-bookmarks->tooltip
-msgid "Choose whether or not to show other bookmarks."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->system-position->description
@@ -7525,42 +7469,20 @@ msgstr ""
 msgid "Sidebar icon size"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->show-favorites->tooltip
-msgid "Choose whether or not to show favorite files in the menu."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->show-recents->description
 msgid "Recents"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-recents->tooltip
-msgid "Choose whether or not to show recents in the menu."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->show-description->description
 msgid "Show application descriptions"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->show-description->tooltip
-msgid "Choose whether or not to show application descriptions in the menu."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->category-hover->description
 msgid "Change categories on hover"
 msgstr ""
 
-#. menu@cinnamon.org->settings-schema.json->category-hover->tooltip
-msgid "Choose whether or not to change categories by hovering."
-msgstr ""
-
 #. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
 msgid "Enable autoscrolling in application list"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->tooltip
-msgid ""
-"Choose whether or not to enable smooth autoscrolling in the application "
-"list."
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->force-show-panel->description

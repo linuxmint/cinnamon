@@ -58,14 +58,12 @@
  "menu-custom" : {
     "type" : "switch",
     "default" : false,
-    "description" : "Use a custom icon and label",
-    "tooltip" : "Check this to specify a custom icon and label"
+    "description" : "Use a custom icon and label"
  },
  "menu-icon" : {
     "type" : "iconfilechooser",
     "default" : "cinnamon-symbolic",
     "description" : "Icon",
-    "tooltip" : "Select an icon to show in the panel.",
     "default_icon" : "cinnamon-symbolic",
     "dependency" : "menu-custom"
  },
@@ -83,14 +81,12 @@
     "type" : "entry",
     "default" : "Menu",
     "description" : "Text",
-    "tooltip" : "Enter custom text to show in the panel.",
     "dependency" : "menu-custom"
  },
  "symbolic-category-icons" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Use symbolic icons for categories",
-    "tooltip" : "Choose whether or not to use symbolic icons for categories."
+    "description" : "Use symbolic icons for categories"
  },
  "category-icon-size" : {
     "type": "spinbutton",
@@ -114,62 +110,52 @@
  "show-sidebar" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Sidebar",
-    "tooltip" : "Choose whether or not to show the left pane of the menu."
+    "description" : "Sidebar"
  },
  "show-avatar" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Avatar",
-    "tooltip" : "Choose whether or not to show the avatar."
+    "description" : "Avatar"
  },
 "show-home" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Home",
-    "tooltip" : "Choose whether or not to show the home directory."
+    "description" : "Home"
  },
 "show-desktop" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Desktop",
-    "tooltip" : "Choose whether or not to show the desktop."
+    "description" : "Desktop"
  },
 "show-documents" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Documents",
-    "tooltip" : "Choose whether or not to show the documents folder."
+    "description" : "Documents"
  },
 "show-downloads" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Downloads",
-    "tooltip" : "Choose whether or not to show the downloads folder."
+    "description" : "Downloads"
  },
  "show-music" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Music",
-    "tooltip" : "Choose whether or not to show the music folder."
+    "description" : "Music"
  },
 "show-pictures" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Pictures",
-    "tooltip" : "Choose whether or not to show the pictures folder."
+    "description" : "Pictures"
  },
  "show-videos" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Videos",
-    "tooltip" : "Choose whether or not to show the videos folder."
+    "description" : "Videos"
  },
  "show-bookmarks" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Other bookmarks",
-    "tooltip" : "Choose whether or not to show other bookmarks."
+    "description" : "Other bookmarks"
  },
  "system-position" : {
       "type": "combobox",
@@ -202,32 +188,27 @@
  "show-favorites" : {
    "type" : "switch",
    "default" : true,
-   "description": "Favorites",
-   "tooltip": "Choose whether or not to show favorite files in the menu."
+   "description": "Favorites"
  },
  "show-recents" : {
    "type" : "switch",
    "default" : true,
-   "description": "Recents",
-   "tooltip": "Choose whether or not to show recents in the menu."
+   "description": "Recents"
  },
 "show-description" : {
    "type" : "switch",
    "default" : true,
-   "description": "Show application descriptions",
-   "tooltip": "Choose whether or not to show application descriptions in the menu."
+   "description": "Show application descriptions"
  },
  "category-hover" : {
     "type" : "switch",
     "default" : true,
-    "description": "Change categories on hover",
-    "tooltip": "Choose whether or not to change categories by hovering."
+    "description": "Change categories on hover"
  },
 "enable-autoscroll" : {
     "type" : "switch",
     "default" : true,
-    "description": "Enable autoscrolling in application list",
-    "tooltip": "Choose whether or not to enable smooth autoscrolling in the application list."
+    "description": "Enable autoscrolling in application list"
  },
  "force-show-panel" : {
     "type" : "switch",
