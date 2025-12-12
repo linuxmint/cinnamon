@@ -1283,9 +1283,15 @@ cinnamon_global_get_pointer (CinnamonGlobal         *global,
 {
   ClutterModifierType raw_mods;
   MetaCursorTracker *tracker;
+  graphene_point_t point;
 
   tracker = meta_cursor_tracker_get_for_display (global->meta_display);
-  meta_cursor_tracker_get_pointer (tracker, x, y, &raw_mods);
+  meta_cursor_tracker_get_pointer (tracker, &point, &raw_mods);
+
+  if (x)
+    *x = point.x;
+  if (y)
+    *y = point.y;
 
   *mods = raw_mods & CLUTTER_MODIFIER_MASK;
 }
