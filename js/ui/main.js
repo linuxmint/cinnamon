@@ -1178,7 +1178,7 @@ function getWindowActorsForWorkspace(workspaceIndex) {
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
-    // log("Stage event handler........." + event.type() + "..." + event);
+    // log("Stage event handler........." + event.type() + "..." + event.get_source() + "...flags: "+event.get_flags());
 
     if (event.type() != Clutter.EventType.KEY_PRESS) {
         if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
@@ -1190,10 +1190,12 @@ function _stageEventHandler(actor, event) {
     let keyCode = event.get_key_code();
     let modifierState = Cinnamon.get_event_state(event);
 
-    // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
-    let action = global.display.get_keybinding_action(keyCode, modifierState);
-    if (action > 0) {
-        keybindingManager.invoke_keybinding_action_by_id(action);
+    if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.FLAG_INPUT_METHOD))) {
+        // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
+        let action = global.display.get_keybinding_action(keyCode, modifierState);
+        if (action > 0) {
+            keybindingManager.invoke_keybinding_action_by_id(action);
+        }
     }
 
     // Other bindings are only available when the overview is up and no modal dialog is present
