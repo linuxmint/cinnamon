@@ -13,7 +13,7 @@ from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from KeybindingWidgets import ButtonKeybinding
 import util
 
-import KeybindingTable
+from bin import KeybindingTable
 
 settings_objects = {}
 
