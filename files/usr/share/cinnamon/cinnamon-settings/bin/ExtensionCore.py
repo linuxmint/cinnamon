@@ -767,7 +767,7 @@ class DownloadSpicesRow(Gtk.ListBoxRow):
         score_box = Gtk.Box()
         score_image = Gtk.Image.new_from_icon_name('xsi-starred-symbolic', 2)
         score_box.pack_start(score_image, False, False, 0)
-        score_label = Gtk.Label(self.score)
+        score_label = Gtk.Label(label=str(self.score))
         score_box.pack_start(score_label, False, False, 5)
         widget.pack_start(score_box, False, False, 0)
         size_groups[1].add_widget(score_box)
