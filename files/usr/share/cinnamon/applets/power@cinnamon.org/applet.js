@@ -191,7 +191,7 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
         let statusLabel = null;
 
         if (battery_level == UPDeviceLevel.NONE) {
-            this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
+            this.label = new St.Label({ text: "%d%% %s".format(Math.round(percentage), description) });
             statusLabel = new St.Label({ text: "%s".format(status), style_class: 'popup-inactive-menu-item' });
         } else {
             this.label = new St.Label({ text: "%s".format(description) });
