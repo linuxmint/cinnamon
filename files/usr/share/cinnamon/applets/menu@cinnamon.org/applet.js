@@ -812,7 +812,10 @@ class CategoryButton extends SimpleMenuItem {
             size = 16;
             symbolic = true;
             if (typeof icon !== 'string')
-                icon = icon.get_names()[0]
+                if (icon?.get_names)
+                    icon = icon.get_names()[0];
+                else
+                    icon = "";
             if (icon.startsWith("applications-") || icon === "folder-recent")
                 icon = "xsi-" + icon;
             else if (icon == "xapp-user-favorites")
