@@ -132,6 +132,7 @@ class VisibleChildIterator {
  * category         CategoryButton
  * fav              FavoritesButton
  * no-recent        "No recent documents" button
+ * no-favorites     "No favorite documents" button
  * none             Default type
  * place            PlaceButton
  * favorite         PathButton
@@ -2226,7 +2227,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         let favorite_infos = XApp.Favorites.get_default().get_favorites(null);
 
-        if (!this.showFavorites || favorite_infos.length == 0) {
+        if (!this.showFavorites) {
             return;
         }
 
@@ -2236,16 +2237,29 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this.categoriesBox.add_actor(this.favoriteDocsButton.actor);
         }
 
-        favorite_infos.forEach( info => {
-            let icon = new St.Icon({
-                gicon: Gio.content_type_get_icon(info.cached_mimetype),
-                icon_size: this.applicationIconSize
+        if (favorite_infos.length > 0) {
+            favorite_infos.forEach( info => {
+                let icon = new St.Icon({
+                    gicon: Gio.content_type_get_icon(info.cached_mimetype),
+                    icon_size: this.applicationIconSize
+                });
+                let button = new PathButton(this, 'favorite', info.display_name, info.uri, icon);
+                this._favoriteDocButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+                button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "favorite";
             });
-            let button = new PathButton(this, 'favorite', info.display_name, info.uri, icon);
+        }
+        else {
+            let button = new SimpleMenuItem(this, { name: _("No favorite documents"),
+                                                    type: 'no-favorites',
+                                                    styleClass: 'appmenu-application-button',
+                                                    reactive: false,
+                                                    activatable: false });
+            button.addLabel(button.name, 'appmenu-application-button-label');
             this._favoriteDocButtons.push(button);
             this.applicationsBox.add_actor(button.actor);
             button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "favorite";
-        });
+        }
     }
 
     _refreshApps() {
@@ -2867,7 +2881,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let regexpPattern = new RegExp(Util.escapeRegExp(pattern));
 
         for (let button of buttons) {
-            if (button.type == "recent-clear" || button.type == "no-recent") {
+            if (button.type == "recent-clear" || button.type == "no-recent" || button.type == "no-favorites") {
                 continue;
             }
             let res = button.searchStrings[0].match(regexpPattern);
