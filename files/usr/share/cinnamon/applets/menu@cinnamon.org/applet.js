@@ -809,7 +809,6 @@ class CategoryButton extends SimpleMenuItem {
 
         let size = applet.categoryIconSize;
         if (applet.symbolicCategoryIcons) {
-            size = 16;
             symbolic = true;
             if (typeof icon !== 'string')
                 if (icon?.get_names)

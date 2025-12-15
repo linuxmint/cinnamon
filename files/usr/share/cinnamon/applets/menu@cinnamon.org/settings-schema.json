@@ -91,17 +91,16 @@
  "category-icon-size" : {
     "type": "spinbutton",
     "default" : 16,
-    "min" : 16,
+    "min" : 8,
     "max" : 48,
     "step" : 1,
     "units" : "px",
-    "description" : "Categories icon size",
-    "dependency" : "!symbolic-category-icons"
+    "description" : "Categories icon size"
  },
  "application-icon-size" : {
     "type": "spinbutton",
     "default" : 32,
-    "min" : 16,
+    "min" : 8,
     "max" : 48,
     "step" : 1,
     "units" : "px",
@@ -119,7 +118,7 @@
  },
 "show-home" : {
     "type" : "switch",
-    "default" : true,
+    "default" : false,
     "description" : "Home"
  },
 "show-desktop" : {
@@ -129,7 +128,7 @@
  },
 "show-documents" : {
     "type" : "switch",
-    "default" : true,
+    "default" : false,
     "description" : "Documents"
  },
 "show-downloads" : {
@@ -139,17 +138,17 @@
  },
  "show-music" : {
     "type" : "switch",
-    "default" : true,
+    "default" : false,
     "description" : "Music"
  },
 "show-pictures" : {
     "type" : "switch",
-    "default" : true,
+    "default" : false,
     "description" : "Pictures"
  },
  "show-videos" : {
     "type" : "switch",
-    "default" : true,
+    "default" : false,
     "description" : "Videos"
  },
  "show-bookmarks" : {
@@ -178,7 +177,7 @@
  "sidebar-icon-size" : {
     "type": "spinbutton",
     "default" : 22,
-    "min" : 16,
+    "min" : 8,
     "max" : 48,
     "step" : 1,
     "units" : "px",
@@ -247,11 +246,11 @@
  },
  "popup-width" : {
     "type" : "generic",
-    "default" : 590
+    "default" : 665
  },
  "popup-height" : {
     "type" : "generic",
-    "default" : 560
+    "default" : 410
  },
  "reset-menu-size-button" : {
     "type" : "button",
