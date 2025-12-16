@@ -1,3 +1,32 @@
+cinnamon (6.6.1) zena; urgency=medium
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * main.js: Don't try to invoke keybindings for synthetic events.
+  * magnifier.js: Revert part of 894ab13f - go back to using Cinnamon's KeybindingManager to setup zoom keybindings.
+
+  [ fredcw ]
+  * menu@cinnamon.org: check category icon exists (#13258)
+
+  [ Michael Webster ]
+  * ExtensionCore.py: GtkLabel argument should be a string.
+
+  [ Clement Lefebvre ]
+  * l10n: Don't use POTFILES.in in makepot
+
+  [ Michael Webster ]
+  * keyboardManager.js: Use KeybindingManager to setup layout switch (#13251)
+  * debian/control: Add Recommends: ibus
+
+  [ Clement Lefebvre ]
+  * menu: Tune defaults
+  * menu: Show favorite category even when there are no favorites
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 16 Dec 2025 10:51:01 +0000
+
 cinnamon (6.6.0) zena; urgency=medium
 
   [ Matt Turnbull ]
