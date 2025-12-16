@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-16 10:50+0000\n"
+"POT-Creation-Date: 2025-12-16 16:40+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -68,7 +68,7 @@ msgstr ""
 msgid "%1$s: %2$s"
 msgstr ""
 
-#: src/main.c:279
+#: src/main.c:284
 msgid "Print version"
 msgstr ""
 
@@ -95,7 +95,7 @@ msgid "Cancel"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:52
-#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:207
+#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:221
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:59
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:163
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:54
@@ -112,11 +112,15 @@ msgstr ""
 msgid "Type to search layouts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:151
+#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:130
+msgid "Include less-common layouts"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:165
 msgid "Enabled layouts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:220
+#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:234
 #: js/ui/panel.js:1746
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:62
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:56
@@ -125,11 +129,11 @@ msgstr ""
 msgid "Remove"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:273
+#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:287
 msgid "View layout"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:287
+#: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:301
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:306
 msgid "Configure"
 msgstr ""
@@ -454,7 +458,7 @@ msgid "Switch User"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:142 js/ui/endSessionDialog.js:149
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2361
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2348
 msgid "Log Out"
 msgstr ""
 
@@ -482,7 +486,7 @@ msgid "Restart"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:185 js/ui/endSessionDialog.js:193
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2374
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2361
 msgid "Shut Down"
 msgstr ""
 
@@ -1248,7 +1252,7 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->show-favorites->description
 #. favorites@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/favorites@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2235
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2222
 msgid "Favorites"
 msgstr ""
 
@@ -1406,8 +1410,8 @@ msgstr ""
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:792
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:738
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:779
 msgid "This file is no longer available"
 msgstr ""
 
@@ -1415,58 +1419,58 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->behavior-menu->title
 #. sound@cinnamon.org->settings-schema.json->section1->description
 #. network@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1095
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1082
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:57
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1100
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1087
 msgid "Edit menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2172
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2159
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2188
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2175
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2189
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2176
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2205
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2192
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:126
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2253
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2240
 msgid "No favorite documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2285
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2272
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2335
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2322
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:80
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:615
 msgid "Lock Screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2336
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2323
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2362
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2349
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2375
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2362
 msgid "Shut down the computer"
 msgstr ""
 
@@ -2752,7 +2756,7 @@ msgstr ""
 #. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:591
 #: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:176
-#: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:73
+#: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:79
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:849
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:792
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:83
@@ -2889,11 +2893,11 @@ msgstr ""
 msgid "Item"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:81
+#: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:87
 msgid "Input method"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:194
+#: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:207
 msgid "IBus"
 msgstr ""
 
