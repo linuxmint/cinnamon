@@ -1,3 +1,28 @@
+cinnamon (6.6.2) zena; urgency=medium
+
+  [ Clement Lefebvre ]
+  * packaging: Update menu favorites
+
+  [ Michael Webster ]
+  * main.c: Go back to blocking caribou's osk service.
+
+  [ Clement Lefebvre ]
+  * menu: Add a tiny bit more height to the default size
+
+  [ Michael Webster ]
+  * AddKeyboardLayout.py: Add checkbox to display less-common layouts.
+
+  [ Leigh Scott ]
+  * Menu: Removes the icon validation logic that only checked Gtk.IconTheme (#13272)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * menu applet: Restore and fix icon check removed in e15b112e3bb59.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 16 Dec 2025 17:31:09 +0000
+
 cinnamon (6.6.1) zena; urgency=medium
 
   [ Clement Lefebvre ]
