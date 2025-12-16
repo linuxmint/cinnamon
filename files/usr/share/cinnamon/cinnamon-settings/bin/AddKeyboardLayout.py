@@ -18,6 +18,9 @@ from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
 MAX_LAYOUTS_PER_GROUP = 4
 
+INPUT_SOURCE_SETTINGS = "org.cinnamon.desktop.input-sources"
+SHOW_ALL_SOURCES_KEY="show-all-sources"
+
 def make_gkbd_keyboard_args(layout, variant):
     if variant:
         return ["gkbd-keyboard-display", "-l", f"{layout}\t{variant}"]
@@ -42,8 +45,8 @@ LAYOUT_VARIANT_COLUMN = 4
 
 class AddKeyboardLayoutDialog():
     def __init__(self, used_ids):
-        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
-        self.used_ids = set(used_ids)
+        self.input_source_settings = Gio.Settings(schema_id=INPUT_SOURCE_SETTINGS)
+        self.original_used_ids = set(used_ids)
 
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
@@ -56,6 +59,9 @@ class AddKeyboardLayoutDialog():
         self.cancel_button.connect("clicked", self._on_cancel_button_clicked)
         self.preview_button = builder.get_object("preview_button")
         self.preview_button.connect("clicked", self._on_preview_button_clicked)
+        self.all_sources_checkbox = builder.get_object("show_all_sources_checkbox")
+        self.all_sources_checkbox.set_active(self.input_source_settings.get_boolean(SHOW_ALL_SOURCES_KEY))
+        self.all_sources_checkbox.connect("toggled", self._on_all_sources_changed)
         self.search_entry = builder.get_object("search_entry")
         self.search_entry.connect("search-changed", self._on_search_entry_changed)
         self.layouts_view = builder.get_object("layouts_view")
@@ -85,27 +91,30 @@ class AddKeyboardLayoutDialog():
         column.pack_start(cell, False)
         column.set_cell_data_func(cell, self.layout_type_data_func)
 
-        self._locales_by_language = {}
-        self._locales = {}
-        self._row_items = []
-
         self.response_id = None
 
         if not GLib.find_program_in_path("gkbd-keyboard-display"):
             self.preview_button.set_visible(False)
 
+        self._ibus = IBus.Bus.new_async()
+        self._reload_all_engines()
+
+    def _reload_all_engines(self):
+        self.layouts_store.clear()
+
+        self.used_ids = set(self.original_used_ids)
         self.xkb_info = CinnamonDesktop.XkbInfo()
 
         self._load_layouts()
-        self._update_widgets()
 
-        self._ibus = IBus.Bus.new_async()
         if not self._ibus.is_connected():
             print("Connecting to IBus")
             self._ibus.connect("connected", self._on_ibus_connected)
         else:
             print("IBus already connected")
             self._on_ibus_connected(self._ibus)
+
+        self._update_widgets()
 
     def _on_ibus_connected(self, ibus, data=None):
         ibus.list_engines_async(5000, None, self._list_ibus_engines_completed)
@@ -146,6 +155,10 @@ class AddKeyboardLayoutDialog():
         layout_variant = self.layouts_sort_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
         args = make_gkbd_keyboard_args(layout_layout, layout_variant)
         subprocess.Popen(args)
+
+    def _on_all_sources_changed(self, button, data=None):
+        self.input_source_settings.set_boolean(SHOW_ALL_SOURCES_KEY, button.get_active())
+        self._reload_all_engines()
 
     def _on_cancel_button_clicked(self, button, data=None):
         self.dialog.response(Gtk.ResponseType.CANCEL)
