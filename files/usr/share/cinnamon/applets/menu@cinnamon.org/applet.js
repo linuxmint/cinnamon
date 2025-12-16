@@ -582,6 +582,22 @@ class ApplicationButton extends GenericApplicationButton {
         super(applet, app, 'app', true, 'appmenu-application-button');
         this.category = [];
         this.icon = this.app.create_icon_texture(applet.applicationIconSize);
+        if (this.icon instanceof St.Icon) {
+            let gicon = this.icon.get_gicon();
+            if (gicon?.get_names) {
+                let iconNames = gicon.get_names();
+                let iconTheme = Gtk.IconTheme.get_default();
+                let hasAnyIcon = gicon.get_names()
+                    .some(name => iconTheme.lookup_icon(name, this.icon.icon_size, 0));
+                if (!hasAnyIcon) {
+                    this.icon = new St.Icon({
+                        icon_name: 'application-x-executable',
+                        icon_size: applet.applicationIconSize,
+                        icon_type: St.IconType.FULLCOLOR
+                    });
+                }
+            }
+        }
         this.addActor(this.icon);
 
         this.addLabel(this.name, 'appmenu-application-button-label');
