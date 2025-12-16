@@ -250,7 +250,7 @@
  },
  "popup-height" : {
     "type" : "generic",
-    "default" : 410
+    "default" : 425
  },
  "reset-menu-size-button" : {
     "type" : "button",
