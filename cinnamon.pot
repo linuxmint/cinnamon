@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-12 12:06+0000\n"
+"POT-Creation-Date: 2025-12-16 10:50+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -261,7 +261,7 @@ msgid "Delete"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:278
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:491
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:492
 msgid "Properties"
 msgstr ""
 
@@ -454,7 +454,7 @@ msgid "Switch User"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:142 js/ui/endSessionDialog.js:149
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2345
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2361
 msgid "Log Out"
 msgstr ""
 
@@ -482,7 +482,7 @@ msgid "Restart"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:185 js/ui/endSessionDialog.js:193
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2358
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2374
 msgid "Shut Down"
 msgstr ""
 
@@ -596,7 +596,7 @@ msgstr ""
 msgid "Workspace"
 msgstr ""
 
-#: js/ui/main.js:1619
+#: js/ui/main.js:1621
 msgid "Restarting Cinnamon..."
 msgstr ""
 
@@ -1248,7 +1248,7 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->show-favorites->description
 #. favorites@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/favorites@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2232
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2235
 msgid "Favorites"
 msgstr ""
 
@@ -1282,7 +1282,7 @@ msgid "Recent"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:209
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:468
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:469
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:49
 msgid "Run with dedicated GPU"
 msgstr ""
@@ -1379,25 +1379,25 @@ msgstr ""
 msgid "Manage keyboard layouts"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:390
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:481
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:391
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:482
 msgid "Remove from favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:397
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:484
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:398
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:485
 msgid "Add to favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:472
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:473
 msgid "Add to panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:476
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:477
 msgid "Add to desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:496
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:497
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:912
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_actions.py:84
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:57
@@ -1406,8 +1406,8 @@ msgstr ""
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:750
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:791
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:751
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:792
 msgid "This file is no longer available"
 msgstr ""
 
@@ -1415,54 +1415,58 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->behavior-menu->title
 #. sound@cinnamon.org->settings-schema.json->section1->description
 #. network@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1092
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1095
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:57
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1097
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1100
 msgid "Edit menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2169
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2172
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2185
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2188
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2186
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2189
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2202
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2205
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:126
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2269
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2253
+msgid "No favorite documents"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2285
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2319
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2335
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:80
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:615
 msgid "Lock Screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2320
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2336
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2346
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2362
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2359
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2375
 msgid "Shut down the computer"
 msgstr ""
 
