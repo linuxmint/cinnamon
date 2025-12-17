@@ -73,7 +73,7 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         subMenu.menu.addMenuItem(item);
 
         item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
-        this._signals.connect(item, 'activate', Lang.bind(this._launcher.launchersBox, this._launcher.launchersBox.configureApplet));
+        this._signals.connect(item, 'activate', () => this._launcher.launchersBox.configureApplet());
         subMenu.menu.addMenuItem(item);
 
         this.remove_item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "edit-delete", St.IconType.SYMBOLIC);

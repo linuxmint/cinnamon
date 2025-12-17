@@ -647,6 +647,11 @@ var Applet = class Applet {
     }
 
     configureApplet(tab=0) {
+        if (typeof tab !== "number") {
+            global.logWarning("configureApplet: tab argument is not a number");
+            tab = 0;
+        }
+
         Util.spawnCommandLine("xlet-settings applet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 

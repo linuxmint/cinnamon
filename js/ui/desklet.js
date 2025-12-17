@@ -279,7 +279,11 @@ var Desklet = class Desklet {
     }
 
     configureDesklet(tab=0) {
-        if (typeof tab !== "number") tab = 0;
+        if (typeof tab !== "number") {
+            global.logWarning("configureDesklet: tab argument is not a number");
+            tab = 0;
+        }
+
         Util.spawnCommandLine("xlet-settings desklet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 }
