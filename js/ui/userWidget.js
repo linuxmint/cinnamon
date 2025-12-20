@@ -3,6 +3,7 @@
 // A widget showing the user avatar and name
 /* exported UserWidget */
 
+const Atk = imports.gi.Atk;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
@@ -59,6 +60,7 @@ class Avatar extends St.Bin {
                 effect.set_contrast(0.3);
                 this.add_effect(effect);
             }
+            this.add_accessible_state(Atk.StateType.FOCUSED);
         } else {
             if (this.child) {
                 this.child.remove_style_class_name('highlighted');
@@ -66,6 +68,7 @@ class Avatar extends St.Bin {
             else {
                 this.clear_effects();
             }
+            this.remove_accessible_state(Atk.StateType.FOCUSED);
         }
     }
 

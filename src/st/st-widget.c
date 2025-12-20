@@ -2386,7 +2386,7 @@ st_widget_get_label_actor (StWidget *widget)
 /**
  * st_widget_set_label_actor:
  * @widget: a #StWidget
- * @label: a #ClutterActor
+ * @label: (nullable): a #ClutterActor
  *
  * Sets @label as the #ClutterActor that identifies (labels)
  * @widget. @label can be %NULL to indicate that @widget is not

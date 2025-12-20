@@ -281,6 +281,7 @@ class SimpleMenuItem {
         this.label.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this.actor.add_actor(this.labelContainer);
         this.labelContainer.add_actor(this.label);
+        this.actor.set_label_actor(this.label);
     }
 
     addDescription(label='', styleClass=null) {
@@ -300,6 +301,20 @@ class SimpleMenuItem {
             this.descriptionLabel.set_style_class_name(styleClass);
         this.descriptionLabel.clutter_text.ellipsize = Pango.EllipsizeMode.END;
         this.labelContainer.add_actor(this.descriptionLabel);
+    }
+
+    updateAccessibleName() {
+        this.actor.set_label_actor(null);
+
+        let name = "";
+        if (this.label)
+            name += this.label.get_text();
+        if (this.descriptionLabel) {
+            if (name.length > 0)
+                name += ". ";
+            name += this.descriptionLabel.get_text();
+        }
+        this.actor.set_accessible_name(name);
     }
 
     /**
@@ -333,7 +348,7 @@ class SimpleMenuItem {
 
 class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
     constructor(appButton, label, action, iconName) {
-        super({focusOnHover: false});
+        super({focusOnHover: true});
 
         this._appButton = appButton;
         this._action = action;
@@ -350,6 +365,7 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
         }
 
         this.addActor(this.label);
+        this.actor.set_label_actor(this.label);
     }
 
     activate (event) {
@@ -604,6 +620,8 @@ class ApplicationButton extends GenericApplicationButton {
         if (applet.showDescription)
             this.addDescription(this.description, 'appmenu-application-button-description');
 
+        this.updateAccessibleName();
+
         this._draggable = DND.makeDraggable(this.actor);
         this._signals.connect(this._draggable, 'drag-end', this._onDragEnd.bind(this));
         this.isDraggableApp = true;
@@ -809,7 +827,6 @@ class CategoryButton extends SimpleMenuItem {
             styleClass: 'appmenu-category-button',
             categoryId: categoryId,
         });
-        this.actor.accessible_role = Atk.Role.LIST_ITEM;
 
         let size = applet.categoryIconSize;
         if (applet.symbolicCategoryIcons) {
@@ -895,6 +912,8 @@ class SystemButton extends SimpleMenuItem {
             styleClass: 'appmenu-system-button',
         });
         this.addIcon(16, iconName, null, true);
+        this.actor.set_accessible_name(name);
+        this.actor.set_accessible_role(Atk.Role.BUTTON);
     }
 }
 
@@ -1818,6 +1837,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _buttonEnterEvent(button) {
         this.categoriesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
+        this.categoriesBox.get_children().forEach(child => child.remove_accessible_state(Atk.StateType.FOCUSED));
         this.applicationsBox.get_children().forEach(child => child.set_style_class_name("appmenu-application-button"));
         this.favoriteAppsBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
         this.placesBox.get_children().forEach(child => child.remove_style_pseudo_class("hover"));
@@ -1847,6 +1867,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         }
 
+        button.actor.add_accessible_state(Atk.StateType.FOCUSED);
 
         let parent = button.actor.get_parent();
         this._activeContainer = parent;
@@ -1867,6 +1888,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             else
                 button.actor.set_style_class_name(button.styleClass);
         }
+
+        button.actor.remove_accessible_state(Atk.StateType.FOCUSED);
 
         // This method is only called on mouse leave so return key focus to the
         // currently active category button.
@@ -2451,6 +2474,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
         this.userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL, false);
         this.userIcon.set_reactive(true);
+        this.userIcon.track_hover = true;
+        this.userIcon.set_accessible_role(Atk.Role.BUTTON);
+        this.userIcon.set_accessible_name(_("Account details"));
         this.userIcon.connect('button-press-event', () => {
             this.menu.toggle();
             Util.spawnCommandLine("cinnamon-settings user");
@@ -2525,7 +2551,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             name: 'appmenu-search-entry',
             track_hover: true,
             can_focus: true,
+            accessible_name: _("Search"),
+            accessible_role: Atk.Role.ENTRY,
         });
+        this.searchEntry.add_accessible_state(Atk.StateType.EDITABLE);
 
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
         this.searchActive = false;
