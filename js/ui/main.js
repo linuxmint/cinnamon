@@ -1190,9 +1190,9 @@ function _stageEventHandler(actor, event) {
     let keyCode = event.get_key_code();
     let modifierState = Cinnamon.get_event_state(event);
 
+    let action = global.display.get_keybinding_action(keyCode, modifierState);
     if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.FLAG_INPUT_METHOD))) {
         // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
-        let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
             keybindingManager.invoke_keybinding_action_by_id(action);
         }
