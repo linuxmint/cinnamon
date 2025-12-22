@@ -300,6 +300,22 @@ class AppGroup {
             });
         }
 
+        if (icon instanceof St.Icon) {
+            let gicon = icon.get_gicon();
+            if (gicon?.get_names) {
+                let iconTheme = Gtk.IconTheme.get_default();
+                let hasAnyIcon = gicon.get_names()
+                    .some(name => iconTheme.lookup_icon(name, icon.icon_size, 0));
+                if (!hasAnyIcon) {
+                    icon = new St.Icon({
+                        icon_name: 'application-x-executable',
+                        icon_size: this.iconSize,
+                        icon_type: St.IconType.FULLCOLOR
+                    });
+                }
+            }
+        }
+
         const oldChild = this.iconBox.get_child();
         this.iconBox.set_child(icon);
 
