@@ -457,6 +457,25 @@ class GenericApplicationButton extends SimpleMenuItem {
         });
     }
 
+    set_application_icon(icon_size) {
+        this.icon = this.app.create_icon_texture(icon_size);
+        if (this.icon instanceof St.Icon) {
+            let gicon = this.icon.get_gicon();
+            if (gicon?.get_names) {
+                let iconTheme = Gtk.IconTheme.get_default();
+                let hasAnyIcon = gicon.get_names()
+                    .some(name => iconTheme.lookup_icon(name, this.icon.icon_size, 0));
+                if (!hasAnyIcon) {
+                    this.icon = new St.Icon({
+                        icon_name: 'application-x-executable',
+                        icon_size: icon_size,
+                        icon_type: St.IconType.FULLCOLOR
+                    });
+                }
+            }
+        }
+    }
+
     highlight() {
         if (this.actor.has_style_pseudo_class('highlighted'))
             return;
@@ -597,23 +616,7 @@ class ApplicationButton extends GenericApplicationButton {
     constructor(applet, app) {
         super(applet, app, 'app', true, 'appmenu-application-button');
         this.category = [];
-        this.icon = this.app.create_icon_texture(applet.applicationIconSize);
-        if (this.icon instanceof St.Icon) {
-            let gicon = this.icon.get_gicon();
-            if (gicon?.get_names) {
-                let iconNames = gicon.get_names();
-                let iconTheme = Gtk.IconTheme.get_default();
-                let hasAnyIcon = gicon.get_names()
-                    .some(name => iconTheme.lookup_icon(name, this.icon.icon_size, 0));
-                if (!hasAnyIcon) {
-                    this.icon = new St.Icon({
-                        icon_name: 'application-x-executable',
-                        icon_size: applet.applicationIconSize,
-                        icon_type: St.IconType.FULLCOLOR
-                    });
-                }
-            }
-        }
+        this.set_application_icon(applet.applicationIconSize);
         this.addActor(this.icon);
 
         this.addLabel(this.name, 'appmenu-application-button-label');
@@ -870,7 +873,7 @@ class CategoryButton extends SimpleMenuItem {
 class FavoritesButton extends GenericApplicationButton {
     constructor(applet, app) {
         super(applet, app, 'fav', false, 'appmenu-sidebar-button');
-        this.icon = app.create_icon_texture(applet.sidebarIconSize);
+        this.set_application_icon(applet.sidebarIconSize);
         this.addActor(this.icon);
         this.addLabel(this.name, 'appmenu-application-button-label');
 
