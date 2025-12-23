@@ -1881,7 +1881,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _buttonLeaveEvent (button) {
         if (button instanceof CategoryButton) {
             if (button.categoryId !== this.lastSelectedCategory && !this.searchActive) {
-                button.actor.set_style_class_name("menu-category-button");
+                button.actor.set_style_class_name("appmenu-category-button");
                 if (button.actor.has_style_pseudo_class("hover")) {
                     button.actor.remove_style_pseudo_class("hover");
                 }
