@@ -29,7 +29,7 @@ class Module:
             section.add_row(switch)
 
             range_css = """
-@define-color ORANGE_100 #ffc27d;
+@define-color ORANGE_100 #fff4e9;
 @define-color ORANGE_500 #f37329;
 @define-color base_color white;
 @define-color bg_color shade (@base_color, 0.96);
@@ -41,7 +41,7 @@ class Module:
 }
 """
             temp_range = GSettingsRange(_("Color temperature"), COLOR_SCHEMA, "night-light-temperature", "", "",
-                                        mini=1700, maxi=4700, step=100, invert=True, show_value=False)
+                                        mini=1700, maxi=6500, step=100, invert=True, show_value=False)
             section.add_row(temp_range)
             temp_range.content_widget.set_has_origin(False)
             temp_range.content_widget.add_mark(2700, Gtk.PositionType.TOP, None)
