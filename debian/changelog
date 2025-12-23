@@ -1,3 +1,25 @@
+cinnamon (6.6.3) zena; urgency=medium
+
+  [ Leigh Scott ]
+  * cs_user.py: Switch from pam passwd to system-auth or common-auth with login fallback (#13239)
+
+  [ Michael Webster ]
+  * applets,desklets: Validate tab argument before attempting to launch xlet-settings.
+  * Remove cs-tiling icon and desktop file.
+  * Regenerate desktop files with latest translations.
+  * menu applet: Fix screen-reader/Atk support.
+  * main.js: Fix error during expo view - 'action is not defined'.
+  * cs_nightlight.py: Increase possible color temp range.
+
+  [ Clement Lefebvre ]
+  * Use xsi-preferences when appropriate
+  * menu: Make the sidebar min-width configurable
+  * menu: Fix category hover stylename on leave event
+  * menu: Fix symbolic category icon for wine and custom categories
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 23 Dec 2025 12:49:34 +0000
+
 cinnamon (6.6.2) zena; urgency=medium
 
   [ Clement Lefebvre ]
