@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-23 12:49+0000\n"
+"POT-Creation-Date: 2025-12-23 13:48+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -57,7 +57,7 @@ msgstr ""
 
 #: src/cinnamon-util.c:259
 #: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2562
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:301
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:302
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:446
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:860
 #: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingTable.py:225
@@ -799,9 +799,9 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:72
 #: generate_additional_files.py:24
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:41
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:195
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:389
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:733
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:196
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:390
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:734
 msgid "System Settings"
 msgstr ""
 
@@ -1565,8 +1565,8 @@ msgid "Modem"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:714
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:98
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:99
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:100
 msgid "Bluetooth"
 msgstr ""
 
@@ -2379,7 +2379,7 @@ msgid "Control Center"
 msgstr ""
 
 #: generate_additional_files.py:37
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:97
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:98
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:472
 msgid "Users and Groups"
 msgstr ""
@@ -2514,112 +2514,120 @@ msgid "info, usb, pci, gpu, bios, report, crash, system"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:86
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:87
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:88
-msgid "Login Window"
+msgid "System Administration"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:86
-msgid "login, lightdm, mdm, gdm, manager, user, password, startup, switch"
+msgid "adminitration, grub, boot, system"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:87
-msgid "login, lightdm, manager, settings, editor"
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:88
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:89
+msgid "Login Window"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:87
+msgid "login, lightdm, mdm, gdm, manager, user, password, startup, switch"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:88
+msgid "login, lightdm, manager, settings, editor"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:89
 msgid "login, gdm, manager, user, startup, switch"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:89
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:90
 msgid "Driver Manager"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:89
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:90
 msgid ""
 "video, driver, wifi, card, hardware, proprietary, nvidia, radeon, nouveau, "
 "fglrx"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:90
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:91
 msgid "Nvidia Settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:90
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:91
 msgid "video, driver, proprietary, nvidia, settings"
 msgstr ""
 
 #. Label                  Executable                  Icon
 #. Category  Keywords for filter
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:91
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:107
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:92
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:108
 msgid "Software Sources"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:91
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:92
 msgid "ppa, repository, package, source, download"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:92
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:93
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:94
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:95
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:96
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:108
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:97
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:109
 msgid "Package Management"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:92
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:93
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:94
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:95
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:96
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:108
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:97
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:109
 msgid "update, install, repository, package, source, download"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:97
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:98
 msgid "user, users, account, accounts, group, groups, password"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:98
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:99
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:100
 msgid "bluetooth, dongle, transfer, mobile"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:100
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:101
 msgid "Manage Services and Units"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:100
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:101
 msgid "systemd, units, services, systemctl, init"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:102
 msgid "Disks"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:101
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:102
 msgid ""
 "disks, manage, hardware, management, hard, hdd, pendrive, format, erase, "
 "test, create, iso, ISO, disk, image"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:102
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:103
 msgid "Online Accounts"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:102
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:103
 msgid "google, microsoft, nextcloud, owncloud"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:107
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:108
 msgid ""
 "ppa, repository, package, source, download, video, driver, wifi, card, "
 "hardware, proprietary, nvidia, radeon, nouveau, fglrx"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:294
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:295
 msgid "Back to all settings"
 msgstr ""
 
