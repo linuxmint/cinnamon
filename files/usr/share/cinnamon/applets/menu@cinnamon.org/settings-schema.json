@@ -31,7 +31,7 @@
             "type" : "section",
             "title" : "Options",
             "keys" : ["search-position", "system-position", "show-description", "symbolic-category-icons", "category-icon-size",
-                      "application-icon-size", "sidebar-icon-size",
+                      "application-icon-size", "sidebar-icon-size", "sidebar-max-width",
                       "reset-menu-size-button"]
         },
         "appearance-panel" : {
@@ -183,6 +183,14 @@
     "units" : "px",
     "description" : "Sidebar icon size",
     "dependency" : "show-sidebar"
+ },
+ "sidebar-max-width": {
+  "type": "spinbutton",
+  "default": 180,
+  "min": 130,
+  "max": 600,
+  "step": 1,
+  "description": "Maximum sidebar width (px)"
  },
  "show-favorites" : {
    "type" : "switch",

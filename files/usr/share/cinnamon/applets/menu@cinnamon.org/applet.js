@@ -1169,6 +1169,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("system-position", "systemPosition", () => this._layout());
         this.settings.bind("show-description", "showDescription", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-sidebar", "showSidebar", this._sidebarToggle);
+        this.settings.bind("sidebar-max-width", "sidebarMaxWidth", this._sidebarToggle);
         this.settings.bind("show-avatar", "showAvatar", this._avatarToggle);
         this.settings.bind("show-home", "showHome", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("show-desktop", "showDesktop", () => this.queueRefresh(REFRESH_ALL_MASK));
@@ -1458,8 +1459,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _sidebarToggle() {
         if (!this.showSidebar)
             this.sidebar.hide();
-        else
+        else {
             this.sidebar.show();
+            this.sidebar.set_style(`max-width: ${this.sidebarMaxWidth}px;`);
+        }
+
         this.updateNavigation();
     }
 
