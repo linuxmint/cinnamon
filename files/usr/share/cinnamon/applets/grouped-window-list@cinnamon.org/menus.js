@@ -160,7 +160,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.signals.connect(item, 'activate', () => this.state.trigger('openAbout'));
         subMenu.menu.addMenuItem(item);
 
-        item = createMenuItem({label: _('Configure...'), icon: 'system-run'});
+        item = createMenuItem({label: _('Configure...'), icon: 'xsi-preferences'});
         this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
         subMenu.menu.addMenuItem(item);
 

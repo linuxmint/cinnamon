@@ -960,7 +960,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "xsi-preferences", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', () => this._launcher._applet.configureApplet());
         subMenu.menu.addMenuItem(item);
 

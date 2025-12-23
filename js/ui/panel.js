@@ -1817,7 +1817,7 @@ PanelContextMenu.prototype = {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
         menu.addMenuItem(menu.troubleshootItem);
 
-        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "xsi-tools"));
+        this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "xsi-preferences"));
     },
 
     open: function(animate) {

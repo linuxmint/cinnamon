@@ -16,7 +16,7 @@ class NightLightSwitch extends Applet.IconApplet {
     let items = this._applet_context_menu._getMenuItems();
     if (this.context_menu_item_configure == null) {
       this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
-        "system-run",
+        "xsi-preferences",
         St.IconType.SYMBOLIC);
       this.context_menu_item_configure.connect('activate',
         () => { Util.spawnCommandLineAsync("cinnamon-settings nightlight"); }
