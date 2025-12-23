@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-16 16:40+0000\n"
+"POT-Creation-Date: 2025-12-23 12:49+0000\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -33,8 +33,8 @@ msgstr ""
 
 #: src/cinnamon-keyring-prompt.c:765
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:324
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:451
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:452
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:461
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:462
 msgid "Passwords do not match"
 msgstr ""
 
@@ -56,6 +56,7 @@ msgid "File System"
 msgstr ""
 
 #: src/cinnamon-util.c:259
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2562
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:301
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:446
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:860
@@ -265,7 +266,7 @@ msgid "Delete"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:278
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:492
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:508
 msgid "Properties"
 msgstr ""
 
@@ -458,7 +459,7 @@ msgid "Switch User"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:142 js/ui/endSessionDialog.js:149
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2348
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2395
 msgid "Log Out"
 msgstr ""
 
@@ -486,7 +487,7 @@ msgid "Restart"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:185 js/ui/endSessionDialog.js:193
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2361
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2408
 msgid "Shut Down"
 msgstr ""
 
@@ -1252,7 +1253,7 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->show-favorites->description
 #. favorites@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/favorites@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2222
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2269
 msgid "Favorites"
 msgstr ""
 
@@ -1286,7 +1287,7 @@ msgid "Recent"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:209
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:469
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:485
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:49
 msgid "Run with dedicated GPU"
 msgstr ""
@@ -1383,25 +1384,25 @@ msgstr ""
 msgid "Manage keyboard layouts"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:391
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:482
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:407
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:498
 msgid "Remove from favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:398
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:485
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:414
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:501
 msgid "Add to favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:473
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:489
 msgid "Add to panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:477
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:493
 msgid "Add to desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:497
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:513
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:912
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_actions.py:84
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:57
@@ -1410,8 +1411,8 @@ msgstr ""
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:738
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:779
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:772
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:813
 msgid "This file is no longer available"
 msgstr ""
 
@@ -1419,59 +1420,65 @@ msgstr ""
 #. menu@cinnamon.org->settings-schema.json->behavior-menu->title
 #. sound@cinnamon.org->settings-schema.json->section1->description
 #. network@cinnamon.org->settings-schema.json->section1->description
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1082
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1121
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:57
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1087
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1126
 msgid "Edit menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2159
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2206
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2175
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2222
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2176
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2223
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2192
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2239
 #: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:126
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2240
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2287
 msgid "No favorite documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2272
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2319
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2322
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2369
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:80
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:615
 msgid "Lock Screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2323
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2370
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2349
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2396
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2362
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2409
 msgid "Shut down the computer"
+msgstr ""
+
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2487
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:38
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:52
+msgid "Account details"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/network@cinnamon.org/applet.js:88
@@ -2664,27 +2671,27 @@ msgid "Change"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:328
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:457
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:467
 msgid "Too short"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:331
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:460
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:470
 msgid "Weak"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:334
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:463
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:473
 msgid "Fair"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:337
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:466
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:476
 msgid "Good"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:340
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:469
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:479
 msgid "Strong"
 msgstr ""
 
@@ -7024,11 +7031,6 @@ msgstr ""
 msgid "user, account, information, details, password"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:38
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:52
-msgid "Account details"
-msgstr ""
-
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:58
 msgid "Click to change your picture"
 msgstr ""
@@ -7049,13 +7051,13 @@ msgstr ""
 msgid "Current password"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:399
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:400
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:409
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:410
 msgid "Wrong password"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:404
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:405
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:414
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:415
 msgid "Internal Error"
 msgstr ""
 
@@ -7575,6 +7577,10 @@ msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->sidebar-icon-size->description
 msgid "Sidebar icon size"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->sidebar-max-width->description
+msgid "Maximum sidebar width (px)"
 msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->show-recents->description
