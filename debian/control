@@ -104,6 +104,7 @@ Depends:
  streamer,
  wget,
  xapps-common (>= 2.5.0),
+ xapp-symbolic-icons (>= 1.0.7),
  xdg-desktop-portal-gtk,
  xdg-desktop-portal-xapp,
  ${gir:Depends},

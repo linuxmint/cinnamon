@@ -844,6 +844,10 @@ class CategoryButton extends SimpleMenuItem {
                 icon = "xsi-applications-administration";
             else if (icon == "preferences-desktop")
                 icon = "xsi-applications-preferences";
+            else if (icon == "wine")
+                icon = "xsi-applications-wine";
+            else
+                icon = "xsi-applications-other";
         }
 
         if (typeof icon === 'string')
