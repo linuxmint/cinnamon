@@ -2,6 +2,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
