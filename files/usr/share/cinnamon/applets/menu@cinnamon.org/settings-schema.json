@@ -176,7 +176,7 @@
   },
  "sidebar-icon-size" : {
     "type": "spinbutton",
-    "default" : 22,
+    "default" : 24,
     "min" : 8,
     "max" : 48,
     "step" : 1,
