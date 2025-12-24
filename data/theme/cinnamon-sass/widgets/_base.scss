@@ -50,6 +50,26 @@
   -pie-background-color: rgba(140, 140, 140, 0.6);
 }
 
+// placeholder
+
+.placeholder {
+  spacing: 8px;
+  padding: $base_padding * 2;
+
+  .placeholder-icon { color: $insensitive_fg_color; }
+  .placeholder-label {
+    @extend %title_3;
+    text-align: center;
+    color: $insensitive_fg_color;
+    padding-top: 8px;
+  }
+
+  .placeholder-description {
+    color: $insensitive_fg_color;
+    text-align: center;
+  }
+}
+
 // ripples
 
 .ripple-pointer-location {
