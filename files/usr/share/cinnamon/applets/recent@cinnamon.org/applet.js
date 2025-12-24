@@ -1,3 +1,4 @@
+const Clutter = imports.gi.Clutter;
 const DocInfo = imports.misc.docInfo;
 const Gtk = imports.gi.Gtk;
 const Gio = imports.gi.Gio;
@@ -21,7 +22,10 @@ class MyPopupMenuItem extends PopupMenu.PopupBaseMenuItem {
             this.box.add(this.icon);
         }
 
-        this.label = new St.Label({ text: text });
+        this.label = new St.Label({
+            text: text,
+            y_align: Clutter.ActorAlign.CENTER,
+        });
         this.box.add(this.label);
         this.addActor(this.box);
     }
