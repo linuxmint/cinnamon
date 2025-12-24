@@ -30,7 +30,7 @@ let _xkbInfo = null;
 
 function getXkbInfo() {
     if (_xkbInfo == null)
-        _xkbInfo = new CinnamonDesktop.XkbInfo();
+        _xkbInfo = CinnamonDesktop.XkbInfo.new_with_extras();
     return _xkbInfo;
 }
 
@@ -499,7 +499,7 @@ var InputSourceManager = class {
         this._ibusManager.connect('property-updated', this._ibusPropertyUpdated.bind(this));
         this._ibusManager.connect('set-content-type', this._ibusSetContentType.bind(this));
 
-        global.display.connect('modifiers-accelerator-activated', this._modifiersSwitcher.bind(this));
+        global.display.connect('modifiers-accelerator-activated', () => this._modifiersSwitcher(false));
 
         this._sourcesPerWindow = false;
         this._focusWindowNotifyId = 0;

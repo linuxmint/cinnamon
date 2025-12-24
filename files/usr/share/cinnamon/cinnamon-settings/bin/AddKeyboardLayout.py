@@ -103,7 +103,11 @@ class AddKeyboardLayoutDialog():
         self.layouts_store.clear()
 
         self.used_ids = set(self.original_used_ids)
-        self.xkb_info = CinnamonDesktop.XkbInfo()
+
+        if self.input_source_settings.get_boolean(SHOW_ALL_SOURCES_KEY):
+            self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
+        else:
+            self.xkb_info = CinnamonDesktop.XkbInfo.new()
 
         self._load_layouts()
 

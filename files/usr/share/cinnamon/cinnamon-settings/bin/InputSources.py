@@ -275,7 +275,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
             print(e.message)
             self._proxy = None
 
-        self.xkb_info = CinnamonDesktop.XkbInfo()
+        self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
 
         self._ibus = IBus.Bus.new()
         if not self._ibus.is_connected():
