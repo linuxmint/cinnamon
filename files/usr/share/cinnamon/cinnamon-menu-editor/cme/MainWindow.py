@@ -507,8 +507,7 @@ class MainWindow(object):
             event_time = 0
             menu_tree.grab_focus()
             menu_tree.set_cursor(path, menu_tree.get_columns()[0], 0)
-        popup = self.tree.get_object('edit_menu')
-        popup.popup(None, None, None, None, button, event_time)
+        self.popup_menu.popup(None, None, None, None, button, event_time)
         #without this shift-f10 won't work
         return True
 
