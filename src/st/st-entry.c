@@ -533,6 +533,8 @@ cursor_blinks (StEntry *entry)
 {
   StEntryPrivate *priv = entry->priv;
 
+  return FALSE;
+
   if (clutter_actor_has_key_focus (CLUTTER_ACTOR (priv->entry)) &&
       clutter_text_get_editable (CLUTTER_TEXT (priv->entry)) &&
       clutter_text_get_selection_bound (CLUTTER_TEXT (priv->entry)) == clutter_text_get_cursor_position (CLUTTER_TEXT (priv->entry)))
