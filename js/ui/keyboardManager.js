@@ -641,6 +641,11 @@ var InputSourceManager = class {
         let sources = this._settings.inputSources;
         let nSources = sources.length;
 
+        if (nSources == 0) {
+            this._settings.loadSystemLayouts();
+            return;
+        }
+
         let use_group_names = this._interface_settings.get_boolean("keyboard-layout-prefer-variant-names");
         let use_upper = this._interface_settings.get_boolean("keyboard-layout-use-upper");
         let show_flags = this._interface_settings.get_boolean("keyboard-layout-show-flags");
@@ -699,13 +704,26 @@ var InputSourceManager = class {
         }
 
         if (infosList.length == 0) {
-            // We hit this *only* if the user reset/removed all layout entries from the 'sources' key.
-            // Exit here and do our first-run setup again.
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                this._settings.loadSystemLayouts();
-            });
+            // If only an ibus source is defined at Cinnamon startup, ibus won't be loaded yet, pending
+            // a callback. We need to provide something temporarily to allow Cinnamon to finish initializine.
+            // Once ibus is loaded, _inputSourcesChanged will be called again.
+            let [exists, displayName, shortName, xkbLayout, variant] =
+                    this._xkbInfo.get_layout_info(DEFAULT_LAYOUT);
+            let flagName = xkbLayout;
+            if (!use_group_names) {
+                shortName = xkbLayout;
+            }
 
-            return;
+            infosList.push({
+                type: INPUT_SOURCE_TYPE_XKB,
+                id: DEFAULT_LAYOUT,
+                displayName,
+                shortName,
+                flagName,
+                xkbLayout,
+                variant,
+                prefs: ''
+            });
         }
 
         let inputSourcesDupeTracker = {};
