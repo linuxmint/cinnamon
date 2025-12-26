@@ -8,6 +8,7 @@ const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
+const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
@@ -125,172 +126,23 @@ PlaceDeviceInfo.prototype = {
         if (!this.isRemovable())
             return;
 
-        let mountOp = new Gio.MountOperation();
+        let mountOp = new CinnamonMountOperation.CinnamonMountOperation();
         let drive = this._mount.get_drive();
         let volume = this._mount.get_volume();
 
         if (drive &&
             drive.get_start_stop_type() == Gio.DriveStartStopType.SHUTDOWN &&
             drive.can_stop()) {
-            drive.stop(0, mountOp, null, Lang.bind(this, this._stopFinish));
+            drive.stop(0, mountOp.mountOp, null, null);
         } else {
-            if (drive && drive.can_eject())
-                drive.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, true));
-            else if (volume && volume.can_eject())
-                volume.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, false));
-            else if (this._mount.can_eject())
-                this._mount.eject_with_operation(0, mountOp, null, Lang.bind(this, this._ejectFinish, false));
+            if ((drive && drive.can_eject()) || (volume && volume.can_eject()) || this._mount.can_eject())
+                drive.eject_with_operation(0, mountOp.mountOp, null, null);
             else if (this._mount.can_unmount())
-                this._mount.unmount_with_operation(0, mountOp, null, Lang.bind(this, this._removeFinish));
+                this._mount.unmount_with_operation(0, mountOp.mountOp, null, null);
         }
 
         this.busyWaitId = 0;
         return false;
-    },
-
-    _sendNotification: function(msg1, msg2 = null, withButton = false, persistent = false) {
-        if (Main.messageTray) {
-            if (persistent && this.busyNotification != null) {
-                return;
-            }
-
-            if (!persistent && this.busyNotification) {
-                this.busyNotification.destroy();
-                this.busyNotification = null;
-            }
-
-            let source = new MessageTray.SystemNotificationSource();
-            Main.messageTray.add(source);
-            let notification = new MessageTray.Notification(source, msg1, msg2);
-            notification.setTransient(true);
-            notification.setUrgency(persistent ? MessageTray.Urgency.CRITICAL : MessageTray.Urgency.NORMAL);
-            if (withButton) {
-                notification.addButton('system-undo', _("Retry"));
-                notification.connect('action-invoked', Lang.bind(this, this.remove));
-            }
-            source.notify(notification);
-            if (persistent) {
-                this.busyNotification = notification;
-                this.destroySignalId = notification.connect("destroy", () => {
-                    this.busyNotification.disconnect(this.destroySignalId);
-                    this.busyNotification = null;
-                    this.destroySignalId = 0;
-                })
-            }
-        } else {
-            if (msg2)
-                global.log(msg1 + ': ' + msg2);
-            else
-                global.log(msg1);
-        }
-    },
-
-    _stopFinish: function(drive, res) {
-        if (DEBUG) global.log("PlacesManager: **_stopFinish**");
-        let driveName = drive.get_name();  // Ex: USB Flash Drive
-        let unixDevice = drive.get_identifier('unix-device'); // Ex: /dev/sdc
-        let msg1 = _("%s (%s) has just been stopped.").format(driveName, this.name);
-        let msg2 = _("Device %s can be turned off, if necessary.").format(unixDevice);
-        let btn = false; // Show the 'Retry' button?
-        try {
-            drive.stop_finish(res);
-        } catch(e) {
-            if (e.code == Gio.IOErrorEnum.BUSY) {
-                msg1 = _("Device %s is busy, please wait.".format(drive.get_name()));
-                msg2 = _("Do not disconnect or data loss may occur.");
-
-                this._sendNotification(msg1, msg2, false, true);
-                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
-                return;
-            }
-            btn = true;
-            msg1 = _("Unable to stop the drive %s (%s)").format(drive.get_name(), this.name);
-            msg2 = e.message;
-        }
-        if (DEBUG) global.log(msg1 + ": " + msg2);
-        this._sendNotification(msg1, msg2, btn);
-    },
-
-    _ejectFinish: function(source, res, is_drive) {
-        if (DEBUG) global.log("PlacesManager: **_ejectFinish**");
-        let msg1;
-        let msg2 = null;
-        let btn = false;
-
-        if (is_drive) {
-            let driveName = source.get_name();  // Ex: USB Flash Drive
-            let unixDevice = source.get_identifier('unix-device'); // Ex: /dev/sdc
-            msg1 = _("%s (%s) can be safely unplugged.").format(driveName, this.name);
-            msg2 = _("Device %s can be removed.").format(unixDevice);
-        } else {
-            msg1 = _("%s (%s) has just been ejected.").format(source.get_name(), this.name);
-        }
-        try {
-            source.eject_with_operation_finish(res);
-        } catch(e) {
-            if (e.code == Gio.IOErrorEnum.BUSY) {
-                msg1 = _("Device %s is busy, please wait.".format(source.get_name()));
-                msg2 = _("Do not remove or data loss may occur.");
-
-                this._sendNotification(msg1, msg2, false, true);
-                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
-                return;
-            }
-            btn = true;
-            msg1 = _("Unable to eject the drive %s (%s)").format(source.get_name(), this.name);
-            msg2 = e.message;
-        }
-        if (DEBUG) global.log(msg1 + ": " + msg2);
-        this._sendNotification(msg1, msg2, btn);
-    },
-
-    _removeFinish: function(o, res, data) {
-        if (DEBUG) global.log("PlacesManager: **_removeFinish**");
-        let msg1 = _("Successfully unmounted %s (%s)").format(o.get_name(), this.name);
-        let msg2 = null;
-        let btn = false;
-
-        // 'this._mount.can_eject()' seems to be ever false. Thus, only the 'else' part will be used.
-        // If no issues are reported, these 19 lines of code commented below can be deleted.
-        //~ if (this._mount.can_eject()) {
-            //~ msg1 = _("%s (%s) can be safely unplugged").format(o.get_name(), this.name);
-            //~ msg2 = _("Device can be removed");
-            //~ try {
-                //~ this._mount.eject_with_operation_finish(res);
-            //~ } catch(e) {
-                //~ btn = true;
-                //~ msg1 = _("Failed to eject %s (%s)").format(o.get_name(), this.name);
-                //~ msg2 = e.message;
-            //~ }
-        //~ } else {
-            //~ try {
-                //~ this._mount.unmount_with_operation_finish(res);
-            //~ } catch(e) {
-                //~ btn = true;
-                //~ msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
-                //~ msg2 = e.message;
-            //~ }
-        //~ }
-        // <--Beginning of the code replacing the 19 lines above:
-        try {
-            this._mount.unmount_with_operation_finish(res);
-        } catch(e) {
-            if (e.code == Gio.IOErrorEnum.BUSY) {
-                msg1 = _("Device %s is busy, please wait.".format(o.get_name()));
-                msg2 = _("Do not disconnect or data loss may occur.");
-
-                this._sendNotification(msg1, msg2, false, true);
-                this.busyWaitId = Mainloop.timeout_add_seconds(2, ()=>this._tryRemove());
-                return;
-            }
-            btn = true;
-            msg1 = _("Failed to unmount %s (%s)").format(o.get_name(), this.name);
-            msg2 = e.message;
-        }
-        // End of this code.-->
-
-        if (DEBUG) global.log(msg1 + ": " + msg2);
-        this._sendNotification(msg1, msg2, btn);
     }
 };
 
