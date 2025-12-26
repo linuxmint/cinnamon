@@ -163,18 +163,8 @@ var IBusManager = class {
             this._panelService.connect('set-content-type', this._setContentType.bind(this));
         } catch (e) {
         }
-        // If an engine is already active we need to get its properties
-        this._ibus.get_global_engine_async(-1, this._cancellable, (_bus, res) => {
-            let engine;
-            try {
-                engine = this._ibus.get_global_engine_async_finish(res);
-                if (!engine)
-                    return;
-            } catch (e) {
-                return;
-            }
-            this._engineChanged(this._ibus, engine.get_name());
-        });
+
+        this.refreshCurrentEngineProperties();
         this._updateReadiness();
     }
 
@@ -245,6 +235,23 @@ var IBusManager = class {
                 if (callback)
                     callback();
             });
+    }
+
+    refreshCurrentEngineProperties() {
+        if (!this._ready)
+            return;
+        // If an engine is already active we need to get its properties
+        this._ibus.get_global_engine_async(-1, this._cancellable, (_bus, res) => {
+            let engine;
+            try {
+                engine = this._ibus.get_global_engine_async_finish(res);
+                if (!engine)
+                    return;
+            } catch (e) {
+                return;
+            }
+            this._engineChanged(this._ibus, engine.get_name());
+        });
     }
 
     preloadEngines(ids) {

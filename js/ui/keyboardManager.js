@@ -634,6 +634,11 @@ var InputSourceManager = class {
             this._ibusManager.setEngine(engine, releaseKeyboard);
         else
             this._ibusManager.setEngine(engine);
+
+        if (is.type == INPUT_SOURCE_TYPE_IBUS && (is.id === this._currentSource?.id)) {
+            this._ibusManager.refreshCurrentEngineProperties();
+        }
+
         this._currentInputSourceChanged(is);
     }
 
@@ -650,7 +655,6 @@ var InputSourceManager = class {
         let use_upper = this._interface_settings.get_boolean("keyboard-layout-use-upper");
         let show_flags = this._interface_settings.get_boolean("keyboard-layout-show-flags");
 
-        this._currentSource = null;
         this._inputSources = {};
         this._ibusSources = {};
 
