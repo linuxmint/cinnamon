@@ -2571,7 +2571,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.searchActive = false;
         this.searchEntryText = this.searchEntry.clutter_text;
         this.searchEntryText.connect('text-changed', this._onSearchTextChanged.bind(this));
-        this.searchEntryText.connect('key-press-event', this._onMenuKeyPress.bind(this));
+        this.searchEntryText.connect_after('key-press-event', this._onMenuKeyPress.bind(this));
         this._previousSearchPattern = "";
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
