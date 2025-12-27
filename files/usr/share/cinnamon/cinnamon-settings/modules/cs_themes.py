@@ -148,6 +148,8 @@ class Module:
             if os.path.exists(path):
                 try:
                     for line in list(open(path)):
+                        if line.startswith("Hidden=true"):
+                            break
                         if line.startswith("Directories="):
                             valid.append(directory)
                             break
