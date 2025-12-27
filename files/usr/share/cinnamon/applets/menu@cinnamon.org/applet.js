@@ -1718,6 +1718,11 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             return Clutter.EVENT_STOP;
         }
 
+        if (this.searchEntryText.has_preedit()) {
+            // There is an uncommitted text in the search box, let the input method to handle this.
+            return Clutter.EVENT_PROPAGATE;
+        }
+
         let ctrlKey = modifierState & Clutter.ModifierType.CONTROL_MASK;
 
         // If a context menu is open, hijack keyboard navigation and concentrate on the context menu.
