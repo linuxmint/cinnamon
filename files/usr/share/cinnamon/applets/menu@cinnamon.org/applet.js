@@ -348,7 +348,7 @@ class SimpleMenuItem {
 
 class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
     constructor(appButton, label, action, iconName) {
-        super({focusOnHover: true});
+        super({focusOnHover: false});
 
         this._appButton = appButton;
         this._action = action;
@@ -366,6 +366,13 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
 
         this.addActor(this.label);
         this.actor.set_label_actor(this.label);
+
+        this._signals.connect(this, "active-changed", () => {
+            if (this.active)
+                this.actor.add_accessible_state(Atk.StateType.FOCUSED);
+            else
+                this.actor.remove_accessible_state(Atk.StateType.FOCUSED);
+        });
     }
 
     activate (event) {
