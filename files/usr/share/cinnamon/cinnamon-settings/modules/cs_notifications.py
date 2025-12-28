@@ -84,5 +84,5 @@ class Module:
         settings.add_row(switch)
 
     def send_test(self, widget):
-        n = Notify.Notification.new("This is a test notification", content, "dialog-warning")
+        n = Notify.Notification.new(_("This is a test notification"), content, "dialog-warning")
         n.show()
