@@ -90,41 +90,6 @@ const PanelDefElement = {
     POSITION: 2
 };
 
-function _norm(x) {
-    return Math.round(x / 255);
-}
-
-function _over(srcColor, dstColor) {
-    let src = _premultiply(srcColor);
-    let dst = _premultiply(dstColor);
-    let result = new Clutter.Color();
-
-    result.alpha = src.alpha + _norm((255 - src.alpha) * dst.alpha);
-    result.red = src.red + _norm((255 - src.alpha) * dst.red);
-    result.green = src.green + _norm((255 - src.alpha) * dst.green);
-    result.blue = src.blue + _norm((255 - src.alpha) * dst.blue);
-
-    return _unpremultiply(result);
-}
-
-function _premultiply(color) {
-    return new Clutter.Color({ red: _norm(color.red * color.alpha),
-                               green: _norm(color.green * color.alpha),
-                               blue: _norm(color.blue * color.alpha),
-                               alpha: color.alpha });
-};
-
-function _unpremultiply(color) {
-    if (color.alpha == 0)
-        return new Clutter.Color();
-
-    let red = Math.min((color.red * 255 + 127) / color.alpha, 255);
-    let green = Math.min((color.green * 255 + 127) / color.alpha, 255);
-    let blue = Math.min((color.blue * 255 + 127) / color.alpha, 255);
-    return new Clutter.Color({ red: red, green: green,
-                               blue: blue, alpha: color.alpha });
-};
-
 /**
  * checkPanelUpgrade:
  *
