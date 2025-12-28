@@ -9,7 +9,6 @@
  */
 const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
@@ -348,9 +347,9 @@ var PanelManager = class PanelManager {
         this.addPanelMode = false;
         this.handling_panels_changed = false;
 
-        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
-        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
-        this._monitorsChangedId = Main.layoutManager.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
+        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", this._onPanelsEnabledChanged.bind(this));
+        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", this._onPanelEditModeChanged.bind(this));
+        this._monitorsChangedId = Main.layoutManager.connect("monitors-changed", this._onMonitorsChanged.bind(this));
 
         this._addOsd  = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
@@ -923,7 +922,7 @@ var PanelManager = class PanelManager {
         if (panelProperties.length == 0) {
             let lastPanelRemovedDialog = new ModalDialog.ConfirmDialog(
                 _("You don't have any panels added.\nDo you want to open panel settings?"),
-                Lang.bind(this, function() { Util.spawnCommandLine("cinnamon-settings panel"); }));
+                () => { Util.spawnCommandLine("cinnamon-settings panel") });
             lastPanelRemovedDialog.open();
         }
 
@@ -997,7 +996,7 @@ var PanelManager = class PanelManager {
         if (this.addPanelMode || !this.canAdd)
             return;
 
-        this._showDummyPanels(Lang.bind(this, this.addPanel));
+        this._showDummyPanels(this.addPanel.bind(this));
         this._addOsd.show();
     }
 
@@ -1012,7 +1011,7 @@ var PanelManager = class PanelManager {
             return;
 
         this.moveId = id;
-        this._showDummyPanels(Lang.bind(this, this.movePanel));
+        this._showDummyPanels(this.movePanel.bind(this));
         this._moveOsd.show();
     }
 
@@ -1047,10 +1046,10 @@ var PanelManager = class PanelManager {
         }
 
         this.addPanelMode = true;
-        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', Lang.bind(this, function() {
+        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', () => {
             if (this.addPanelMode)
                 this._destroyDummyPanels();
-        }));
+        });
 
        return true;
     }
@@ -1131,9 +1130,9 @@ var PanelDummy = class PanelDummy {
                 global.log("paneDummy - unrecognised panel position "+panelPosition);
         }
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onClicked));
-        this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
-        this.actor.connect('leave-event', Lang.bind(this, this._onLeave));
+        this.actor.connect('button-press-event', this._onClicked.bind(this));
+        this.actor.connect('enter-event', this._onEnter.bind(this));
+        this.actor.connect('leave-event', this._onLeave.bind(this));
     }
 
     _onClicked() {
@@ -1169,16 +1168,16 @@ var AnimatedIcon = class AnimatedIcon {
 
     _init(name, size) {
         this.actor = new St.Bin({ visible: false });
-        this.actor.connect('destroy', Lang.bind(this, this._onDestroy));
-        this.actor.connect('notify::visible', Lang.bind(this, function() {
+        this.actor.connect('destroy', this._onDestroy.bind(this));
+        this.actor.connect('notify::visible', () => {
             if (this.actor.visible) {
-                this._timeoutId = Mainloop.timeout_add(ANIMATED_ICON_UPDATE_TIMEOUT, Lang.bind(this, this._update));
+                this._timeoutId = Mainloop.timeout_add(ANIMATED_ICON_UPDATE_TIMEOUT, this._update.bind(this));
             } else {
                 if (this._timeoutId)
                     Mainloop.source_remove(this._timeoutId);
                 this._timeoutId = 0;
             }
-        }));
+        });
 
         this._timeoutId = 0;
         this._i = 0;
@@ -1211,9 +1210,9 @@ var SettingsLauncher = class SettingsLauncher extends PopupMenu.PopupIconMenuIte
         super._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
         this._keyword = keyword;
-        this.connect('activate', Lang.bind(this, function() {
+        this.connect('activate', () => {
             Util.spawnCommandLine("cinnamon-settings " + this._keyword);
-        }));
+        });
     }
 }
 
@@ -1247,35 +1246,35 @@ var PanelContextMenu = class PanelContextMenu extends PopupMenu.PopupMenu {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
         });
 
-        this.connect("destroy", Lang.bind(this, function() {
+        this.connect("destroy", () => {
             global.settings.disconnect(this.panel_edit_setting_id);
             this.panel_edit_setting_id = 0;
-        }))
+        });
 
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
 
         menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "xsi-move", St.IconType.SYMBOLIC); // submenu item move panel
-        menu.movePanelItem.activate = Lang.bind(menu, function() {
+        menu.movePanelItem.activate = () => {
             Main.panelManager.movePanelQuery(this.panelId);
             this.close(true);
-        });
+        };
         menu.addMenuItem(menu.movePanelItem);
 
         let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "xsi-list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
-        menuItem.activate = Lang.bind(menu, function() {
+        menuItem.activate = () => {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?"),
                     function() {
                         Main.panelManager.removePanel(panelId);
                     });
             confirm.open();
-        });
+        };
         menu.addMenuItem(menuItem);
 
         menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add a new panel"), "xsi-list-add", St.IconType.SYMBOLIC); // submenu item add panel
-        menu.addPanelItem.activate = Lang.bind(menu, function() {
+        menu.addPanelItem.activate = () => {
             Main.panelManager.addPanelQuery();
             this.close(true);
-        });
+        };
         menu.addMenuItem(menu.addPanelItem);
 
         // menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
@@ -1374,7 +1373,7 @@ var PanelZoneDNDHandler = class PanelZoneDNDHandler {
         this._origAppletCenters = null;
         this._origAppletPos = -1;
 
-        this._panelZone.connect('leave-event', Lang.bind(this, this._handleLeaveEvent));
+        this._panelZone.connect('leave-event', this._handleLeaveEvent.bind(this));
     }
 
     handleDragOver(source, actor, x, y, time) {
@@ -1665,13 +1664,13 @@ var Panel = class Panel {
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
-        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate', Lang.bind(this, this._allocate));
+        this.actor.connect('button-press-event', this._onButtonPressEvent.bind(this));
+        this.actor.connect('style-changed', this._moveResizePanel.bind(this));
+        this.actor.connect('leave-event', this._leavePanel.bind(this));
+        this.actor.connect('enter-event', this._enterPanel.bind(this));
+        this.actor.connect('get-preferred-width', this._getPreferredWidth.bind(this));
+        this.actor.connect('get-preferred-height', this._getPreferredHeight.bind(this));
+        this.actor.connect('allocate', this._allocate.bind(this));
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
@@ -1916,7 +1915,7 @@ var Panel = class Panel {
         if (this._dragShowId && this._dragShowId > 0)
             Mainloop.source_remove(this._dragShowId);
 
-        let leaveIfOut = Lang.bind(this, function() {
+        let leaveIfOut = () => {
             this._dragShowId = 0;
             let [x, y, whatever] = global.get_pointer();
             this.actor.sync_hover();
@@ -1928,7 +1927,7 @@ var Panel = class Panel {
                 this._leavePanel();
                 return false;
             }
-        });  // end of bind
+        };
 
         this._dragShowId = Mainloop.timeout_add(500, leaveIfOut);
 
@@ -3129,10 +3128,10 @@ var Panel = class Panel {
          * by the coming enter-event, and the panel remains open. */
         if (this._shouldShow) {
             let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
+            this._showHideTimer = Mainloop.timeout_add(showDelay, this._showPanel.bind(this));
         } else {
             let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
+            this._showHideTimer = Mainloop.timeout_add(hideDelay, this._hidePanel.bind(this));
         }
     }
 
