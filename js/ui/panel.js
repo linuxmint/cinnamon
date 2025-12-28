@@ -41,24 +41,34 @@ const EDIT_MODE_MIN_BOX_SIZE = 25;
 const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 
 /*** These are defaults for a new panel added */
-const DEFAULT_PANEL_VALUES = {"panels-autohide": "false",
-                        "panels-show-delay": "0",
-                        "panels-hide-delay": "0",
-                        "panels-height": "40"};
+const DEFAULT_PANEL_VALUES = {
+    "panels-autohide": "false",
+    "panels-show-delay": "0",
+    "panels-hide-delay": "0",
+    "panels-height": "40"
+};
 
-const DEFAULT_FULLCOLOR_ICON_SIZE_VALUES = {"left":   0,
-                                            "center": 0,
-                                            "right":  0};
+const DEFAULT_FULLCOLOR_ICON_SIZE_VALUES = {
+    "left": 0,
+    "center": 0,
+    "right": 0
+};
 
-const DEFAULT_SYMBOLIC_ICON_SIZE_VALUES = {"left":   28,
-                                           "center": 28,
-                                           "right":  28};
+const DEFAULT_SYMBOLIC_ICON_SIZE_VALUES = {
+    "left": 28,
+    "center": 28,
+    "right": 28
+};
+
 const MIN_SYMBOLIC_SIZE_PX = 10;
 const MAX_SYMBOLIC_SIZE_PX = 50;
 
-const DEFAULT_TEXT_SIZE_VALUES = {"left":   0.0,
-                                  "center": 0.0,
-                                  "right":  0.0};
+const DEFAULT_TEXT_SIZE_VALUES = {
+    "left": 0.0,
+    "center": 0.0,
+    "right": 0.0
+};
+
 const MIN_TEXT_SIZE_PTS = 6.0;
 const MAX_TEXT_SIZE_PTS = 16.0;
 /*** Defaults ***/
@@ -72,20 +82,20 @@ const PANEL_ZONE_SYMBOLIC_ICON_SIZES = "panel-zone-symbolic-icon-sizes";
 const PANEL_ZONE_TEXT_SIZES = "panel-zone-text-sizes";
 
 const Direction = {
-    LEFT  : 0,
-    RIGHT : 1
+    LEFT: 0,
+    RIGHT: 1
 };
 
 var PanelLoc = {
-    top : 0,
-    bottom : 1,
-    left : 2,
-    right : 3
+    top: 0,
+    bottom: 1,
+    left: 2,
+    right: 3
 };
 
 const PanelDefElement = {
-    ID  : 0,
-    MONITOR : 1,
+    ID: 0,
+    MONITOR: 1,
     POSITION: 2
 };
 
@@ -347,11 +357,11 @@ var PanelManager = class PanelManager {
         this.addPanelMode = false;
         this.handling_panels_changed = false;
 
-        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", this._onPanelsEnabledChanged.bind(this));
-        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", this._onPanelEditModeChanged.bind(this));
+        this._panelsEnabledId = global.settings.connect("changed::panels-enabled", this._onPanelsEnabledChanged.bind(this));
+        this._panelEditModeId = global.settings.connect("changed::panel-edit-mode", this._onPanelEditModeChanged.bind(this));
         this._monitorsChangedId = Main.layoutManager.connect("monitors-changed", this._onMonitorsChanged.bind(this));
 
-        this._addOsd  = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
+        this._addOsd = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
         this._addOsd.hide();
         this._moveOsd.hide();
@@ -594,8 +604,7 @@ var PanelManager = class PanelManager {
             global.settings.set_strv(key, settings);
         }
 
-        switch (panelPosition)
-        {
+        switch (panelPosition) {
             case PanelLoc.top:
                 list.push(i + ":" + monitorIndex + ":" + "top");
                 break;
@@ -631,8 +640,7 @@ var PanelManager = class PanelManager {
 
         for (let i = 0, len = list.length; i < len; i++) {
             if (list[i].split(":")[0] == this.moveId) {
-                switch (panelPosition)
-                {
+                switch (panelPosition) {
                     case PanelLoc.top:
                         list[i] = this.moveId + ":" + monitorIndex + ":" + "top";
                         break;
@@ -761,7 +769,6 @@ var PanelManager = class PanelManager {
      * Returns (Panel.Panel): Panel created
      */
     _loadPanel(ID, monitorIndex, panelPosition, panelList, metaList) {
-
         if (!panelList) panelList = this.panels;
         if (!metaList) metaList = this.panelsMeta;
 
@@ -779,8 +786,7 @@ var PanelManager = class PanelManager {
                 continue;
             }
             if ((metaList[i][0] == monitorIndex) && (metaList[i][1] == panelPosition) && i != ID) {
-                switch (panelPosition)
-                {
+                switch (panelPosition) {
                     case PanelLoc.top:
                         global.log("Conflicting panel definitions: " + ID + ":" + monitorIndex + ":" + "top" );
                         break;
@@ -854,30 +860,27 @@ var PanelManager = class PanelManager {
                 continue;
             }
 
-            let ID   = parseInt(elements[0]);       // each panel is stored as ID:monitor:panelposition
-            let mon  = parseInt(elements[1]);
+            let ID = parseInt(elements[0]); // each panel is stored as ID:monitor:panelposition
+            let mon = parseInt(elements[1]);
             let ploc = getPanelLocFromName(elements[2]);
 
-            if (this.panels[ID]) {                  // If (existing) panel is moved
+            if (this.panels[ID]) { // If (existing) panel is moved
+                newMeta[ID] = [mon, ploc]; // Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
 
-                newMeta[ID] = [mon, ploc];          //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
-
-                newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
-                this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
+                newPanels[ID] = this.panels[ID]; // Move panel object to newPanels
+                this.panels[ID] = null; // avoids triggering the destroy logic that follows
                 delete this.panels[ID];
 
-                if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
-                    ||
-                    newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
-
+                if (newMeta[ID][0] != this.panelsMeta[ID][0] || // monitor changed
+                    newMeta[ID][1] != this.panelsMeta[ID][1]) { // or panel position changed
                     newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
-                    AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc.
-                                                                       // need reorienting within the applet using their
-                                                                         // on_orientation_changed function
+                    // Asymmetrical applets such as panel launchers, systray etc.
+                    // need reorienting within the applet using their
+                    // on_orientation_changed function
+                    AppletManager.updateAppletsOnPanel(newPanels[ID]);
                 }
-            } else {                                                       // new panel
-
+            } else { // new panel
                 let panel = this._loadPanel(ID,
                                             mon,
                                             ploc,
@@ -941,9 +944,9 @@ var PanelManager = class PanelManager {
             if (!this.panelsMeta[i]) {
                 continue;
             }
-
-            if (!this.panels[i]) { // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
-                                                         // - the monitor may just have been reconnected
+            // If there is a meta but not a panel, i.e. panel could not create due to non-existent monitor, try again
+            // - the monitor may just have been reconnected
+            if (!this.panels[i]) {
                 if (this.panelsMeta[i][0] < this.monitorCount)  // just check that the monitor is there
                 {
                     let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1]);
@@ -956,7 +959,6 @@ var PanelManager = class PanelManager {
                     delete this.panels[i];
                     this.panelCount -= 1;
                 }
-
             } else {
                 this.panels[i]._monitorsChanged = true;
 
@@ -1529,7 +1531,7 @@ var PanelZoneDNDHandler = class PanelZoneDNDHandler {
         if (sourcebox.has_style_class_name("panelRight") || sourcebox.has_style_class_name("panelLeft")) {
             children = sourcebox.get_children();
 
-            if (children.length == 0) {         /* put back some minimum space if the source box is now empty */
+            if (children.length == 0) { /* put back some minimum space if the source box is now empty */
                 if (sourcebox.get_parent()._delegate.is_vertical) {
                     let height = sourcebox.get_height();
                     if (height < EDIT_MODE_MIN_BOX_SIZE * global.ui_scale)
@@ -1639,9 +1641,9 @@ var Panel = class Panel {
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
-        this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
-        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', important: true });
-        this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
+        this._leftBox = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
+        this._rightBox = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', important: true });
+        this._centerBox = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
 
         if (this.is_vertical) {
             this._set_vertical_panel_style();
@@ -1653,9 +1655,9 @@ var Panel = class Panel {
         this.actor.add_actor(this._centerBox);
         this.actor.add_actor(this._rightBox);
 
-        this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox, 'left', this.panelId);
+        this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox, 'left', this.panelId);
         this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox, 'center', this.panelId);
-        this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox, 'right', this.panelId);
+        this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox, 'right', this.panelId);
 
         this.addContextMenuToPanel(this.panelPosition);
 
@@ -1712,8 +1714,7 @@ var Panel = class Panel {
      *  Adds a context menu to the panel
      */
     addContextMenuToPanel(panelPosition) {
-        switch (panelPosition)
-        {
+        switch (panelPosition) {
             case PanelLoc.top:
                 this._context_menu = new PanelContextMenu(this, St.Side.TOP, this.panelId);
                 break;
@@ -1741,8 +1742,7 @@ var Panel = class Panel {
      *  Adds the panel style class.  NB the original #panel style class is kept
      */
     addPanelStyleClass(panelPosition) {
-        switch (panelPosition)
-        {
+        switch (panelPosition) {
             case PanelLoc.top:
                 this.actor.remove_style_class_name('panel-bottom');
                 this.actor.remove_style_class_name('panel-left');
@@ -1875,13 +1875,13 @@ var Panel = class Panel {
             values.push(this.panelId + ":" + property);
             global.settings.set_strv(key, values);
         }
-        switch (type){
-        case "b":
-            return property == "true";
-        case "i":
-            return parseInt(property);
-        default:
-            return property;
+        switch (type) {
+            case "b":
+                return property == "true";
+            case "i":
+                return parseInt(property);
+            default:
+                return property;
         }
     }
 
@@ -1908,9 +1908,7 @@ var Panel = class Panel {
     }
 
     handleDragOver(source, actor, x, y, time) {
-//
-// For empty panels. If over left,right,center box then will not get here.
-//
+    // For empty panels. If over left,right,center box then will not get here.
         this._enterPanel();
         if (this._dragShowId && this._dragShowId > 0)
             Mainloop.source_remove(this._dragShowId);
@@ -1939,7 +1937,6 @@ var Panel = class Panel {
      * https://cgit.freedesktop.org/cgit/?url=xorg/proto/fixesproto/plain/fixesproto.txt
      */
     _updatePanelBarriers() {
-
         this._clearPanelBarriers();
 
         if (this._destroyed)  // ensure we do not try to set barriers if panel is being destroyed
@@ -1955,7 +1952,6 @@ var Panel = class Panel {
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
 
         if (this.actor.height && this.actor.width) {
-
             let panelTop = 0;
             let panelBottom = 0;
             let panelLeft = 0;
@@ -1974,8 +1970,7 @@ var Panel = class Panel {
                             break;
                     }
                     let x_coord = this.monitor.x + this.monitor.width - 1 - this.margin_right;
-                    if (panelTop != panelBottom && x_coord >= 0)
-                    {
+                    if (panelTop != panelBottom && x_coord >= 0) {
                         if (screen_width > this.monitor.x + this.monitor.width - this.margin_right) {    // if there is a monitor to the right or panel offset into monitor
                             this._rightPanelBarrier = new Meta.Barrier({
                                 display: global.display,
@@ -2214,8 +2209,8 @@ var Panel = class Panel {
         }
 
         let animating = typeof offset === "number";
-        let isHorizontal = this.panelPosition == PanelLoc.top
-                           || this.panelPosition == PanelLoc.bottom;
+        let isHorizontal = this.panelPosition == PanelLoc.top ||
+                           this.panelPosition == PanelLoc.bottom;
 
         // determine exposed amount of panel
         let exposedAmount;
@@ -2371,21 +2366,21 @@ var Panel = class Panel {
         let newMarginLeft = 0;
         let newMarginRight = 0;
         try {
-            newMarginTop    = themeNode.get_margin(St.Side.TOP);
+            newMarginTop = themeNode.get_margin(St.Side.TOP);
             newMarginBottom = themeNode.get_margin(St.Side.BOTTOM);
-            newMarginLeft   = themeNode.get_margin(St.Side.LEFT);
-            newMarginRight  = themeNode.get_margin(St.Side.RIGHT);
+            newMarginLeft = themeNode.get_margin(St.Side.LEFT);
+            newMarginRight = themeNode.get_margin(St.Side.RIGHT);
         } catch (e) {
             global.log(e);
         }
 
         let panelChanged = false;
 
-        let shadowChanged = !this._shadowBox
-                            || shadowBox.x1 != this._shadowBox.x1
-                            || shadowBox.x2 != this._shadowBox.x2
-                            || shadowBox.y1 != this._shadowBox.y1
-                            || shadowBox.y2 != this._shadowBox.y2;
+        let shadowChanged = !this._shadowBox ||
+                            shadowBox.x1 != this._shadowBox.x1 ||
+                            shadowBox.x2 != this._shadowBox.x2 ||
+                            shadowBox.y1 != this._shadowBox.y1 ||
+                            shadowBox.y2 != this._shadowBox.y2;
 
         // if the shadow changed, we need to update the clip
         if (shadowChanged) {
@@ -2486,8 +2481,7 @@ var Panel = class Panel {
         if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
             this._set_horizontal_panel_style();
             this.is_vertical = false;
-        }
-        else {
+        } else {
             this._set_vertical_panel_style();
             this.is_vertical = true;
         }
@@ -2742,7 +2736,6 @@ var Panel = class Panel {
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
-
         alloc.min_size = -1;
         alloc.natural_size = -1;
 
@@ -2752,7 +2745,6 @@ var Panel = class Panel {
     }
 
     _getPreferredHeight(actor, forWidth, alloc) {
-
         alloc.min_size = -1;
         alloc.natural_size = -1;
 
@@ -2814,22 +2806,22 @@ var Panel = class Panel {
      */
     _calcBoxSizes(allocWidth, allocHeight, vertical) {
         let leftBoundary, rightBoundary = 0;
-        let leftMinWidth       = 0;
-        let leftNaturalWidth   = 0;
-        let rightMinWidth      = 0;
-        let rightNaturalWidth  = 0;
-        let centerMinWidth     = 0;
+        let leftMinWidth = 0;
+        let leftNaturalWidth = 0;
+        let rightMinWidth = 0;
+        let rightNaturalWidth = 0;
+        let centerMinWidth = 0;
         let centerNaturalWidth = 0;
 
         if (vertical)
         {
-            [leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_height(-1);
+            [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_height(-1);
             [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_height(-1);
-            [rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_height(-1);
+            [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_height(-1);
         } else {
-            [leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_width(-1);
+            [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
             [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
-            [rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_width(-1);
+            [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
         }
 
         let centerBoxOccupied = this._centerBox.get_n_children() > 0;
@@ -2838,17 +2830,17 @@ var Panel = class Panel {
          * least a minimum width so that things can be dropped into it.
            Note that this has to be combined with the box being given Clutter.ActorAlign.FILL */
         if (this._panelEditMode) {
-            centerBoxOccupied  = true;
-            centerMinWidth     = Math.max(centerMinWidth, EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
+            centerBoxOccupied = true;
+            centerMinWidth = Math.max(centerMinWidth, EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
             centerNaturalWidth = Math.max(centerNaturalWidth, EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
         }
 
-        let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
-        let totalNaturalWidth         = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
+        let totalMinWidth = leftMinWidth + centerMinWidth + rightMinWidth;
+        let totalNaturalWidth = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
 
-        let sideMinWidth              = Math.max(leftMinWidth, rightMinWidth);
-        let sideNaturalWidth          = Math.max(leftNaturalWidth, rightNaturalWidth);
-        let totalCenteredMinWidth     = centerMinWidth + 2 * sideMinWidth;
+        let sideMinWidth = Math.max(leftMinWidth, rightMinWidth);
+        let sideNaturalWidth = Math.max(leftNaturalWidth, rightNaturalWidth);
+        let totalCenteredMinWidth = centerMinWidth + 2 * sideMinWidth;
         let totalCenteredNaturalWidth = centerNaturalWidth + 2 * sideNaturalWidth;
 
         let leftWidth, rightWidth;
@@ -2856,7 +2848,7 @@ var Panel = class Panel {
         if (centerBoxOccupied) {
             if (totalCenteredNaturalWidth < allocWidth) {
                 /* center the central box and butt the left and right up to it. */
-                leftWidth  = (allocWidth - centerNaturalWidth) / 2;
+                leftWidth = (allocWidth - centerNaturalWidth) / 2;
                 rightWidth = leftWidth;
             } else if (totalCenteredMinWidth < allocWidth) {
                 /* Center can be centered as without shrinking things too much.
@@ -2864,7 +2856,7 @@ var Panel = class Panel {
                  * distribute the remaining space proportional to how much the
                  * regions want. */
                 let totalRemaining = allocWidth - totalCenteredMinWidth;
-                let totalWant      = totalCenteredNaturalWidth - totalCenteredMinWidth;
+                let totalWant = totalCenteredNaturalWidth - totalCenteredMinWidth;
 
                 leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
                 rightWidth = leftWidth;
@@ -2878,7 +2870,7 @@ var Panel = class Panel {
                         rightWidth = allocWidth - leftMinWidth - centerNaturalWidth;
                     } else {
                         let totalRemaining = allocWidth - totalMinWidth;
-                        let totalWant      = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
+                        let totalWant = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
 
                         rightWidth = rightMinWidth;
                         if (totalWant > 0)
@@ -2891,7 +2883,7 @@ var Panel = class Panel {
                         leftWidth = allocWidth - rightMinWidth - centerNaturalWidth;
                     } else {
                         let totalRemaining = allocWidth - totalMinWidth;
-                        let totalWant      = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
+                        let totalWant = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
 
                         leftWidth = leftMinWidth;
                         if (totalWant > 0)
@@ -2900,17 +2892,17 @@ var Panel = class Panel {
                 }
             } else {
                 /* Scale everything down according to their minWidth. */
-                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
+                leftWidth = leftMinWidth / totalMinWidth * allocWidth;
                 rightWidth = rightMinWidth / totalMinWidth * allocWidth;
             }
         } else {  // center box not occupied
             if (totalNaturalWidth < allocWidth) {
                 /* Everything's fine. Allocate as usual. */
                 if (vertical) {
-                    leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
+                    leftWidth = Math.max(leftNaturalWidth, leftMinWidth);
                     rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
                 } else {
-                    leftWidth  = leftNaturalWidth;
+                    leftWidth = leftNaturalWidth;
                     rightWidth = rightNaturalWidth;
                 }
             } else if (totalMinWidth < allocWidth) {
@@ -2918,13 +2910,13 @@ var Panel = class Panel {
                  * Allocate the minWidth and then divide the remaining space
                  * according to how much more they want. */
                 let totalRemaining = allocWidth - totalMinWidth;
-                let totalWant      = totalNaturalWidth - totalMinWidth;
+                let totalWant = totalNaturalWidth - totalMinWidth;
 
-                leftWidth  = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
+                leftWidth = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
                 rightWidth = rightMinWidth + ((rightNaturalWidth - rightMinWidth) / totalWant) * totalRemaining;
             } else {
                 /* Scale everything down according to their minWidth. */
-                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
+                leftWidth = leftMinWidth / totalMinWidth * allocWidth;
                 rightWidth = rightMinWidth / totalMinWidth * allocWidth;
             }
         }
@@ -2933,7 +2925,7 @@ var Panel = class Panel {
         rightBoundary = Math.round(allocWidth - rightWidth);
 
         if (!vertical && (this.actor.get_direction() === St.TextDirection.RTL)) {
-            leftBoundary  = Math.round(allocWidth - leftWidth);
+            leftBoundary = Math.round(allocWidth - leftWidth);
             rightBoundary = Math.round(rightWidth);
         }
 
@@ -3144,7 +3136,6 @@ var Panel = class Panel {
     _leavePanel(actor=null, event=null) {
         // Panel gives false leave-event's when mouse is still on panel so we determine this._mouseEntered
         // manually with this._mouseOnPanel() in this._updatePanelVisibility()
-
         if (this._mouseEntered) {
             this._updatePanelVisibility();
             if (this.isHideable() && event !== null && this._mouseOnPanel()) {
@@ -3210,8 +3201,8 @@ var Panel = class Panel {
 
         // setup panel tween - slide in from edge of monitor
         // if horizontal panel, animation on y. if vertical, animation on x.
-        let isHorizontal = this.panelPosition == PanelLoc.top
-                           || this.panelPosition == PanelLoc.bottom;
+        let isHorizontal = this.panelPosition == PanelLoc.top ||
+                           this.panelPosition == PanelLoc.bottom;
         let animationTime = AUTOHIDE_ANIMATION_TIME;
         let panelParams = { duration: animationTime,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD };
@@ -3273,8 +3264,8 @@ var Panel = class Panel {
 
         // setup panel tween - slide out the monitor edge leaving one pixel
         // if horizontal panel, animation on y. if vertical, animation on x.
-        let isHorizontal = this.panelPosition == PanelLoc.top
-                         || this.panelPosition == PanelLoc.bottom;
+        let isHorizontal = this.panelPosition == PanelLoc.top ||
+                           this.panelPosition == PanelLoc.bottom;
         let panelParams = { duration: AUTOHIDE_ANIMATION_TIME,
                             mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
@@ -3302,15 +3293,17 @@ var Panel = class Panel {
         panelParams['onUpdate'] = () => this._setClipRegion(true, destPos);
         // hide boxes after panel slides out
         panelParams['onComplete'] = () => {
-               this._leftBox.hide();
-               this._centerBox.hide();
-               this._rightBox.hide();
+           this._leftBox.hide();
+           this._centerBox.hide();
+           this._rightBox.hide();
         };
 
         // setup boxes tween - fade out as panel slides out
-        let boxParams = { opacity: 0,
-                          duration: AUTOHIDE_BOX_FADE_TIME,
-                          mode: Clutter.AnimationMode.EASE_OUT_QUAD };
+        let boxParams = {
+            opacity: 0,
+            duration: AUTOHIDE_BOX_FADE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+        };
 
         // add all tweens
         this.actor.ease(panelParams);
