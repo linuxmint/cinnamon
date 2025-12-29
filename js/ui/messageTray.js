@@ -1072,7 +1072,10 @@ MessageTray.prototype = {
             opacity: 0,
             duration: ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => this._hideNotificationCompleted()
+            onComplete: () => {
+                this._hideNotificationCompleted();
+                this._updateState();
+            }
         });
     },
 
