@@ -196,6 +196,8 @@ class JSONSettingsHandler(object):
                 self.do_key_update(key)
 
         self.save_settings()
+        if self.notify_callback:
+            self.notify_callback(self, "", "")
 
     def do_key_update(self, key):
         if key in self.bindings:
@@ -224,6 +226,8 @@ class JSONSettingsHandler(object):
             else:
                 print(f"Skipping key {key}: the key does not exist in {filepath} or has no value")
         self.save_settings()
+        if self.notify_callback:
+            self.notify_callback(self, "", "")
 
     def save_to_file(self, filepath):
         if os.path.exists(filepath):
