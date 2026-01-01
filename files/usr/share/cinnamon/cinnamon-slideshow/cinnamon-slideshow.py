@@ -42,7 +42,8 @@ class CinnamonSlideshowApplication(Gio.Application):
         self.used_image_playlist = []
         self.images_ready = False
         self.update_in_progress = False
-        self.current_image = self.background_settings.get_string("picture-uri")
+        self.starting_image = self.background_settings.get_string("picture-uri")
+        self.current_image = self.starting_image
 
         self.update_id = 0
         self.loop_counter = self.slideshow_settings.get_int("delay")
@@ -302,12 +303,27 @@ class CinnamonSlideshowApplication(Gio.Application):
             index = random.randint(0, len(self.image_playlist) - 1)
             image = self.image_playlist[index]
         else:
+            self.maybe_skip_past_last_image()
             index = 0
             image = self.image_playlist[index]
 
         self.move_image_to_used_playlist(index, image)
 
         return image
+
+    def maybe_skip_past_last_image(self):
+        if self.starting_image is None:
+            return
+        # Check if the starting image is in our list (we've rebooted or otherwise a new process)
+        if self.starting_image in self.image_playlist:
+            # Make sure it's *not* the last image in our list. (We want to start over anyhow, if it is)
+            if self.image_playlist[-1] != self.starting_image:
+                # Move all images leading up to, and including this one, to the 'used' bin.
+                while self.image_playlist[0] != self.starting_image:
+                    self.move_image_to_used_playlist(0, self.image_playlist[0])
+                self.move_image_to_used_playlist(0, self.image_playlist[0])
+
+        self.starting_image = None
 
     def move_image_to_used_playlist(self, index, image):
         self.image_playlist.pop(index)
