@@ -465,6 +465,15 @@ PlacesManager.prototype = {
             }
         }
 
+        /* add mounts that have no volume (/etc/mtab mounts, ftp, sftp,...) */
+        let mounts = this._volumeMonitor.get_mounts();
+        for(let i = 0; i < mounts.length; i++) {
+            if(mounts[i].get_volume())
+                continue;
+
+            this._addMount(mounts[i]);
+        }
+
         /* We emit two signals, one for a generic 'all places' update
          * and the other for one specific to mounts. We do this because
          * clients like PlaceDisplay may only care about places in general
