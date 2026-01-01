@@ -134,7 +134,7 @@ class ItemEditor(object):
 
     def set_text(self, ctl, name):
         try:
-            val = self.keyfile.get_string(DESKTOP_GROUP, name)
+            val = self.keyfile.get_locale_string(DESKTOP_GROUP, name, None)
         except GLib.GError:
             pass
         else:
