@@ -20,7 +20,7 @@
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('CMenu', '3.0')
-from gi.repository import Gtk, GObject, Gdk, CMenu
+from gi.repository import Gtk, GObject, Gdk, CMenu, GLib
 import html
 import os
 import gettext
@@ -94,6 +94,8 @@ class MainWindow(object):
     def loadUpdates(self):
         menu_tree = self.tree.get_object('menu_tree')
         item_tree = self.tree.get_object('item_tree')
+        item_tree_pos = item_tree.get_vadjustment().get_value()
+
         items, iter = item_tree.get_selection().get_selected()
         update_items = False
         update_type = None
@@ -152,6 +154,7 @@ class MainWindow(object):
                 if found:
                     item_tree.get_selection().select_path((i,))
                     self.on_item_tree_cursor_changed(item_tree)
+                    GLib.idle_add(lambda: item_tree.get_vadjustment().set_value(item_tree_pos))
                     break
                 i += 1
         return False
