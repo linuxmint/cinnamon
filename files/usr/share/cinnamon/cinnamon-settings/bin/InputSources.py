@@ -15,6 +15,7 @@ from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
 import AddKeyboardLayout
+import XkbSettings
 
 MAX_LAYOUTS_PER_GROUP = 4
 
@@ -117,6 +118,17 @@ class InputSourceSettingsPage(SettingsPage):
         )
         section.add_row(widget)
 
+        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        info = CinnamonDesktop.XkbInfo.new_with_extras()
+        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+
+        popover_button = XkbSettings.XkbOptionButton("Compose key", self.input_source_settings, info, size_group)
+        section.add_row(popover_button)
+        popover_button = XkbSettings.XkbOptionButton("lv3", self.input_source_settings, info, size_group)
+        section.add_row(popover_button)
+
+        section = XkbSettings.XkbSettingsEditor()
+        self.pack_start(section, False, False, 0)
 
     def row_separator_func(self, row, before, data=None):
         if before is None:
