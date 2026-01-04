@@ -11,7 +11,7 @@ $menuitem_border_radius: $base_border_radius * 1;
 .popup-menu-content {
   padding: $base_padding;
   background-color: $bg_color;
-  border-radius: $base_border_radius * 2;
+  border-radius: $larger_border_radius;
   border: 1px solid $borders_color;
   box-shadow: 0 0 6px $shadow_color;
 }
@@ -102,7 +102,7 @@ $menuitem_border_radius: $base_border_radius * 1;
 .popup-combo-menu {
   padding: $base_padding;
   background-color: $bg_color;
-  border-radius: $base_border_radius * 1.25;
+  border-radius: $larger_border_radius;
   border: 1px solid $borders_color;
   box-shadow: 0 0 4px 0 rgba(0, 0, 0, 0.2);
 }
