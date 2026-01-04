@@ -885,7 +885,8 @@ class Player extends PopupMenu.PopupMenuSection {
     _showCover(cover_path) {
         if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
             this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
-            cover_path = null;
+            this._cover_path = null;
+            this._applet.setAppletTextIcon(this, null);
         }
         else {
             this._cover_path = cover_path;
@@ -1330,15 +1331,21 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._icon_path = null;
         }
 
-        if (this.showalbum) {
-            if (path && player && (player === true || player._playerStatus == 'Playing')) {
-                this.setIcon(path, "player-path");
+        if (player && (player === true || player._playerStatus == 'Playing')) {
+            // Something is playing
+            if (this.showalbum) {
+                if (path) {
+                    this.setIcon(path, "player-path");
+                } else {
+                    this.setIcon('xsi-media-optical-cd-audio', 'player-name');
+                }
             } else {
-                this.setIcon('xsi-media-optical-cd-audio', 'player-name');
+                this.setIcon('xsi-audio-x-generic', 'player-name');
             }
-        }
-        else {
-            this.setIcon('xsi-audio-x-generic', 'player-name');
+        } else {
+            // Nothing is playing - clear player icon and show volume icon
+            this._playerIcon = [null, false];
+            this.setIcon(this._outputIcon);
         }
     }
 
@@ -1425,7 +1432,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
             this._changeActivePlayer(owner);
             this._updatePlayerMenuItems();
-            this.setAppletTextIcon();
+            this.setAppletTextIcon(this._players[this._activePlayer], true);
         }
     }
 
@@ -1434,7 +1441,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             // The player exists, switch to it
             this._changeActivePlayer(owner);
             this._updatePlayerMenuItems();
-            this.setAppletTextIcon();
+            this.setAppletTextIcon(this._players[this._activePlayer], true);
         } else {
             // The player doesn't seem to exist. Remove it from the players list
             this._removePlayerItem(owner);
@@ -1470,7 +1477,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 }
             }
             this._updatePlayerMenuItems();
-            this.setAppletTextIcon();
+            this.setAppletTextIcon(this._players[this._activePlayer], true);
         }
     }
 
@@ -1580,6 +1587,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (this.playerControl && this._activePlayer != null) {
             let menuItem = this._players[player];
             this.menu.addMenuItem(menuItem, 2);
+            this._icon_path = menuItem._cover_path || null;
+        } else {
+            this._icon_path = null;
         }
 
         this._updatePlayerMenuItems();
