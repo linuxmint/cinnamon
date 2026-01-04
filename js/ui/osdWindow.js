@@ -110,6 +110,8 @@ class OsdWindow extends Clutter.Actor {
         if (!this._icon.gicon)
             return;
 
+        this.remove_transition('opacity');
+
         if (!this.visible) {
             Meta.disable_unredirect_for_display(global.display);
             super.show();
@@ -121,6 +123,8 @@ class OsdWindow extends Clutter.Actor {
                 duration: FADE_TIME,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             });
+        } else {
+            this.opacity = 255;
         }
 
         if (this._hideTimeoutId)
