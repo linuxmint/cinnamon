@@ -100,7 +100,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 
         this.app_icon = app_icon;
         if (this.app_icon == null) {
-            this.iconName = this.isMic ? "microphone-sensitivity-muted" : "audio-volume-muted";
+            this.iconName = this.isMic ? "xsi-microphone-sensitivity-muted" : "xsi-audio-volume-muted";
             this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         }
         else {
@@ -257,7 +257,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
             else
                 icon = "high";
         }
-        return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
+        return this.isMic? "xsi-microphone-sensitivity-" + icon : "xsi-audio-volume-" + icon;
     }
 }
 
