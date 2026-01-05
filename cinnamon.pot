@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-05 21:46+0200\n"
+"POT-Creation-Date: 2026-01-05 22:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -89,7 +89,7 @@ msgstr ""
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:385
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:451
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:656
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:331
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:155
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:762
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:771
 msgid "Cancel"
@@ -3824,67 +3824,69 @@ msgstr ""
 msgid "Choose the assignment you wish to keep. The others will be cleared."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:146
+#. l10n constants - get them translated here so they use Cinnamon's gettext
+#. context
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:147
 msgid "Click to set a new accelerator key."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:147
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:148
 msgid "Press Escape or click again to cancel the operation."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:148
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:149
 msgid "Press Backspace to clear the existing keybinding."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:183
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:150
 msgid "unassigned"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:227
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:151
 msgid "Pick an accelerator"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:332
-msgid "Continue"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:336
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:152
 #, python-format
 msgid ""
 "\n"
 "This key combination, '<b>%s</b>' should not be used because it would become impossible to type using this key. "
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:337
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:153
 msgid ""
 "Please try again using a modifier key such as Control, Alt or Super (Windows key).\n"
 "\n"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:338
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:154
 msgid ""
 "Continue only if you are certain this is what you want, otherwise press "
 "cancel.\n"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:176
+#: files/usr/share/cinnamon/cinnamon-settings/bin/KeybindingWidgets.py:156
+msgid "Continue"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:179
 msgid "Checking dependencies"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:177
+#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:180
 #, python-format
 msgid "Please install: %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:376
+#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:379
 msgid "_Cancel"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:377
+#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:380
 msgid "_Open"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:390
+#: files/usr/share/cinnamon/cinnamon-settings/bin/SettingsWidgets.py:393
 msgid "Sound files"
 msgstr ""
 

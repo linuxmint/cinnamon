@@ -143,9 +143,17 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                          GObject.ParamFlags.READWRITE)
     }
 
+    # l10n constants - get them translated here so they use Cinnamon's gettext context
     TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to set a new accelerator key."),
                                    _("Press Escape or click again to cancel the operation."),
                                    _("Press Backspace to clear the existing keybinding."))
+    UNASSIGNED = _("unassigned")
+    PICK_AN_ACCELERATOR = _("Pick an accelerator")
+    MSG = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
+    MSG += _("Please try again using a modifier key such as Control, Alt or Super (Windows key).\n\n")
+    MSG += _("Continue only if you are certain this is what you want, otherwise press cancel.\n")
+    CANCEL = _("Cancel")
+    CONTINUE = _("Continue")
 
     def __init__(self, a_widget, accel_string=None):
         super(CellRendererKeybinding, self).__init__()
@@ -180,7 +188,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             raise AttributeError(f'unknown property {prop.name}')
 
     def update_label(self):
-        text = _("unassigned") if self.default_value else self.text_string
+        text = CellRendererKeybinding.UNASSIGNED if self.default_value else self.text_string
         if self.accel_string:
             restore_atab = False
             restore_keyboard = False
@@ -224,7 +232,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                                Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
                                None, Gdk.CURRENT_TIME)
 
-            editable.set_text(_("Pick an accelerator"))
+            editable.set_text(CellRendererKeybinding.PICK_AN_ACCELERATOR)
             self.accel_editable = editable
 
             self.release_event_id = self.accel_editable.connect( "key-release-event", self.on_key_release )
@@ -328,15 +336,12 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                                            Gtk.MessageType.WARNING,
                                            Gtk.ButtonsType.NONE,
                                            None)
-                button = dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
-                button = dialog.add_button(_("Continue"), Gtk.ResponseType.OK)
+                button = dialog.add_button(CellRendererKeybinding.CANCEL, Gtk.ResponseType.CANCEL)
+                button = dialog.add_button(CellRendererKeybinding.CONTINUE, Gtk.ResponseType.OK)
                 dialog.set_default_response(Gtk.ResponseType.CANCEL)
                 button.get_style_context().add_class(Gtk.STYLE_CLASS_DESTRUCTIVE_ACTION)
                 dialog.set_default_size(400, 200)
-                msg = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
-                msg += _("Please try again using a modifier key such as Control, Alt or Super (Windows key).\n\n")
-                msg += _("Continue only if you are certain this is what you want, otherwise press cancel.\n")
-                dialog.set_markup(msg % accel_label)
+                dialog.set_markup(CellRendererKeybinding.MSG % accel_label)
                 dialog.show_all()
                 response = dialog.run()
                 dialog.destroy()
