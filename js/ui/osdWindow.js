@@ -97,12 +97,12 @@ class OsdWindow extends Clutter.Actor {
             if (this.visible) {
                 if (Math.abs(this._level.value - value) < 0.04) {
                     this._level.ease_property('value', value, {
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        mode: Clutter.AnimationMode.CLUTTER_LINEAR,
                         duration: LEVEL_ANIMATION_TIME_FAST,
                     });
                 } else {
                     this._level.ease_property('value', value, {
-                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        mode: Clutter.AnimationMode.CLUTTER_LINEAR,
                         duration: LEVEL_ANIMATION_TIME,
                     });
                 }
