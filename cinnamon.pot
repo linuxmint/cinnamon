@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2026-01-05 22:02+0200\n"
+"POT-Creation-Date: 2026-01-05 22:23+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -233,7 +233,7 @@ msgstr ""
 #: js/ui/workspace.js:1169
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:341
 #: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:1031
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:482
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:483
 msgid "Close"
 msgstr ""
 
@@ -285,7 +285,7 @@ msgid "Add/Edit Launcher"
 msgstr ""
 
 #: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:87
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:505
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:506
 msgid "Type:"
 msgstr ""
 
@@ -4676,7 +4676,7 @@ msgid "Plain Text"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:178
-msgid "CD audio"
+msgid "Audio CD"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:178
@@ -4684,7 +4684,7 @@ msgid "Select an application for audio CDs"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:179
-msgid "DVD video"
+msgid "Video DVD"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:179
@@ -4717,23 +4717,23 @@ msgstr ""
 #. If the shared-mime-info translation works for your language,
 #. simply leave these untranslated.
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:190
-msgid "audio DVD"
+msgid "Audio DVD"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:191
-msgid "blank Blu-ray disc"
+msgid "Blank Blu-ray disc"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:192
-msgid "blank CD disc"
+msgid "Blank CD disc"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:193
-msgid "blank DVD disc"
+msgid "Blank DVD disc"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:194
-msgid "blank HD DVD disc"
+msgid "Blank HD DVD disc"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:195
@@ -4741,7 +4741,7 @@ msgid "Blu-ray video disc"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:196
-msgid "e-book reader"
+msgid "E-book reader"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:197
@@ -4764,20 +4764,24 @@ msgstr ""
 msgid "Windows software"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:352
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:203
+msgid "OSTree Software Updates"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:353
 msgid "Command-line option for your terminal to execute a passed-in command."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:416
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:417
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:15
 msgid "Ask what to do"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:418
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:419
 msgid "Open folder"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:420
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:421
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:16
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:611
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:620
@@ -4785,11 +4789,11 @@ msgstr ""
 msgid "Do nothing"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:478
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:479
 msgid "Other Media"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:508
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:509
 msgid "Select how other media should be handled"
 msgstr ""
 
