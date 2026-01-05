@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-12-28 14:42+0000\n"
+"POT-Creation-Date: 2026-01-05 21:46+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -56,7 +56,7 @@ msgid "File System"
 msgstr ""
 
 #: src/cinnamon-util.c:259
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2565
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2572
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:302
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:446
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:860
@@ -71,140 +71,6 @@ msgstr ""
 
 #: src/main.c:284
 msgid "Print version"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:7
-msgid "Add/Edit Launcher"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:87
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:505
-msgid "Type:"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:104
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui:97
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:97
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:766
-msgid "Name:"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:121
-msgid "Title:"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:138
-msgid "Program:"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:155
-msgid "Icon Name"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:172
-msgid "Application"
-msgstr ""
-
-#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:173
-msgid "Custom Application"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:8
-msgid "Main Menu"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:28
-msgid "Restore System Configuration"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:33
-msgid "Restore the default menu layout"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:45
-#: js/ui/workspace.js:1169
-#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:341
-#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:1031
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:482
-msgid "Close"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:162
-msgid "_New Menu"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:178
-msgid "Ne_w Item"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:208
-msgid "Cut"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:222
-#: js/ui/cinnamonEntry.js:33
-msgid "Copy"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:236
-#: js/ui/cinnamonEntry.js:38
-msgid "Paste"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:250
-#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:72
-#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:189
-msgid "Delete"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:278
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:527
-msgid "Properties"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:292
-msgid "Edit Desktop File"
-msgstr ""
-
-#. Display name                         ID              Show it? Always False
-#. to start              Icon
-#. printers@cinnamon.org->settings-schema.json->section1->description
-#. menu@cinnamon.org->settings-schema.json->appearance->title
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:26
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:64
-msgid "Appearance"
-msgstr ""
-
-#. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:42
-#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:73
-msgid "Color"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:56
-msgid ""
-"In mixed mode most applications are light. Some desktop elements are dark to"
-" create contrast."
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:100
-msgid "Mixed"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:148
-msgid "Dark"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:196
-msgid "Light"
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:241
-msgid "Advanced settings..."
-msgstr ""
-
-#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:257
-msgid "Style"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui:9
@@ -273,22 +139,66 @@ msgstr ""
 msgid "Configure"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui:9
-msgid "Directory Properties"
+#. Display name                         ID              Show it? Always False
+#. to start              Icon
+#. menu@cinnamon.org->settings-schema.json->appearance->title
+#. printers@cinnamon.org->settings-schema.json->section1->description
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:26
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:64
+msgid "Appearance"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui:114
-#: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:127
-msgid "Comment:"
+#. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:42
+#: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:73
+msgid "Color"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:56
+msgid ""
+"In mixed mode most applications are light. Some desktop elements are dark to"
+" create contrast."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:100
+msgid "Mixed"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:148
+msgid "Dark"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:196
+msgid "Light"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:241
+msgid "Advanced settings..."
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/themes.ui:257
+msgid "Style"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:9
 msgid "Launcher Properties"
 msgstr ""
 
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:97
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui:97
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:104
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:766
+msgid "Name:"
+msgstr ""
+
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:112
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:767
 msgid "Command:"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:127
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui:114
+msgid "Comment:"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui:171
@@ -303,10 +213,100 @@ msgstr ""
 msgid "Use dedicated GPU if available"
 msgstr ""
 
+#: files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui:9
+msgid "Directory Properties"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:8
+msgid "Main Menu"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:28
+msgid "Restore System Configuration"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:33
+msgid "Restore the default menu layout"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:45
+#: js/ui/workspace.js:1169
+#: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:341
+#: files/usr/share/cinnamon/applets/window-list@cinnamon.org/applet.js:1031
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:482
+msgid "Close"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:162
+msgid "_New Menu"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:178
+msgid "Ne_w Item"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:208
+msgid "Cut"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:222
+#: js/ui/cinnamonEntry.js:33
+msgid "Copy"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:236
+#: js/ui/cinnamonEntry.js:38
+msgid "Paste"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:250
+#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:72
+#: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:189
+msgid "Delete"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:278
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:534
+msgid "Properties"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cinnamon-menu-editor.ui:292
+msgid "Edit Desktop File"
+msgstr ""
+
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui:176
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:58
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:431
 msgid "Edit"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:7
+msgid "Add/Edit Launcher"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:87
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:505
+msgid "Type:"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:121
+msgid "Title:"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:138
+msgid "Program:"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:155
+msgid "Icon Name"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:172
+msgid "Application"
+msgstr ""
+
+#: files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.ui:173
+msgid "Custom Application"
 msgstr ""
 
 #: js/misc/util.js:260
@@ -357,31 +357,31 @@ msgstr ""
 msgid "Configure..."
 msgstr ""
 
-#: js/ui/appletManager.js:452
+#: js/ui/appletManager.js:453
 msgid ""
 "This applet does not support panels of that type. This can cause visual "
 "glitches in the panel. Would you like to continue using it anyway, remove it"
 " from the panel, or try to move it to a different panel?"
 msgstr ""
 
-#: js/ui/appletManager.js:461
+#: js/ui/appletManager.js:462
 msgid "Leave it"
 msgstr ""
 
-#: js/ui/appletManager.js:468
+#: js/ui/appletManager.js:469
 msgid "Remove it"
 msgstr ""
 
-#: js/ui/appletManager.js:475
+#: js/ui/appletManager.js:476
 msgid "Move to another panel"
 msgstr ""
 
-#: js/ui/appletManager.js:534
+#: js/ui/appletManager.js:535
 msgid ""
 "A suitable panel could not be found. The applet has been removed instead."
 msgstr ""
 
-#: js/ui/appletManager.js:811
+#: js/ui/appletManager.js:812
 msgid ""
 "Certain applets do not allow multiple instances or were at their max number "
 "of instances so were not copied"
@@ -392,7 +392,7 @@ msgid "Select Audio Device"
 msgstr ""
 
 #: js/ui/audioDeviceSelection.js:79
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1519
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1526
 msgid "Sound Settings"
 msgstr ""
 
@@ -407,7 +407,7 @@ msgid "Headset"
 msgstr ""
 
 #: js/ui/audioDeviceSelection.js:90
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1083
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1084
 msgid "Microphone"
 msgstr ""
 
@@ -459,7 +459,7 @@ msgid "Switch User"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:142 js/ui/endSessionDialog.js:149
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2398
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2405
 msgid "Log Out"
 msgstr ""
 
@@ -487,7 +487,7 @@ msgid "Restart"
 msgstr ""
 
 #: js/ui/endSessionDialog.js:185 js/ui/endSessionDialog.js:193
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2411
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2418
 msgid "Shut Down"
 msgstr ""
 
@@ -524,23 +524,23 @@ msgid ""
 "\n"
 msgstr ""
 
-#: js/ui/extension.js:522
+#: js/ui/extension.js:524
 msgid "Initializing"
 msgstr ""
 
-#: js/ui/extension.js:524
+#: js/ui/extension.js:526
 msgid "Loaded"
 msgstr ""
 
-#: js/ui/extension.js:526
+#: js/ui/extension.js:528
 msgid "Error"
 msgstr ""
 
-#: js/ui/extension.js:528
+#: js/ui/extension.js:530
 msgid "Out of date"
 msgstr ""
 
-#: js/ui/extension.js:530
+#: js/ui/extension.js:532
 msgid "Not compatible with Wayland"
 msgstr ""
 
@@ -605,7 +605,7 @@ msgstr ""
 msgid "Restarting Cinnamon..."
 msgstr ""
 
-#: js/ui/messageTray.js:1106
+#: js/ui/messageTray.js:1109
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:85
 msgid "System Information"
 msgstr ""
@@ -1250,10 +1250,10 @@ msgstr ""
 msgid "Expo"
 msgstr ""
 
-#. favorites@cinnamon.org->metadata.json->name
 #. menu@cinnamon.org->settings-schema.json->show-favorites->description
+#. favorites@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/favorites@cinnamon.org/applet.js:46
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2272
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2279
 msgid "Favorites"
 msgstr ""
 
@@ -1287,7 +1287,7 @@ msgid "Recent"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/menus.js:209
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:504
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:511
 #: files/usr/share/cinnamon/applets/panel-launchers@cinnamon.org/applet.js:49
 msgid "Run with dedicated GPU"
 msgstr ""
@@ -1384,25 +1384,25 @@ msgstr ""
 msgid "Manage keyboard layouts"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:407
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:517
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:414
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:524
 msgid "Remove from favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:414
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:520
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:421
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:527
 msgid "Add to favorites"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:508
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:515
 msgid "Add to panel"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:512
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:519
 msgid "Add to desktop"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:532
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:539
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:912
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_actions.py:84
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_applets.py:57
@@ -1411,71 +1411,71 @@ msgstr ""
 msgid "Uninstall"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:775
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:816
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:782
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:823
 msgid "This file is no longer available"
 msgstr ""
 
-#. network@cinnamon.org->settings-schema.json->section1->description
-#. sound@cinnamon.org->settings-schema.json->section1->description
 #. menu@cinnamon.org->metadata.json->name
 #. menu@cinnamon.org->settings-schema.json->behavior-menu->title
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1124
+#. sound@cinnamon.org->settings-schema.json->section1->description
+#. network@cinnamon.org->settings-schema.json->section1->description
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1131
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:57
 msgid "Menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1129
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:1136
 msgid "Edit menu"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2209
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2216
 msgid "Recent Files"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2225
-#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:121
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2232
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:125
 msgid "Clear list"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2226
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2233
 msgid "Clear all recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2242
-#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:126
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2249
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:130
 msgid "No recent documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2290
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2297
 msgid "No favorite documents"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2322
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2329
 msgid "All Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2372
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2379
 #: files/usr/share/cinnamon/applets/user@cinnamon.org/applet.js:80
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:610
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:615
 msgid "Lock Screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2373
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2380
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_power.py:11
 msgid "Lock the screen"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2399
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2406
 msgid "Leave the session"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2412
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2419
 msgid "Shut down the computer"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2490
+#: files/usr/share/cinnamon/applets/menu@cinnamon.org/applet.js:2497
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:38
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_user.py:52
 msgid "Account details"
@@ -2057,7 +2057,7 @@ msgid "Send to front"
 msgstr ""
 
 #. recent@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:35
+#: files/usr/share/cinnamon/applets/recent@cinnamon.org/applet.js:39
 msgid "Recent documents"
 msgstr ""
 
@@ -2070,23 +2070,23 @@ msgstr ""
 msgid "Open file manager"
 msgstr ""
 
-#. scale@cinnamon.org->metadata.json->name
 #. grouped-window-list@cinnamon.org->settings-schema.json->launcher-animation-
 #. effect->options
+#. scale@cinnamon.org->metadata.json->name
 #: files/usr/share/cinnamon/applets/scale@cinnamon.org/applet.js:12
 msgid "Scale"
 msgstr ""
 
-#. cornerbar@cinnamon.org->settings-schema.json->head->description
-#. favorites@cinnamon.org->settings-schema.json->head->description
 #. show-desktop@cinnamon.org->settings-schema.json->head->description
+#. favorites@cinnamon.org->settings-schema.json->head->description
+#. cornerbar@cinnamon.org->settings-schema.json->head->description
 #: files/usr/share/cinnamon/applets/settings@cinnamon.org/applet.js:8
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_backgrounds.py:291
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:47
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:48
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_gestures.py:244
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:73
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:268
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:270
 msgid "Settings"
 msgstr ""
 
@@ -2161,8 +2161,8 @@ msgid "Stopped"
 msgstr ""
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:97
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1374
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1513
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1381
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1520
 msgid "Volume"
 msgstr ""
 
@@ -2170,7 +2170,7 @@ msgstr ""
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:740
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:743
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:746
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1381
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1388
 msgid "Unknown Artist"
 msgstr ""
 
@@ -2181,7 +2181,7 @@ msgstr ""
 
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:572
 #: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:758
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1384
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1391
 msgid "Unknown Title"
 msgstr ""
 
@@ -2240,35 +2240,35 @@ msgstr ""
 msgid "Shuffle"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1064
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1065
 msgid "Mute output"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1065
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1066
 msgid "Mute input"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1075
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1076
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:614
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_sound.py:620
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:910
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:249
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:251
 msgid "Applications"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1076
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1077
 msgid "Output device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1085
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1086
 msgid "Input device"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1502
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1509
 msgid "Launch player"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1507
+#: files/usr/share/cinnamon/applets/sound@cinnamon.org/applet.js:1514
 msgid "Choose player controls"
 msgstr ""
 
@@ -2347,10 +2347,10 @@ msgstr ""
 msgid "Upside-down"
 msgstr ""
 
-#. xrandr@cinnamon.org->metadata.json->name
 #. window-list@cinnamon.org->settings-schema.json->section2->description
-#. calendar@cinnamon.org->settings-schema.json->section1->description
 #. notifications@cinnamon.org->settings-schema.json->section2->description
+#. calendar@cinnamon.org->settings-schema.json->section1->description
+#. xrandr@cinnamon.org->metadata.json->name
 #. power@cinnamon.org->settings-schema.json->labelinfo->description
 #: files/usr/share/cinnamon/applets/xrandr@cinnamon.org/applet.js:26
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_display.py:15
@@ -2770,7 +2770,7 @@ msgstr ""
 #. so object is the same index for
 #. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
 #: files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py:591
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:176
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:179
 #: files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py:79
 #: files/usr/share/cinnamon/cinnamon-settings/bin/ExtensionCore.py:849
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_startup.py:792
@@ -2900,11 +2900,11 @@ msgstr ""
 msgid "Random"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:189
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:192
 msgid "Show"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:197
+#: files/usr/share/cinnamon/cinnamon-menu-editor/cme/MainWindow.py:200
 msgid "Item"
 msgstr ""
 
@@ -4325,18 +4325,18 @@ msgstr ""
 msgid "Motion threshold"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->window-preview-
-#. scale->options
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
 #. size->options
+#. window-list@cinnamon.org->settings-schema.json->window-preview-
+#. scale->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:403
 msgid "Small"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->window-preview-
-#. scale->options
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
 #. size->options
+#. window-list@cinnamon.org->settings-schema.json->window-preview-
+#. scale->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_accessibility.py:403
 msgid "Large"
 msgstr ""
@@ -4506,69 +4506,117 @@ msgstr ""
 msgid "Picture aspect"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:15
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:20
 msgid "Manage date and time settings"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:19
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:24
 msgid "time, date, calendar, format, network, sync"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:20
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:25
 msgid "Date & Time"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:29
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:34
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_screensaver.py:101
 msgid "Date and Time"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:39
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:44
 msgid "Network time"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:45
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:50
 msgid "Manually set date and time"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:53
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:58
 msgid "Format"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:54
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:59
 msgid "Use 24h clock"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:55
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:60
 msgid "Display the date"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:56
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:61
 msgid "Display seconds"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:57
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:62
 msgid "Use locale default"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:57
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:62
 msgid "Sunday"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:57
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:62
 msgid "Monday"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:58
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:63
 msgid "First day of week"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:223
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:228
 msgid "Region"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:226
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:231
 msgid "City"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:250
+msgid "Africa"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:251
+msgid "America"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:252
+msgid "Antarctica"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:253
+msgid "Arctic"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:254
+msgid "Asia"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:255
+msgid "Atlantic Ocean"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:256
+msgid "Australia"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:257
+msgid "Canada"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:258
+msgid "Europe"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:259
+msgid "Indian Ocean"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:260
+msgid "Pacific Ocean"
+msgstr ""
+
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_calendar.py:261
+msgid "USA"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_default.py:42
@@ -4864,7 +4912,7 @@ msgstr ""
 
 #. menu@cinnamon.org->settings-schema.json->show-desktop->description
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_desktop.py:23
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:255
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:257
 msgid "Desktop"
 msgstr ""
 
@@ -5080,10 +5128,10 @@ msgstr ""
 msgid "Slight"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->window-preview-
-#. scale->options
 #. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
 #. size->options
+#. window-list@cinnamon.org->settings-schema.json->window-preview-
+#. scale->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_fonts.py:50
 msgid "Medium"
 msgstr ""
@@ -5578,9 +5626,9 @@ msgstr ""
 msgid "Categories"
 msgstr ""
 
+#. notifications@cinnamon.org->settings-schema.json->section3->description
 #. inhibit@cinnamon.org->settings-schema.json->section1->description
 #. calendar@cinnamon.org->settings-schema.json->section2->description
-#. notifications@cinnamon.org->settings-schema.json->section3->description
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_keyboard.py:247
 msgid "Keyboard shortcuts"
 msgstr ""
@@ -5923,11 +5971,11 @@ msgstr ""
 msgid "Show delay"
 msgstr ""
 
-#. cornerbar@cinnamon.org->settings-schema.json->peek-delay->units
-#. show-desktop@cinnamon.org->settings-schema.json->peek-delay->units
 #. menu@cinnamon.org->settings-schema.json->hover-delay->units
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
 #. timeout->units
+#. show-desktop@cinnamon.org->settings-schema.json->peek-delay->units
+#. cornerbar@cinnamon.org->settings-schema.json->peek-delay->units
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:64
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:67
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:177
@@ -5989,9 +6037,9 @@ msgstr ""
 msgid "panel, height, bottom, top, autohide, size, layout"
 msgstr ""
 
-#. sound@cinnamon.org->settings-schema.json->section2->description
 #. menu@cinnamon.org->settings-schema.json->behavior-panel->title
 #. menu@cinnamon.org->settings-schema.json->appearance-panel->title
+#. sound@cinnamon.org->settings-schema.json->section2->description
 #. grouped-window-list@cinnamon.org->settings-schema.json->panelPage->title
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_panel.py:162
 msgid "Panel"
@@ -6872,59 +6920,59 @@ msgid "themes, style"
 msgstr ""
 
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:101
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:242
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:244
 msgid "Themes"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:246
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:248
 msgid "Mouse Pointer"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:252
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:254
 msgid "Icons"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:259
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:261
 msgid "Simplified settings..."
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:265
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:267
 msgid "Add/Remove"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:270
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:272
 msgid "Miscellaneous options"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:272
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:274
 msgid "Let applications decide"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:273
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:275
 msgid "Prefer dark mode"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:274
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:276
 msgid "Prefer light mode"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:275
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:277
 msgid "Dark mode"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:276
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:278
 msgid "This setting only affects applications which support dark mode"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:279
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:281
 msgid "Show icons in menus"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:282
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:284
 msgid "Show icons on buttons"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:285
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:287
 msgid "Scrollbar behavior"
 msgstr ""
 
@@ -6932,31 +6980,31 @@ msgstr ""
 #. rides in.  This setting determines whether clicking in that trough
 #. somewhere
 #. jumps directly to the new position, or if it only scrolls towards it.
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:290
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:292
 msgid "Jump to position when clicking in a trough"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:293
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:295
 msgid "Use overlay scroll bars"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:298
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:300
 msgid "Override the current theme's scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:302
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:304
 msgid "Scrollbar width"
 msgstr ""
 
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:323
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:325
 msgid ""
 "Changes may not apply to already-running programs, and may not affect all "
 "applications."
 msgstr ""
 
 #. Position style combo on "Custom"
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:524
-#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:578
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:526
+#: files/usr/share/cinnamon/cinnamon-settings/modules/cs_themes.py:580
 msgid "Custom"
 msgstr ""
 
@@ -7143,8 +7191,8 @@ msgstr ""
 msgid "Action on title bar right-click"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->window-hover->options
 #. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
+#. window-list@cinnamon.org->settings-schema.json->window-hover->options
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:68
 msgid "Nothing"
 msgstr ""
@@ -7165,19 +7213,19 @@ msgstr ""
 msgid "Minimum opacity"
 msgstr ""
 
-#. cornerbar@cinnamon.org->settings-schema.json->peek-opacity->units
 #. show-desktop@cinnamon.org->settings-schema.json->peek-opacity->units
+#. cornerbar@cinnamon.org->settings-schema.json->peek-opacity->units
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:73
 msgid "%"
 msgstr ""
 
-#. panel-launchers@cinnamon.org->settings-schema.json->section1->description
-#. window-list@cinnamon.org->settings-schema.json->section1->description
-#. expo@cinnamon.org->settings-schema.json->section1->description
-#. notifications@cinnamon.org->settings-schema.json->section1->description
 #. menu@cinnamon.org->settings-schema.json->behavior->title
 #. grouped-window-list@cinnamon.org->settings-
 #. schema.json->generalSection->title
+#. window-list@cinnamon.org->settings-schema.json->section1->description
+#. expo@cinnamon.org->settings-schema.json->section1->description
+#. panel-launchers@cinnamon.org->settings-schema.json->section1->description
+#. notifications@cinnamon.org->settings-schema.json->section1->description
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:82
 msgid "Behavior"
 msgstr ""
@@ -7331,8 +7379,6 @@ msgstr ""
 msgid "Delay before displaying the alt-tab switcher"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->show-all-
-#. workspaces->description
 #. grouped-window-list@cinnamon.org->settings-schema.json->show-all-
 #. workspaces->description
 #: files/usr/share/cinnamon/cinnamon-settings/modules/cs_windows.py:180
@@ -7486,33 +7532,751 @@ msgstr ""
 msgid "Unable to locate %s %s"
 msgstr ""
 
-#. panel-launchers@cinnamon.org->metadata.json->description
-msgid "Launch applications from the panel"
+#. nightlight@cinnamon.org->metadata.json->description
+msgid "Activate/deactivate Night Light mode."
 msgstr ""
 
-#. panel-launchers@cinnamon.org->settings-schema.json->allow-
+#. menu@cinnamon.org->metadata.json->description
+msgid "Main Cinnamon menu"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->content->title
+#. menu@cinnamon.org->settings-schema.json->content-content->title
+msgid "Content"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->content-places->title
+msgid "Places"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->overlay-key->description
+msgid "Keyboard shortcut to open and close the menu"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-custom->description
+msgid "Use a custom icon and label"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon->description
+#. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
+msgid "Icon"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-icon-size->description
+msgid "Icon size"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-label->description
+msgid "Text"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->symbolic-category-
+#. icons->description
+msgid "Use symbolic icons for categories"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->category-icon-size->description
+msgid "Categories icon size"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->application-icon-size->description
+msgid "Applications icon size"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-sidebar->description
+msgid "Sidebar"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-avatar->description
+msgid "Avatar"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-documents->description
+msgid "Documents"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-downloads->description
+msgid "Downloads"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-pictures->description
+msgid "Pictures"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-videos->description
+msgid "Videos"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-bookmarks->description
+msgid "Other bookmarks"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->system-position->description
+msgid "Position of the system buttons"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->system-position->options
+msgid "In the sidebar"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->system-position->options
+msgid "Alongside the search bar"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-position->description
+msgid "Position of the search bar"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-position->options
+msgid "At the top"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->search-position->options
+msgid "At the bottom"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->sidebar-icon-size->description
+msgid "Sidebar icon size"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->sidebar-max-width->description
+msgid "Maximum sidebar width (px)"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-recents->description
+msgid "Recents"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->show-description->description
+msgid "Show application descriptions"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->category-hover->description
+msgid "Change categories on hover"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
+msgid "Enable autoscrolling in application list"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->force-show-panel->description
+msgid "Force the panel to be visible when opening the menu"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->force-show-panel->tooltip
+msgid ""
+"Opening the menu will also show the main panel (which may be auto-hidden)."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Open the menu when I move my mouse over it"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->activate-on-hover->tooltip
+msgid "Enable opening the menu when the mouse enters the applet"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->hover-delay->description
+msgid "Menu hover delay"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->hover-delay->tooltip
+msgid "Delay before the menu opens when hovered"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-animation->description
+msgid "Use menu animations"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->enable-animation->tooltip
+msgid "Allow the menu to animate on open and close"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-editor-button->description
+msgid "Open the menu editor"
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
+msgid "Press this button to customize your menu entries."
+msgstr ""
+
+#. menu@cinnamon.org->settings-schema.json->reset-menu-size-
+#. button->description
+msgid "Restore the menu to its original size"
+msgstr ""
+
+#. xapp-status@cinnamon.org->metadata.json->name
+msgid "XApp Status Applet"
+msgstr ""
+
+#. xapp-status@cinnamon.org->metadata.json->description
+msgid ""
+"An applet which hosts all the system tray icons for applications which use "
+"XAppStatusIcons"
+msgstr ""
+
+#. sound@cinnamon.org->metadata.json->description
+msgid "A Cinnamon applet to control sound and music"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->playerControl->description
+msgid "Control Players"
+msgstr ""
+
+#. sound@cinnamon.org->settings-
+#. schema.json->extendedPlayerControl->description
+msgid "Show Loop and Shuffle controls"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->keyOpen->description
+#. network@cinnamon.org->settings-schema.json->keyOpen->description
+msgid "Show menu"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->keyOpen->tooltip
+msgid "Set keybinding(s) to show the sound applet menu."
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->alwaysShowMuteInput->description
+msgid "Always show input switch"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->alwaysShowMuteInput->tooltip
+msgid "Always show the 'Mute input' switch in the context menu."
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->showtrack->description
+msgid "Show song information on the panel"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->truncatetext->units
+msgid "characters"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->truncatetext->description
+msgid "Limit song information to"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
+#. sound@cinnamon.org->settings-schema.json->middleShiftClickAction->options
+msgid "Toggle Mute"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
+#. sound@cinnamon.org->settings-schema.json->middleShiftClickAction->options
+msgid "Toggle Mute output"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
+#. sound@cinnamon.org->settings-schema.json->middleShiftClickAction->options
+msgid "Toggle Mute input"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->middleClickAction->description
+msgid "Action on middle click"
+msgstr ""
+
+#. sound@cinnamon.org->settings-
+#. schema.json->middleShiftClickAction->description
+msgid "Action on shift+middle click"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->horizontalScroll->description
+msgid "Use horizontal scrolling to move between tracks"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->showalbum->description
+msgid "Show album art as icon"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->hideSystray->description
+msgid "Hide system tray icons for compatible players"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->section3->description
+msgid "Tooltip"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->tooltipShowVolume->description
+msgid "Show volume in tooltip"
+msgstr ""
+
+#. sound@cinnamon.org->settings-schema.json->tooltipShowPlayer->description
+msgid "Show player in tooltip"
+msgstr ""
+
+#. sound@cinnamon.org->settings-
+#. schema.json->tooltipShowArtistTitle->description
+msgid "Show song artist and title in tooltip"
+msgstr ""
+
+#. systray@cinnamon.org->metadata.json->name
+msgid "System Tray"
+msgstr ""
+
+#. systray@cinnamon.org->metadata.json->description
+msgid "An applet which hosts all the system tray icons"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->metadata.json->description
+msgid "Main Cinnamon window list with app grouping"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->thumbnailsPage->title
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->thumbnailsSection->title
+msgid "Thumbnails"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->contextMenuPage->title
+msgid "Context Menu"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->hotKeysSection->title
+msgid "Hot Keys"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->appButtonsSection->title
+msgid "Application Buttons"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->hoverPeekSection->title
+msgid "Hover Peek"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->group-
+#. apps->description
+msgid "Group windows by application"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
+#. behavior->description
+msgid "Mouse wheel scroll action"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
+#. behavior->options
+msgid "Cycle apps"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
+#. behavior->options
+#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
+#. action->options
+msgid "Cycle windows"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
+#. action->description
+msgid "Left click action"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
+#. action->options
+msgid "Toggle activation of last focused window"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
+#. action->description
+#. cornerbar@cinnamon.org->settings-schema.json->middle-click-
+#. action->description
+msgid "Middle click action"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
+#. action->options
+msgid "Launch new app instance"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
+#. action->options
+msgid "Close last focused window in group"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->window-display-
+#. settings->description
+msgid "Show windows from other monitors"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->window-display-
+#. settings->options
+msgid "Only from monitors without a window list"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->window-display-
+#. settings->options
+msgid "From all monitors"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-
+#. schema.json->cycleMenusHotkey->description
+msgid "Global hotkey for cycling through thumbnail menus"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
+#. hotkey->description
+msgid "Global hotkey to show the order of apps"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
+#. timeout->description
+msgid "Duration of the apps order display on hotkey press"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->super-num-
+#. hotkeys->description
+msgid "Enable Super+<number> shortcut to switch/open apps"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->title-
+#. display->description
+msgid "Button label"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->title-
+#. display->options
+msgid "Application name"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->title-
+#. display->options
+msgid "Window title"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->title-
+#. display->options
+msgid "Window title (only for the focused window)"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->launcher-animation-
+#. effect->description
+msgid "Launcher animation"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->enable-window-
+#. count-badges->description
+msgid "Show window count badges"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->enable-window-
+#. count-badges->tooltip
+msgid "Indicate on the panel the number of open windows an application has"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->enable-
+#. notification-badges->description
+#. window-list@cinnamon.org->settings-schema.json->enable-
+#. notifications->description
+msgid "Show notification badges"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->enable-
+#. notification-badges->tooltip
+msgid "Indicate on the panel when an application has notifications"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->enable-app-button-
 #. dragging->description
-msgid "Allow dragging of launchers"
+msgid "Enable app button dragging"
 msgstr ""
 
-#. a11y@cinnamon.org->metadata.json->description
-msgid "Accessibility applet"
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-scroll-
+#. behavior->description
+msgid "Cycle windows on mouse wheel scroll"
 msgstr ""
 
-#. scale@cinnamon.org->metadata.json->description
-msgid "Click or hover to activate Scale view"
+#. grouped-window-list@cinnamon.org->settings-schema.json->show-
+#. thumbnails->description
+msgid "Show thumbnails"
 msgstr ""
 
-#. scale@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Activate scale on hover"
+#. grouped-window-list@cinnamon.org->settings-schema.json->animate-
+#. thumbnails->description
+msgid "Animate thumbnails"
 msgstr ""
 
-#. keyboard@cinnamon.org->metadata.json->description
-msgid "Keyboard layout"
+#. grouped-window-list@cinnamon.org->settings-schema.json->vertical-
+#. thumbnails->description
+msgid "Enable vertical thumbnails"
 msgstr ""
 
-#. xrandr@cinnamon.org->metadata.json->description
-msgid "XRandR monitor control applet"
+#. grouped-window-list@cinnamon.org->settings-schema.json->sort-
+#. thumbnails->description
+msgid "Sort thumbnails according to the last focused windows"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->highlight-last-
+#. focused-thumbnail->description
+msgid "Highlight the thumbnail of the last focused window"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->onclick-
+#. thumbnails->description
+msgid "Click to show thumbnails"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. timeout->description
+msgid "Delay before showing thumbnails"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. timeout->options
+msgid "50 ms"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. timeout->options
+msgid "250 ms"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. timeout->options
+msgid "500 ms"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. size->description
+#. window-list@cinnamon.org->settings-schema.json->window-preview-
+#. scale->description
+msgid "Thumbnail size"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
+#. size->options
+#. window-list@cinnamon.org->settings-schema.json->window-preview-
+#. scale->options
+msgid "Largest"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->enable-hover-
+#. peek->description
+msgid "Show the window when hovering its thumbnail"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. in->description
+msgid "Window fade-in time"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. in->options
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. out->options
+msgid "150 ms"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. in->options
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. out->options
+msgid "300 ms"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. in->options
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. out->options
+msgid "450 ms"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
+#. out->description
+msgid "Window fade-out time"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
+#. opacity->units
+msgid "percent"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
+#. opacity->description
+#. show-desktop@cinnamon.org->settings-schema.json->peek-opacity->description
+#. cornerbar@cinnamon.org->settings-schema.json->peek-opacity->description
+msgid "Window opacity"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->show-
+#. recent->description
+msgid "Show recent items"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->autostart-menu-
+#. item->description
+msgid "Show autostart option"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->monitor-move-all-
+#. windows->description
+msgid "Apply the monitor move option to all windows"
+msgstr ""
+
+#. grouped-window-list@cinnamon.org->settings-schema.json->monitor-move-all-
+#. windows->tooltip
+msgid ""
+"When clicking \"Move to monitor\" in the context menu, this option will move"
+" all of an app's windows instead of just the last focused window from the "
+"app."
+msgstr ""
+
+#. network@cinnamon.org->metadata.json->description
+msgid "Network manager applet"
+msgstr ""
+
+#. network@cinnamon.org->settings-schema.json->keyOpen->tooltip
+msgid "Set keybinding(s) to show the network applet menu."
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->metadata.json->name
+msgid "Workspace switcher"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->metadata.json->description
+msgid "Select the workspace from the panel"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->display-
+#. type->description
+msgid "Type of display"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->display-
+#. type->tooltip
+msgid ""
+"Note that the visual representation will only work if your panel is large "
+"enough to display it properly, otherwise the simple style will be used."
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->display-
+#. type->options
+msgid "A visual representation of the workspaces"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->display-
+#. type->options
+msgid "Simple buttons"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
+#. behavior->description
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->description
+msgid "Scroll wheel behavior"
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
+#. behavior->tooltip
+msgid "Reverse or disable the direction of the scroll in the workspace list."
+msgstr ""
+
+#. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
+#. behavior->options
+msgid "Reversed"
+msgstr ""
+
+#. show-desktop@cinnamon.org->metadata.json->description
+msgid "Minimize all windows"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-at-
+#. desktop->description
+#. cornerbar@cinnamon.org->settings-schema.json->peek-at-desktop->description
+msgid "Peek at the desktop on hover"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-at-desktop->tooltip
+#. cornerbar@cinnamon.org->settings-schema.json->peek-at-desktop->tooltip
+msgid "Peek at the desktop when hovering the applet"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-blur->description
+#. cornerbar@cinnamon.org->settings-schema.json->peek-blur->description
+msgid "Blur effect"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-blur->tooltip
+#. cornerbar@cinnamon.org->settings-schema.json->peek-blur->tooltip
+msgid "Blur windows when peeking at the desktop"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-delay->description
+#. cornerbar@cinnamon.org->settings-schema.json->peek-delay->description
+msgid "Hover delay"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-delay->tooltip
+#. cornerbar@cinnamon.org->settings-schema.json->peek-delay->tooltip
+msgid "Delay before Peek shows desktop"
+msgstr ""
+
+#. show-desktop@cinnamon.org->settings-schema.json->peek-opacity->tooltip
+#. cornerbar@cinnamon.org->settings-schema.json->peek-opacity->tooltip
+msgid "Change the opacity of windows when peeking at the desktop"
+msgstr ""
+
+#. favorites@cinnamon.org->metadata.json->description
+msgid "Access your favorite files"
+msgstr ""
+
+#. favorites@cinnamon.org->settings-schema.json->show-full-uri->description
+msgid "Display full paths in the list"
+msgstr ""
+
+#. trash@cinnamon.org->metadata.json->description
+msgid "Control the trash from the panel"
+msgstr ""
+
+#. settings@cinnamon.org->metadata.json->name
+msgid "Settings Applet"
+msgstr ""
+
+#. settings@cinnamon.org->metadata.json->description
+msgid "Cinnamon Settings"
+msgstr ""
+
+#. removable-drives@cinnamon.org->metadata.json->description
+msgid "Access removable drives"
+msgstr ""
+
+#. recent@cinnamon.org->metadata.json->description
+msgid "Access the documents you recently opened"
+msgstr ""
+
+#. cornerbar@cinnamon.org->metadata.json->name
+msgid "Corner bar"
+msgstr ""
+
+#. cornerbar@cinnamon.org->metadata.json->description
+msgid ""
+"A bar designed to be placed in the corner, used to show the desktop, "
+"desklets, the workspace selector or the window selector."
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->click-action->description
+msgid "Click action"
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->shift-click-
+#. action->description
+msgid "Shift + click action"
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->shift-middle-click-
+#. action->description
+msgid "Shift + middle click action"
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
+msgid "Switch workspaces"
+msgstr ""
+
+#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
+msgid "Switch workspaces (reversed)"
 msgstr ""
 
 #. window-list@cinnamon.org->metadata.json->name
@@ -7581,159 +8345,52 @@ msgstr ""
 msgid "Show title above thumbnail"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->window-preview-
-#. scale->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. size->description
-msgid "Thumbnail size"
+#. spacer@cinnamon.org->metadata.json->name
+msgid "Spacer"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->window-preview-
-#. scale->options
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. size->options
-msgid "Largest"
+#. spacer@cinnamon.org->metadata.json->description
+msgid "Add some space between your other applets"
 msgstr ""
 
-#. window-list@cinnamon.org->settings-schema.json->enable-
-#. notifications->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-
-#. notification-badges->description
-msgid "Show notification badges"
+#. spacer@cinnamon.org->settings-schema.json->width->description
+msgid "Amount of space in pixels"
 msgstr ""
 
-#. user@cinnamon.org->metadata.json->description
-msgid ""
-"An applet to access your account details, switch users and quickly logout or"
-" power off the computer"
+#. spacer@cinnamon.org->settings-schema.json->width->tooltip
+msgid "Adjust this to increase or decrease the width of this spacer"
 msgstr ""
 
-#. user@cinnamon.org->metadata.json->name
-msgid "User Applet"
+#. scale@cinnamon.org->metadata.json->description
+msgid "Click or hover to activate Scale view"
 msgstr ""
 
-#. user@cinnamon.org->settings-schema.json->display-name->description
-msgid "Display user name on panel"
+#. scale@cinnamon.org->settings-schema.json->activate-on-hover->description
+msgid "Activate scale on hover"
 msgstr ""
 
-#. user@cinnamon.org->settings-schema.json->display-image->description
-msgid "Display the user image on the panel"
+#. printers@cinnamon.org->metadata.json->description
+msgid "Manage print jobs"
 msgstr ""
 
-#. cornerbar@cinnamon.org->metadata.json->name
-msgid "Corner bar"
+#. printers@cinnamon.org->settings-schema.json->show-icon->description
+msgid "Show printer icon"
 msgstr ""
 
-#. cornerbar@cinnamon.org->metadata.json->description
-msgid ""
-"A bar designed to be placed in the corner, used to show the desktop, "
-"desklets, the workspace selector or the window selector."
+#. printers@cinnamon.org->settings-schema.json->show-icon->options
+msgid "Always"
 msgstr ""
 
-#. cornerbar@cinnamon.org->settings-schema.json->click-action->description
-msgid "Click action"
+#. printers@cinnamon.org->settings-schema.json->show-icon->options
+msgid "When printers exist"
 msgstr ""
 
-#. cornerbar@cinnamon.org->settings-schema.json->middle-click-
-#. action->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
-#. action->description
-msgid "Middle click action"
+#. printers@cinnamon.org->settings-schema.json->show-icon->options
+msgid "When printing"
 msgstr ""
 
-#. cornerbar@cinnamon.org->settings-schema.json->shift-click-
-#. action->description
-msgid "Shift + click action"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->shift-middle-click-
-#. action->description
-msgid "Shift + middle click action"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->description
-#. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
-#. behavior->description
-msgid "Scroll wheel behavior"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
-msgid "Switch workspaces"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->scroll-behavior->options
-msgid "Switch workspaces (reversed)"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-at-desktop->description
-#. show-desktop@cinnamon.org->settings-schema.json->peek-at-
-#. desktop->description
-msgid "Peek at the desktop on hover"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-at-desktop->tooltip
-#. show-desktop@cinnamon.org->settings-schema.json->peek-at-desktop->tooltip
-msgid "Peek at the desktop when hovering the applet"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-blur->description
-#. show-desktop@cinnamon.org->settings-schema.json->peek-blur->description
-msgid "Blur effect"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-blur->tooltip
-#. show-desktop@cinnamon.org->settings-schema.json->peek-blur->tooltip
-msgid "Blur windows when peeking at the desktop"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-delay->description
-#. show-desktop@cinnamon.org->settings-schema.json->peek-delay->description
-msgid "Hover delay"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-delay->tooltip
-#. show-desktop@cinnamon.org->settings-schema.json->peek-delay->tooltip
-msgid "Delay before Peek shows desktop"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-opacity->description
-#. show-desktop@cinnamon.org->settings-schema.json->peek-opacity->description
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
-#. opacity->description
-msgid "Window opacity"
-msgstr ""
-
-#. cornerbar@cinnamon.org->settings-schema.json->peek-opacity->tooltip
-#. show-desktop@cinnamon.org->settings-schema.json->peek-opacity->tooltip
-msgid "Change the opacity of windows when peeking at the desktop"
-msgstr ""
-
-#. trash@cinnamon.org->metadata.json->description
-msgid "Control the trash from the panel"
-msgstr ""
-
-#. settings@cinnamon.org->metadata.json->name
-msgid "Settings Applet"
-msgstr ""
-
-#. settings@cinnamon.org->metadata.json->description
-msgid "Cinnamon Settings"
-msgstr ""
-
-#. favorites@cinnamon.org->metadata.json->description
-msgid "Access your favorite files"
-msgstr ""
-
-#. favorites@cinnamon.org->settings-schema.json->show-full-uri->description
-msgid "Display full paths in the list"
-msgstr ""
-
-#. systray@cinnamon.org->metadata.json->name
-msgid "System Tray"
-msgstr ""
-
-#. systray@cinnamon.org->metadata.json->description
-msgid "An applet which hosts all the system tray icons"
+#. printers@cinnamon.org->settings-schema.json->show-icon->tooltip
+msgid "Choose when to show the printer icon in the panel"
 msgstr ""
 
 #. settings-example@cinnamon.org->metadata.json->name
@@ -7974,11 +8631,6 @@ msgid "Id number"
 msgstr ""
 
 #. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
-#. menu@cinnamon.org->settings-schema.json->menu-icon->description
-msgid "Icon"
-msgstr ""
-
-#. settings-example@cinnamon.org->settings-schema.json->tree->columns->title
 msgid "Shortcut key"
 msgstr ""
 
@@ -8061,43 +8713,91 @@ msgstr ""
 msgid "Activate expo on hover"
 msgstr ""
 
-#. windows-quick-list@cinnamon.org->metadata.json->name
-msgid "Windows Quick List"
+#. slideshow@cinnamon.org->metadata.json->name
+msgid "Slideshow Controls"
 msgstr ""
 
-#. windows-quick-list@cinnamon.org->metadata.json->description
-msgid "Quickly access windows from all workspaces"
+#. slideshow@cinnamon.org->metadata.json->description
+msgid "Basic controls for the Cinnamon slideshow"
 msgstr ""
 
-#. on-screen-keyboard@cinnamon.org->metadata.json->name
-msgid "On-Screen keyboard"
-msgstr ""
-
-#. on-screen-keyboard@cinnamon.org->metadata.json->description
-msgid "A Cinnamon applet to launch the on-screen keyboard"
-msgstr ""
-
-#. xapp-status@cinnamon.org->metadata.json->name
-msgid "XApp Status Applet"
-msgstr ""
-
-#. xapp-status@cinnamon.org->metadata.json->description
+#. user@cinnamon.org->metadata.json->description
 msgid ""
-"An applet which hosts all the system tray icons for applications which use "
-"XAppStatusIcons"
+"An applet to access your account details, switch users and quickly logout or"
+" power off the computer"
 msgstr ""
 
-#. network@cinnamon.org->metadata.json->description
-msgid "Network manager applet"
+#. user@cinnamon.org->metadata.json->name
+msgid "User Applet"
 msgstr ""
 
-#. network@cinnamon.org->settings-schema.json->keyOpen->description
-#. sound@cinnamon.org->settings-schema.json->keyOpen->description
-msgid "Show menu"
+#. user@cinnamon.org->settings-schema.json->display-name->description
+msgid "Display user name on panel"
 msgstr ""
 
-#. network@cinnamon.org->settings-schema.json->keyOpen->tooltip
-msgid "Set keybinding(s) to show the network applet menu."
+#. user@cinnamon.org->settings-schema.json->display-image->description
+msgid "Display the user image on the panel"
+msgstr ""
+
+#. panel-launchers@cinnamon.org->metadata.json->description
+msgid "Launch applications from the panel"
+msgstr ""
+
+#. panel-launchers@cinnamon.org->settings-schema.json->allow-
+#. dragging->description
+msgid "Allow dragging of launchers"
+msgstr ""
+
+#. notifications@cinnamon.org->metadata.json->description
+msgid "Click to display and manage system notifications"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->ignoreTransientNotifications->description
+msgid "Ignore transient notifications"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->ignoreTransientNotifications->tooltip
+msgid "Check this to ignore transient notifications."
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->showEmptyTray->description
+msgid "Show empty tray"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-schema.json->showEmptyTray->tooltip
+msgid "Check this to show the tray even when there are no new notifications."
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->showNotificationCount->description
+msgid "Show the number of notifications"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->showNewestFirst->description
+msgid "Show newest notifications first"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-schema.json->keyOpen->description
+msgid "Show notifications"
+msgstr ""
+
+#. notifications@cinnamon.org->settings-schema.json->keyOpen->tooltip
+msgid "Set keybinding(s) to show the notification popup menu."
+msgstr ""
+
+#. notifications@cinnamon.org->settings-schema.json->keyClear->tooltip
+msgid "Set keybinding(s) to clear all notifications."
+msgstr ""
+
+#. notifications@cinnamon.org->settings-
+#. schema.json->btnSystemSettings->description
+#. inhibit@cinnamon.org->settings-
+#. schema.json->btnSystemNotificationSettings->description
+msgid "Open notification settings"
 msgstr ""
 
 #. inhibit@cinnamon.org->metadata.json->name
@@ -8131,11 +8831,12 @@ msgstr ""
 msgid "Open power settings"
 msgstr ""
 
-#. inhibit@cinnamon.org->settings-
-#. schema.json->btnSystemNotificationSettings->description
-#. notifications@cinnamon.org->settings-
-#. schema.json->btnSystemSettings->description
-msgid "Open notification settings"
+#. on-screen-keyboard@cinnamon.org->metadata.json->name
+msgid "On-Screen keyboard"
+msgstr ""
+
+#. on-screen-keyboard@cinnamon.org->metadata.json->description
+msgid "A Cinnamon applet to launch the on-screen keyboard"
 msgstr ""
 
 #. calendar@cinnamon.org->metadata.json->name
@@ -8203,163 +8904,24 @@ msgstr ""
 msgid "Set keybinding(s) to show the calendar."
 msgstr ""
 
-#. sound@cinnamon.org->metadata.json->description
-msgid "A Cinnamon applet to control sound and music"
+#. xrandr@cinnamon.org->metadata.json->description
+msgid "XRandR monitor control applet"
 msgstr ""
 
-#. sound@cinnamon.org->settings-schema.json->playerControl->description
-msgid "Control Players"
+#. keyboard@cinnamon.org->metadata.json->description
+msgid "Keyboard layout"
 msgstr ""
 
-#. sound@cinnamon.org->settings-
-#. schema.json->extendedPlayerControl->description
-msgid "Show Loop and Shuffle controls"
+#. a11y@cinnamon.org->metadata.json->description
+msgid "Accessibility applet"
 msgstr ""
 
-#. sound@cinnamon.org->settings-schema.json->keyOpen->tooltip
-msgid "Set keybinding(s) to show the sound applet menu."
+#. windows-quick-list@cinnamon.org->metadata.json->name
+msgid "Windows Quick List"
 msgstr ""
 
-#. sound@cinnamon.org->settings-schema.json->alwaysShowMuteInput->description
-msgid "Always show input switch"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->alwaysShowMuteInput->tooltip
-msgid "Always show the 'Mute input' switch in the context menu."
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->showtrack->description
-msgid "Show song information on the panel"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->truncatetext->units
-msgid "characters"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->truncatetext->description
-msgid "Limit song information to"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
-#. sound@cinnamon.org->settings-schema.json->middleShiftClickAction->options
-msgid "Toggle Mute"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
-#. sound@cinnamon.org->settings-schema.json->middleShiftClickAction->options
-msgid "Toggle Mute output"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->options
-#. sound@cinnamon.org->settings-schema.json->middleShiftClickAction->options
-msgid "Toggle Mute input"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->middleClickAction->description
-msgid "Action on middle click"
-msgstr ""
-
-#. sound@cinnamon.org->settings-
-#. schema.json->middleShiftClickAction->description
-msgid "Action on shift+middle click"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->horizontalScroll->description
-msgid "Use horizontal scrolling to move between tracks"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->showalbum->description
-msgid "Show album art as icon"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->hideSystray->description
-msgid "Hide system tray icons for compatible players"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->section3->description
-msgid "Tooltip"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->tooltipShowVolume->description
-msgid "Show volume in tooltip"
-msgstr ""
-
-#. sound@cinnamon.org->settings-schema.json->tooltipShowPlayer->description
-msgid "Show player in tooltip"
-msgstr ""
-
-#. sound@cinnamon.org->settings-
-#. schema.json->tooltipShowArtistTitle->description
-msgid "Show song artist and title in tooltip"
-msgstr ""
-
-#. printers@cinnamon.org->metadata.json->description
-msgid "Manage print jobs"
-msgstr ""
-
-#. printers@cinnamon.org->settings-schema.json->show-icon->description
-msgid "Show printer icon"
-msgstr ""
-
-#. printers@cinnamon.org->settings-schema.json->show-icon->options
-msgid "Always"
-msgstr ""
-
-#. printers@cinnamon.org->settings-schema.json->show-icon->options
-msgid "When printers exist"
-msgstr ""
-
-#. printers@cinnamon.org->settings-schema.json->show-icon->options
-msgid "When printing"
-msgstr ""
-
-#. printers@cinnamon.org->settings-schema.json->show-icon->tooltip
-msgid "Choose when to show the printer icon in the panel"
-msgstr ""
-
-#. notifications@cinnamon.org->metadata.json->description
-msgid "Click to display and manage system notifications"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->ignoreTransientNotifications->description
-msgid "Ignore transient notifications"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->ignoreTransientNotifications->tooltip
-msgid "Check this to ignore transient notifications."
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->showEmptyTray->description
-msgid "Show empty tray"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-schema.json->showEmptyTray->tooltip
-msgid "Check this to show the tray even when there are no new notifications."
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->showNotificationCount->description
-msgid "Show the number of notifications"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-
-#. schema.json->showNewestFirst->description
-msgid "Show newest notifications first"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-schema.json->keyOpen->description
-msgid "Show notifications"
-msgstr ""
-
-#. notifications@cinnamon.org->settings-schema.json->keyOpen->tooltip
-msgid "Set keybinding(s) to show the notification popup menu."
-msgstr ""
-
-#. notifications@cinnamon.org->settings-schema.json->keyClear->tooltip
-msgid "Set keybinding(s) to clear all notifications."
+#. windows-quick-list@cinnamon.org->metadata.json->description
+msgid "Quickly access windows from all workspaces"
 msgstr ""
 
 #. separator@cinnamon.org->metadata.json->name
@@ -8368,14 +8930,6 @@ msgstr ""
 
 #. separator@cinnamon.org->metadata.json->description
 msgid "A separator icon which can be added multiple times"
-msgstr ""
-
-#. show-desktop@cinnamon.org->metadata.json->description
-msgid "Minimize all windows"
-msgstr ""
-
-#. recent@cinnamon.org->metadata.json->description
-msgid "Access the documents you recently opened"
 msgstr ""
 
 #. power@cinnamon.org->metadata.json->name
@@ -8412,543 +8966,6 @@ msgid ""
 "whether one of them is marked primary."
 msgstr ""
 
-#. workspace-switcher@cinnamon.org->metadata.json->name
-msgid "Workspace switcher"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->metadata.json->description
-msgid "Select the workspace from the panel"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->settings-schema.json->display-
-#. type->description
-msgid "Type of display"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->settings-schema.json->display-
-#. type->tooltip
-msgid ""
-"Note that the visual representation will only work if your panel is large "
-"enough to display it properly, otherwise the simple style will be used."
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->settings-schema.json->display-
-#. type->options
-msgid "A visual representation of the workspaces"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->settings-schema.json->display-
-#. type->options
-msgid "Simple buttons"
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
-#. behavior->tooltip
-msgid "Reverse or disable the direction of the scroll in the workspace list."
-msgstr ""
-
-#. workspace-switcher@cinnamon.org->settings-schema.json->scroll-
-#. behavior->options
-msgid "Reversed"
-msgstr ""
-
-#. menu@cinnamon.org->metadata.json->description
-msgid "Main Cinnamon menu"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->content->title
-#. menu@cinnamon.org->settings-schema.json->content-content->title
-msgid "Content"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->content-places->title
-msgid "Places"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->overlay-key->description
-msgid "Keyboard shortcut to open and close the menu"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-custom->description
-msgid "Use a custom icon and label"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-icon-size->description
-msgid "Icon size"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-label->description
-msgid "Text"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->symbolic-category-
-#. icons->description
-msgid "Use symbolic icons for categories"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->category-icon-size->description
-msgid "Categories icon size"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->application-icon-size->description
-msgid "Applications icon size"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-sidebar->description
-msgid "Sidebar"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-avatar->description
-msgid "Avatar"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-documents->description
-msgid "Documents"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-downloads->description
-msgid "Downloads"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-pictures->description
-msgid "Pictures"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-videos->description
-msgid "Videos"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-bookmarks->description
-msgid "Other bookmarks"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->system-position->description
-msgid "Position of the system buttons"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->system-position->options
-msgid "In the sidebar"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->system-position->options
-msgid "Alongside the search bar"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-position->description
-msgid "Position of the search bar"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-position->options
-msgid "At the top"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->search-position->options
-msgid "At the bottom"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->sidebar-icon-size->description
-msgid "Sidebar icon size"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->sidebar-max-width->description
-msgid "Maximum sidebar width (px)"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-recents->description
-msgid "Recents"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->show-description->description
-msgid "Show application descriptions"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->category-hover->description
-msgid "Change categories on hover"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-autoscroll->description
-msgid "Enable autoscrolling in application list"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->force-show-panel->description
-msgid "Force the panel to be visible when opening the menu"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->force-show-panel->tooltip
-msgid ""
-"Opening the menu will also show the main panel (which may be auto-hidden)."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->activate-on-hover->description
-msgid "Open the menu when I move my mouse over it"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->activate-on-hover->tooltip
-msgid "Enable opening the menu when the mouse enters the applet"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->hover-delay->description
-msgid "Menu hover delay"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->hover-delay->tooltip
-msgid "Delay before the menu opens when hovered"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-animation->description
-msgid "Use menu animations"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->enable-animation->tooltip
-msgid "Allow the menu to animate on open and close"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-editor-button->description
-msgid "Open the menu editor"
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->menu-editor-button->tooltip
-msgid "Press this button to customize your menu entries."
-msgstr ""
-
-#. menu@cinnamon.org->settings-schema.json->reset-menu-size-
-#. button->description
-msgid "Restore the menu to its original size"
-msgstr ""
-
-#. spacer@cinnamon.org->metadata.json->name
-msgid "Spacer"
-msgstr ""
-
-#. spacer@cinnamon.org->metadata.json->description
-msgid "Add some space between your other applets"
-msgstr ""
-
-#. spacer@cinnamon.org->settings-schema.json->width->description
-msgid "Amount of space in pixels"
-msgstr ""
-
-#. spacer@cinnamon.org->settings-schema.json->width->tooltip
-msgid "Adjust this to increase or decrease the width of this spacer"
-msgstr ""
-
-#. slideshow@cinnamon.org->metadata.json->name
-msgid "Slideshow Controls"
-msgstr ""
-
-#. slideshow@cinnamon.org->metadata.json->description
-msgid "Basic controls for the Cinnamon slideshow"
-msgstr ""
-
-#. removable-drives@cinnamon.org->metadata.json->description
-msgid "Access removable drives"
-msgstr ""
-
-#. nightlight@cinnamon.org->metadata.json->description
-msgid "Activate/deactivate Night Light mode."
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->metadata.json->description
-msgid "Main Cinnamon window list with app grouping"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->thumbnailsPage->title
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->thumbnailsSection->title
-msgid "Thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->contextMenuPage->title
-msgid "Context Menu"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->hotKeysSection->title
-msgid "Hot Keys"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->appButtonsSection->title
-msgid "Application Buttons"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->hoverPeekSection->title
-msgid "Hover Peek"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->group-
-#. apps->description
-msgid "Group windows by application"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
-#. behavior->description
-msgid "Mouse wheel scroll action"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
-#. behavior->options
-msgid "Cycle apps"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->scroll-
-#. behavior->options
-#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
-#. action->options
-msgid "Cycle windows"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
-#. action->description
-msgid "Left click action"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->left-click-
-#. action->options
-msgid "Toggle activation of last focused window"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
-#. action->options
-msgid "Launch new app instance"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->middle-click-
-#. action->options
-msgid "Close last focused window in group"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->window-display-
-#. settings->description
-msgid "Show windows from other monitors"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->window-display-
-#. settings->options
-msgid "Only from monitors without a window list"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->window-display-
-#. settings->options
-msgid "From all monitors"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-
-#. schema.json->cycleMenusHotkey->description
-msgid "Global hotkey for cycling through thumbnail menus"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
-#. hotkey->description
-msgid "Global hotkey to show the order of apps"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-apps-order-
-#. timeout->description
-msgid "Duration of the apps order display on hotkey press"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->super-num-
-#. hotkeys->description
-msgid "Enable Super+<number> shortcut to switch/open apps"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->title-
-#. display->description
-msgid "Button label"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->title-
-#. display->options
-msgid "Application name"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->title-
-#. display->options
-msgid "Window title"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->title-
-#. display->options
-msgid "Window title (only for the focused window)"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->launcher-animation-
-#. effect->description
-msgid "Launcher animation"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-window-
-#. count-badges->description
-msgid "Show window count badges"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-window-
-#. count-badges->tooltip
-msgid "Indicate on the panel the number of open windows an application has"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-
-#. notification-badges->tooltip
-msgid "Indicate on the panel when an application has notifications"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-app-button-
-#. dragging->description
-msgid "Enable app button dragging"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-scroll-
-#. behavior->description
-msgid "Cycle windows on mouse wheel scroll"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-
-#. thumbnails->description
-msgid "Show thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->animate-
-#. thumbnails->description
-msgid "Animate thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->vertical-
-#. thumbnails->description
-msgid "Enable vertical thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->sort-
-#. thumbnails->description
-msgid "Sort thumbnails according to the last focused windows"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->highlight-last-
-#. focused-thumbnail->description
-msgid "Highlight the thumbnail of the last focused window"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->onclick-
-#. thumbnails->description
-msgid "Click to show thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. timeout->description
-msgid "Delay before showing thumbnails"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. timeout->options
-msgid "50 ms"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. timeout->options
-msgid "250 ms"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->thumbnail-
-#. timeout->options
-msgid "500 ms"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->enable-hover-
-#. peek->description
-msgid "Show the window when hovering its thumbnail"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. in->description
-msgid "Window fade-in time"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. in->options
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. out->options
-msgid "150 ms"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. in->options
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. out->options
-msgid "300 ms"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. in->options
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. out->options
-msgid "450 ms"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-time-
-#. out->description
-msgid "Window fade-out time"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->hover-peek-
-#. opacity->units
-msgid "percent"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->show-
-#. recent->description
-msgid "Show recent items"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->autostart-menu-
-#. item->description
-msgid "Show autostart option"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->monitor-move-all-
-#. windows->description
-msgid "Apply the monitor move option to all windows"
-msgstr ""
-
-#. grouped-window-list@cinnamon.org->settings-schema.json->monitor-move-all-
-#. windows->tooltip
-msgid ""
-"When clicking \"Move to monitor\" in the context menu, this option will move"
-" all of an app's windows instead of just the last focused window from the "
-"app."
-msgstr ""
-
-#. clock@cinnamon.org->metadata.json->name
-msgid "Clock desklet"
-msgstr ""
-
-#. clock@cinnamon.org->metadata.json->description
-msgid "A desklet that displays the time"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->text-color->description
-msgid "Text color"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->text-color->tooltip
-msgid "Click the button to select a new text color"
-msgstr ""
-
-#. clock@cinnamon.org->settings-schema.json->use-custom-format->tooltip
-msgid ""
-"Check this to define a custom format for the time in the clock desklet."
-msgstr ""
-
-#. launcher@cinnamon.org->metadata.json->name
-msgid "Launcher desklet"
-msgstr ""
-
-#. launcher@cinnamon.org->metadata.json->description
-msgid "A desklet that launches a program"
-msgstr ""
-
 #. photoframe@cinnamon.org->metadata.json->name
 msgid "Digital photo frame"
 msgstr ""
@@ -8983,4 +9000,33 @@ msgstr ""
 
 #. photoframe@cinnamon.org->settings-schema.json->effect->options
 msgid "Black and White"
+msgstr ""
+
+#. launcher@cinnamon.org->metadata.json->name
+msgid "Launcher desklet"
+msgstr ""
+
+#. launcher@cinnamon.org->metadata.json->description
+msgid "A desklet that launches a program"
+msgstr ""
+
+#. clock@cinnamon.org->metadata.json->name
+msgid "Clock desklet"
+msgstr ""
+
+#. clock@cinnamon.org->metadata.json->description
+msgid "A desklet that displays the time"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->text-color->description
+msgid "Text color"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->text-color->tooltip
+msgid "Click the button to select a new text color"
+msgstr ""
+
+#. clock@cinnamon.org->settings-schema.json->use-custom-format->tooltip
+msgid ""
+"Check this to define a custom format for the time in the clock desklet."
 msgstr ""
