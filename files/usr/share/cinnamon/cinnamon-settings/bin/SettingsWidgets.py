@@ -39,9 +39,12 @@ class BinFileMonitor(GObject.GObject):
 
         for path in self.paths:
             file = Gio.File.new_for_path(path)
-            mon = file.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
-            mon.connect("changed", self.queue_emit_changed)
-            self.monitors.append(mon)
+            try:
+                mon = file.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
+                mon.connect("changed", self.queue_emit_changed)
+                self.monitors.append(mon)
+            except GLib.Error as e:
+                pass
 
     def _emit_changed(self):
         self.emit("changed")
