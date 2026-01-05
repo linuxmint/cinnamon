@@ -16,6 +16,8 @@ const LEVEL_ANIMATION_TIME = 100;
 const FADE_TIME = 100;
 const HIDE_TIMEOUT = 1500;
 
+const LEVEL_ANIMATION_TIME_FAST = 0;
+
 function convertGdkIndex(monitorIndex) {
     let screen = Gdk.Screen.get_default();
     let rect = screen.get_monitor_geometry(monitorIndex);
@@ -92,12 +94,19 @@ class OsdWindow extends Clutter.Actor {
         this._level.visible = value != null;
         if (this._level.visible) {
             value = value / 100;
-            if (this.visible)
-                this._level.ease_property('value', value, {
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    duration: LEVEL_ANIMATION_TIME,
-                });
-            else
+            if (this.visible) {
+                if (Math.abs(this._level.value - value) < 0.04) {
+                    this._level.ease_property('value', value, {
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        duration: LEVEL_ANIMATION_TIME_FAST,
+                    });
+                } else {
+                    this._level.ease_property('value', value, {
+                        mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                        duration: LEVEL_ANIMATION_TIME,
+                    });
+                }
+            } else
                 this._level.value = value;
         }
     }
