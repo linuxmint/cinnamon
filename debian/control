@@ -90,6 +90,7 @@ Depends:
  network-manager-gnome [linux-any],
  policykit-1-gnome | mate-polkit,
  python3,
+ python3-babel,
  python3-distro,
  python3-gi,
  python3-gi-cairo,

@@ -6,6 +6,11 @@ from xapp.GSettingsWidgets import *
 import pytz
 import gi
 import datetime
+import locale
+try:
+    from babel import Locale as BabelLocale
+except:
+    pass
 import os
 gi.require_version('TimezoneMap', '1.0')
 from gi.repository import TimezoneMap
@@ -241,18 +246,49 @@ class TimeZoneSelector(SettingsWidget):
         self.city_combo.add_attribute(renderer_text, "text", 1)
         self.city_combo.set_id_column(0)
 
+        REGION_NAMES = {
+            "Africa": _("Africa"),
+            "America": _("America"),
+            "Antarctica": _("Antarctica"),
+            "Arctic": _("Arctic"),
+            "Asia": _("Asia"),
+            "Atlantic": _("Atlantic Ocean"),
+            "Australia": _("Australia"),
+            "Canada": _("Canada"),
+            "Europe": _("Europe"),
+            "Indian": _("Indian Ocean"),
+            "Pacific": _("Pacific Ocean"),
+            "US": _("USA"),
+        }
+
         self.region_map = {}
         for tz in pytz.common_timezones:
+            city_display_name = tz
+            region_display_name = tz
             try:
                 region, city = tz.split('/', maxsplit=1)
                 city_display_name = city.replace("_"," ")
+                region_display_name = region
             except:
                 continue
 
+            try:
+                # localize city names (best effort, ignore exceptions)
+                loc = BabelLocale(locale.getlocale()[0])
+                city_display_name = loc.time_zones[tz]["city"]
+            except:
+                pass
+
+            try:
+                # localize the region name (best effort, ignore exceptions)
+                region_display_name = REGION_NAMES[region_display_name]
+            except:
+                pass
+
             if region not in self.region_map:
                 self.region_map[region] = Gtk.ListStore(str, str)
-                self.region_list.append([region, _(region)])
-            self.region_map[region].append([city, _(city_display_name)])
+                self.region_list.append([region, region_display_name])
+            self.region_map[region].append([city, city_display_name])
 
     def set_timezone(self, timezone):
         if timezone == "Etc/UTC" or timezone == "Universal":
