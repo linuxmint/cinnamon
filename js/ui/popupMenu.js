@@ -70,16 +70,16 @@ function arrowIcon(side) {
     let iconName;
     switch (side) {
         case St.Side.TOP:
-            iconName = 'pan-up';
+            iconName = 'xsi-pan-up';
             break;
         case St.Side.RIGHT:
-            iconName = 'pan-end';
+            iconName = 'xsi-pan-end';
             break;
         case St.Side.BOTTOM:
-            iconName = 'pan-down';
+            iconName = 'xsi-pan-down';
             break;
         case St.Side.LEFT:
-            iconName = 'pan-start';
+            iconName = 'xsi-pan-start';
             break;
     }
 
