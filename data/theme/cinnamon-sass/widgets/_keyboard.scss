@@ -44,6 +44,18 @@ $shifted_key_color: $lightest_bg_color;
   &.shift-key-uppercase { background-color: $shifted_key_color }
   &.enter-key { background-color: $accent_bg_color }
 
+  &.modifier-key {
+    background-color: $non_alpha_key_color;
+
+    &:focus { @include button(focus); }
+    &:hover, &:checked { @include button(hover); }
+    &:active { @include button(active); }
+
+    &:latched {
+      background-color: $shifted_key_color;
+    }
+  }
+
   StIcon { icon-size: 1.125em; }
 }
 
