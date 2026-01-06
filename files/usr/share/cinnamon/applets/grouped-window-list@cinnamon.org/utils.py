@@ -26,7 +26,12 @@ def spawn(command):
 def handle_cli():
 
     if CLI[1] == 'get_process':
-        process = spawn('cat /proc/{}/cmdline'.format(CLI[2]))
+        if len(CLI) < 3 or not CLI[2].isdigit():
+        print("Invalid PID provided")
+        sys.exit(1)
+
+        pid = int(CLI[2])
+        process = spawn(f"cat /proc/{pid}/cmdline")
 
         if '.exe' in process:
             if 'Z:' in process:
