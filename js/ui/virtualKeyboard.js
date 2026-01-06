@@ -29,7 +29,7 @@ const KEYBOARD_POSITION_KEY = 'keyboard-position';
 const KEY_SIZE = 2;
 
 const escape_key = { keyval: Clutter.KEY_Escape, label: "Esc",                               extraClassName: 'escape-key' };
-const tab_key =    { keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
+const tab_key =    { width: 1.5, keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
 const _123_key =   { width: 1.5, level: 2,       label: '?123',                              extraClassName: 'non-alpha-key' };
 const abc_key =    { width: 1.5, level: 0,       label: 'ABC',                               extraClassName: 'non-alpha-key' };
 const backsp_key = { width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'xsi-edit-clear-symbolic', extraClassName: 'non-alpha-key' };
@@ -40,12 +40,14 @@ const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                  
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
 const layout_key = { action: 'next-layout',      icon: 'xsi-input-keyboard-symbolic' };
+const ctrl_key =   { keyval: Clutter.KEY_Control_L, label: 'Ctrl', width: 1.5, modifier: 'ctrl', extraClassName: 'non-alpha-key' };
+const alt_key =    { keyval: Clutter.KEY_Alt_L,     label: 'Alt',  width: 1.5, modifier: 'alt',  extraClassName: 'non-alpha-key' };
 
 const defaultKeysPre = [
-    [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
-    [[escape_key], [tab_key], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
-    [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [abc_key]],
-    [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [abc_key]],
+    [[escape_key], [tab_key], [layout_key, { width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [ctrl_key, _123_key, alt_key]],
+    [[escape_key], [tab_key], [layout_key, { width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [ctrl_key, _123_key, alt_key]],
+    [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [ctrl_key, abc_key, alt_key]],
+    [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [ctrl_key, abc_key, alt_key]],
 ];
 
 const defaultKeysPost = [
@@ -137,6 +139,8 @@ class KeyContainer extends St.Widget {
 
         this._currentRow = null;
         this._rows = [];
+        this.shiftKeys = [];
+        this.modifierKeys = {};
     }
 
     appendRow() {
@@ -469,16 +473,25 @@ var Key = GObject.registerClass({
         this.keyButton.keyWidth = width;
     }
 
-    setLatched(latched) {
-        if (!this._icon)
+    setLatched(latched, modifierType = 'shift') {
+        const is_shift = modifierType === 'shift';
+        if (!this._icon && is_shift)
             return;
 
         if (latched) {
             this.keyButton.add_style_pseudo_class('latched');
-            this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
+            if (is_shift && this._icon) {
+                this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
+            } else {
+                this.keyButton.add_style_class_name('shift-key-uppercase');
+            }
         } else {
             this.keyButton.remove_style_pseudo_class('latched');
-            this._icon.icon_name = 'keyboard-shift-filled-symbolic';
+            if (is_shift && this._icon) {
+                this._icon.icon_name = 'keyboard-shift-filled-symbolic';
+            } else {
+                this.keyButton.remove_style_class_name('shift-key-uppercase');
+            }
         }
     }
 });
@@ -712,7 +725,7 @@ var VirtualKeyboardManager = GObject.registerClass({
     }
 
     _keyboardSettingsChanged() {
-        this._destroyKeyboard();
+        this.destroyKeyboard();
         this._syncEnabled();
     }
 
@@ -730,11 +743,11 @@ var VirtualKeyboardManager = GObject.registerClass({
         if (enabled && !this._keyboard) {
             this._keyboard = new Keyboard(this._keyboardSettings.get_string(ACTIVATION_MODE_KEY) === "on-demand");
         } else if (!enabled && this._keyboard) {
-            this._destroyKeyboard();
+            this.destroyKeyboard();
         }
     }
 
-    _destroyKeyboard() {
+    destroyKeyboard() {
         if (this._keyboard == null) {
             return;
         }
@@ -814,6 +827,16 @@ class Keyboard extends St.BoxLayout {
         this._currentFocusWindow = null;
 
         this._latched = false; // current level is latched
+        this._currentLevel = 0; // track current level for modifier handling
+
+        this._latchedModifiers = {
+            ctrl: false,
+            alt: false
+        };
+        this._pressedModifierKeyvals = {
+            ctrl: 0,
+            alt: 0
+        };
 
         this._suggestions = null;
 
@@ -869,6 +892,7 @@ class Keyboard extends St.BoxLayout {
         delete this._connectionsIDs;
 
         this._clearShowIdle();
+        this._releaseAllModifiers();
 
         this._keyboardController.destroy();
 
@@ -971,8 +995,6 @@ class Keyboard extends St.BoxLayout {
             let level = i >= 1 && levels.length == 3 ? i + 1 : i;
 
             let layout = new KeyContainer();
-            layout.shiftKeys = [];
-
             this._loadRows(currentLevel, level, levels.length, layout);
             layers[level] = layout;
             this._aspectContainer.add_child(layout);
@@ -1014,6 +1036,8 @@ class Keyboard extends St.BoxLayout {
                     button._keyvalPress = false;
                 }
 
+                this._releaseAllModifiers();
+
                 if (!this._latched)
                     this._setActiveLayer(0);
             });
@@ -1030,6 +1054,7 @@ class Keyboard extends St.BoxLayout {
             let switchToLevel = key.level;
             let action = key.action;
             let icon = key.icon;
+            let modifier = key.modifier;
 
             if (action === 'next-layout') {
                 let groups = this._keyboardController.getGroups();
@@ -1051,18 +1076,35 @@ class Keyboard extends St.BoxLayout {
             let actor = extraButton.keyButton;
 
             extraButton.connect('pressed', () => {
+                if (switchToLevel != null && (switchToLevel === 0 || switchToLevel === 1) &&
+                    (this._currentLevel === 0 || this._currentLevel === 1) &&
+                    (this._latchedModifiers.ctrl || this._latchedModifiers.alt)) {
+                    this._keyboardController.keyvalPress(Clutter.KEY_Shift_L);
+                    extraButton._shiftPressed = true;
+                    return;
+                }
+
                 if (switchToLevel != null) {
                     this._setActiveLayer(switchToLevel);
-                    // Shift only gets latched on long press
                     this._latched = switchToLevel != 1;
+                } else if (modifier != null) {
+                    this._toggleModifier(modifier, keyval, extraButton);
                 } else if (keyval != null) {
                     this._keyboardController.keyvalPress(keyval);
                 }
             });
             extraButton.connect('released', () => {
-                if (keyval != null)
+                if (extraButton._shiftPressed) {
+                    this._keyboardController.keyvalRelease(Clutter.KEY_Shift_L);
+                    this._releaseAllModifiers();
+                    extraButton._shiftPressed = false;
+                    return;
+                }
+
+                if (keyval != null && modifier == null) {
                     this._keyboardController.keyvalRelease(keyval);
-                else if (action == 'hide')
+                    this._releaseAllModifiers();
+                } else if (action == 'hide')
                     this.close();
                 else if (action == 'next-layout')
                     this._keyboardController.activateNextGroup();
@@ -1075,6 +1117,10 @@ class Keyboard extends St.BoxLayout {
                     this._latched = true;
                     this._setCurrentLevelLatched(this._currentPage, this._latched);
                 });
+            } else if (modifier != null) {
+                if (!layout.modifierKeys[modifier])
+                    layout.modifierKeys[modifier] = [];
+                layout.modifierKeys[modifier].push(extraButton);
             }
 
             /* Fixup default keys based on the number of levels/keys */
@@ -1104,6 +1150,58 @@ class Keyboard extends St.BoxLayout {
         for (let i = 0; i < layout.shiftKeys.length; i++) {
             let key = layout.shiftKeys[i];
             key.setLatched(latched);
+        }
+    }
+
+    _toggleModifier(modifier, keyval, keyButton) {
+        if (this._latchedModifiers[modifier]) {
+            this._releaseModifier(modifier);
+        } else {
+            this._latchedModifiers[modifier] = true;
+            this._pressedModifierKeyvals[modifier] = keyval;
+            this._keyboardController.keyvalPress(keyval);
+            this._setModifierLatchedAllLayers(modifier, true);
+        }
+    }
+
+    _setModifierLatched(layout, modifier, latched) {
+        if (!layout?.modifierKeys?.[modifier])
+            return;
+
+        for (let i = 0; i < layout.modifierKeys[modifier].length; i++) {
+            let key = layout.modifierKeys[modifier][i];
+            key.setLatched(latched, modifier);
+        }
+    }
+
+    _setModifierLatchedAllLayers(modifier, latched) {
+        let activeGroupName = this._keyboardController.getCurrentGroup();
+        let layers = this._groups[activeGroupName];
+
+        for (let level in layers) {
+            this._setModifierLatched(layers[level], modifier, latched);
+        }
+    }
+
+    _releaseModifier(modifier) {
+        if (!this._latchedModifiers[modifier])
+            return;
+
+        let keyval = this._pressedModifierKeyvals[modifier];
+        if (keyval != 0) {
+            this._keyboardController.keyvalRelease(keyval);
+        }
+
+        this._latchedModifiers[modifier] = false;
+        this._pressedModifierKeyvals[modifier] = 0;
+        this._setModifierLatchedAllLayers(modifier, false);
+    }
+
+    _releaseAllModifiers() {
+        for (let modifier in this._latchedModifiers) {
+            if (this._latchedModifiers[modifier]) {
+                this._releaseModifier(modifier);
+            }
         }
     }
 
@@ -1255,6 +1353,7 @@ class Keyboard extends St.BoxLayout {
             delete this._currentPage._destroyID;
         }
 
+        this._currentLevel = activeLevel;
         this._currentPage = currentPage;
         this._currentPage._destroyID = this._currentPage.connect('destroy', () => {
             this._currentPage = null;
@@ -1322,6 +1421,7 @@ class Keyboard extends St.BoxLayout {
     _close() {
         if (this._keyboardRequested)
             return;
+        this._releaseAllModifiers();
         Main.layoutManager.hideKeyboard();
     }
 
