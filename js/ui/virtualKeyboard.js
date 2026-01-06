@@ -40,8 +40,8 @@ const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                  
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
 const layout_key = { action: 'next-layout',      icon: 'xsi-input-keyboard-symbolic' };
-const ctrl_key =   { keyval: Clutter.KEY_Control_L, label: 'Ctrl', width: 1.5, modifier: 'ctrl', extraClassName: 'modifier-key' };
-const alt_key =    { keyval: Clutter.KEY_Alt_L,     label: 'Alt',  width: 1.5, modifier: 'alt',  extraClassName: 'modifier-key' };
+const ctrl_key =   { keyval: Clutter.KEY_Control_L, label: 'Ctrl', width: 1.5, modifier: 'ctrl', extraClassName: 'non-alpha-key' };
+const alt_key =    { keyval: Clutter.KEY_Alt_L,     label: 'Alt',  width: 1.5, modifier: 'alt',  extraClassName: 'non-alpha-key' };
 
 const defaultKeysPre = [
     [[escape_key], [tab_key], [layout_key, { width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [ctrl_key, _123_key, alt_key]],
@@ -480,12 +480,18 @@ var Key = GObject.registerClass({
 
         if (latched) {
             this.keyButton.add_style_pseudo_class('latched');
-            if (is_shift && this._icon)
+            if (is_shift && this._icon) {
                 this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
+            } else {
+                this.keyButton.add_style_class_name('shift-key-uppercase');
+            }
         } else {
             this.keyButton.remove_style_pseudo_class('latched');
-            if (is_shift && this._icon)
+            if (is_shift && this._icon) {
                 this._icon.icon_name = 'keyboard-shift-filled-symbolic';
+            } else {
+                this.keyButton.remove_style_class_name('shift-key-uppercase');
+            }
         }
     }
 });
@@ -719,7 +725,7 @@ var VirtualKeyboardManager = GObject.registerClass({
     }
 
     _keyboardSettingsChanged() {
-        this._destroyKeyboard();
+        this.destroyKeyboard();
         this._syncEnabled();
     }
 
@@ -737,11 +743,11 @@ var VirtualKeyboardManager = GObject.registerClass({
         if (enabled && !this._keyboard) {
             this._keyboard = new Keyboard(this._keyboardSettings.get_string(ACTIVATION_MODE_KEY) === "on-demand");
         } else if (!enabled && this._keyboard) {
-            this._destroyKeyboard();
+            this.destroyKeyboard();
         }
     }
 
-    _destroyKeyboard() {
+    destroyKeyboard() {
         if (this._keyboard == null) {
             return;
         }
@@ -821,6 +827,7 @@ class Keyboard extends St.BoxLayout {
         this._currentFocusWindow = null;
 
         this._latched = false; // current level is latched
+        this._currentLevel = 0; // track current level for modifier handling
 
         this._latchedModifiers = {
             ctrl: false,
@@ -885,6 +892,7 @@ class Keyboard extends St.BoxLayout {
         delete this._connectionsIDs;
 
         this._clearShowIdle();
+        this._releaseAllModifiers();
 
         this._keyboardController.destroy();
 
@@ -1069,6 +1077,7 @@ class Keyboard extends St.BoxLayout {
 
             extraButton.connect('pressed', () => {
                 if (switchToLevel != null && (switchToLevel === 0 || switchToLevel === 1) &&
+                    (this._currentLevel === 0 || this._currentLevel === 1) &&
                     (this._latchedModifiers.ctrl || this._latchedModifiers.alt)) {
                     this._keyboardController.keyvalPress(Clutter.KEY_Shift_L);
                     extraButton._shiftPressed = true;
@@ -1151,7 +1160,7 @@ class Keyboard extends St.BoxLayout {
             this._latchedModifiers[modifier] = true;
             this._pressedModifierKeyvals[modifier] = keyval;
             this._keyboardController.keyvalPress(keyval);
-            this._setModifierLatched(this._currentPage, modifier, true);
+            this._setModifierLatchedAllLayers(modifier, true);
         }
     }
 
@@ -1162,6 +1171,15 @@ class Keyboard extends St.BoxLayout {
         for (let i = 0; i < layout.modifierKeys[modifier].length; i++) {
             let key = layout.modifierKeys[modifier][i];
             key.setLatched(latched, modifier);
+        }
+    }
+
+    _setModifierLatchedAllLayers(modifier, latched) {
+        let activeGroupName = this._keyboardController.getCurrentGroup();
+        let layers = this._groups[activeGroupName];
+
+        for (let level in layers) {
+            this._setModifierLatched(layers[level], modifier, latched);
         }
     }
 
@@ -1176,7 +1194,7 @@ class Keyboard extends St.BoxLayout {
 
         this._latchedModifiers[modifier] = false;
         this._pressedModifierKeyvals[modifier] = 0;
-        this._setModifierLatched(this._currentPage, modifier, false);
+        this._setModifierLatchedAllLayers(modifier, false);
     }
 
     _releaseAllModifiers() {
@@ -1319,8 +1337,6 @@ class Keyboard extends St.BoxLayout {
     }
 
     _setActiveLayer(activeLevel) {
-        this._releaseAllModifiers();
-
         let activeGroupName = this._keyboardController.getCurrentGroup();
         let layers = this._groups[activeGroupName];
         let currentPage = layers[activeLevel];
@@ -1337,6 +1353,7 @@ class Keyboard extends St.BoxLayout {
             delete this._currentPage._destroyID;
         }
 
+        this._currentLevel = activeLevel;
         this._currentPage = currentPage;
         this._currentPage._destroyID = this._currentPage.connect('destroy', () => {
             this._currentPage = null;

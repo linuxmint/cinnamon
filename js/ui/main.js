@@ -1627,6 +1627,8 @@ function restartCinnamon(showOsd = false) {
         return false;
     });
 
+    virtualKeyboardManager.destroyKeyboard();
+
     global.reexec_self();
 }
 
