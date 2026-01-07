@@ -408,11 +408,11 @@ var VolumeAction = class extends BaseAction {
 
     update(direction, percentage, time) {
         if (this.definition.action === "VOLUME_UP") {
-            this._set_volume(true, percentage);
+            this._set_volume(true, percentage, time);
         }
         else
         if (this.definition.action === "VOLUME_DOWN") {
-            this._set_volume(false, 100 - percentage);
+            this._set_volume(false, 100 - percentage, time);
         }
     }
 
