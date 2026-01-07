@@ -83,6 +83,7 @@ class MainWindow(object):
 
         self.tree.get_object("action_box").set_layout(Gtk.ButtonBoxStyle.EDGE)
 
+
     def run(self):
         self.loadMenus()
         self.main_window.show_all()
@@ -362,6 +363,9 @@ class MainWindow(object):
         if not isinstance(item, CMenu.TreeEntry):
             return
         (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
+
+        # Update focus to menu tree view, which will activate paste button and deselect copied item
+        self.on_menu_tree_cursor_changed(self.tree.get_object('menu_tree'))
 
     def on_edit_paste_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
