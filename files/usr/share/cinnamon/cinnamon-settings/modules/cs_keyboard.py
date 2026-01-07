@@ -16,6 +16,7 @@ from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
 from SettingsWidgets import SidePage, Keybinding
 from bin import util
 from bin import InputSources
+from bin import XkbSettings
 from bin import KeybindingTable
 from xapp.GSettingsWidgets import *
 
@@ -300,6 +301,11 @@ class Module:
 
             page = InputSources.InputSourceSettingsPage()
             self.sidePage.stack.add_titled(page, "layouts", _("Layouts"))
+
+            page = SettingsPage()
+            self.sidePage.stack.add_titled(page, "xkb-options", _("XKB Options"))
+
+            page.pack_start(XkbSettings.XkbSettingsEditor(), True, True, 0)
 
             self.kb_search_entry.grab_focus()
 
