@@ -24,11 +24,10 @@ def spawn(command):
 
 # Utility script that creates GDesktop files for Wine and other window backed applications.
 def handle_cli():
-
     if CLI[1] == 'get_process':
         if len(CLI) < 3 or not CLI[2].isdigit():
-        print("Invalid PID provided")
-        sys.exit(1)
+            print("Invalid PID provided")
+            sys.exit(1)
 
         pid = int(CLI[2])
         process = spawn(f"cat /proc/{pid}/cmdline")
