@@ -1,6 +1,9 @@
 #!/usr/bin/python3
 
 from gi.repository import Gtk, Gdk, GObject
+import util
+
+print("KeybindingWidgets session type: %s" % util.get_session_type())
 
 FORBIDDEN_KEYVALS = [
     Gdk.KEY_Home,
@@ -170,6 +173,8 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         self.teaching = False
         self.default_value = True
         self.text_string = ""
+        self.seat = None
+        self.keyboard = None
 
         self.update_label()
 
@@ -222,15 +227,33 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     def editing_started(self, renderer, editable, path):
         if not self.teaching:
             self.path = path
-            device = Gtk.get_current_event_device()
-            if device.get_source() == Gdk.InputSource.KEYBOARD:
-                self.keyboard = device
-            else:
-                self.keyboard = device.get_associated_device()
 
-            self.keyboard.grab(self.a_widget.get_window(), Gdk.GrabOwnership.WINDOW, False,
-                               Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
-                               None, Gdk.CURRENT_TIME)
+            if util.get_session_type() == "x11":
+                device = Gtk.get_current_event_device()
+                if device.get_source() == Gdk.InputSource.KEYBOARD:
+                    self.keyboard = device
+                else:
+                    self.keyboard = device.get_associated_device()
+
+                self.keyboard.grab(self.a_widget.get_window(), Gdk.GrabOwnership.WINDOW, False,
+                                   Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
+                                   None, Gdk.CURRENT_TIME)
+            else:
+                display = self.a_widget.get_display()
+                self.seat = display.get_default_seat()
+
+                # Grab both keyboard and pointer to prevent mouse events from canceling the operation
+                grab_status = self.seat.grab(
+                    self.a_widget.get_window(),
+                    Gdk.SeatCapabilities.KEYBOARD | Gdk.SeatCapabilities.POINTER,
+                    False,
+                    None,
+                    None,
+                    None
+                )
+
+                if grab_status != Gdk.GrabStatus.SUCCESS:
+                    print(f"Warning: Keyboard grab failed with status: {grab_status}")
 
             editable.set_text(CellRendererKeybinding.PICK_AN_ACCELERATOR)
             self.accel_editable = editable
@@ -356,7 +379,14 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         return True
 
     def ungrab(self):
-        self.keyboard.ungrab(Gdk.CURRENT_TIME)
+        if util.get_session_type() == "x11":
+            if self.keyboard is not None:
+                self.keyboard.ungrab(Gdk.CURRENT_TIME)
+                self.keyboard = None
+        else:
+            if self.seat is not None:
+                self.seat.ungrab()
+                self.seat = None
         if self.release_event_id > 0:
             self.accel_editable.disconnect(self.release_event_id)
             self.release_event_id = 0
