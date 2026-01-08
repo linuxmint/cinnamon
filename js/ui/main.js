@@ -191,6 +191,9 @@ var gesturesManager = null;
 var keyboardManager = null;
 var workspace_names = [];
 
+var actionMode = Cinnamon.ActionMode.NORMAL;
+var _actionModeStack = [];
+
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
 var deskletContainer = null;
 
@@ -1170,6 +1173,32 @@ function getWindowActorsForWorkspace(workspaceIndex) {
     });
 }
 
+/**
+ * _shouldFilterKeybinding:
+ * @entry: The keybinding entry from keybindingManager (or undefined)
+ *
+ * Helper function to check if a keybinding should be filtered based on
+ * the current ActionMode. Returns true to BLOCK, false to ALLOW.
+ *
+ * This is used by both _filterKeybinding (window manager path) and
+ * _stageEventHandler (modal/stage capture path).
+ */
+function _shouldFilterKeybinding(entry) {
+    // Check if all keybindings should be blocked
+    if (actionMode == Cinnamon.ActionMode.NONE)
+        return true;
+
+    if (entry === undefined) {
+        // Binding not in our registry, fall back to old behavior
+        return global.stage_input_mode !== Cinnamon.StageInputMode.NORMAL;
+    }
+
+    // Check if current ActionMode is in the allowed modes for this binding
+    // Use bitwise AND - if result is non-zero, the mode is allowed
+    let allowed = (entry.allowedModes & actionMode) !== 0;
+    return !allowed;
+}
+
 // This function encapsulates hacks to make certain global keybindings
 // work even when we are in one of our modes where global keybindings
 // are disabled with a global grab. (When there is a global grab, then
@@ -1194,7 +1223,11 @@ function _stageEventHandler(actor, event) {
     if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.INPUT_METHOD))) {
         // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
         if (action > 0) {
-            keybindingManager.invoke_keybinding_action_by_id(action);
+            // Check if this keybinding should be filtered based on ActionMode
+            let entry = keybindingManager.getBindingById(action);
+            if (!_shouldFilterKeybinding(entry)) {
+                keybindingManager.invoke_keybinding_action_by_id(action);
+            }
         }
     }
 
@@ -1254,6 +1287,7 @@ function _findModal(actor) {
  * @timestamp (int): optional timestamp
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
  * is already grabbed
+ * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1268,11 +1302,17 @@ function _findModal(actor) {
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
  *
+ * @mode determines which keybindings and actions are allowed while modal.
+ * If not provided, defaults to SYSTEM_MODAL.
+ *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
-function pushModal(actor, timestamp, options) {
+function pushModal(actor, timestamp, options, mode) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
+
+    if (mode == undefined)
+        mode = Cinnamon.ActionMode.SYSTEM_MODAL;
 
     if (modalCount == 0) {
         if (!global.begin_modal(timestamp, options ? options : 0)) {
@@ -1284,6 +1324,9 @@ function pushModal(actor, timestamp, options) {
 
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
 
+    let previousMode = actionMode;
+    actionMode = mode;
+
     modalCount += 1;
     let actorDestroyId = actor.connect('destroy', function() {
         let index = _findModal(actor);
@@ -1294,7 +1337,9 @@ function pushModal(actor, timestamp, options) {
     let record = {
         actor: actor,
         focus: global.stage.get_key_focus(),
-        destroyId: actorDestroyId
+        destroyId: actorDestroyId,
+        actionMode: mode,
+        previousActionMode: previousMode
     };
     if (record.focus != null) {
         record.focusDestroyId = record.focus.connect('destroy', function() {
@@ -1360,11 +1405,15 @@ function popModal(actor, timestamp) {
     }
     modalActorFocusStack.splice(focusIndex, 1);
 
-    if (modalCount > 0)
+    if (modalCount > 0) {
+        let topModal = modalActorFocusStack[modalActorFocusStack.length - 1];
+        actionMode = topModal.actionMode;
         return;
+    }
 
     global.end_modal(timestamp);
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+    actionMode = Cinnamon.ActionMode.NORMAL;
 
     layoutManager.updateChrome(true);
 

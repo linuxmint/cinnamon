@@ -611,7 +611,7 @@ DeskletContainer.prototype = {
             global.stage.connect('leave-event', Lang.bind(this, this.handleStageEvent))
         ];
 
-        if (Main.pushModal(this.actor)) {
+        if (Main.pushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.POPUP)) {
             this.isModal = true;
         }
     },

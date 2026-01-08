@@ -172,7 +172,7 @@ var _Draggable = new Lang.Class({
 
     _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
-            this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
+            this._eventsGrabbed = Main.pushModal(_getEventHandlerActor(), undefined, undefined, Cinnamon.ActionMode.NORMAL);
             if (this._eventsGrabbed) {
                 this.drag_device = event.get_device()
                 this.drag_device.grab(_getEventHandlerActor());

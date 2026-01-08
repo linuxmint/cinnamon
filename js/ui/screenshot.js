@@ -255,7 +255,7 @@ class SelectArea {
     }
 
     show() {
-        if (!Main.pushModal(this._group))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL))
             return;
         this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
@@ -465,7 +465,7 @@ class PickColor {
     }
 
     show() {
-        if (!Main.pushModal(this._group))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL))
             return;
         this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
