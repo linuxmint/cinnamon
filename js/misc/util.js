@@ -716,24 +716,14 @@ function getDesktopActionIcon(action) {
  * @str (string): The string to be converted
  *
  * Converts a string, possibly containing multiple codepoint unicode characters (e.g. emoji), into
- * an array of unicode graphemes clusters (glyphs). For example: "👩‍👩‍👧‍👧😃".length === 13, but splitByGlyph("👩‍👩‍👧‍👧😃")
+ * an array of unicode graphemes or grapheme clusters. For example: "👩‍👩‍👧‍👧😃".length === 13, but splitByGlyph("👩‍👩‍👧‍👧😃")
  * returns ["👩‍👩‍👧‍👧", "😃"] which is length 2.
  * 
- * Returns (array): Array of unicode grapheme clusters (glyphs).
+ * Returns (array): Array of unicode graphemes or grapheme clusters.
  */
 function splitByGlyph(str) {
-    const glyphs = [];
-    const buffer = new Gtk.TextBuffer();
-    buffer.set_text(str, -1);
-    const iter = buffer.get_start_iter();
-    const iter2 = buffer.get_start_iter();
-    
-    while (!iter2.is_end()) {
-        iter2.forward_cursor_position();
-        glyphs.push(buffer.get_text(iter, iter2, false));
-        iter.forward_cursor_position();
-    }
-    return glyphs;
+    const segmenter = new Intl.Segmenter(undefined, { granularity: 'grapheme' });
+    return Array.from(segmenter.segment(str), (s) => s.segment);
 }
 
 function wiggle(actor, params) {
