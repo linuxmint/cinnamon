@@ -1,3 +1,99 @@
+cinnamon (6.6.4) zena; urgency=medium
+
+  [ Clement Lefebvre ]
+  * cinnamon-settings: Add support for mintsysadm
+  * l10n: Update POT
+
+  [ Michael Webster ]
+  * keyboard: Always fetch the full XkbInfo store except when adding a layout.
+
+  [ Clement Lefebvre ]
+  * defaults: Switch gucharmap for GNOME Calendar
+
+  [ fredcw ]
+  * GWL: Add generic icon for apps with no icon (#13294)
+  * menu applet: Show generic icon on sidebar if fav app has no themed icon (#13296)
+
+  [ Clement Lefebvre ]
+  * js: Fix missing import
+
+  [ Michael Webster ]
+  * st-entry.c: Disable cursor blink.
+  * keyboardManager.js: When loading configured sources, always ensure at least one layout.
+  * keyboardManager.js: Make sure to reload the current engine properties when sources change.
+  * keyboardManager.js: Update the definition of 'multiple sources'.
+
+  [ Clement Lefebvre ]
+  * cs_notifications: i18n test notification title
+  * l10n: Update POT
+
+  [ fredcw ]
+  * trigger xlet settings update when settings options "Reset to defaults"... (#13297)
+
+  [ JosephMcc ]
+  * recent applet: Fix label alignment (#13302)
+
+  [ rlbxku1r ]
+  * menu: Fix context menu to not close the menu applet (#13318)
+
+  [ Balló György ]
+  * Hide icon themes that marked as 'Hidden' (#13307)
+
+  [ fredcw ]
+  * Put back "notifications" role removed in commit... (#13303)
+  * messageTray.js: Check for pending notifications after showing a notification (#13277)
+
+  [ NotSirius-A ]
+  * Fixed menu editor freezing on right-clicking categories on the left menu (#13306)
+
+  [ Michael Webster ]
+  * cinnamon-menu-editor: Remember the scroll position when refreshing the item list after an edit.
+  * menu/desktop editor: Load and save for the current language when editing desktop entries.
+  * cinnamon-slideshow.py: Continue with the next background in a folder when launched (if it exists), instead of always starting over.
+
+  [ fredcw ]
+  * cinnamon theme: use a variable for consistent window/popup border radius (#13328)
+
+  [ Michael Webster ]
+  * sound applet: Fix panel album art not being discarded and falling out of sync with the active player.
+
+  [ Kaushik B ]
+  * Fix OSD fading out when updated during hide animation (#13335)
+
+  [ Clement Lefebvre ]
+  * network applet: Remove symbolic icons
+  * sound applet: Switch leftover Adwaita icon names to XSI
+  * popupmenu.js: Switch leftover Adwaita icon names to XSI
+
+  [ Michael Webster ]
+  * SettingsWidgets: Silently ignore BinFileMonitor errors.
+
+  [ Clement Lefebvre ]
+  * cs_calendar: Localize regions and cities
+  * l10n: Update POT
+  * Fix localization in KeybindingWidgets.py
+  * cs_default: Fix localization in removable_media_defs
+  * l10n: Update POT
+
+  [ rlbxku1r ]
+  * menu: Fix input method key event handling (#13317)
+
+  [ Michael Webster ]
+  * placesManager.js: Add mounts with no associated volume. (#13325)
+  * osk: Restore control and Alt keys (#13337)
+
+  [ hduelme ]
+  * wrong app id in calc search provider example (#13249)
+
+  [ Michael Webster ]
+  * KeybindingWidgets.py: Fix keybinding teaching in wayland sessions.
+  * cs_keyboard: Add an XKB options page. (#13343)
+
+  [ Clement Lefebvre ]
+  * l10n: Update POT
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 08 Jan 2026 13:29:45 +0000
+
 cinnamon (6.6.3) zena; urgency=medium
 
   [ Leigh Scott ]
