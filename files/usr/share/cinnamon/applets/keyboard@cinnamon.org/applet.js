@@ -58,6 +58,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         try {
             this.metadata = metadata;
             Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
