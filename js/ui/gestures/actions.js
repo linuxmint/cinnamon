@@ -320,9 +320,12 @@ var VolumeAction = class extends BaseAction {
             this.max_volume = mixer.get_vol_max_norm();
 
         this.pct_step = Math.ceil(this.max_volume / 100);
+
+        this.last_time = 0;
+        this.poll_interval = 50 * 1000;
     }
 
-    _set_volume(up, percentage) {
+    _set_volume(up, percentage, time) {
         const sink = mixer.get_default_sink();
 
         if (sink == null) {
@@ -356,7 +359,12 @@ var VolumeAction = class extends BaseAction {
             sink.change_is_muted(false);
         }
 
+        if (time < (this.last_time + this.poll_interval)) {
+            return;
+        }
+
         Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct, false);
+        this.last_time = time;
     }
 
     _toggle_muted() {
@@ -400,11 +408,11 @@ var VolumeAction = class extends BaseAction {
 
     update(direction, percentage, time) {
         if (this.definition.action === "VOLUME_UP") {
-            this._set_volume(true, percentage);
+            this._set_volume(true, percentage, time);
         }
         else
         if (this.definition.action === "VOLUME_DOWN") {
-            this._set_volume(false, 100 - percentage);
+            this._set_volume(false, 100 - percentage, time);
         }
     }
 
