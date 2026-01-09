@@ -15,7 +15,6 @@ const Main = imports.ui.main;
 const LEVEL_ANIMATION_TIME = 100;
 const FADE_TIME = 100;
 const HIDE_TIMEOUT = 1500;
-const LEVEL_ANIMATION_TIME_GESTURE = 0;
 
 function convertGdkIndex(monitorIndex) {
     let screen = Gdk.Screen.get_default();
@@ -93,28 +92,14 @@ class OsdWindow extends Clutter.Actor {
         this._level.visible = value != null;
         if (this._level.visible) {
             value = value / 100;
-            if (this.visible) {
+            if (this.visible)
                 this._level.ease_property('value', value, {
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                     duration: LEVEL_ANIMATION_TIME,
-                    });
-                }
-            } else
+                });
+            else
                 this._level.value = value;
-    }
-
-    setLevelGesture(value) {
-        this._level.visible = value != null;
-        if (this._level.visible) {
-            value = value / 100;
-            if (this.visible) {
-                this._level.ease_property('value', value, {
-                    mode: Clutter.AnimationMode.CLUTTER_LINEAR,
-                    duration: LEVEL_ANIMATION_TIME_GESTURE,
-                    });
-                }
-            } else
-                this._level.value = value;
+        }
     }
 
     setMaxLevel(maxLevel = 1) {
@@ -206,18 +191,15 @@ var OsdWindowManager = class {
         }
     }
 
-    _showOsdWindow(monitorIndex, icon, label, level, isGesture) {
+    _showOsdWindow(monitorIndex, icon, label, level) {
         this._osdWindows[monitorIndex].setIcon(icon);
         this._osdWindows[monitorIndex].setLabel(label);
         this._osdWindows[monitorIndex].setMaxLevel(1);
-        if (isGesture)
-            this._osdWindows[monitorIndex].setLevelGesture(level);
-        else
-            this._osdWindows[monitorIndex].setLevel(level);
+        this._osdWindows[monitorIndex].setLevel(level);
         this._osdWindows[monitorIndex].show();
     }
 
-    show(monitorIndex, icon, label, level, convertIndex, isGesture) {
+    show(monitorIndex, icon, label, level, convertIndex) {
         if (this._osdWindows.length === 0)
             return;
 
@@ -226,13 +208,13 @@ var OsdWindowManager = class {
                 monitorIndex = convertGdkIndex(monitorIndex);
             for (let i = 0; i < this._osdWindows.length; i++) {
                 if (i === monitorIndex)
-                    this._showOsdWindow(i, icon, label, level, isGesture);
+                    this._showOsdWindow(i, icon, label, level);
                 else
                     this._osdWindows[i].cancel();
             }
         } else {
             for (let i = 0; i < this._osdWindows.length; i++)
-                this._showOsdWindow(i, icon, label, level, isGesture);
+                this._showOsdWindow(i, icon, label, level);
         }
     }
 

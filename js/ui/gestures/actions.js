@@ -363,7 +363,7 @@ var VolumeAction = class extends BaseAction {
             return;
         }
 
-        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct, false, true);
+        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct, false);
         this.last_time = time;
     }
 
