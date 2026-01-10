@@ -109,7 +109,7 @@ class PinnedFavs {
             const currentWorkspace = this.params.state.trigger('getCurrentWorkspace');
             const newFavorites = [];
             let refActorFound = false;
-            currentWorkspace.actor.get_children().forEach( (actor, i) => {
+            currentWorkspace.container.get_children().forEach( (actor, i) => {
                 const appGroup = currentWorkspace.appGroups.find( appGroup => appGroup.actor === actor );
                 if (!appGroup) return;
                 const {app, appId, isFavoriteApp} = appGroup.groupState;
@@ -800,12 +800,25 @@ class GroupedWindowListApplet extends Applet.Applet {
         if(this.state.dragging.posList === null){
             this.state.dragging.isForeign = !(source instanceof AppGroup);
             this.state.dragging.posList = [];
-            currentWorkspace.actor.get_children().forEach( child => {
+
+            let offset = 0;
+            if (this.state.isHorizontal) {
+                offset = currentWorkspace.container.translation_x;
+                if (currentWorkspace.startButton.visible) 
+                    offset += currentWorkspace.startButton.width;
+            } else {
+                offset = currentWorkspace.container.translation_y;
+                if (currentWorkspace.startButton.visible)
+                    offset += currentWorkspace.startButton.height;
+            }
+
+            currentWorkspace.container.get_children().forEach( child => {
                 let childPos;
+                let box = child.get_allocation_box();
                 if(rtl_horizontal)
-                    childPos = this.actor.width - child.get_allocation_box()['x1'];
+                    childPos = this.actor.width - (box.x1 + offset);
                 else
-                    childPos = child.get_allocation_box()[axis[1]];
+                    childPos = box[axis[1]] + offset;
                 this.state.dragging.posList.push(childPos);
             });
         }
@@ -834,13 +847,13 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             if(this.state.dragging.isForeign) {
                 if (this.state.dragging.dragPlaceholder)
-                    currentWorkspace.actor.set_child_at_index(this.state.dragging.dragPlaceholder.actor, pos);
+                    currentWorkspace.container.set_child_at_index(this.state.dragging.dragPlaceholder.actor, pos);
                 else {
                     const iconSize = this.getPanelIconSize() * global.ui_scale;
                     this.state.dragging.dragPlaceholder = new DND.GenericDragPlaceholderItem();
                     this.state.dragging.dragPlaceholder.child.width = iconSize;
                     this.state.dragging.dragPlaceholder.child.height = iconSize;
-                    currentWorkspace.actor.insert_child_at_index(
+                    currentWorkspace.container.insert_child_at_index(
                         this.state.dragging.dragPlaceholder.actor,
                         this.state.dragging.pos
                     );
@@ -848,7 +861,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 }
             }
             else
-                currentWorkspace.actor.set_child_at_index(source.actor, pos);
+                currentWorkspace.container.set_child_at_index(source.actor, pos);
         }
 
         if(this.state.dragging.isForeign)

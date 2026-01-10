@@ -1,4 +1,6 @@
 const Clutter = imports.gi.Clutter;
+const St = imports.gi.St;
+const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
@@ -11,7 +13,9 @@ class Workspace {
     constructor(params) {
         this.state = params.state;
         this.state.connect({
-            orientation: () => this.on_orientation_changed(false)
+            orientation: (state) => {
+                this.on_orientation_changed(state.orientation);
+            }
         });
         this.workspaceState = createStore({
             workspaceIndex: params.index,
@@ -28,7 +32,8 @@ class Workspace {
                 if (this.state.willUnmount) {
                     return;
                 }
-                this.actor.remove_child(actor);
+                this.container.remove_child(actor);
+                this.updateScrollVisibility();
             },
             updateFocusState: (focusedAppId) => {
                 this.appGroups.forEach( appGroup => {
@@ -41,31 +46,243 @@ class Workspace {
         this.signals = new SignalManager(null);
         this.metaWorkspace = params.metaWorkspace;
 
-        const managerOrientation = this.state.isHorizontal ? 'HORIZONTAL' : 'VERTICAL';
-        this.manager = new Clutter.BoxLayout({orientation: Clutter.Orientation[managerOrientation]});
-        this.actor = new Clutter.Actor({layout_manager: this.manager});
+        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
+
+        this.manager = new Clutter.BoxLayout({orientation: managerOrientation});
+        this.container = new Clutter.Actor({layout_manager: this.manager});
+
+        this.mainLayout = new Clutter.BoxLayout({orientation: managerOrientation});
+        this.actor = new Clutter.Actor({ layout_manager: this.mainLayout, reactive: true });
+
+        // TODO: Move to Cinnamon default CSS styling
+        const shadeStyle = 'min-width: 15px; min-height: 20px; background-color: rgba(0, 0, 0, 0.25); border: 1px solid rgba(128, 128, 128, 0.2); margin: 0px; padding: 0px;';
+
+        this.startButton = new St.Bin({
+            style_class: 'grouped-window-list-scroll-button-start',
+            style: shadeStyle,
+            visible: false,
+            reactive: true,
+            x_align: St.Align.MIDDLE,
+            y_align: St.Align.MIDDLE
+        });
+        this.endButton = new St.Bin({
+            style_class: 'grouped-window-list-scroll-button-end',
+            style: shadeStyle,
+            visible: false,
+            reactive: true,
+            x_align: St.Align.MIDDLE,
+            y_align: St.Align.MIDDLE
+        });
+
+        // XXX: Use fixed icon size instead of the popup-menu-icon style class? (or maybe set the default in the cinnamon default theme)
+        this.startIcon = new St.Icon({
+            icon_name: 'pan-start-symbolic',
+            icon_type: St.IconType.SYMBOLIC,
+            style_class: 'popup-menu-icon grouped-window-list-scroll-button-icon'
+        });
+        this.endIcon = new St.Icon({
+            icon_name: 'pan-end-symbolic',
+            icon_type: St.IconType.SYMBOLIC,
+            style_class: 'popup-menu-icon grouped-window-list-scroll-button-icon'
+        });
+
+        this.startButton.set_child(this.startIcon);
+        this.endButton.set_child(this.endIcon);
+
+        this.signals.connect(this.startButton, 'enter-event', () => this.startSlide(-1));
+        this.signals.connect(this.startButton, 'leave-event', this.stopSlide, this);
+        this.signals.connect(this.endButton, 'enter-event', () => this.startSlide(1));
+        this.signals.connect(this.endButton, 'leave-event', this.stopSlide, this);
+
+        this.scrollBox = new Clutter.Actor({ clip_to_allocation: true });
+        this.scrollBox.add_child(this.container);
+
+        this.actor.add_child(this.startButton);
+        this.actor.add_child(this.scrollBox);
+        this.actor.add_child(this.endButton);
+
+        this.scrollBox.set_x_expand(true);
+        this.scrollBox.set_y_expand(true);
 
         this.appGroups = [];
         this.lastFocusedApp = null;
+        this.slideTimerSourceId = 0;
 
         // Connect all the signals
         this.signals.connect(global.display, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
         // Ugly change: refresh the removed app instances from all workspaces
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
-        this.on_orientation_changed(null, true);
+        this.signals.connect(this.actor, 'allocation-changed', this.updateScrollVisibility, this);
+        this.signals.connect(this.container, 'allocation-changed', this.updateScrollVisibility, this);
+        this.signals.connect(this.container, 'notify::translation-x', this.updateScrollVisibility, this);
+        this.signals.connect(this.container, 'notify::translation-y', this.updateScrollVisibility, this);
+        this.signals.connect(this.actor, 'scroll-event', (actor, event) => this.onScroll(event));
+
+        this.on_orientation_changed(this.state.orientation);
     }
 
-    on_orientation_changed() {
+    on_orientation_changed(orientation) {
         if (!this.manager) return;
 
-        if (!this.state.isHorizontal) {
-            this.manager.set_orientation(Clutter.Orientation.VERTICAL);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
+
+        this.manager.set_orientation(managerOrientation);
+        this.mainLayout.set_orientation(managerOrientation);
+
+        if (this.state.isHorizontal) {
+            this.actor.set_x_align(Clutter.ActorAlign.FILL);
+
+            this.startIcon.set_icon_name('pan-start-symbolic');
+            this.endIcon.set_icon_name('pan-end-symbolic');
+
+            this.startButton.set_x_expand(false);
+            this.startButton.set_y_expand(true);
+            this.startButton.set_y_align(Clutter.ActorAlign.FILL);
+            this.endButton.set_x_expand(false);
+            this.endButton.set_y_expand(true);
+            this.endButton.set_y_align(Clutter.ActorAlign.FILL);
         } else {
-            this.manager.set_orientation(Clutter.Orientation.HORIZONTAL);
+            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+
+            this.startIcon.set_icon_name('pan-up-symbolic');
+            this.endIcon.set_icon_name('pan-down-symbolic');
+
+            this.startButton.set_x_expand(true);
+            this.startButton.set_y_expand(false);
+            this.startButton.set_x_align(Clutter.ActorAlign.FILL);
+            this.endButton.set_x_expand(true);
+            this.endButton.set_y_expand(false);
+            this.endButton.set_x_align(Clutter.ActorAlign.FILL);
         }
         this.refreshList();
+    }
+
+    startSlide(direction) {
+        if (this.slideTimerSourceId > 0) {
+            GLib.source_remove(this.slideTimerSourceId);
+            this.slideTimerSourceId = 0;
+        }
+
+        const scrollFunc = () => {
+            this.scroll(direction * 5);
+            if (this.slideTimerSourceId === 0) return GLib.SOURCE_REMOVE;
+
+            // Check if reached bounds to stop timer
+            let current, min;
+            if (this.state.isHorizontal) {
+                current = this.container.translation_x;
+                min = Math.min(0, this.scrollBox.width - this.container.width);
+            } else {
+                current = this.container.translation_y;
+                min = Math.min(0, this.scrollBox.height - this.container.height);
+            }
+
+            if (current >= 0 && direction < 0) return GLib.SOURCE_REMOVE; // At start, trying to go start
+            if (current <= min && direction > 0) return GLib.SOURCE_REMOVE; // At end, trying to go end
+
+            return GLib.SOURCE_CONTINUE;
+        };
+
+        this.slideTimerSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10, scrollFunc);
+    }
+
+    stopSlide() {
+        if (this.slideTimerSourceId > 0) {
+            GLib.source_remove(this.slideTimerSourceId);
+            this.slideTimerSourceId = 0;
+        }
+    }
+
+    onScroll(event) {
+        let containerSize, scrollBoxSize;
+        if (this.state.isHorizontal) {
+            containerSize = this.container.get_preferred_width(-1)[1];
+            scrollBoxSize = this.scrollBox.width;
+        } else {
+            containerSize = this.container.get_preferred_height(-1)[1];
+            scrollBoxSize = this.scrollBox.height;
+        }
+
+        if (containerSize <= scrollBoxSize) return Clutter.EVENT_PROPAGATE;
+
+        const direction = event.get_scroll_direction();
+        let delta = 0;
+
+        if (direction === Clutter.ScrollDirection.SMOOTH) {
+            const [dx, dy] = event.get_scroll_delta();
+            delta = this.state.isHorizontal ? dx : dy;
+            delta *= 15; // Scale smooth scroll
+        } else {
+            const step = 20;
+            if (direction === Clutter.ScrollDirection.UP || direction === Clutter.ScrollDirection.LEFT) {
+                delta = -step;
+            } else if (direction === Clutter.ScrollDirection.DOWN || direction === Clutter.ScrollDirection.RIGHT) {
+                delta = step;
+            }
+        }
+
+        if (delta !== 0) {
+            this.scroll(delta);
+            return Clutter.EVENT_STOP;
+        }
+
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    scroll(amount) {
+        let current, min, next;
+        if (this.state.isHorizontal) {
+            current = this.container.translation_x;
+            min = Math.min(0, this.scrollBox.width - this.container.width);
+            next = current - amount;
+        } else {
+            current = this.container.translation_y;
+            min = Math.min(0, this.scrollBox.height - this.container.height);
+            next = current - amount;
+        }
+
+        if (next > 0) next = 0;
+        if (next < min) next = min;
+
+        if (this.state.isHorizontal) this.container.translation_x = next;
+        else this.container.translation_y = next;
+    }
+
+    updateScrollVisibility() {
+        let containerSize, scrollBoxSize;
+
+        if (this.state.isHorizontal) {
+            containerSize = this.container.get_preferred_width(-1)[1];
+            scrollBoxSize = this.scrollBox.width;
+        } else {
+            containerSize = this.container.get_preferred_height(-1)[1];
+            scrollBoxSize = this.scrollBox.height;
+        }
+
+        let minTranslation = Math.min(0, scrollBoxSize - containerSize);
+        let currentTranslation = this.state.isHorizontal ? this.container.translation_x : this.container.translation_y;
+
+        // Clamp translation if bounds have changed (resizing, etc)
+        if (currentTranslation < minTranslation) {
+            currentTranslation = minTranslation;
+            if (this.state.isHorizontal) this.container.translation_x = currentTranslation;
+            else this.container.translation_y = currentTranslation;
+        }
+
+        if (containerSize > scrollBoxSize) {
+            // Tolerance of 1 pixel to avoid flickering
+            this.startButton.visible = currentTranslation < -1;
+            this.endButton.visible = currentTranslation > minTranslation + 1;
+        } else {
+            this.startButton.visible = false;
+            this.endButton.visible = false;
+
+            if (currentTranslation !== 0) {
+                if (this.state.isHorizontal) this.container.translation_x = 0;
+                else this.container.translation_y = 0;
+            }
+        }
     }
 
     getWindowCount(appId) {
@@ -308,13 +525,14 @@ class Workspace {
             });
 
             if(idx > -1) {
-                this.actor.insert_child_at_index(appGroup.actor, idx);
+                this.container.insert_child_at_index(appGroup.actor, idx);
                 this.appGroups.splice(idx, 0, appGroup);
             }
             else {
-                this.actor.add_child(appGroup.actor);
+                this.container.add_child(appGroup.actor);
                 this.appGroups.push(appGroup);
             }
+            this.updateScrollVisibility();
             appGroup.windowAdded(metaWindow);
         };
 
@@ -339,7 +557,7 @@ class Workspace {
 
     updateAppGroupIndexes() {
         const newAppGroups = [];
-        this.actor.get_children().forEach( child => {
+        this.container.get_children().forEach( child => {
             const appGroup = this.appGroups.find( appGroup => appGroup.actor === child);
             if (appGroup) {
                 newAppGroups.push(appGroup);
@@ -403,7 +621,7 @@ class Workspace {
                         // in edge case when multiple apps of the same program are favorited, do not move other app
                         if(!otherAppObject.groupState.isFavoriteApp) {
                             this.appGroups.splice(otherApp, 1);
-                            this.actor.set_child_at_index(otherAppObject.actor, refApp);
+                            this.container.set_child_at_index(otherAppObject.actor, refApp);
                             this.appGroups.splice(refApp, 0, otherAppObject);
 
                             // change previously unpinned app status to pinned
