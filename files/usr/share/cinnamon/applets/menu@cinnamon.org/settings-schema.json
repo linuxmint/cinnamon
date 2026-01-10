@@ -5,7 +5,7 @@
         "content" : {
             "type" : "page",
             "title" : "Content",
-            "sections" : ["content-places", "content-content"]
+            "sections" : ["content-content", "content-places"]
         },
         "appearance" : {
             "type" : "page",
@@ -39,15 +39,16 @@
             "title" : "Panel",
             "keys" : ["menu-custom", "menu-icon", "menu-icon-size", "menu-label"]
         },
-        "content-places" : {
-            "type" : "section",
-            "title" : "Places",
-            "keys" : ["show-home", "show-desktop", "show-documents", "show-downloads", "show-music", "show-pictures", "show-videos", "show-bookmarks"]
-        },
        "content-content" : {
             "type" : "section",
             "title" : "Content",
             "keys" : ["show-sidebar", "show-avatar", "show-favorites", "show-recents", "menu-editor-button"]
+        },
+        "content-places" : {
+            "dependency" : "show-sidebar",
+            "type" : "section",
+            "title" : "Places",
+            "keys" : ["show-home", "show-desktop", "show-documents", "show-downloads", "show-music", "show-pictures", "show-videos", "show-bookmarks"]
         }
     },
  "overlay-key" : {
@@ -112,6 +113,7 @@
     "description" : "Sidebar"
  },
  "show-avatar" : {
+    "dependency" : "show-sidebar",
     "type" : "switch",
     "default" : true,
     "description" : "Avatar"
@@ -185,6 +187,7 @@
     "dependency" : "show-sidebar"
  },
  "sidebar-max-width": {
+  "dependency" : "show-sidebar",
   "type": "spinbutton",
   "default": 180,
   "min": 130,
