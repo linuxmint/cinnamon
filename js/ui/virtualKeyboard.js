@@ -40,8 +40,8 @@ const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                  
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
 const layout_key = { action: 'next-layout',      icon: 'xsi-input-keyboard-symbolic' };
-const ctrl_key =   { keyval: Clutter.KEY_Control_L, label: 'Ctrl', width: 1.5, modifier: 'ctrl', extraClassName: 'non-alpha-key' };
-const alt_key =    { keyval: Clutter.KEY_Alt_L,     label: 'Alt',  width: 1.5, modifier: 'alt',  extraClassName: 'non-alpha-key' };
+const ctrl_key =   { keyval: Clutter.KEY_Control_L, label: 'Ctrl', width: 1.5, modifier: 'ctrl', extraClassName: 'modifier-key' };
+const alt_key =    { keyval: Clutter.KEY_Alt_L,     label: 'Alt',  width: 1.5, modifier: 'alt',  extraClassName: 'modifier-key' };
 
 const defaultKeysPre = [
     [[escape_key], [tab_key], [layout_key, { width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [ctrl_key, _123_key, alt_key]],
@@ -482,15 +482,11 @@ var Key = GObject.registerClass({
             this.keyButton.add_style_pseudo_class('latched');
             if (is_shift && this._icon) {
                 this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
-            } else {
-                this.keyButton.add_style_class_name('shift-key-uppercase');
             }
         } else {
             this.keyButton.remove_style_pseudo_class('latched');
             if (is_shift && this._icon) {
                 this._icon.icon_name = 'keyboard-shift-filled-symbolic';
-            } else {
-                this.keyButton.remove_style_class_name('shift-key-uppercase');
             }
         }
     }
