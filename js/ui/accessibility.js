@@ -20,6 +20,10 @@ const HOVERKEY_ACTIONS = {
     "secondary": Clutter.PointerA11yDwellClickType.SECONDARY
 }
 
+const HOVERKEY_ACTION_NAMES = Object.fromEntries(
+    Object.entries(HOVERKEY_ACTIONS).map(([k, v]) => [v, k])
+);
+
 function A11yHandler(){
     this._init();
 }
@@ -41,6 +45,7 @@ A11yHandler.prototype = {
         this._events_flash = false;
         this._events_sound = false
         this._hoverclick_enabled = false;
+        this._updatingHoverclickAction = false;
 
         /* Options */
         this.state_on_sound = null;
@@ -50,6 +55,10 @@ A11yHandler.prototype = {
 
         let seat = Clutter.get_default_backend().get_default_seat();
         this.keymap = seat.get_keymap();
+
+        seat.connect('ptr-a11y-dwell-click-type-changed', (seat, clickType) => {
+            this._onDwellClickTypeChanged(clickType);
+        });
 
         this.caps = this.keymap.get_caps_lock_state();
         this.num = this.keymap.get_num_lock_state();
@@ -89,6 +98,10 @@ A11yHandler.prototype = {
     },
 
     hoverkey_action_changed: function(settings, key) {
+        if (this._updatingHoverclickAction) {
+            return;
+        }
+
         let action = global.settings.get_string("hoverclick-action");
 
         seat = Clutter.get_default_backend().get_default_seat();
@@ -97,6 +110,15 @@ A11yHandler.prototype = {
             seat.set_pointer_a11y_dwell_click_type(HOVERKEY_ACTIONS[action]);
         } catch (e) {
             global.logError("Attempted to use invalid action name for hoverclick")
+        }
+    },
+
+    _onDwellClickTypeChanged: function(clickType) {
+        let actionName = HOVERKEY_ACTION_NAMES[clickType];
+        if (actionName && global.settings.get_string("hoverclick-action") !== actionName) {
+            this._updatingHoverclickAction = true;
+            global.settings.set_string("hoverclick-action", actionName);
+            this._updatingHoverclickAction = false;
         }
     },
 

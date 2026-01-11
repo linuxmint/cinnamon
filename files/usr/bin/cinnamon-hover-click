@@ -99,6 +99,7 @@ class HoverClickWindow(XApp.GtkWindow):
 
         self.show_all()
         self.settings.connect("changed::hoverclick-layout", self.update_layout)
+        self.settings.connect("changed::hoverclick-action", self.on_action_changed)
         self.connect("delete-event", self.exit)
         GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit)
 
@@ -110,6 +111,24 @@ class HoverClickWindow(XApp.GtkWindow):
             return
 
         self.settings.set_string("hoverclick-action", action)
+
+    def on_action_changed(self, settings, key):
+        if self.doing_setup:
+            return
+
+        action = settings.get_string("hoverclick-action")
+        button_map = {
+            "single": self.single_click_button,
+            "double": self.double_click_button,
+            "drag": self.drag_button,
+            "secondary": self.right_click_button
+        }
+
+        button = button_map.get(action)
+        if button and not button.get_active():
+            self.doing_setup = True
+            button.set_active(True)
+            self.doing_setup = False
 
     def on_button_press_event(self, button, event):
         had_button, button = event.get_button()
