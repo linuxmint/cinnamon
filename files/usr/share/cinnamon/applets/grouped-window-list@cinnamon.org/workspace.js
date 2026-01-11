@@ -15,6 +15,11 @@ class Workspace {
         this.state.connect({
             orientation: (state) => {
                 this.on_orientation_changed(state.orientation);
+            },
+            currentWs: (state) => {
+                if (this.metaWorkspace && state.currentWs === this.metaWorkspace.index()) {
+                    this.scrollToFocusedApp();
+                }
             }
         });
         this.workspaceState = createStore({
@@ -283,6 +288,18 @@ class Workspace {
         if (index === -1) return;
 
         const isHorizontal = this.state.isHorizontal;
+
+        let containerSize, boxSize;
+        if (isHorizontal) {
+            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
+            boxSize = this.scrollBox.width;
+        } else {
+            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
+            boxSize = this.scrollBox.height;
+        }
+
+        if (containerSize <= boxSize) return;
+
         let itemPos = 0;
         let itemSize = 0;
 
@@ -294,15 +311,6 @@ class Workspace {
                 itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
             }
             itemPos += itemSize;
-        }
-
-        const boxSize = isHorizontal ? this.scrollBox.width : this.scrollBox.height;
-
-        let containerSize;
-        if (isHorizontal) {
-            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
-        } else {
-            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
         }
 
         // Subtract half size to get center.
