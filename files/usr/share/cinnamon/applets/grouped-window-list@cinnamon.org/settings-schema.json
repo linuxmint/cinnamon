@@ -98,12 +98,13 @@
   },
   "scroll-behavior": {
     "type": "combobox",
-    "default": 1,
+    "default": 4,
     "description": "Mouse wheel scroll action",
     "options": {
       "None": 1,
       "Cycle apps": 2,
-      "Cycle windows": 3
+      "Cycle windows": 3,
+      "Slide app list": 4
     }
   },
   "left-click-action": {

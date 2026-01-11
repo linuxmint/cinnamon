@@ -207,6 +207,10 @@ class Workspace {
     }
 
     onScroll(event) {
+        if (this.state.settings.scrollBehavior !== 4) {
+            return Clutter.EVENT_PROPAGATE;
+        }
+
         let containerSize, scrollBoxSize;
         if (this.state.isHorizontal) {
             containerSize = this.container.get_preferred_width(-1)[1];
