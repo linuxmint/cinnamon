@@ -121,6 +121,7 @@ class Workspace {
         this.signals.connect(this.container, 'allocation-changed', this.updateScrollVisibility, this);
         this.signals.connect(this.container, 'notify::translation-x', this.updateScrollVisibility, this);
         this.signals.connect(this.container, 'notify::translation-y', this.updateScrollVisibility, this);
+        this.signals.connect(this.scrollBox, 'notify::allocation', this.updateScrollVisibility, this);
         this.signals.connect(this.actor, 'scroll-event', (actor, event) => this.onScroll(event));
 
         this.on_orientation_changed(this.state.orientation);
