@@ -202,18 +202,37 @@ class LauncherEditor(ItemEditor):
 
     def build_ui(self):
         self.builder.get_object('exec-browse').connect('clicked', self.pick_exec)
-
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
         self.builder.get_object('exec-entry').connect('changed', self.resync_validity)
 
-    def resync_validity(self, *args):
-        name_text = self.builder.get_object('name-entry').get_text().strip()
-        exec_text = self.builder.get_object('exec-entry').get_text().strip()
-        name_valid = name_text != ""
-        exec_valid = self.validate_exec_line(exec_text)
-        self.sync_widgets(name_valid, exec_valid)
+        self.category_widgets = {} # Map ID -> CheckButton
+        self.setup_categories_list()
+
+    def setup_categories_list(self):
+        flowbox = self.builder.get_object('category-flowbox')
+        
+        tree = CMenu.Tree.new("cinnamon-applications.menu", CMenu.TreeFlags.INCLUDE_NODISPLAY | CMenu.TreeFlags.SHOW_EMPTY)
+        if tree.load_sync():
+            root = tree.get_root_directory()
+            it = root.iter()
+            while True:
+                item_type = it.next()
+                if item_type == CMenu.TreeItemType.INVALID:
+                    break
+                if item_type == CMenu.TreeItemType.DIRECTORY:
+                    dir_item = it.get_directory()
+                    name = dir_item.get_name()
+                    cat_id = dir_item.get_menu_id()
+                    print(cat_id, name)
+                    if cat_id:
+                        cb = Gtk.CheckButton(label=name)
+                        cb.set_visible(True)
+                        flowbox.add(cb)
+                        self.category_widgets[cat_id] = cb
 
     def load(self):
+        flowbox = self.builder.get_object('category-flowbox')
+
         super(LauncherEditor, self).load()
         self.set_text('name-entry', "Name")
         self.set_text('exec-entry', "Exec")
@@ -222,14 +241,43 @@ class LauncherEditor(ItemEditor):
         self.set_check('offload-gpu-check', "PrefersNonDefaultGPU")
         self.set_icon("Icon")
 
+        # Preselect existing categories
+        try:
+            flowbox = self.builder.get_object('category-flowbox')
+            existing_categories = self.keyfile.get_string_list(DESKTOP_GROUP, "Categories")
+            print(existing_categories)
+            for cat_id in existing_categories:
+                if cat_id not in self.category_widgets:
+                    cb = Gtk.CheckButton(label=cat_id)
+                    cb.set_visible(True)
+                    flowbox.add(cb)
+                    self.category_widgets[cat_id] = cb
+                self.category_widgets[cat_id].set_active(True)
+        except GLib.GError:
+            pass
+
     def get_keyfile_edits(self):
+        selected_categories = [cat_id for cat_id, cb in self.category_widgets.items() if cb.get_active()]
+        
+        categories_val = ";".join(selected_categories)
+        if categories_val:
+            categories_val += ";"
+
         return dict(Name=self.builder.get_object('name-entry').get_text(),
                     Exec=self.builder.get_object('exec-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
                     Terminal=self.builder.get_object('terminal-check').get_active(),
                     PrefersNonDefaultGPU=self.builder.get_object("offload-gpu-check").get_active(),
+                    Categories=categories_val,
                     Icon=self.icon_chooser.get_icon(),
                     Type="Application")
+
+    def resync_validity(self, *args):
+        name_text = self.builder.get_object('name-entry').get_text().strip()
+        exec_text = self.builder.get_object('exec-entry').get_text().strip()
+        name_valid = name_text != ""
+        exec_valid = self.validate_exec_line(exec_text)
+        self.sync_widgets(name_valid, exec_valid)
 
     def pick_exec(self, button):
         chooser = Gtk.FileChooserDialog(title=_("Choose a command"),

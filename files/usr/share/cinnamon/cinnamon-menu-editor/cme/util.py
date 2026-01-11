@@ -72,27 +72,6 @@ def getUniqueFileId(name, extension):
                 break
     return filename
 
-def getUniqueRedoFile(filepath) -> str:
-    while 1:
-        new_filepath = filepath + '.redo-' + str(uuid.uuid1())
-        if not os.path.isfile(new_filepath):
-            break
-    return new_filepath
-
-def getUniqueUndoFile(filepath) -> str:
-    filename, extension = os.path.split(filepath)[1].rsplit('.', 1)
-    while 1:
-        if extension == 'desktop':
-            path = getUserItemPath()
-        elif extension == 'directory':
-            path = getUserDirectoryPath()
-        elif extension == 'menu':
-            path = getUserMenuPath()
-        new_filepath = os.path.join(path, filename + '.' + extension + '.undo-' + str(uuid.uuid1()))
-        if not os.path.isfile(new_filepath):
-            break
-    return new_filepath
-
 def getItemPath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
         file_path = os.path.join(path, 'applications', file_id)
