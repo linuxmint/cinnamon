@@ -110,6 +110,7 @@ class Workspace {
         this.appGroups = [];
         this.lastFocusedApp = null;
         this.slideTimerSourceId = 0;
+        this.scrollToAppDebounceTimeoutId = 0;
 
         // Connect all the signals
         this.signals.connect(global.display, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
@@ -266,9 +267,10 @@ class Workspace {
     }
 
     scrollToAppGroup(appGroup) {
-        if (this.scrollToAppDebounceTimeoutId) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
+        if (this.scrollToAppDebounceTimeoutId > 0) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
         this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLL_TO_APP_DEBOUNCE_TIME, () => {
             this._scrollToAppGroup(appGroup);
+            this.scrollToAppDebounceTimeoutId = 0;
             return GLib.SOURCE_REMOVE;
         });
     }
