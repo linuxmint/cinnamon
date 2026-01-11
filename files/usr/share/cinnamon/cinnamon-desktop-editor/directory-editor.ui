@@ -8,6 +8,8 @@
     <property name="border_width">4</property>
     <property name="title" translatable="yes">Directory Properties</property>
     <property name="type_hint">dialog</property>
+    <property name="default-width">420</property>
+    <property name="default-height">150</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-box">
         <property name="can_focus">False</property>
@@ -129,7 +131,6 @@
                     <property name="can_focus">True</property>
                     <property name="has_focus">True</property>
                     <property name="hexpand">True</property>
-                    <property name="invisible_char">●</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
@@ -143,11 +144,25 @@
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="hexpand">True</property>
-                    <property name="invisible_char">●</property>
                   </object>
                   <packing>
                     <property name="left_attach">1</property>
                     <property name="top_attach">1</property>
+                    <property name="width">1</property>
+                    <property name="height">1</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkCheckButton" id="nodisplay-check">
+                    <property name="label" translatable="yes">Hide (NoDisplay)</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">False</property>
+                    <property name="draw_indicator">True</property>
+                  </object>
+                  <packing>
+                    <property name="left_attach">1</property>
+                    <property name="top_attach">2</property>
                     <property name="width">1</property>
                     <property name="height">1</property>
                   </packing>
