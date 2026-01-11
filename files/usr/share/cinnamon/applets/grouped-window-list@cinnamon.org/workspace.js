@@ -37,7 +37,10 @@ class Workspace {
             },
             updateFocusState: (focusedAppId) => {
                 this.appGroups.forEach( appGroup => {
-                    if (focusedAppId === appGroup.groupState.appId) return;
+                    if (focusedAppId === appGroup.groupState.appId) {
+                        this.scrollToAppGroup(appGroup);
+                        return;
+                    };
                     appGroup.onFocusChange(false);
                 });
             }
@@ -249,14 +252,66 @@ class Workspace {
         else this.container.translation_y = next;
     }
 
+    scrollToAppGroup(appGroup) {
+        if (this.scrollToAppDebounceTimeoutId) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
+        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this._scrollToAppGroup(appGroup);
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _scrollToAppGroup(appGroup) {
+        if (!appGroup || !appGroup.actor) return;
+
+        const index = this.appGroups.indexOf(appGroup);
+        if (index === -1) return;
+
+        const isHorizontal = this.state.isHorizontal;
+        let itemPos = 0;
+        let itemSize = 0;
+
+        for (let i = 0; i <= index; i++) {
+            const actor = this.appGroups[i].actor;
+            if (isHorizontal) {
+                itemSize = actor.width > 0 ? actor.width : actor.get_preferred_width(-1)[1];
+            } else {
+                itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
+            }
+            itemPos += itemSize;
+        }
+
+        const boxSize = isHorizontal ? this.scrollBox.width : this.scrollBox.height;
+
+        let containerSize;
+        if (isHorizontal) {
+            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
+        } else {
+            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
+        }
+
+        // Subtract half size to get center.
+        const targetCenter = itemPos - (itemSize / 2);
+        // We want targetCenter to be at boxSize / 2
+        let newPos = (boxSize / 2) - targetCenter;
+
+        const minPos = Math.min(0, boxSize - containerSize);
+        newPos = Math.round(Math.max(minPos, Math.min(newPos, 0)));
+
+        if (isHorizontal) {
+            this.container.translation_x = newPos;
+        } else {
+            this.container.translation_y = newPos;
+        }
+    }
+
     updateScrollVisibility() {
         let containerSize, scrollBoxSize;
 
         if (this.state.isHorizontal) {
-            containerSize = this.container.get_preferred_width(-1)[1];
+            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
             scrollBoxSize = this.scrollBox.width;
         } else {
-            containerSize = this.container.get_preferred_height(-1)[1];
+            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
             scrollBoxSize = this.scrollBox.height;
         }
 
@@ -394,6 +449,7 @@ class Workspace {
         this.appGroups = [];
         this.loadFavorites();
         this.refreshApps();
+        this.scrollToFocusedApp();
     }
 
     loadFavorites() {
@@ -428,6 +484,15 @@ class Workspace {
 
         for (let i = 0, len = windows.length; i < len; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
+        }
+    }
+
+    scrollToFocusedApp() {
+        for (let appGroup of this.appGroups) {
+            if (appGroup.groupState.lastFocused && appGroup.groupState.lastFocused.has_focus()) {
+                this.scrollToAppGroup(appGroup);
+                return;
+            }
         }
     }
 

@@ -12,6 +12,7 @@ const constants = {
     FLASH_INTERVAL: 500,
     FLASH_MAX_COUNT: 4,
     RESERVE_KEYS: ['willUnmount'],
+    SCROLL_TO_APP_DEBOUNCE_TIME: 100,
     TitleDisplay: {
         None: 1,
         App: 2,
