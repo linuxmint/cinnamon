@@ -9,14 +9,12 @@ import shutil
 import subprocess
 from setproctitle import setproctitle
 from pathlib import Path
+import xml.etree.ElementTree as ET
 
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("CMenu", "3.0")
 from gi.repository import GLib, Gtk, Gio, CMenu
-
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
-from cme import util
 
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings/bin')
 import JsonSettingsWidgets
@@ -37,21 +35,77 @@ DEFAULT_ICON_NAME = "cinnamon-panel-launcher"
 def escape_space(string):
     return string.replace(" ", r"\ ")
 
-
 def ask(msg):
-    dialog = Gtk.MessageDialog(None,
-                               Gtk.DialogFlags.DESTROY_WITH_PARENT | Gtk.DialogFlags.MODAL,
-                               Gtk.MessageType.QUESTION,
-                               Gtk.ButtonsType.YES_NO,
-                               None)
+    dialog = Gtk.MessageDialog(
+        transient_for=None,
+        modal=True,
+        destroy_with_parent=True,
+        message_type=Gtk.MessageType.QUESTION,
+        buttons=Gtk.ButtonsType.YES_NO,
+    )
     dialog.set_markup(msg)
-    dialog.show_all()
+
     response = dialog.run()
     dialog.destroy()
     return response == Gtk.ResponseType.YES
 
 
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
+KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
+
+
+def getUserItemPath():
+    item_dir = os.path.join(GLib.get_user_data_dir(), 'applications')
+    if not os.path.isdir(item_dir):
+        os.makedirs(item_dir)
+    return item_dir
+
+def getUserDirectoryPath():
+    menu_dir = os.path.join(GLib.get_user_data_dir(), 'desktop-directories')
+    if not os.path.isdir(menu_dir):
+        os.makedirs(menu_dir)
+    return menu_dir
+
+def is_system_launcher(filename):
+    for path in GLib.get_system_data_dirs():
+        if os.path.exists(os.path.join(path, "applications", filename)):
+            return True
+    return False
+
+def is_system_directory(filename):
+    for path in GLib.get_system_data_dirs():
+        if os.path.exists(os.path.join(path, "desktop-directories", filename)):
+            return True
+    return False
+
+# from cs_startup.py
+def get_locale():
+    current_locale = None
+    locales = GLib.get_language_names()
+    for locale in locales:
+        if locale.find(".") == -1:
+            current_locale = locale
+            break
+    return current_locale
+
+def fillKeyFile(keyfile, items):
+    LOCALIZABLE_KEYS = ("Name", "GenericName", "Comment", "Keywords")
+    locale = get_locale()
+
+    for key, item in items.items():
+        if item is None:
+            continue
+
+        if isinstance(item, bool):
+            keyfile.set_boolean(DESKTOP_GROUP, key, item)
+        elif isinstance(item, str):
+            keyfile.set_string(DESKTOP_GROUP, key, item)
+            if key in LOCALIZABLE_KEYS and locale:
+                keyfile.set_locale_string(DESKTOP_GROUP, key, locale, item)
+        elif isinstance(item, list):
+            keyfile.set_string_list(DESKTOP_GROUP, key, item)
+            if key in LOCALIZABLE_KEYS and locale:
+                keyfile.set_locale_string_list(DESKTOP_GROUP, key, locale, item)
 
 
 class ItemEditor(object):
@@ -132,6 +186,22 @@ class ItemEditor(object):
     def get_keyfile_edits(self):
         raise NotImplementedError()
 
+    def pick_exec(self, button):
+        chooser = Gtk.FileChooserDialog(
+            title=_("Choose a command"),
+            parent=self.dialog,
+            action=Gtk.FileChooserAction.OPEN
+        )
+        chooser.add_buttons(
+            Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
+            Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT
+        )
+        response = chooser.run()
+
+        if response == Gtk.ResponseType.ACCEPT:
+            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
+        chooser.destroy()
+
     def set_text(self, ctl, name):
         try:
             val = self.keyfile.get_locale_string(DESKTOP_GROUP, name, None)
@@ -154,38 +224,27 @@ class ItemEditor(object):
         except GLib.GError:
             pass
         else:
-            print(val)
             self.icon_chooser.set_icon(val)
             self.starting_icon = val
-            print('icon:', self.icon_chooser.get_icon())
 
     def load(self):
         self.keyfile = GLib.KeyFile()
         path = self.item_path or ""
         try:
-            self.keyfile.load_from_file(path, util.KEY_FILE_FLAGS)
+            self.keyfile.load_from_file(path, KEY_FILE_FLAGS)
         except GLib.GError:
             pass
 
     def save(self):
-        util.fillKeyFile(self.keyfile, self.get_keyfile_edits())
+        fillKeyFile(self.keyfile, self.get_keyfile_edits())
         contents, length = self.keyfile.to_data()
-        need_exec = False
-        if self.destdir is not None:
-            self.item_path = os.path.join(self.destdir, self.builder.get_object('name-entry').get_text() + ".desktop")
-            need_exec = True
-
+        
         try:
             with open(self.item_path, 'w') as f:
                 f.write(contents)
-            if need_exec:
-                os.chmod(self.item_path, 0o755)
-
-            subprocess.Popen(['update-desktop-database', util.getUserItemPath()], env=os.environ)
+            
         except IOError as e:
-            if ask(_("Cannot create the launcher at this location.  Add to the desktop instead?")):
-                self.destdir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
-                self.save()
+            print("Error writing file:", e)
 
     def run(self):
         self.dialog.present()
@@ -197,14 +256,19 @@ class ItemEditor(object):
         else:
             self.callback(False, self.item_path)
 
-class LauncherEditor(ItemEditor):
+class NemoLauncherEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
 
     def build_ui(self):
         self.builder.get_object('exec-browse').connect('clicked', self.pick_exec)
-
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
         self.builder.get_object('exec-entry').connect('changed', self.resync_validity)
+
+        # Hide LauncherEditor widgets not relevant to NemoLauncherEditor
+        self.builder.get_object('nodisplay-check').set_visible(False)
+        self.builder.get_object('nodisplay-check').set_no_show_all(True)
+        self.builder.get_object('category-section').set_visible(False)
+        self.builder.get_object('category-section').set_no_show_all(True)
 
     def resync_validity(self, *args):
         name_text = self.builder.get_object('name-entry').get_text().strip()
@@ -213,8 +277,9 @@ class LauncherEditor(ItemEditor):
         exec_valid = self.validate_exec_line(exec_text)
         self.sync_widgets(name_valid, exec_valid)
 
+
     def load(self):
-        super(LauncherEditor, self).load()
+        super(NemoLauncherEditor, self).load()
         self.set_text('name-entry', "Name")
         self.set_text('exec-entry', "Exec")
         self.set_text('comment-entry', "Comment")
@@ -231,19 +296,241 @@ class LauncherEditor(ItemEditor):
                     Icon=self.icon_chooser.get_icon(),
                     Type="Application")
 
-    def pick_exec(self, button):
-        chooser = Gtk.FileChooserDialog(title=_("Choose a command"),
-                                        parent=self.dialog,
-                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                                                 Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
-        response = chooser.run()
-        if response == Gtk.ResponseType.ACCEPT:
-            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
-        chooser.destroy()
-
     def check_custom_path(self):
         if self.item_path:
-            self.item_path = os.path.join(util.getUserItemPath(), os.path.split(self.item_path)[1])
+            self.item_path = os.path.join(getUserItemPath(), os.path.split(self.item_path)[1])
+
+    def save(self):
+        fillKeyFile(self.keyfile, self.get_keyfile_edits())
+        contents, length = self.keyfile.to_data()
+        need_exec = False
+        if self.destdir is not None:
+            self.item_path = os.path.join(self.destdir, self.builder.get_object('name-entry').get_text() + ".desktop")
+            need_exec = True
+
+        try:
+            with open(self.item_path, 'w') as f:
+                f.write(contents)
+            if need_exec:
+                os.chmod(self.item_path, 0o755)
+
+            subprocess.Popen(['update-desktop-database', getUserItemPath()], env=os.environ)
+        except IOError as e:
+            if ask(_("Cannot create the launcher at this location.  Add to the desktop instead?")):
+                self.destdir = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP)
+                self.save()
+
+class LauncherEditor(ItemEditor):
+    ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
+
+    def __init__(self, item_path=None, callback=None, destdir=None, icon_size=24, show_categories=False):
+        self.show_categories = show_categories
+        super(LauncherEditor, self).__init__(item_path, callback, destdir, icon_size)
+
+    def build_ui(self):
+        self.builder.get_object('exec-browse').connect('clicked', self.pick_exec)
+        self.builder.get_object('name-entry').connect('changed', self.resync_validity)
+        self.builder.get_object('exec-entry').connect('changed', self.resync_validity)
+
+        if self.show_categories:
+            self.category_widgets = {} # Map ID -> CheckButton
+            self._setup_categories_list()
+            self.fdo_categories = []
+        else:
+            cat_section = self.builder.get_object('category-section')
+            cat_section.set_visible(False)
+            cat_section.set_no_show_all(True)
+
+    def resync_validity(self, *args):
+        name_text = self.builder.get_object('name-entry').get_text().strip()
+        exec_text = self.builder.get_object('exec-entry').get_text().strip()
+        name_valid = name_text != ""
+        exec_valid = self.validate_exec_line(exec_text)
+        self.sync_widgets(name_valid, exec_valid)
+
+    def _setup_categories_list(self):
+        flowbox = self.builder.get_object('category-flowbox')
+        DONT_SHOWS = ["Other"]
+
+        tree = CMenu.Tree.new("cinnamon-applications.menu", CMenu.TreeFlags.INCLUDE_NODISPLAY | CMenu.TreeFlags.SHOW_EMPTY)
+        if tree.load_sync():
+            root = tree.get_root_directory()
+            it = root.iter()
+            while True:
+                item_type = it.next()
+                if item_type == CMenu.TreeItemType.INVALID:
+                    break
+                if item_type == CMenu.TreeItemType.DIRECTORY:
+                    dir_item = it.get_directory()
+                    name = dir_item.get_name()
+                    cat_id = dir_item.get_menu_id()
+                    if cat_id and cat_id not in DONT_SHOWS:
+                        cb = Gtk.CheckButton(label=name)
+                        cb.set_visible(True)
+                        flowbox.add(cb)
+                        self.category_widgets[cat_id] = cb
+
+    def load(self):
+        super(LauncherEditor, self).load()
+        self.set_text('name-entry', "Name")
+        self.set_text('exec-entry', "Exec")
+        self.set_text('comment-entry', "Comment")
+        self.set_check('terminal-check', "Terminal")
+        self.set_check('offload-gpu-check', "PrefersNonDefaultGPU")
+        self.set_check('nodisplay-check', "NoDisplay")
+        self.set_icon("Icon")
+
+        if self.show_categories:
+            # Preselect existing categories
+            try:
+                flowbox = self.builder.get_object('category-flowbox')
+                self.fdo_categories = self.keyfile.get_string_list(DESKTOP_GROUP, "Categories")
+                cinnamon_categories = self._fdo_to_cinnamon(self.fdo_categories)
+                for cat_id in cinnamon_categories:
+                    if cat_id in self.category_widgets:
+                        self.category_widgets[cat_id].set_active(True)
+            except GLib.GError:
+                pass
+        else:
+            try:
+                self.old_categories = self.keyfile.get_locale_string(DESKTOP_GROUP, "Categories", None)
+            except GLib.GError:
+                self.old_categories = ""
+
+    def get_keyfile_edits(self):
+        if self.show_categories:
+            self.fdo_categories = self._cinnamon_to_fdo(self.fdo_categories)
+            categories_val = ";".join(self.fdo_categories)
+            if categories_val:
+                categories_val += ";"
+        else:
+            categories_val = self.old_categories
+
+        return dict(Name=self.builder.get_object('name-entry').get_text(),
+                    Exec=self.builder.get_object('exec-entry').get_text(),
+                    Comment=self.builder.get_object('comment-entry').get_text(),
+                    Terminal=self.builder.get_object('terminal-check').get_active(),
+                    PrefersNonDefaultGPU=self.builder.get_object("offload-gpu-check").get_active(),
+                    NoDisplay=self.builder.get_object("nodisplay-check").get_active(),
+                    Categories=categories_val,
+                    Icon=self.icon_chooser.get_icon(),
+                    Type="Application")
+
+    def check_custom_path(self):
+        # If item_path is a system file, we create an override in user item path, otherwise
+        # we edit it directly (including items in subdirectories of user path e.g. wine apps)
+        file_name = os.path.basename(self.item_path)
+        if is_system_launcher(file_name):
+            self.item_path = os.path.join(getUserItemPath(), file_name)
+        else:
+            # If launcher appears to be from a user installed app (e.g. steam, wine) rather
+            # than a user created custom launcher, we show a warning that 'restore' is not available.
+            if not file_name.startswith("alacarte-"):
+                self.builder.get_object('restore-info-bar').show()
+
+    def _fdo_to_cinnamon(self, fdo_cats):
+        # These conversions are based on /etc/xdg/menus/cinnamon-applications.menu
+        cats = list(fdo_cats)
+
+        mappings = {
+            "Game": "Games",
+            "Network": "Internet",
+            "AudioVideo": "Multimedia",
+            "Wine": "wine-wine"
+        }
+        for fdo, cinn in mappings.items():
+            if fdo in cats:
+                cats.append(cinn)
+
+        if "Utility" in cats and "Accessibility" not in cats and "System" not in cats:
+            cats.append("Accessories")
+            
+        if "Accessibility" in cats and "Settings" not in cats:
+            cats.append("Universal Access")
+            
+        if "Settings" in cats and "System" not in cats:
+            cats.append("Preferences")
+
+        if "System" in cats:
+            cats.append("Administration")
+
+        return cats
+
+    def _cinnamon_to_fdo(self, fdo_cats):
+        # These conversions are based on /etc/xdg/menus/cinnamon-applications.menu
+        mappings = {
+            "Accessories": "Utility",
+            "Games": "Game",
+            "Internet": "Network",
+            "Multimedia": "AudioVideo",
+            "Universal Access": "Accessibility",
+            "wine-wine": "Wine",
+            "Preferences": "Settings",
+            "Administration": "System"
+        }
+
+        for cinn_cat, button in self.category_widgets.items():
+            fdo_cat = mappings.get(cinn_cat, cinn_cat)
+            if button.get_active():
+                if fdo_cat not in fdo_cats:
+                    fdo_cats.append(fdo_cat)
+            else:
+                if fdo_cat in fdo_cats:
+                    fdo_cats.remove(fdo_cat)
+
+        if self.category_widgets["Accessories"].get_active():
+            if "System" in fdo_cats:
+                fdo_cats.remove("System")
+            if "Accessibility" in fdo_cats:
+                fdo_cats.remove("Accessibility")
+
+        if self.category_widgets["Education"].get_active() and "Science" in fdo_cats:
+            fdo_cats.remove("Science")
+
+        if self.category_widgets["Preferences"].get_active(): 
+            if "System" in fdo_cats:
+                fdo_cats.remove("System")
+
+        return fdo_cats
+
+    def _clear_menu_overrides(self):
+        """Removes <Include> and <Exclude> rules for this item from the menu XML."""
+        if not self.item_path:
+            return
+
+        desktop_id = os.path.basename(self.item_path)
+        menu_path = os.path.join(GLib.get_user_config_dir(), "menus", "cinnamon-applications.menu")
+        
+        if not os.path.exists(menu_path):
+            return
+
+        try:
+            tree = ET.parse(menu_path)
+            root = tree.getroot()
+            modified = False
+
+            for parent in root.iter():
+                for node in list(parent):
+                    if node.tag in ('Include', 'Exclude'):
+                        for filename_node in list(node.findall('Filename')):
+                            if filename_node.text == desktop_id:
+                                node.remove(filename_node)
+                                modified = True
+                        
+                        if len(node) == 0:
+                            parent.remove(node)
+                            modified = True
+            
+            if modified:
+                tree.write(menu_path, encoding='utf-8', xml_declaration=True)
+
+        except Exception as e:
+            print(f"Could not clean menu overrides: {e}")
+
+    def save(self):
+        super(LauncherEditor, self).save()
+        subprocess.Popen(['update-desktop-database', getUserItemPath()], env=os.environ)
+        self._clear_menu_overrides()
 
 class DirectoryEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui'
@@ -260,16 +547,27 @@ class DirectoryEditor(ItemEditor):
         super(DirectoryEditor, self).load()
         self.set_text('name-entry', "Name")
         self.set_text('comment-entry', "Comment")
+        self.set_check('nodisplay-check', "NoDisplay")
         self.set_icon("Icon")
 
     def get_keyfile_edits(self):
         return dict(Name=self.builder.get_object('name-entry').get_text(),
                     Comment=self.builder.get_object('comment-entry').get_text(),
+                    NoDisplay=self.builder.get_object('nodisplay-check').get_active(),
                     Icon=self.icon_chooser.get_icon(),
                     Type="Directory")
 
     def check_custom_path(self):
-        self.item_path = os.path.join(util.getUserDirectoryPath(), os.path.split(self.item_path)[1])
+        # If item_path is a system file, we create an override in user's
+        # desktop-directories path, otherwise we edit it directly.
+        file_name = os.path.basename(self.item_path)
+        if is_system_directory(file_name):
+            self.item_path = os.path.join(getUserDirectoryPath(), file_name)
+        else:
+            # If directory appears to be from a user installed app (e.g. wine) rather
+            # than a user created custom launcher, we show a warning that 'restore' is not available.
+            if not file_name.startswith("alacarte-"):
+                self.builder.get_object('restore-info-bar').show()
 
 class CinnamonLauncherEditor(ItemEditor):
     ui_file = '/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui'
@@ -279,6 +577,11 @@ class CinnamonLauncherEditor(ItemEditor):
 
         self.builder.get_object('name-entry').connect('changed', self.resync_validity)
         self.builder.get_object('exec-entry').connect('changed', self.resync_validity)
+
+        self.builder.get_object('nodisplay-check').set_visible(False)
+        self.builder.get_object('nodisplay-check').set_no_show_all(True)
+        self.builder.get_object('category-section').set_visible(False)
+        self.builder.get_object('category-section').set_no_show_all(True)
 
     def check_custom_path(self):
         dir = Gio.file_new_for_path(PANEL_LAUNCHER_PATH)
@@ -346,17 +649,6 @@ class CinnamonLauncherEditor(ItemEditor):
 
         return False
 
-    def pick_exec(self, button):
-        chooser = Gtk.FileChooserDialog(title=_("Choose a command"),
-                                        parent=self.dialog,
-                                        buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.REJECT,
-                                                 Gtk.STOCK_OK, Gtk.ResponseType.ACCEPT))
-        response = chooser.run()
-        if response == Gtk.ResponseType.ACCEPT:
-            self.builder.get_object('exec-entry').set_text(escape_space(chooser.get_filename()))
-        chooser.destroy()
-
-
 class Main:
     def __init__(self):
         parser = OptionParser()
@@ -365,6 +657,7 @@ class Main:
         parser.add_option("-f", "--file", dest="desktop_file", help="Name of desktop file (i.e. gnome-terminal.desktop)", metavar="DESKTOP_NAME")
         parser.add_option("-m", "--mode", dest="mode", default=None, help="Mode to run in: launcher, directory, panel-launcher or nemo-launcher")
         parser.add_option("-i", "--icon-size", dest="icon_size", type=int, default=24, help="Size to set the icon picker for (panel-launcher only)")
+        parser.add_option("--show-categories", action="store_true", dest="show_categories", default=False, help="Show the category selection section (launcher mode only)")
         (options, args) = parser.parse_args()
 
         if not options.mode:
@@ -385,6 +678,7 @@ class Main:
         self.orig_file = options.original_desktop_file
         self.desktop_file = options.desktop_file
         self.dest_dir = options.destination_directory
+        self.show_categories = options.show_categories
 
         if options.mode == "cinnamon-launcher":
             self.json_path = args[0]
@@ -397,13 +691,13 @@ class Main:
             editor = DirectoryEditor(self.orig_file, self.directory_cb)
             editor.dialog.show_all()
         elif self.mode == "launcher":
-            editor = LauncherEditor(self.orig_file, self.launcher_cb)
+            editor = LauncherEditor(self.orig_file, self.launcher_cb, show_categories=self.show_categories)
             editor.dialog.show_all()
         elif self.mode == "cinnamon-launcher":
             editor = CinnamonLauncherEditor(self.orig_file, self.panel_launcher_cb, icon_size=self.icon_size)
             editor.dialog.show_all()
         elif self.mode == "nemo-launcher":
-            editor = LauncherEditor(self.orig_file, self.nemo_launcher_cb, self.dest_dir)
+            editor = NemoLauncherEditor(self.orig_file, self.nemo_launcher_cb, self.dest_dir)
             editor.dialog.show_all()
         else:
             print("Invalid args")
@@ -437,7 +731,7 @@ class Main:
 
     def ask_menu_launcher(self, dest_path):
         if ask(_("Would you like to add this launcher to the menu also?  It will be placed in the Other category initially.")):
-            new_file_path = os.path.join(util.getUserItemPath(), os.path.split(dest_path)[1])
+            new_file_path = os.path.join(getUserItemPath(), os.path.split(dest_path)[1])
             shutil.copy(dest_path, new_file_path)
 
     def get_desktop_path(self):

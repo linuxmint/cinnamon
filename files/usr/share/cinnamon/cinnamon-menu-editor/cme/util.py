@@ -17,128 +17,65 @@
 #   Foundation, Inc., 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA
 
 import os
-import xml.dom.minidom
+from pathlib import Path
+import xml.etree.ElementTree as ET
 import uuid
-import sys
 from typing import Optional
-
-if sys.version_info[:2] >= (3, 8):
-    from collections.abc import Sequence
-else:
-    from collections import Sequence
 from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 
-DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
-KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
-
-# from cs_startup.py
-def get_locale():
-    current_locale = None
-    locales = GLib.get_language_names()
-    for locale in locales:
-        if locale.find(".") == -1:
-            current_locale = locale
-            break
-
-    return current_locale
-
-def fillKeyFile(keyfile, items) -> None:
-    for key, item in items.items():
-        if item is None:
-            continue
-
-        if isinstance(item, bool):
-            keyfile.set_boolean(DESKTOP_GROUP, key, item)
-        elif isinstance(item, str):
-            keyfile.set_string(DESKTOP_GROUP, key, item)
-            keyfile.set_locale_string(DESKTOP_GROUP, key, get_locale(), item)
-        elif isinstance(item, Sequence):
-            keyfile.set_string_list(DESKTOP_GROUP, key, item)
-            keyfile.set_locale_string_list(DESKTOP_GROUP, key, get_locale(), item)
-
-def getNameFromKeyFile(keyfile):
-    return keyfile.get_string(DESKTOP_GROUP, "Name")
-
 def getUniqueFileId(name, extension):
-    while 1:
-        filename = name + '-' + str(uuid.uuid1()) + extension
-        if extension == '.desktop':
-            path = getUserItemPath()
-            if not os.path.isfile(os.path.join(path, filename)) and not getItemPath(filename):
-                break
-        elif extension == '.directory':
-            path = getUserDirectoryPath()
-            if not os.path.isfile(os.path.join(path, filename)) and not getDirectoryPath(filename):
-                break
-    return filename
+    return f"{name}-{uuid.uuid4().hex[:8]}{extension}"
 
-def getUniqueRedoFile(filepath) -> str:
-    while 1:
-        new_filepath = filepath + '.redo-' + str(uuid.uuid1())
-        if not os.path.isfile(new_filepath):
-            break
-    return new_filepath
-
-def getUniqueUndoFile(filepath) -> str:
-    filename, extension = os.path.split(filepath)[1].rsplit('.', 1)
-    while 1:
-        if extension == 'desktop':
-            path = getUserItemPath()
-        elif extension == 'directory':
-            path = getUserDirectoryPath()
-        elif extension == 'menu':
-            path = getUserMenuPath()
-        new_filepath = os.path.join(path, filename + '.' + extension + '.undo-' + str(uuid.uuid1()))
-        if not os.path.isfile(new_filepath):
-            break
-    return new_filepath
-
-def getItemPath(file_id) -> Optional[str]:
+def getSystemItemFilepath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
-        file_path = os.path.join(path, 'applications', file_id)
-        if os.path.isfile(file_path):
-            return file_path
+        file_path = Path(path) / 'applications' / file_id
+        if file_path.is_file():
+            return str(file_path)
     return None
 
-def getUserItemPath() -> str:
-    item_dir = os.path.join(GLib.get_user_data_dir(), 'applications')
-    if not os.path.isdir(item_dir):
-        os.makedirs(item_dir)
-    return item_dir
+def getUserItemDir() -> str:
+    item_dir = Path(GLib.get_user_data_dir()) / 'applications'
+    if not item_dir.is_dir():
+        Path(item_dir).mkdir(parents=True, exist_ok=True)
+    return str(item_dir)
 
-def getDirectoryPath(file_id) -> Optional[str]:
+def getSystemDirectoryFilepath(file_id) -> Optional[str]:
     for path in GLib.get_system_data_dirs():
-        file_path = os.path.join(path, 'desktop-directories', file_id)
-        if os.path.isfile(file_path):
-            return file_path
+        file_path = Path(path) / 'desktop-directories' / file_id
+        if file_path.is_file():
+            return str(file_path)
     return None
 
-def getUserDirectoryPath() -> str:
-    menu_dir = os.path.join(GLib.get_user_data_dir(), 'desktop-directories')
-    if not os.path.isdir(menu_dir):
-        os.makedirs(menu_dir)
-    return menu_dir
+def getUserDirectoryDir() -> str:
+    path = Path(GLib.get_user_data_dir()) / 'desktop-directories'
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)
 
 def getUserMenuPath() -> str:
-    menu_dir = os.path.join(GLib.get_user_config_dir(), 'menus')
-    if not os.path.isdir(menu_dir):
-        os.makedirs(menu_dir)
-    return menu_dir
+    path = Path(GLib.get_user_config_dir()) / 'menus'
+    path.mkdir(parents=True, exist_ok=True)
+    return str(path)
 
-def getSystemMenuPath(file_id) -> Optional[str]:
+def _getSystemMenuPath(file_id) -> Optional[str]:
     for path in GLib.get_system_config_dirs():
-        file_path = os.path.join(path, 'menus', file_id)
-        if os.path.isfile(file_path):
-            return file_path
+        file_path = Path(path) / 'menus' / file_id
+        if file_path.is_file():
+            return str(file_path)
     return None
 
 def getUserMenuXml(tree) -> str:
-    system_file = getSystemMenuPath(os.path.basename(tree.get_canonical_menu_path()))
+    system_file = _getSystemMenuPath(os.path.basename(tree.get_canonical_menu_path()))
     name = tree.get_root_directory().get_menu_id()
-    menu_xml = "<!DOCTYPE Menu PUBLIC '-//freedesktop//DTD Menu 1.0//EN' 'http://standards.freedesktop.org/menu-spec/menu-1.0.dtd'>\n"
-    menu_xml += "<Menu>\n  <Name>" + name + "</Name>\n  "
-    menu_xml += "<MergeFile type=\"parent\">" + system_file +    "</MergeFile>\n</Menu>\n"
-    return menu_xml
+    
+    return (
+        '<?xml version="1.0" encoding="UTF-8"?>\n'
+        '<!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN" '
+        '"http://standards.freedesktop.org/menu-spec/menu-1.0.dtd">\n'
+        f'<Menu>\n'
+        f'  <Name>{name}</Name>\n'
+        f'  <MergeFile type="parent">{system_file}</MergeFile>\n'
+        '</Menu>'
+    )
 
 class SurfaceWrapper:
     def __init__(self, surface):
@@ -177,18 +114,6 @@ def getIcon(item, widget) -> SurfaceWrapper:
 
     wrapper.surface = Gdk.cairo_surface_create_from_pixbuf (pixbuf, widget.get_scale_factor(), widget.get_window())
     return wrapper
-
-def removeWhitespaceNodes(node) -> None:
-    remove_list = []
-    for child in node.childNodes:
-        if child.nodeType == xml.dom.minidom.Node.TEXT_NODE:
-            child.data = child.data.strip()
-            if not child.data.strip():
-                remove_list.append(child)
-        elif child.hasChildNodes():
-            removeWhitespaceNodes(child)
-    for node in remove_list:
-        node.parentNode.removeChild(node)
 
 def menuSortKey(node):
     prefCats = ["administration", "preferences"]

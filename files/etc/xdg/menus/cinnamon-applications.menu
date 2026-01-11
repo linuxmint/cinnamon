@@ -129,12 +129,6 @@
       </Include>
   </Menu>
 
-  <!-- System Tools-->
-  <Menu>
-    <Name>System</Name>
-    <Directory>cinnamon-system-tools.directory</Directory>    
-  </Menu>   <!-- End System Tools -->
-
   <!-- Other -->
   <Menu>
     <Name>Other</Name>
@@ -176,16 +170,7 @@
     <Name>Administration</Name>
     <Directory>cinnamon-settings-system.directory</Directory>
     <Include>
-      <And>
-        <Category>Settings</Category>
-        <Category>System</Category>
-      </And>
-    </Include>
-    <Include>
-      <And>
-        <Category>System</Category>
-        <Not><Category>Settings</Category></Not>
-      </And>
+      <Category>System</Category>
     </Include>
   </Menu>     <!-- End System Settings -->
 
@@ -199,8 +184,8 @@
 	<Menuname>Office</Menuname>
 	<Menuname>Other</Menuname>
 	<Menuname>Development</Menuname>
+  <Menuname>Science</Menuname>
 	<Menuname>Multimedia</Menuname>
-	<Menuname>System</Menuname>
 	<Menuname>Universal Access</Menuname>
 	<Menuname>wine-wine</Menuname>
 	<Menuname>Preferences</Menuname>
