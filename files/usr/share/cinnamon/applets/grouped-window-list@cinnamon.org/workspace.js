@@ -7,7 +7,7 @@ const {unref} = imports.misc.util;
 
 const createStore = require('./state');
 const AppGroup = require('./appGroup');
-const {RESERVE_KEYS} = require('./constants');
+const {RESERVE_KEYS, SCROLL_TO_APP_DEBOUNCE_TIME} = require('./constants');
 
 class Workspace {
     constructor(params) {
@@ -181,8 +181,17 @@ class Workspace {
                 min = Math.min(0, this.scrollBox.height - this.container.height);
             }
 
-            if (current >= 0 && direction < 0) return GLib.SOURCE_REMOVE; // At start, trying to go start
-            if (current <= min && direction > 0) return GLib.SOURCE_REMOVE; // At end, trying to go end
+            // At start, trying to go start
+            if (current >= 0 && direction < 0) {
+                this.slideTimerSourceId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+
+            // At end, trying to go end
+            if (current <= min && direction > 0) {
+                this.slideTimerSourceId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
 
             return GLib.SOURCE_CONTINUE;
         };
@@ -254,7 +263,7 @@ class Workspace {
 
     scrollToAppGroup(appGroup) {
         if (this.scrollToAppDebounceTimeoutId) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
-        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLL_TO_APP_DEBOUNCE_TIME, () => {
             this._scrollToAppGroup(appGroup);
             return GLib.SOURCE_REMOVE;
         });
