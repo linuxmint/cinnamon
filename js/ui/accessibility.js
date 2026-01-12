@@ -69,6 +69,8 @@ A11yHandler.prototype = {
 
         this.on_settings_changed();
         this.hoverkey_action_changed();
+
+        this.a11y_mouse_settings.set_boolean("dwell-click-mode-lock", false);
     },
 
     _set_keymap_listener: function(enabled) {

@@ -41,11 +41,12 @@ class HoverClickWindow(XApp.GtkWindow):
         self.popup = None
 
         self.settings = Gio.Settings(schema_id="org.cinnamon")
+        self.a11y_mouse_settings = Gio.Settings(schema_id="org.cinnamon.desktop.a11y.mouse")
 
         self.mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=4)
         self.add(self.mainbox)
 
-        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, homogeneous=True)
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, homogeneous=False)
         self.mainbox.pack_start(self.button_box, True, True, 0)
 
         self.action = self.settings.get_string("hoverclick-action")
@@ -87,6 +88,21 @@ class HoverClickWindow(XApp.GtkWindow):
         self.button_box.pack_start(self.drag_button, True, True, 0)
         self.right_click_button = make_button(_("Secondary Click"), "cinnamon-hc-right-click", "secondary")
         self.button_box.pack_start(self.right_click_button, True, True, 0)
+
+        self.lock_separator = Gtk.Separator()
+        self.button_box.pack_start(self.lock_separator, False, False, 0)
+
+        self.lock_button = Gtk.ToggleButton(image=Gtk.Image(icon_name="changes-prevent-symbolic",
+                                                            no_show_all=True,
+                                                            icon_size=Gtk.IconSize.MENU),
+                                            relief=Gtk.ReliefStyle.NONE,
+                                            always_show_image=True)
+        self.lock_button.connect("button-press-event", self.on_button_press_event)
+        self.button_box.pack_start(self.lock_button, True, True, 0)
+
+        self.a11y_mouse_settings.bind("dwell-click-mode-lock",
+                                      self.lock_button, "active",
+                                      Gio.SettingsBindFlags.DEFAULT)
 
         if self.start_button is not None:
             self.start_button.set_active(True)
@@ -149,8 +165,10 @@ class HoverClickWindow(XApp.GtkWindow):
         if orientation != self.orientation:
             if orientation == "vertical":
                 self.button_box.set_orientation(Gtk.Orientation.VERTICAL)
+                self.lock_separator.set_orientation(Gtk.Orientation.HORIZONTAL)
             elif orientation == "horizontal":
                 self.button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+                self.lock_separator.set_orientation(Gtk.Orientation.VERTICAL)
             self.orientation = orientation
             # snap size
             self.resize(1, 1)
