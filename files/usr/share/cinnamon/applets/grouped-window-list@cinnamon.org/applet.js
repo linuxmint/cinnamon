@@ -620,7 +620,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     updateTitleDisplay(titleDisplay) {
         if (titleDisplay === TitleDisplay.None
             || this.state.lastTitleDisplay === TitleDisplay.None) {
-            this.refreshCurrentWorkspace();
+            this.refreshAllWorkspaces();
         }
 
         this.workspaces.forEach( workspace => {
