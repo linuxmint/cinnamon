@@ -135,6 +135,7 @@ const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
 const {KeyboardManager} = imports.ui.keyboardManager;
+const SuspendLock = imports.ui.suspendLock;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -462,6 +463,10 @@ function start() {
     else {
         global.log('SSH agent: disabled by settings')
     }
+
+    // Suspend Lock Manager - ensures screen is locked BEFORE suspend
+    // This fixes a race condition where desktop can be briefly visible after resume
+    SuspendLock.init();
 
     magnifier = new Magnifier.Magnifier();
     locatePointer = new LocatePointer.locatePointer();
