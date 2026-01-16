@@ -44,6 +44,10 @@ const LoginManagerIface = '\
             <arg type="s" name="session_id" direction="in"/> \
             <arg type="o" name="session_path" direction="out"/> \
         </method> \
+        <method name="GetSessionByPID"> \
+            <arg type="u" name="pid" direction="in"/> \
+            <arg type="o" name="session_path" direction="out"/> \
+        </method> \
         <signal name="PrepareForSleep"> \
             <arg type="b" name="start" direction="out"/> \
         </signal> \
@@ -75,6 +79,8 @@ var SuspendLockManager = class SuspendLockManager {
         this._sessionPath = null;
         this._powerSettings = null;
         this._propertiesChangedId = 0;
+        this._prepareForSleepId = 0;
+        this._settingsChangedId = 0;
         this._lockTimeoutId = 0;
 
         // Inhibitor file descriptor - when closed, inhibitor is released
@@ -87,6 +93,11 @@ var SuspendLockManager = class SuspendLockManager {
         // Get power settings to check lock-on-suspend
         try {
             this._powerSettings = new Gio.Settings({ schema_id: POWER_SETTINGS_SCHEMA });
+            // Listen for settings changes to manage inhibitor accordingly
+            this._settingsChangedId = this._powerSettings.connect(
+                'changed::' + LOCK_ON_SUSPEND_KEY,
+                this._onLockOnSuspendChanged.bind(this)
+            );
         } catch (e) {
             global.logWarning('SuspendLockManager: Could not load power settings: ' + e.message);
             return;
@@ -96,6 +107,18 @@ var SuspendLockManager = class SuspendLockManager {
         this._connectToLogind();
 
         global.log('SuspendLockManager: Initialized - universal lock support enabled');
+    }
+
+    _onLockOnSuspendChanged() {
+        let lockOnSuspend = this._powerSettings.get_boolean(LOCK_ON_SUSPEND_KEY);
+        if (lockOnSuspend) {
+            // Take inhibitor if we don't have one
+            this._takeInhibitor();
+        } else {
+            // Release inhibitor if lock-on-suspend is disabled
+            this._releaseInhibitor();
+        }
+        global.log('SuspendLockManager: lock-on-suspend changed to ' + lockOnSuspend);
     }
 
     _connectToLogind() {
@@ -108,15 +131,17 @@ var SuspendLockManager = class SuspendLockManager {
                 '/org/freedesktop/login1'
             );
 
-            // Listen for PrepareForSleep signal
-            this._logindManagerProxy.connectSignal('PrepareForSleep',
+            // Listen for PrepareForSleep signal (store ID for cleanup)
+            this._prepareForSleepId = this._logindManagerProxy.connectSignal('PrepareForSleep',
                 this._onPrepareForSleep.bind(this));
 
             // Get current session path
             this._getCurrentSession();
 
-            // Take a delay inhibitor immediately
-            this._takeInhibitor();
+            // Take a delay inhibitor only if lock-on-suspend is enabled
+            if (this._powerSettings.get_boolean(LOCK_ON_SUSPEND_KEY)) {
+                this._takeInhibitor();
+            }
 
             global.log('SuspendLockManager: Connected to systemd-logind');
         } catch (e) {
@@ -126,26 +151,49 @@ var SuspendLockManager = class SuspendLockManager {
 
     _getCurrentSession() {
         try {
-            // Get XDG_SESSION_ID from environment
-            let sessionId = GLib.getenv('XDG_SESSION_ID');
+            let sessionPath = null;
 
-            if (!sessionId) {
-                // Fallback: use "auto" which refers to the caller's session
-                sessionId = 'auto';
+            // Try XDG_SESSION_ID first (most reliable when available)
+            let sessionId = GLib.getenv('XDG_SESSION_ID');
+            if (sessionId) {
+                try {
+                    [sessionPath] = this._logindManagerProxy.GetSessionSync(sessionId);
+                } catch (e) {
+                    global.log('SuspendLockManager: GetSession failed, trying GetSessionByPID');
+                }
             }
 
-            // Get the D-Bus object path for this session
-            let [sessionPath] = this._logindManagerProxy.GetSessionSync(sessionId);
-            this._sessionPath = sessionPath;
+            // Fallback: GetSessionByPID with our own PID (always works)
+            if (!sessionPath) {
+                [sessionPath] = this._logindManagerProxy.GetSessionByPIDSync(GLib.getpid());
+            }
 
+            this._sessionPath = sessionPath;
             global.log('SuspendLockManager: Session path: ' + this._sessionPath);
 
             // Create proxy for the session (to monitor LockedHint)
+            // Use G_DBUS_PROXY_FLAGS_NONE to ensure properties are cached
             let LoginSessionProxy = Gio.DBusProxy.makeProxyWrapper(LoginSessionIface);
             this._logindSessionProxy = new LoginSessionProxy(
                 Gio.DBus.system,
                 'org.freedesktop.login1',
-                this._sessionPath
+                this._sessionPath,
+                null,  // async callback - null for sync
+                null,  // cancellable
+                Gio.DBusProxyFlags.GET_INVALIDATED_PROPERTIES
+            );
+
+            // Force sync of properties to ensure LockedHint is cached
+            this._logindSessionProxy.get_connection().call_sync(
+                'org.freedesktop.login1',
+                this._sessionPath,
+                'org.freedesktop.DBus.Properties',
+                'GetAll',
+                new GLib.Variant('(s)', ['org.freedesktop.login1.Session']),
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null
             );
 
         } catch (e) {
@@ -286,60 +334,97 @@ var SuspendLockManager = class SuspendLockManager {
     }
 
     _lockViaLoginctl() {
-        // Method 1: Direct D-Bus call to session Lock() method
+        // Method 1: Direct D-Bus call to session Lock() method (async)
         if (this._logindSessionProxy) {
-            try {
-                global.log('SuspendLockManager: Calling Session.Lock() via D-Bus');
-                this._logindSessionProxy.LockSync();
-                global.log('SuspendLockManager: Session.Lock() call completed');
-                return;
-            } catch (e) {
-                global.logWarning('SuspendLockManager: D-Bus Lock() failed: ' + e.message);
-            }
+            global.log('SuspendLockManager: Calling Session.Lock() via D-Bus (async)');
+            this._logindSessionProxy.LockRemote((_result, error) => {
+                if (error) {
+                    global.logWarning('SuspendLockManager: D-Bus Lock() failed: ' + error.message);
+                    this._lockViaLoginctlCommand();
+                } else {
+                    global.log('SuspendLockManager: Session.Lock() call completed');
+                    // Lock was requested; wait for LockedHint signal or timeout
+                }
+            });
+            return;
         }
 
-        // Method 2: Fallback to loginctl command
+        // No session proxy, fall back to command
+        this._lockViaLoginctlCommand();
+    }
+
+    _lockViaLoginctlCommand() {
+        // Method 2: Fallback to loginctl command (async via subprocess)
+        global.log('SuspendLockManager: Falling back to loginctl lock-session (async)');
+
         try {
-            global.log('SuspendLockManager: Falling back to loginctl lock-session');
-            let [success, stdout, stderr, exitCode] = GLib.spawn_command_line_sync(
-                'loginctl lock-session'
-            );
-            if (success && exitCode === 0) {
-                global.log('SuspendLockManager: loginctl lock-session succeeded');
-            } else {
-                global.logWarning('SuspendLockManager: loginctl failed: ' +
-                    (stderr ? new TextDecoder().decode(stderr) : 'exit code ' + exitCode));
-                this._lockFallback();
-            }
+            let subprocess = new Gio.Subprocess({
+                argv: ['loginctl', 'lock-session'],
+                flags: Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+            });
+            subprocess.init(null);
+
+            subprocess.wait_async(null, (proc, result) => {
+                try {
+                    proc.wait_finish(result);
+                    if (proc.get_successful()) {
+                        global.log('SuspendLockManager: loginctl lock-session succeeded');
+                    } else {
+                        global.logWarning('SuspendLockManager: loginctl failed with exit code ' +
+                            proc.get_exit_status());
+                        this._lockFallbackAsync();
+                    }
+                } catch (e) {
+                    global.logWarning('SuspendLockManager: loginctl wait error: ' + e.message);
+                    this._lockFallbackAsync();
+                }
+            });
         } catch (e) {
-            global.logWarning('SuspendLockManager: loginctl error: ' + e.message);
-            this._lockFallback();
+            global.logWarning('SuspendLockManager: loginctl spawn error: ' + e.message);
+            this._lockFallbackAsync();
         }
     }
 
-    _lockFallback() {
-        // Last resort fallbacks for edge cases
+    _lockFallbackAsync() {
+        // Last resort fallbacks for edge cases (async)
         global.log('SuspendLockManager: Trying fallback lock methods');
 
-        // Try xdg-screensaver
-        try {
-            GLib.spawn_command_line_sync('xdg-screensaver lock');
-            global.log('SuspendLockManager: xdg-screensaver lock succeeded');
-            return;
-        } catch (e) {
-            // Ignore
-        }
+        this._tryFallbackCommand(['xdg-screensaver', 'lock'], 'xdg-screensaver', () => {
+            this._tryFallbackCommand(['cinnamon-screensaver-command', '--lock'], 'cinnamon-screensaver-command', () => {
+                global.logError('SuspendLockManager: All lock methods failed!');
+                // Timeout will eventually release the inhibitor
+            });
+        });
+    }
 
-        // Try cinnamon-screensaver-command
+    _tryFallbackCommand(argv, name, onFailure) {
         try {
-            GLib.spawn_command_line_sync('cinnamon-screensaver-command --lock');
-            global.log('SuspendLockManager: cinnamon-screensaver-command succeeded');
-            return;
-        } catch (e) {
-            // Ignore
-        }
+            let subprocess = new Gio.Subprocess({
+                argv: argv,
+                flags: Gio.SubprocessFlags.NONE
+            });
+            subprocess.init(null);
 
-        global.logError('SuspendLockManager: All lock methods failed!');
+            subprocess.wait_async(null, (proc, result) => {
+                try {
+                    proc.wait_finish(result);
+                    if (proc.get_successful()) {
+                        global.log('SuspendLockManager: ' + name + ' succeeded');
+                        // Success - wait for LockedHint or timeout
+                    } else {
+                        global.log('SuspendLockManager: ' + name + ' failed with exit code ' +
+                            proc.get_exit_status());
+                        onFailure();
+                    }
+                } catch (e) {
+                    global.log('SuspendLockManager: ' + name + ' wait error: ' + e.message);
+                    onFailure();
+                }
+            });
+        } catch (e) {
+            global.log('SuspendLockManager: ' + name + ' not available');
+            onFailure();
+        }
     }
 
     _clearLockTimeout() {
@@ -368,9 +453,22 @@ var SuspendLockManager = class SuspendLockManager {
     destroy() {
         this._clearLockTimeout();
 
+        // Disconnect PrepareForSleep signal
+        if (this._prepareForSleepId > 0 && this._logindManagerProxy) {
+            this._logindManagerProxy.disconnectSignal(this._prepareForSleepId);
+            this._prepareForSleepId = 0;
+        }
+
+        // Disconnect PropertiesChanged listener
         if (this._propertiesChangedId > 0 && this._logindSessionProxy) {
             this._logindSessionProxy.disconnect(this._propertiesChangedId);
             this._propertiesChangedId = 0;
+        }
+
+        // Disconnect settings changed listener
+        if (this._settingsChangedId > 0 && this._powerSettings) {
+            this._powerSettings.disconnect(this._settingsChangedId);
+            this._settingsChangedId = 0;
         }
 
         this._releaseInhibitor();
