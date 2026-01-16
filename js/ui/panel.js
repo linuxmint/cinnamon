@@ -3774,16 +3774,20 @@ Panel.prototype = {
                     this._shouldShow = true;
 
                     let windows = global.get_window_actors();
+                    let currentWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
                     for (let i = 0; i < windows.length; i++) {
                         let actor = windows[i];
                         let metaWin = actor.get_meta_window();
+                        let winWorkspace = metaWin.get_workspace();
+                        // Check if winWorkspace exists and if its index value is equal to the current workspace
+                        let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
                         
-                        // Skip actor if undefined
-                        if (typeof actor == 'undefined' && actor !== null) {
+                        if (!onCurrentWorkspace && !metaWin.is_on_all_workspaces()) {
                             continue;
                         }
+                        
                         // Skip actor if it has been destroyed
-                        if (actor.is_finalized()) {
+                        if (!actor || actor.is_finalized()) {
                             continue;
                         }
 
@@ -3800,7 +3804,6 @@ Panel.prototype = {
 
                         // Exit loop if previous assumption that panel should be shown is wrong
                         if (this._panelPositionHasOverlap(metaWin) == false) {
-                            global.log("OFFENDER: " + metaWin.get_title());
                             this._shouldShow = false;
                             break;
                         }   
