@@ -2736,7 +2736,7 @@ Panel.prototype = {
     _processPanelAutoHide: function() {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
 
-        if (this._autohideSettings == "intel") {
+        if (this._autohideSettings == "intel" || this._autohideSettings == "dodgeall") {
             this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             /* focus-window signal is emitted when the workspace change
              * animation starts. When the animation ends, we do the position
