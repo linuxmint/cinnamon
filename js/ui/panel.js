@@ -3788,6 +3788,11 @@ Panel.prototype = {
                         let winWorkspace = metaWin.get_workspace();
                         // Check if winWorkspace exists and if its index value is equal to the current workspace
                         let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
+
+                        // Check if window is minimized
+                        if (metaWin.minimized) {
+                            continue;
+                        }
                         
                         // Skip windows not on current workspace
                         if (!onCurrentWorkspace && !metaWin.is_on_all_workspaces()) {
