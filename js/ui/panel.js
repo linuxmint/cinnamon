@@ -3708,7 +3708,7 @@ Panel.prototype = {
                 case "true":
                     this._shouldShow = this._mouseEntered;
                     break;
-                default:
+                case "intel":
                     if (this._mouseEntered || !global.display.focus_window ||
                         global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
                         this._shouldShow = true;
@@ -3743,7 +3743,7 @@ Panel.prototype = {
                     let a = this.actor;
                     let b = global.display.focus_window.get_frame_rect();
                     /* Magic to check whether the panel position overlaps with the
-                    * current focused window */
+                    * current focused window*/
                     if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
                         this._shouldShow = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
                                             Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
@@ -3751,7 +3751,80 @@ Panel.prototype = {
                         this._shouldShow = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
                                             Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
                     }
+                    break;
+                case "dodgeall":
+                    if (this._mouseEntered) {
+                        this._shouldShow = true;
+                        break;
+                    }
 
+                    // Assume the panel should be shown
+                    this._shouldShow = true;
+
+                    let windows = global.get_window_actors();
+                    for (let i = 0; i < windows.length; i++) {
+                        let actor = windows[i];
+                        let metaWin = actor.get_meta_window();
+                        
+                        // Skip actor if undefined
+                        if (typeof actor == 'undefined' && actor !== null) {
+                            continue;
+                        }
+                        // Skip actor if it has been destroyed
+                        if (actor.is_finalized()) {
+                            continue;
+                        }
+
+                        // Skip the desktop and skip the panel itself (DOCK type)
+                        if (!metaWin || 
+                            metaWin.get_window_type() == Meta.WindowType.DESKTOP) { 
+                            continue;
+                        }
+
+                        // Ensure actor on the correct monitor
+                        if (metaWin.get_monitor() !== this.monitorIndex) {
+                            continue;
+                        } 
+
+                        /* Calculate the x or y instead of getting it from the actor since the
+                        * actor might be hidden */
+                        let x, y;
+                        switch (this.panelPosition) {
+                            case PanelLoc.top:
+                                y = this.monitor.y;
+                                break;
+                            case PanelLoc.bottom:
+                                y = this.monitor.y + this.monitor.height - this.actor.height;
+                                break;
+                            case PanelLoc.left:
+                                x = this.monitor.x;
+                                break;
+                            case PanelLoc.right:
+                                x = this.monitor.x + this.monitor.width - this.actor.width;
+                                break;
+                            default:
+                                global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
+                        }
+                        
+                        /* Magic to check whether the panel position overlaps with the
+                        * current focused window*/
+                        let show = true;
+                        let a = this.actor;
+                        let b = metaWin.get_frame_rect();
+                        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+                            show = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
+                                                Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
+                        } else {
+                            show = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
+                                                Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
+                        }
+
+                        // Exit loop if previous assumption that panel should be shown is wrong
+                        if (show == false) {
+                            this._shouldShow = false;
+                            break;
+                        }   
+                    } // End of window actor for-loop    
             } // end of switch on autohidesettings
         }
 
