@@ -57,7 +57,7 @@ class PanelSettingsPage(SettingsPage):
 
         self.size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-        options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligent (dodge active window)")], ["dodgeall", _("Itelligent (dodge all windows)")]]
+        options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligent (dodge active window)")], ["dodgeall", _("Intelligent (dodge all windows)")]]
         widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=self.size_group)
         section.add_row(widget)
 
