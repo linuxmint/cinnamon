@@ -3687,6 +3687,47 @@ Panel.prototype = {
     },
 
     /**
+     * _panelPositionOverlap:
+     * 
+     * Returns true if the panel overlaps the given window, false if it does not 
+     */
+    _panelPositionHasOverlap: function(meta) {
+        /* Calculate the x or y instead of getting it from the actor since the
+        * actor might be hidden */
+        let x, y;
+        switch (this.panelPosition) {
+            case PanelLoc.top:
+                y = this.monitor.y;
+                break;
+            case PanelLoc.bottom:
+                y = this.monitor.y + this.monitor.height - this.actor.height;
+                break;
+            case PanelLoc.left:
+                x = this.monitor.x;
+                break;
+            case PanelLoc.right:
+                x = this.monitor.x + this.monitor.width - this.actor.width;
+                break;
+            default:
+                global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
+        }
+
+        /* Magic to check whether the panel position overlaps with the
+        * current focused window*/
+        let a = this.actor;
+        let b = meta.get_frame_rect();
+        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
+            show = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
+                                Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
+        } else {
+            show = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
+                                Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
+        }
+
+        return show;
+    },
+
+    /**
      * _updatePanelVisibility:
      *
      * Checks whether the panel should show based on the autohide settings and
@@ -3719,38 +3760,9 @@ Panel.prototype = {
                         this._shouldShow = false;
                         break;
                     }
-                    let x, y;
 
-                    /* Calculate the x or y instead of getting it from the actor since the
-                    * actor might be hidden*/
-                    switch (this.panelPosition) {
-                        case PanelLoc.top:
-                            y = this.monitor.y;
-                            break;
-                        case PanelLoc.bottom:
-                            y = this.monitor.y + this.monitor.height - this.actor.height;
-                            break;
-                        case PanelLoc.left:
-                            x = this.monitor.x;
-                            break;
-                        case PanelLoc.right:
-                            x = this.monitor.x + this.monitor.width - this.actor.width;
-                            break;
-                        default:
-                            global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
-                    }
-
-                    let a = this.actor;
-                    let b = global.display.focus_window.get_frame_rect();
-                    /* Magic to check whether the panel position overlaps with the
-                    * current focused window*/
-                    if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-                        this._shouldShow = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
-                                            Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
-                    } else {
-                        this._shouldShow = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
-                                            Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
-                    }
+                    // Update _shouldShow if panel overlaps the focased window
+                    this._shouldShow = this._panelPositionHasOverlap(global.display.focus_window);
                     break;
                 case "dodgeall":
                     if (this._mouseEntered) {
@@ -3786,41 +3798,9 @@ Panel.prototype = {
                             continue;
                         } 
 
-                        /* Calculate the x or y instead of getting it from the actor since the
-                        * actor might be hidden */
-                        let x, y;
-                        switch (this.panelPosition) {
-                            case PanelLoc.top:
-                                y = this.monitor.y;
-                                break;
-                            case PanelLoc.bottom:
-                                y = this.monitor.y + this.monitor.height - this.actor.height;
-                                break;
-                            case PanelLoc.left:
-                                x = this.monitor.x;
-                                break;
-                            case PanelLoc.right:
-                                x = this.monitor.x + this.monitor.width - this.actor.width;
-                                break;
-                            default:
-                                global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
-                        }
-                        
-                        /* Magic to check whether the panel position overlaps with the
-                        * current focused window*/
-                        let show = true;
-                        let a = this.actor;
-                        let b = metaWin.get_frame_rect();
-                        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-                            show = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
-                                                Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
-                        } else {
-                            show = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
-                                                Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
-                        }
-
                         // Exit loop if previous assumption that panel should be shown is wrong
-                        if (show == false) {
+                        if (this._panelPositionHasOverlap(metaWin) == false) {
+                            global.log("OFFENDER: " + metaWin.get_title());
                             this._shouldShow = false;
                             break;
                         }   
