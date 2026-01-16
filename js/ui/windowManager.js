@@ -1185,6 +1185,12 @@ var WindowManager = class WindowManager {
             }
         }
 
+        // PERFORMANCE FIX: Batched animation queue to limit concurrent Clutter timelines
+        // Without batching, 30+ windows create 30+ parallel animations causing compositor overload
+        let animationQueue = [];
+        let animationCount = 0;
+        const MAX_CONCURRENT_ANIMATIONS = 10;
+
         let finish_switch_workspace = (actor) =>
         {
             if (to_windows.delete(actor)) {
@@ -1195,6 +1201,10 @@ var WindowManager = class WindowManager {
                 cleanup_window_effect(actor, true);
             };
 
+            // Animation completed, decrement counter and process queue
+            animationCount--;
+            processAnimationQueue();
+
             if (to_windows.size === 0 && from_windows.size === 0) {
                 if (kill_id > 0) {
                     this._cinnamonwm.disconnect(kill_id);
@@ -1202,6 +1212,22 @@ var WindowManager = class WindowManager {
 
                     cinnamonwm.completed_switch_workspace();
                 }
+            }
+        };
+
+        let processAnimationQueue = () => {
+            // Start animations from queue up to the concurrent limit
+            while (animationQueue.length > 0 && animationCount < MAX_CONCURRENT_ANIMATIONS) {
+                let animData = animationQueue.shift();
+                animationCount++;
+
+                animData.window.ease({
+                    x: animData.x,
+                    y: animData.y,
+                    duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => finish_switch_workspace(animData.window)
+                });
             }
         };
 
@@ -1240,12 +1266,11 @@ var WindowManager = class WindowManager {
                     window.origY = window.y;
                 }
                 from_windows.add(window);
-                window.ease({
+                // Queue animation instead of starting immediately
+                animationQueue.push({
+                    window: window,
                     x: window.origX + xDest,
-                    y: window.origY + yDest,
-                    duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => finish_switch_workspace(window)
+                    y: window.origY + yDest
                 });
             } else if (window.get_workspace() === to) {
                 if (window.origX == undefined) {
@@ -1255,15 +1280,17 @@ var WindowManager = class WindowManager {
                 }
                 to_windows.add(window);
                 window.show_all();
-                window.ease({
+                // Queue animation instead of starting immediately
+                animationQueue.push({
+                    window: window,
                     x: window.origX,
-                    y: window.origY,
-                    duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
-                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => finish_switch_workspace(window)
+                    y: window.origY
                 });
             }
         }
+
+        // Start initial batch of animations
+        processAnimationQueue();
 
         if (to_windows.size === 0 && from_windows.size === 0) {
             this._cinnamonwm.completed_switch_workspace();
