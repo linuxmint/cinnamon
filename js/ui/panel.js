@@ -3775,7 +3775,7 @@ Panel.prototype = {
                             continue;
                         }
 
-                        // Skip the desktop and skip the panel itself (DOCK type)
+                        // Skip the desktop
                         if (!metaWin || 
                             metaWin.get_window_type() == Meta.WindowType.DESKTOP) { 
                             continue;
