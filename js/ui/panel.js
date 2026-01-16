@@ -2736,7 +2736,7 @@ Panel.prototype = {
     _processPanelAutoHide: function() {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
 
-        if (this._autohideSettings == "intel" || this._autohideSettings == "dodgeall") {
+        if (this._autohideSettings == "intel") {
             this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
             /* focus-window signal is emitted when the workspace change
              * animation starts. When the animation ends, we do the position
@@ -2745,6 +2745,13 @@ Panel.prototype = {
              * is no actual focus change. */
             this._signalManager.connect(global.window_manager, "switch-workspace-complete", this._updatePanelVisibility, this);
             this._onFocusChanged();
+        } else if (this._autohideSettings == "dodgeall") {
+            // Update on change of focus
+            this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
+            // Update if window is closed
+            this._signalManager.connect(global.window_group, "actor-removed", this._updatePanelVisibility, this);
+            // Update if window is opened
+            this._signalManager.connect(global.window_group, "actor-added", this._updatePanelVisibility, this);
         } else {
             this._signalManager.disconnect("notify::focus-window");
             this._signalManager.disconnect("switch-workspace-complete");
@@ -3782,6 +3789,7 @@ Panel.prototype = {
                         // Check if winWorkspace exists and if its index value is equal to the current workspace
                         let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
                         
+                        // Skip windows not on current workspace
                         if (!onCurrentWorkspace && !metaWin.is_on_all_workspaces()) {
                             continue;
                         }
