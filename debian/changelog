@@ -1,3 +1,14 @@
+cinnamon (6.6.5) zena; urgency=medium
+
+  [ Clement Lefebvre ]
+  * systray: Hide IBUS applet
+
+  [ Michael Webster ]
+  * accessibility/cinnamon-hover-click: Keep the active click action in sync with Clutter.
+  * virtualKeyboard.js: Fix support for OSK ctrl and alt modifier in (#13355)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 16 Jan 2026 11:58:07 +0000
+
 cinnamon (6.6.4) zena; urgency=medium
 
   [ Clement Lefebvre ]
