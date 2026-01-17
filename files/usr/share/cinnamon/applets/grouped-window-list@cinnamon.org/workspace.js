@@ -9,55 +9,13 @@ const createStore = require('./state');
 const AppGroup = require('./appGroup');
 const {RESERVE_KEYS, SCROLL_TO_APP_DEBOUNCE_TIME} = require('./constants');
 
-class Workspace {
-    constructor(params) {
-        this.state = params.state;
-        this.state.connect({
-            orientation: (state) => {
-                this.on_orientation_changed(state.orientation);
-            },
-            currentWs: (state) => {
-                if (this.metaWorkspace && state.currentWs === this.metaWorkspace.index()) {
-                    this.scrollToFocusedApp();
-                }
-            }
-        });
-        this.workspaceState = createStore({
-            workspaceIndex: params.index,
-            lastFocusedApp: null
-        });
-        this.workspaceState.connect({
-            getWorkspace: () => this.metaWorkspace,
-            updateAppGroupIndexes: () => this.updateAppGroupIndexes(),
-            closeAllRightClickMenus: (cb) => this.closeAllRightClickMenus(cb),
-            closeAllHoverMenus: (cb) => this.closeAllHoverMenus(cb),
-            windowAdded: (win) => this.windowAdded(this.metaWorkspace, win),
-            windowRemoved: (win) => this.windowRemoved(this.metaWorkspace, win),
-            removeChild: (actor) => {
-                if (this.state.willUnmount) {
-                    return;
-                }
-                this.container.remove_child(actor);
-                this.updateScrollVisibility();
-            },
-            updateFocusState: (focusedAppId) => {
-                this.appGroups.forEach( appGroup => {
-                    if (focusedAppId === appGroup.groupState.appId) {
-                        this.scrollToAppGroup(appGroup);
-                        return;
-                    };
-                    appGroup.onFocusChange(false);
-                });
-            }
-        });
-
+class AppGroupListScrollBox {
+    constructor(state, container) {
+        this.state = state;
+        this.container = container;
         this.signals = new SignalManager(null);
-        this.metaWorkspace = params.metaWorkspace;
 
         const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
-
-        this.manager = new Clutter.BoxLayout({orientation: managerOrientation});
-        this.container = new Clutter.Actor({layout_manager: this.manager});
 
         this.mainLayout = new Clutter.BoxLayout({orientation: managerOrientation});
         this.actor = new Clutter.Actor({ layout_manager: this.mainLayout, reactive: true });
@@ -112,16 +70,9 @@ class Workspace {
         this.scrollBox.set_x_expand(true);
         this.scrollBox.set_y_expand(true);
 
-        this.appGroups = [];
-        this.lastFocusedApp = null;
         this.slideTimerSourceId = 0;
-        this.scrollToAppDebounceTimeoutId = 0;
 
         // Connect all the signals
-        this.signals.connect(global.display, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
-        // Ugly change: refresh the removed app instances from all workspaces
-        this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
-        this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
         this.signals.connect(this.actor, 'allocation-changed', this.updateScrollVisibility, this);
         this.signals.connect(this.container, 'allocation-changed', this.updateScrollVisibility, this);
         this.signals.connect(this.container, 'notify::translation-x', this.updateScrollVisibility, this);
@@ -133,11 +84,8 @@ class Workspace {
     }
 
     on_orientation_changed(orientation) {
-        if (!this.manager) return;
-
         const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
 
-        this.manager.set_orientation(managerOrientation);
         this.mainLayout.set_orientation(managerOrientation);
 
         if (this.state.isHorizontal) {
@@ -165,7 +113,7 @@ class Workspace {
             this.endButton.set_y_expand(false);
             this.endButton.set_x_align(Clutter.ActorAlign.FILL);
         }
-        this.refreshList();
+        this.updateScrollVisibility();
     }
 
     startSlide(direction) {
@@ -272,62 +220,6 @@ class Workspace {
         else this.container.translation_y = next;
     }
 
-    scrollToAppGroup(appGroup) {
-        if (this.scrollToAppDebounceTimeoutId > 0) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
-        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLL_TO_APP_DEBOUNCE_TIME, () => {
-            this._scrollToAppGroup(appGroup);
-            this.scrollToAppDebounceTimeoutId = 0;
-            return GLib.SOURCE_REMOVE;
-        });
-    }
-
-    _scrollToAppGroup(appGroup) {
-        if (!appGroup || !appGroup.actor) return;
-
-        const index = this.appGroups.indexOf(appGroup);
-        if (index === -1) return;
-
-        const isHorizontal = this.state.isHorizontal;
-
-        let containerSize, boxSize;
-        if (isHorizontal) {
-            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
-            boxSize = this.scrollBox.width;
-        } else {
-            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
-            boxSize = this.scrollBox.height;
-        }
-
-        if (containerSize <= boxSize) return;
-
-        let itemPos = 0;
-        let itemSize = 0;
-
-        for (let i = 0; i <= index; i++) {
-            const actor = this.appGroups[i].actor;
-            if (isHorizontal) {
-                itemSize = actor.width > 0 ? actor.width : actor.get_preferred_width(-1)[1];
-            } else {
-                itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
-            }
-            itemPos += itemSize;
-        }
-
-        // Subtract half size to get center.
-        const targetCenter = itemPos - (itemSize / 2);
-        // We want targetCenter to be at boxSize / 2
-        let newPos = (boxSize / 2) - targetCenter;
-
-        const minPos = Math.min(0, boxSize - containerSize);
-        newPos = Math.round(Math.max(minPos, Math.min(newPos, 0)));
-
-        if (isHorizontal) {
-            this.container.translation_x = newPos;
-        } else {
-            this.container.translation_y = newPos;
-        }
-    }
-
     updateScrollVisibility() {
         let containerSize, scrollBoxSize;
 
@@ -362,6 +254,153 @@ class Workspace {
                 else this.container.translation_y = 0;
             }
         }
+    }
+
+    scrollToChild(childActor) {
+        if (!childActor) return;
+
+        const children = this.container.get_children();
+        const index = children.indexOf(childActor);
+        if (index === -1) return;
+
+        const isHorizontal = this.state.isHorizontal;
+
+        let containerSize, boxSize;
+        if (isHorizontal) {
+            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
+            boxSize = this.scrollBox.width;
+        } else {
+            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
+            boxSize = this.scrollBox.height;
+        }
+
+        if (containerSize <= boxSize) return;
+
+        let itemPos = 0;
+        let itemSize = 0;
+
+        for (let i = 0; i <= index; i++) {
+            const actor = children[i];
+            if (isHorizontal) {
+                itemSize = actor.width > 0 ? actor.width : actor.get_preferred_width(-1)[1];
+            } else {
+                itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
+            }
+            itemPos += itemSize;
+        }
+
+        // Subtract half size to get center.
+        const targetCenter = itemPos - (itemSize / 2);
+        // We want targetCenter to be at boxSize / 2
+        let newPos = (boxSize / 2) - targetCenter;
+
+        const minPos = Math.min(0, boxSize - containerSize);
+        newPos = Math.round(Math.max(minPos, Math.min(newPos, 0)));
+
+        if (isHorizontal) {
+            this.container.translation_x = newPos;
+        } else {
+            this.container.translation_y = newPos;
+        }
+    }
+
+    destroy() {
+        this.signals.disconnectAllSignals();
+        if (this.slideTimerSourceId > 0) {
+            GLib.source_remove(this.slideTimerSourceId);
+            this.slideTimerSourceId = 0;
+        }
+        this.actor.destroy();
+    }
+}
+
+class Workspace {
+    constructor(params) {
+        this.state = params.state;
+        this.state.connect({
+            orientation: (state) => {
+                this.on_orientation_changed(state.orientation);
+            },
+            currentWs: (state) => {
+                if (this.metaWorkspace && state.currentWs === this.metaWorkspace.index()) {
+                    this.scrollToFocusedApp();
+                }
+            }
+        });
+        this.workspaceState = createStore({
+            workspaceIndex: params.index,
+            lastFocusedApp: null
+        });
+        this.workspaceState.connect({
+            getWorkspace: () => this.metaWorkspace,
+            updateAppGroupIndexes: () => this.updateAppGroupIndexes(),
+            closeAllRightClickMenus: (cb) => this.closeAllRightClickMenus(cb),
+            closeAllHoverMenus: (cb) => this.closeAllHoverMenus(cb),
+            windowAdded: (win) => this.windowAdded(this.metaWorkspace, win),
+            windowRemoved: (win) => this.windowRemoved(this.metaWorkspace, win),
+            removeChild: (actor) => {
+                if (this.state.willUnmount) {
+                    return;
+                }
+                this.container.remove_child(actor);
+                this.scrollBoxObject.updateScrollVisibility();
+            },
+            updateFocusState: (focusedAppId) => {
+                this.appGroups.forEach( appGroup => {
+                    if (focusedAppId === appGroup.groupState.appId) {
+                        this.scrollToAppGroup(appGroup);
+                        return;
+                    };
+                    appGroup.onFocusChange(false);
+                });
+            }
+        });
+
+        this.signals = new SignalManager(null);
+        this.metaWorkspace = params.metaWorkspace;
+
+        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
+
+        this.manager = new Clutter.BoxLayout({orientation: managerOrientation});
+        this.container = new Clutter.Actor({layout_manager: this.manager});
+
+        this.scrollBoxObject = new AppGroupListScrollBox(this.state, this.container);
+        this.actor = this.scrollBoxObject.actor;
+
+        this.appGroups = [];
+        this.lastFocusedApp = null;
+        this.scrollToAppDebounceTimeoutId = 0;
+
+        // Connect all the signals
+        this.signals.connect(global.display, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
+        // Ugly change: refresh the removed app instances from all workspaces
+        this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
+        this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
+
+        this.on_orientation_changed(this.state.orientation);
+    }
+
+    on_orientation_changed(orientation) {
+        if (!this.manager) return;
+
+        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
+        this.manager.set_orientation(managerOrientation);
+        this.scrollBoxObject.on_orientation_changed(orientation);
+        this.refreshList();
+    }
+
+    scrollToAppGroup(appGroup) {
+        if (this.scrollToAppDebounceTimeoutId > 0) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
+        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLL_TO_APP_DEBOUNCE_TIME, () => {
+            this._scrollToAppGroup(appGroup);
+            this.scrollToAppDebounceTimeoutId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _scrollToAppGroup(appGroup) {
+        if (!appGroup || !appGroup.actor) return;
+        this.scrollBoxObject.scrollToChild(appGroup.actor);
     }
 
     getWindowCount(appId) {
@@ -621,7 +660,7 @@ class Workspace {
                 this.container.add_child(appGroup.actor);
                 this.appGroups.push(appGroup);
             }
-            this.updateScrollVisibility();
+            this.scrollBoxObject.updateScrollVisibility();
             appGroup.windowAdded(metaWindow);
         };
 
@@ -730,8 +769,8 @@ class Workspace {
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
         this.workspaceState.destroy();
+        this.scrollBoxObject.destroy();
         this.manager = null;
-        this.actor.destroy();
         unref(this, RESERVE_KEYS);
     }
 }
