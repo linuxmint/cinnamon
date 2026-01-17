@@ -168,10 +168,10 @@ class AppGroupListScrollBox {
 
         let containerSize, scrollBoxSize;
         if (this.state.isHorizontal) {
-            containerSize = this.container.get_preferred_width(-1)[1];
+            containerSize = this.container.width || this.container.get_preferred_width(-1)[1];
             scrollBoxSize = this.scrollBox.width;
         } else {
-            containerSize = this.container.get_preferred_height(-1)[1];
+            containerSize = this.container.height || this.container.get_preferred_height(-1)[1];
             scrollBoxSize = this.scrollBox.height;
         }
 
@@ -257,11 +257,7 @@ class AppGroupListScrollBox {
     }
 
     scrollToChild(childActor) {
-        if (!childActor) return;
-
-        const children = this.container.get_children();
-        const index = children.indexOf(childActor);
-        if (index === -1) return;
+        if (!childActor || childActor.get_parent() !== this.container) return;
 
         const isHorizontal = this.state.isHorizontal;
 
@@ -276,21 +272,43 @@ class AppGroupListScrollBox {
 
         if (containerSize <= boxSize) return;
 
-        let itemPos = 0;
-        let itemSize = 0;
+        let targetCenter = 0;
+        let allocationValid = false;
 
-        for (let i = 0; i <= index; i++) {
-            const actor = children[i];
-            if (isHorizontal) {
-                itemSize = actor.width > 0 ? actor.width : actor.get_preferred_width(-1)[1];
-            } else {
-                itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
+        if (childActor.has_allocation()) {
+            const box = childActor.get_allocation_box();
+            const size = isHorizontal ? box.get_width() : box.get_height();
+
+            if (size > 0) {
+                targetCenter = (isHorizontal ? box.x1 : box.y1) + (size / 2);
+                allocationValid = true;
             }
-            itemPos += itemSize;
         }
 
-        // Subtract half size to get center.
-        const targetCenter = itemPos - (itemSize / 2);
+        if (!allocationValid) {
+            const children = this.container.get_children();
+            const index = children.indexOf(childActor);
+
+            if (index === -1) return;
+
+            let itemPos = 0;
+            let itemSize = 0;
+
+            for (let i = 0; i <= index; i++) {
+                const actor = children[i];
+
+                if (isHorizontal) {
+                    itemSize = actor.width > 0 ? actor.width : actor.get_preferred_width(-1)[1];
+                } else {
+                    itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
+                }
+
+                itemPos += itemSize;
+            }
+
+            targetCenter = itemPos - (itemSize / 2);
+        }
+
         // We want targetCenter to be at boxSize / 2
         let newPos = (boxSize / 2) - targetCenter;
 
