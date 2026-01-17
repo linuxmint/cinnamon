@@ -1,5 +1,4 @@
 const Clutter = imports.gi.Clutter;
-const St = imports.gi.St;
 const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;

@@ -19,7 +19,7 @@ class AppGroupListScrollBox {
         const shadeStyle = 'min-width: 15px; min-height: 20px; background-color: rgba(0, 0, 0, 0.25); border: 1px solid rgba(128, 128, 128, 0.2); margin: 0px; padding: 0px;';
 
         this.startButton = new St.Bin({
-            style_class: 'grouped-window-list-scroll-button-start',
+            style_class: 'grouped-window-list-scroll-button',
             style: shadeStyle,
             visible: false,
             reactive: true,
@@ -27,7 +27,7 @@ class AppGroupListScrollBox {
             y_align: St.Align.MIDDLE
         });
         this.endButton = new St.Bin({
-            style_class: 'grouped-window-list-scroll-button-end',
+            style_class: 'grouped-window-list-scroll-button',
             style: shadeStyle,
             visible: false,
             reactive: true,
@@ -85,10 +85,12 @@ class AppGroupListScrollBox {
 
         if (this.state.isHorizontal) {
             this.actor.set_x_align(Clutter.ActorAlign.FILL);
-
+            this.startButton.remove_style_class_name('grouped-window-list-scroll-button-top');
+            this.endButton.remove_style_class_name('grouped-window-list-scroll-button-down');
+            this.startButton.add_style_class_name('grouped-window-list-scroll-button-left');
+            this.endButton.add_style_class_name('grouped-window-list-scroll-button-right');
             this.startIcon.set_icon_name('pan-start-symbolic');
             this.endIcon.set_icon_name('pan-end-symbolic');
-
             this.startButton.set_x_expand(false);
             this.startButton.set_y_expand(true);
             this.startButton.set_y_align(Clutter.ActorAlign.FILL);
@@ -97,10 +99,12 @@ class AppGroupListScrollBox {
             this.endButton.set_y_align(Clutter.ActorAlign.FILL);
         } else {
             this.actor.set_x_align(Clutter.ActorAlign.CENTER);
-
+            this.startButton.remove_style_class_name('grouped-window-list-scroll-button-left');
+            this.endButton.remove_style_class_name('grouped-window-list-scroll-button-right');
+            this.startButton.add_style_class_name('grouped-window-list-scroll-button-top');
+            this.endButton.add_style_class_name('grouped-window-list-scroll-button-down');
             this.startIcon.set_icon_name('pan-up-symbolic');
             this.endIcon.set_icon_name('pan-down-symbolic');
-
             this.startButton.set_x_expand(true);
             this.startButton.set_y_expand(false);
             this.startButton.set_x_align(Clutter.ActorAlign.FILL);
@@ -116,6 +120,8 @@ class AppGroupListScrollBox {
             GLib.source_remove(this.slideTimerSourceId);
             this.slideTimerSourceId = 0;
         }
+
+        if (this.state.panelEditMode) return;
 
         const scrollFunc = () => {
             this.scroll(direction * 5);
@@ -157,6 +163,8 @@ class AppGroupListScrollBox {
     }
 
     onScroll(event) {
+        if (this.state.panelEditMode) return;
+
         if (this.state.settings.scrollBehavior !== 4) {
             return Clutter.EVENT_PROPAGATE;
         }
@@ -216,6 +224,8 @@ class AppGroupListScrollBox {
     }
 
     updateScrollVisibility() {
+        if (this.state.panelEditMode) return;
+
         let containerSize, scrollBoxSize;
 
         if (this.state.isHorizontal) {
@@ -252,6 +262,8 @@ class AppGroupListScrollBox {
     }
 
     scrollToChild(childActor) {
+        if (this.state.panelEditMode) return;
+
         if (!childActor || childActor.get_parent() !== this.container) return;
 
         const isHorizontal = this.state.isHorizontal;
@@ -308,7 +320,7 @@ class AppGroupListScrollBox {
         let newPos = (boxSize / 2) - targetCenter;
 
         const minPos = Math.min(0, boxSize - containerSize);
-        newPos = Math.round(Math.max(minPos, Math.min(newPos, 0)));
+        newPos = Math.round(Math.max(minPos, Math.min(newPos, 0)) * 100) / 100;
 
         if (isHorizontal) {
             this.container.translation_x = newPos;

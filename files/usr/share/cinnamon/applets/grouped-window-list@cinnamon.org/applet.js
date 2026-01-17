@@ -804,12 +804,12 @@ class GroupedWindowListApplet extends Applet.Applet {
             let offset = 0;
             if (this.state.isHorizontal) {
                 offset = currentWorkspace.container.translation_x;
-                if (currentWorkspace.startButton.visible) 
-                    offset += currentWorkspace.startButton.width;
+                if (currentWorkspace.scrollBox.startButton.visible) 
+                    offset += currentWorkspace.scrollBox.startButton.width;
             } else {
                 offset = currentWorkspace.container.translation_y;
-                if (currentWorkspace.startButton.visible)
-                    offset += currentWorkspace.startButton.height;
+                if (currentWorkspace.scrollBox.startButton.visible)
+                    offset += currentWorkspace.scrollBox.startButton.height;
             }
 
             currentWorkspace.container.get_children().forEach( child => {
