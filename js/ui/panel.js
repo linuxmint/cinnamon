@@ -3795,7 +3795,7 @@ Panel.prototype = {
                         }
                         
                         // Skip windows not on current workspace
-                        if (!onCurrentWorkspace && !metaWin.is_on_all_workspaces()) {
+                        if (!onCurrentWorkspace) {
                             continue;
                         }
                         
