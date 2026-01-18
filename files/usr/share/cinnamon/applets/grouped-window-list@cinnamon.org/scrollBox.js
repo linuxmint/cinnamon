@@ -15,12 +15,8 @@ class AppGroupListScrollBox {
         this.mainLayout = new Clutter.BoxLayout({orientation: managerOrientation});
         this.actor = new Clutter.Actor({ layout_manager: this.mainLayout, reactive: true });
 
-        // TODO: Move to Cinnamon default CSS styling
-        const shadeStyle = 'min-width: 15px; min-height: 20px; background-color: rgba(0, 0, 0, 0.25); border: 1px solid rgba(128, 128, 128, 0.2); margin: 0px; padding: 0px;';
-
         this.startButton = new St.Bin({
             style_class: 'grouped-window-list-scroll-button',
-            style: shadeStyle,
             visible: false,
             reactive: true,
             x_align: St.Align.MIDDLE,
@@ -28,23 +24,20 @@ class AppGroupListScrollBox {
         });
         this.endButton = new St.Bin({
             style_class: 'grouped-window-list-scroll-button',
-            style: shadeStyle,
             visible: false,
             reactive: true,
             x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE
         });
-
-        // XXX: Use fixed icon size instead of the popup-menu-icon style class? (or maybe set the default in the cinnamon default theme)
         this.startIcon = new St.Icon({
             icon_name: 'pan-start-symbolic',
             icon_type: St.IconType.SYMBOLIC,
-            style_class: 'popup-menu-icon grouped-window-list-scroll-button-icon'
+            style_class: 'grouped-window-list-scroll-button-icon'
         });
         this.endIcon = new St.Icon({
             icon_name: 'pan-end-symbolic',
             icon_type: St.IconType.SYMBOLIC,
-            style_class: 'popup-menu-icon grouped-window-list-scroll-button-icon'
+            style_class: 'grouped-window-list-scroll-button-icon'
         });
 
         this.startButton.set_child(this.startIcon);
