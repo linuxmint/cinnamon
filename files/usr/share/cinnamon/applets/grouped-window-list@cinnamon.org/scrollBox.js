@@ -66,6 +66,7 @@ class AppGroupListScrollBox {
         this.scrollBox.set_y_expand(true);
 
         this.slideTimerSourceId = 0;
+        this.updateScrollVisibilityId = 0;
 
         // Connect all the signals
         this.signals.connect(this.actor, 'allocation-changed', this.updateScrollVisibility, this);
@@ -224,6 +225,15 @@ class AppGroupListScrollBox {
     }
 
     updateScrollVisibility() {
+        if (this.updateScrollVisibilityId > 0) return;
+        this.updateScrollVisibilityId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this._updateScrollVisibility();
+            this.updateScrollVisibilityId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _updateScrollVisibility() {
         if (this.state.panelEditMode) return;
 
         let containerSize, scrollBoxSize;
@@ -247,9 +257,9 @@ class AppGroupListScrollBox {
         }
 
         if (containerSize > scrollBoxSize) {
-            // Tolerance of 1 pixel to avoid flickering
-            this.startButton.visible = currentTranslation < -1;
-            this.endButton.visible = currentTranslation > minTranslation + 1;
+            // Some tolerance to avoid flickering
+            this.startButton.visible = currentTranslation < -0.1;
+            this.endButton.visible = currentTranslation > minTranslation + 0.1;
         } else {
             this.startButton.visible = false;
             this.endButton.visible = false;
@@ -335,6 +345,12 @@ class AppGroupListScrollBox {
             GLib.source_remove(this.slideTimerSourceId);
             this.slideTimerSourceId = 0;
         }
+
+        if (this.updateScrollVisibilityId > 0) {
+            GLib.source_remove(this.updateScrollVisibilityId);
+            this.updateScrollVisibilityId = 0;
+        }
+
         this.actor.destroy();
     }
 }
