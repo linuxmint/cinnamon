@@ -1215,7 +1215,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
         this._searchIconClickedId = 0;
         this._applicationsButtons = [];
-        this._favoriteAppButtons = [];
         this._placesButtons = [];
         this._transientButtons = [];
         this.recentButton = null;
@@ -2182,20 +2181,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         // FAV APPS
         this.favoriteAppsBox.destroy_all_children();
-        this._favoriteAppButtons = [];
+        let showingSomeFavorites = false;
         let launchers = global.settings.get_strv('favorite-apps');
         for (let launcher of launchers) {
             let app = appsys.lookup_app(launcher);
             if (app) {
                 let button = new FavoritesButton(this, app);
-                this._favoriteAppButtons[app] = button;
+                showingSomeFavorites = true;
                 this.favoriteAppsBox.add(button.actor, { y_align: St.Align.END, y_fill: false });
             }
         }
         this.favoriteAppsBox.queue_relayout();
 
         // Separator between favs and places
-        if (this._placesButtons.length > 0 && this._favoriteDocButtons.length > 0)
+        if (this._placesButtons.length > 0 && showingSomeFavorites)
             this.placesSeparator.show();
         else
             this.placesSeparator.hide();
