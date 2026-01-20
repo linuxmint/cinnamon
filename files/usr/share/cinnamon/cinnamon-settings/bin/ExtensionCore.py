@@ -582,6 +582,9 @@ class ManageSpicesPage(SettingsPage):
         if self.collection_type == 'action' and hasattr(row, 'disabled_about'):
             self.about_button.set_sensitive(not row.disabled_about)
 
+        # Disable "Disable all" button when no extensions are installed
+        self.restore_button.set_sensitive(len(self.extension_rows) > 0)
+
     def add_instance(self, *args):
         extension_row = self.list_box.get_selected_row()
         self.enable_extension(extension_row.uuid, extension_row.name, extension_row.version_supported)
@@ -659,6 +662,7 @@ class ManageSpicesPage(SettingsPage):
                 print(f"Failed to load extension {uuid}: {msg}")
 
         self.list_box.show_all()
+        self.update_button_states()
 
     def update_status(self, *args):
         for row in self.extension_rows:
