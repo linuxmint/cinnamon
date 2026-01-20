@@ -795,7 +795,7 @@ class PathButton extends SimpleMenuItem {
             description: shorten_path(uri, name),
             type: type,
             styleClass: 'appmenu-application-button',
-            withMenu: false,
+            withMenu: (type === 'recent' || type === 'favorite'),
             uri: uri,
         });
 
@@ -825,6 +825,65 @@ class PathButton extends SimpleMenuItem {
             notification.setTransient(true);
             notification.setUrgency(MessageTray.Urgency.NORMAL);
             source.notify(notification);
+        }
+    }
+
+    hasLocalPath(file) {
+        return file.is_native() || file.get_path() != null;
+    }
+
+    populateMenu(menu) {
+        if (this.type !== 'recent' && this.type !== 'favorite')
+            return;
+
+        let menuItem;
+        menuItem = new PopupMenu.PopupMenuItem(_("Open with"), { reactive: false });
+        menuItem.actor.style = "font-weight: bold";
+        menu.addMenuItem(menuItem);
+
+        let file = Gio.File.new_for_uri(this.uri);
+        let mimeType = Gio.content_type_guess(this.uri, null)[0];
+
+        let default_info = Gio.AppInfo.get_default_for_type(mimeType, !this.hasLocalPath(file));
+
+        if (default_info) {
+            menuItem = new PopupMenu.PopupMenuItem(default_info.get_display_name());
+            menuItem.connect('activate', () => {
+                default_info.launch([file], null);
+                this.applet.toggleContextMenu(this);
+                this.applet.menu.close();
+            });
+            menu.addMenuItem(menuItem);
+        }
+
+        let infos = Gio.AppInfo.get_all_for_type(mimeType);
+
+        for (let i = 0; i < infos.length; i++) {
+            let info = infos[i];
+
+            if (!this.hasLocalPath(file) && !info.supports_uris())
+                continue;
+
+            if (info.equal(default_info))
+                continue;
+
+            menuItem = new PopupMenu.PopupMenuItem(info.get_display_name());
+            menuItem.connect('activate', () => {
+                info.launch([file], null);
+                this.applet.toggleContextMenu(this);
+                this.applet.menu.close();
+            });
+            menu.addMenuItem(menuItem);
+        }
+
+        if (GLib.find_program_in_path("nemo-open-with") != null) {
+            menuItem = new PopupMenu.PopupMenuItem(_("Other application..."));
+            menuItem.connect('activate', () => {
+                Util.spawnCommandLine("nemo-open-with " + this.uri);
+                this.applet.toggleContextMenu(this);
+                this.applet.menu.close();
+            });
+            menu.addMenuItem(menuItem);
         }
     }
 }
