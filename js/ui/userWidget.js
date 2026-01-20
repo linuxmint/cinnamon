@@ -124,7 +124,8 @@ class Avatar extends St.Bin {
             this.add_style_class_name('user-avatar');
             this.style = `
                 background-image: url("${iconFile}");
-                background-size: cover;`;
+                background-size: cover;
+                overflow: hidden;`;
         } else {
             this.style = null;
             this.child = new St.Icon({
