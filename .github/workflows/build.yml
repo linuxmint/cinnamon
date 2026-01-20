@@ -14,9 +14,12 @@ on:
         description: 'Start an SSH server on failure.'
         required: false
         default: false
+  issue_comment:
+    types: [created]
 
 jobs:
   build:
+    if: github.event_name != 'issue_comment'
     uses: linuxmint/github-actions/.github/workflows/do-builds.yml@master
     with:
       commit_id: master
@@ -35,3 +38,27 @@ jobs:
         linuxmint/xapp,
         linuxmint/xdg-desktop-portal-xapp
       ##############################
+
+  # Generate test packages when /generate-test-packages is commented on a PR
+  generate-test-packages:
+    if: github.event_name == 'issue_comment' && github.event.issue.pull_request
+    uses: linuxmint/github-actions/.github/workflows/generate-test-packages.yml@master
+    secrets: inherit
+    with:
+      comment_body: ${{ github.event.comment.body }}
+      comment_user: ${{ github.event.comment.user.login }}
+      comment_id: ${{ github.event.comment.id }}
+      issue_number: ${{ github.event.issue.number }}
+      ############################## Comma separated list - like 'linuxmint/xapp, linuxmint/cinnamon-desktop'
+      dependencies: >
+        linuxmint/cinnamon-control-center,
+        linuxmint/cinnamon-desktop,
+        linuxmint/cinnamon-menus,
+        linuxmint/cinnamon-session,
+        linuxmint/cinnamon-settings-daemon,
+        linuxmint/cinnamon-translations,
+        linuxmint/cjs,
+        linuxmint/muffin,
+        linuxmint/nemo,
+        linuxmint/xapp,
+        linuxmint/xdg-desktop-portal-xapp
