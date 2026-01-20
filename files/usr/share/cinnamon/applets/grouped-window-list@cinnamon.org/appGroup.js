@@ -947,10 +947,6 @@ class AppGroup {
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
-            this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
-            this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
-            this.signals.connect(metaWindow, 'unmanaged', (w) => this.onAppChange(w));
-
             this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
@@ -992,8 +988,6 @@ class AppGroup {
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
-        this.signals.disconnect('notify::gtk-application-id', metaWindow);
-        this.signals.disconnect('notify::wm-class', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
@@ -1017,13 +1011,6 @@ class AppGroup {
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
             }
         }
-    }
-
-    onAppChange(metaWindow) {
-        if (!this.workspaceState) return;
-
-        this.workspaceState.trigger('windowRemoved', metaWindow);
-        this.workspaceState.trigger('windowAdded', metaWindow);
     }
 
     onWindowTitleChanged(metaWindow, refresh) {
