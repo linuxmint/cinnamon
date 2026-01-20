@@ -3696,7 +3696,7 @@ Panel.prototype = {
     /**
      * _panelPositionOverlap:
      * 
-     * Returns true if the panel overlaps the given window, false if it does not 
+     * Returns true if the panel overlaps the given window, false if it does not.
      */
     _panelPositionHasOverlap: function(meta) {
         /* Calculate the x or y instead of getting it from the actor since the
@@ -3741,7 +3741,10 @@ Panel.prototype = {
      * position of mouse/active window. It then calls the _queueShowHidePanel
      * function to show or hide the panel as necessary.
      *
-     * true = autohide, false = always show, intel = Intelligent
+     * true = autohide, 
+     * false = always show, 
+     * intel = Intelligent (dodge active window),
+     * dodgeall = Itelligent (dodge all windows)
      */
     _updatePanelVisibility: function() {
         this._mouseEntered = this._mouseOnPanel();
@@ -3784,36 +3787,26 @@ Panel.prototype = {
                     let currentWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
                     for (let i = 0; i < windows.length; i++) {
                         let actor = windows[i];
+
                         let metaWin = actor.get_meta_window();
+                        // Skip if window metadata is undefined, null, or if the actor is finalized
+                        if (typeof metaWin === 'undefined' || metaWin === null || actor.is_finalized()) {
+                            continue;
+                        }
+
                         let winWorkspace = metaWin.get_workspace();
                         // Check if winWorkspace exists and if its index value is equal to the current workspace
                         let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
 
-                        // Check if window is minimized
-                        if (metaWin.minimized) {
-                            continue;
-                        }
-                        
-                        // Skip windows not on current workspace
-                        if (!onCurrentWorkspace) {
-                            continue;
-                        }
-                        
-                        // Skip actor if it has been destroyed
-                        if (!actor || actor.is_finalized()) {
+                        // Skip if window is not on current workspace/monitor or is minimized
+                        if (!onCurrentWorkspace || metaWin.minimized || metaWin.get_monitor() !== this.monitorIndex) {
                             continue;
                         }
 
-                        // Skip the desktop
-                        if (!metaWin || 
-                            metaWin.get_window_type() == Meta.WindowType.DESKTOP) { 
+                        // Skip Cinnamon desktop window
+                        if (metaWin.get_window_type() == Meta.WindowType.DESKTOP) {
                             continue;
                         }
-
-                        // Ensure actor on the correct monitor
-                        if (metaWin.get_monitor() !== this.monitorIndex) {
-                            continue;
-                        } 
 
                         // Exit loop if previous assumption that panel should be shown is wrong
                         if (this._panelPositionHasOverlap(metaWin) == false) {
