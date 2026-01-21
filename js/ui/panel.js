@@ -3724,10 +3724,10 @@ Panel.prototype = {
         let a = this.actor;
         let b = meta.get_frame_rect();
         if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-            show = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
+            show = (Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
                                 Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
         } else {
-            show = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
+            show = (Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
                                 Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
         }
 
@@ -3771,10 +3771,9 @@ Panel.prototype = {
                         break;
                     }
 
-                    // Update _shouldShow if panel overlaps the focased window
-                    this._shouldShow = this._panelPositionHasOverlap(global.display.focus_window);
+                    this._shouldShow = !(this._panelPositionHasOverlap(global.display.focus_window));
                     break;
-                case "dodgeall":
+                default:
                     if (this._mouseEntered) {
                         this._shouldShow = true;
                         break;
@@ -3783,37 +3782,26 @@ Panel.prototype = {
                     // Assume the panel should be shown
                     this._shouldShow = true;
 
-                    let windows = global.get_window_actors();
+                    let actors = global.get_window_actors();
                     let currentWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
-                    for (let i = 0; i < windows.length; i++) {
-                        let actor = windows[i];
-
-                        let metaWin = actor.get_meta_window();
-                        // Skip if window metadata is undefined, null, or if the actor is finalized
-                        if (typeof metaWin === 'undefined' || metaWin === null || actor.is_finalized()) {
-                            continue;
-                        }
-
+                    for (let i = 0; i < actors.length; i++) {
+                        let window = actors[i];
+                        let metaWin = window.get_meta_window();
                         let winWorkspace = metaWin.get_workspace();
-                        // Check if winWorkspace exists and if its index value is equal to the current workspace
                         let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
-
-                        // Skip if window is not on current workspace/monitor or is minimized
-                        if (!onCurrentWorkspace || metaWin.minimized || metaWin.get_monitor() !== this.monitorIndex) {
-                            continue;
-                        }
-
-                        // Skip Cinnamon desktop window
-                        if (metaWin.get_window_type() == Meta.WindowType.DESKTOP) {
+                        
+                        if (metaWin === null || metaWin.get_window_type() == Meta.WindowType.DESKTOP || 
+                            !onCurrentWorkspace || metaWin.minimized || 
+                            metaWin.get_monitor() !== this.monitorIndex) {
                             continue;
                         }
 
                         // Exit loop if previous assumption that panel should be shown is wrong
-                        if (this._panelPositionHasOverlap(metaWin) == false) {
+                        if (this._panelPositionHasOverlap(metaWin) == true) {
                             this._shouldShow = false;
                             break;
                         }   
-                    } // End of window actor for-loop    
+                    } 
             } // end of switch on autohidesettings
         }
 
