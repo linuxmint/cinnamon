@@ -26,6 +26,7 @@ const Pango = imports.gi.Pango;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const SignalManager = imports.misc.signalManager;
 const Params = imports.misc.params;
+const CinnamonEntry = imports.ui.cinnamonEntry;
 
 const INITIAL_BUTTON_LOAD = 30;
 
@@ -2578,6 +2579,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             accessible_role: Atk.Role.ENTRY,
         });
         this.searchEntry.add_accessible_state(Atk.StateType.EDITABLE);
+        CinnamonEntry.addContextMenu(this.searchEntry);
 
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
         this.searchActive = false;
