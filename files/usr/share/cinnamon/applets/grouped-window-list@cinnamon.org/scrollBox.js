@@ -32,6 +32,7 @@ class ScrollBox {
 
         this.edgeScrollTimeoutId = 0;
         this.edgeScrollDirection = 0;
+        this.scrollActiveTimeoutId = 0;
 
         this.signals.connect(this.actor, 'scroll-event', (actor, event) => this._onScroll(actor, event));
 
@@ -57,8 +58,10 @@ class ScrollBox {
     on_orientation_changed() {
         this.box.vertical = !this.state.isHorizontal;
         if (this.state.isHorizontal) {
+            this.actor.set_policy(St.PolicyType.EXTERNAL, St.PolicyType.EXTERNAL);
             this.actor.style_class = 'grouped-window-list-scrollbox hfade';
         } else {
+            this.actor.set_policy(St.PolicyType.NEVER, St.PolicyType.EXTERNAL);
             this.actor.style_class = 'grouped-window-list-scrollbox vfade';
         }
     }
@@ -90,7 +93,6 @@ class ScrollBox {
         if (adjustment) {
             const current = adjustment.value;
             const page_size = adjustment.page_size;
-            const item_size = c2 - c1;
 
             let fade_offset = 30;
 
@@ -199,7 +201,18 @@ class ScrollBox {
             this.edgeScrollTimeoutId = 0;
         }
         this.edgeScrollDirection = 0;
-        this.state.scrollActive = false;
+
+        if (this.scrollActiveTimeoutId) {
+            GLib.source_remove(this.scrollActiveTimeoutId);
+        }
+
+        this.scrollActiveTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 150, () => {
+            if (this.edgeScrollDirection === 0) {
+                this.state.scrollActive = false;
+            }
+            this.scrollActiveTimeoutId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _onScroll(actor, event) {
