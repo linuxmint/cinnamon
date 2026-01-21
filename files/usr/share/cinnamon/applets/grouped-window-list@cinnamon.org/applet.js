@@ -792,42 +792,43 @@ class GroupedWindowListApplet extends Applet.Applet {
         const rtl_horizontal = this.state.isHorizontal
             && St.Widget.get_default_direction () === St.TextDirection.RTL;
 
-        const axis = this.state.isHorizontal ? [x, 'x2'] : [y, 'y2'];
-        if(rtl_horizontal)
-            axis[0] = this.actor.width - axis[0];
+        let [containerX, containerY] = currentWorkspace.container.get_transformed_position();
+        let offset = this.state.isHorizontal ? containerX : containerY;
+        let mousePos = this.state.isHorizontal ? x : y;
 
         // save data on drag start
         if(this.state.dragging.posList === null){
             this.state.dragging.isForeign = !(source instanceof AppGroup);
             this.state.dragging.posList = [];
 
-            let offset = 0;
-            if (this.state.isHorizontal) {
-                offset = currentWorkspace.container.translation_x;
-                if (currentWorkspace.scrollBox.startButton.visible) 
-                    offset += currentWorkspace.scrollBox.startButton.width;
-            } else {
-                offset = currentWorkspace.container.translation_y;
-                if (currentWorkspace.scrollBox.startButton.visible)
-                    offset += currentWorkspace.scrollBox.startButton.height;
-            }
-
             currentWorkspace.container.get_children().forEach( child => {
-                let childPos;
                 let box = child.get_allocation_box();
+
+                let storedVal;
                 if(rtl_horizontal)
-                    childPos = this.actor.width - (box.x1 + offset);
+                    storedVal = box.x1;
+                else if (this.state.isHorizontal)
+                    storedVal = box.x2;
                 else
-                    childPos = box[axis[1]] + offset;
-                this.state.dragging.posList.push(childPos);
+                    storedVal = box.y2;
+
+                this.state.dragging.posList.push(storedVal);
             });
         }
 
         // get current position
         let pos = 0;
-        while(pos < this.state.dragging.posList.length && axis[0] > this.state.dragging.posList[pos])
-            pos++;
-        
+        while(pos < this.state.dragging.posList.length) {
+            let splitPoint = this.state.dragging.posList[pos] + offset;
+            if (rtl_horizontal) {
+                if (mousePos < splitPoint) pos++;
+                else break;
+            } else {
+                if (mousePos > splitPoint) pos++;
+                else break;
+            }
+        }
+
         let favLength = 0;
         for (const appGroup of currentWorkspace.appGroups) {
             if(appGroup.groupState.isFavoriteApp)

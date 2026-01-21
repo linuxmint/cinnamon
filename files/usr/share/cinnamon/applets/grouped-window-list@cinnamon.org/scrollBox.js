@@ -1,351 +1,246 @@
 const Clutter = imports.gi.Clutter;
-const St = imports.gi.St;
 const GLib = imports.gi.GLib;
+const St = imports.gi.St;
 const { SignalManager } = imports.misc.signalManager;
 
+const EDGE_SCROLL_ZONE_SIZE = 68;
+const EDGE_SCROLL_SPEED = 8;
+const EDGE_SCROLL_INTERVAL = 16;
 
-class AppGroupListScrollBox {
-    constructor(state, container) {
+class ScrollBox {
+    constructor(state) {
         this.state = state;
-        this.container = container;
         this.signals = new SignalManager(null);
 
-        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
-
-        this.mainLayout = new Clutter.BoxLayout({orientation: managerOrientation});
-        this.actor = new Clutter.Actor({ layout_manager: this.mainLayout, reactive: true });
-
-        this.startButton = new St.Bin({
-            style_class: 'grouped-window-list-scroll-button',
-            visible: false,
-            reactive: true,
-            x_align: St.Align.MIDDLE,
-            y_align: St.Align.MIDDLE
-        });
-        this.endButton = new St.Bin({
-            style_class: 'grouped-window-list-scroll-button',
-            visible: false,
-            reactive: true,
-            x_align: St.Align.MIDDLE,
-            y_align: St.Align.MIDDLE
-        });
-        this.startIcon = new St.Icon({
-            icon_name: 'pan-start-symbolic',
-            icon_type: St.IconType.SYMBOLIC,
-            style_class: 'grouped-window-list-scroll-button-icon'
-        });
-        this.endIcon = new St.Icon({
-            icon_name: 'pan-end-symbolic',
-            icon_type: St.IconType.SYMBOLIC,
-            style_class: 'grouped-window-list-scroll-button-icon'
+        this.actor = new St.ScrollView({
+            x_expand: true,
+            y_expand: true,
+            reactive: true
         });
 
-        this.startButton.set_child(this.startIcon);
-        this.endButton.set_child(this.endIcon);
+        this.actor.set_auto_scrolling(false);
+        this.actor.set_mouse_scrolling(true);
+        this.actor.set_clip_to_allocation(true);
+        this.actor.set_policy(St.PolicyType.EXTERNAL, St.PolicyType.EXTERNAL);
 
-        this.signals.connect(this.startButton, 'enter-event', () => this.startSlide(-1));
-        this.signals.connect(this.startButton, 'leave-event', this.stopSlide, this);
-        this.signals.connect(this.endButton, 'enter-event', () => this.startSlide(1));
-        this.signals.connect(this.endButton, 'leave-event', this.stopSlide, this);
+        this.box = new St.BoxLayout({
+            vertical: !this.state.isHorizontal,
+            style_class: 'grouped-window-list-scrollbox-container'
+        });
 
-        this.scrollBox = new Clutter.Actor({ clip_to_allocation: true });
-        this.scrollBox.add_child(this.container);
+        this.actor.add_actor(this.box);
 
-        this.actor.add_child(this.startButton);
-        this.actor.add_child(this.scrollBox);
-        this.actor.add_child(this.endButton);
+        this.edgeScrollTimeoutId = 0;
+        this.edgeScrollDirection = 0;
 
-        this.scrollBox.set_x_expand(true);
-        this.scrollBox.set_y_expand(true);
+        this.signals.connect(this.actor, 'scroll-event', (actor, event) => this._onScroll(actor, event));
 
-        this.slideTimerSourceId = 0;
-        this.updateScrollVisibilityId = 0;
+        this.signals.connect(this.actor, 'motion-event', (actor, event) => this._onMotionEvent(actor, event));
+        this.signals.connect(this.actor, 'leave-event', () => this._stopEdgeScroll());
 
-        // Connect all the signals
-        this.signals.connect(this.actor, 'allocation-changed', this.updateScrollVisibility, this);
-        this.signals.connect(this.container, 'allocation-changed', this.updateScrollVisibility, this);
-        this.signals.connect(this.container, 'notify::translation-x', this.updateScrollVisibility, this);
-        this.signals.connect(this.container, 'notify::translation-y', this.updateScrollVisibility, this);
-        this.signals.connect(this.scrollBox, 'notify::allocation', this.updateScrollVisibility, this);
-        this.signals.connect(this.actor, 'scroll-event', (actor, event) => this.onScroll(event));
+        this.stateConnectionID = this.state.connect({
+            orientation: (state) => this.on_orientation_changed()
+        });
 
-        this.on_orientation_changed(this.state.orientation);
+        this.on_orientation_changed();
     }
 
-    on_orientation_changed(orientation) {
-        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
+    destroy() {
+        this._stopEdgeScroll();
+        if (this.stateConnectionID) {
+            this.state.disconnect(this.stateConnectionID);
+        }
+        this.signals.disconnectAllSignals();
+        this.actor.destroy();
+    }
 
-        this.mainLayout.set_orientation(managerOrientation);
-
+    on_orientation_changed() {
+        this.box.vertical = !this.state.isHorizontal;
         if (this.state.isHorizontal) {
-            this.actor.set_x_align(Clutter.ActorAlign.FILL);
-            this.startButton.remove_style_class_name('grouped-window-list-scroll-button-top');
-            this.endButton.remove_style_class_name('grouped-window-list-scroll-button-down');
-            this.startButton.add_style_class_name('grouped-window-list-scroll-button-left');
-            this.endButton.add_style_class_name('grouped-window-list-scroll-button-right');
-            this.startIcon.set_icon_name('pan-start-symbolic');
-            this.endIcon.set_icon_name('pan-end-symbolic');
-            this.startButton.set_x_expand(false);
-            this.startButton.set_y_expand(true);
-            this.startButton.set_y_align(Clutter.ActorAlign.FILL);
-            this.endButton.set_x_expand(false);
-            this.endButton.set_y_expand(true);
-            this.endButton.set_y_align(Clutter.ActorAlign.FILL);
+            this.actor.style_class = 'grouped-window-list-scrollbox hfade';
         } else {
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
-            this.startButton.remove_style_class_name('grouped-window-list-scroll-button-left');
-            this.endButton.remove_style_class_name('grouped-window-list-scroll-button-right');
-            this.startButton.add_style_class_name('grouped-window-list-scroll-button-top');
-            this.endButton.add_style_class_name('grouped-window-list-scroll-button-down');
-            this.startIcon.set_icon_name('pan-up-symbolic');
-            this.endIcon.set_icon_name('pan-down-symbolic');
-            this.startButton.set_x_expand(true);
-            this.startButton.set_y_expand(false);
-            this.startButton.set_x_align(Clutter.ActorAlign.FILL);
-            this.endButton.set_x_expand(true);
-            this.endButton.set_y_expand(false);
-            this.endButton.set_x_align(Clutter.ActorAlign.FILL);
-        }
-        this.updateScrollVisibility();
-    }
-
-    startSlide(direction) {
-        if (this.slideTimerSourceId > 0) {
-            GLib.source_remove(this.slideTimerSourceId);
-            this.slideTimerSourceId = 0;
-        }
-
-        if (this.state.panelEditMode) return;
-
-        const scrollFunc = () => {
-            this.scroll(direction * 5);
-            if (this.slideTimerSourceId === 0) return GLib.SOURCE_REMOVE;
-
-            // Check if reached bounds to stop timer
-            let current, min;
-            if (this.state.isHorizontal) {
-                current = this.container.translation_x;
-                min = Math.min(0, this.scrollBox.width - this.container.width);
-            } else {
-                current = this.container.translation_y;
-                min = Math.min(0, this.scrollBox.height - this.container.height);
-            }
-
-            // At start, trying to go start
-            if (current >= 0 && direction < 0) {
-                this.slideTimerSourceId = 0;
-                return GLib.SOURCE_REMOVE;
-            }
-
-            // At end, trying to go end
-            if (current <= min && direction > 0) {
-                this.slideTimerSourceId = 0;
-                return GLib.SOURCE_REMOVE;
-            }
-
-            return GLib.SOURCE_CONTINUE;
-        };
-
-        this.slideTimerSourceId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 10, scrollFunc);
-    }
-
-    stopSlide() {
-        if (this.slideTimerSourceId > 0) {
-            GLib.source_remove(this.slideTimerSourceId);
-            this.slideTimerSourceId = 0;
+            this.actor.style_class = 'grouped-window-list-scrollbox vfade';
         }
     }
 
-    onScroll(event) {
-        if (this.state.panelEditMode) return;
+    scrollToChild(childActor) {
+        if (!childActor) return;
 
-        if (this.state.settings.scrollBehavior !== 4) {
+        // Get allocation of child relative to container
+        const allocation = childActor.get_allocation_box();
+
+        // Child coordinates
+        let c1, c2;
+
+        const isHorizontal = this.state.isHorizontal;
+        let adjustment;
+
+        if (isHorizontal) {
+            c1 = allocation.x1;
+            c2 = allocation.x2;
+            const hBar = this.actor.get_hscroll_bar();
+            if (hBar) adjustment = hBar.get_adjustment();
+        } else {
+            c1 = allocation.y1;
+            c2 = allocation.y2;
+            const vBar = this.actor.get_vscroll_bar();
+            if (vBar) adjustment = vBar.get_adjustment();
+        }
+
+        if (adjustment) {
+            const current = adjustment.value;
+            const page_size = adjustment.page_size;
+            const item_size = c2 - c1;
+
+            let fade_offset = 30;
+
+            const fade_eff = this.actor.get_effect('fade');
+
+            if (fade_eff) {
+                fade_offset = this.state.isHorizontal ? fade_eff.hfade_offset : fade_eff.vfade_offset;
+            }
+
+            if (c1 < current + fade_offset || c2 > current + page_size - fade_offset) {
+                const newValue = (c1 + c2) / 2 - page_size / 2;
+                adjustment.value = Math.max(adjustment.lower, Math.min(newValue, adjustment.upper - page_size));
+            }
+        }
+    }
+
+    _onMotionEvent(actor, event) {
+        if (this.state.panelEditMode) return Clutter.EVENT_PROPAGATE;
+
+        const [x, y] = event.get_coords();
+        const [actorX, actorY] = actor.get_transformed_position();
+        const [actorWidth, actorHeight] = actor.get_transformed_size();
+
+        // Calculate relative position within the actor
+        const relX = x - actorX;
+        const relY = y - actorY;
+
+        let scrollDirection = 0;
+        const adjustment = this._getScrollAdjustment();
+
+        if (!adjustment) return Clutter.EVENT_PROPAGATE;
+
+        // Check if we can scroll (content is larger than view)
+        const canScroll = adjustment.upper > adjustment.page_size;
+        if (!canScroll) {
+            this._stopEdgeScroll();
             return Clutter.EVENT_PROPAGATE;
         }
 
-        let containerSize, scrollBoxSize;
         if (this.state.isHorizontal) {
-            containerSize = this.container.width || this.container.get_preferred_width(-1)[1];
-            scrollBoxSize = this.scrollBox.width;
+            // Check left edge
+            if (relX < EDGE_SCROLL_ZONE_SIZE && adjustment.value > adjustment.lower) {
+                scrollDirection = -1;
+            }
+            // Check right edge
+            else if (relX > actorWidth - EDGE_SCROLL_ZONE_SIZE &&
+                adjustment.value < adjustment.upper - adjustment.page_size) {
+                scrollDirection = 1;
+            }
         } else {
-            containerSize = this.container.height || this.container.get_preferred_height(-1)[1];
-            scrollBoxSize = this.scrollBox.height;
-        }
-
-        if (containerSize <= scrollBoxSize) return Clutter.EVENT_PROPAGATE;
-
-        const direction = event.get_scroll_direction();
-        let delta = 0;
-
-        if (direction === Clutter.ScrollDirection.SMOOTH) {
-            const [dx, dy] = event.get_scroll_delta();
-            delta = this.state.isHorizontal ? dx : dy;
-            delta *= 15; // Scale smooth scroll
-        } else {
-            const step = 20;
-            if (direction === Clutter.ScrollDirection.UP || direction === Clutter.ScrollDirection.LEFT) {
-                delta = -step;
-            } else if (direction === Clutter.ScrollDirection.DOWN || direction === Clutter.ScrollDirection.RIGHT) {
-                delta = step;
+            // Check top edge
+            if (relY < EDGE_SCROLL_ZONE_SIZE && adjustment.value > adjustment.lower) {
+                scrollDirection = -1;
+            }
+            // Check bottom edge
+            else if (relY > actorHeight - EDGE_SCROLL_ZONE_SIZE &&
+                adjustment.value < adjustment.upper - adjustment.page_size) {
+                scrollDirection = 1;
             }
         }
 
-        if (delta !== 0) {
-            this.scroll(delta);
-            return Clutter.EVENT_STOP;
+        if (scrollDirection !== 0 && scrollDirection !== this.edgeScrollDirection) {
+            this._startEdgeScroll(scrollDirection);
+        } else if (scrollDirection === 0) {
+            this._stopEdgeScroll();
         }
 
         return Clutter.EVENT_PROPAGATE;
     }
 
-    scroll(amount) {
-        let current, min, next;
+    _getScrollAdjustment() {
         if (this.state.isHorizontal) {
-            current = this.container.translation_x;
-            min = Math.min(0, this.scrollBox.width - this.container.width);
-            next = current - amount;
+            const hBar = this.actor.get_hscroll_bar();
+            return hBar ? hBar.get_adjustment() : null;
         } else {
-            current = this.container.translation_y;
-            min = Math.min(0, this.scrollBox.height - this.container.height);
-            next = current - amount;
+            const vBar = this.actor.get_vscroll_bar();
+            return vBar ? vBar.get_adjustment() : null;
         }
-
-        if (next > 0) next = 0;
-        if (next < min) next = min;
-
-        if (this.state.isHorizontal) this.container.translation_x = next;
-        else this.container.translation_y = next;
     }
 
-    updateScrollVisibility() {
-        if (this.updateScrollVisibilityId > 0) return;
-        this.updateScrollVisibilityId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
-            this._updateScrollVisibility();
-            this.updateScrollVisibilityId = 0;
-            return GLib.SOURCE_REMOVE;
+    _startEdgeScroll(direction) {
+        this._stopEdgeScroll();
+        this.edgeScrollDirection = direction;
+        this.state.scrollActive = true;
+
+        this.edgeScrollTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, EDGE_SCROLL_INTERVAL, () => {
+            const adjustment = this._getScrollAdjustment();
+            if (!adjustment) {
+                this.edgeScrollTimeoutId = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+
+            const newValue = adjustment.value + (EDGE_SCROLL_SPEED * this.edgeScrollDirection * global.ui_scale);
+
+            // Clamp value to valid range
+            adjustment.value = Math.max(adjustment.lower,
+                Math.min(newValue, adjustment.upper - adjustment.page_size));
+
+            return GLib.SOURCE_CONTINUE;
         });
     }
 
-    _updateScrollVisibility() {
-        if (this.state.panelEditMode) return;
+    _stopEdgeScroll() {
+        if (this.edgeScrollTimeoutId > 0) {
+            GLib.source_remove(this.edgeScrollTimeoutId);
+            this.edgeScrollTimeoutId = 0;
+        }
+        this.edgeScrollDirection = 0;
+        this.state.scrollActive = false;
+    }
 
-        let containerSize, scrollBoxSize;
+    _onScroll(actor, event) {
+        if (this.state.panelEditMode) return Clutter.EVENT_PROPAGATE;
 
+        // Handle horizontal scrolling with vertical wheel
         if (this.state.isHorizontal) {
-            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
-            scrollBoxSize = this.scrollBox.width;
-        } else {
-            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
-            scrollBoxSize = this.scrollBox.height;
-        }
+            const direction = event.get_scroll_direction();
+            let delta = 0;
 
-        let minTranslation = Math.min(0, scrollBoxSize - containerSize);
-        let currentTranslation = this.state.isHorizontal ? this.container.translation_x : this.container.translation_y;
+            const hBar = this.actor.get_hscroll_bar();
+            if (!hBar) return Clutter.EVENT_PROPAGATE;
 
-        // Clamp translation if bounds have changed (resizing, etc)
-        if (currentTranslation < minTranslation) {
-            currentTranslation = minTranslation;
-            if (this.state.isHorizontal) this.container.translation_x = currentTranslation;
-            else this.container.translation_y = currentTranslation;
-        }
+            const adjustment = hBar.get_adjustment();
+            if (!adjustment) return Clutter.EVENT_PROPAGATE;
 
-        if (containerSize > scrollBoxSize) {
-            // Some tolerance to avoid flickering
-            this.startButton.visible = currentTranslation < -0.1;
-            this.endButton.visible = currentTranslation > minTranslation + 0.1;
-        } else {
-            this.startButton.visible = false;
-            this.endButton.visible = false;
-
-            if (currentTranslation !== 0) {
-                if (this.state.isHorizontal) this.container.translation_x = 0;
-                else this.container.translation_y = 0;
-            }
-        }
-    }
-
-    scrollToChild(childActor) {
-        if (this.state.panelEditMode) return;
-
-        if (!childActor || childActor.get_parent() !== this.container) return;
-
-        const isHorizontal = this.state.isHorizontal;
-
-        let containerSize, boxSize;
-        if (isHorizontal) {
-            containerSize = this.container.width > 0 ? this.container.width : this.container.get_preferred_width(-1)[1];
-            boxSize = this.scrollBox.width;
-        } else {
-            containerSize = this.container.height > 0 ? this.container.height : this.container.get_preferred_height(-1)[1];
-            boxSize = this.scrollBox.height;
-        }
-
-        if (containerSize <= boxSize) return;
-
-        let targetCenter = 0;
-        let allocationValid = false;
-
-        if (childActor.has_allocation()) {
-            const box = childActor.get_allocation_box();
-            const size = isHorizontal ? box.get_width() : box.get_height();
-
-            if (size > 0) {
-                targetCenter = (isHorizontal ? box.x1 : box.y1) + (size / 2);
-                allocationValid = true;
-            }
-        }
-
-        if (!allocationValid) {
-            const children = this.container.get_children();
-            const index = children.indexOf(childActor);
-
-            if (index === -1) return;
-
-            let itemPos = 0;
-            let itemSize = 0;
-
-            for (let i = 0; i <= index; i++) {
-                const actor = children[i];
-
-                if (isHorizontal) {
-                    itemSize = actor.width > 0 ? actor.width : actor.get_preferred_width(-1)[1];
+            if (direction === Clutter.ScrollDirection.UP) {
+                delta = -10 * global.ui_scale;
+            } else if (direction === Clutter.ScrollDirection.DOWN) {
+                delta = 10 * global.ui_scale;
+            } else if (direction === Clutter.ScrollDirection.SMOOTH) {
+                const [dx, dy] = event.get_scroll_delta();
+                // If pure vertical scroll, map to horizontal
+                if (Math.abs(dy) > Math.abs(dx)) {
+                    delta = dy * (16 * global.ui_scale); // Scale factor
                 } else {
-                    itemSize = actor.height > 0 ? actor.height : actor.get_preferred_height(-1)[1];
+                    // Let StScrollView handle horizontal smooth scroll naturally if it exists
+                    return Clutter.EVENT_PROPAGATE;
                 }
-
-                itemPos += itemSize;
+            } else {
+                return Clutter.EVENT_PROPAGATE;
             }
 
-            targetCenter = itemPos - (itemSize / 2);
+            if (delta !== 0) {
+                // Manually updating adjustment value using property
+                adjustment.value = adjustment.value + delta;
+                return Clutter.EVENT_STOP;
+            }
         }
-
-        // We want targetCenter to be at boxSize / 2
-        let newPos = (boxSize / 2) - targetCenter;
-
-        const minPos = Math.min(0, boxSize - containerSize);
-        newPos = Math.round(Math.max(minPos, Math.min(newPos, 0)) * 100) / 100;
-
-        if (isHorizontal) {
-            this.container.translation_x = newPos;
-        } else {
-            this.container.translation_y = newPos;
-        }
-    }
-
-    destroy() {
-        this.signals.disconnectAllSignals();
-        if (this.slideTimerSourceId > 0) {
-            GLib.source_remove(this.slideTimerSourceId);
-            this.slideTimerSourceId = 0;
-        }
-
-        if (this.updateScrollVisibilityId > 0) {
-            GLib.source_remove(this.updateScrollVisibilityId);
-            this.updateScrollVisibilityId = 0;
-        }
-
-        this.actor.destroy();
+        return Clutter.EVENT_PROPAGATE;
     }
 }
 
-module.exports = AppGroupListScrollBox;
+module.exports = ScrollBox;

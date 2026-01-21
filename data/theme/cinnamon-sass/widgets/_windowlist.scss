@@ -108,30 +108,9 @@
     font-size: 12px;
   }
 
-  &-scroll-button {
-    background-color: rgba(0, 0, 0, 0.25);
-    border: 1px solid rgba(128, 128, 128, 0.2);
-    box-shadow: none;
-
-    &-icon {
-      icon-size: 1.09em;
-    }
-
-    &-left {
-      border-right-width: 0;
-    }
-
-    &-right {
-      border-left-width: 0;
-    }
-
-    &-top {
-      border-bottom-width: 0;
-    }
-
-    &-down {
-      border-top-width: 0;
-    }
+  &-scrollbox {
+    &.vfade { -st-vfade-offset: 68px; }
+    &.hfade { -st-hfade-offset: 68px; }
   }
 }
 

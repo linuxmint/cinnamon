@@ -1,13 +1,14 @@
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const St = imports.gi.St;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
 
 const createStore = require('./state');
 const AppGroup = require('./appGroup');
-const AppGroupListScrollBox = require('./scrollBox');
 const {RESERVE_KEYS, SCROLL_TO_APP_DEBOUNCE_TIME} = require('./constants');
+const ScrollBox = require('./scrollBox');
 
 
 class Workspace {
@@ -39,7 +40,6 @@ class Workspace {
                     return;
                 }
                 this.container.remove_child(actor);
-                this.scrollBox.updateScrollVisibility();
             },
             updateFocusState: (focusedAppId) => {
                 this.appGroups.forEach( appGroup => {
@@ -55,13 +55,9 @@ class Workspace {
         this.signals = new SignalManager(null);
         this.metaWorkspace = params.metaWorkspace;
 
-        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
-
-        this.manager = new Clutter.BoxLayout({orientation: managerOrientation});
-        this.container = new Clutter.Actor({layout_manager: this.manager});
-
-        this.scrollBox = new AppGroupListScrollBox(this.state, this.container);
+        this.scrollBox = new ScrollBox(this.state);
         this.actor = this.scrollBox.actor;
+        this.container = this.scrollBox.box;
 
         this.appGroups = [];
         this.lastFocusedApp = null;
@@ -77,11 +73,6 @@ class Workspace {
     }
 
     on_orientation_changed(orientation) {
-        if (!this.manager) return;
-
-        const managerOrientation = this.state.isHorizontal ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
-        this.manager.set_orientation(managerOrientation);
-        this.scrollBox.on_orientation_changed(orientation);
         this.refreshList();
     }
 
@@ -356,7 +347,6 @@ class Workspace {
                 this.container.add_child(appGroup.actor);
                 this.appGroups.push(appGroup);
             }
-            this.scrollBox.updateScrollVisibility();
             appGroup.windowAdded(metaWindow);
         };
 
@@ -462,11 +452,14 @@ class Workspace {
     }
 
     destroy() {
+        this.scrollBox.destroy();
+        if (this.scrollToAppDebounceTimeoutId > 0) {
+            GLib.source_remove(this.scrollToAppDebounceTimeoutId);
+            this.scrollToAppDebounceTimeoutId = 0;
+        }
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
         this.workspaceState.destroy();
-        this.scrollBox.destroy();
-        this.manager = null;
         unref(this, RESERVE_KEYS);
     }
 }
