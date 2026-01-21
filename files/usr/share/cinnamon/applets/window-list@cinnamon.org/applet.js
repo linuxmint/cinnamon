@@ -818,9 +818,13 @@ class AppMenuButton {
 
         let icon = this.app ?
             this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon',
+            null;
+
+        if (!icon) {
+            icon = new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
+        }
 
         let old_child = this._iconBox.get_child();
         this._iconBox.set_child(icon);

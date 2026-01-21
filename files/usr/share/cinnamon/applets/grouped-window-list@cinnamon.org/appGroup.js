@@ -293,7 +293,9 @@ class AppGroup {
             } else {
                 icon = this.groupState.app.create_icon_texture(this.iconSize);
             }
-        } else {
+        }
+
+        if (!icon) {
             icon = new St.Icon({
                 icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
