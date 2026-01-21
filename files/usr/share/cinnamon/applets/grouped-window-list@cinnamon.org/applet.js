@@ -208,7 +208,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         // applet to avoid passing down the parent class down the constructor chain and creating circular references.
         // In addition to manual event emitting, store.js can emit updates on property changes when set through
         // store.set. Any keys emitted through store.trigger that are not declared here first will throw an error.
-        this.state.connect({
+        this.stateConnectionId = this.state.connect({
             setSettingsValue: (k, v) => this.settings.setValue(k, v),
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
@@ -428,6 +428,9 @@ class GroupedWindowListApplet extends Applet.Applet {
                 workspace.destroy();
             }
         });
+        if (this.stateConnectionId) {
+            this.state.disconnect(this.stateConnectionId);
+        }
         this.settings.finalize();
         unref(this, RESERVE_KEYS);
         MessageTray.extensionsHandlingNotifications--;

@@ -11,7 +11,7 @@ const {RESERVE_KEYS} = Me.imports.constants;
 var Workspace = class Workspace {
     constructor(params) {
         this.state = params.state;
-        this.state.connect({
+        this.stateConnectionId = this.state.connect({
             orientation: () => this.on_orientation_changed(false)
         });
         this.workspaceState = createStore({
@@ -421,6 +421,9 @@ var Workspace = class Workspace {
     }
 
     destroy() {
+        if (this.stateConnectionId) {
+            this.state.disconnect(this.stateConnectionId);
+        }
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
         this.workspaceState.destroy();
