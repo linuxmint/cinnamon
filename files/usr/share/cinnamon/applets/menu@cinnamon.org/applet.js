@@ -1146,6 +1146,12 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._size_dirty = true;
         })
 
+        // Bind popup size settings BEFORE creating the resizer, so that
+        // popup_width and popup_height are defined when the resizer's
+        // get_user_width/height callbacks are invoked. Fixes #12972.
+        this.settings.bind("popup-width", "popup_width");
+        this.settings.bind("popup-height", "popup_height");
+
         this._resizer = new Applet.PopupResizeHandler(this.menu.actor,
             () => this._orientation,
             (w,h) => this._onBoxResized(w,h),
@@ -1195,8 +1201,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("show-bookmarks", "showBookmarks", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("sidebar-icon-size", "sidebarIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("enable-animation", "enableAnimation", null);
-        this.settings.bind("popup-width", "popup_width");
-        this.settings.bind("popup-height", "popup_height");
 
         this._updateKeybinding();
 
