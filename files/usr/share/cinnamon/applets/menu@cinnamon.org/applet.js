@@ -1722,7 +1722,27 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let action = global.display.get_keybinding_action(keyCode, modifierState);
 
         if (action == Meta.KeyBindingAction.CUSTOM) {
+            // Invoke the keybinding callback (e.g., for keyboard layout switching)
+            // before stopping event propagation. This ensures keybindings like
+            // switch-input-source work even when the menu search is focused.
+            Main.keybindingManager.invoke_keybinding_action_by_id(action);
             return Clutter.EVENT_STOP;
+        }
+
+        // Allow modifier-only key combinations (Alt, Shift, Ctrl) to propagate
+        // so XKB-based keyboard layout switching can work when no custom
+        // keybinding is registered for the combo.
+        if (action == Meta.KeyBindingAction.NONE) {
+            const isModifierOnly = (
+                symbol == Clutter.KEY_Shift_L || symbol == Clutter.KEY_Shift_R ||
+                symbol == Clutter.KEY_Alt_L || symbol == Clutter.KEY_Alt_R ||
+                symbol == Clutter.KEY_Control_L || symbol == Clutter.KEY_Control_R ||
+                symbol == Clutter.KEY_Super_L || symbol == Clutter.KEY_Super_R ||
+                symbol == Clutter.KEY_ISO_Level3_Shift
+            );
+            if (isModifierOnly) {
+                return Clutter.EVENT_PROPAGATE;
+            }
         }
 
         if (this.searchEntryText.has_preedit()) {
