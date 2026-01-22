@@ -1,7 +1,5 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
-#include "config.h"
-
 #include <fcntl.h>
 
 #include "cinnamon-global-private.h"

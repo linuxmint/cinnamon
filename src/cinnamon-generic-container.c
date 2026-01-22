@@ -19,7 +19,6 @@
 
 #include <clutter/clutter.h>
 #include <gtk/gtk.h>
-#include <girepository.h>
 
 static void cinnamon_generic_container_iface_init (ClutterContainerIface *iface);
 
