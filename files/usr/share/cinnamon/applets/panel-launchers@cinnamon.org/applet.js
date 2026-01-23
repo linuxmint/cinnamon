@@ -41,25 +41,25 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         }
 
-        let item = new PopupMenu.PopupIconMenuItem(_("Launch"), "media-playback-start", St.IconType.SYMBOLIC);
+        let item = new PopupMenu.PopupIconMenuItem(_("Launch"), "xsi-media-playback-start", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, this._onLaunchActivate));
         this.addMenuItem(item);
 
         if (Main.gpu_offload_supported) {
-            let item = new PopupMenu.PopupIconMenuItem(_("Run with dedicated GPU"), "cpu", St.IconType.SYMBOLIC);
+            let item = new PopupMenu.PopupIconMenuItem(_("Run with dedicated GPU"), "xsi-cpu", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', Lang.bind(this, this._onLaunchOffloadedActivate));
             this.addMenuItem(item);
         }
 
-        item = new PopupMenu.PopupIconMenuItem(_("Add"), "list-add", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Add"), "xsi-list-add", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, this._onAddActivate));
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Edit"), "document-properties", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Edit"), "xsi-edit", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, this._onEditActivate));
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Remove"), "window-close", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Remove"), "xsi-list-remove", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, this._onRemoveActivate));
         this.addMenuItem(item);
 
@@ -68,7 +68,7 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applet preferences"));
         this.addMenuItem(subMenu);
 
-        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "xsi-dialog-question", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this._launcher.launchersBox, this._launcher.launchersBox.openAbout));
         subMenu.menu.addMenuItem(item);
 
@@ -76,7 +76,7 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         this._signals.connect(item, 'activate', () => this._launcher.launchersBox.configureApplet());
         subMenu.menu.addMenuItem(item);
 
-        this.remove_item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "edit-delete", St.IconType.SYMBOLIC);
+        this.remove_item = new PopupMenu.PopupIconMenuItem(_("Remove '%s'").format(_("Panel launchers")), "xsi-edit-delete", St.IconType.SYMBOLIC);
         subMenu.menu.addMenuItem(this.remove_item);
     }
 

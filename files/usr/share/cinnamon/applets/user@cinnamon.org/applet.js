@@ -69,7 +69,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        let item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "preferences-system", St.IconType.SYMBOLIC);
+        let item = new PopupMenu.PopupIconMenuItem(_("System Settings"), "xsi-preferences", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             Util.spawnCommandLine("cinnamon-settings");
         }));
@@ -77,7 +77,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "system-lock-screen", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "xsi-lock-screen", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
             let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
@@ -99,7 +99,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
         if (!lockdown_settings.get_boolean('disable-user-switching')) {
             if (GLib.getenv("XDG_SEAT_PATH")) {
                 // LightDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "system-switch-user", St.IconType.SYMBOLIC);
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
                 item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("dm-tool switch-to-greeter");
@@ -108,7 +108,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
             }
             else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
                 // MDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "system-switch-user", St.IconType.SYMBOLIC);
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
                 item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("mdmflexiserver");
                 }));
@@ -116,7 +116,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
             }
             else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
                 // GDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "system-switch-user", St.IconType.SYMBOLIC);
+                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
                 item.connect('activate', Lang.bind(this, function() {
                     Util.spawnCommandLine("cinnamon-screensaver-command --lock");
                     Util.spawnCommandLine("gdmflexiserver");
@@ -125,7 +125,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
             }
         }
 
-        item = new PopupMenu.PopupIconMenuItem(_("Log Out..."), "logout", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Log Out..."), "xsi-log-out", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             this._session.LogoutRemote(0);
         }));
@@ -133,7 +133,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        item = new PopupMenu.PopupIconMenuItem(_("Power Off..."), "system-shutdown", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Power Off..."), "xsi-shutdown", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
             this._session.ShutdownRemote();
         }));

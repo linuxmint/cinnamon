@@ -956,7 +956,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applet preferences"));
         this.addMenuItem(subMenu);
 
-        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "xsi-dialog-question", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
         subMenu.menu.addMenuItem(item);
 
@@ -964,14 +964,14 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this._signals.connect(item, 'activate', () => this._launcher._applet.configureApplet());
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "xsi-edit-delete", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', (actor, event) => this._launcher._applet.confirmRemoveApplet(event));
         subMenu.menu.addMenuItem(item);
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Close all/others
-        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "application-exit", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "xsi-exit", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -980,7 +980,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }));
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "window-close", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "xsi-window-close", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -1002,12 +1002,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         if (mw.minimized) {
-            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "view-sort-descending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "xsi-view-sort-descending", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 Main.activateWindow(mw, global.get_current_time());
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "view-sort-ascending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "xsi-view-sort-ascending", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.minimize();
             });
@@ -1015,12 +1015,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         if (mw.get_maximized()) {
-            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "view-restore", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "xsi-view-restore", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "view-fullscreen", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "xsi-view-fullscreen", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
@@ -1028,7 +1028,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
         item.setSensitive(mw.can_maximize())
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close"), "xsi-edit-delete", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', function() {
             mw.delete(global.get_current_time());
         });
@@ -1323,7 +1323,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
             window.setDisplayTitle();
         }
     }
-    
+
     _updateLabels() {
         for (let window of this._windows)
             window.updateLabelVisible();

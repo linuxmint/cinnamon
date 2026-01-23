@@ -526,7 +526,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         }));
         this._applet_context_menu.addMenuItem(addWorkspaceMenuItem);
 
-        this.removeWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Remove the current workspace"), "list-remove", St.IconType.SYMBOLIC);
+        this.removeWorkspaceMenuItem = new PopupMenu.PopupIconMenuItem (_("Remove the current workspace"), "xsi-list-remove", St.IconType.SYMBOLIC);
         this.removeWorkspaceMenuItem.connect('activate', this.removeCurrentWorkspace.bind(this));
         this._applet_context_menu.addMenuItem(this.removeWorkspaceMenuItem);
         this.removeWorkspaceMenuItem.setSensitive(global.workspace_manager.n_workspaces > 1);
