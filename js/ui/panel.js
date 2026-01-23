@@ -3769,7 +3769,7 @@ Panel.prototype = {
                     }
 
                     if (this._dodgeAll == "false") {
-                        if (!global.display.focus_window ||
+                        if (!global.display.focus_window || global.display.focus_window.minimized ||
                             global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
                             this._shouldShow = true;
                             break;
