@@ -156,7 +156,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         const subMenu = new PopupMenu.PopupSubMenuMenuItem(_('Applet preferences'));
         this.addMenuItem(subMenu);
 
-        item = createMenuItem({label: _('About...'), icon: 'dialog-question'});
+        item = createMenuItem({label: _('About...'), icon: 'xsi-dialog-question'});
         this.signals.connect(item, 'activate', () => this.state.trigger('openAbout'));
         subMenu.menu.addMenuItem(item);
 
@@ -164,7 +164,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.signals.connect(item, 'activate', () => this.state.trigger('configureApplet'));
         subMenu.menu.addMenuItem(item);
 
-        item = createMenuItem({label: _("Remove '%s'").format(_("Grouped window list")), icon: 'edit-delete'});
+        item = createMenuItem({label: _("Remove '%s'").format(_("Grouped window list")), icon: 'xsi-edit-delete'});
         this.signals.connect(item, 'activate', (actor, event) => this.state.trigger('removeApplet', event));
 
         subMenu.menu.addMenuItem(item);
@@ -197,7 +197,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                     });
                 };
                 for (let i = 0; i < itemsLength; i++) {
-                    item = createMenuItem({label: _(items[i].get_short_name()), icon: 'list-add'});
+                    item = createMenuItem({label: _(items[i].get_short_name()), icon: 'xsi-list-add'});
                     handleRecentLaunch(item, i);
                     subMenu.menu.addMenuItem(item);
                 }
@@ -206,7 +206,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         if (Main.gpu_offload_supported && !hasWindows) {
-            item = createMenuItem({label: _("Run with dedicated GPU"), icon: 'cpu'});
+            item = createMenuItem({label: _("Run with dedicated GPU"), icon: 'xsi-cpu'});
 
             this.signals.connect(item, 'activate', () => this.groupState.trigger('launchNewInstance', true));
 
@@ -223,7 +223,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 const handleAction = (action) => {
                     let icon = getDesktopActionIcon(action);
                     if (icon == null)
-                        icon = 'application-x-executable';
+                        icon = 'xsi-empty-icon';
 
                     item = createMenuItem({
                         label: _(this.groupState.appInfo.get_action_name(action)),
@@ -252,23 +252,23 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             let label, icon;
             if (this.groupState.isFavoriteApp) {
                 label = _('Unpin from Panel');
-                icon = 'unpin';
+                icon = 'xsi-unpin';
             } else {
                 label = _('Pin to Panel');
-                icon = 'pin';
+                icon = 'xsi-pin';
             }
             this.pinToggleItem = createMenuItem({label, icon});
             this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
             this.addMenuItem(this.pinToggleItem);
             if (this.state.settings.autoStart) {
                 const label = this.groupState.autoStartIndex !== -1 ? _('Remove from Autostart') : _('Add to Autostart');
-                item = createMenuItem({label: label, icon: 'insert-object'});
+                item = createMenuItem({label: label, icon: 'xsi-insert-object'});
                 this.signals.connect(item, 'activate', (...args) => this.toggleAutostart(...args));
                 this.addMenuItem(item);
             }
         } else {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            item = createMenuItem({label: _('Create Shortcut'), icon: 'list-add'});
+            item = createMenuItem({label: _('Create Shortcut'), icon: 'xsi-list-add'});
             this.signals.connect(item, 'activate', (...args) => this.createShortcut(...args));
             this.addMenuItem(item);
         }
@@ -285,25 +285,25 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
             }
 
             if (this.groupState.lastFocused.minimized) {
-                item = createMenuItem({label: _('Restore'), icon: 'view-sort-descending'});
+                item = createMenuItem({label: _('Restore'), icon: 'xsi-empty-icon'});
                 this.signals.connect(item, 'activate', () => {
                     Main.activateWindow(this.groupState.lastFocused, global.get_current_time());
                 });
             } else {
-                item = createMenuItem({label: _('Minimize'), icon: 'view-sort-ascending'});
+                item = createMenuItem({label: _('Minimize'), icon: 'xsi-empty-icon'});
                 this.signals.connect(item, 'activate', () => this.groupState.lastFocused.minimize());
             }
             this.addMenuItem(item);
 
             if (this.groupState.lastFocused.get_maximized()) {
-                item = createMenuItem({label: _('Unmaximize'), icon: 'view-restore'});
+                item = createMenuItem({label: _('Unmaximize'), icon: 'xsi-empty-icon'});
                 this.signals.connect(item, 'activate', () => {
                     this.groupState.lastFocused.unmaximize(
                         Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL
                     );
                 });
             } else {
-                item = createMenuItem({label: _('Maximize'), icon: 'view-fullscreen'});
+                item = createMenuItem({label: _('Maximize'), icon: 'xsi-empty-icon'});
                 this.signals.connect(item, 'activate', () => {
                     this.groupState.lastFocused.maximize(
                         Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL
@@ -315,7 +315,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
 
             if (this.groupState.metaWindows && this.groupState.metaWindows.length > 1) {
                 // Close others
-                item = createMenuItem({label: _('Close others'), icon: 'window-close'});
+                item = createMenuItem({label: _('Close others'), icon: 'xsi-window-close'});
                 this.signals.connect(item, 'activate', () => {
                     this.groupState.metaWindows.forEach( metaWindow => {
                         if (metaWindow !== this.groupState.lastFocused && !metaWindow._needsAttention) {
@@ -328,7 +328,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 // TODO: We should detect if windows from this group are on another workspace
                 // and close windows across all workspaces while showAllWorkspaces is enabled.
                 // Ditto for 'Close others'.
-                item = createMenuItem({label: _('Close all'), icon: 'application-exit'});
+                item = createMenuItem({label: _('Close all'), icon: 'xsi-exit'});
                 this.signals.connect(item, 'activate', () => {
                     if (!this.groupState.isFavoriteApp) {
                         this.groupState.set({willUnmount: true});
@@ -338,7 +338,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 this.addMenuItem(item);
                 this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             } else {
-                item = createMenuItem({label: _('Close'), icon: 'edit-delete'});
+                item = createMenuItem({label: _('Close'), icon: 'xsi-edit-delete'});
                 this.signals.connect(item, 'activate', () => {
                     this.groupState.lastFocused.delete(global.get_current_time());
                 });
