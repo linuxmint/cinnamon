@@ -105,7 +105,7 @@ PlaceDeviceInfo.prototype = {
     },
 
     isRemovable: function() {
-        return this._mount.can_eject();
+        return this._mount.can_unmount();
     },
 
     remove: function() {
