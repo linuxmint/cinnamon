@@ -816,11 +816,18 @@ class AppMenuButton {
     setIcon() {
         this.icon_size = this._applet.icon_size;
 
-        let icon = this.app ?
-            this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon',
+        let icon;
+        if (this.app) {
+            if (this.app.is_window_backed()) {
+                icon = this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow);
+            } else {
+                icon = this.app.create_icon_texture(this.icon_size);
+            }
+        } else {
+            icon = new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
+        }
 
         let old_child = this._iconBox.get_child();
         this._iconBox.set_child(icon);
@@ -1240,7 +1247,14 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _onWindowAppChanged(tracker, metaWindow) {
-        this._refreshItemByMetaWindow(metaWindow);
+        let window = this._windows.find(win => (win.metaWindow == metaWindow));
+
+        if (window) {
+            window.app = window._getApp();
+            window.appId = window.app ? window.app.get_id() : null;
+            window.setIcon();
+            window.setDisplayTitle();
+        }
     }
 
     _onWindowSkipTaskbarChanged(display, metaWindow) {
