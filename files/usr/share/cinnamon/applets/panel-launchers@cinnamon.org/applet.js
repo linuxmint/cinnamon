@@ -35,7 +35,13 @@ class PanelAppLauncherMenu extends Applet.AppletPopupMenu {
         if (this._actions.length > 0) {
             for (let i = 0; i < this._actions.length; i++) {
                 let actionName = this._actions[i];
-                this.addAction(appinfo.get_action_name(actionName), Lang.bind(this, this._launchAction, actionName));
+                let icon = Util.getDesktopActionIcon(actionName);
+                if (icon == null)
+                    icon = 'xsi-empty-icon-symbolic';
+
+                let item = new PopupMenu.PopupIconMenuItem(appinfo.get_action_name(actionName), icon, St.IconType.SYMBOLIC);
+                this._signals.connect(item, 'activate', () => this._launcher.launchAction(actionName));
+                this.addMenuItem(item);
             }
 
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
