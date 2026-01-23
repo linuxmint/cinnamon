@@ -1002,12 +1002,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         if (mw.minimized) {
-            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "xsi-view-sort-descending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 Main.activateWindow(mw, global.get_current_time());
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "xsi-view-sort-ascending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.minimize();
             });
@@ -1015,12 +1015,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         if (mw.get_maximized()) {
-            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "xsi-view-restore", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "xsi-view-fullscreen", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
@@ -1028,7 +1028,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
         item.setSensitive(mw.can_maximize())
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close"), "xsi-edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close"), "xsi-window-close", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', function() {
             mw.delete(global.get_current_time());
         });
