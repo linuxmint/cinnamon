@@ -39,7 +39,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.updating = false;
         this.showLater = false;
         this.printers = [];
-        this.set_applet_icon_symbolic_name('printer');
+        this.set_applet_icon_symbolic_name('xsi-printer');
         this.update();
     }
 
@@ -129,7 +129,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.jobsCount = 0;
         this.printersCount = 0;
         this.menu.removeAll();
-        let printers = new PopupMenu.PopupIconMenuItem(_("Printers"), 'printer', St.IconType.SYMBOLIC);
+        let printers = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
         printers.connect('activate', Lang.bind(this, this.onShowPrintersClicked));
         this.menu.addMenuItem(printers);
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
@@ -203,7 +203,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                             jobItem.connect('activate', Lang.bind(jobItem, this.onCancelJobClicked));
                             this.cancelSubMenu.addMenuItem(jobItem);
                             if(out2[out2.indexOf(job) - 2] != 'active' && out2[out2.indexOf(job) - 2] != '1st') {
-                                sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'go-up', St.IconType.SYMBOLIC));
+                                sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC));
                                 sendJobs[sendJobs.length - 1].job = job;
                                 sendJobs[sendJobs.length - 1].connect('activate', Lang.bind(sendJobs[sendJobs.length - 1], this.onSendToFrontClicked));
                             }
@@ -246,11 +246,11 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                                 this.set_applet_tooltip(_("Printers"));
                             }
                             if(this.printWarning) {
-                                this.set_applet_icon_symbolic_name('printer-warning');
+                                this.set_applet_icon_symbolic_name('xsi-printer-warning');
                             } else if(this.jobsCount > 0) {
-                                this.set_applet_icon_symbolic_name('printer-printing');
+                                this.set_applet_icon_symbolic_name('xsi-printer-printing');
                             } else {
-                                this.set_applet_icon_symbolic_name('printer');
+                                this.set_applet_icon_symbolic_name('xsi-printer');
                             }
                         }));
                     }))
