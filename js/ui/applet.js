@@ -1246,15 +1246,20 @@ var PopupResizeHandler = class PopupResizeHandler {
         const user_w = this._get_user_width();
         const user_h = this._get_user_height();
 
+        // Calculate padding between outer actor and inner content
+        const padding_w = Math.max(0, cur_w - user_w);
+        const padding_h = Math.max(0, cur_h - user_h);
+
         let new_w = user_w;
         let new_h = user_h;
 
-        if (cur_w > this._workAreaWidth) {
-            new_w -= cur_w - this._workAreaWidth;
+        // Check if content + padding exceeds work area
+        if (user_w + padding_w > this._workAreaWidth) {
+            new_w = Math.max(0, this._workAreaWidth - padding_w);
         }
 
-        if (cur_h > this._workAreaHeight) {
-            new_h -= cur_h - this._workAreaHeight;
+        if (user_h + padding_h > this._workAreaHeight) {
+            new_h = Math.max(0, this._workAreaHeight - padding_h);
         }
 
         if (new_w !== user_w || new_h !== user_h) {
