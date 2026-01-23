@@ -2580,6 +2580,55 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
         this.searchEntry.add_accessible_state(Atk.StateType.EDITABLE);
         CinnamonEntry.addContextMenu(this.searchEntry);
+        this.searchEntry._menuManager.shouldGrab = false;
+
+        // Close the search entry context menu when main menu closes
+        this.menu.connect('open-state-changed', (menu, open) => {
+            if (!open && this.searchEntry._menu.isOpen) {
+                this.searchEntry._menu.close();
+            }
+        });
+
+        // Extend _eventIsOnActiveMenu to include the search entry context menu
+        // This prevents the main menu from closing when clicking on the context menu
+        let originalEventIsOnActiveMenu = this.menuManager._eventIsOnActiveMenu.bind(this.menuManager);
+        this.menuManager._eventIsOnActiveMenu = (event) => {
+            if (this.searchEntry._menu.isOpen &&
+                this.searchEntry._menu.actor.contains(event.get_source())) {
+                return true;
+            }
+            return originalEventIsOnActiveMenu(event);
+        };
+
+        // Manual hover effect using direct style pseudo-class (no signals)
+        let contextMenu = this.searchEntry._menu;
+        let contextMenuItems = [contextMenu._copyItem, contextMenu._pasteItem];
+
+        let updateHoverState = () => {
+            if (!contextMenu.isOpen) {
+                for (let item of contextMenuItems) {
+                    item.actor.change_style_pseudo_class('active', false);
+                }
+                return true;
+            }
+
+            let [mouseX, mouseY] = global.get_pointer();
+            for (let item of contextMenuItems) {
+                let [itemX, itemY] = item.actor.get_transformed_position();
+                let [width, height] = item.actor.get_size();
+                let isHovered = (mouseX >= itemX && mouseX <= itemX + width &&
+                                 mouseY >= itemY && mouseY <= itemY + height);
+                item.actor.change_style_pseudo_class('active', isHovered);
+            }
+            return true;
+        };
+
+        // Start hover polling when main menu opens
+        this.menu.connect('open-state-changed', (menu, open) => {
+            if (open) {
+                Mainloop.timeout_add(50, updateHoverState);
+            }
+        });
 
         this.searchEntry.set_secondary_icon(this._searchInactiveIcon);
         this.searchActive = false;
