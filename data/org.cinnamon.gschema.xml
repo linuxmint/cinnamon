@@ -132,6 +132,12 @@
       </description>
     </key>
 
+    <key name="panels-dodge-all" type="as">
+      <default>['1:false']</default>
+      <summary>Panel dodges the current active window when autohide is enabled</summary>
+      <description>Only dodge the active window rather than dodging all windows</description>
+    </key>
+
     <key name="panels-show-delay" type="as">
       <default>['1:0']</default>
       <summary>Duration of the delay before a hidden panel is shown</summary>

@@ -45,7 +45,8 @@ const VALID_ICON_SIZE_VALUES = [-1, 0, 16, 22, 24, 32, 48];
 const DEFAULT_PANEL_VALUES = {"panels-autohide": "false",
                         "panels-show-delay": "0",
                         "panels-hide-delay": "0",
-                        "panels-height": "40"};
+                        "panels-height": "40",
+                        "panels-dodge-all": "false"};
 
 const DEFAULT_FULLCOLOR_ICON_SIZE_VALUES = {"left":   0,
                                             "center": 0,
@@ -65,6 +66,7 @@ const MAX_TEXT_SIZE_PTS = 16.0;
 /*** Defaults ***/
 
 const PANEL_AUTOHIDE_KEY = "panels-autohide";
+const PANEL_DODGE_KEY = "panels-dodge-all";
 const PANEL_SHOW_DELAY_KEY = "panels-show-delay";
 const PANEL_HIDE_DELAY_KEY = "panels-hide-delay";
 const PANEL_HEIGHT_KEY = "panels-height";
@@ -2161,6 +2163,7 @@ Panel.prototype = {
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
+        this._signalManager.connect(global.settings, "changed::" + PANEL_DODGE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_ICON_SIZES, this._onPanelZoneSizesChanged, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_ZONE_SYMBOLIC_ICON_SIZES, this._onPanelZoneSizesChanged, this);
@@ -2735,23 +2738,23 @@ Panel.prototype = {
 
     _processPanelAutoHide: function() {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
+        this._dodgeAll = this._getProperty(PANEL_DODGE_KEY, "s");
 
         if (this._autohideSettings == "intel") {
-            this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
-            /* focus-window signal is emitted when the workspace change
-             * animation starts. When the animation ends, we do the position
-             * check again because the windows have moved. We cannot use
-             * _onFocusChanged because _onFocusChanged does nothing when there
-             * is no actual focus change. */
-            this._signalManager.connect(global.window_manager, "switch-workspace-complete", this._updatePanelVisibility, this);
-            this._onFocusChanged();
-        } else if (this._autohideSettings == "dodgeall") {
-            // Update on change of focus
-            this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
-            // Update if window is closed
-            this._signalManager.connect(global.window_group, "actor-removed", this._updatePanelVisibility, this);
-            // Update if window is opened
-            this._signalManager.connect(global.window_group, "actor-added", this._updatePanelVisibility, this);
+            if (this._dodgeAll == "false") {
+                this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
+                /* focus-window signal is emitted when the workspace change
+                * animation starts. When the animation ends, we do the position
+                * check again because the windows have moved. We cannot use
+                * _onFocusChanged because _onFocusChanged does nothing when there
+                * is no actual focus change. */
+                this._signalManager.connect(global.window_manager, "switch-workspace-complete", this._updatePanelVisibility, this);
+                this._onFocusChanged();
+            } else {
+                this._signalManager.connect(global.display, "notify::focus-window", this._onFocusChanged, this);
+                this._signalManager.connect(global.window_group, "actor-removed", this._updatePanelVisibility, this);
+                this._signalManager.connect(global.window_group, "actor-added", this._updatePanelVisibility, this);
+            }
         } else {
             this._signalManager.disconnect("notify::focus-window");
             this._signalManager.disconnect("switch-workspace-complete");
@@ -3760,47 +3763,48 @@ Panel.prototype = {
                     this._shouldShow = this._mouseEntered;
                     break;
                 case "intel":
-                    if (this._mouseEntered || !global.display.focus_window ||
-                        global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
-                        this._shouldShow = true;
-                        break;
-                    }
-
-                    if (global.display.focus_window.get_monitor() != this.monitorIndex) {
-                        this._shouldShow = false;
-                        break;
-                    }
-
-                    this._shouldShow = !(this._panelPositionHasOverlap(global.display.focus_window));
-                    break;
-                default:
                     if (this._mouseEntered) {
                         this._shouldShow = true;
                         break;
                     }
 
-                    // Assume the panel should be shown
-                    this._shouldShow = true;
-
-                    let actors = global.get_window_actors();
-                    let currentWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
-                    for (let i = 0; i < actors.length; i++) {
-                        let window = actors[i];
-                        let metaWin = window.get_meta_window();
-                        let winWorkspace = metaWin.get_workspace();
-                        let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
-                        
-                        if (metaWin === null || metaWin.get_window_type() == Meta.WindowType.DESKTOP || 
-                            !onCurrentWorkspace || metaWin.minimized || 
-                            metaWin.get_monitor() !== this.monitorIndex) {
-                            continue;
+                    if (this._dodgeAll == "false") {
+                        if (!global.display.focus_window ||
+                            global.display.focus_window.get_window_type() == Meta.WindowType.DESKTOP) {
+                            this._shouldShow = true;
+                            break;
                         }
 
-                        // Exit loop if previous assumption that panel should be shown is wrong
-                        if (this._panelPositionHasOverlap(metaWin) == true) {
+                        if (global.display.focus_window.get_monitor() != this.monitorIndex) {
                             this._shouldShow = false;
                             break;
-                        }   
+                        }
+
+                        this._shouldShow = !(this._panelPositionHasOverlap(global.display.focus_window));
+                    } else {
+                        // Assume the panel should be shown
+                        this._shouldShow = true;
+
+                        let actors = global.get_window_actors();
+                        let currentWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
+                        for (let i = 0; i < actors.length; i++) {
+                            let window = actors[i];
+                            let metaWin = window.get_meta_window();
+                            let winWorkspace = metaWin.get_workspace();
+                            let onCurrentWorkspace = (winWorkspace && winWorkspace.index() === currentWorkspaceIndex);
+                            
+                            if (metaWin === null || metaWin.get_window_type() == Meta.WindowType.DESKTOP || 
+                                !onCurrentWorkspace || metaWin.minimized || 
+                                metaWin.get_monitor() !== this.monitorIndex) {
+                                continue;
+                            }
+
+                            // Exit loop if previous assumption that panel should be shown is wrong
+                            if (this._panelPositionHasOverlap(metaWin) == true) {
+                                this._shouldShow = false;
+                                break;
+                            }
+                        }  
                     } 
             } // end of switch on autohidesettings
         }
