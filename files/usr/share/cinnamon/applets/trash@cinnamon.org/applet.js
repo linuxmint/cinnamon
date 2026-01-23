@@ -14,7 +14,7 @@ class CinnamonTrashApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.set_applet_icon_symbolic_name("user-trash");
+        this.set_applet_icon_symbolic_name("xsi-user-trash");
         this.set_applet_tooltip(_("Trash"));
 
         this.trash_changed_timeout = 0;
@@ -35,13 +35,13 @@ class CinnamonTrashApplet extends Applet.IconApplet {
 
     _initContextMenu() {
         this.empty_item = new PopupMenu.PopupIconMenuItem(_("Empty Trash"),
-                "list-remove",
+                "xsi-list-remove",
                 St.IconType.SYMBOLIC);
         this.empty_item.connect('activate', Lang.bind(this, this._emptyTrash));
         this._applet_context_menu.addMenuItem(this.empty_item);
 
         this.open_item = new PopupMenu.PopupIconMenuItem(_("Open Trash"),
-                "document-open",
+                "xsi-document-open",
                 St.IconType.SYMBOLIC);
         this.open_item.connect('activate', Lang.bind(this, this._openTrash));
         this._applet_context_menu.addMenuItem(this.open_item);
@@ -109,9 +109,9 @@ class CinnamonTrashApplet extends Applet.IconApplet {
                 (enumerator, res) => {
                     file = enumerator.next_files_finish(res);
                     if (file.length > 0) {
-                        this.set_applet_icon_symbolic_name("user-trash-full");
+                        this.set_applet_icon_symbolic_name("xsi-user-trash-full");
                     } else {
-                        this.set_applet_icon_symbolic_name("user-trash");
+                        this.set_applet_icon_symbolic_name("xsi-user-trash");
                     }
                 }
             );
