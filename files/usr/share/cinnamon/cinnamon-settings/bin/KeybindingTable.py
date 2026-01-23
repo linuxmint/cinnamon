@@ -39,7 +39,7 @@ SETTINGS_DIR = Path.joinpath(Path.home(), ".config/cinnamon/spices/")
 """
 STATIC_KEYBINDINGS = \
 [
-  [_("General"), "general", None, "preferences-desktop-keyboard-shortcuts",
+  [_("General"), "general", None, "xsi-keyboard-shortcuts-symbolic",
     [
       [_("Pointer"), "pointer", "general", None, [],
         [
@@ -67,7 +67,7 @@ STATIC_KEYBINDINGS = \
       [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog"]
     ]
   ],
-  [_("Keyboard"), "keyboard", None, "input-keyboard", [],
+  [_("Keyboard"), "keyboard", None, "xsi-input-keyboard-symbolic", [],
     [
       [_("Switch to next layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source"],
       [_("Switch to previous layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-backward"],
@@ -77,7 +77,7 @@ STATIC_KEYBINDINGS = \
       [_("Switch to fourth layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-3"]
     ]
   ],
-  [_("Windows"), "windows", None, "preferences-system-windows",
+  [_("Windows"), "windows", None, "xsi-focus-windows-symbolic",
     [
       [_("Positioning"), "win-position", "windows", None, [],
         [
@@ -151,7 +151,7 @@ STATIC_KEYBINDINGS = \
       [_("Toggle horizontal maximization"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally"]
     ]
   ],
-  [_("Workspaces"), "workspaces", None, "video-display",
+  [_("Workspaces"), "workspaces", None, "xsi-video-display-symbolic",
     [
       [_("Direct Navigation"), "ws-navi", "workspaces", None, [],
         [
@@ -175,7 +175,7 @@ STATIC_KEYBINDINGS = \
       [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right"]
     ]
   ],
-  [_("System"), "system", None, "preferences-system",
+  [_("System"), "system", None, "xsi-emblem-system-symbolic",
     [
       [_("Hardware"), "sys-hw", "system", None, [],
         [
@@ -214,7 +214,7 @@ STATIC_KEYBINDINGS = \
       [_("Restart Cinnamon"), MEDIA_KEYS_SCHEMA, "restart-cinnamon"]
     ]
   ],
-  [_("Launchers"), "launchers", None, "applications-utilities", [],
+  [_("Launchers"), "launchers", None, "xsi-launch-symbolic", [],
     [
       [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal"],
       [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help"],
@@ -225,7 +225,7 @@ STATIC_KEYBINDINGS = \
       [_("Search"), MEDIA_KEYS_SCHEMA, "search"]
     ]
   ],
-  [_("Sound and Media"), "media", None, "applications-multimedia",
+  [_("Sound and Media"), "media", None, "xsi-multimedia-symbolic",
     [
       [_("Quiet Keys"), "media-quiet", "media", None, [],
         [
@@ -253,7 +253,7 @@ STATIC_KEYBINDINGS = \
       [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random"]
     ]
   ],
-  [_("Universal Access"), "accessibility", None, "preferences-desktop-accessibility", [],
+  [_("Universal Access"), "accessibility", None, "xsi-accessibility-symbolic", [],
     [
       [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in"],
       [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out"],
@@ -265,7 +265,7 @@ STATIC_KEYBINDINGS = \
       [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"]
     ]
   ],
-  [_("Spices"), "spices", None, "cinnamon", [], []]
+  [_("Spices"), "spices", None, "cinnamon-symbolic", [], []]
 ]
 
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
@@ -744,7 +744,7 @@ class KeybindingTable(GObject.Object):
         self._custom_store = []
         self._custom_categories = {}
 
-        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "cinnamon-panel-launcher")
+        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "xsi-tag-symbolic")
         self._custom_store.append(cat)
 
         for entry in custom_list:
