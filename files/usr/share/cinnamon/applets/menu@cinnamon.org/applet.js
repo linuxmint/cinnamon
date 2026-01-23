@@ -1247,7 +1247,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._pathCompleter.set_dirs_only(false);
         this.contextMenu = null;
         this.lastSelectedCategory = null;
-        this.settings.bind("force-show-panel", "forceShowPanel");
 
         this.orderDirty = false;
 
@@ -1280,9 +1279,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     _updateKeybinding() {
         Main.keybindingManager.addXletHotKey(this, "overlay-key", this.overlayKey, () => {
             if (!Main.overview.visible && !Main.expo.visible) {
-                if (this.forceShowPanel && !this.isOpen) {
-                    this.panel.peekPanel();
-                }
                 this.menu.toggle_with_options(this.enableAnimation);
             }
         });
