@@ -1,3 +1,22 @@
+cinnamon (6.6.6) zena; urgency=medium
+
+  [ Michael Webster ]
+  * placesManager.js: Go back to having isRemovable() call can_unmount(). (#13464)
+
+  [ fredcw ]
+  * menu applet: remove 'force show panel' toggle as ... (#13394)
+  * menu applet: fix sidebar separator showing inconsistently (#13438)
+
+  [ Clement Lefebvre ]
+  * printer applet: Switch to XSI icons
+  * network applet: Switch to XSI icons
+  * Switch to XSI icons
+
+  [ Michael Webster ]
+  * misc/util.js: Use xsi-symbolics for desktop-file actions.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sun, 25 Jan 2026 13:23:52 +0000
+
 cinnamon (6.6.5) zena; urgency=medium
 
   [ Clement Lefebvre ]
