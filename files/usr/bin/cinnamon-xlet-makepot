@@ -5,8 +5,7 @@ import json
 import subprocess
 import collections
 import argparse
-from datetime import datetime
-import pytz
+from datetime import datetime, timezone
 
 LOCALE_DIR = os.path.join(os.path.expanduser('~'), '.local/share/locale')
 
@@ -54,7 +53,7 @@ def scan_json(dir, pot_path):
         pot_file.metadata = {
             'Project-Id-Version': 'PACKAGE VERSION',
             'Report-Msgid-Bugs-To': '',
-            'POT-Creation-Date': '%s' % datetime.now(pytz.utc).strftime("%Y-%m-%d %H:%M%z"),
+            'POT-Creation-Date': '%s' % datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M%z"),
             'PO-Revision-Date': 'YEAR-MO-DA HO:MI+ZONE',
             'Last-Translator': 'FULL NAME <EMAIL@ADDRESS>',
             'Language-Team': 'LANGUAGE <LL@li.org>',

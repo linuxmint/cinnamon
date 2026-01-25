@@ -101,7 +101,6 @@ Depends:
  python3-requests,
  python3-setproctitle,
  python3-tinycss2,
- python3-tz,
  streamer,
  wget,
  xapps-common (>= 2.5.0),

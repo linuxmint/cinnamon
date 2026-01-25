@@ -3,7 +3,7 @@
 from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
-import pytz
+from zoneinfo import ZoneInfo, available_timezones
 import gi
 import datetime
 import locale
@@ -130,8 +130,8 @@ class Module:
 
     def set_date_and_time(self, *args):
         unaware = datetime.datetime.combine(self.date_chooser.get_date(), self.time_chooser.get_time())
-        tz = pytz.timezone(self.zone)
-        self.datetime = tz.localize(unaware)
+        tz = ZoneInfo(self.zone)
+        self.datetime = unaware.replace(tzinfo=tz)
 
         seconds = int((self.datetime - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
         self.proxy_handler.set_time(seconds)
@@ -217,6 +217,89 @@ class CsdDBusProxyHandler(object):
         self._proxy.SetTime('(x)', seconds)
 
 
+# Timezones not in pytz.common_timezones - skip to match previous behavior
+SKIP_TIMEZONES = {
+    "Africa/Asmera",
+    "Africa/Timbuktu",
+    "America/Argentina/ComodRivadavia",
+    "America/Atka",
+    "America/Buenos_Aires",
+    "America/Catamarca",
+    "America/Coral_Harbour",
+    "America/Cordoba",
+    "America/Ensenada",
+    "America/Fort_Wayne",
+    "America/Godthab",
+    "America/Indianapolis",
+    "America/Jujuy",
+    "America/Knox_IN",
+    "America/Louisville",
+    "America/Mendoza",
+    "America/Montreal",
+    "America/Nipigon",
+    "America/Pangnirtung",
+    "America/Porto_Acre",
+    "America/Rainy_River",
+    "America/Rosario",
+    "America/Santa_Isabel",
+    "America/Shiprock",
+    "America/Thunder_Bay",
+    "America/Virgin",
+    "America/Yellowknife",
+    "Antarctica/South_Pole",
+    "Asia/Ashkhabad",
+    "Asia/Brunei",
+    "Asia/Calcutta",
+    "Asia/Choibalsan",
+    "Asia/Chongqing",
+    "Asia/Chungking",
+    "Asia/Dacca",
+    "Asia/Harbin",
+    "Asia/Istanbul",
+    "Asia/Kashgar",
+    "Asia/Katmandu",
+    "Asia/Macao",
+    "Asia/Rangoon",
+    "Asia/Saigon",
+    "Asia/Tel_Aviv",
+    "Asia/Thimbu",
+    "Asia/Ujung_Pandang",
+    "Asia/Ulan_Bator",
+    "Atlantic/Faeroe",
+    "Atlantic/Jan_Mayen",
+    "Australia/ACT",
+    "Australia/Canberra",
+    "Australia/Currie",
+    "Australia/LHI",
+    "Australia/North",
+    "Australia/NSW",
+    "Australia/Queensland",
+    "Australia/South",
+    "Australia/Tasmania",
+    "Australia/Victoria",
+    "Australia/West",
+    "Australia/Yancowinna",
+    "Canada/Saskatchewan",
+    "Canada/Yukon",
+    "Europe/Belfast",
+    "Europe/Kiev",
+    "Europe/Nicosia",
+    "Europe/Tiraspol",
+    "Europe/Uzhgorod",
+    "Europe/Zaporozhye",
+    "Pacific/Enderbury",
+    "Pacific/Johnston",
+    "Pacific/Ponape",
+    "Pacific/Samoa",
+    "Pacific/Truk",
+    "Pacific/Yap",
+    "US/Aleutian",
+    "US/East-Indiana",
+    "US/Indiana-Starke",
+    "US/Michigan",
+    "US/Samoa",
+}
+
 class TimeZoneSelector(SettingsWidget):
     __gsignals__ = {
         'timezone-changed': (GObject.SignalFlags.RUN_FIRST, None, (str,))
@@ -262,7 +345,7 @@ class TimeZoneSelector(SettingsWidget):
         }
 
         self.region_map = {}
-        for tz in pytz.common_timezones:
+        for tz in sorted(available_timezones()):
             city_display_name = tz
             region_display_name = tz
             try:
@@ -270,6 +353,12 @@ class TimeZoneSelector(SettingsWidget):
                 city_display_name = city.replace("_"," ")
                 region_display_name = region
             except:
+                continue
+
+            if region not in REGION_NAMES.keys():
+                continue
+
+            if tz in SKIP_TIMEZONES:
                 continue
 
             try:
