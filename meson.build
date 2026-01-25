@@ -175,6 +175,15 @@ if get_option('exclude_info_settings')
     excluded_files += ['usr/share/applications/cinnamon-settings-info.desktop']
     excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_info.py']
 endif
+if get_option('exclude_users_settings')
+    excluded_files += ['usr/bin/cinnamon-settings-users']
+    excluded_files += ['usr/share/applications/cinnamon-settings-user.desktop']
+    excluded_files += ['usr/share/applications/cinnamon-settings-users.desktop']
+    excluded_files += ['usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py']
+    excluded_files += ['usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.ui']
+    excluded_files += ['usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.svg']
+    excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_user.py']
+endif
 
 install_subdir(
     'files',

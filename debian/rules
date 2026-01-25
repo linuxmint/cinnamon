@@ -19,6 +19,7 @@ override_dh_auto_configure:
 		-D docs=true \
 		-D deprecated_warnings=false \
 		-D exclude_info_settings=true \
+		-D exclude_users_settings=true \
 		-D py3modules_dir=/usr/lib/python3/dist-packages
 
 # workaround for fix lmde4 build

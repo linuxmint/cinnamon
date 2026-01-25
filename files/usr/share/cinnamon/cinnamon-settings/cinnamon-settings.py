@@ -9,6 +9,7 @@ import glob
 import locale
 import os
 from setproctitle import setproctitle
+import subprocess
 import sys
 import time
 import traceback
@@ -82,6 +83,7 @@ STANDALONE_MODULES = [
     [_("Firewall"),                   "firewall-config",                      "cs-firewall",               "admin",      _("firewall, block, filter, programs")],
     [_("Languages"),                  "mintlocale",                           "cs-language",               "prefs",      _("language, install, foreign")],
     [_("Input Method"),               "mintlocale-im",                        "cs-input-method",           "prefs",      _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
+    [_("Account Details"),            "mintsysadm-settings-user",             "preferences-desktop-user",  "prefs",      _("user, account, password")],
     [_("System Information"),         "mintreport",                           "mintreport",                "hardware",   _("info, usb, pci, gpu, bios, report, crash, system")],
     [_("System Administration"),      "pkexec mintsysadm",                    "mintsysadm",                "admin",      _("adminitration, grub, boot, system")],
     [_("Login Window"),               "pkexec lightdm-settings",              "cs-login",                  "admin",      _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
@@ -96,6 +98,7 @@ STANDALONE_MODULES = [
     [_("Package Management"),         "pamac-manager",                        "system-software-install",   "admin",      _("update, install, repository, package, source, download")],
     [_("Package Management"),         "yumex",                                "yumex",                     "admin",      _("update, install, repository, package, source, download")],
     [_("Users and Groups"),           "cinnamon-settings-users",              "cs-user-accounts",          "admin",      _("user, users, account, accounts, group, groups, password")],
+    [_("Users"),                      "mintsysadm --user",                    "system-config-users",       "admin",      _("user, users, account, accounts, password")],
     [_("Bluetooth"),                  "blueberry",                            "cs-bluetooth",              "hardware",   _("bluetooth, dongle, transfer, mobile")],
     [_("Bluetooth"),                  "blueman-manager",                      "cs-bluetooth",              "hardware",   _("bluetooth, dongle, transfer, mobile")],
     [_("Manage Services and Units"),  "systemd-manager-pkexec",               "cs-sources",                "admin",      _("systemd, units, services, systemctl, init")],
@@ -793,6 +796,11 @@ SORT_TYPE can be specified by number or name as follows:
         return f"cs_{name}" in PYTHON_CS_MODULES or name in [item[1] for item in CONTROL_CENTER_MODULES]
 
     if args.module is not None and not find_module_name(args.module):
+        if args.module == "user":
+            subprocess.Popen(["cinnamon-settings-user"])
+            sys.exit(0)
+
+
         new_mod = CS_MODULE_ALIASES.get(args.module, None)
         if not find_module_name(new_mod):
             print(f"warning: settings module {args.module} not found. Ignoring any remaining arguments.")

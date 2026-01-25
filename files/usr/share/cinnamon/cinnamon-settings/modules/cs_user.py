@@ -35,7 +35,7 @@ class Module:
 
     def __init__(self, content_box):
         keywords = _("user, account, information, details, password")
-        sidePage = SidePage(_("Account details"), "cs-user", keywords, content_box, module=self)
+        sidePage = SidePage(_("Account Details"), "cs-user", keywords, content_box, module=self)
         self.sidePage = sidePage
         self.window = None
 
@@ -49,7 +49,7 @@ class Module:
             page = SettingsPage()
             self.sidePage.add_widget(page)
 
-            settings = page.add_section(_("Account details"))
+            settings = page.add_section(_("Account Details"))
 
             self.scale = self.window.get_scale_factor()
 

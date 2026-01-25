@@ -34,4 +34,9 @@ option('exclude_info_settings',
     value : false,
     description: 'Exclude Info settings'
 )
+option('exclude_users_settings',
+    type : 'boolean',
+    value : false,
+    description: 'Exclude Users settings'
+)
 
