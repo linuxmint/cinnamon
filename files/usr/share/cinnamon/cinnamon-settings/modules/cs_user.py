@@ -212,10 +212,29 @@ class Module:
 
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
 
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 255, -1)
-            pixbuf.savev(face_path, "png")
-            self.accountService.set_icon_file(path)
-            self.face_button.set_picture_from_file(path)
+            # Resize image if needed to avoid AccountsService size limits
+            # Load original to check size
+            original_pixbuf = GdkPixbuf.Pixbuf.new_from_file(path)
+            width = original_pixbuf.get_width()
+            height = original_pixbuf.get_height()
+
+            # Resize if larger than 512px (AccountsService limit is ~1MB, 512px is safe)
+            max_size = 512
+            if width > max_size or height > max_size:
+                # Calculate aspect-preserving dimensions
+                scale = min(max_size / width, max_size / height)
+                new_width = int(width * scale)
+                new_height = int(height * scale)
+                pixbuf = original_pixbuf.scale_simple(new_width, new_height, GdkPixbuf.InterpType.BILINEAR)
+            else:
+                pixbuf = original_pixbuf
+
+            # Save resized/original image to .face
+            pixbuf.savev(face_path, "png", [], [])
+
+            # Use .face path (not original) for AccountsService
+            self.accountService.set_icon_file(face_path)
+            self.face_button.set_picture_from_file(face_path)
 
         dialog.destroy()
 
