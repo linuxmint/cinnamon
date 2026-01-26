@@ -3,7 +3,7 @@
 from gi.repository import Gio, Gtk, CinnamonDesktop, Pango, GLib
 
 from xapp.SettingsWidgets import SettingsSection
-import util
+from bin import util
 import subprocess
 
 class XkbSettingsEditor(SettingsSection):
