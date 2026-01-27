@@ -1348,6 +1348,41 @@ var WindowManager = class WindowManager {
     }
 
     _startAppSwitcher(display, window, binding) {
+        let bindingName = binding.get_name();
+
+        // Direct switch for switch-group (cycle windows of same app without showing switcher)
+        // Only when "Group windows by application" setting is enabled
+        let groupByApp = global.settings.get_boolean("alttab-switcher-group-by-app");
+        if (groupByApp && (bindingName === 'switch-group' || bindingName === 'switch-group-backward')) {
+            let windows = AppSwitcher.getWindowsForBinding(binding);
+            if (windows.length === 0) return;
+
+            // If only one window, nothing to do
+            if (windows.length === 1) return;
+
+            // Sort by stable_sequence (creation order) instead of user time
+            // This ensures consistent cycling through all windows
+            windows.sort((a, b) => a.get_stable_sequence() - b.get_stable_sequence());
+
+            // Find current window index
+            let currentWindow = global.display.focus_window;
+            let currentIndex = windows.indexOf(currentWindow);
+            if (currentIndex < 0) currentIndex = 0;
+
+            // Calculate next window index
+            let nextIndex;
+            if (bindingName === 'switch-group-backward') {
+                nextIndex = (currentIndex - 1 + windows.length) % windows.length;
+            } else {
+                nextIndex = (currentIndex + 1) % windows.length;
+            }
+
+            // Activate next window directly
+            let nextWindow = windows[nextIndex];
+            Main.activateWindow(nextWindow, global.get_current_time());
+            return;
+        }
+
         this._createAppSwitcher(binding);
     }
 

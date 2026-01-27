@@ -43,6 +43,31 @@ function matchWorkspace(win) {
     return win.get_workspace() == this && !win.is_skip_taskbar();
 }
 
+// Group windows by application - returns only the most recent window per app
+function groupWindowsByApplication(windows) {
+    let appGroups = {};
+
+    for (let i = 0; i < windows.length; i++) {
+        let win = windows[i];
+        let wmClass = win.get_wm_class();
+
+        if (!wmClass) continue;
+
+        if (!appGroups[wmClass]) {
+            // First window of this app - keep it (it's the most recent due to sorting)
+            appGroups[wmClass] = win;
+        }
+    }
+
+    // Convert object to array
+    let result = [];
+    for (let wmClass in appGroups) {
+        result.push(appGroups[wmClass]);
+    }
+
+    return result;
+}
+
 function primaryModifier(mask) {
     if (mask == 0)
         return 0;
@@ -93,10 +118,18 @@ function getWindowsForBinding(binding) {
             if (!this._showAllWorkspaces) {
                 windows = windows.filter(matchWorkspace, global.workspace_manager.get_active_workspace());
             }
+            // Group windows by application - optional setting
+            let groupByApp = global.settings.get_boolean("alttab-switcher-group-by-app");
+            if (groupByApp) {
+                // Sort by user time BEFORE grouping (so most recent window per app is kept)
+                windows.sort(sortWindowsByUserTime);
+                // Group windows by application - show only one window per app
+                windows = groupWindowsByApplication(windows);
+            }
             break;
     }
 
-    // Sort by user time
+    // Sort by user time (for non-default cases)
     windows.sort(sortWindowsByUserTime);
 
     return windows;

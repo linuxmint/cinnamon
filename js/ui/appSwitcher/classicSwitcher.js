@@ -420,9 +420,16 @@ AppIcon.prototype = {
         this._iconBin = new St.Bin();
 
         this.actor.add(this._iconBin, { x_fill: false, y_fill: false } );
-        let title = window.get_title();
-        if (title) {
-            this.label = new St.Label({ text: title });
+        // Use app name instead of window title when grouping by app
+        let groupByApp = global.settings.get_boolean("alttab-switcher-group-by-app");
+        let labelText;
+        if (groupByApp) {
+            labelText = this.app ? this.app.get_name() : window.get_title();
+        } else {
+            labelText = window.get_title();
+        }
+        if (labelText) {
+            this.label = new St.Label({ text: labelText });
             if (window.minimized) {
                 let contrast_effect = new Clutter.BrightnessContrastEffect();
                 contrast_effect.set_brightness_full(-0.5, -0.5, -0.5);
@@ -431,8 +438,7 @@ AppIcon.prototype = {
             let bin = new St.Bin({ x_align: St.Align.MIDDLE });
             bin.add_actor(this.label);
             this.actor.add(bin);
-        }
-        else {
+        } else {
             this.label = new St.Label({ text: this.app ? this.app.get_name() : window.title });
             this.actor.add(this.label, { x_fill: false });
         }
