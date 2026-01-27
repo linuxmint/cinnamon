@@ -388,7 +388,9 @@ class LauncherEditor(ItemEditor):
 
     def check_custom_path(self):
         if self.item_path:
-            self.item_path = os.path.join(getUserItemPath(), os.path.split(self.item_path)[1])
+            # Don't duplicate a file in ~/.local/share/applications/ if the original is in a subdirectory of ~/.local/share/applications/
+            if not self.item_path.startswith(getUserItemPath()):
+                self.item_path = os.path.join(getUserItemPath(), os.path.split(self.item_path)[1])
 
     def _fdo_to_cinnamon(self, fdo_cats):
         # These conversions are based on /etc/xdg/menus/cinnamon-applications.menu
