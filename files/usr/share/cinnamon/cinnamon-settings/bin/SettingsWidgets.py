@@ -11,7 +11,7 @@ from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend
 from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
 from KeybindingWidgets import ButtonKeybinding
-import util
+from bin import util
 
 import KeybindingTable
 
