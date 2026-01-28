@@ -7,6 +7,8 @@ from zoneinfo import ZoneInfo, available_timezones
 import gi
 import datetime
 import locale
+import json
+from pathlib import Path
 try:
     from babel import Locale as BabelLocale
 except:
@@ -55,10 +57,16 @@ class Module:
             self.date_chooser.connect('date-changed', self.set_date_and_time)
             self.time_chooser.connect('time-changed', self.set_date_and_time)
 
+            self.clock_24h_switch = GSettingsSwitch(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h")
+            self.show_date_switch = GSettingsSwitch(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date")
+            self.show_seconds_switch = GSettingsSwitch(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds")
+
+            self._check_custom_format_in_applets(page)
+
             settings = page.add_section(_("Format"))
-            settings.add_row(GSettingsSwitch(_("Use 24h clock"), "org.cinnamon.desktop.interface", "clock-use-24h"))
-            settings.add_row(GSettingsSwitch(_("Display the date"), "org.cinnamon.desktop.interface", "clock-show-date"))
-            settings.add_row(GSettingsSwitch(_("Display seconds"), "org.cinnamon.desktop.interface", "clock-show-seconds"))
+            settings.add_row(self.clock_24h_switch)
+            settings.add_row(self.show_date_switch)
+            settings.add_row(self.show_seconds_switch)
             days = [[7, _("Use locale default")], [0, _("Sunday")], [1, _("Monday")]]
             settings.add_row(GSettingsComboBox(_("First day of week"), "org.cinnamon.desktop.interface", "first-day-of-week", days, valtype=int))
 
@@ -135,6 +143,63 @@ class Module:
 
         seconds = int((self.datetime - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
         self.proxy_handler.set_time(seconds)
+
+    def _check_custom_format_in_applets(self, page):
+        """Check if calendar applet has custom format enabled and show warning if so"""
+        SETTINGS_DIR = Path.joinpath(Path.home(), ".config/cinnamon/spices/")
+
+        try:
+            settings = Gio.Settings(schema_id="org.cinnamon")
+            enabled_applets = settings.get_strv("enabled-applets")
+
+            for applet_def in enabled_applets:
+                parts = applet_def.split(":")
+                if len(parts) >= 5:
+                    applet_uuid = parts[3]
+                    instance_id = parts[4]
+
+                    if "calendar@cinnamon.org" in applet_uuid:
+                        config_path = Path.joinpath(SETTINGS_DIR, applet_uuid)
+                        config_file = Path.joinpath(config_path, f"{instance_id}.json")
+
+                        try:
+                            with open(config_file, encoding="utf-8") as f:
+                                config = json.load(f)
+                                use_custom = config.get("use-custom-format", {}).get("value", False)
+
+                                if use_custom:
+                                    warning_section = page.add_section(_("Custom Format Active"))
+
+                                    info_bar = Gtk.InfoBar()
+                                    info_bar.set_message_type(Gtk.MessageType.INFO)
+                                    info_bar.set_show_close_button(False)
+
+                                    label = Gtk.Label(
+                                        _("Note: The calendar applet is using a custom date format. ") +
+                                        _("The format options below will not apply. ") +
+                                        _("To use these settings, disable 'Use a custom date format' in the calendar applet configuration.")
+                                    )
+                                    label.set_line_wrap(True)
+                                    label.set_xalign(0)
+
+                                    content = info_bar.get_content_area()
+                                    content.add(label)
+
+                                    info_widget = SettingsWidget()
+                                    info_widget.pack_start(info_bar, True, True, 0)
+                                    warning_section.add_row(info_widget)
+
+                                    info_bar.show_all()
+
+                                    self.clock_24h_switch.set_sensitive(False)
+                                    self.show_date_switch.set_sensitive(False)
+                                    self.show_seconds_switch.set_sensitive(False)
+                                    return
+                        except (FileNotFoundError, json.JSONDecodeError, KeyError):
+                            pass
+        except Exception as e:
+            import traceback
+            traceback.print_exc()
 
 class SytemdDBusProxyHandler(object):
     def __init__(self, proxy_ready_callback):
