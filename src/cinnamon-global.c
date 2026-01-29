@@ -608,7 +608,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
       ret_curs = META_CURSOR_MOVE;
       break;
     case CINNAMON_CURSOR_COPY:
-      ret_curs = META_CURSOR_DND_COPY;
+      ret_curs = META_CURSOR_COPY;
       break;
     case CINNAMON_CURSOR_NO_DROP:
       ret_curs = META_CURSOR_NO_DROP;
