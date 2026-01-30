@@ -141,7 +141,7 @@ _draw_cursor_image (cairo_surface_t       *surface,
   cairo_surface_t *cursor_surface;
   cairo_region_t *screenshot_region;
   cairo_t *cr;
-  int x, y;
+  graphene_point_t coords;
   int xhot, yhot;
   double xscale, yscale;
 
@@ -153,9 +153,9 @@ _draw_cursor_image (cairo_surface_t       *surface,
     return;
 
   screenshot_region = cairo_region_create_rectangle (&area);
-  meta_cursor_tracker_get_pointer (tracker, &x, &y, NULL);
+  meta_cursor_tracker_get_pointer (tracker, &coords, NULL);
 
-  if (!cairo_region_contains_point (screenshot_region, x, y))
+  if (!cairo_region_contains_point (screenshot_region, (int) coords.x, (int) coords.y))
     {
       cairo_region_destroy (screenshot_region);
       return;
@@ -181,7 +181,7 @@ _draw_cursor_image (cairo_surface_t       *surface,
       int monitor;
       float monitor_scale;
       MetaRectangle cursor_rect = {
-        .x = x, .y = y, .width = width, .height = height
+        .x = (int) coords.x, .y = (int) coords.y, .width = width, .height = height
       };
 
       monitor = meta_display_get_monitor_index_for_rect (display, &cursor_rect);
@@ -193,8 +193,8 @@ _draw_cursor_image (cairo_surface_t       *surface,
   cr = cairo_create (surface);
   cairo_set_source_surface (cr,
                             cursor_surface,
-                            x - xhot - area.x,
-                            y - yhot - area.y);
+                            (int) coords.x - xhot - area.x,
+                            (int) coords.y - yhot - area.y);
   cairo_paint (cr);
 
   cairo_destroy (cr);

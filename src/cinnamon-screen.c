@@ -519,12 +519,15 @@ cinnamon_screen_get_mouse_window (CinnamonScreen  *screen,
 
   MetaCursorTracker *cursor_tracker = meta_cursor_tracker_get_for_display (screen->display);
   GList *actors, *l;
+  graphene_point_t coords;
   int mx, my;
 
   if (not_this_one)
     g_debug ("Focusing mouse window excluding %s", meta_window_get_description (not_this_one));
 
-  meta_cursor_tracker_get_pointer (cursor_tracker, &mx, &my, NULL);
+  meta_cursor_tracker_get_pointer (cursor_tracker, &coords, NULL);
+  mx = (int) coords.x;
+  my = (int) coords.y;
 
   /* Bottom to top */
   actors = meta_get_window_actors (screen->display);
