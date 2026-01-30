@@ -198,6 +198,12 @@ class RunDialog extends ModalDialog.ModalDialog {
      }
 
     _onKeyPress(o, e) {
+        // Handle keyboard layout switching (Alt+Shift, etc.) before other key handling
+        let layoutResult = Util.handleKeyboardLayoutSwitchingInTextEntry(o, e);
+        if (layoutResult !== null) {
+            return layoutResult;
+        }
+
         let symbol = e.get_key_symbol();
         if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
             if (o.get_text().trim() == "") {

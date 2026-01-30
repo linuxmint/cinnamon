@@ -769,3 +769,71 @@ function wiggle(actor, params) {
         }
     });
 }
+
+/**
+ * Handles keyboard layout switching in text entry fields.
+ *
+ * This function should be called early in key-press-event handlers
+ * of text entries to enable keyboard layout switching (e.g., Alt+Shift)
+ * while typing.
+ *
+ * It respects:
+ * - Input methods (has_preedit check) for Japanese, Chinese, Korean input
+ * - Custom keybindings (switch-input-source)
+ * - XKB-based layout switching (modifier-only keys)
+ *
+ * Background:
+ * - Commit 6a5105420 moved switch-input-source from global.display to KeybindingManager
+ * - Commit 05e68dd2c blocked keybindings in text entries to prevent duplicate events
+ * - This function allows layout switching while preventing duplicate events
+ *
+ * @param {Clutter.Text} entryText - The text entry widget (e.g., St.Entry.clutter_text)
+ * @param {Clutter.KeyEvent} event - The key press event
+ * @returns {Clutter.EventResult|null} - EVENT_STOP/PROPAGATE if handled, null otherwise
+ */
+function handleKeyboardLayoutSwitchingInTextEntry(entryText, event) {
+    const Meta = imports.gi.Meta;
+
+    // CRITICAL: Don't interfere with input methods (Japanese, Chinese, Korean)
+    // If there's uncommitted text (preedit), let the input method handle it
+    // This respects the pattern from commit 640dad661
+    if (entryText.has_preedit && entryText.has_preedit()) {
+        return Clutter.EVENT_PROPAGATE;
+    }
+
+    let keyCode = event.get_key_code();
+    let modifierState = event.get_state();
+    let symbol = event.get_key_symbol();
+
+    // Check if this is a registered keybinding
+    let action = global.display.get_keybinding_action(keyCode, modifierState);
+
+    // Handle custom keybindings (e.g., switch-input-source)
+    // These were moved to KeybindingManager in commit 6a5105420
+    if (action == Meta.KeyBindingAction.CUSTOM) {
+        Main.keybindingManager.invoke_keybinding_action_by_id(action);
+        return Clutter.EVENT_STOP;
+    }
+
+    // Allow modifier-only keys to propagate for XKB-based switching
+    // This handles cases where no custom keybinding is registered
+    if (action == Meta.KeyBindingAction.NONE) {
+        // Use Set for O(1) lookup instead of multiple OR comparisons
+        const MODIFIER_KEYS = new Set([
+            Clutter.KEY_Shift_L, Clutter.KEY_Shift_R,
+            Clutter.KEY_Alt_L, Clutter.KEY_Alt_R,
+            Clutter.KEY_Control_L, Clutter.KEY_Control_R,
+            Clutter.KEY_Super_L, Clutter.KEY_Super_R,
+            Clutter.KEY_ISO_Level3_Shift,
+            Clutter.KEY_Hyper_L, Clutter.KEY_Hyper_R,
+            Clutter.KEY_Meta_L, Clutter.KEY_Meta_R
+        ]);
+
+        if (MODIFIER_KEYS.has(symbol)) {
+            return Clutter.EVENT_PROPAGATE;
+        }
+    }
+
+    // Not a layout switching key, let caller handle it
+    return null;
+}

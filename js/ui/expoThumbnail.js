@@ -16,6 +16,7 @@ const PointerTracker = imports.misc.pointerTracker;
 const SignalManager = imports.misc.signalManager;
 const GridNavigator = imports.misc.gridNavigator;
 const WindowUtils = imports.misc.windowUtils;
+const Util = imports.misc.util;
 
 // The maximum size of a thumbnail is 1/8 the width and height of the screen
 let MAX_THUMBNAIL_SCALE = 0.9;
@@ -499,6 +500,12 @@ ExpoWorkspaceThumbnail.prototype = {
     },
     
     onTitleKeyPressEvent: function(actor, event) {
+        // Handle keyboard layout switching (Alt+Shift, etc.) before other key handling
+        let layoutResult = Util.handleKeyboardLayoutSwitchingInTextEntry(actor, event);
+        if (layoutResult !== null) {
+            return layoutResult;
+        }
+
         this.undoTitleEdit = false;
         let symbol = event.get_key_symbol();
         if (symbol === Clutter.KEY_Return ||
