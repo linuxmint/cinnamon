@@ -601,32 +601,32 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
 
   switch (type)
     {
-    case CINNAMON_CURSOR_DND_IN_DRAG:
-      ret_curs = META_CURSOR_DND_IN_DRAG;
+    case CINNAMON_CURSOR_NOT_ALLOWED:
+      ret_curs = META_CURSOR_NOT_ALLOWED;
       break;
-    case CINNAMON_CURSOR_DND_MOVE:
-      ret_curs = META_CURSOR_DND_MOVE;
+    case CINNAMON_CURSOR_MOVE:
+      ret_curs = META_CURSOR_MOVE;
       break;
-    case CINNAMON_CURSOR_DND_COPY:
-      ret_curs = META_CURSOR_DND_COPY;
+    case CINNAMON_CURSOR_COPY:
+      ret_curs = META_CURSOR_COPY;
       break;
-    case CINNAMON_CURSOR_DND_UNSUPPORTED_TARGET:
-      ret_curs = META_CURSOR_DND_UNSUPPORTED_TARGET;
+    case CINNAMON_CURSOR_NO_DROP:
+      ret_curs = META_CURSOR_NO_DROP;
       break;
-    case CINNAMON_CURSOR_POINTING_HAND:
-      ret_curs = META_CURSOR_POINTING_HAND;
+    case CINNAMON_CURSOR_POINTER:
+      ret_curs = META_CURSOR_POINTER;
       break;
     case CINNAMON_CURSOR_RESIZE_BOTTOM:
-      ret_curs = META_CURSOR_SOUTH_RESIZE;
+      ret_curs = META_CURSOR_S_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_TOP:
-      ret_curs = META_CURSOR_NORTH_RESIZE;
+      ret_curs = META_CURSOR_N_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_LEFT:
-      ret_curs = META_CURSOR_WEST_RESIZE;
+      ret_curs = META_CURSOR_W_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_RIGHT:
-      ret_curs = META_CURSOR_EAST_RESIZE;
+      ret_curs = META_CURSOR_E_RESIZE;
       break;
     case CINNAMON_CURSOR_RESIZE_BOTTOM_RIGHT:
       ret_curs = META_CURSOR_SE_RESIZE;
@@ -644,7 +644,7 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
       ret_curs = META_CURSOR_CROSSHAIR;
       break;
     case CINNAMON_CURSOR_TEXT:
-      ret_curs = META_CURSOR_IBEAM;
+      ret_curs = META_CURSOR_TEXT;
       break;
     default:
       g_return_if_reached ();

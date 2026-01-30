@@ -29,10 +29,10 @@ var DragMotionResult = {
 };
 
 var DRAG_CURSOR_MAP = {
-    0: Cinnamon.Cursor.DND_UNSUPPORTED_TARGET,
-    1: Cinnamon.Cursor.DND_COPY,
-    2: Cinnamon.Cursor.DND_MOVE,
-    3: Cinnamon.Cursor.POINTING_HAND
+    0: Cinnamon.Cursor.NO_DROP,
+    1: Cinnamon.Cursor.COPY,
+    2: Cinnamon.Cursor.MOVE,
+    3: Cinnamon.Cursor.POINTER
 };
 
 var DragDropResult = {
@@ -269,7 +269,7 @@ var _Draggable = new Lang.Class({
         if (this._onEventId)
             this._ungrabActor(event);
         this._grabEvents(event);
-        global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
+        global.set_cursor(Cinnamon.Cursor.NO_DROP);
 
         this._dragX = this._dragStartX = stageX;
         this._dragY = this._dragStartY = stageY;
@@ -447,7 +447,7 @@ var _Draggable = new Lang.Class({
             target = target.get_parent();
         }
         if (result in DRAG_CURSOR_MAP) global.set_cursor(DRAG_CURSOR_MAP[result]);
-        else global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
+        else global.set_cursor(Cinnamon.Cursor.NO_DROP);
         return false;
     },
 
