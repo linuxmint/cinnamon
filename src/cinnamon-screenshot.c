@@ -144,6 +144,7 @@ _draw_cursor_image (cairo_surface_t       *surface,
   int x, y;
   int xhot, yhot;
   double xscale, yscale;
+  graphene_point_t coords;
   graphene_point_t point;
 
   display = cinnamon_global_get_display (cinnamon_global_get ());
