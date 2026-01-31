@@ -109,8 +109,14 @@
   }
 
   &-scrollbox {
-    &.vfade { -st-vfade-offset: 68px; }
-    &.hfade { -st-hfade-offset: 68px; }
+    &.vfade {
+      -st-vfade-offset: 68px !important;
+      -st-hfade-offset: 0 !important;
+    }
+    &.hfade {
+      -st-hfade-offset: 68px !important;
+      -st-vfade-offset: 0 !important;
+    }
   }
 }
 
