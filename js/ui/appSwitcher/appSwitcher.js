@@ -68,7 +68,7 @@ function getWindowsForBinding(binding) {
     let showCurrentMonitorOnly = global.settings.get_boolean("alttab-switcher-show-current-monitor");
 
     if (showCurrentMonitorOnly) {
-        windows = windows.filter(w => w.get_monitor() === global.screen.get_current_monitor())
+        windows = windows.filter(w => w.get_monitor() === global.display.get_current_monitor())
     }
 
     switch (binding.get_name()) {

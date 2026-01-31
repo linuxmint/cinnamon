@@ -195,20 +195,20 @@ class CinnamonBarApplet extends Applet.Applet {
         if (etime > (this._last_scroll_time + SCROLL_DELAY) ||
             edir !== this._last_scroll_direction) {
 
-            let index = global.screen.get_active_workspace_index();
+            let index = global.workspace_manager.get_active_workspace_index();
 
             let workspaceCycle = this.muffinSettings.get_boolean('workspace-cycle')
 
             if ((edir == Clutter.ScrollDirection.UP) == (this.scroll_behavior == 'normal')) {
                 index--;
-                if (index < 0) index = workspaceCycle ? global.screen.n_workspaces - 1 : 0;
+                if (index < 0) index = workspaceCycle ? global.workspace_manager.n_workspaces - 1 : 0;
             } else {
                 index++;
-                if (index == global.screen.n_workspaces) index = workspaceCycle ? 0 : index - 1;
+                if (index == global.workspace_manager.n_workspaces) index = workspaceCycle ? 0 : index - 1;
             }
             
-            if (global.screen.get_workspace_by_index(index) != null) {
-                global.screen.get_workspace_by_index(index).activate(global.get_current_time());
+            if (global.workspace_manager.get_workspace_by_index(index) != null) {
+                global.workspace_manager.get_workspace_by_index(index).activate(global.get_current_time());
             }
 
             this._last_scroll_direction = edir;

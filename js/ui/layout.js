@@ -655,6 +655,32 @@ LayoutManager.prototype = {
      */
     isTrackingChrome: function(actor) {
         return this._chrome._findActor(actor) != -1;
+    },
+
+    /**
+     * getWindowAtPointer:
+     *
+     * Gets the MetaWindow under the mouse pointer. Only considers windows
+     * that are not completely obscured by other windows.
+     *
+     * Returns (Meta.Window): the MetaWindow under the pointer, or null if none found
+     */
+    getWindowAtPointer: function() {
+        let [pointerX, pointerY] = global.get_pointer();
+        let workspace = global.workspace_manager.get_active_workspace();
+        let windows = workspace.list_unobscured_windows();
+
+        for (let i = windows.length - 1; i >= 0; i--) {
+            let window = windows[i];
+            let rect = window.get_frame_rect();
+
+            if (pointerX >= rect.x && pointerX < rect.x + rect.width &&
+                pointerY >= rect.y && pointerY < rect.y + rect.height) {
+                return window;
+            }
+        }
+
+        return null;
     }
 };
 Signals.addSignalMethods(LayoutManager.prototype);

@@ -1142,7 +1142,7 @@ var PopupResizeHandler = class PopupResizeHandler {
 
     _collect_work_area_edges() {
         const monitor = Main.layoutManager.findMonitorForActor(this.actor);
-        const ws = global.screen.get_active_workspace();
+        const ws = global.workspace_manager.get_active_workspace();
         const area = ws.get_work_area_for_monitor(monitor.index);
 
         this._edges.top = area.y;

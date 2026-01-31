@@ -106,6 +106,7 @@ cinnamon_screen_get_property (GObject      *object,
   switch (prop_id)
     {
     case PROP_N_WORKSPACES:
+      g_warning_once ("global.screen.n_workspaces is deprecated. Use global.workspace_manager.n_workspaces instead.");
       g_value_set_int (value, meta_workspace_manager_get_n_workspaces (screen->ws_manager));
       break;
     default:
@@ -439,10 +440,19 @@ cinnamon_screen_new (MetaDisplay *display)
     return g_object_new (CINNAMON_TYPE_SCREEN, "display", display, NULL);
 }
 
+/**
+ * cinnamon_screen_get_n_workspaces:
+ * @screen: a #CinnamonScreen
+ *
+ * Returns: the number of workspaces
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_get_n_workspaces() via global.workspace_manager instead.
+ */
 int
 cinnamon_screen_get_n_workspaces (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 1);
+  g_warning_once ("global.screen.get_n_workspaces() is deprecated. Use global.workspace_manager.get_n_workspaces() instead.");
 
   return meta_workspace_manager_get_n_workspaces (screen->ws_manager);
 }
@@ -458,22 +468,34 @@ cinnamon_screen_get_n_workspaces (CinnamonScreen *screen)
  *
  * Return value: (transfer none): the workspace object with specified index, or %NULL
  *   if the index is out of range.
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_get_workspace_by_index() via global.workspace_manager instead.
  */
 MetaWorkspace*
 cinnamon_screen_get_workspace_by_index (CinnamonScreen  *screen,
                                         int              idx)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
+  g_warning_once ("global.screen.get_workspace_by_index() is deprecated. Use global.workspace_manager.get_workspace_by_index() instead.");
 
   return meta_workspace_manager_get_workspace_by_index (screen->ws_manager, idx);
 }
 
+/**
+ * cinnamon_screen_remove_workspace:
+ * @screen: a #CinnamonScreen
+ * @workspace: the workspace to remove
+ * @timestamp: the timestamp for the operation
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_remove_workspace() via global.workspace_manager instead.
+ */
 void
 cinnamon_screen_remove_workspace (CinnamonScreen *screen,
                                   MetaWorkspace  *workspace,
                                   guint32         timestamp)
 {
   g_return_if_fail (CINNAMON_IS_SCREEN (screen));
+  g_warning_once ("global.screen.remove_workspace() is deprecated. Use global.workspace_manager.remove_workspace() instead.");
 
   meta_workspace_manager_remove_workspace (screen->ws_manager, workspace, timestamp);
 }
@@ -490,6 +512,8 @@ cinnamon_screen_remove_workspace (CinnamonScreen *screen,
  * screen.
  *
  * Return value: (transfer none): the newly appended workspace.
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_append_new_workspace() via global.workspace_manager instead.
  */
 MetaWorkspace *
 cinnamon_screen_append_new_workspace (CinnamonScreen *screen,
@@ -497,6 +521,7 @@ cinnamon_screen_append_new_workspace (CinnamonScreen *screen,
                                       guint32         timestamp)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
+  g_warning_once ("global.screen.append_new_workspace() is deprecated. Use global.workspace_manager.append_new_workspace() instead.");
 
   return meta_workspace_manager_append_new_workspace (screen->ws_manager, activate, timestamp);
 }
@@ -510,12 +535,15 @@ cinnamon_screen_append_new_workspace (CinnamonScreen *screen,
  *
  * Return value: (transfer none): the #MetaWindow pointed by the mouse
  *  %NULL when window not found
+ *
+ * Deprecated: 6.4: Use Main.layoutManager.getWindowAtPointer() instead.
  */
 MetaWindow*
 cinnamon_screen_get_mouse_window (CinnamonScreen  *screen,
                                   MetaWindow      *not_this_one)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
+  g_warning_once ("global.screen.get_mouse_window() is deprecated. Use Main.layoutManager.getWindowAtPointer() instead.");
 
   MetaCursorTracker *cursor_tracker = meta_cursor_tracker_get_for_display (screen->display);
   GList *actors, *l;
@@ -559,11 +587,21 @@ cinnamon_screen_get_mouse_window (CinnamonScreen  *screen,
   return NULL;;
 }
 
+/**
+ * cinnamon_screen_get_monitor_index_for_rect:
+ * @screen: a #CinnamonScreen
+ * @rect: the rectangle
+ *
+ * Returns: the monitor index for the rectangle
+ *
+ * Deprecated: 6.4: Use meta_display_get_monitor_index_for_rect() via global.display instead.
+ */
 int
 cinnamon_screen_get_monitor_index_for_rect (CinnamonScreen    *screen,
                                             MetaRectangle *rect)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
+  g_warning_once ("global.screen.get_monitor_index_for_rect() is deprecated. Use global.display.get_monitor_index_for_rect() instead.");
 
   return meta_display_get_monitor_index_for_rect (screen->display, rect);
 }
@@ -575,11 +613,14 @@ cinnamon_screen_get_monitor_index_for_rect (CinnamonScreen    *screen,
  * Gets the index of the monitor that currently has the mouse pointer.
  *
  * Return value: a monitor index
+ *
+ * Deprecated: 6.4: Use meta_display_get_current_monitor() via global.display instead.
  */
 int
 cinnamon_screen_get_current_monitor (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
+  g_warning_once ("global.screen.get_current_monitor() is deprecated. Use global.display.get_current_monitor() instead.");
 
   return meta_display_get_current_monitor (screen->display);
 }
@@ -591,11 +632,14 @@ cinnamon_screen_get_current_monitor (CinnamonScreen *screen)
  * Gets the number of monitors that are joined together to form @screen.
  *
  * Return value: the number of monitors
+ *
+ * Deprecated: 6.4: Use meta_display_get_n_monitors() via global.display instead.
  */
 int
 cinnamon_screen_get_n_monitors (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 1);
+  g_warning_once ("global.screen.get_n_monitors() is deprecated. Use global.display.get_n_monitors() instead.");
 
   return meta_display_get_n_monitors (screen->display);
 }
@@ -607,11 +651,14 @@ cinnamon_screen_get_n_monitors (CinnamonScreen *screen)
  * Gets the index of the primary monitor on this @screen.
  *
  * Return value: a monitor index
+ *
+ * Deprecated: 6.4: Use meta_display_get_primary_monitor() via global.display instead.
  */
 int
 cinnamon_screen_get_primary_monitor (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
+  g_warning_once ("global.screen.get_primary_monitor() is deprecated. Use global.display.get_primary_monitor() instead.");
 
   return meta_display_get_primary_monitor (screen->display);
 }
@@ -623,6 +670,8 @@ cinnamon_screen_get_primary_monitor (CinnamonScreen *screen)
  * @geometry: (out): location to store the monitor geometry
  *
  * Stores the location and size of the indicated monitor in @geometry.
+ *
+ * Deprecated: 6.4: Use meta_display_get_monitor_geometry() via global.display instead.
  */
 void
 cinnamon_screen_get_monitor_geometry (CinnamonScreen    *screen,
@@ -632,6 +681,7 @@ cinnamon_screen_get_monitor_geometry (CinnamonScreen    *screen,
   g_return_if_fail (CINNAMON_IS_SCREEN (screen));
   g_return_if_fail (monitor >= 0 && monitor < meta_display_get_n_monitors (screen->display));
   g_return_if_fail (geometry != NULL);
+  g_warning_once ("global.screen.get_monitor_geometry() is deprecated. Use global.display.get_monitor_geometry() instead.");
 
   meta_display_get_monitor_geometry (screen->display, monitor, geometry);
 }
@@ -648,6 +698,8 @@ cinnamon_screen_get_monitor_geometry (CinnamonScreen    *screen,
  *
  * Explicitly set the layout of workspaces. Once this has been called, the contents of the
  * _NET_DESKTOP_LAYOUT property on the root window are completely ignored.
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_override_workspace_layout() via global.workspace_manager instead.
  */
 void
 cinnamon_screen_override_workspace_layout (CinnamonScreen      *screen,
@@ -659,6 +711,7 @@ cinnamon_screen_override_workspace_layout (CinnamonScreen      *screen,
   g_return_if_fail (CINNAMON_IS_SCREEN (screen));
   g_return_if_fail (n_rows > 0 || n_columns > 0);
   g_return_if_fail (n_rows != 0 && n_columns != 0);
+  g_warning_once ("global.screen.override_workspace_layout() is deprecated. Use global.workspace_manager.override_workspace_layout() instead.");
 
   meta_workspace_manager_override_workspace_layout (screen->ws_manager,
                                                     starting_corner,
@@ -667,39 +720,66 @@ cinnamon_screen_override_workspace_layout (CinnamonScreen      *screen,
                                                     n_columns);
 }
 
+/**
+ * cinnamon_screen_toggle_desktop:
+ * @screen: a #CinnamonScreen
+ * @timestamp: the timestamp for the operation
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_toggle_desktop() via global.workspace_manager instead.
+ */
 void
 cinnamon_screen_toggle_desktop (CinnamonScreen *screen,
                                 guint32         timestamp)
 {
+  g_warning_once ("global.screen.toggle_desktop() is deprecated. Use global.workspace_manager.toggle_desktop() instead.");
   meta_workspace_manager_toggle_desktop (screen->ws_manager,
                                          timestamp);
 }
 
+/**
+ * cinnamon_screen_show_desktop:
+ * @screen: a #CinnamonScreen
+ * @timestamp: the timestamp for the operation
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_show_desktop() via global.workspace_manager instead.
+ */
 void
 cinnamon_screen_show_desktop (CinnamonScreen *screen,
                               guint32         timestamp)
 {
+  g_warning_once ("global.screen.show_desktop() is deprecated. Use global.workspace_manager.show_desktop() instead.");
   meta_workspace_manager_show_desktop (screen->ws_manager,
                                        timestamp);
 }
 
+/**
+ * cinnamon_screen_unshow_desktop:
+ * @screen: a #CinnamonScreen
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_unshow_desktop() via global.workspace_manager instead.
+ */
 void
 cinnamon_screen_unshow_desktop (CinnamonScreen *screen)
 {
+  g_warning_once ("global.screen.unshow_desktop() is deprecated. Use global.workspace_manager.unshow_desktop() instead.");
   meta_workspace_manager_unshow_desktop (screen->ws_manager);
 }
 
 /**
  * cinnamon_screen_get_display:
- * Retrieve the display associated with screen.
  * @screen: A #CinnamonScreen
  *
+ * Retrieve the display associated with screen.
+ *
  * Returns: (transfer none): Display
+ *
+ * Deprecated: 6.4: Use global.display directly instead.
  */
 MetaDisplay *
 cinnamon_screen_get_display (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
+  g_warning_once ("global.screen.get_display() is deprecated. Use global.display directly instead.");
 
   return screen->display;
 }
@@ -711,6 +791,8 @@ cinnamon_screen_get_display (CinnamonScreen *screen)
  * @height: (out): The height of the screen
  *
  * Retrieve the size of the screen.
+ *
+ * Deprecated: 6.4: Use meta_display_get_size() via global.display instead.
  */
 void
 cinnamon_screen_get_size (CinnamonScreen *screen,
@@ -718,6 +800,7 @@ cinnamon_screen_get_size (CinnamonScreen *screen,
                       int        *height)
 {
   g_return_if_fail (CINNAMON_IS_SCREEN (screen));
+  g_warning_once ("global.screen.get_size() is deprecated. Use global.display.get_size() instead.");
 
   meta_display_get_size (screen->display, width, height);
   g_debug ("screen - size: %dx%d", *width, *height);
@@ -728,32 +811,48 @@ cinnamon_screen_get_size (CinnamonScreen *screen,
  * @screen: a #CinnamonScreen
  *
  * Returns: (transfer none) (element-type Meta.Workspace): The workspaces for @screen
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_get_workspaces() via global.workspace_manager instead.
  */
 GList *
 cinnamon_screen_get_workspaces (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
+  g_warning_once ("global.screen.get_workspaces() is deprecated. Use global.workspace_manager.get_workspaces() instead.");
 
   return meta_workspace_manager_get_workspaces (screen->ws_manager);
 }
 
+/**
+ * cinnamon_screen_get_active_workspace_index:
+ * @screen: a #CinnamonScreen
+ *
+ * Returns: the index of the active workspace
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_get_active_workspace_index() via global.workspace_manager instead.
+ */
 int
 cinnamon_screen_get_active_workspace_index (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
+  g_warning_once ("global.screen.get_active_workspace_index() is deprecated. Use global.workspace_manager.get_active_workspace_index() instead.");
 
   return meta_workspace_manager_get_active_workspace_index (screen->ws_manager);
 }
 
 /**
  * cinnamon_screen_get_active_workspace:
+ * @screen: a #CinnamonScreen
  *
  * Returns: (transfer none): The current workspace
+ *
+ * Deprecated: 6.4: Use meta_workspace_manager_get_active_workspace() via global.workspace_manager instead.
  */
 MetaWorkspace *
 cinnamon_screen_get_active_workspace (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), NULL);
+  g_warning_once ("global.screen.get_active_workspace() is deprecated. Use global.workspace_manager.get_active_workspace() instead.");
 
   return meta_workspace_manager_get_active_workspace (screen->ws_manager);
 }
@@ -771,6 +870,8 @@ cinnamon_screen_get_active_workspace (CinnamonScreen *screen)
  * CinnamonScreen::in-fullscreen-changed.
  *
  * Returns: %TRUE if there is a fullscreen window covering the specified monitor.
+ *
+ * Deprecated: 6.4: Use meta_display_get_monitor_in_fullscreen() via global.display instead.
  */
 gboolean
 cinnamon_screen_get_monitor_in_fullscreen (CinnamonScreen  *screen,
@@ -779,16 +880,27 @@ cinnamon_screen_get_monitor_in_fullscreen (CinnamonScreen  *screen,
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), FALSE);
   g_return_val_if_fail (monitor >= 0 &&
                           monitor < meta_display_get_n_monitors (screen->display), FALSE);
+  g_warning_once ("global.screen.get_monitor_in_fullscreen() is deprecated. Use global.display.get_monitor_in_fullscreen() instead.");
 
   return meta_display_get_monitor_in_fullscreen (screen->display, monitor);
 }
 
+/**
+ * cinnamon_screen_get_xwindow_for_window:
+ * @screen: a #CinnamonScreen
+ * @window: the #MetaWindow
+ *
+ * Returns: the X window ID for the window
+ *
+ * Deprecated: 6.4: Use meta_window_get_xwindow() on the MetaWindow directly instead.
+ */
 unsigned long
 cinnamon_screen_get_xwindow_for_window (CinnamonScreen *screen,
                                         MetaWindow     *window)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
   g_return_val_if_fail (META_IS_WINDOW (window), 0);
+  g_warning_once ("global.screen.get_xwindow_for_window() is deprecated. Use metaWindow.get_xwindow() directly instead.");
 
   return meta_window_get_xwindow (window);
 }
