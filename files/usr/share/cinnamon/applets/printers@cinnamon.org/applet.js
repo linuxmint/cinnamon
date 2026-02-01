@@ -179,7 +179,6 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                     out = out.split(/\n/);
                     this.jobsCount = out.length - 1;
                     Util.spawn_async(['/usr/bin/lpq', '-a'], Lang.bind(this, function(out2) {
-                        //out2 = out2.replace(/\n/g, ' ').split(/\s+/);
                         out2 = out2.split(/\n/);
                         let sendJobs = [];
                         for(var n = 0; n < out.length - 1; n++) {
