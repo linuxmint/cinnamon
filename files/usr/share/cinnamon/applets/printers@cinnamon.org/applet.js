@@ -207,6 +207,8 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                             if(doc.length > 30) {
                                 doc = doc + '...';
                             }
+                            out2[out2.indexOf(job) + 1] = "used";
+                            out2[out2.indexOf(job) + 2] = "used";
                             
                             let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer);
                             text = text + ' (' + size + ')' + _(" - by %s").format(user);
