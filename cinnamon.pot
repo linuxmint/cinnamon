@@ -2039,28 +2039,28 @@ msgstr ""
 #. Label                           Executable
 #. Icon                        Category      Keywords for filter
 #. printers@cinnamon.org->metadata.json->name
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:22
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:133
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:244
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:38
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:149
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:264
 #: files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py:79
 msgid "Printers"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:169
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:185
 msgid "Cancel all jobs"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:194
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:211
 #, javascript-format
 msgid "'%s' on %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:194
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:212
 #, javascript-format
 msgid " by %s"
 msgstr ""
 
-#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:212
+#: files/usr/share/cinnamon/applets/printers@cinnamon.org/applet.js:232
 msgid "Send to front"
 msgstr ""
 
