@@ -179,28 +179,27 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                     out = out.split(/\n/);
                     this.jobsCount = out.length - 1;
                     Util.spawn_async(['/usr/bin/lpq', '-a'], Lang.bind(this, function(out2) {
-                        out2 = out2.split(/\n/);
+                        out2 = out2.replace(/\n/g, ' ').split(/\s+/);
                         let sendJobs = [];
                         for(var n = 0; n < out.length - 1; n++) {
-                            let out2_n = out2[n+1].split(/\s+/);
                             let line = out[n].split(' ')[0].split('-');
                             let job = line.slice(-1)[0];
                             let printer = line.slice(0, -1).join('-');
-                            let doc = out2_n[out2_n.indexOf(job) + 1];
-                            let user = out2_n[out2_n.indexOf(job) - 1]
+                            let doc = out2[out2.indexOf(job) + 1];
+                            let user = out2[out2.indexOf(job) - 1];
                             if(doc.length > 30) {
                                 doc = doc + '...';
                             }
                             let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer) + _(" by %s").format(user);
                             let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xsi-edit-delete', St.IconType.SYMBOLIC);
-                            if(out2_n[out2_n.indexOf(job) - 2] == 'active') {
+                            if(out2[out2.indexOf(job) - 2] == 'active') {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-emblem-default', icon_type: St.IconType.SYMBOLIC }));
                             }
                             jobItem.job = job;
                             jobItem.connect('activate', Lang.bind(jobItem, this.onCancelJobClicked));
                             this.cancelSubMenu.addMenuItem(jobItem);
                             this.jobs.push(jobItem);
-                            if(out2_n[out2_n.indexOf(job) - 2] != 'active' && out2_n[out2_n.indexOf(job) - 2] != '1st') {
+                            if(out2[out2.indexOf(job) - 2] != 'active' && out2[out2.indexOf(job) - 2] != '1st') {
                                 sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC));
                                 sendJobs[sendJobs.length - 1].job = job;
                                 sendJobs[sendJobs.length - 1].connect('activate', Lang.bind(sendJobs[sendJobs.length - 1], this.onSendToFrontClicked));
