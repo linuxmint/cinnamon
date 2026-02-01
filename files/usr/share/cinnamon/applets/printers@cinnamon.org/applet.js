@@ -11,6 +11,22 @@ const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 const APPLET_PATH = imports.ui.appletManager.appletMeta['printers@cinnamon.org'].path;
 
 
+function formatBytes(bytesStr) {
+    const bytes = parseInt(bytesStr, 10);
+    if (isNaN(bytes) || bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const value = bytes / Math.pow(k, i);
+
+    return value.toLocaleString(undefined, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+    }) + " " + sizes[i];
+}
+
+
 class CinnamonPrintersApplet extends Applet.TextIconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -187,13 +203,18 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                             let printer = line.slice(0, -1).join('-');
                             let doc = out2[out2.indexOf(job) + 1];
                             let user = out2[out2.indexOf(job) - 1];
+                            let size = formatBytes(out2[out2.indexOf(job) + 2]);
                             if(doc.length > 30) {
                                 doc = doc + '...';
                             }
-                            let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer) + _(" by %s").format(user);
+                            
+                            let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer);
+                            text = text + ' (' + size + ')' + _(" - by %s").format(user);
                             let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xsi-edit-delete', St.IconType.SYMBOLIC);
                             if(out2[out2.indexOf(job) - 2] == 'active') {
-                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-emblem-default', icon_type: St.IconType.SYMBOLIC }));
+                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-printer-printing', icon_type: St.IconType.SYMBOLIC }));
+                            } else {
+                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-time', icon_type: St.IconType.SYMBOLIC }));
                             }
                             jobItem.job = job;
                             jobItem.connect('activate', Lang.bind(jobItem, this.onCancelJobClicked));
