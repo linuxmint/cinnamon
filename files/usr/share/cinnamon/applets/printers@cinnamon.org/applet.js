@@ -11,6 +11,22 @@ const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 const APPLET_PATH = imports.ui.appletManager.appletMeta['printers@cinnamon.org'].path;
 
 
+function formatBytes(bytesStr) {
+    const bytes = parseInt(bytesStr, 10);
+    if (isNaN(bytes) || bytes === 0) return "0 Bytes";
+
+    const k = 1024;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    const value = bytes / Math.pow(k, i);
+
+    return value.toLocaleString(undefined, {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 1
+    }) + " " + sizes[i];
+}
+
+
 class CinnamonPrintersApplet extends Applet.TextIconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -39,6 +55,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.updating = false;
         this.showLater = false;
         this.printers = [];
+        this.jobs = [];
         this.set_applet_icon_symbolic_name('xsi-printer');
         this.update();
     }
@@ -104,8 +121,8 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     onCancelAllJobsClicked() {
         Util.spawn_async(['python3', APPLET_PATH + '/cancel-print-dialog.py', 'all'], Lang.bind(this, function(out) {
             if(out.trim() == "Cancel") {
-                for(var n = 0; n < this.printers.length; n++) {
-                    Util.spawn(['cancel', '-a', this.printers[n]]);
+                for(var n = 0; n < this.jobs.length; n++) {
+                    Util.spawn(['cancel', this.jobs[n].job]);
                 }
             }
         }));
@@ -162,6 +179,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
                 //Add Jobs
                 Util.spawn_async(['/usr/bin/lpstat', '-o'], Lang.bind(this, function(out) {
+                    this.jobs = [];
                     //Cancel all Jobs
                     if(out.length > 0) {
                         let cancelAll = new PopupMenu.PopupIconMenuItem(_("Cancel all jobs"), 'xsi-edit-delete', St.IconType.SYMBOLIC);
@@ -176,7 +194,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                     //Cancel Job
                     out = out.split(/\n/);
                     this.jobsCount = out.length - 1;
-                    Util.spawn_async(['/usr/bin/lpstat', '-o'], Lang.bind(this, function(out2) {
+                    Util.spawn_async(['/usr/bin/lpq', '-a'], Lang.bind(this, function(out2) {
                         out2 = out2.replace(/\n/g, ' ').split(/\s+/);
                         let sendJobs = [];
                         for(var n = 0; n < out.length - 1; n++) {
@@ -184,24 +202,24 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                             let job = line.slice(-1)[0];
                             let printer = line.slice(0, -1).join('-');
                             let doc = out2[out2.indexOf(job) + 1];
-                            for(var m = out2.indexOf(job) + 2; m < out2.length - 1; m++) {
-                                if(isNaN(out2[m]) || out2[m + 1] != 'bytes') {
-                                    doc = doc + ' ' + out2[m];
-                                } else {
-                                    break;
-                                }
-                            }
+                            let user = out2[out2.indexOf(job) - 1];
+                            let size = formatBytes(out2[out2.indexOf(job) + 2]);
                             if(doc.length > 30) {
                                 doc = doc + '...';
                             }
+                            
                             let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer);
+                            text = text + ' (' + size + ')' + _(" - by %s").format(user);
                             let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xsi-edit-delete', St.IconType.SYMBOLIC);
                             if(out2[out2.indexOf(job) - 2] == 'active') {
-                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-emblem-default', icon_type: St.IconType.SYMBOLIC }));
+                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-printer-printing', icon_type: St.IconType.SYMBOLIC }));
+                            } else {
+                                jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-time', icon_type: St.IconType.SYMBOLIC }));
                             }
                             jobItem.job = job;
                             jobItem.connect('activate', Lang.bind(jobItem, this.onCancelJobClicked));
                             this.cancelSubMenu.addMenuItem(jobItem);
+                            this.jobs.push(jobItem);
                             if(out2[out2.indexOf(job) - 2] != 'active' && out2[out2.indexOf(job) - 2] != '1st') {
                                 sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC));
                                 sendJobs[sendJobs.length - 1].job = job;
