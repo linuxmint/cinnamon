@@ -132,10 +132,7 @@ class InputSourceSettingsPage(SettingsPage):
     def _update_selected_row(self, data=None):
         self.input_sources_list.handler_block(self.source_activate_handler)
 
-        for row in self.input_sources_list.get_children():
-            source = row.get_child().input_source
-            if source.active:
-                self.input_sources_list.select_row(row)
+        self.input_sources_list.unselect_all()
 
         self.input_sources_list.handler_unblock(self.source_activate_handler)
         self.update_widgets()
@@ -178,8 +175,9 @@ class InputSourceSettingsPage(SettingsPage):
 
     def on_engine_config_clicked(self, button, data=None):
         source = self._get_selected_source()
-
-        subprocess.Popen([source.preferences], shell=True)
+        dialog = IBusConfigDialog(source, self.current_input_sources_model.input_source_settings)
+        dialog.run()
+        dialog.destroy()
 
     def update_widgets(self):
         # Don't allow removal of last remaining layout
@@ -189,7 +187,8 @@ class InputSourceSettingsPage(SettingsPage):
         source = self._get_selected_source()
         if source is not None:
             self.test_layout_button.set_sensitive(source.type == "xkb")
-            self.engine_config_button.set_sensitive(source.type == "ibus" and source.preferences != '')
+            # Enable Configure button for all IBus sources (not just those with preferences)
+            self.engine_config_button.set_sensitive(source.type == "ibus")
             index = self.current_input_sources_model.get_item_index(source)
             self.move_layout_up_button.set_sensitive(index > 0)
             self.move_layout_down_button.set_sensitive(index < self.current_input_sources_model.get_n_items() - 1)
@@ -200,6 +199,142 @@ class InputSourceSettingsPage(SettingsPage):
             self.move_layout_up_button.set_sensitive(False)
             self.move_layout_down_button.set_sensitive(False)
             self.remove_layout_button.set_sensitive(False)
+
+
+class IBusConfigDialog():
+    def __init__(self, source, settings):
+        self.source = source
+        self.settings = settings
+        self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
+
+        # Check if this engine uses "default" layout or has a specific one
+        self.engine_layout = self._get_engine_layout()
+        self.allows_override = (self.engine_layout == "default")
+
+        builder = Gtk.Builder()
+        builder.set_translation_domain('cinnamon')
+        builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
+
+        self.dialog = builder.get_object("ibus_config_dialog")
+
+        # Set up name label
+        name_label = builder.get_object("ibus_config_name_label")
+        name_label.set_text(source.display_name)
+
+        # Set up explanation label based on whether override is allowed
+        explanation_label = builder.get_object("ibus_config_explanation_label")
+        if not self.allows_override:
+            layout_display = self._get_engine_layout_display_name()
+            explanation_label.set_text(
+                _("This input method requires the \"%s\" keyboard layout to function correctly. "
+                  "The layout is set automatically when you switch to this input method.") % layout_display
+            )
+
+        # Set up layout label
+        self.layout_label = builder.get_object("ibus_config_layout_label")
+
+        # Set up buttons
+        close_button = builder.get_object("ibus_config_close_button")
+        close_button.connect("clicked", self.on_close_clicked)
+
+        self.change_layout_button = builder.get_object("ibus_config_change_layout_button")
+        self.change_layout_button.connect("clicked", self.on_change_layout_clicked)
+        self.change_layout_button.set_sensitive(self.allows_override)
+
+        self.clear_override_button = builder.get_object("ibus_config_clear_override_button")
+        self.clear_override_button.connect("clicked", self.on_clear_override_clicked)
+
+        engine_settings_button = builder.get_object("ibus_config_engine_settings_button")
+        if source.preferences:
+            engine_settings_button.connect("clicked", self.on_engine_settings_clicked)
+        else:
+            engine_settings_button.set_visible(False)
+
+        self.update_layout_display()
+        self.dialog.show_all()
+
+    def _get_engine_layout(self):
+        ibus = IBus.Bus.new()
+        if ibus.is_connected():
+            engines = ibus.get_engines_by_names([self.source.id])
+            if engines:
+                return engines[0].get_layout() or "default"
+        return "default"
+
+    def _get_engine_layout_display_name(self):
+        if not self.engine_layout or self.engine_layout == "default":
+            return _("Default")
+        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(self.engine_layout)
+        if got:
+            return f"{display_name} ({self.engine_layout})"
+        return self.engine_layout
+
+    def run(self):
+        return self.dialog.run()
+
+    def destroy(self):
+        self.dialog.destroy()
+
+    def on_close_clicked(self, button, data=None):
+        self.dialog.response(Gtk.ResponseType.CLOSE)
+
+    def get_current_override(self):
+        source_layouts = self.settings.get_value("source-layouts").unpack()
+        return source_layouts.get(self.source.id, None)
+
+    def get_layout_display_name(self, layout_id):
+        if layout_id is None:
+            return None
+        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
+        if got:
+            return f"{display_name} ({layout_id})"
+        return layout_id
+
+    def update_layout_display(self):
+        if not self.allows_override:
+            # Engine has a fixed layout requirement
+            self.layout_label.set_text(self._get_engine_layout_display_name())
+            self.clear_override_button.set_sensitive(False)
+            return
+
+        override = self.get_current_override()
+        if override:
+            display_name = self.get_layout_display_name(override)
+            self.layout_label.set_text(display_name)
+            self.clear_override_button.set_sensitive(True)
+        else:
+            self.layout_label.set_text(_("Default"))
+            self.clear_override_button.set_sensitive(False)
+
+    def on_change_layout_clicked(self, button, data=None):
+        # Show the layout picker in XKB-only mode
+        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], xkb_only=True)
+        add_dialog.dialog.set_transient_for(self.dialog)
+        add_dialog.dialog.show_all()
+        ret = add_dialog.dialog.run()
+        if ret == Gtk.ResponseType.OK:
+            layout_type, layout_id = add_dialog.response
+            self.set_layout_override(layout_id)
+        add_dialog.dialog.destroy()
+
+    def on_clear_override_clicked(self, button, data=None):
+        self.clear_layout_override()
+
+    def on_engine_settings_clicked(self, button, data=None):
+        subprocess.Popen([self.source.preferences], shell=True)
+
+    def set_layout_override(self, layout_id):
+        source_layouts = self.settings.get_value("source-layouts").unpack()
+        source_layouts[self.source.id] = layout_id
+        self.settings.set_value("source-layouts", GLib.Variant("a{ss}", source_layouts))
+        self.update_layout_display()
+
+    def clear_layout_override(self):
+        source_layouts = self.settings.get_value("source-layouts").unpack()
+        if self.source.id in source_layouts:
+            del source_layouts[self.source.id]
+            self.settings.set_value("source-layouts", GLib.Variant("a{ss}", source_layouts))
+        self.update_layout_display()
 
 class LayoutIcon(Gtk.Overlay):
     def __init__(self, file, dupe_id):
@@ -267,6 +402,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         self.interface_settings = Gio.Settings(schema_id="org.cinnamon.desktop.interface")
         self.interface_settings.connect("changed", self.on_interface_settings_changed)
         self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+        self.input_source_settings.connect("changed::source-layouts", self.on_source_layouts_changed)
 
         try:
             Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
@@ -292,6 +428,16 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         if self._proxy.get_name_owner() is None:
             return False
         return True
+
+    def _get_layout_override(self, engine_id):
+        source_layouts = self.input_source_settings.get_value("source-layouts").unpack()
+        return source_layouts.get(engine_id, None)
+
+    def _get_layout_display_name(self, layout_id):
+        got, display_name, short_name, layout, variant = self.xkb_info.get_layout_info(layout_id)
+        if got:
+            return display_name
+        return layout_id
 
     def _on_ibus_connected(self, ibus, data=None):
         if self._proxy is None:
@@ -323,6 +469,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
     def on_interface_settings_changed(self, settings, key, data=None):
         if key.startswith("keyboard-layout-"):
             self.refresh_input_source_list()
+
+    def on_source_layouts_changed(self, settings, key, data=None):
+        self.refresh_input_source_list()
 
     def refresh_input_source_list(self):
         if self.live:
@@ -377,7 +526,18 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
 
     def create_row(self, source, data=None):
         row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        markup = f"<b>{source.display_name}</b>"
+
+        # Build display name, including layout override for IBus sources
+        display_name = GLib.markup_escape_text(source.display_name)
+        if source.type == "ibus":
+            layout_override = self._get_layout_override(source.id)
+            if layout_override:
+                layout_display = GLib.markup_escape_text(self._get_layout_display_name(layout_override))
+                markup = f"<b>{display_name}</b>  <small>|  {layout_display}</small>"
+            else:
+                markup = f"<b>{display_name}</b>"
+        else:
+            markup = f"<b>{display_name}</b>"
         label = Gtk.Label(label=markup, xalign=0.0, use_markup=True, margin_start=4)
         row.pack_start(label, True, True, 0)
 
