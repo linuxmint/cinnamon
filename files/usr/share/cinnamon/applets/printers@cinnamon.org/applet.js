@@ -27,6 +27,27 @@ function formatBytes(bytesStr) {
 }
 
 
+function parseLpq(lpq_output) {
+    var parsedData = {};
+    lpq_output = lpq_output.split(/\n/);
+    let line = [];
+    let joined_line = [];
+
+    for(var n = 0; n < lpq_output.length - 1; n++) {
+        line = lpq_output[n].split(/\s+/);
+        if (line.length < 5) continue;
+        joined_line = [];
+        joined_line.push(line[0]);
+        joined_line.push(line[1]);
+        joined_line.push(line.slice(3, -2).join(' '));
+        joined_line.push(line[line.length-2]);
+        parsedData[line[2]] = joined_line;
+    }
+
+    return parsedData;
+}
+
+
 class CinnamonPrintersApplet extends Applet.TextIconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -137,7 +158,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     }
 
     onSendToFrontClicked(item) {
-        Util.spawn(['lp', '-i', item.job, '-q 100']);
+        Util.spawn(['lp', '-i', item.job, '-H', 'immediate']);
     }
 
     update() {
@@ -195,25 +216,24 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                     out = out.split(/\n/);
                     this.jobsCount = out.length - 1;
                     Util.spawn_async(['/usr/bin/lpq', '-a'], Lang.bind(this, function(out2) {
-                        out2 = out2.replace(/\n/g, ' ').split(/\s+/);
+                        let jobInfo = parseLpq(out2);
                         let sendJobs = [];
                         for(var n = 0; n < out.length - 1; n++) {
                             let line = out[n].split(' ')[0].split('-');
                             let job = line.slice(-1)[0];
                             let printer = line.slice(0, -1).join('-');
-                            let doc = out2[out2.indexOf(job) + 1];
-                            let user = out2[out2.indexOf(job) - 1];
-                            let size = formatBytes(out2[out2.indexOf(job) + 2]);
+                            let doc = jobInfo[job][2];
+                            let user = jobInfo[job][1];
+                            let size = formatBytes(jobInfo[job][3]);
+
                             if(doc.length > 30) {
                                 doc = doc + '...';
                             }
-                            out2[out2.indexOf(job) + 1] = "used";
-                            out2[out2.indexOf(job) + 2] = "used";
                             
                             let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer);
                             text = text + ' (' + size + ')' + _(" - by %s").format(user);
                             let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xsi-edit-delete', St.IconType.SYMBOLIC);
-                            if(out2[out2.indexOf(job) - 2] == 'active') {
+                            if(jobInfo[job][0] == 'active') {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-printer-printing', icon_type: St.IconType.SYMBOLIC }));
                             } else {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-time', icon_type: St.IconType.SYMBOLIC }));
@@ -222,7 +242,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                             jobItem.connect('activate', Lang.bind(jobItem, this.onCancelJobClicked));
                             this.cancelSubMenu.addMenuItem(jobItem);
                             this.jobs.push(jobItem);
-                            if(out2[out2.indexOf(job) - 2] != 'active' && out2[out2.indexOf(job) - 2] != '1st') {
+                            if(jobInfo[job][0] != 'active' && jobInfo[job][0] != '1st') {
                                 sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC));
                                 sendJobs[sendJobs.length - 1].job = job;
                                 sendJobs[sendJobs.length - 1].connect('activate', Lang.bind(sendJobs[sendJobs.length - 1], this.onSendToFrontClicked));
