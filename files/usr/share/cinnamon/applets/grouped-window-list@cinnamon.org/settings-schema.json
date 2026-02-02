@@ -63,7 +63,6 @@
         "show-thumbnails",
         "animate-thumbnails",
         "vertical-thumbnails",
-        "sort-thumbnails",
         "highlight-last-focused-thumbnail",
         "onclick-thumbnails",
         "thumbnail-timeout",
@@ -221,11 +220,6 @@
     "type": "checkbox",
     "default": false,
     "description": "Enable vertical thumbnails"
-  },
-  "sort-thumbnails": {
-    "type": "checkbox",
-    "default": false,
-    "description": "Sort thumbnails according to the last focused windows"
   },
   "highlight-last-focused-thumbnail": {
     "type": "checkbox",

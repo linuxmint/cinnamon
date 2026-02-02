@@ -6,9 +6,11 @@ const {unref} = imports.misc.util;
 const createStore = require('./state');
 const AppGroup = require('./appGroup');
 const {RESERVE_KEYS} = require('./constants');
+const isReloading = false;
 
 class Workspace {
     constructor(params) {
+        this.isReloading = false;
         this.state = params.state;
         this.state.connect({
             orientation: () => this.on_orientation_changed(false)
@@ -162,11 +164,17 @@ class Workspace {
     }
 
     reloadList() {
+        this.isReloading = true;
+
         const windows = this.metaWorkspace.list_windows();
 
         for (let i = 0, len = windows.length; i < len; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
         }
+        this.isReloading = false;
+
+        // Reapply persistent order after MRU rebuild
+        this.appGroups.forEach(g => g.applySavedWindowOrder());
     }
 
     refreshList() {
@@ -180,6 +188,8 @@ class Workspace {
     }
 
     loadFavorites() {
+        this.isReloading = true;
+
         const favorites = this.state.trigger('getFavorites');
         const appSystem = this.state.trigger('getAppSystem');
         for (let i = 0; i < favorites.length; i++) {
@@ -199,19 +209,24 @@ class Workspace {
                 this.windowAdded(this.metaWorkspace, appWindows[i], app, true);
             }
         }
+
+        this.isReloading = false;
+        this.appGroups.forEach(g => g.applySavedWindowOrder());
     }
 
     refreshApps() {
-        let windows;
-        if (this.state.settings.showAllWorkspaces) {
-            windows = global.display.list_windows(0);
-        } else {
-            windows = this.metaWorkspace.list_windows();
-        }
+        this.isReloading = true;
 
-        for (let i = 0, len = windows.length; i < len; i++) {
+        const windows = this.state.settings.showAllWorkspaces
+            ? global.display.list_windows(0)
+            : this.metaWorkspace.list_windows();
+
+        for (let i = 0; i < windows.length; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
         }
+
+        this.isReloading = false;
+        this.appGroups.forEach(g => g.applySavedWindowOrder());
     }
 
     updateAttentionState(display, window) {
@@ -240,7 +255,10 @@ class Workspace {
     }
 
     windowWorkspaceChanged(display, metaWorkspace, metaWindow) {
+        this.isReloading = true;
         this.windowAdded(metaWindow, metaWorkspace);
+        this.isReloading = false;
+        this.appGroups.forEach(g => g.applySavedWindowOrder());
     }
 
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {

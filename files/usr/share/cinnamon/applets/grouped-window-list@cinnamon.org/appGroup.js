@@ -11,6 +11,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
+const Gio = imports.gi.Gio;
 
 const createStore = require('./state');
 const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
@@ -63,6 +64,7 @@ const getFocusState = function(metaWindow) {
 class AppGroup {
     constructor(params) {
         this.state = params.state;
+        this.userOrder = []; // New: user-defined window order
         this.workspaceState = params.workspaceState;
         this.groupState = createStore({
             app: params.app,
@@ -84,6 +86,18 @@ class AppGroup {
             fileDrag: false,
             pressed: true
         });
+		this.groupState.set({ appGroup: this });
+
+		// Get the saved settings
+		this._settings = new Gio.Settings({ schema_id: 'org.cinnamon.grouped-window-list' });
+		const savedSettings = this._settings.get_string('user-order');
+		try {
+			this.userOrder = JSON.parse(savedSettings);
+			if (!Array.isArray(this.userOrder))
+				this.userOrder = [];
+		} catch (e) {
+			this.userOrder = [];
+		}
 
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
@@ -913,16 +927,15 @@ class AppGroup {
     windowHandle() {
         if (this.groupState.lastFocused.appears_focused) {
             if (this.groupState.metaWindows.length > 1) {
-                let nextWindow = null;
-                for (let i = 0, max = this.groupState.metaWindows.length - 1; i < max; i++) {
-                    if (this.groupState.metaWindows[i] === this.groupState.lastFocused) {
-                        nextWindow = this.groupState.metaWindows[i + 1];
-                        break;
-                    }
-                }
-                if (nextWindow === null) {
-                    nextWindow = this.groupState.metaWindows[0];
-                }
+                // Always enforce persistent order before cycling
+                this.applySavedWindowOrder();
+
+                const ordered = this.groupState.metaWindows;
+                const idx = ordered.indexOf(this.groupState.lastFocused);
+
+                // Cycle to next window in persistent order
+                const nextWindow = ordered[(idx + 1) % ordered.length];
+
                 Main.activateWindow(nextWindow, global.get_current_time());
             } else {
                 this.groupState.lastFocused.minimize();
@@ -966,6 +979,16 @@ class AppGroup {
             }
             if (refWindow === -1) {
                 metaWindows.push(metaWindow);
+
+                // Update userOrder if this is NOT a workspace rebuild
+				if (!this.workspaceState.isReloading) {
+					const id = metaWindow.get_id();
+					if (!this.userOrder.includes(id)) {
+						this.userOrder.push(id);
+						this.saveWindowOrder();
+					}
+				}
+
                 if (this.hoverMenu) trigger('addThumbnailToMenu', metaWindow);
             }
 
@@ -980,6 +1003,7 @@ class AppGroup {
             metaWindows,
             lastFocused: metaWindow
         });
+        this.applySavedWindowOrder();
         this.handleFavorite();
     }
 
@@ -990,6 +1014,18 @@ class AppGroup {
         this.signals.disconnect('notify::appears-focused', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
+
+		// Remove closed window from userOrder if not reloading
+		const id = metaWindow.get_id();
+        if (!this.workspaceState.isReloading) {
+            this.userOrder = this.userOrder.filter(x => x !== id);
+
+            // Persist userOrder to Gsettings
+            this.saveWindowOrder();
+        }
+
+        if (this.hoverMenu)
+            this.hoverMenu.fullyRefreshThumbnails();
 
         if (this.progressOverlay.visible) this.onProgressChange();
 
@@ -1005,12 +1041,50 @@ class AppGroup {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in workspace to put the final nail in the coffin.
             if (typeof cb === 'function') {
+                // Always enforce persistent order
+                this.applySavedWindowOrder();
+
                 if (this.hoverMenu && this.groupState.isFavoriteApp) {
                     this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
                 }
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
             }
         }
+    }
+
+	saveWindowOrder() {
+        this._settings.set_string(
+			'user-order',
+			JSON.stringify(this.userOrder)
+		);
+	}
+
+    applySavedWindowOrder() {
+        // Load from GSettings if userOrder is empty
+		if (!this.userOrder || this.userOrder.length === 0) {
+			let saved = this._settings.get_string('user-order');
+
+			try {
+				const order = JSON.parse(saved);
+				if (Array.isArray(order))
+					this.userOrder = order;
+			} catch (e) {
+				return;
+			}
+		}
+
+		const order = this.userOrder;
+		if (!Array.isArray(order) || order.length === 0)
+			return;
+		
+		// Sort metaWindows only, not thumbnails
+		if (Array.isArray(this.groupState.metaWindows)) {
+			this.groupState.metaWindows.sort((a, b) => {
+				const posA = order.indexOf(a.get_id());
+				const posB = order.indexOf(b.get_id());
+				return (posA === -1 ? 999999 : posA) - (posB === -1 ? 999999 : posB);
+			});
+		} 
     }
 
     onWindowTitleChanged(metaWindow, refresh) {
@@ -1063,11 +1137,14 @@ class AppGroup {
         const hasFocus = getFocusState(metaWindow);
         if (hasFocus && this.groupState.hasOwnProperty('lastFocused')) {
             this.workspaceState.set({lastFocusedApp: this.groupState.appId});
-            this.groupState.set({lastFocused: metaWindow});
+            if (!this.workspaceState.isReloading) {
+                this.groupState.set({lastFocused: metaWindow});
+				this.applySavedWindowOrder();
+			}
         }
         this.onFocusChange(hasFocus);
 
-        if (this.state.settings.sortThumbs && this.hoverMenu) {
+        if (this.hoverMenu) {
             this.hoverMenu.addThumbnail(metaWindow);
         }
     }

@@ -317,7 +317,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
             {key: 'animate-thumbnails', value: 'animateThumbs', cb: null},
             {key: 'vertical-thumbnails', value: 'verticalThumbs', cb: this.updateVerticalThumbnailState},
-            {key: 'sort-thumbnails', value: 'sortThumbs', cb: this.updateVerticalThumbnailState},
             {
                 key: 'highlight-last-focused-thumbnail',
                 value: 'highlightLastFocusedThumbnail',
@@ -1039,7 +1038,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.refreshAllWorkspaces();
     }
 
-     _onNotificationReceived(mtray, notification) {
+    _onNotificationReceived(mtray, notification) {
         let appId = notification.source.app?.get_id();
       
         if (!appId) {
@@ -1088,7 +1087,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 appGroup.updateNotificationsBadge();
             });
         });
-    }
+	}
 }
 
 function main(metadata, orientation, panel_height, instance_id) {

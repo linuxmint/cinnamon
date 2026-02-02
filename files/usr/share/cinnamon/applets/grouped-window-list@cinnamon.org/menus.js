@@ -865,6 +865,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         super._init.call(this, groupState.trigger('getActor'), state.orientation, 0.5);
         this.state = state;
         this.groupState = groupState;
+        this.appGroup = groupState.appGroup;
         this.shouldClose = true;
         this.isOpen = false;
         this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
@@ -942,6 +943,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         this.appThumbnails = [];
         this.queuedWindows = [];
         this.fullyRefreshThumbnails();
+        this._dragIndicator = null;
     }
 
     addQueuedThumbnails() {
@@ -975,6 +977,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         }
 
         this.addQueuedThumbnails();
+        this._sortThumbnailsByUserOrder();
 
         if (actor != null) {
             this.groupState.set({thumbnailMenuEntered: this.isOpen});
@@ -1020,6 +1023,8 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             if (force || this.state.settings.onClickThumbs) this.addQueuedThumbnails();
             this.state.set({thumbnailMenuOpen: true});
             super.open(this.state.settings.animateThumbs);
+            // ALWAYS enforce user-defined order
+            this._sortThumbnailsByUserOrder();
         }
     }
 
@@ -1120,6 +1125,8 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
             this.destroyThumbnails();
         }
         this.addWindowThumbnails(this.groupState.metaWindows);
+
+        this._sortThumbnailsByUserOrder();
     }
 
     destroyThumbnails() {
@@ -1141,16 +1148,9 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     }
 
     addThumbnail(metaWindow) {
-        if (this.state.settings.sortThumbs) {
-            this.appThumbnails.sort(function(a, b) {
-                if (!a.metaWindow || !b.metaWindow) {
-                    return -1;
-                }
-                return b.metaWindow.user_time - a.metaWindow.user_time;
-            });
-        }
+        // Check if a thumbnail already exists
         const refThumb = this.appThumbnails.findIndex( thumbnail => thumbnail.metaWindow === metaWindow );
-        if (!this.appThumbnails[refThumb] && refThumb === -1) {
+        if (!this.appThumbnails[refThumb] && refThumb === -1) { // No, create new thumbnail
             const thumbnail = new WindowThumbnail({
                 state: this.state,
                 groupState: this.groupState,
@@ -1158,12 +1158,67 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 index: this.appThumbnails.length // correct index before actual push
             });
             this.appThumbnails.push(thumbnail);
-            this.box.insert_actor(thumbnail.actor, -1);
+			this.box.insert_actor(thumbnail.actor, -1);
+
+            // Enable drag-and-drop sorting
+            let drag = new Clutter.DragAction();
+            thumbnail.actor.add_action(drag);
+
+            drag.connect('drag-begin', () => {
+                this._createDragIndicatorFor(thumbnail.actor);
+            });
+
+            drag.connect('drag-motion', (action, dragEvent) => {
+                if (!this._dragIndicator || this._dragIndicator.destroyed)
+                    return;
+
+                // Get stage coordinates
+                let [stageX, stageY] = action.get_motion_coords();
+
+                // Move the indicator to follow the thumbnail
+                this._dragIndicator.set_position(
+                    stageX - this._dragIndicator.width / 2,
+                    this._dragIndicatorBaseY
+                );
+            });
+
+            drag.connect('drag-end', (action, actor) => {
+                if (this._dragIndicator && !this._dragIndicator.destroyed)
+                    this._destroyDragIndicator();
+
+                // Retrieve stage coordinates
+                let [stageX, stageY] = action.get_motion_coords();
+
+                this.onThumbnailDragEnd(actor, stageX, stageY);
+
+                // Dragged window receives focus after drag
+                Mainloop.timeout_add(50, () => {
+                    if (actor.metaWindow)
+                    Main.activateWindow(actor.metaWindow);
+                    return false;
+                });
+
+                if (this._stageReleaseId) {
+                    global.stage.disconnect(this._stageReleaseId);
+                    this._stageReleaseId = null;
+                }
+            });
+
+            this._stageReleaseId = global.stage.connect('captured-event', (actor, event) => {
+                if (event.type() === Clutter.EventType.BUTTON_RELEASE) {
+                    this._destroyDragIndicator();
+                }
+                return Clutter.EVENT_PROPAGATE;
+            });
+
+            // Store reference for sorting
+            thumbnail.actor.metaWindow = metaWindow;
+
             // TBD: Update the thumbnail scaling for the other thumbnails belonging to this group.
             // Since the total window count determines the scaling used, this needs to be done
             // each time a window is added.
             this.updateThumbnails(thumbnail.index);
-        } else if (this.appThumbnails[refThumb]) {
+        } else if (this.appThumbnails[refThumb]) { // Existing thumbnail
             this.appThumbnails[refThumb].index = refThumb;
             this.appThumbnails[refThumb].metaWindow = metaWindow;
             this.appThumbnails[refThumb].refreshThumbnail();
@@ -1203,6 +1258,111 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
                 this.appThumbnails[i].refreshThumbnail();
             }
         }
+    }
+
+    onThumbnailDragEnd(actor, x, y) {
+        const draggedWin = actor.metaWindow;
+        if (!draggedWin)
+            return;
+
+        // Current order of windows
+        const windows = this.appThumbnails.map(t => t.metaWindow);
+        const oldIndex = windows.indexOf(draggedWin);
+        if (oldIndex === -1)
+            return;
+
+        const newIndex = this._computeDropIndex(x, y);
+        if (newIndex < 0 || newIndex === oldIndex)
+            return;
+
+        // Reorder internal array
+        const [thumb] = this.appThumbnails.splice(oldIndex, 1);
+        this.appThumbnails.splice(newIndex, 0, thumb);
+
+        // Persist new order to GSettings
+        const ids = this.appThumbnails.map(t => t.metaWindow.get_id());
+		this.appGroup.userOrder = ids;
+		this.appGroup.saveWindowOrder();
+
+        // Remove the drag indicator when the drag operation ends
+        this._destroyDragIndicator();
+
+        // Rebuild UI
+		this._sortThumbnailsByUserOrder();
+    }
+
+    _computeDropIndex(x, y) {
+        const children = this.box.get_children();
+
+        for (let i = 0; i < children.length; i++) {
+            const alloc = children[i].get_allocation_box();
+            if (x < alloc.x2)
+                return i;
+        }
+
+        return children.length - 1;
+    }
+
+    _createDragIndicatorFor(actor) {
+        if (!actor) {
+            return;
+        }
+
+        // Destroy previous indicator if it exists
+        if (this._dragIndicator && !this._dragIndicator.destroyed) {
+            this._dragIndicator.destroy();
+            this._dragIndicator = null;
+        }
+
+        // Get absolute position and size of the thumbnail
+        let [x, y] = actor.get_transformed_position();
+        let [w, h] = actor.get_transformed_size();
+        this._dragIndicatorBaseY = y;
+
+        // Create a new overlay widget that visually matches the thumbnail
+        this._dragIndicator = new St.Widget({
+            reactive: false,
+            layout_manager: new Clutter.BinLayout(),
+            x,
+            y,
+            width: w,
+            height: h,
+            style: `background-color: rgba(0,0,0,0.15);`
+        });
+
+        // Add the indicator to the UI
+        Main.uiGroup.add_child(this._dragIndicator);
+    }
+
+    _destroyDragIndicator() {
+        if (this._dragIndicator && !this._dragIndicator.destroyed) {
+            this._dragIndicator.destroy();
+            this._dragIndicator = null;
+        }
+    }
+
+    _sortThumbnailsByUserOrder() {
+        if (!this.appThumbnails?.length)
+            return;
+
+        const order = this.appGroup.userOrder || [];
+
+        // Sort array
+        this.appThumbnails.sort((a, b) => {
+            const idA = a.metaWindow.get_id();
+            const idB = b.metaWindow.get_id();
+
+            const idxA = order.indexOf(idA);
+            const idxB = order.indexOf(idB);
+
+            return (idxA === -1 ? 999999 : idxA) - (idxB === -1 ? 999999 : idxB);
+        });
+
+        // Update index + UI container
+        this.appThumbnails.forEach((thumb, i) => {
+            thumb.index = i;
+            this.box.set_child_at_index(thumb.actor, i);
+        });
     }
 
     destroy() {
