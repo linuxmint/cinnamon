@@ -88,16 +88,9 @@ class AppGroup {
         });
 		this.groupState.set({ appGroup: this });
 
-		// Get the saved settings
+		// Get the saved persistent order settings
 		this._settings = new Gio.Settings({ schema_id: 'org.cinnamon.grouped-window-list' });
-		const savedSettings = this._settings.get_string('user-order');
-		try {
-			this.userOrder = JSON.parse(savedSettings);
-			if (!Array.isArray(this.userOrder))
-				this.userOrder = [];
-		} catch (e) {
-			this.userOrder = [];
-		}
+        this.userOrder = this._loadUserOrder();
 
         this.groupState.connect({
             isFavoriteApp: () => this.handleFavorite(true),
@@ -1052,6 +1045,16 @@ class AppGroup {
         }
     }
 
+    _loadUserOrder() {
+        try {
+            const saved = this._settings.get_string('user-order');
+            const parsed = JSON.parse(saved);
+            return Array.isArray(parsed) ? parsed : [];
+        } catch (e) {
+            return [];
+        }
+    }
+
 	saveWindowOrder() {
         this._settings.set_string(
 			'user-order',
@@ -1060,6 +1063,9 @@ class AppGroup {
 	}
 
     applySavedWindowOrder() {
+        if (!this.groupState.metaWindows || this.groupState.metaWindows.length <= 1)
+            return;
+
         // Load from GSettings if userOrder is empty
 		if (!this.userOrder || this.userOrder.length === 0) {
 			let saved = this._settings.get_string('user-order');

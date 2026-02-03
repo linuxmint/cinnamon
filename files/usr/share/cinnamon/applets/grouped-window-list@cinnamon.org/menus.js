@@ -1292,6 +1292,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     }
 
     _computeDropIndex(x, y) {
+        // Find the first thumbnail whose right edge is past the drop X coordinate
         const children = this.box.get_children();
 
         for (let i = 0; i < children.length; i++) {
@@ -1342,7 +1343,7 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     }
 
     _sortThumbnailsByUserOrder() {
-        if (!this.appThumbnails?.length)
+        if (!this.appThumbnails || this.appThumbnails.length <= 1)
             return;
 
         const order = this.appGroup.userOrder || [];

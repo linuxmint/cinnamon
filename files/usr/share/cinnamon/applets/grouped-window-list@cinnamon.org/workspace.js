@@ -173,7 +173,7 @@ class Workspace {
         }
         this.isReloading = false;
 
-        // Reapply persistent order after MRU rebuild
+        // Restore user-defined window order after rebuild
         this.appGroups.forEach(g => g.applySavedWindowOrder());
     }
 
