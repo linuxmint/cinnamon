@@ -145,7 +145,7 @@ function _dateIntervalsOverlap(a0, a1, b0, b1)
         return true;
 }
 
-class Calendar {
+var Calendar = class Calendar {
     constructor(settings, events_manager) {
         this.events_manager = events_manager;
         this._weekStart = Cinnamon.util_get_week_start();

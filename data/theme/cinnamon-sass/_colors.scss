@@ -1,9 +1,9 @@
 // global colors
-$bg_color: #242424;
-$base_color: #303030;
+$bg_color: #242428;
+$base_color: #303034;
 $fg_color: white;
 
-$panel_bg: #1a1a1a;
+$panel_bg: #1a1a1f;
 
 // colored elements
 $error_color: #e4705b;
@@ -27,16 +27,16 @@ $large_icon_color: transparentize($fg_color, 0.6);
 $light_text_color: mix($fg_color, $bg_color, 65%);
 
 // used for button, entries and highlighted items
-$light_bg_color: #393939;
-$light_base_color: #444444;
-$lighter_bg_color: #454545;
-$lightest_bg_color: #656565;
+$light_bg_color: #39393c;
+$light_base_color: #444448;
+$lighter_bg_color: #454549;
+$lightest_bg_color: #656569;
 
 // link colors
 $link_color: #1c71d8;
 
 // borders
-$borders_color: #333333;
+$borders_color: #333337;
 
 // shadows
 $shadow_color: rgba(0, 0, 0, 0.5);

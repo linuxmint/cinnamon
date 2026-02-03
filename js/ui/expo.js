@@ -267,7 +267,7 @@ Expo.prototype = {
             return;
         this.beforeShow();
         // Do this manually instead of using _syncInputMode, to handle failure
-        if (!Main.pushModal(this._group))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW))
             return;
         this._modal = true;
         this._animateVisible();
@@ -389,7 +389,7 @@ Expo.prototype = {
 
         if (this._shown) {
             if (!this._modal) {
-                if (Main.pushModal(this._group))
+                if (Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW))
                     this._modal = true;
                 else
                     this.hide();

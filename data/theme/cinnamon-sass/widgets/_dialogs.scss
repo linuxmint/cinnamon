@@ -65,7 +65,7 @@
 
     .dialog-list-title {
       color: $warning_color;
-      background-color: tranparentize($warning_color, 0.9);
+      background-color: transparentize($warning_color, 0.9);
       padding: $base_padding * 1.5;
       border-radius: $base_border_radius;
       margin: $base_margin 0;

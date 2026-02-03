@@ -2,7 +2,6 @@
 
 const Main = imports.ui.main;
 const Extension = imports.ui.extension;
-const {getModuleByIndex} = imports.misc.fileUtils;
 
 // Maps uuid -> importer object (extension directory tree)
 var extensions;
@@ -33,7 +32,7 @@ function enableExtension(uuid) {
 // Callback for extension.js
 function prepareExtensionUnload(extension) {
     try {
-        getModuleByIndex(extension.moduleIndex).disable();
+        extension.module.disable();
     } catch (e) {
         Extension.logError('Failed to evaluate \'disable\' function on extension: ' + extension.uuid, e);
     }
@@ -50,7 +49,7 @@ function prepareExtensionUnload(extension) {
 // Callback for extension.js
 function prepareExtensionReload(extension) {
     try {
-        let on_extension_reloaded = getModuleByIndex(extension.moduleIndex).on_extension_reloaded;
+        let on_extension_reloaded = extension.module.on_extension_reloaded;
         if (on_extension_reloaded) on_extension_reloaded();
     } catch (e) {
         Extension.logError('Failed to evaluate \'on_extension_reloaded\' function on extension: ' + extension.uuid, e);
@@ -60,12 +59,12 @@ function prepareExtensionReload(extension) {
 // Callback for extension.js
 function finishExtensionLoad(extensionIndex) {
     let extension = Extension.extensions[extensionIndex];
-    if (!extension.lockRole(getModuleByIndex(extension.moduleIndex))) {
+    if (!extension.lockRole(extension.module)) {
         return false;
     }
 
     try {
-        getModuleByIndex(extension.moduleIndex).init(extension.meta);
+        extension.module.init(extension.meta);
     } catch (e) {
         Extension.logError('Failed to evaluate \'init\' function on extension: ' + extension.uuid, e);
         return false;
@@ -73,7 +72,7 @@ function finishExtensionLoad(extensionIndex) {
 
     let extensionCallbacks;
     try {
-        extensionCallbacks = getModuleByIndex(extension.moduleIndex).enable();
+        extensionCallbacks = extension.module.enable();
     } catch (e) {
         Extension.logError('Failed to evaluate \'enable\' function on extension: ' + extension.uuid, e);
         return false;

@@ -1668,3 +1668,20 @@ cinnamon_global_alloc_leak (CinnamonGlobal *global, gint mb)
         );
     }
 }
+
+/**
+ * cinnamon_global_get_stage_xwindow:
+ * @global: A #CinnamonGlobal
+ *
+ * Returns the X11 window ID of the stage window backing the compositor.
+ * This can be used to monitor cinnamon's liveness from external processes.
+ *
+ * Returns: The X11 Window ID, or 0 if not available
+ */
+gulong
+cinnamon_global_get_stage_xwindow (CinnamonGlobal *global)
+{
+    g_return_val_if_fail (CINNAMON_IS_GLOBAL (global), 0);
+
+    return meta_get_stage_xwindow (global->meta_display);
+}

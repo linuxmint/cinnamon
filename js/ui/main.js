@@ -117,6 +117,9 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const Screenshot = imports.ui.screenshot;
+const ScreenShield = imports.ui.screensaver.screenShield;
+const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
+const ScreenSaver = imports.misc.screenSaver;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const LocatePointer = imports.ui.locatePointer;
@@ -149,6 +152,10 @@ var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
 var osdWindowManager = null;
+let _screenShield = null;
+let _screenSaverProxy = null;
+let _screensaverSettings = null;
+var lockdownSettings = null;
 var overview = null;
 var expo = null;
 var runDialog = null;
@@ -190,6 +197,8 @@ var pointerSwitcher = null;
 var gesturesManager = null;
 var keyboardManager = null;
 var workspace_names = [];
+
+var actionMode = Cinnamon.ActionMode.NORMAL;
 
 var applet_side = St.Side.TOP; // Kept to maintain compatibility. Doesn't seem to be used anywhere
 var deskletContainer = null;
@@ -255,7 +264,9 @@ function _initUserSession() {
     systrayManager = new Systray.SystrayManager();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
-        getRunDialog().open();
+        if (!lockdownSettings.get_boolean('disable-command-line')) {
+            getRunDialog().open();
+        }
     });
 }
 
@@ -294,6 +305,12 @@ function start() {
     global.logWarning = _logWarning;
     global.logError = _logError;
     global.log = _logInfo;
+
+    try {
+        imports.clearCache;
+    } catch (e) {
+        global.logWarning('CJS clearCache not available. Xlet reloading may not work correctly (cjs update required).');
+    }
 
     let cinnamonStartTime = new Date().getTime();
 
@@ -464,9 +481,11 @@ function start() {
     }
 
     magnifier = new Magnifier.Magnifier();
-    locatePointer = new LocatePointer.locatePointer();
+    locatePointer = new LocatePointer.LocatePointer();
 
     layoutManager.init();
+    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
+
     overview.init();
     expo.init();
 
@@ -518,6 +537,24 @@ function start() {
             runDialog = null;
         }
     });
+
+    _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
+
+    // The internal screensaver is the only option for wayland sessions. X11 sessions can use either
+    // the internal one or cinnamon-screensaver (>= 6.7).
+    if (Meta.is_wayland_compositor() || global.settings.get_boolean('internal-screensaver-enabled')) {
+        _screenShield = new ScreenShield.ScreenShield();
+        new ScreenSaver.ScreenSaverService(_screenShield);
+    }
+
+    // Protect security-critical exported functions from being replaced by extensions.
+    for (let fnName of ['lockScreen', 'screenShieldHideKeyboard']) {
+        Object.defineProperty(imports.ui.main, fnName, {
+            value: imports.ui.main[fnName],
+            writable: false,
+            configurable: false
+        });
+    }
 
     Promise.all([
         AppletManager.init(),
@@ -1170,6 +1207,42 @@ function getWindowActorsForWorkspace(workspaceIndex) {
     });
 }
 
+/**
+ * _shouldFilterKeybinding:
+ * @entry: The keybinding entry from keybindingManager (or undefined)
+ *
+ * Helper function to check if a keybinding should be filtered based on
+ * the current ActionMode. Returns true to BLOCK, false to ALLOW.
+ *
+ * This is used by both _filterKeybinding (window manager path) and
+ * _stageEventHandler (modal/stage capture path).
+ */
+function _shouldFilterKeybinding(entry) {
+    // Check if all keybindings should be blocked
+    if (actionMode == Cinnamon.ActionMode.NONE)
+        return true;
+
+    if (entry === undefined) {
+        // Binding not in our registry, fall back to old behavior
+        return global.stage_input_mode !== Cinnamon.StageInputMode.NORMAL;
+    }
+
+    // Check if current ActionMode is in the allowed modes for this binding
+    // Use bitwise AND - if result is non-zero, the mode is allowed
+    let allowed = (entry.allowedModes & actionMode) !== 0;
+
+    if (allowed) {
+        let lockModes = Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN;
+        if ((actionMode & lockModes) !== 0 && (entry.allowedModes & lockModes) !== 0) {
+            if (_screenShield && !_screensaverSettings.get_boolean('allow-keyboard-shortcuts')) {
+                return true;
+            }
+        }
+    }
+
+    return !allowed;
+}
+
 // This function encapsulates hacks to make certain global keybindings
 // work even when we are in one of our modes where global keybindings
 // are disabled with a global grab. (When there is a global grab, then
@@ -1191,10 +1264,14 @@ function _stageEventHandler(actor, event) {
     let modifierState = Cinnamon.get_event_state(event);
 
     let action = global.display.get_keybinding_action(keyCode, modifierState);
-    if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.FLAG_INPUT_METHOD))) {
+    if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.INPUT_METHOD))) {
         // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
         if (action > 0) {
-            keybindingManager.invoke_keybinding_action_by_id(action);
+            // Check if this keybinding should be filtered based on ActionMode
+            let entry = keybindingManager.getBindingById(action);
+            if (!_shouldFilterKeybinding(entry)) {
+                keybindingManager.invoke_keybinding_action_by_id(action);
+            }
         }
     }
 
@@ -1233,7 +1310,9 @@ function _stageEventHandler(actor, event) {
             expo.hide();
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
-            getRunDialog().open();
+            if (!lockdownSettings.get_boolean('disable-command-line')) {
+                getRunDialog().open();
+            }
             return true;
     }
 
@@ -1254,6 +1333,7 @@ function _findModal(actor) {
  * @timestamp (int): optional timestamp
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
  * is already grabbed
+ * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1268,11 +1348,17 @@ function _findModal(actor) {
  * initiated event.  If not provided then the value of
  * global.get_current_time() is assumed.
  *
+ * @mode determines which keybindings and actions are allowed while modal.
+ * If not provided, defaults to SYSTEM_MODAL.
+ *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
-function pushModal(actor, timestamp, options) {
+function pushModal(actor, timestamp, options, mode) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
+
+    if (mode == undefined)
+        mode = Cinnamon.ActionMode.SYSTEM_MODAL;
 
     if (modalCount == 0) {
         if (!global.begin_modal(timestamp, options ? options : 0)) {
@@ -1284,6 +1370,8 @@ function pushModal(actor, timestamp, options) {
 
     global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
 
+    actionMode = mode;
+
     modalCount += 1;
     let actorDestroyId = actor.connect('destroy', function() {
         let index = _findModal(actor);
@@ -1294,7 +1382,8 @@ function pushModal(actor, timestamp, options) {
     let record = {
         actor: actor,
         focus: global.stage.get_key_focus(),
-        destroyId: actorDestroyId
+        destroyId: actorDestroyId,
+        actionMode: mode
     };
     if (record.focus != null) {
         record.focusDestroyId = record.focus.connect('destroy', function() {
@@ -1308,6 +1397,29 @@ function pushModal(actor, timestamp, options) {
 
     layoutManager.updateChrome(true);
     return true;
+}
+
+/**
+ * setActionMode:
+ * @actor (Clutter.Actor): actor currently holding the modal grab.
+ * @mode (Cinnamon.ActionMode): the new action mode.
+ *
+ * Change the action mode for an existing modal grab without releasing
+ * and reacquiring the grab. This avoids a window where there is no
+ * grab, which is important for the lock screen.
+ */
+function setActionMode(actor, mode) {
+    let focusIndex = _findModal(actor);
+    if (focusIndex < 0) {
+        global.logWarning('setActionMode: actor is not in the modal stack');
+        return;
+    }
+
+    if (modalActorFocusStack[focusIndex].actionMode === mode)
+        return;
+
+    actionMode = mode;
+    modalActorFocusStack[focusIndex].actionMode = mode;
 }
 
 /**
@@ -1360,11 +1472,15 @@ function popModal(actor, timestamp) {
     }
     modalActorFocusStack.splice(focusIndex, 1);
 
-    if (modalCount > 0)
+    if (modalCount > 0) {
+        let topModal = modalActorFocusStack[modalActorFocusStack.length - 1];
+        actionMode = topModal.actionMode;
         return;
+    }
 
     global.end_modal(timestamp);
     global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+    actionMode = Cinnamon.ActionMode.NORMAL;
 
     layoutManager.updateChrome(true);
 
@@ -1653,4 +1769,37 @@ function closeEndSessionDialog() {
 
     endSessionDialog.close();
     endSessionDialog = null;
+}
+
+function lockScreen(askForAwayMessage) {
+    if (lockdownSettings.get_boolean('disable-lock-screen')) {
+        return;
+    }
+
+    if (askForAwayMessage && _screensaverSettings.get_boolean('ask-for-away-message')) {
+        let dialog = new AwayMessageDialog.AwayMessageDialog((message) => {
+            _doLock(message);
+        });
+        dialog.open();
+        return;
+    }
+
+    _doLock(null);
+}
+
+function _doLock(awayMessage) {
+    if (_screenShield) {
+        _screenShield.lock(false, awayMessage);
+        return;
+    }
+
+    if (_screenSaverProxy === null) {
+        _screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+    }
+
+    _screenSaverProxy.LockRemote(awayMessage || "");
+}
+
+function screenShieldHideKeyboard() {
+    _screenShield?._hideScreensaverKeyboard();
 }

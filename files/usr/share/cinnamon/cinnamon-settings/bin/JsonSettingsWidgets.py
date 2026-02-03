@@ -2,10 +2,10 @@
 
 from gi.repository import Gio
 from xapp.SettingsWidgets import *
-from SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding
+from bin.SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding
 from xapp.GSettingsWidgets import CAN_BACKEND as px_can_backend
-from SettingsWidgets import CAN_BACKEND as c_can_backend
-from TreeListWidgets import List
+from bin.SettingsWidgets import CAN_BACKEND as c_can_backend
+from bin.TreeListWidgets import List
 import os
 import collections
 import json

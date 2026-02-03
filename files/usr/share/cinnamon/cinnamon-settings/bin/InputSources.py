@@ -10,11 +10,11 @@ gi.require_version("CinnamonDesktop", "3.0")
 gi.require_version('IBus', '1.0')
 from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus
 
-from SettingsWidgets import GSettingsKeybinding
+from bin.SettingsWidgets import GSettingsKeybinding
 from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
-import AddKeyboardLayout
+from bin import AddKeyboardLayout
 
 MAX_LAYOUTS_PER_GROUP = 4
 

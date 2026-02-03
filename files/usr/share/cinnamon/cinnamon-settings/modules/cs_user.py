@@ -19,8 +19,8 @@ import gi
 gi.require_version('AccountsService', '1.0')
 from gi.repository import AccountsService, GLib, GdkPixbuf, XApp
 
-from SettingsWidgets import SidePage
-from ChooserButtonWidgets import PictureChooserButton
+from bin.SettingsWidgets import SidePage
+from bin.ChooserButtonWidgets import PictureChooserButton
 from xapp.GSettingsWidgets import *
 
 class PasswordError(Exception):

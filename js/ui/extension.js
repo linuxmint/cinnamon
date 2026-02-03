@@ -15,7 +15,6 @@ const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const Main = imports.ui.main;
-const {requireModule, unloadModule, getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 
 var State = {
@@ -25,17 +24,6 @@ var State = {
     OUT_OF_DATE: 3,
     X11_ONLY: 4
 };
-
-// Xlets using imports.gi.NMClient. This should be removed in Cinnamon 4.2+,
-// after these applets have been updated on Spices.
-var knownCinnamon4Conflicts = [
-    // Applets
-    'turbonote@iksws.com.b',
-    'vnstat@linuxmint.com',
-    'netusagemonitor@pdcurtis',
-    // Desklets
-    'netusage@30yavash.com'
-];
 
 var x11Only = [
         "systray@cinnamon.org"
@@ -96,6 +84,271 @@ function _createExtensionType(name, folder, manager, overrides){
  */
 var startTime;
 var extensions = [];
+
+// Track the currently loading extension for require() calls during module initialization
+var currentlyLoadingExtension = null;
+// UUIDs that have already been warned about using deprecated require()
+var requireWarned = new Set();
+
+// Stack-based module.exports compatibility for Node.js-style modules
+var moduleStack = [];
+// Cache of module.exports overrides, keyed by module path
+var moduleExportsCache = {};
+
+Object.defineProperty(globalThis, 'module', {
+    get: function() {
+        if (moduleStack.length > 0) {
+            return moduleStack[moduleStack.length - 1];
+        }
+        return undefined;
+    },
+    configurable: true
+});
+
+// Also provide 'exports' as a shorthand (some code uses it directly)
+Object.defineProperty(globalThis, 'exports', {
+    get: function() {
+        if (moduleStack.length > 0) {
+            return moduleStack[moduleStack.length - 1].exports;
+        }
+        return undefined;
+    },
+    configurable: true
+});
+
+/**
+ * getXletFromStack:
+ *
+ * Get the calling xlet by examining the stack trace.
+ *
+ * Returns: The Extension object if found, null otherwise
+ */
+function getXletFromStack() {
+    let stack = new Error().stack.split('\n');
+    for (let i = 1; i < stack.length; i++) {
+        for (let folder of ['applets', 'desklets', 'extensions', 'search_providers']) {
+            let match = stack[i].match(new RegExp(`/${folder}/([^/]+)/`));
+            if (match) {
+                return getExtension(match[1]) || getExtension(match[1].replace('!', ''));
+            }
+        }
+    }
+    return null;
+}
+
+/**
+ * getCurrentExtension:
+ *
+ * Get the current xlet's Extension object. Can be called during module
+ * initialization or at runtime.
+ *
+ * Usage in xlets:
+ *   const Extension = imports.ui.extension;
+ *   const Me = Extension.getCurrentExtension();
+ *   const MyModule = Me.imports.myModule;
+ *
+ * Returns: The Extension object for the calling xlet
+ */
+function getCurrentExtension() {
+    return currentlyLoadingExtension || getXletFromStack();
+}
+
+/**
+ * xletRequire:
+ * @path (string): The module path to require
+ *
+ * ********************* DEPRECATED ************************
+ * *** Use getCurrentExtension() to import local modules ***
+ * *********************************************************
+ *
+ * Global require function for xlets. Supports:
+ * - Relative paths: './calendar' -> extension.imports.calendar
+ * - GI imports: 'gi.St' -> imports.gi.St
+ * - Cinnamon imports: 'ui.main' -> imports.ui.main
+ *
+ * Returns: The required module
+ */
+var _FunctionConstructor = (0).constructor.constructor;
+
+function _evalModule(extension, resolvedPath) {
+    let filePath = `${extension.meta.path}/${resolvedPath}.js`;
+    let file = Gio.File.new_for_path(filePath);
+    let [success, contents] = file.load_contents(null);
+    if (!success) {
+        throw new Error(`Failed to load ${filePath}`);
+    }
+
+    let source = ByteArray.toString(contents);
+    let exports = {};
+    let module = { exports: exports };
+
+    // Regex matches top level declarations and appends them to exports,
+    // mimicking how the native CJS importer handles var/function.
+    let re = /^(?:const|var|let|function|class)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/gm;
+    let match;
+    let exportLines = '';
+    while ((match = re.exec(source)) !== null) {
+        exportLines += `if(typeof ${match[1]}!=='undefined')exports.${match[1]}=${match[1]};`;
+    }
+
+    source = `'use strict';${source};${exportLines}return module.exports;//# sourceURL=${filePath}`;
+
+    _FunctionConstructor(
+        'require', 'exports', 'module', source
+    ).call(
+        exports,
+        function require(path) { return xletRequire(path); },
+        exports,
+        module
+    );
+
+    return module.exports;
+}
+
+function _requireLocal(extension, path) {
+    let parts = path.replace(/^\.\//, '').replace(/\.js$/, '').split('/');
+    let resolvedPath = parts.filter(p => p !== '..').join('/');
+    let cacheKey = `${extension.meta.path}/${resolvedPath}`;
+
+    if (cacheKey in moduleExportsCache) {
+        return moduleExportsCache[cacheKey];
+    }
+
+    let moduleObj = { exports: {} };
+    moduleObj._originalExports = moduleObj.exports;
+    moduleStack.push(moduleObj);
+
+    let nativeModule;
+    try {
+        nativeModule = extension.imports;
+        for (let part of parts) {
+            if (part === '..') continue;
+            nativeModule = nativeModule[part];
+        }
+    } finally {
+        moduleStack.pop();
+    }
+
+    let result;
+
+    let exportsReplaced = moduleObj.exports !== moduleObj._originalExports;
+    let exportsMutated = Object.getOwnPropertyNames(moduleObj._originalExports).length > 0;
+
+    if (exportsReplaced) {
+        result = moduleObj.exports;
+    } else if (exportsMutated) {
+        result = moduleObj._originalExports;
+    } else {
+        // CJS only exports var/function declarations as module properties.
+        // let/const/class values are inaccessible via the native module object.
+        // Fall back to evaluating the source with module/exports in scope.
+        result = _evalModule(extension, resolvedPath);
+    }
+
+    moduleExportsCache[cacheKey] = result;
+    return result;
+}
+
+function xletRequire(path) {
+    let extension = currentlyLoadingExtension || getXletFromStack();
+    if (!extension) {
+        throw new Error(`require() called outside of xlet context: ${path}`);
+    }
+
+    if (!requireWarned.has(extension.uuid)) {
+        requireWarned.add(extension.uuid);
+        global.logWarning(`${extension.uuid}: require() and module.exports are deprecated. Define exportable symbols with 'var' and use Extension.getCurrentExtension().imports to access local modules.`);
+    }
+
+    // Relative paths: './foo' or '../foo' -> extension local module
+    if (path.startsWith('./') || path.startsWith('../')) {
+        return _requireLocal(extension, path);
+    }
+
+    // GI imports: 'gi.St' -> imports.gi.St
+    if (path.startsWith('gi.')) {
+        return imports.gi[path.slice(3)];
+    }
+
+    // Cinnamon imports: 'ui.main', 'misc.util', etc.
+    let prefixes = ['ui', 'misc', 'perf'];
+    for (let prefix of prefixes) {
+        if (path.startsWith(prefix + '.')) {
+            return imports[prefix][path.slice(prefix.length + 1)];
+        }
+    }
+
+    // Bare name: try as a local module first, fall back to global
+    try {
+        return _requireLocal(extension, path);
+    } catch (e) {
+        return imports[path];
+    }
+}
+
+/**
+ * installXletImporter:
+ * @extension (Extension): The extension object
+ *
+ * Install native importer for xlet by temporarily modifying
+ * the search path.
+ */
+function installXletImporter(extension) {
+    // extension.dir is the actual directory containing the JS files,
+    // which might be a versioned subdirectory (e.g., .../uuid/6.0/)
+    // or the uuid directory itself for non-versioned xlets.
+    let parentPath = extension.dir.get_parent().get_path();
+    let dirName = extension.dir.get_basename();
+
+    let oldSearchPath = imports.searchPath.slice();
+    imports.searchPath = [parentPath];
+
+    try {
+        extension.imports = imports[dirName];
+    } catch (e) {
+        imports.searchPath = oldSearchPath;
+        throw new Error(`Failed to create importer for ${extension.uuid} at ${parentPath}/${dirName}: ${e.message}`);
+    }
+
+    imports.searchPath = oldSearchPath;
+
+    if (!extension.imports) {
+        throw new Error(`Importer is null for ${extension.uuid} at ${parentPath}/${dirName}`);
+    }
+}
+
+/**
+ * clearXletImportCache:
+ * @extension (Extension): The extension object
+ *
+ * Clear import cache to allow reloading of the xlet.
+ * Clears all cached module properties from the xlet's sub-importer.
+ */
+function clearXletImportCache(extension) {
+    if (!extension) return;
+
+    // Clear all cached modules from the xlet's importer
+    if (!extension.imports) return;
+
+    // Meta properties that should not be cleared
+    const metaProps = ['searchPath', '__moduleName__', '__parentModule__',
+                      '__modulePath__', '__file__', '__init__', 'toString',
+                      'clearCache'];
+
+    try {
+        let props = Object.getOwnPropertyNames(extension.imports);
+        for (let prop of props) {
+            if (!metaProps.includes(prop)) {
+                extension.imports.clearCache(prop);
+            }
+        }
+    } catch (e) {
+        // clearCache may not be available if cjs is not updated
+    }
+}
+
+globalThis.require = xletRequire;
+
 var Type = {
     EXTENSION: _createExtensionType("Extension", "extensions", ExtensionSystem, {
         requiredFunctions: ["init", "disable", "enable"],
@@ -146,17 +399,11 @@ function logError(message, uuid, error, state) {
     }
 
     if (state !== State.X11_ONLY) {
-        error.stack = error.stack.split('\n')
-            .filter(function(line) {
-                return !line.match(/<Promise>|wrapPromise/);
-            })
-            .join('\n');
-
         global.logError(error);
     } else {
         global.logWarning(error.message);
     }
-    
+
     // An error during initialization leads to unloading the extension again.
     let extension = getExtension(uuid);
     if (extension) {
@@ -182,25 +429,25 @@ function ensureFileExists(file) {
 // The Extension object itself
 function Extension(type, uuid) {
     let extension = getExtension(uuid);
-    if (extension) {
-        return Promise.resolve(true);
-    }
+    if (extension) return Promise.resolve(true);
+
     let force = false;
     if (uuid.substr(0, 1) === '!') {
         uuid = uuid.replace(/^!/, '');
         force = true;
     }
-    let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
 
+    let dir = findExtensionDirectory(uuid, type.userDir, type.folder);
     if (dir == null) {
         forgetExtension(uuid, type, true);
         return Promise.resolve(null);
     }
+
     return this._init(dir, type, uuid, force);
 }
 
 Extension.prototype = {
-    _init: function(dir, type, uuid, force) {
+    _init: async function(dir, type, uuid, force) {
         this.name = type.name;
         this.uuid = uuid;
         this.dir = dir;
@@ -211,10 +458,34 @@ Extension.prototype = {
         this.iconDirectory = null;
         this.meta = createMetaDummy(uuid, dir.get_path(), State.INITIALIZING);
 
-        let isPotentialNMClientConflict = knownCinnamon4Conflicts.indexOf(uuid) > -1;
+        try {
+            this.meta = await loadMetaData({
+                state: this.meta.state,
+                path: this.meta.path,
+                uuid: uuid,
+                userDir: type.userDir,
+                folder: type.folder,
+                force: force
+            });
 
-        const finishLoad = () => {
-            // Many xlets still use appletMeta/deskletMeta to get the path
+            // Timer needs to start after the first initial I/O
+            startTime = new Date().getTime();
+
+            if (!force) {
+                this.validateMetaData();
+            }
+
+            this.dir = await findExtensionSubdirectory(this.dir);
+            this.meta.path = this.dir.get_path();
+
+            this._finishLoad(type, uuid);
+        } catch (e) {
+            this._handleLoadError(type, uuid, e);
+        }
+    },
+
+    _finishLoad: function(type, uuid) {
+        try {
             type.legacyMeta[uuid] = {path: this.meta.path};
 
             ensureFileExists(this.dir.get_child(`${this.lowerType}.js`));
@@ -226,85 +497,52 @@ Extension.prototype = {
                 });
             }
             this.loadIconDirectory(this.dir);
-            // get [extension/applet/desklet].js
-            return requireModule(
-                `${this.meta.path}/${this.lowerType}.js`, // path
-                this.meta.path, // dir,
-                this.meta, // meta
-                this.lowerType, // type
-                true, // async
-                true // returnIndex
-            );
-        };
 
-        return loadMetaData({
-            state: this.meta.state,
-            path: this.meta.path,
-            uuid: uuid,
-            userDir: type.userDir,
-            folder: type.folder,
-            force: force
-        }).then((meta) => {
-            // Timer needs to start after the first initial I/O, otherwise every applet shows as taking 1-2 seconds to load.
-            // Maybe because of how promises are wired up in CJS?
-            // https://github.com/linuxmint/cjs/blob/055da399c794b0b4d76ecd7b5fabf7f960f77518/modules/_lie.js#L9
-            startTime = new Date().getTime();
-            this.meta = meta;
+            installXletImporter(this);
+            currentlyLoadingExtension = this;
 
-            if (!force) {
-                this.validateMetaData();
+            try {
+                this.module = this.imports[this.lowerType];
+            } finally {
+                currentlyLoadingExtension = null;
             }
 
-            return findExtensionSubdirectory(this.dir).then((dir) => {
-                this.dir = dir;
-                this.meta.path = this.dir.get_path();
-
-                // If an xlet has known usage of imports.gi.NMClient, we require them to have a
-                // 4.0 directory. It is the only way to assume they are patched for Cinnamon 4 from here.
-                if (isPotentialNMClientConflict && this.meta.path.indexOf(`/4.0`) === -1) {
-                    throw new Error(`Found unpatched usage of imports.gi.NMClient for ${this.lowerType} ${uuid}`);
-                }
-
-                return finishLoad();
-            });
-        }).then((moduleIndex) => {
-            if (moduleIndex == null) {
-                throw new Error(`Could not find module index: ${moduleIndex}`);
+            if (this.module == null) {
+                throw new Error(`Could not load module for ${uuid}`);
             }
-            this.moduleIndex = moduleIndex;
-            for (let i = 0; i < type.requiredFunctions.length; i++) {
-                let func = type.requiredFunctions[i];
-                if (!getModuleByIndex(moduleIndex)[func]) {
+
+            for (let func of type.requiredFunctions) {
+                if (!this.module[func]) {
                     throw new Error(`Function "${func}" is missing`);
                 }
             }
 
-            // Add the extension to the global collection
             extensions.push(this);
 
-            if(!type.callbacks.finishExtensionLoad(extensions.length - 1)) {
-                throw new Error(`${type.name} ${uuid}: Could not create ${this.lowerType} object.`);
+            if (!type.callbacks.finishExtensionLoad(extensions.length - 1)) {
+                throw new Error(`Could not create ${this.lowerType} object.`);
             }
+
             this.finalize();
             Main.cinnamonDBusService.EmitXletAddedComplete(true, uuid);
-        }).catch((e) => {
-             // Silently fail to load xlets that aren't actually installed -
-             //   but no error, since the user can't do anything about it anyhow
-             //   (short of editing gsettings).  Silent failure is consistent with
-             //   other reactions in Cinnamon to missing items (e.g. panel launchers
-             //   just don't show up if their program isn't installed, but we don't
-             //   remove them or anything)
-            Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
 
-            if (e.cause == null || e.cause !== State.X11_ONLY) {
-                Main.xlet_startup_error = true;
-            }
-            forgetExtension(uuid, type);
-            if (e._alreadyLogged) {
-                return;
-            }
-            logError(`Error importing ${this.lowerType}.js from ${uuid}`, uuid, e);
-        });
+        } catch (e) {
+            this._handleLoadError(type, uuid, e);
+        }
+    },
+
+    _handleLoadError: function(type, uuid, error) {
+        Main.cinnamonDBusService.EmitXletAddedComplete(false, uuid);
+
+        if (error.cause == null || error.cause !== State.X11_ONLY) {
+            Main.xlet_startup_error = true;
+        }
+
+        forgetExtension(uuid, type);
+
+        if (!error._alreadyLogged) {
+            logError(`Error importing ${this.lowerType}.js from ${uuid}`, uuid, error);
+        }
     },
 
     finalize: function() {
@@ -579,10 +817,23 @@ function unloadExtension(uuid, type, deleteConfig = true, reload = false) {
 
 function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
     if (typeof extensions[extensionIndex] !== 'undefined') {
-        unloadModule(extensions[extensionIndex].moduleIndex);
-        try {
-           delete imports[type.folder][uuid];
-        } catch (e) {}
+        let extension = extensions[extensionIndex];
+
+        // Clear module.exports cache entries for this extension
+        let pathPrefix = extension.meta.path + '/';
+        for (let key in moduleExportsCache) {
+            if (key.startsWith(pathPrefix)) {
+                delete moduleExportsCache[key];
+            }
+        }
+
+        // Clear the import cache to allow reloading (must be done before nulling references)
+        clearXletImportCache(extension);
+
+        // Clear the module reference
+        extension.module = null;
+        extension.imports = null;
+
         if (forgetMeta) {
             extensions[extensionIndex] = undefined;
             extensions.splice(extensionIndex, 1);
@@ -661,29 +912,28 @@ function maybeAddWindowAttentionHandlerRole(meta) {
 }
 
 function loadMetaData({state, path, uuid, userDir, folder, force}) {
-    return new Promise((resolve, reject) => {
+    return new Promise((resolve) => {
         let dir = findExtensionDirectory(uuid, userDir, folder);
         let meta;
         let metadataFile = dir.get_child('metadata.json');
         let oldState = state ? state : State.INITIALIZING;
         let oldPath = path ? path : dir.get_path();
+
         ensureFileExists(metadataFile);
+
         metadataFile.load_contents_async(null, (object, result) => {
             try {
                 let [success, json] = metadataFile.load_contents_finish(result);
                 if (!success) {
-                    reject();
-                    return;
+                    throw new Error('Failed to load metadata');
                 }
                 meta = JSON.parse(ByteArray.toString(json));
-
                 maybeAddWindowAttentionHandlerRole(meta);
             } catch (e) {
                 logError(`Failed to load/parse metadata.json`, uuid, e);
                 meta = createMetaDummy(uuid, oldPath, State.ERROR);
-
             }
-            // Store some additional crap here
+
             meta.state = oldState;
             meta.path = oldPath;
             meta.error = '';
@@ -702,45 +952,47 @@ function loadMetaData({state, path, uuid, userDir, folder, force}) {
  * equal to the current running version. If no such version is found, the
  * original directory is returned.
  *
- * Returns (Gio.File): directory object of the desired directory.
+ * Returns: Promise that resolves to the directory
  */
 function findExtensionSubdirectory(dir) {
-    return new Promise(function(resolve, reject) {
+    return new Promise((resolve) => {
         dir.enumerate_children_async(
             'standard::*',
             Gio.FileQueryInfoFlags.NONE,
             GLib.PRIORITY_DEFAULT,
             null,
-            function(obj, res) {
-            try {
-                let fileEnum = obj.enumerate_children_finish(res);
-                let info;
-                let largest = null;
-                while ((info = fileEnum.next_file(null)) != null) {
-                    let fileType = info.get_file_type();
-                    if (fileType !== Gio.FileType.DIRECTORY) {
-                        continue;
+            (obj, res) => {
+                try {
+                    let fileEnum = obj.enumerate_children_finish(res);
+                    let info;
+                    let largest = null;
+
+                    while ((info = fileEnum.next_file(null)) != null) {
+                        let fileType = info.get_file_type();
+                        if (fileType !== Gio.FileType.DIRECTORY) {
+                            continue;
+                        }
+
+                        let name = info.get_name();
+                        if (!name.match(/^[1-9][0-9]*\.[0-9]+(\.[0-9]+)?$/)) {
+                            continue;
+                        }
+
+                        if (versionLeq(name, Config.PACKAGE_VERSION) &&
+                            (!largest || versionLeq(largest[0], name))) {
+                            largest = [name, fileEnum.get_child(info)];
+                        }
                     }
 
-                    let name = info.get_name();
-                    if (!name.match(/^[1-9][0-9]*\.[0-9]+(\.[0-9]+)?$/)) {
-                        continue;
-                    }
-
-                    if (versionLeq(name, Config.PACKAGE_VERSION) &&
-                        (!largest || versionLeq(largest[0], name))) {
-                        largest = [name, fileEnum.get_child(info)];
-                    }
+                    fileEnum.close(null);
+                    resolve(largest ? largest[1] : dir);
+                } catch (e) {
+                    logError(`Error looking for extension version for ${dir.get_basename()}`,
+                             'findExtensionSubdirectory', e);
+                    resolve(dir);  // Fall back to original dir
                 }
-
-                fileEnum.close(null);
-                resolve(largest ? largest[1] : dir);
-            } catch (e) {
-                logError(`Error looking for extension version for ${dir.get_basename()} in directory ${dir}`, 'findExtensionSubdirectory', e);
-                resolve(dir)
             }
-
-        });
+        );
     });
 }
 

@@ -1,14 +1,13 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const { Clutter, Gio, GLib, St } = imports.gi;
+const { Clutter, Gio } = imports.gi;
 const Ripples = imports.ui.ripples;
-const Lang = imports.lang;
 const Main = imports.ui.main;
 
 const LOCATE_POINTER_ENABLED_SCHEMA = "org.cinnamon.desktop.peripherals.mouse"
 const LOCATE_POINTER_SCHEMA = "org.cinnamon.muffin"
 
-var locatePointer = class {
+var LocatePointer = class {
     constructor() {
         this._enabledSettings = new Gio.Settings({schema_id: LOCATE_POINTER_ENABLED_SCHEMA});
         this._enabledSettings.connect('changed::locate-pointer', this._updateKey.bind(this));
@@ -23,7 +22,7 @@ var locatePointer = class {
     _updateKey() {
         if (this._enabledSettings.get_boolean("locate-pointer")) {
             let modifierKeys = this._keySettings.get_strv('locate-pointer-key');
-            Main.keybindingManager.addHotKeyArray('locate-pointer', modifierKeys, Lang.bind(this, this.show));
+            Main.keybindingManager.addHotKeyArray('locate-pointer', modifierKeys, this.show.bind(this));
         } else {
             Main.keybindingManager.removeHotKey('locate-pointer');
         }

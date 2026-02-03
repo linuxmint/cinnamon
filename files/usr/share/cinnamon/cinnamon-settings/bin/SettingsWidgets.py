@@ -9,11 +9,11 @@ from gi.repository import Gio, Gtk, GObject, GLib
 
 from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend
-from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
-from KeybindingWidgets import ButtonKeybinding
+from bin.ChooserButtonWidgets import DateChooserButton, TimeChooserButton
+from bin.KeybindingWidgets import ButtonKeybinding
 from bin import util
 
-import KeybindingTable
+from bin import KeybindingTable
 
 settings_objects = {}
 

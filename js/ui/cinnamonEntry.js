@@ -1,8 +1,6 @@
 const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
 const GObject = imports.gi.GObject;
-const Gtk = imports.gi.Gtk;
-const Lang = imports.lang;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 
@@ -10,18 +8,11 @@ const Main = imports.ui.main;
 const Params = imports.misc.params;
 const PopupMenu = imports.ui.popupMenu;
 
+var _EntryMenu = class extends PopupMenu.PopupMenu {
+    constructor (entry, params) {
+        super(entry, 0, St.Side.TOP)
 
-function _EntryMenu(entry, params) {
-    this._init(entry, params);
-};
-
-_EntryMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-
-    _init: function(entry, params) {
-        params = Params.parse (params, { isPassword: false });
-
-        PopupMenu.PopupMenu.prototype._init.call(this, entry, St.Side.TOP);
+        params = Params.parse(params, { isPassword: false });
 
         this.actor.add_style_class_name('entry-context-menu');
 
@@ -31,29 +22,28 @@ _EntryMenu.prototype = {
         // Populate menu
         let item;
         item = new PopupMenu.PopupMenuItem(_("Copy"));
-        item.connect('activate', Lang.bind(this, this._onCopyActivated));
+        item.connect('activate', this._onCopyActivated.bind(this));
         this.addMenuItem(item);
         this._copyItem = item;
 
         item = new PopupMenu.PopupMenuItem(_("Paste"));
-        item.connect('activate', Lang.bind(this, this._onPasteActivated));
+        item.connect('activate', this._onPasteActivated.bind(this));
         this.addMenuItem(item);
         this._pasteItem = item;
 
         this._passwordItem = null;
         if (params.isPassword) {
             item = new PopupMenu.PopupMenuItem('');
-            item.connect('activate', Lang.bind(this,
-                                               this._onPasswordActivated));
+            item.connect('activate', this._onPasswordActivated.bind(this));
             this.addMenuItem(item);
             this._passwordItem = item;
         }
 
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
-    },
+    }
 
-    open: function() {
+    open() {
         this._updatePasteItem();
         this._updateCopyItem();
         if (this._passwordItem)
@@ -67,46 +57,44 @@ _EntryMenu.prototype = {
             this.shiftToPosition(x);
         }
 
-        PopupMenu.PopupMenu.prototype.open.call(this);
-    },
+        super.open();
+    }
 
-    _updateCopyItem: function() {
+    _updateCopyItem() {
         let selection = this._entry.clutter_text.get_selection();
         this._copyItem.setSensitive(selection && selection != '');
-    },
+    }
 
-    _updatePasteItem: function() {
-        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, Lang.bind(this,
-            function(clipboard, text) {
-                this._pasteItem.setSensitive(text && text != '');
-            }));
-    },
+    _updatePasteItem() {
+        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, (clipboard, text) => {
+            this._pasteItem.setSensitive(text && text != '');
+        });
+    }
 
-    _updatePasswordItem: function() {
+    _updatePasswordItem() {
         let textHidden = (this._entry.clutter_text.password_char);
         if (textHidden)
             this._passwordItem.label.set_text(_("Show Text"));
         else
             this._passwordItem.label.set_text(_("Hide Text"));
-    },
+    }
 
-    _onCopyActivated: function() {
+    _onCopyActivated() {
         let selection = this._entry.clutter_text.get_selection();
         this._clipboard.set_text(St.ClipboardType.CLIPBOARD, selection);
-    },
+    }
 
-    _onPasteActivated: function() {
-        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, Lang.bind(this,
-            function(clipboard, text) {
-                if (!text)
-                    return;
-                this._entry.clutter_text.delete_selection();
-                let pos = this._entry.clutter_text.get_cursor_position();
-                this._entry.clutter_text.insert_text(text, pos);
-            }));
-    },
+    _onPasteActivated() {
+        this._clipboard.get_text(St.ClipboardType.CLIPBOARD, (clipboard, text) => {
+            if (!text)
+                return;
+            this._entry.clutter_text.delete_selection();
+            let pos = this._entry.clutter_text.get_cursor_position();
+            this._entry.clutter_text.insert_text(text, pos);
+        });
+    }
 
-    _onPasswordActivated: function() {
+    _onPasswordActivated() {
         let visible = !!(this._entry.clutter_text.password_char);
         this._entry.clutter_text.set_password_char(visible ? '' : '\u25cf');
     }

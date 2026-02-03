@@ -18,8 +18,8 @@ from gi.repository import GLib, Gtk, Gio, CMenu
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
 
-sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings/bin')
-import JsonSettingsWidgets
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings')
+from bin import JsonSettingsWidgets
 
 # i18n
 gettext.install("cinnamon", "/usr/share/locale")
