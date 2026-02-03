@@ -1,5 +1,7 @@
 const Cinnamon = imports.gi.Cinnamon;
 const CMenu = imports.gi.CMenu;
+const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 
 let appsys = Cinnamon.AppSystem.get_default();
 
@@ -115,3 +117,68 @@ function loadDirectory(dir, top_dir, apps) {
     }
     return has_entries;
 }
+
+function _launchMintinstall(pkgName) {
+    GLib.spawn_command_line_async(`mintinstall show ${pkgName}`);
+}
+
+// launch mintinstall on app page
+function launchMintinstallForApp(app) {
+    if (app.get_is_flatpak()) {
+        const pkgName = app.get_flatpak_app_id();
+        _launchMintinstall(pkgName);
+    } else {
+        const filePath = app.desktop_file_path;
+        if (!filePath) return;
+        
+        const proc = Gio.Subprocess.new(
+            ['dpkg', '-S', filePath],
+            Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+        );
+        proc.communicate_utf8_async(null, null, (obj, res) => {
+            try {
+                let [success, stdout, stderr] = obj.communicate_utf8_finish(res);
+                if (success && stdout) {
+                    const foundPkg = stdout.split(':')[0].trim();
+                    _launchMintinstall(foundPkg);
+                }
+            } catch (e) {
+                global.logError("dpkg check failed: " + e.message);
+            }
+        });
+    }
+}
+
+function _launchPamac(pkgName) {
+    GLib.spawn_command_line_async(`pamac-manager --details=${pkgName}`);
+}
+
+// launch pamac-manager on app page
+function launchPamacForApp(app) {
+    if (app.get_is_flatpak()) {
+        // pamac-manager doesn't open on page of flatpak apps even if flatpak
+        // is enabled but let's launch it anyway so user can search for it.
+        const pkgName = app.get_flatpak_app_id();
+        _launchPamac(pkgName);
+    } else {
+        const filePath = app.desktop_file_path;
+        if (!filePath) return;
+        
+        const proc = Gio.Subprocess.new(
+            ['pacman', '-Qqo', filePath],
+            Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+        );
+        proc.communicate_utf8_async(null, null, (obj, res) => {
+            try {
+                let [success, stdout, stderr] = obj.communicate_utf8_finish(res);
+                if (success && stdout) {
+                    const foundPkg = stdout.trim();
+                    _launchPamac(foundPkg);
+                }
+            } catch (e) {
+                global.logError("pacman check failed: " + e.message);
+            }
+        });
+    }
+}
+
