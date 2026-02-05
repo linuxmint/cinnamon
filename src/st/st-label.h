@@ -64,7 +64,7 @@ StWidget *     st_label_new              (const gchar *text);
 const gchar *  st_label_get_text         (StLabel     *label);
 void           st_label_set_text         (StLabel     *label,
                                           const gchar *text);
-ClutterActor * st_label_get_clutter_text (StLabel     *label);
+ClutterText * st_label_get_clutter_text (StLabel     *label);
 
 G_END_DECLS
 

@@ -355,7 +355,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    g_param_spec_object ("stage",
                                                         "Stage",
                                                         "Stage holding the desktop scene graph",
-                                                        CLUTTER_TYPE_ACTOR,
+                                                        CLUTTER_TYPE_STAGE,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_STAGE_INPUT_MODE,
