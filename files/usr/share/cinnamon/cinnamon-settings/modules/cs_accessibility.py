@@ -5,7 +5,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gtk
-from SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
+from bin.SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25

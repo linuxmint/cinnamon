@@ -3,7 +3,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import GSettingsSwitch, SettingsLabel, SettingsPage, SettingsRevealer, SettingsWidget, Switch
 
 PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy"

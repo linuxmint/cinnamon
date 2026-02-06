@@ -7,8 +7,8 @@ import argparse
 import gi
 gi.require_version('Gtk', '3.0')
 
-sys.path.append('/usr/share/cinnamon/cinnamon-settings/bin')
-from Spices import Spice_Harvester
+sys.path.append('/usr/share/cinnamon/cinnamon-settings')
+from bin.Spices import Spice_Harvester
 
 USAGE_DESCRIPTION = 'Installs an applet, desklet, extension, or theme from a local folder. Rather than just doing a shallow copy, it will also install translations, schema files (if present) and update the metadata with a timestamp for version comparison.'
 USAGE_EPILOG = 'This script is designed for developers to test their work. It is recommended that everyone else continue to use cinnamon-settings to install their spices as this script has no safeguards in place to prevent malicious code.'

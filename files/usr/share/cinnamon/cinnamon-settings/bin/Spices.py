@@ -409,7 +409,7 @@ class Spice_Harvester(GObject.Object):
         # Like the one in urllib. Unlike urllib.retrieve url_retrieve
         # can be interrupted. KeyboardInterrupt exception is raised when
         # interrupted.
-        import proxygsettings
+        from bin import proxygsettings
         import requests
 
         count = 0

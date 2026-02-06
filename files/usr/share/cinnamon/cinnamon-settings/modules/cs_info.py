@@ -11,7 +11,7 @@ from json import loads
 
 from gi.repository import GdkPixbuf
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from bin import util
 from xapp.GSettingsWidgets import *
 

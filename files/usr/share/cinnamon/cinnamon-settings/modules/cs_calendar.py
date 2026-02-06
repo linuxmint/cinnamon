@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
-from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
-from SettingsWidgets import SidePage
+from bin.ChooserButtonWidgets import DateChooserButton, TimeChooserButton
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 from zoneinfo import ZoneInfo, available_timezones
 import gi

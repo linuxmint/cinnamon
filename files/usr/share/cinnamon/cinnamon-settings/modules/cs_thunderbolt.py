@@ -8,7 +8,7 @@ gi.require_version("Gio", "2.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import Gtk, Gio, GLib
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.SettingsWidgets import SettingsStack, SettingsPage, SettingsSection, SettingsWidget, SettingsLabel
 
 

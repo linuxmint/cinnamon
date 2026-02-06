@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 DESKTOP_SCHEMA = "org.nemo.desktop"

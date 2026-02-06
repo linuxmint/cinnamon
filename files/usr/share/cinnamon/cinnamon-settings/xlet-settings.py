@@ -18,8 +18,8 @@ import importlib.util
 import traceback
 from pathlib import Path
 
-from JsonSettingsWidgets import *
-from ExtensionCore import find_extension_subdir
+from bin.JsonSettingsWidgets import *
+from bin.ExtensionCore import find_extension_subdir
 from gi.repository import Gtk, Gio, XApp, GLib
 
 # i18n

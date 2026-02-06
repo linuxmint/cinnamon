@@ -2,7 +2,7 @@
 
 import os
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 import gi

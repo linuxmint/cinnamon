@@ -15,7 +15,7 @@ gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib
 
 from xapp.SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
-from Spices import ThreadedTaskManager
+from bin.Spices import ThreadedTaskManager
 
 home = os.path.expanduser('~')
 

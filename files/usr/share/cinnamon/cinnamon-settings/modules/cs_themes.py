@@ -7,11 +7,11 @@ import tinycss2
 from gi.repository import Gtk, GdkPixbuf
 
 from xapp.GSettingsWidgets import *
-from CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
-from SettingsWidgets import LabelRow, SidePage, walk_directories
-from ChooserButtonWidgets import PictureChooserButton
-from ExtensionCore import DownloadSpicesPage
-from Spices import Spice_Harvester
+from bin.CinnamonGtkSettings import CssRange, CssOverrideSwitch, GtkSettingsSwitch, PreviewWidget, Gtk2ScrollbarSizeEditor
+from bin.SettingsWidgets import LabelRow, SidePage, walk_directories
+from bin.ChooserButtonWidgets import PictureChooserButton
+from bin.ExtensionCore import DownloadSpicesPage
+from bin.Spices import Spice_Harvester
 
 from pathlib import Path
 import config

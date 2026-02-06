@@ -18,7 +18,6 @@ gettext.install(DOMAIN, PATH)
 try:
     sys.path.append('files/usr/share/cinnamon/cinnamon-settings')
     sys.path.append('files/usr/share/cinnamon/cinnamon-settings/modules')
-    sys.path.append('files/usr/share/cinnamon/cinnamon-settings/bin')
     mod_files = glob.glob('files/usr/share/cinnamon/cinnamon-settings/modules/*.py')
     mod_files.sort()
     if len(mod_files) == 0:

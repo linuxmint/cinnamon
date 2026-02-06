@@ -12,7 +12,7 @@ gi.require_version('IBus', '1.0')
 gi.require_version('Pango', '1.0')
 from gi.repository import GLib, Gio, Gtk, GObject, CinnamonDesktop, IBus, Pango
 
-from SettingsWidgets import Keybinding
+from bin.SettingsWidgets import Keybinding
 from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
