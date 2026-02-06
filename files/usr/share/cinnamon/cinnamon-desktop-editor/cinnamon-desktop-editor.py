@@ -18,6 +18,7 @@ from gi.repository import GLib, Gtk, Gio, CMenu
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-menu-editor')
 from cme import util
 
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings')
 sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings/bin')
 import JsonSettingsWidgets
 
