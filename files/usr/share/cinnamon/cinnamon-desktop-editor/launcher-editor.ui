@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Generated with glade 3.38.2 -->
 <interface>
   <requires lib="gtk+" version="3.22"/>
   <requires lib="xapp" version="0.0"/>
@@ -8,11 +7,12 @@
     <property name="border-width">4</property>
     <property name="title" translatable="yes">Launcher Properties</property>
     <property name="type-hint">dialog</property>
+    <property name="default-width">500</property>
     <child internal-child="vbox">
       <object class="GtkBox" id="dialog-box">
         <property name="can-focus">False</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">4</property>
+        <property name="spacing">10</property>
         <child internal-child="action_area">
           <object class="GtkButtonBox" id="dialog-action_area">
             <property name="can-focus">False</property>
@@ -25,11 +25,6 @@
                 <property name="receives-default">True</property>
                 <property name="use-stock">True</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <object class="GtkButton" id="ok">
@@ -39,11 +34,6 @@
                 <property name="receives-default">True</property>
                 <property name="use-stock">True</property>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-              </packing>
             </child>
           </object>
           <packing>
@@ -77,11 +67,6 @@
                   </object>
                 </child>
               </object>
-              <packing>
-                <property name="expand">False</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-              </packing>
             </child>
             <child>
               <!-- n-columns=3 n-rows=5 -->
@@ -93,7 +78,6 @@
                 <child>
                   <object class="GtkLabel" id="label2">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Name:</property>
                     <property name="xalign">1</property>
                     <attributes>
@@ -108,7 +92,6 @@
                 <child>
                   <object class="GtkLabel" id="label3">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Command:</property>
                     <property name="xalign">1</property>
                     <attributes>
@@ -123,7 +106,6 @@
                 <child>
                   <object class="GtkLabel" id="label4">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="label" translatable="yes">Comment:</property>
                     <property name="xalign">1</property>
                     <attributes>
@@ -141,7 +123,6 @@
                     <property name="can-focus">True</property>
                     <property name="has-focus">True</property>
                     <property name="hexpand">True</property>
-                    <property name="invisible-char">●</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -151,33 +132,19 @@
                 <child>
                   <object class="GtkBox" id="command-box">
                     <property name="visible">True</property>
-                    <property name="can-focus">False</property>
                     <property name="spacing">10</property>
                     <child>
                       <object class="GtkEntry" id="exec-entry">
                         <property name="visible">True</property>
                         <property name="can-focus">True</property>
                         <property name="hexpand">True</property>
-                        <property name="invisible-char">●</property>
                       </object>
-                      <packing>
-                        <property name="expand">True</property>
-                        <property name="fill">True</property>
-                        <property name="position">0</property>
-                      </packing>
                     </child>
                     <child>
                       <object class="GtkButton" id="exec-browse">
                         <property name="label" translatable="yes">Browse</property>
                         <property name="visible">True</property>
-                        <property name="can-focus">True</property>
-                        <property name="receives-default">True</property>
                       </object>
-                      <packing>
-                        <property name="expand">False</property>
-                        <property name="fill">True</property>
-                        <property name="position">1</property>
-                      </packing>
                     </child>
                   </object>
                   <packing>
@@ -189,8 +156,6 @@
                   <object class="GtkEntry" id="comment-entry">
                     <property name="visible">True</property>
                     <property name="can-focus">True</property>
-                    <property name="hexpand">True</property>
-                    <property name="invisible-char">●</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -201,10 +166,6 @@
                   <object class="GtkCheckButton" id="terminal-check">
                     <property name="label" translatable="yes">Launch in Terminal?</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="halign">start</property>
-                    <property name="draw-indicator">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -215,10 +176,6 @@
                   <object class="GtkCheckButton" id="offload-gpu-check">
                     <property name="label" translatable="yes">Use dedicated GPU if available</property>
                     <property name="visible">True</property>
-                    <property name="can-focus">True</property>
-                    <property name="receives-default">False</property>
-                    <property name="halign">start</property>
-                    <property name="draw-indicator">True</property>
                   </object>
                   <packing>
                     <property name="left-attach">1</property>
@@ -226,39 +183,64 @@
                   </packing>
                 </child>
                 <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
-                </child>
-                <child>
-                  <placeholder/>
+                  <object class="GtkCheckButton" id="nodisplay-check">
+                    <property name="label" translatable="yes">Hide (NoDisplay)</property>
+                    <property name="visible">True</property>
+                  </object>
+                  <packing>
+                    <property name="left-attach">1</property>
+                    <property name="top-attach">5</property>
+                  </packing>
                 </child>
               </object>
               <packing>
                 <property name="expand">True</property>
                 <property name="fill">True</property>
-                <property name="pack-type">end</property>
                 <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkBox" id="category-section">
+            <property name="visible">True</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">5</property>
+            <child>
+              <object class="GtkLabel" id="cat-label">
+                <property name="visible">True</property>
+                <property name="label" translatable="yes">Menu Categories:</property>
+                <property name="xalign">0</property>
+                <attributes><attribute name="weight" value="bold"/></attributes>
+              </object>
+            </child>
+            <child>
+              <object class="GtkScrolledWindow" id="cat-scroll">
+                <property name="visible">True</property>
+                <property name="can-focus">True</property>
+                <property name="shadow-type">in</property>
+                <property name="min-content-height">120</property>
+                <child>
+                  <object class="GtkFlowBox" id="category-flowbox">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="homogeneous">True</property>
+                    <property name="min-children-per-line">2</property>
+                    <property name="max-children-per-line">6</property>
+                    <property name="selection-mode">none</property>
+                    <property name="activate-on-single-click">False</property>
+                  </object>
+                </child>
+              </object>
+              <packing>
+                <property name="expand">True</property>
+                <property name="fill">True</property>
               </packing>
             </child>
           </object>
           <packing>
             <property name="expand">True</property>
             <property name="fill">True</property>
-            <property name="position">1</property>
           </packing>
         </child>
       </object>

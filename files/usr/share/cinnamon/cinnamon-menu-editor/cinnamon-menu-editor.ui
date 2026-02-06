@@ -5,8 +5,8 @@
   <requires lib="gtk+" version="3.0"/>
   <object class="GtkDialog" id="mainwindow">
     <property name="can_focus">False</property>
-    <property name="title" translatable="yes">Main Menu</property>
-    <property name="default_width">800</property>
+    <property name="title" translatable="yes">Cinnamon Menu Editor</property>
+    <property name="default_width">750</property>
     <property name="default_height">500</property>
     <property name="type_hint">normal</property>
     <signal name="destroy" handler="on_close_button_clicked" swapped="no"/>
@@ -17,53 +17,9 @@
       <object class="GtkBox">
         <property name="can_focus">False</property>
         <property name="margin_top">6</property>
+        <property name="margin_bottom">6</property>
         <property name="orientation">vertical</property>
-        <property name="spacing">10</property>
-        <child internal-child="action_area">
-          <object class="GtkButtonBox" id="action_box">
-            <property name="can_focus">False</property>
-            <property name="hexpand">True</property>
-            <child>
-              <object class="GtkButton" id="restore_button">
-                <property name="label" translatable="yes">Restore System Configuration</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="receives_default">False</property>
-                <property name="tooltip_text" translatable="yes">Restore the default menu layout</property>
-                <signal name="clicked" handler="on_restore_button_clicked" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">0</property>
-                <property name="non_homogeneous">True</property>
-              </packing>
-            </child>
-            <child>
-              <object class="GtkButton" id="close_button">
-                <property name="label" translatable="yes">Close</property>
-                <property name="visible">True</property>
-                <property name="can_focus">True</property>
-                <property name="can_default">True</property>
-                <property name="has_default">True</property>
-                <property name="receives_default">False</property>
-                <signal name="clicked" handler="on_close_button_clicked" swapped="no"/>
-              </object>
-              <packing>
-                <property name="expand">True</property>
-                <property name="fill">True</property>
-                <property name="position">1</property>
-                <property name="non_homogeneous">True</property>
-              </packing>
-            </child>
-          </object>
-          <packing>
-            <property name="expand">False</property>
-            <property name="fill">False</property>
-            <property name="position">0</property>
-          </packing>
-        </child>
+        <property name="spacing">0</property>
         <child>
           <object class="GtkBox">
             <property name="visible">True</property>
@@ -72,7 +28,7 @@
             <property name="margin_right">6</property>
             <property name="spacing">8</property>
             <child>
-              <object class="GtkPaned">
+              <object class="GtkPaned" id="main_paned">
                 <property name="visible">True</property>
                 <property name="can_focus">True</property>
                 <property name="position">225</property>
@@ -111,7 +67,7 @@
                     </child>
                   </object>
                   <packing>
-                    <property name="resize">False</property>
+                    <property name="resize">True</property>
                     <property name="shrink">True</property>
                   </packing>
                 </child>
@@ -126,7 +82,6 @@
                         <property name="can_focus">True</property>
                         <property name="rules_hint">True</property>
                         <signal name="button-press-event" handler="on_item_tree_popup_menu" swapped="no"/>
-                        <signal name="cursor-changed" handler="on_item_tree_cursor_changed" swapped="no"/>
                         <signal name="cursor-changed" handler="on_item_tree_cursor_changed" swapped="no"/>
                         <signal name="key-press-event" handler="on_item_tree_key_press_event" swapped="no"/>
                         <signal name="popup-menu" handler="on_item_tree_popup_menu" swapped="no"/>
@@ -150,13 +105,12 @@
               </packing>
             </child>
             <child>
-              <object class="GtkButtonBox">
+              <object class="GtkBox">
                 <property name="visible">True</property>
                 <property name="can_focus">False</property>
                 <property name="vexpand">True</property>
                 <property name="orientation">vertical</property>
                 <property name="spacing">4</property>
-                <property name="layout_style">start</property>
                 <child>
                   <object class="GtkButton" id="new_menu_button">
                     <property name="label" translatable="yes">_New Menu</property>
@@ -168,23 +122,23 @@
                     <signal name="clicked" handler="on_new_menu_button_clicked" swapped="no"/>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">0</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="new_item_button">
-                    <property name="label" translatable="yes">Ne_w Item</property>
+                    <property name="label" translatable="yes">Ne_w Launcher</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="can_default">True</property>
                     <property name="receives_default">False</property>
                     <property name="use_underline">True</property>
-                    <signal name="clicked" handler="on_new_item_button_clicked" swapped="no"/>
+                    <signal name="clicked" handler="on_new_launcher_button_clicked" swapped="no"/>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">1</property>
                   </packing>
@@ -197,57 +151,14 @@
                     <property name="margin_bottom">6</property>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
+                    <property name="expand">False</property>
                     <property name="fill">True</property>
                     <property name="position">2</property>
-                    <property name="non_homogeneous">True</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="cut_button">
-                    <property name="label" translatable="yes">Cut</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <signal name="clicked" handler="on_cut_button_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">3</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="copy_button">
-                    <property name="label" translatable="yes">Copy</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <signal name="clicked" handler="on_copy_button_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">4</property>
-                  </packing>
-                </child>
-                <child>
-                  <object class="GtkButton" id="paste_button">
-                    <property name="label" translatable="yes">Paste</property>
-                    <property name="visible">True</property>
-                    <property name="can_focus">True</property>
-                    <property name="receives_default">True</property>
-                    <signal name="clicked" handler="on_paste_button_clicked" swapped="no"/>
-                  </object>
-                  <packing>
-                    <property name="expand">False</property>
-                    <property name="fill">False</property>
-                    <property name="position">5</property>
                   </packing>
                 </child>
                 <child>
                   <object class="GtkButton" id="delete_button">
-                    <property name="label" translatable="yes">Delete</property>
+                    <property name="label" translatable="yes">Delete Item</property>
                     <property name="visible">True</property>
                     <property name="can_focus">True</property>
                     <property name="receives_default">True</property>
@@ -260,6 +171,21 @@
                   </packing>
                 </child>
                 <child>
+                  <object class="GtkButton" id="restore_item_button">
+                    <property name="label" translatable="yes">Restore Item</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Restore this item to the system default</property>
+                    <signal name="clicked" handler="on_restore_item_button_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
+                    <property name="position">7</property>
+                  </packing>
+                </child>
+                <child>
                   <object class="GtkSeparator" id="separator2">
                     <property name="visible">True</property>
                     <property name="can_focus">False</property>
@@ -267,10 +193,9 @@
                     <property name="margin_bottom">6</property>
                   </object>
                   <packing>
-                    <property name="expand">True</property>
-                    <property name="fill">True</property>
+                    <property name="expand">False</property>
+                    <property name="fill">False</property>
                     <property name="position">7</property>
-                    <property name="non_homogeneous">True</property>
                   </packing>
                 </child>
                 <child>
@@ -284,7 +209,7 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">8</property>
+                    <property name="position">9</property>
                   </packing>
                 </child>
                 <child>
@@ -298,7 +223,46 @@
                   <packing>
                     <property name="expand">False</property>
                     <property name="fill">False</property>
-                    <property name="position">9</property>
+                    <property name="position">10</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkSeparator" id="separator3">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                    <property name="margin_top">6</property>
+                    <property name="margin_bottom">6</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">11</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkBox" id="spacingbox1">
+                    <property name="visible">True</property>
+                    <property name="can_focus">False</property>
+                  </object>
+                  <packing>
+                    <property name="expand">True</property>
+                    <property name="fill">True</property>
+                    <property name="position">12</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkButton" id="restore_all_button">
+                    <property name="label" translatable="yes">Restore All</property>
+                    <property name="visible">True</property>
+                    <property name="can_focus">True</property>
+                    <property name="receives_default">True</property>
+                    <property name="tooltip_text" translatable="yes">Restore the default menu layout</property>
+                    <signal name="clicked" handler="on_restore_all_button_clicked" swapped="no"/>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">13</property>
                   </packing>
                 </child>
               </object>
@@ -318,23 +282,20 @@
         </child>
       </object>
     </child>
-    <action-widgets>
-      <action-widget response="0">restore_button</action-widget>
-      <action-widget response="-7">close_button</action-widget>
-    </action-widgets>
   </object>
   <object class="GtkSizeGroup">
     <widgets>
       <widget name="new_menu_button"/>
       <widget name="new_item_button"/>
       <widget name="separator1"/>
-      <widget name="cut_button"/>
-      <widget name="copy_button"/>
-      <widget name="paste_button"/>
       <widget name="delete_button"/>
+      <widget name="restore_item_button"/>
       <widget name="separator2"/>
       <widget name="properties_button"/>
       <widget name="edit_desktop_button"/>
+      <widget name="separator3"/>
+      <widget name="spacingbox1"/>
+      <widget name="restore_all_button"/>
     </widgets>
   </object>
 </interface>
