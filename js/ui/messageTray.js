@@ -149,7 +149,7 @@ URLHighlighter.prototype = {
 
             let urlId = this._findUrlAtPos(event);
             if (urlId != -1 && !this._cursorChanged) {
-                global.set_cursor(Cinnamon.Cursor.POINTING_HAND);
+                global.set_cursor(Cinnamon.Cursor.POINTER);
                 this._cursorChanged = true;
             } else if (urlId == -1) {
                 global.unset_cursor();
