@@ -18,21 +18,21 @@ const Main = imports.ui.main;
 
 /* Imports...feel free to add here as needed */
 var commandHeader = 'const Clutter = imports.gi.Clutter; ' +
-                    'const GLib = imports.gi.GLib; ' +
-                    'const Gtk = imports.gi.Gtk; ' +
-                    'const Mainloop = imports.mainloop; ' +
-                    'const Meta = imports.gi.Meta; ' +
-                    'const Cinnamon = imports.gi.Cinnamon; ' +
-                    'const Main = imports.ui.main; ' +
-                    /* Utility functions...we should probably be able to use these
-                     * in Cinnamon core code too. */
-                    'const stage = global.stage; ' +
-                    'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
-                    /* Special lookingGlass functions */
-                    'const it = Main.lookingGlass.getIt(); ' +
-                    'const a = Main.lookingGlass.getWindowApp.bind(Main.lookingGlass); '+
-                    'const w = Main.lookingGlass.getWindow.bind(Main.lookingGlass); '+
-                    'const r = Main.lookingGlass.getResult.bind(Main.lookingGlass); ';
+'const GLib = imports.gi.GLib; ' +
+'const Gtk = imports.gi.Gtk; ' +
+'const Mainloop = imports.mainloop; ' +
+'const Meta = imports.gi.Meta; ' +
+'const Cinnamon = imports.gi.Cinnamon; ' +
+'const Main = imports.ui.main; ' +
+/* Utility functions...we should probably be able to use these
+ * in Cinnamon core code too. */
+'const stage = global.stage; ' +
+'const color = function(pixel) { let c= new Clutter.Color(); c.from_pixel(pixel); return c; }; ' +
+/* Special lookingGlass functions */
+'const it = Main.lookingGlass.getIt(); ' +
+'const a = Main.lookingGlass.getWindowApp.bind(Main.lookingGlass); '+
+'const w = Main.lookingGlass.getWindow.bind(Main.lookingGlass); '+
+'const r = Main.lookingGlass.getResult.bind(Main.lookingGlass); ';
 
 /* delay/aggregation period for window list updates. without a delay, the window
  * still exists in the get_window_actor() immediately after 'MetaWindow::unmanaged',
@@ -79,11 +79,11 @@ function getObjInfo(o) {
             if (value.startsWith("[GjsFileImporter")
                 || value.startsWith("[object GjsModule gi")) {
                 type = "importer";
-            } else if (value.startsWith("[boxed prototype")) {
-                type = "boxedproto";
-            } else if (Array.isArray(o)) {
-                type = "array";
-            }
+                } else if (value.startsWith("[boxed prototype")) {
+                    type = "boxedproto";
+                } else if (Array.isArray(o)) {
+                    type = "array";
+                }
         }
 
         // make empty strings/arrays obvious
@@ -108,12 +108,12 @@ function getObjKeysInfo(obj) {
         let ownKeys;
         if (type === "array")
             ownKeys = curProto.keys(); // index properties only
-        else
-            ownKeys = Reflect.ownKeys(curProto); // all own properties and symbols
+            else
+                ownKeys = Reflect.ownKeys(curProto); // all own properties and symbols
 
-        // adding to set ignores duplicates
-        for (let key of ownKeys)
-            keys.add(key);
+                // adding to set ignores duplicates
+                for (let key of ownKeys)
+                    keys.add(key);
 
         curProto = Object.getPrototypeOf(curProto);
     }
@@ -125,10 +125,10 @@ function getObjKeysInfo(obj) {
                 let [t, v] = getObjInfo(obj[k]);
                 return { name: k.toString(), type: t, value: v, shortValue: "" };
             } catch (e) {
-                return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+                return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" };
             }
         } else {
-            return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+            return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" };
         }
     });
 }
@@ -205,14 +205,14 @@ class WindowList {
                 wmclass: metaWindow.get_wm_class() + '',
                 app: '' };
 
-            let app = tracker.get_window_app(metaWindow);
-            if (app != null && !app.is_window_backed()) {
-                lgInfo.app = app.get_id() + '';
-            } else {
-                lgInfo.app = '<untracked>';
-            }
+                let app = tracker.get_window_app(metaWindow);
+                if (app != null && !app.is_window_backed()) {
+                    lgInfo.app = app.get_id() + '';
+                } else {
+                    lgInfo.app = '<untracked>';
+                }
 
-            this.latestWindowList.push(lgInfo);
+                this.latestWindowList.push(lgInfo);
         }
 
         // Make sure the list changed before notifying listeners
@@ -232,34 +232,34 @@ class WindowList {
 
 function addBorderPaintHook(actor) {
     let signalId = actor.connect_after('paint',
-        function (actor, paint_context) {
-            let framebuffer = paint_context.get_framebuffer();
-            let coglContext = framebuffer.get_context();
+                                       function (actor, paint_context) {
+                                           let framebuffer = paint_context.get_framebuffer();
+                                           let coglContext = framebuffer.get_context();
 
-            if (!this._pipeline) {
-                let color = new Cogl.Color();
-                color.init_from_4ub(0xff, 0, 0, 0xc4);
+                                           if (!this._pipeline) {
+                                               let color = new Cogl.Color();
+                                               color.init_from_4ub(0xff, 0, 0, 0xc4);
 
-                this._pipeline = new Cogl.Pipeline(coglContext);
-                this._pipeline.set_color(color);
-            }
+                                               this._pipeline = new Cogl.Pipeline(coglContext);
+                                               this._pipeline.set_color(color);
+                                           }
 
-            let alloc = actor.get_allocation_box();
-            let width = 2;
+                                           let alloc = actor.get_allocation_box();
+                                           let width = 2;
 
-            // clockwise order
-            framebuffer.draw_rectangle(this._pipeline,
-                0, 0, alloc.get_width(), width);
-            framebuffer.draw_rectangle(this._pipeline,
-                alloc.get_width() - width, width,
-                alloc.get_width(), alloc.get_height());
-            framebuffer.draw_rectangle(this._pipeline,
-                0, alloc.get_height(),
-                alloc.get_width() - width, alloc.get_height() - width);
-            framebuffer.draw_rectangle(this._pipeline,
-                0, alloc.get_height() - width,
-                width, width);
-        });
+                                           // clockwise order
+                                           framebuffer.draw_rectangle(this._pipeline,
+                                                                      0, 0, alloc.get_width(), width);
+                                           framebuffer.draw_rectangle(this._pipeline,
+                                                                      alloc.get_width() - width, width,
+                                                                      alloc.get_width(), alloc.get_height());
+                                           framebuffer.draw_rectangle(this._pipeline,
+                                                                      0, alloc.get_height(),
+                                                                      alloc.get_width() - width, alloc.get_height() - width);
+                                           framebuffer.draw_rectangle(this._pipeline,
+                                                                      0, alloc.get_height() - width,
+                                                                      width, width);
+                                       });
 
     actor.queue_redraw();
     return signalId;
@@ -317,15 +317,15 @@ var Inspector = GObject.registerClass({
 
     _onCapturedEvent(actor, event) {
         if (event.type() == Clutter.EventType.KEY_PRESS && (event.get_key_symbol() === Clutter.KEY_Control_L ||
-                                                            event.get_key_symbol() === Clutter.KEY_Control_R ||
-                                                            event.get_key_symbol() === Clutter.KEY_Pause)) {
+            event.get_key_symbol() === Clutter.KEY_Control_R ||
+            event.get_key_symbol() === Clutter.KEY_Pause)) {
             this.passThroughEvents = !this.passThroughEvents;
-            this._updatePassthroughText();
-            return Clutter.EVENT_STOP;
-        }
+        this._updatePassthroughText();
+        return Clutter.EVENT_STOP;
+            }
 
-        if (this.passThroughEvents)
-            return Clutter.EVENT_PROPAGATE;
+            if (this.passThroughEvents)
+                return Clutter.EVENT_PROPAGATE;
 
         switch (event.type()) {
             case Clutter.EventType.KEY_PRESS:
@@ -341,23 +341,23 @@ var Inspector = GObject.registerClass({
         }
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (!this._eventHandler)
             return;
 
-        this.set_allocation(box, flags);
+        this.set_allocation(box);
 
         let primary = Main.layoutManager.primaryMonitor;
 
         let [minWidth, minHeight, natWidth, natHeight] =
-            this._eventHandler.get_preferred_size();
+        this._eventHandler.get_preferred_size();
 
         let childBox = new Clutter.ActorBox();
         childBox.x1 = primary.x + Math.floor((primary.width - natWidth) / 2);
         childBox.x2 = childBox.x1 + natWidth;
         childBox.y1 = primary.y + Math.floor((primary.height - natHeight) / 2);
         childBox.y2 = childBox.y1 + natHeight;
-        this._eventHandler.allocate(childBox, flags);
+        this._eventHandler.allocate(childBox);
     }
 
     _close() {
@@ -452,66 +452,66 @@ var Inspector = GObject.registerClass({
 });
 
 const melangeIFace =
-    '<node> \
-        <interface name="org.Cinnamon.Melange"> \
-            <method name="show" /> \
-            <method name="hide" /> \
-            <method name="getVisible"> \
-                <arg type="b" direction="out" name="visible"/> \
-            </method> \
-        </interface> \
-     </node>';
+'<node> \
+<interface name="org.Cinnamon.Melange"> \
+<method name="show" /> \
+<method name="hide" /> \
+<method name="getVisible"> \
+<arg type="b" direction="out" name="visible"/> \
+</method> \
+</interface> \
+</node>';
 
 const lgIFace =
-    '<node> \
-        <interface name="org.Cinnamon.LookingGlass"> \
-            <method name="Eval"> \
-                <arg type="s" direction="in" name="code"/> \
-            </method> \
-            <method name="GetResults"> \
-                <arg type="b" direction="out" name="success"/> \
-                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: command, type, object, index"/> \
-            </method> \
-            <method name="AddResult"> \
-                <arg type="s" direction="in" name="code"/> \
-            </method> \
-            <method name="GetErrorStack"> \
-                <arg type="b" direction="out" name="success"/> \
-                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: timestamp, category, message"/> \
-            </method> \
-            <method name="GetMemoryInfo"> \
-                <arg type="b" direction="out" name="success"/> \
-                <arg type="i" direction="out" name="time since last garbage collect"/> \
-                <arg type="a{si}" direction="out" name="dictionary mapping name(string) to number of bytes used(int)"/> \
-            </method> \
-            <method name="FullGc"> \
-            </method> \
-            <method name="Inspect"> \
-                <arg type="s" direction="in" name="code"/> \
-                <arg type="b" direction="out" name="success"/> \
-                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: name, type, value, shortValue"/> \
-            </method> \
-            <method name="GetLatestWindowList"> \
-                <arg type="b" direction="out" name="success"/> \
-                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: id, title, wmclass, app"/> \
-            </method> \
-            <method name="StartInspector"> \
-            </method> \
-            <method name="GetExtensionList"> \
-                <arg type="b" direction="out" name="success"/> \
-                <arg type="aa{ss}" direction="out" name="array of dictionary containing keys: status, name, description, uuid, folder, url, type"/> \
-            </method> \
-            <method name="ReloadExtension"> \
-                <arg type="s" direction="in" name="uuid"/> \
-                <arg type="s" direction="in" name="type"/> \
-            </method> \
-            <signal name="LogUpdate"></signal> \
-            <signal name="WindowListUpdate"></signal> \
-            <signal name="ResultUpdate"></signal> \
-            <signal name="InspectorDone"></signal> \
-            <signal name="ExtensionListUpdate"></signal> \
-        </interface> \
-    </node>';
+'<node> \
+<interface name="org.Cinnamon.LookingGlass"> \
+<method name="Eval"> \
+<arg type="s" direction="in" name="code"/> \
+</method> \
+<method name="GetResults"> \
+<arg type="b" direction="out" name="success"/> \
+<arg type="aa{ss}" direction="out" name="array of dictionary containing keys: command, type, object, index"/> \
+</method> \
+<method name="AddResult"> \
+<arg type="s" direction="in" name="code"/> \
+</method> \
+<method name="GetErrorStack"> \
+<arg type="b" direction="out" name="success"/> \
+<arg type="aa{ss}" direction="out" name="array of dictionary containing keys: timestamp, category, message"/> \
+</method> \
+<method name="GetMemoryInfo"> \
+<arg type="b" direction="out" name="success"/> \
+<arg type="i" direction="out" name="time since last garbage collect"/> \
+<arg type="a{si}" direction="out" name="dictionary mapping name(string) to number of bytes used(int)"/> \
+</method> \
+<method name="FullGc"> \
+</method> \
+<method name="Inspect"> \
+<arg type="s" direction="in" name="code"/> \
+<arg type="b" direction="out" name="success"/> \
+<arg type="aa{ss}" direction="out" name="array of dictionary containing keys: name, type, value, shortValue"/> \
+</method> \
+<method name="GetLatestWindowList"> \
+<arg type="b" direction="out" name="success"/> \
+<arg type="aa{ss}" direction="out" name="array of dictionary containing keys: id, title, wmclass, app"/> \
+</method> \
+<method name="StartInspector"> \
+</method> \
+<method name="GetExtensionList"> \
+<arg type="b" direction="out" name="success"/> \
+<arg type="aa{ss}" direction="out" name="array of dictionary containing keys: status, name, description, uuid, folder, url, type"/> \
+</method> \
+<method name="ReloadExtension"> \
+<arg type="s" direction="in" name="uuid"/> \
+<arg type="s" direction="in" name="type"/> \
+</method> \
+<signal name="LogUpdate"></signal> \
+<signal name="WindowListUpdate"></signal> \
+<signal name="ResultUpdate"></signal> \
+<signal name="InspectorDone"></signal> \
+<signal name="ExtensionListUpdate"></signal> \
+</interface> \
+</node>';
 
 var Melange = class {
     constructor() {
@@ -544,14 +544,14 @@ var Melange = class {
         let nodeInfo = Gio.DBusNodeInfo.new_for_xml(melangeIFace);
 
         Gio.DBusProxy.new(
-              Gio.DBus.session,
-              Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
-              nodeInfo.lookup_interface("org.Cinnamon.Melange"),
-              "org.Cinnamon.Melange",
-              "/org/Cinnamon/Melange",
-              "org.Cinnamon.Melange",
-              null,
-              this._onProxyReady.bind(this)
+            Gio.DBus.session,
+            Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
+            nodeInfo.lookup_interface("org.Cinnamon.Melange"),
+                          "org.Cinnamon.Melange",
+                          "/org/Cinnamon/Melange",
+                          "org.Cinnamon.Melange",
+                          null,
+                          this._onProxyReady.bind(this)
         );
     }
 

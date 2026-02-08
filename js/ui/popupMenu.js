@@ -350,7 +350,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         alloc.min_size = alloc.natural_size = height;
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(actor, box) {
         let height = box.y2 - box.y1;
         let direction = this.actor.get_direction();
 
@@ -371,7 +371,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
             }
             dotBox.y1 = Math.round(box.y1 + (height - dotWidth) / 2);
             dotBox.y2 = dotBox.y1 + dotWidth;
-            this._dot.allocate(dotBox, flags);
+            this._dot.allocate(dotBox);
         }
 
         let x;
@@ -465,7 +465,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
             childBox.y1 = Math.round(box.y1 + (height - naturalHeight) / 2);
             childBox.y2 = childBox.y1 + naturalHeight;
 
-            child.actor.allocate(childBox, flags);
+            child.actor.allocate(childBox);
 
             if (direction == St.TextDirection.LTR)
                 x += availWidth + this._spacing;
@@ -2621,8 +2621,8 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(forWidth);
     }
 
-    _boxAllocate (actor, box, flags) {
-        this.box.allocate(box, flags);
+    _boxAllocate (actor, box) {
+        this.box.allocate(box);
     }
 
     _allocationChanged (actor, pspec) {

@@ -526,7 +526,7 @@ class Calendar {
         }
     }
 
-    _allocate_dot_box (actor, box, flags) {
+    _allocate_dot_box (actor, box) {
         let children = actor.get_children();
 
         if (children.length == 0) {
@@ -567,7 +567,7 @@ class Calendar {
             cbox.y2 = cbox.y1 + nh;
 
             while (i < ((dot_row * max_children_per_row) + dots_this_row)) {
-                children[i].allocate(cbox, flags);
+                children[i].allocate(cbox);
 
                 cbox.x1 += nw;
                 cbox.x2 += nw;

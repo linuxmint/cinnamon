@@ -60,19 +60,18 @@ cinnamon_generic_container_allocation_unref (CinnamonGenericContainerAllocation 
 
 static void
 cinnamon_generic_container_allocate (ClutterActor           *self,
-                                  const ClutterActorBox  *box,
-                                  ClutterAllocationFlags  flags)
+                                  const ClutterActorBox  *box)
 {
   StThemeNode *theme_node;
   ClutterActorBox content_box;
 
-  clutter_actor_set_allocation (self, box, flags);
+  clutter_actor_set_allocation (self, box);
 
   theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
   g_signal_emit (G_OBJECT (self), cinnamon_generic_container_signals[ALLOCATE], 0,
-                 &content_box, flags);
+                 &content_box);
 }
 
 static void
@@ -371,7 +370,6 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
    * CinnamonGenericContainer::allocate:
    * @self: the #CinnamonGenericContainer
    * @box: @self's content box
-   * @flags: the allocation flags.
    *
    * Emitted when @self is allocated, after chaining up to the parent
    * allocate method.
@@ -385,7 +383,7 @@ cinnamon_generic_container_class_init (CinnamonGenericContainerClass *klass)
                   G_SIGNAL_RUN_LAST,
                   0,
                   NULL, NULL, NULL,
-                  G_TYPE_NONE, 2, CLUTTER_TYPE_ACTOR_BOX, CLUTTER_TYPE_ALLOCATION_FLAGS);
+                  G_TYPE_NONE, 2, CLUTTER_TYPE_ACTOR_BOX);
 
   g_type_class_add_private (gobject_class, sizeof (CinnamonGenericContainerPrivate));
 }

@@ -12,3 +12,4 @@ debian/files
 debian/tmp/
 obj-x86_64-linux-gnu
 *.pyc
+.cache

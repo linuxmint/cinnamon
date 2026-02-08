@@ -721,7 +721,7 @@ GenericDragItemContainer.prototype = {
         this.animatingOut = false;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(actor, box) {
         if (this.child == null)
             return;
 
@@ -740,7 +740,7 @@ GenericDragItemContainer.prototype = {
         childBox.x2 = childBox.x1 + childWidth;
         childBox.y2 = childBox.y1 + childHeight;
 
-        this.child.allocate(childBox, flags);
+        this.child.allocate(childBox);
     },
 
     _getPreferredHeight: function(actor, forWidth, alloc) {
