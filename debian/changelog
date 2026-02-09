@@ -1,3 +1,17 @@
+cinnamon (6.6.7) zena; urgency=medium
+
+  [ fredcw ]
+  * menu@cinnamon.org: Avoid using absolute path as this doesn't work on NixOS (#13500)
+
+  [ carsten_eu ]
+  * cinnamon-settings: Fix util module import to prevent name collisions (#13492)
+
+  [ Michael Webster ]
+  * cinnamon-desktop-editor.py: Add import path.
+  * endSessionDialog.js: Don't close the dialog immediately when selecting 'suspend' or 'hibernate'.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 09 Feb 2026 16:23:53 +0000
+
 cinnamon (6.6.6) zena; urgency=medium
 
   [ Michael Webster ]
