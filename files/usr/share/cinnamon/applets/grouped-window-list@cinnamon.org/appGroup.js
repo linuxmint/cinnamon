@@ -388,11 +388,11 @@ class AppGroup {
             } else {
                 alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
             }
+            alloc.min_size = alloc.natural_size;
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
+            alloc.min_size = 1 * global.ui_scale;
         }
-
-        alloc.min_size = alloc.natural_size;
     }
 
     getPreferredHeight(actor, forWidth, alloc) {
