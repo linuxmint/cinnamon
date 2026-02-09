@@ -17,46 +17,46 @@ var make_action = (settings, definition, device) => {
         threshold = settings.get_uint("swipe-percent-threshold");
     }
     else
-        if (definition.type === GestureType.PINCH) {
-            threshold = settings.get_uint("pinch-percent-threshold");
-        }
+    if (definition.type === GestureType.PINCH) {
+        threshold = settings.get_uint("pinch-percent-threshold");
+    }
 
-        switch (definition.action) {
-            case "WORKSPACE_NEXT":
-            case "WORKSPACE_PREVIOUS":
-            case "WORKSPACE_UP":
-            case "WORKSPACE_DOWN":
-                return new WorkspaceSwitchAction(definition, device, threshold);
-            case "TOGGLE_EXPO":
-            case "TOGGLE_OVERVIEW":
-            case "TOGGLE_DESKTOP":
-                return new GlobalDesktopAction(definition, device, threshold);
-            case "MINIMIZE":
-            case "MAXIMIZE":
-            case "CLOSE":
-            case "WINDOW_WORKSPACE_NEXT":
-            case "WINDOW_WORKSPACE_PREVIOUS":
-            case "FULLSCREEN":
-            case "UNFULLSCREEN":
-            case "PUSH_TILE_UP":
-            case "PUSH_TILE_DOWN":
-            case "PUSH_TILE_LEFT":
-            case "PUSH_TILE_RIGHT":
-                return new WindowOpAction(definition, device, threshold);
-            case "VOLUME_UP":
-            case "VOLUME_DOWN":
-            case "TOGGLE_MUTE":
-                return new VolumeAction(definition, device, threshold);
-            case "MEDIA_PLAY_PAUSE":
-            case "MEDIA_NEXT":
-            case "MEDIA_PREVIOUS":
-                return new MediaAction(definition, device, threshold);
-            case "ZOOM_IN":
-            case "ZOOM_OUT":
-                return new ZoomAction(definition, device, threshold);
-            case "EXEC":
-                return new ExecAction(definition, device, threshold);
-        }
+    switch (definition.action) {
+    case "WORKSPACE_NEXT":
+    case "WORKSPACE_PREVIOUS":
+    case "WORKSPACE_UP":
+    case "WORKSPACE_DOWN":
+        return new WorkspaceSwitchAction(definition, device, threshold);
+    case "TOGGLE_EXPO":
+    case "TOGGLE_OVERVIEW":
+    case "TOGGLE_DESKTOP":
+        return new GlobalDesktopAction(definition, device, threshold);
+    case "MINIMIZE":
+    case "MAXIMIZE":
+    case "CLOSE":
+    case "WINDOW_WORKSPACE_NEXT":
+    case "WINDOW_WORKSPACE_PREVIOUS":
+    case "FULLSCREEN":
+    case "UNFULLSCREEN":
+    case "PUSH_TILE_UP":
+    case "PUSH_TILE_DOWN":
+    case "PUSH_TILE_LEFT":
+    case "PUSH_TILE_RIGHT":
+        return new WindowOpAction(definition, device, threshold);
+    case "VOLUME_UP":
+    case "VOLUME_DOWN":
+    case "TOGGLE_MUTE":
+        return new VolumeAction(definition, device, threshold);
+    case "MEDIA_PLAY_PAUSE":
+    case "MEDIA_NEXT":
+    case "MEDIA_PREVIOUS":
+        return new MediaAction(definition, device, threshold);
+    case "ZOOM_IN":
+    case "ZOOM_OUT":
+        return new ZoomAction(definition, device, threshold);
+    case "EXEC":
+        return new ExecAction(definition, device, threshold);
+    }
 }
 
 var cleanup = () => {
@@ -108,18 +108,18 @@ var WorkspaceSwitchAction = class extends BaseAction {
         let reverse = touchpad_settings.get_boolean("natural-scroll");
 
         switch (this.definition.action) {
-            case "WORKSPACE_NEXT":
-                motion_dir = reverse ? Meta.MotionDirection.RIGHT : Meta.MotionDirection.LEFT;
-                break;
-            case "WORKSPACE_PREVIOUS":
-                motion_dir = reverse ? Meta.MotionDirection.LEFT : Meta.MotionDirection.RIGHT;
-                break;
-            case "WORKSPACE_UP":
-                motion_dir = Meta.MotionDirection.UP;
-                break;
-            case "WORKSPACE_DOWN":
-                motion_dir = Meta.MotionDirection.DOWN;
-                break;
+        case "WORKSPACE_NEXT":
+            motion_dir = reverse ? Meta.MotionDirection.RIGHT : Meta.MotionDirection.LEFT;
+            break;
+        case "WORKSPACE_PREVIOUS":
+            motion_dir = reverse ? Meta.MotionDirection.LEFT : Meta.MotionDirection.RIGHT;
+            break;
+        case "WORKSPACE_UP":
+            motion_dir = Meta.MotionDirection.UP;
+            break;
+        case "WORKSPACE_DOWN":
+            motion_dir = Meta.MotionDirection.DOWN;
+            break;
         }
 
         const neighbor = current.get_neighbor(motion_dir);
@@ -129,8 +129,8 @@ var WorkspaceSwitchAction = class extends BaseAction {
 
 const actionable_window_types = [
     Meta.WindowType.NORMAL,
-Meta.WindowType.DIALOG,
-Meta.WindowType.MODAL_DIALOG
+    Meta.WindowType.DIALOG,
+    Meta.WindowType.MODAL_DIALOG
 ]
 
 var WindowOpAction = class extends BaseAction {
@@ -151,59 +151,59 @@ var WindowOpAction = class extends BaseAction {
         }
 
         switch (this.definition.action) {
-            case "MINIMIZE":
-                if (window.can_minimize()) {
-                    window.minimize();
-                }
-                break
-            case "MAXIMIZE":
-                if (window.maximized_horizontally && window.maximized_vertically) {
-                    window.unmaximize(Meta.MaximizeFlags.BOTH);
-                }
-                else {
-                    if (window.can_maximize()) {
-                        window.maximize(Meta.MaximizeFlags.BOTH);
-                    }
-                }
-                break
-            case "CLOSE":
-                window.delete(global.get_current_time());
-                break
-            case "FULLSCREEN":
+        case "MINIMIZE":
+            if (window.can_minimize()) {
+                window.minimize();
+            }
+            break
+        case "MAXIMIZE":
+            if (window.maximized_horizontally && window.maximized_vertically) {
+                window.unmaximize(Meta.MaximizeFlags.BOTH);
+            } 
+            else {
                 if (window.can_maximize()) {
-                    window.make_fullscreen();
+                    window.maximize(Meta.MaximizeFlags.BOTH);
                 }
-                break
-            case "UNFULLSCREEN":
-                window.unmake_fullscreen();
-                break
-            case "PUSH_TILE_UP":
-            case "PUSH_TILE_DOWN":
-            case "PUSH_TILE_LEFT":
-            case "PUSH_TILE_RIGHT":
-                this._handle_tile(this.definition.action, window);
-                break;
-            case "WINDOW_WORKSPACE_NEXT":
-            case "WINDOW_WORKSPACE_PREVIOUS":
-                this._handle_window_workspace_move(this.definition.action, window);
-                break;
+            }
+            break
+        case "CLOSE":
+            window.delete(global.get_current_time());
+            break
+        case "FULLSCREEN":
+            if (window.can_maximize()) {
+                window.make_fullscreen();
+            }
+            break
+        case "UNFULLSCREEN":
+            window.unmake_fullscreen();
+            break
+        case "PUSH_TILE_UP":
+        case "PUSH_TILE_DOWN":
+        case "PUSH_TILE_LEFT":
+        case "PUSH_TILE_RIGHT":
+            this._handle_tile(this.definition.action, window);
+            break;
+        case "WINDOW_WORKSPACE_NEXT":
+        case "WINDOW_WORKSPACE_PREVIOUS":
+            this._handle_window_workspace_move(this.definition.action, window);
+            break;
         }
     }
 
     _handle_tile(action, window) {
         switch (action) {
-            case "PUSH_TILE_LEFT":
-                global.display.push_tile(window, Meta.MotionDirection.LEFT);
-                return;
-            case "PUSH_TILE_RIGHT":
-                global.display.push_tile(window, Meta.MotionDirection.RIGHT);
-                return;
-            case "PUSH_TILE_UP":
-                global.display.push_tile(window, Meta.MotionDirection.UP);
-                return;
-            case "PUSH_TILE_DOWN":
-                global.display.push_tile(window, Meta.MotionDirection.DOWN);
-                return;
+        case "PUSH_TILE_LEFT":
+            global.display.push_tile(window, Meta.MotionDirection.LEFT);
+            return;
+        case "PUSH_TILE_RIGHT":
+            global.display.push_tile(window, Meta.MotionDirection.RIGHT);
+            return;
+        case "PUSH_TILE_UP":
+            global.display.push_tile(window, Meta.MotionDirection.UP);
+            return;
+        case "PUSH_TILE_DOWN":
+            global.display.push_tile(window, Meta.MotionDirection.DOWN);
+            return;
         }
     }
 
@@ -220,30 +220,30 @@ var WindowOpAction = class extends BaseAction {
         // Don't use workspace.get_neighbor() here - just do nothing if we swipe right
         // from the last workspace or left from the first.
         switch (action) {
-            case "WINDOW_WORKSPACE_NEXT":
-                if (cur_index === max_index) {
-                    return;
-                }
-
-                new_workspace = global.workspace_manager.get_workspace_by_index(cur_index + 1)
-                if (new_workspace != null) {
-                    window.change_workspace(new_workspace);
-                } else {
-                    global.logWarning("Gesture - move window to next workspace failed, workspace doesn't exist");
-                }
+        case "WINDOW_WORKSPACE_NEXT":
+            if (cur_index === max_index) {
                 return;
-            case "WINDOW_WORKSPACE_PREVIOUS":
-                if (cur_index === 0) {
-                    return;
-                }
+            }
 
-                new_workspace = global.workspace_manager.get_workspace_by_index(cur_index - 1)
-                if (new_workspace != null) {
-                    window.change_workspace(new_workspace);
-                } else {
-                    global.logWarning("Gesture - move window to next workspace failed, workspace doesn't exist");
-                }
+            new_workspace = global.workspace_manager.get_workspace_by_index(cur_index + 1)
+            if (new_workspace != null) {
+                window.change_workspace(new_workspace);
+            } else {
+                global.logWarning("Gesture - move window to next workspace failed, workspace doesn't exist");
+            }
+            return;
+        case "WINDOW_WORKSPACE_PREVIOUS":
+            if (cur_index === 0) {
                 return;
+            }
+
+            new_workspace = global.workspace_manager.get_workspace_by_index(cur_index - 1)
+            if (new_workspace != null) {
+                window.change_workspace(new_workspace);
+            } else {
+                global.logWarning("Gesture - move window to next workspace failed, workspace doesn't exist");
+            }
+            return;
         }
     }
 }
@@ -269,15 +269,15 @@ var GlobalDesktopAction = class extends BaseAction {
         }
 
         switch (this.definition.action) {
-            case "TOGGLE_EXPO":
-                Main.expo.toggle();
-                break
-            case "TOGGLE_OVERVIEW":
-                Main.overview.toggle();
-                break;
-            case "TOGGLE_DESKTOP":
-                global.workspace_manager.toggle_desktop(global.get_current_time());
-                break;
+        case "TOGGLE_EXPO":
+            Main.expo.toggle();
+            break
+        case "TOGGLE_OVERVIEW":
+            Main.overview.toggle();
+            break;
+        case "TOGGLE_DESKTOP":
+            global.workspace_manager.toggle_desktop(global.get_current_time());
+            break;
         }
     }
 }
@@ -388,11 +388,11 @@ var VolumeAction = class extends BaseAction {
         if (volume_pct < 1)
             icon = "muted";
         else
-            if (volume_pct < 33)
-                icon = "low";
+        if (volume_pct < 33)
+            icon = "low";
         else
-            if (volume_pct < 66)
-                icon = "medium";
+        if (volume_pct < 66)
+            icon = "medium";
         else
             icon = "high";
 
@@ -414,9 +414,9 @@ var VolumeAction = class extends BaseAction {
             this._set_volume(true, percentage, time);
         }
         else
-            if (this.definition.action === "VOLUME_DOWN") {
-                this._set_volume(false, 100 - percentage, time);
-            }
+        if (this.definition.action === "VOLUME_DOWN") {
+            this._set_volume(false, 100 - percentage, time);
+        }
     }
 
     end(direction, percentage, time) {
@@ -463,13 +463,13 @@ var MediaAction = class extends BaseAction {
             player.toggle_play()
         }
         else
-            if (this.definition.action === "MEDIA_NEXT") {
-                player.next_track();
-            }
-            else
-                if (this.definition.action === "MEDIA_PREVIOUS") {
-                    player.previous_track();
-                }
+        if (this.definition.action === "MEDIA_NEXT") {
+            player.next_track();
+        }
+        else
+        if (this.definition.action === "MEDIA_PREVIOUS") {
+            player.previous_track();
+        }
     }
 }
 
@@ -513,12 +513,12 @@ var ZoomAction = class extends BaseAction {
         }
 
         switch (this.definition.action) {
-            case "ZOOM_IN":
-                zoom_in = percentage > this.last_percentage;
-                break;
-            case "ZOOM_OUT":
-                zoom_in = percentage < this.last_percentage;
-                break;
+        case "ZOOM_IN":
+            zoom_in = percentage > this.last_percentage;
+            break;
+        case "ZOOM_OUT":
+            zoom_in = percentage < this.last_percentage;
+            break;
         }
 
         if (zoom_in) {
