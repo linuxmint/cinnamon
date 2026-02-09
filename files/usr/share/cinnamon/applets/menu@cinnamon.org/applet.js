@@ -26,6 +26,7 @@ const Pango = imports.gi.Pango;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const SignalManager = imports.misc.signalManager;
 const Params = imports.misc.params;
+const Placeholder = imports.ui.placeholder;
 
 const INITIAL_BUTTON_LOAD = 30;
 
@@ -2246,14 +2247,19 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "recent";
         } else {
             this.noRecentDocuments = true;
-            let button = new SimpleMenuItem(this, { name: _("No recent documents"),
-                                                    type: 'no-recent',
-                                                    styleClass: 'appmenu-application-button',
-                                                    reactive: false,
-                                                    activatable: false });
-            button.addLabel(button.name, 'appmenu-application-button-label');
+            let button = new SimpleMenuItem(this, {
+                type: 'no-recent',
+                reactive:false,
+            });
+            let placeHolder = new Placeholder.Placeholder({
+                icon_name: 'xsi-document-open-recent-symbolic',
+                title: _('No Recent Documents'),
+            });
+            button.actor.y_expand = true;
+            button.actor.y_align = Clutter.ActorAlign.CENTER;
+            button.actor.add_child(placeHolder);
             this._recentButtons.push(button);
-            this.applicationsBox.add_actor(button.actor);
+            this.applicationsBox.add_child(button.actor);
             button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "recent";
         }
     }
@@ -2294,14 +2300,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             });
         }
         else {
-            let button = new SimpleMenuItem(this, { name: _("No favorite documents"),
-                                                    type: 'no-favorites',
-                                                    styleClass: 'appmenu-application-button',
-                                                    reactive: false,
-                                                    activatable: false });
-            button.addLabel(button.name, 'appmenu-application-button-label');
+            let button = new SimpleMenuItem(this, {
+                type: 'no-favorites',
+                reactive: false,
+            });
+            let placeHolder = new Placeholder.Placeholder({
+                icon_name: 'xsi-user-favorites-symbolic',
+                title: _('No Favorite Documents'),
+                description: _("Files you add to Favorites in your file manager will be shown here")
+            });
+            button.actor.y_expand = true;
+            button.actor.y_align = Clutter.ActorAlign.CENTER;
+            button.actor.add_child(placeHolder);
             this._favoriteDocButtons.push(button);
-            this.applicationsBox.add_actor(button.actor);
+            this.applicationsBox.add_child(button.actor);
             button.actor.visible = this.menu.isOpen && this.lastSelectedCategory === "favorite";
         }
     }
