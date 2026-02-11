@@ -152,7 +152,7 @@ static void window_grab_broken (gpointer data);
 static gboolean
 activate_backup_window_cb (BackupWindow *window)
 {
-    g_debug ("activate_backup_window_cb: should_grab=%d\n", window->should_grab);
+    g_debug ("activate_backup_window_cb: should_grab=%d", window->should_grab);
 
     if (window->should_grab)
     {
@@ -231,7 +231,7 @@ update_for_compositing (gpointer data)
 
         gtk_widget_show (GTK_WIDGET (window));
     }
-    g_debug ("update for compositing\n");
+    g_debug ("update for compositing");
 
     if (window->should_grab)
     {
@@ -267,7 +267,7 @@ backup_window_realize (GtkWidget *widget)
     BackupWindow *window = BACKUP_WINDOW (widget);
     GdkWindow *gdk_win = gtk_widget_get_window (widget);
 
-    g_debug ("backup_window_realize: window xid=0x%lx\n",
+    g_debug ("backup_window_realize: window xid=0x%lx",
            (gulong) GDK_WINDOW_XID (gdk_win));
 
     set_net_wm_name (gdk_win, "backup-locker");
@@ -397,7 +397,7 @@ backup_window_init (BackupWindow *window)
     gtk_fixed_put (GTK_FIXED (window->fixed), window->info_box, 0, 0);
     gtk_widget_show (window->fixed);
 
-    window->grabber = cs_event_grabber_new (debug);
+    window->grabber = cs_event_grabber_new ();
 }
 
 static void
@@ -530,21 +530,21 @@ screensaver_window_gone (GObject      *source,
 
     g_task_propagate_boolean (G_TASK (result), NULL);
 
-    g_debug ("screensaver_window_gone: xid=0x%lx, cancelled=%d\n",
+    g_debug ("screensaver_window_gone: xid=0x%lx, cancelled=%d",
            xid, g_cancellable_is_cancelled (task_cancellable));
 
     if (!g_cancellable_is_cancelled (task_cancellable))
     {
         g_mutex_lock (&pretty_xid_mutex);
 
-        g_debug ("screensaver_window_gone: xid=0x%lx, pretty_xid=0x%lx, match=%d\n",
+        g_debug ("screensaver_window_gone: xid=0x%lx, pretty_xid=0x%lx, match=%d",
                xid, window->pretty_xid, xid == window->pretty_xid);
 
         if (xid == window->pretty_xid)
         {
-            g_debug ("screensaver_window_gone: ACTIVATING - starting event filter and grabbing\n");
+            g_debug ("screensaver_window_gone: ACTIVATING - starting event filter and grabbing");
             cs_gdk_event_filter_stop (window->event_filter);
-            cs_gdk_event_filter_start (window->event_filter, debug);
+            cs_gdk_event_filter_start (window->event_filter);
 
             window->should_grab = TRUE;
             window->pretty_xid = 0;
@@ -562,7 +562,7 @@ setup_window_monitor (BackupWindow *window, gulong xid)
 {
     GTask *task;
 
-    g_debug ("setup_window_monitor: xid=0x%lx\n", xid);
+    g_debug ("setup_window_monitor: xid=0x%lx", xid);
 
     g_mutex_lock (&pretty_xid_mutex);
 
@@ -586,7 +586,7 @@ release_grabs_internal (BackupWindow *window)
     if (!window->should_grab)
         return;
 
-    g_debug ("release_grabs_internal: releasing grabs, stopping event filter\n");
+    g_debug ("release_grabs_internal: releasing grabs, stopping event filter");
 
     cs_gdk_event_filter_stop (window->event_filter);
     g_clear_handle_id (&window->activate_idle_id, g_source_remove);
@@ -637,7 +637,7 @@ handle_lock (BackupWindow          *window,
     term_tty = new_term_tty;
     session_tty = new_session_tty;
 
-    g_debug ("handle_lock: xid=0x%lx, term=%u, session=%u\n",
+    g_debug ("handle_lock: xid=0x%lx, term=%u, session=%u",
            xid, term_tty, session_tty);
 
     if (window == NULL)
@@ -682,7 +682,7 @@ static void
 handle_unlock (BackupWindow          *window,
                GDBusMethodInvocation *invocation)
 {
-    g_debug ("handle_unlock\n");
+    g_debug ("handle_unlock");
 
     cleanup ();
     g_dbus_method_invocation_return_value (invocation, NULL);
@@ -693,7 +693,7 @@ static void
 handle_release_grabs (BackupWindow          *window,
                       GDBusMethodInvocation *invocation)
 {
-    g_debug ("handle_release_grabs\n");
+    g_debug ("handle_release_grabs");
 
     if (window != NULL)
     {
@@ -707,7 +707,7 @@ static void
 handle_quit (BackupWindow          *window,
              GDBusMethodInvocation *invocation)
 {
-    g_debug ("handle_quit\n");
+    g_debug ("handle_quit");
 
     cleanup ();
     g_dbus_method_invocation_return_value (invocation, NULL);
@@ -724,7 +724,7 @@ handle_method_call (GDBusConnection       *connection,
                     GDBusMethodInvocation *invocation,
                     gpointer               user_data)
 {
-    g_debug ("D-Bus method call: %s\n", method_name);
+    g_debug ("D-Bus method call: %s", method_name);
 
     if (g_strcmp0 (method_name, "Lock") == 0)
         handle_lock (global_window, parameters, invocation);
@@ -750,7 +750,7 @@ static const GDBusInterfaceVTable interface_vtable =
 static gboolean
 sigterm_received (gpointer data)
 {
-    g_debug ("SIGTERM received, cleaning up\n");
+    g_debug ("SIGTERM received, cleaning up");
 
     cleanup ();
     g_application_quit (G_APPLICATION (app));
@@ -858,7 +858,7 @@ main (int    argc,
 
     update_debug_from_gsettings ();
 
-    g_debug ("backup-locker: initializing (pid=%d)\n", getpid ());
+    g_debug ("backup-locker: initializing (pid=%d)", getpid ());
 
     app = gtk_application_new (BUS_NAME, G_APPLICATION_DEFAULT_FLAGS);
     g_application_set_inactivity_timeout (G_APPLICATION (app), 10000);
@@ -870,7 +870,7 @@ main (int    argc,
 
     status = g_application_run (G_APPLICATION (app), argc, argv);
 
-    g_debug ("backup-locker: exit\n");
+    g_debug ("backup-locker: exit");
 
     g_clear_pointer (&introspection_data, g_dbus_node_info_unref);
     g_object_unref (app);

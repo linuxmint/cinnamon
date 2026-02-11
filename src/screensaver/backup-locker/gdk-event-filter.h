@@ -11,7 +11,7 @@ G_DECLARE_FINAL_TYPE (CsGdkEventFilter, cs_gdk_event_filter, CS, GDK_EVENT_FILTE
 
 CsGdkEventFilter            *cs_gdk_event_filter_new (GtkWidget *managed_window);
 
-void                         cs_gdk_event_filter_start (CsGdkEventFilter *filter, gboolean debug);
+void                         cs_gdk_event_filter_start (CsGdkEventFilter *filter);
 
 void                         cs_gdk_event_filter_stop  (CsGdkEventFilter *filter);
 

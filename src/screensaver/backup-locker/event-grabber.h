@@ -31,7 +31,7 @@ G_BEGIN_DECLS
 #define CS_TYPE_EVENT_GRABBER         (cs_event_grabber_get_type ())
 G_DECLARE_FINAL_TYPE (CsEventGrabber, cs_event_grabber, CS, EVENT_GRABBER, GObject)
 
-CsEventGrabber  * cs_event_grabber_new              (gboolean debug);
+CsEventGrabber  * cs_event_grabber_new              (void);
 
 void      cs_event_grabber_release          (CsEventGrabber    *grab);
 gboolean  cs_event_grabber_release_mouse    (CsEventGrabber    *grab);

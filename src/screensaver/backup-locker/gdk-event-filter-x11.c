@@ -247,16 +247,10 @@ cs_gdk_event_filter_class_init (CsGdkEventFilterClass *klass)
 }
 
 void
-cs_gdk_event_filter_start (CsGdkEventFilter *filter,
-                           gboolean          debug)
+cs_gdk_event_filter_start (CsGdkEventFilter *filter)
 {
     select_popup_events (filter);
     select_shape_events (filter);
-
-    if (debug)
-    {
-        g_setenv ("G_MESSAGES_DEBUG", "all", TRUE);
-    }
 
     filter->my_xid = gdk_x11_window_get_xid (gtk_widget_get_window (GTK_WIDGET (filter->managed_window)));
 
