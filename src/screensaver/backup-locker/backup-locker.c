@@ -20,17 +20,37 @@
 #define BUS_NAME "org.cinnamon.BackupLocker"
 #define BUS_PATH "/org/cinnamon/BackupLocker"
 
-static gboolean debug = FALSE;
-static guint term_tty = 0;
-static guint session_tty = 0;
+#define BACKUP_TYPE_LOCKER (backup_locker_get_type ())
+G_DECLARE_FINAL_TYPE (BackupLocker, backup_locker, BACKUP, LOCKER, GtkApplication)
 
-static GMutex pretty_xid_mutex;
-static GCancellable *window_monitor_cancellable = NULL;
-static guint sigterm_src_id;
+struct _BackupLocker
+{
+    GtkApplication parent_instance;
 
-static GtkApplication *app = NULL;
-static gboolean held = FALSE;
-static gboolean hold_mode = FALSE;
+    GtkWidget *window;
+    GtkWidget *fixed;
+    GtkWidget *info_box;
+
+    CsGdkEventFilter *event_filter;
+    CsEventGrabber *grabber;
+
+    GCancellable *monitor_cancellable;
+    GMutex pretty_xid_mutex;
+
+    gulong pretty_xid;
+    guint activate_idle_id;
+    guint sigterm_src_id;
+    guint term_tty;
+    guint session_tty;
+
+    gboolean should_grab;
+    gboolean hold_mode;
+    gboolean locked;
+};
+
+G_DEFINE_TYPE (BackupLocker, backup_locker, GTK_TYPE_APPLICATION)
+
+static GDBusNodeInfo *introspection_data = NULL;
 
 static const gchar introspection_xml[] =
     "<node>"
@@ -46,36 +66,9 @@ static const gchar introspection_xml[] =
     "  </interface>"
     "</node>";
 
-static GDBusNodeInfo *introspection_data = NULL;
-
-
-#define BACKUP_TYPE_WINDOW (backup_window_get_type ())
-
-G_DECLARE_FINAL_TYPE (BackupWindow, backup_window, BACKUP, WINDOW, GtkWindow)
-
-static void setup_window_monitor (BackupWindow *window, gulong xid);
-static void cleanup (void);
-static void release_grabs_internal (BackupWindow *window);
-static void app_release (void);
-
-struct _BackupWindow
-{
-    GtkWindow parent_instance;
-    GtkWidget *fixed;
-    GtkWidget *info_box;
-
-    CsGdkEventFilter *event_filter;
-    CsEventGrabber *grabber;
-
-    gulong pretty_xid;
-    guint activate_idle_id;
-
-    gboolean should_grab;
-};
-
-G_DEFINE_TYPE (BackupWindow, backup_window, GTK_TYPE_WINDOW)
-
-static BackupWindow *global_window = NULL;
+static void create_window (BackupLocker *self);
+static void setup_window_monitor (BackupLocker *self, gulong xid);
+static void release_grabs_internal (BackupLocker *self);
 
 static void
 set_net_wm_name (GdkWindow   *window,
@@ -97,27 +90,30 @@ set_net_wm_name (GdkWindow   *window,
 }
 
 static void
-position_info_box (BackupWindow *window)
+position_info_box (BackupLocker *self)
 {
-    GdkDisplay *display = gdk_display_get_default ();
-    GdkMonitor *monitor = gdk_display_get_primary_monitor (display);
+    GdkDisplay *display;
+    GdkMonitor *monitor;
     GdkRectangle rect;
     GtkRequisition natural_size;
 
-    gtk_widget_get_preferred_size (window->info_box, NULL, &natural_size);
+    if (self->info_box == NULL)
+        return;
+
+    gtk_widget_get_preferred_size (self->info_box, NULL, &natural_size);
 
     if (natural_size.width == 0 || natural_size.height == 0)
-    {
         return;
-    }
 
+    display = gdk_display_get_default ();
+    monitor = gdk_display_get_primary_monitor (display);
     gdk_monitor_get_workarea (monitor, &rect);
 
     g_debug ("Positioning info box (%dx%d) to primary monitor (%d+%d+%dx%d)",
              natural_size.width, natural_size.height,
              rect.x, rect.y, rect.width, rect.height);
 
-    gtk_fixed_move (GTK_FIXED (window->fixed), window->info_box,
+    gtk_fixed_move (GTK_FIXED (self->fixed), self->info_box,
                     rect.x + (rect.width / 2) - (natural_size.width / 2),
                     rect.y + (rect.height / 2) - (natural_size.height / 2));
 }
@@ -126,50 +122,49 @@ static void
 root_window_size_changed (CsGdkEventFilter *filter,
                           gpointer          user_data)
 {
-    BackupWindow *window = BACKUP_WINDOW (user_data);
+    BackupLocker *self = BACKUP_LOCKER (user_data);
     GdkWindow *gdk_win;
     Display *xdisplay;
-
     gint w, h, screen_num;
 
-    gdk_win = gtk_widget_get_window (GTK_WIDGET (window));
+    gdk_win = gtk_widget_get_window (self->window);
 
-    xdisplay =  GDK_DISPLAY_XDISPLAY (gdk_window_get_display (gdk_win));
+    xdisplay = GDK_DISPLAY_XDISPLAY (gdk_window_get_display (gdk_win));
     screen_num = DefaultScreen (xdisplay);
 
     w = DisplayWidth (xdisplay, screen_num);
     h = DisplayHeight (xdisplay, screen_num);
 
-    gdk_window_move_resize (gtk_widget_get_window (GTK_WIDGET (window)),
+    gdk_window_move_resize (gtk_widget_get_window (self->window),
                             0, 0, w, h);
-    position_info_box (window);
+    position_info_box (self);
 
-    gtk_widget_queue_resize (GTK_WIDGET (window));
+    gtk_widget_queue_resize (self->window);
 }
 
 static void window_grab_broken (gpointer data);
 
 static gboolean
-activate_backup_window_cb (BackupWindow *window)
+activate_backup_window_cb (BackupLocker *self)
 {
-    g_debug ("activate_backup_window_cb: should_grab=%d", window->should_grab);
+    g_debug ("activate_backup_window_cb: should_grab=%d", self->should_grab);
 
-    if (window->should_grab)
+    if (self->should_grab)
     {
-        if (cs_event_grabber_grab_root (window->grabber, FALSE))
+        if (cs_event_grabber_grab_root (self->grabber, FALSE))
         {
             guint32 user_time;
-            cs_event_grabber_move_to_window (window->grabber,
-                                          gtk_widget_get_window (GTK_WIDGET (window)),
-                                          gtk_widget_get_screen (GTK_WIDGET (window)),
+            cs_event_grabber_move_to_window (self->grabber,
+                                          gtk_widget_get_window (self->window),
+                                          gtk_widget_get_screen (self->window),
                                           FALSE);
-            g_signal_connect_swapped (window, "grab-broken-event", G_CALLBACK (window_grab_broken), window);
+            g_signal_connect_swapped (self->window, "grab-broken-event", G_CALLBACK (window_grab_broken), self);
 
-            user_time = gdk_x11_display_get_user_time (gtk_widget_get_display (GTK_WIDGET (window)));
-            gdk_x11_window_set_user_time (gtk_widget_get_window (GTK_WIDGET (window)), user_time);
+            user_time = gdk_x11_display_get_user_time (gtk_widget_get_display (self->window));
+            gdk_x11_window_set_user_time (gtk_widget_get_window (self->window), user_time);
 
-            gtk_widget_show (window->info_box);
-            position_info_box (window);
+            gtk_widget_show (self->info_box);
+            position_info_box (self);
         }
         else
         {
@@ -177,44 +172,43 @@ activate_backup_window_cb (BackupWindow *window)
         }
     }
 
-    window->activate_idle_id = 0;
+    self->activate_idle_id = 0;
     return G_SOURCE_REMOVE;
 }
 
 static void
-activate_backup_window (BackupWindow *window)
+activate_backup_window (BackupLocker *self)
 {
-    g_clear_handle_id (&window->activate_idle_id, g_source_remove);
-    window->activate_idle_id = g_idle_add ((GSourceFunc) activate_backup_window_cb, window);
+    g_clear_handle_id (&self->activate_idle_id, g_source_remove);
+    self->activate_idle_id = g_idle_add ((GSourceFunc) activate_backup_window_cb, self);
 }
 
 static void
-backup_window_ungrab (BackupWindow *window)
+ungrab (BackupLocker *self)
 {
-    cs_event_grabber_release (window->grabber);
-
-    window->should_grab = FALSE;
+    cs_event_grabber_release (self->grabber);
+    self->should_grab = FALSE;
 }
 
 static void
 window_grab_broken (gpointer data)
 {
-    BackupWindow *window = BACKUP_WINDOW (data);
+    BackupLocker *self = BACKUP_LOCKER (data);
 
-    g_signal_handlers_disconnect_by_func (window, window_grab_broken, window);
+    g_signal_handlers_disconnect_by_func (self->window, window_grab_broken, self);
 
-    if (window->should_grab)
+    if (self->should_grab)
     {
         g_debug ("Grab broken, retrying");
-        activate_backup_window (window);
+        activate_backup_window (self);
     }
 }
 
 static gboolean
-update_for_compositing (gpointer data)
+update_for_compositing (BackupLocker *self)
 {
-    BackupWindow *window = BACKUP_WINDOW (data);
     GdkVisual *visual;
+
     visual = gdk_screen_get_rgba_visual (gdk_screen_get_default ());
     if (!visual)
     {
@@ -222,68 +216,74 @@ update_for_compositing (gpointer data)
         return FALSE;
     }
 
-    if (visual != NULL && gdk_screen_is_composited (gdk_screen_get_default ()))
+    if (gdk_screen_is_composited (gdk_screen_get_default ()))
     {
-        gtk_widget_hide (GTK_WIDGET (window));
-        gtk_widget_unrealize (GTK_WIDGET (window));
-        gtk_widget_set_visual (GTK_WIDGET (window), visual);
-        gtk_widget_realize (GTK_WIDGET (window));
+        gtk_widget_hide (self->window);
+        gtk_widget_unrealize (self->window);
+        gtk_widget_set_visual (self->window, visual);
+        gtk_widget_realize (self->window);
 
-        gtk_widget_show (GTK_WIDGET (window));
+        if (self->locked)
+            gtk_widget_show (self->window);
     }
     g_debug ("update for compositing");
 
-    if (window->should_grab)
-    {
-        activate_backup_window (window);
-    }
+    if (self->should_grab)
+        activate_backup_window (self);
 
     return TRUE;
 }
 
 static void
-on_composited_changed (gpointer data)
+on_composited_changed (BackupLocker *self)
 {
-    g_debug ("Received composited-changed");
+    g_debug ("Received composited-changed (composited: %s)",
+             gdk_screen_is_composited (gdk_screen_get_default ()) ? "yes" : "no");
 
-    g_return_if_fail (BACKUP_IS_WINDOW (data));
+    if (self->window == NULL || !self->locked)
+        return;
 
-    BackupWindow *window = BACKUP_WINDOW (data);
-
-    if (!update_for_compositing (window))
+    if (!update_for_compositing (self))
     {
         g_critical ("Error realizing backup-locker window - exiting");
-        app_release ();
+
+        if (self->locked)
+        {
+            self->locked = FALSE;
+            g_application_release (G_APPLICATION (self));
+        }
     }
 }
 
 static void
-backup_window_realize (GtkWidget *widget)
+on_window_realize (GtkWidget *widget, BackupLocker *self)
 {
-    if (GTK_WIDGET_CLASS (backup_window_parent_class)->realize) {
-        GTK_WIDGET_CLASS (backup_window_parent_class)->realize (widget);
-    }
-
-    BackupWindow *window = BACKUP_WINDOW (widget);
     GdkWindow *gdk_win = gtk_widget_get_window (widget);
 
-    g_debug ("backup_window_realize: window xid=0x%lx",
+    g_debug ("on_window_realize: window xid=0x%lx",
            (gulong) GDK_WINDOW_XID (gdk_win));
 
     set_net_wm_name (gdk_win, "backup-locker");
 
-    root_window_size_changed (window->event_filter, (gpointer) widget);
+    root_window_size_changed (self->event_filter, self);
 }
 
 static void
-backup_window_init (BackupWindow *window)
+create_window (BackupLocker *self)
 {
     GtkWidget *box;
     GtkWidget *widget;
+    GtkStyleContext *context;
+    GtkCssProvider *provider;
     PangoAttrList *attrs;
+    GdkVisual *visual;
 
-    gtk_widget_set_events (GTK_WIDGET (window),
-                           gtk_widget_get_events (GTK_WIDGET (window))
+    self->window = g_object_new (GTK_TYPE_WINDOW,
+                                 "type", GTK_WINDOW_POPUP,
+                                 NULL);
+
+    gtk_widget_set_events (self->window,
+                           gtk_widget_get_events (self->window)
                            | GDK_POINTER_MOTION_MASK
                            | GDK_BUTTON_PRESS_MASK
                            | GDK_BUTTON_RELEASE_MASK
@@ -294,8 +294,18 @@ backup_window_init (BackupWindow *window)
                            | GDK_ENTER_NOTIFY_MASK
                            | GDK_LEAVE_NOTIFY_MASK);
 
-    window->fixed = gtk_fixed_new ();
-    gtk_container_add (GTK_CONTAINER (window), window->fixed);
+    context = gtk_widget_get_style_context (self->window);
+    gtk_style_context_remove_class (context, "background");
+    provider = gtk_css_provider_new ();
+    gtk_css_provider_load_from_data (provider, ".backup-active { background-color: black; }", -1, NULL);
+    gtk_style_context_add_provider (context,
+                                    GTK_STYLE_PROVIDER (provider),
+                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
+    gtk_style_context_add_class (context, "backup-active");
+    g_object_unref (provider);
+
+    self->fixed = gtk_fixed_new ();
+    gtk_container_add (GTK_CONTAINER (self->window), self->fixed);
 
     box = gtk_box_new (GTK_ORIENTATION_VERTICAL, 0);
     gtk_widget_set_valign (box, GTK_ALIGN_CENTER);
@@ -347,19 +357,19 @@ backup_window_init (BackupWindow *window)
     gchar *tmp0 = NULL;
     gchar *tmp1 = NULL;
 
-    tmp0 = g_strdup_printf (_(steps[0]), term_tty);
-    tmp1 = g_strdup_printf ("• %s\n", tmp0);
+    tmp0 = g_strdup_printf (_(steps[0]), self->term_tty);
+    tmp1 = g_strdup_printf ("\xe2\x80\xa2 %s\n", tmp0);
     g_string_append (str, tmp1);
     g_free (tmp0);
     g_free (tmp1);
-    tmp1 = g_strdup_printf ("• %s\n", _(steps[1]));
+    tmp1 = g_strdup_printf ("\xe2\x80\xa2 %s\n", _(steps[1]));
     g_string_append (str, tmp1);
     g_free (tmp1);
-    tmp1 = g_strdup_printf ("• %s\n", _(steps[2]));
+    tmp1 = g_strdup_printf ("\xe2\x80\xa2 %s\n", _(steps[2]));
     g_string_append (str, tmp1);
     g_free (tmp1);
-    tmp0 = g_strdup_printf (_(steps[3]), session_tty);
-    tmp1 = g_strdup_printf ("• %s\n", tmp0);
+    tmp0 = g_strdup_printf (_(steps[3]), self->session_tty);
+    tmp1 = g_strdup_printf ("\xe2\x80\xa2 %s\n", tmp0);
     g_string_append (str, tmp1);
     g_free (tmp0);
     g_free (tmp1);
@@ -385,86 +395,30 @@ backup_window_init (BackupWindow *window)
     gtk_widget_set_halign (widget, GTK_ALIGN_CENTER);
     gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 6);
 
-    g_signal_connect_swapped (gdk_screen_get_default (), "composited-changed", G_CALLBACK (on_composited_changed), window);
-
     gtk_widget_show_all (box);
     gtk_widget_set_no_show_all (box, TRUE);
     gtk_widget_hide (box);
-    window->info_box = box;
+    self->info_box = box;
 
-    g_signal_connect_swapped (window->info_box, "realize", G_CALLBACK (position_info_box), window);
+    g_signal_connect_swapped (self->info_box, "realize", G_CALLBACK (position_info_box), self);
 
-    gtk_fixed_put (GTK_FIXED (window->fixed), window->info_box, 0, 0);
-    gtk_widget_show (window->fixed);
+    gtk_fixed_put (GTK_FIXED (self->fixed), self->info_box, 0, 0);
+    gtk_widget_show (self->fixed);
 
-    window->grabber = cs_event_grabber_new ();
-}
+    self->event_filter = cs_gdk_event_filter_new (self->window);
+    g_signal_connect (self->event_filter, "xscreen-size", G_CALLBACK (root_window_size_changed), self);
+    self->grabber = cs_event_grabber_new ();
 
-static void
-backup_window_finalize (GObject *object)
-{
-        BackupWindow *window;
+    g_signal_connect (self->window, "realize", G_CALLBACK (on_window_realize), self);
 
-        g_return_if_fail (object != NULL);
-        g_return_if_fail (GTK_IS_WINDOW (object));
+    g_signal_connect_object (gdk_screen_get_default (), "composited-changed",
+                             G_CALLBACK (on_composited_changed), self, G_CONNECT_SWAPPED);
 
-        window = BACKUP_WINDOW (object);
+    visual = gdk_screen_get_rgba_visual (gdk_screen_get_default ());
+    if (visual)
+        gtk_widget_set_visual (self->window, visual);
 
-        backup_window_ungrab (window);
-
-        g_object_unref (window->event_filter);
-        g_object_unref (window->grabber);
-
-        G_OBJECT_CLASS (backup_window_parent_class)->finalize (object);
-}
-
-static void
-backup_window_class_init (BackupWindowClass *klass)
-{
-    GObjectClass   *object_class = G_OBJECT_CLASS (klass);
-    GtkWidgetClass *widget_class = GTK_WIDGET_CLASS (klass);
-
-    object_class->finalize = backup_window_finalize;
-    widget_class->realize = backup_window_realize;
-}
-
-
-static GtkWidget *
-backup_window_new (void)
-{
-    BackupWindow *window;
-    GtkStyleContext *context;
-    GtkCssProvider *provider;
-    GObject     *result;
-
-    result = g_object_new (BACKUP_TYPE_WINDOW,
-                           "type", GTK_WINDOW_POPUP,
-                           NULL);
-
-    window = BACKUP_WINDOW (result);
-
-    context = gtk_widget_get_style_context (GTK_WIDGET (window));
-    gtk_style_context_remove_class (context, "background");
-    provider = gtk_css_provider_new ();
-    gtk_css_provider_load_from_data (provider, ".backup-active { background-color: black; }", -1, NULL);
-    gtk_style_context_add_provider (context,
-                                    GTK_STYLE_PROVIDER (provider),
-                                    GTK_STYLE_PROVIDER_PRIORITY_APPLICATION);
-    gtk_style_context_add_class (context, "backup-active");
-    window->event_filter = cs_gdk_event_filter_new (GTK_WIDGET (window));
-    g_signal_connect (window->event_filter, "xscreen-size", G_CALLBACK (root_window_size_changed), window);
-
-    window->pretty_xid = 0;
-    window->should_grab = FALSE;
-
-    if (!update_for_compositing (window))
-    {
-        return NULL;
-    }
-
-    gtk_widget_realize (GTK_WIDGET (window));
-
-    return GTK_WIDGET (result);
+    gtk_widget_realize (self->window);
 }
 
 static void
@@ -524,7 +478,7 @@ screensaver_window_gone (GObject      *source,
                          GAsyncResult *result,
                          gpointer      user_data)
 {
-    BackupWindow *window = BACKUP_WINDOW (user_data);
+    BackupLocker *self = BACKUP_LOCKER (user_data);
     GCancellable *task_cancellable = g_task_get_cancellable (G_TASK (result));
     gulong xid = GDK_POINTER_TO_XID (g_task_get_task_data (G_TASK (result)));
 
@@ -535,183 +489,173 @@ screensaver_window_gone (GObject      *source,
 
     if (!g_cancellable_is_cancelled (task_cancellable))
     {
-        g_mutex_lock (&pretty_xid_mutex);
+        g_mutex_lock (&self->pretty_xid_mutex);
 
         g_debug ("screensaver_window_gone: xid=0x%lx, pretty_xid=0x%lx, match=%d",
-               xid, window->pretty_xid, xid == window->pretty_xid);
+               xid, self->pretty_xid, xid == self->pretty_xid);
 
-        if (xid == window->pretty_xid)
+        if (xid == self->pretty_xid)
         {
             g_debug ("screensaver_window_gone: ACTIVATING - starting event filter and grabbing");
-            cs_gdk_event_filter_stop (window->event_filter);
-            cs_gdk_event_filter_start (window->event_filter);
+            cs_gdk_event_filter_stop (self->event_filter);
+            cs_gdk_event_filter_start (self->event_filter);
 
-            window->should_grab = TRUE;
-            window->pretty_xid = 0;
-            activate_backup_window (window);
+            self->should_grab = TRUE;
+            self->pretty_xid = 0;
+            activate_backup_window (self);
         }
 
-        g_mutex_unlock (&pretty_xid_mutex);
+        g_mutex_unlock (&self->pretty_xid_mutex);
     }
 
-    g_clear_object (&window_monitor_cancellable);
+    g_clear_object (&self->monitor_cancellable);
 }
 
 static void
-setup_window_monitor (BackupWindow *window, gulong xid)
+setup_window_monitor (BackupLocker *self, gulong xid)
 {
     GTask *task;
 
     g_debug ("setup_window_monitor: xid=0x%lx", xid);
 
-    g_mutex_lock (&pretty_xid_mutex);
+    g_mutex_lock (&self->pretty_xid_mutex);
 
-    window->should_grab = FALSE;
-    window->pretty_xid = xid;
+    self->should_grab = FALSE;
+    self->pretty_xid = xid;
 
-    window_monitor_cancellable = g_cancellable_new ();
-    task = g_task_new (NULL, window_monitor_cancellable, screensaver_window_gone, window);
+    self->monitor_cancellable = g_cancellable_new ();
+    task = g_task_new (NULL, self->monitor_cancellable, screensaver_window_gone, self);
 
     g_task_set_return_on_cancel (task, TRUE);
     g_task_set_task_data (task, GDK_XID_TO_POINTER (xid), NULL);
 
     g_task_run_in_thread (task, window_monitor_thread);
     g_object_unref (task);
-    g_mutex_unlock (&pretty_xid_mutex);
+    g_mutex_unlock (&self->pretty_xid_mutex);
 }
 
 static void
-release_grabs_internal (BackupWindow *window)
+release_grabs_internal (BackupLocker *self)
 {
-    if (!window->should_grab)
+    if (!self->should_grab)
         return;
 
     g_debug ("release_grabs_internal: releasing grabs, stopping event filter");
 
-    cs_gdk_event_filter_stop (window->event_filter);
-    g_clear_handle_id (&window->activate_idle_id, g_source_remove);
-    backup_window_ungrab (window);
-    gtk_widget_hide (window->info_box);
+    cs_gdk_event_filter_stop (self->event_filter);
+    g_clear_handle_id (&self->activate_idle_id, g_source_remove);
+    ungrab (self);
+
+    if (self->info_box != NULL)
+        gtk_widget_hide (self->info_box);
 }
 
 static void
-cleanup (void)
-{
-    g_clear_handle_id (&sigterm_src_id, g_source_remove);
-
-    if (window_monitor_cancellable != NULL)
-    {
-        g_cancellable_cancel (window_monitor_cancellable);
-        g_clear_object (&window_monitor_cancellable);
-    }
-
-    if (global_window != NULL)
-    {
-        release_grabs_internal (global_window);
-        gtk_widget_destroy (GTK_WIDGET (global_window));
-        global_window = NULL;
-    }
-}
-
-static void
-app_release (void)
-{
-    if (held)
-    {
-        held = FALSE;
-        g_application_release (G_APPLICATION (app));
-    }
-}
-
-static void
-handle_lock (BackupWindow          *window,
+handle_lock (BackupLocker          *self,
              GVariant              *parameters,
              GDBusMethodInvocation *invocation)
 {
     guint64 xid64;
-    guint new_term_tty, new_session_tty;
 
-    g_variant_get (parameters, "(tuu)", &xid64, &new_term_tty, &new_session_tty);
+    g_variant_get (parameters, "(tuu)", &xid64, &self->term_tty, &self->session_tty);
     gulong xid = (gulong) xid64;
 
-    term_tty = new_term_tty;
-    session_tty = new_session_tty;
-
     g_debug ("handle_lock: xid=0x%lx, term=%u, session=%u",
-           xid, term_tty, session_tty);
+           xid, self->term_tty, self->session_tty);
 
-    if (window == NULL)
+    if (self->window == NULL)
     {
-        GtkWidget *w = backup_window_new ();
-        if (w == NULL)
-        {
-            g_dbus_method_invocation_return_error (invocation,
-                G_DBUS_ERROR, G_DBUS_ERROR_FAILED,
-                "Failed to create backup window");
-            return;
-        }
-
-        window = BACKUP_WINDOW (w);
-        global_window = window;
+        create_window (self);
     }
     else
     {
-        release_grabs_internal (window);
+        release_grabs_internal (self);
 
-        if (window_monitor_cancellable != NULL)
+        if (self->monitor_cancellable != NULL)
         {
-            g_cancellable_cancel (window_monitor_cancellable);
-            g_clear_object (&window_monitor_cancellable);
+            g_cancellable_cancel (self->monitor_cancellable);
+            g_clear_object (&self->monitor_cancellable);
         }
     }
 
-    gtk_widget_show (GTK_WIDGET (window));
+    if (!self->locked)
+        g_application_hold (G_APPLICATION (self));
 
-    setup_window_monitor (window, xid);
+    self->locked = TRUE;
 
-    if (!held)
-    {
-        g_application_hold (G_APPLICATION (app));
-        held = TRUE;
-    }
+    gtk_widget_show (self->window);
+
+    setup_window_monitor (self, xid);
 
     g_dbus_method_invocation_return_value (invocation, NULL);
 }
 
 static void
-handle_unlock (BackupWindow          *window,
+handle_unlock (BackupLocker          *self,
                GDBusMethodInvocation *invocation)
 {
     g_debug ("handle_unlock");
 
-    cleanup ();
+    if (self->monitor_cancellable != NULL)
+    {
+        g_cancellable_cancel (self->monitor_cancellable);
+        g_clear_object (&self->monitor_cancellable);
+    }
+
+    release_grabs_internal (self);
+
+    if (self->window != NULL)
+        gtk_widget_hide (self->window);
+
     g_dbus_method_invocation_return_value (invocation, NULL);
-    app_release ();
+
+    if (self->locked)
+    {
+        self->locked = FALSE;
+        g_application_release (G_APPLICATION (self));
+    }
 }
 
 static void
-handle_release_grabs (BackupWindow          *window,
+handle_release_grabs (BackupLocker          *self,
                       GDBusMethodInvocation *invocation)
 {
     g_debug ("handle_release_grabs");
 
-    if (window != NULL)
-    {
-        release_grabs_internal (window);
-    }
+    release_grabs_internal (self);
 
     g_dbus_method_invocation_return_value (invocation, NULL);
 }
 
 static void
-handle_quit (BackupWindow          *window,
+handle_quit (BackupLocker          *self,
              GDBusMethodInvocation *invocation)
 {
     g_debug ("handle_quit");
 
-    cleanup ();
+    if (self->monitor_cancellable != NULL)
+    {
+        g_cancellable_cancel (self->monitor_cancellable);
+        g_clear_object (&self->monitor_cancellable);
+    }
+
+    release_grabs_internal (self);
+
+    if (self->window != NULL)
+    {
+        gtk_widget_destroy (self->window);
+        self->window = NULL;
+        self->info_box = NULL;
+        self->fixed = NULL;
+    }
+
     g_dbus_method_invocation_return_value (invocation, NULL);
-    app_release ();
+
+    if (self->locked)
+    {
+        self->locked = FALSE;
+        g_application_release (G_APPLICATION (self));
+    }
 }
 
 static void
@@ -724,16 +668,18 @@ handle_method_call (GDBusConnection       *connection,
                     GDBusMethodInvocation *invocation,
                     gpointer               user_data)
 {
+    BackupLocker *self = BACKUP_LOCKER (user_data);
+
     g_debug ("D-Bus method call: %s", method_name);
 
     if (g_strcmp0 (method_name, "Lock") == 0)
-        handle_lock (global_window, parameters, invocation);
+        handle_lock (self, parameters, invocation);
     else if (g_strcmp0 (method_name, "Unlock") == 0)
-        handle_unlock (global_window, invocation);
+        handle_unlock (self, invocation);
     else if (g_strcmp0 (method_name, "ReleaseGrabs") == 0)
-        handle_release_grabs (global_window, invocation);
+        handle_release_grabs (self, invocation);
     else if (g_strcmp0 (method_name, "Quit") == 0)
-        handle_quit (global_window, invocation);
+        handle_quit (self, invocation);
     else
         g_dbus_method_invocation_return_error (invocation,
             G_DBUS_ERROR, G_DBUS_ERROR_UNKNOWN_METHOD,
@@ -750,20 +696,38 @@ static const GDBusInterfaceVTable interface_vtable =
 static gboolean
 sigterm_received (gpointer data)
 {
+    BackupLocker *self = BACKUP_LOCKER (data);
+
     g_debug ("SIGTERM received, cleaning up");
 
-    cleanup ();
-    g_application_quit (G_APPLICATION (app));
+    if (self->monitor_cancellable != NULL)
+    {
+        g_cancellable_cancel (self->monitor_cancellable);
+        g_clear_object (&self->monitor_cancellable);
+    }
+
+    release_grabs_internal (self);
+
+    if (self->window != NULL)
+    {
+        gtk_widget_destroy (self->window);
+        self->window = NULL;
+    }
+
+    self->sigterm_src_id = 0;
+    g_application_quit (G_APPLICATION (self));
 
     return G_SOURCE_REMOVE;
 }
 
 static void
-on_startup (GApplication *application,
-            gpointer      user_data)
+backup_locker_startup (GApplication *application)
 {
+    BackupLocker *self = BACKUP_LOCKER (application);
     GDBusConnection *connection;
     GError *error = NULL;
+
+    G_APPLICATION_CLASS (backup_locker_parent_class)->startup (application);
 
     introspection_data = g_dbus_node_info_new_for_xml (introspection_xml, NULL);
     g_assert (introspection_data != NULL);
@@ -774,7 +738,7 @@ on_startup (GApplication *application,
                                        BUS_PATH,
                                        introspection_data->interfaces[0],
                                        &interface_vtable,
-                                       NULL,
+                                       self,
                                        NULL,
                                        &error);
 
@@ -786,21 +750,25 @@ on_startup (GApplication *application,
         return;
     }
 
-    sigterm_src_id = g_unix_signal_add (SIGTERM, (GSourceFunc) sigterm_received, NULL);
+    self->sigterm_src_id = g_unix_signal_add (SIGTERM, (GSourceFunc) sigterm_received, self);
 
     g_application_hold (application);
 
-    if (!hold_mode)
-    {
+    if (!self->hold_mode)
         g_application_release (application);
-    }
+}
+
+static void
+backup_locker_activate (GApplication *application)
+{
 }
 
 static gint
-on_handle_local_options (GApplication *application,
-                         GVariantDict *options,
-                         gpointer      user_data)
+backup_locker_handle_local_options (GApplication *application,
+                                    GVariantDict *options)
 {
+    BackupLocker *self = BACKUP_LOCKER (application);
+
     if (g_variant_dict_contains (options, "version"))
     {
         g_print ("%s %s\n", g_get_prgname (), VERSION);
@@ -808,25 +776,67 @@ on_handle_local_options (GApplication *application,
     }
 
     if (g_variant_dict_contains (options, "hold"))
-    {
-        hold_mode = TRUE;
-    }
+        self->hold_mode = TRUE;
 
     return -1;
 }
 
 static void
-on_activate (GApplication *application,
-             gpointer      user_data)
+backup_locker_init (BackupLocker *self)
 {
-    /* Nothing to do — activation is handled by D-Bus method calls */
+    g_mutex_init (&self->pretty_xid_mutex);
+}
+
+static void
+backup_locker_finalize (GObject *object)
+{
+    BackupLocker *self = BACKUP_LOCKER (object);
+
+    g_clear_handle_id (&self->sigterm_src_id, g_source_remove);
+    g_clear_handle_id (&self->activate_idle_id, g_source_remove);
+
+    if (self->monitor_cancellable != NULL)
+    {
+        g_cancellable_cancel (self->monitor_cancellable);
+        g_clear_object (&self->monitor_cancellable);
+    }
+
+    if (self->grabber != NULL)
+    {
+        cs_event_grabber_release (self->grabber);
+        g_clear_object (&self->grabber);
+    }
+
+    g_clear_object (&self->event_filter);
+
+    if (self->window != NULL)
+    {
+        gtk_widget_destroy (self->window);
+        self->window = NULL;
+    }
+
+    g_mutex_clear (&self->pretty_xid_mutex);
+
+    G_OBJECT_CLASS (backup_locker_parent_class)->finalize (object);
+}
+
+static void
+backup_locker_class_init (BackupLockerClass *klass)
+{
+    GObjectClass *object_class = G_OBJECT_CLASS (klass);
+    GApplicationClass *app_class = G_APPLICATION_CLASS (klass);
+
+    object_class->finalize = backup_locker_finalize;
+    app_class->startup = backup_locker_startup;
+    app_class->activate = backup_locker_activate;
+    app_class->handle_local_options = backup_locker_handle_local_options;
 }
 
 static void
 update_debug_from_gsettings (void)
 {
     GSettings *settings = g_settings_new ("org.cinnamon");
-    debug = g_settings_get_boolean (settings, "debug-screensaver");
+    gboolean debug = g_settings_get_boolean (settings, "debug-screensaver");
     g_object_unref (settings);
 
     if (debug)
@@ -845,6 +855,7 @@ main (int    argc,
       char **argv)
 {
     int status;
+    BackupLocker *app;
 
     const GOptionEntry entries[] = {
         { "version", 0, 0, G_OPTION_ARG_NONE, NULL, "Version of this application", NULL },
@@ -860,13 +871,13 @@ main (int    argc,
 
     g_debug ("backup-locker: initializing (pid=%d)", getpid ());
 
-    app = gtk_application_new (BUS_NAME, G_APPLICATION_DEFAULT_FLAGS);
-    g_application_set_inactivity_timeout (G_APPLICATION (app), 10000);
-    g_application_add_main_option_entries (G_APPLICATION (app), entries);
+    app = g_object_new (BACKUP_TYPE_LOCKER,
+                        "application-id", BUS_NAME,
+                        "flags", G_APPLICATION_DEFAULT_FLAGS,
+                        "inactivity-timeout", 10000,
+                        NULL);
 
-    g_signal_connect (app, "startup", G_CALLBACK (on_startup), NULL);
-    g_signal_connect (app, "activate", G_CALLBACK (on_activate), NULL);
-    g_signal_connect (app, "handle-local-options", G_CALLBACK (on_handle_local_options), NULL);
+    g_application_add_main_option_entries (G_APPLICATION (app), entries);
 
     status = g_application_run (G_APPLICATION (app), argc, argv);
 
