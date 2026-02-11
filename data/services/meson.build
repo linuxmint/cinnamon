@@ -1,4 +1,5 @@
 service_files = [
+  'org.cinnamon.BackupLocker.service',
   'org.cinnamon.CalendarServer.service',
   'org.Cinnamon.HotplugSniffer.service',
   'org.Cinnamon.Melange.service',

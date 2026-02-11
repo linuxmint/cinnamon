@@ -15,6 +15,7 @@ const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const Slider = imports.ui.slider;
 const Pango = imports.gi.Pango;
+const MprisPlayerModule = imports.misc.mprisPlayer;
 
 const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
 const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
@@ -483,36 +484,36 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
 }
 
 class Player extends PopupMenu.PopupMenuSection {
-    constructor(applet, busname, owner) {
+    constructor(applet, mprisPlayer) {
         super();
-        this._owner = owner;
-        this._busName = busname;
+        this._mprisPlayer = mprisPlayer;
+        this._owner = mprisPlayer.getOwner();
+        this._busName = mprisPlayer.getBusName();
         this._applet = applet;
 
-        // We'll update this later with a proper name
-        this._name = this._busName;
+        // Get name from MprisPlayer
+        this._name = mprisPlayer.getIdentity() || this._busName;
 
-        let asyncReadyCb = (proxy, error, property) => {
-            if (error)
-                log(error);
-            else {
-                this[property] = proxy;
+        // Get proxies from MprisPlayer (shared module handles creation)
+        this._mediaServer = mprisPlayer.getMediaServerProxy();
+        this._mediaServerPlayer = mprisPlayer.getMediaServerPlayerProxy();
+        this._prop = mprisPlayer.getPropertiesProxy();
+
+        // If MprisPlayer is already ready, initialize immediately
+        if (mprisPlayer.isReady()) {
+            this._dbus_acquired();
+        } else {
+            // Wait for proxies to be ready
+            this._readyId = mprisPlayer.connect('ready', () => {
+                this._mediaServer = mprisPlayer.getMediaServerProxy();
+                this._mediaServerPlayer = mprisPlayer.getMediaServerPlayerProxy();
+                this._prop = mprisPlayer.getPropertiesProxy();
+                this._name = mprisPlayer.getIdentity() || this._busName;
+                mprisPlayer.disconnect(this._readyId);
+                this._readyId = 0;
                 this._dbus_acquired();
-            }
-        };
-
-        Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME,
-                                              this._busName,
-                                              (p, e) => asyncReadyCb(p, e, '_mediaServer'));
-
-        Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_PLAYER_NAME,
-                                              this._busName,
-                                              (p, e) => asyncReadyCb(p, e, '_mediaServerPlayer'));
-
-        Interfaces.getDBusPropertiesAsync(this._busName,
-                                          MEDIA_PLAYER_2_PATH,
-                                          (p, e) => asyncReadyCb(p, e, '_prop'));
-
+            });
+        }
     }
 
     _dbus_acquired() {
@@ -919,9 +920,17 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     destroy() {
-        this._seeker.destroy();
-        if (this._prop)
+        if (this._readyId && this._mprisPlayer) {
+            this._mprisPlayer.disconnect(this._readyId);
+            this._readyId = 0;
+        }
+
+        if (this._seeker)
+            this._seeker.destroy();
+        if (this._prop && this._propChangedId)
             this._prop.disconnectSignal(this._propChangedId);
+
+        this._mprisPlayer = null;
 
         PopupMenu.PopupMenuSection.prototype.destroy.call(this);
     }
@@ -994,39 +1003,19 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._playerItems = [];
         this._activePlayer = null;
 
-        Interfaces.getDBusAsync((proxy, error) => {
-            if (error) {
-                // ?? what else should we do if we fail completely here?
-                throw error;
-            }
-
-            this._dbus = proxy;
-
-            // player DBus name pattern
-            let name_regex = /^org\.mpris\.MediaPlayer2\./;
-            // load players
-            this._dbus.ListNamesRemote((names) => {
-                for (let n in names[0]) {
-                    let name = names[0][n];
-                    if (name_regex.test(name))
-                        this._dbus.GetNameOwnerRemote(name, (owner) => this._addPlayer(name, owner[0]));
-                }
-            });
-
-            // watch players
-            this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged',
-                (proxy, sender, [name, old_owner, new_owner]) => {
-                    if (name_regex.test(name)) {
-                        if (new_owner && !old_owner)
-                            this._addPlayer(name, new_owner);
-                        else if (old_owner && !new_owner)
-                            this._removePlayer(name, old_owner);
-                        else
-                            this._changePlayerOwner(name, old_owner, new_owner);
-                    }
-                }
-            );
+        // Use shared MPRIS module for player discovery
+        this._mprisManager = MprisPlayerModule.getMprisPlayerManager();
+        this._mprisManager.connect('player-added', (manager, mprisPlayer) => {
+            this._addPlayer(mprisPlayer);
         });
+        this._mprisManager.connect('player-removed', (manager, busName, owner) => {
+            this._removePlayer(busName, owner);
+        });
+
+        // Add any players that already exist
+        for (let mprisPlayer of this._mprisManager.getPlayers()) {
+            this._addPlayer(mprisPlayer);
+        }
 
         this._control = new Cvc.MixerControl({ name: 'Cinnamon Volume Control' });
         this._control.connect('state-changed', (...args) => this._onControlStateChanged(...args));
@@ -1151,7 +1140,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._iconTimeoutId = 0;
         }
 
-        this._dbus.disconnectSignal(this._ownerChangedId);
+        // Note: MprisPlayerManager is a singleton shared by multiple components,
+        // so we don't destroy it here. Individual player cleanup happens in destroy().
 
         for(let i in this._players)
             this._players[i].destroy();
@@ -1406,7 +1396,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 /^org\.mpris\.MediaPlayer2\.vlc-\d+$/.test(busName);
     }
 
-    _addPlayer(busName, owner) {
+    _addPlayer(mprisPlayer) {
+        let owner = mprisPlayer.getOwner();
+        let busName = mprisPlayer.getBusName();
+
         if (this._players[owner]) {
             let prevName = this._players[owner]._busName;
             // HAVE: ADDING: ACTION:
@@ -1419,12 +1412,12 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             else
                 return;
         } else if (owner) {
-            let player = new Player(this, busName, owner);
+            let player = new Player(this, mprisPlayer);
 
             // Add the player to the list of active players in GUI.
-            // We don't have the org.mpris.MediaPlayer2 interface set up at this point,
-            // add the player's busName as a placeholder until we can get its Identity.
-            let item = new PopupMenu.PopupMenuItem(busName);
+            // Use the identity from MprisPlayer if available, otherwise busName as placeholder
+            let displayName = mprisPlayer.getIdentity() || busName;
+            let item = new PopupMenu.PopupMenuItem(displayName);
             item.activate = () => this._switchPlayer(player._owner);
             this._chooseActivePlayerItem.menu.addMenuItem(item);
 

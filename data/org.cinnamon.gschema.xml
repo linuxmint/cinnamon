@@ -521,6 +521,24 @@
       <description>If true, the pointer will be set to the center of the new monitor when using pointer next/previous shortcuts.</description>
     </key>
 
+    <key type="b" name="internal-screensaver-enabled">
+      <default>true</default>
+      <summary>Use internal screensaver implementation</summary>
+      <description>If true, use Cinnamon's internal screensaver for locking instead of the external cinnamon-screensaver daemon.</description>
+    </key>
+
+    <key type="b" name="session-locked-state">
+      <default>false</default>
+      <summary>Whether the session is currently locked</summary>
+      <description>Persists the screensaver locked state so it can be restored after a Cinnamon restart. This key is managed internally and should not be modified manually.</description>
+    </key>
+
+    <key type="b" name="debug-screensaver">
+      <default>false</default>
+      <summary>Enable screensaver debug logging</summary>
+      <description>If true, enables verbose debug logging for the screensaver, unlock dialog, and backup-locker.</description>
+    </key>
+
     <child name="theme" schema="org.cinnamon.theme"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>

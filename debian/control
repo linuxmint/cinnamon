@@ -24,6 +24,7 @@ Build-Depends:
  libmuffin-dev (>= 5.3),
  libnm-dev (>= 1.6) [linux-any],
  libnma-dev [linux-any],
+ libpam0g-dev,
  libpolkit-agent-1-dev (>= 0.100),
  libpulse-dev,
  librsvg2-dev,
@@ -45,7 +46,6 @@ Depends:
  cinnamon-control-center,
  cinnamon-desktop-data (>= 5.3),
  cinnamon-l10n,
- cinnamon-screensaver,
  cinnamon-session,
  cinnamon-settings-daemon (>= 5.3),
  cjs (>= 4.8),
@@ -118,8 +118,9 @@ Recommends:
  gnome-online-accounts-gtk,
  touchegg,
  ibus,
+ libpam-gnome-keyring,
 Suggests: cinnamon-doc
-Provides: notification-daemon, x-window-manager, polkit-1-auth-agent
+Provides: notification-daemon, x-window-manager, polkit-1-auth-agent, cinnamon-screensaver
 Description: Modern Linux desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
  features and a traditional user experience. It's easy to use, powerful

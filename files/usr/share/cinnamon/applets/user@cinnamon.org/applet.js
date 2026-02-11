@@ -3,11 +3,11 @@ const Lang = imports.lang;
 const St = imports.gi.St;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
+const Main = imports.ui.main;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
-const ScreenSaver = imports.misc.screenSaver;
 const Settings = imports.ui.settings;
 const UserWidget = imports.ui.userWidget;
 
@@ -27,7 +27,6 @@ class CinnamonUserApplet extends Applet.TextApplet {
         this._panel_avatar = null;
 
         this._session = new GnomeSession.SessionManager();
-        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.settings = new Settings.AppletSettings(this, "user@cinnamon.org", instance_id);
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
@@ -79,50 +78,23 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
         item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "xsi-lock-screen", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
-            let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
-            let screensaver_dialog = Gio.file_new_for_path("/usr/bin/cinnamon-screensaver-command");
-            if (screensaver_dialog.query_exists(null)) {
-                if (screensaver_settings.get_boolean("ask-for-away-message")) {
-                    Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
-                }
-                else {
-                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
-                }
-            }
-            else {
-                this._screenSaverProxy.LockRemote();
+            if (Main.screenShield) {
+                Main.screenShield.lock(true);  // Ask for away message
             }
         }));
         this.menu.addMenuItem(item);
 
-        let lockdown_settings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
-        if (!lockdown_settings.get_boolean('disable-user-switching')) {
-            if (GLib.getenv("XDG_SEAT_PATH")) {
-                // LightDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
-                item.connect('activate', Lang.bind(this, function() {
-                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
-                    Util.spawnCommandLine("dm-tool switch-to-greeter");
-                }));
-                this.menu.addMenuItem(item);
-            }
-            else if (GLib.file_test("/usr/bin/mdmflexiserver", GLib.FileTest.EXISTS)) {
-                // MDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
-                item.connect('activate', Lang.bind(this, function() {
-                    Util.spawnCommandLine("mdmflexiserver");
-                }));
-                this.menu.addMenuItem(item);
-            }
-            else if (GLib.file_test("/usr/bin/gdmflexiserver", GLib.FileTest.EXISTS)) {
-                // GDM
-                item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
-                item.connect('activate', Lang.bind(this, function() {
-                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
-                    Util.spawnCommandLine("gdmflexiserver");
-                }));
-                this.menu.addMenuItem(item);
-            }
+        if (!Main.lockdownSettings.get_boolean('disable-user-switching')) {
+            item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
+            item.connect('activate', Lang.bind(this, function() {
+                // Lock before switching
+                if (Main.screenShield) {
+                    Main.screenShield.lock(false);
+                }
+                // Switch to greeter
+                Util.switchToGreeter();
+            }));
+            this.menu.addMenuItem(item);
         }
 
         item = new PopupMenu.PopupIconMenuItem(_("Log Out..."), "xsi-log-out", St.IconType.SYMBOLIC);

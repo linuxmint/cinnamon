@@ -2517,17 +2517,9 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         button.activate = () => {
             this.menu.close();
 
-            let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
-            let screensaver_dialog = GLib.find_program_in_path("cinnamon-screensaver-command");
-            if (screensaver_dialog) {
-                if (screensaver_settings.get_boolean("ask-for-away-message")) {
-                    Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
-                }
-                else {
-                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
-                }
-            }
-            else {
+            if (Main.screenShield) {
+                Main.screenShield.lock(true);  // Ask for away message
+            } else {
                 this._screenSaverProxy.LockRemote("");
             }
         };

@@ -76,6 +76,9 @@ KeybindingManager.prototype = {
 
         this.media_key_settings = new Gio.Settings({ schema_id: MEDIA_KEYS_SCHEMA });
         this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
+
+        this.cinnamon_settings = new Gio.Settings({ schema_id: "org.cinnamon" });
+
         this.setup_media_keys();
     },
 
@@ -356,6 +359,13 @@ KeybindingManager.prototype = {
     },
 
     setup_media_keys: function() {
+        // Media keys before SEPARATOR work in all modes (global keys)
+        // These should work during lock screen, unlock dialog, etc.
+        let globalModes = Cinnamon.ActionMode.NORMAL | Cinnamon.ActionMode.OVERVIEW |
+                         Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN |
+                         Cinnamon.ActionMode.SYSTEM_MODAL | Cinnamon.ActionMode.LOOKING_GLASS |
+                         Cinnamon.ActionMode.POPUP;
+
         for (let i = 0; i < MK.SEPARATOR; i++) {
             if (is_obsolete_mk(i)) {
                 continue;
@@ -368,10 +378,12 @@ KeybindingManager.prototype = {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
-                           Lang.bind(this, this.on_global_media_key_pressed, i),
-                           flags);
+                           Lang.bind(this, this.on_media_key_pressed, i),
+                           flags,
+                           globalModes);
         }
 
+        // Media keys after SEPARATOR only work in normal mode
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
             if (is_obsolete_mk(i)) {
                 continue;
@@ -385,20 +397,24 @@ KeybindingManager.prototype = {
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
                            Lang.bind(this, this.on_media_key_pressed, i),
-                           flags);
+                           flags,
+                           Cinnamon.ActionMode.NORMAL);
         }
         return true;
     },
 
-    on_global_media_key_pressed: function(display, window, kb, action) {
-        // log(`global media key ${display}, ${window}, ${kb}, ${action}`);
-        this._proxy.HandleKeybindingRemote(action);
-    },
-
     on_media_key_pressed: function(display, window, kb, action) {
-        // log(`media key ${display}, ${window}, ${kb}, ${action}`);
-        if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
-            this._proxy.HandleKeybindingRemote(action);
+        // Check if this is the screensaver key and internal screensaver is enabled
+        if (action === MK.SCREENSAVER && this.cinnamon_settings.get_boolean('internal-screensaver-enabled')) {
+            // Use internal screensaver (unless locked down)
+            if (Main.screenShield && !Main.lockdownSettings.get_boolean('disable-lock-screen')) {
+                Main.screenShield.lock();
+            }
+            return;
+        }
+
+        // Otherwise, forward to csd-media-keys (or other handler)
+        this._proxy.HandleKeybindingRemote(action);
     },
 
     invoke_keybinding_action_by_id: function(id) {

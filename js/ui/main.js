@@ -117,6 +117,8 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const Screenshot = imports.ui.screenshot;
+const ScreenShield = imports.ui.screensaver.screenShield;
+const ScreenSaver = imports.misc.screenSaver;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const LocatePointer = imports.ui.locatePointer;
@@ -149,6 +151,9 @@ var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
 var osdWindowManager = null;
+var screenShield = null;
+var screenSaverService = null;
+var lockdownSettings = null;
 var overview = null;
 var expo = null;
 var runDialog = null;
@@ -258,7 +263,9 @@ function _initUserSession() {
     systrayManager = new Systray.SystrayManager();
 
     Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
-        getRunDialog().open();
+        if (!lockdownSettings.get_boolean('disable-command-line')) {
+            getRunDialog().open();
+        }
     });
 }
 
@@ -470,6 +477,9 @@ function start() {
     locatePointer = new LocatePointer.LocatePointer();
 
     layoutManager.init();
+    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
+    screenShield = new ScreenShield.ScreenShield();
+    screenSaverService = new ScreenSaver.ScreenSaverService();
     overview.init();
     expo.init();
 
@@ -1266,7 +1276,9 @@ function _stageEventHandler(actor, event) {
             expo.hide();
             return true;
         case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
-            getRunDialog().open();
+            if (!lockdownSettings.get_boolean('disable-command-line')) {
+                getRunDialog().open();
+            }
             return true;
     }
 

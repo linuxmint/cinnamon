@@ -5,6 +5,7 @@ ignore = [
     st_private_headers,
     tray_headers,
     sniffer_headers,
+    backup_locker_headers,
 ]
 
 if not internal_nm_agent
