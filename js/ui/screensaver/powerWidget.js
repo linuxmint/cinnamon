@@ -7,7 +7,7 @@ const UPowerGlib = imports.gi.UPowerGlib;
 const PowerUtils = imports.misc.powerUtils;
 const SignalManager = imports.misc.signalManager;
 
-const ICON_SIZE_BASE = 22;
+const ICON_SIZE_BASE = 24;
 const BATTERY_CRITICAL_PERCENT = 10;
 
 const {
@@ -15,8 +15,9 @@ const {
     UPDeviceState
 } = PowerUtils;
 
-var PowerWidget = GObject.registerClass(
-class PowerWidget extends St.BoxLayout {
+var PowerWidget = GObject.registerClass({
+    Signals: { 'power-state-changed': {} }
+}, class PowerWidget extends St.BoxLayout {
     _init() {
         super._init({
             style_class: 'power-widget',
@@ -82,13 +83,9 @@ class PowerWidget extends St.BoxLayout {
         this.destroy_all_children();
         this._batteryCritical = false;
 
-        if (this._devices.length === 0) {
+        if (this._devices.length === 0 || !this._shouldShow()) {
             this.hide();
-            return;
-        }
-
-        if (!this._shouldShow()) {
-            this.hide();
+            this.emit('power-state-changed');
             return;
         }
 
@@ -102,6 +99,11 @@ class PowerWidget extends St.BoxLayout {
         }
 
         this.show();
+        this.emit('power-state-changed');
+    }
+
+    shouldShow() {
+        return this._devices.length > 0 && this._shouldShow();
     }
 
     _shouldShow() {
@@ -137,6 +139,7 @@ class PowerWidget extends St.BoxLayout {
             icon_name: iconName,
             icon_type: St.IconType.SYMBOLIC,
             icon_size: this._iconSize,
+            y_align: St.Align.MIDDLE,
             style_class: 'power-widget-icon'
         });
 

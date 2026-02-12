@@ -153,7 +153,6 @@
 
 // Power Widget (battery indicator in upper-right corner)
 .power-widget {
-  padding: 8px;
 }
 
 .power-widget-box {
@@ -167,4 +166,26 @@
 
 .power-widget-icon-critical {
   color: $error_color;
+}
+
+// Info Panel (notification count + battery indicator in upper-right corner)
+.info-panel {
+  padding: 8px;
+  spacing: 12px;
+}
+
+.notification-widget {
+  spacing: 4px;
+}
+
+.notification-widget-label {
+  color: white;
+  font-size: 12pt;
+  font-weight: bold;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+}
+
+.notification-widget-icon {
+  color: white;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }

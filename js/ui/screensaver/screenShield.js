@@ -16,7 +16,7 @@ const UnlockDialog = imports.ui.screensaver.unlockDialog;
 const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
 const ClockWidget = imports.ui.screensaver.clockWidget;
 const AlbumArtWidget = imports.ui.screensaver.albumArtWidget;
-const PowerWidget = imports.ui.screensaver.powerWidget;
+const InfoPanel = imports.ui.screensaver.infoPanel;
 
 const CINNAMON_SCHEMA = 'org.cinnamon';
 const SCREENSAVER_SCHEMA = 'org.cinnamon.desktop.screensaver';
@@ -139,7 +139,7 @@ var ScreenShield = GObject.registerClass({
         this._usedFloatPositions = new Set();  // Track currently used float positions
         this._widgetLoadTimeoutId = 0;
         this._widgetLoadIdleId = 0;
-        this._powerWidget = null;
+        this._infoPanel = null;
         this._inhibitor = null;
         this._cinnamonSettings = new Gio.Settings({ schema_id: CINNAMON_SCHEMA });
         _debug = this._cinnamonSettings.get_boolean('debug-screensaver');
@@ -718,7 +718,7 @@ var ScreenShield = GObject.registerClass({
                 }
             }
 
-            this._positionPowerWidget();
+            this._positionInfoPanel();
         }
     }
 
@@ -752,7 +752,7 @@ var ScreenShield = GObject.registerClass({
 
         this._createBackgrounds();
 
-        this._positionPowerWidget();
+        this._positionInfoPanel();
 
         if (this._state === State.UNLOCKING && this._dialog.visible) {
             this._lastPointerMonitor = -1;
@@ -811,7 +811,7 @@ var ScreenShield = GObject.registerClass({
     }
 
     _startLoadingWidgets() {
-        this._createPowerWidget();
+        this._createInfoPanel();
 
         if (_widgetRegistry.length === 0) {
             _log('ScreenShield: No widgets to load');
@@ -925,7 +925,7 @@ var ScreenShield = GObject.registerClass({
         this._cancelWidgetLoading();
 
         this._stopFloatTimer();
-        this._destroyPowerWidget();
+        this._destroyInfoPanel();
         for (let widget of this._widgets) {
             if (widget._allocationChangedId) {
                 widget.disconnect(widget._allocationChangedId);
@@ -942,24 +942,26 @@ var ScreenShield = GObject.registerClass({
         this._usedFloatPositions.clear();
     }
 
-    _createPowerWidget() {
-        if (this._powerWidget)
+    _createInfoPanel() {
+        if (this._infoPanel)
             return;
 
-        this._powerWidget = new PowerWidget.PowerWidget();
-        this._powerWidget.connect('allocation-changed', this._positionPowerWidget.bind(this));
-        this.add_child(this._powerWidget);
+        this._infoPanel = new InfoPanel.InfoPanel();
+        this._infoPanel.connect('allocation-changed', this._positionInfoPanel.bind(this));
+        this.add_child(this._infoPanel);
+        this._infoPanel.onScreensaverActivated();
     }
 
-    _destroyPowerWidget() {
-        if (this._powerWidget) {
-            this._powerWidget.destroy();
-            this._powerWidget = null;
+    _destroyInfoPanel() {
+        if (this._infoPanel) {
+            this._infoPanel.onScreensaverDeactivated();
+            this._infoPanel.destroy();
+            this._infoPanel = null;
         }
     }
 
-    _positionPowerWidget() {
-        if (!this._powerWidget)
+    _positionInfoPanel() {
+        if (!this._infoPanel)
             return;
 
         let currentMonitor = global.display.get_current_monitor();
@@ -967,15 +969,14 @@ var ScreenShield = GObject.registerClass({
         if (!monitor)
             monitor = Main.layoutManager.primaryMonitor;
 
-        let [, natWidth] = this._powerWidget.get_preferred_width(-1);
-        let [, natHeight] = this._powerWidget.get_preferred_height(natWidth);
+        let [, natWidth] = this._infoPanel.get_preferred_width(-1);
+        let [, natHeight] = this._infoPanel.get_preferred_height(natWidth);
 
-        // Position in upper-right corner with padding
         let padding = 12 * global.ui_scale;
         let x = monitor.x + monitor.width - natWidth - padding;
         let y = monitor.y + padding;
 
-        this._powerWidget.set_position(Math.floor(x), Math.floor(y));
+        this._infoPanel.set_position(Math.floor(x), Math.floor(y));
     }
 
     _positionWidgetByState(widget) {
@@ -1090,6 +1091,9 @@ var ScreenShield = GObject.registerClass({
             widget.onAwake();
             this._positionWidgetByState(widget);
         }
+
+        if (this._infoPanel)
+            this._infoPanel.onWake();
     }
 
     _onSleep() {
@@ -1098,6 +1102,9 @@ var ScreenShield = GObject.registerClass({
         for (let widget of this._widgets) {
             widget.onSleep();
         }
+
+        if (this._infoPanel)
+            this._infoPanel.onSleep();
 
         this._startFloatTimer();
         this._floatersNeedUpdate = true;
