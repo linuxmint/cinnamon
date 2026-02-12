@@ -412,7 +412,10 @@ KeybindingManager.prototype = {
         if (action === MK.SCREENSAVER && this.cinnamon_settings.get_boolean('internal-screensaver-enabled')) {
             // Use internal screensaver (unless locked down)
             if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
-                Main.screenShield.lock();
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    Main.screenShield.lock();
+                    return GLib.SOURCE_REMOVE;
+                });
             }
             return;
         }
