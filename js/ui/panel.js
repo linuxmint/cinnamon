@@ -77,14 +77,6 @@ const Direction = {
     RIGHT : 1
 };
 
-const CornerType = {
-    topleft : 0,
-    topright : 1,
-    bottomleft : 2,
-    bottomright : 3,
-    dummy : 4
-};
-
 var PanelLoc = {
     top : 0,
     bottom : 1,
@@ -96,49 +88,6 @@ const PanelDefElement = {
     ID  : 0,
     MONITOR : 1,
     POSITION: 2
-};
-
-// To make sure the panel corners blend nicely with the panel,
-// we draw background and borders the same way, e.g. drawing
-// them as filled shapes from the outside inwards instead of
-// using cairo stroke(). So in order to give the border the
-// appearance of being drawn on top of the background, we need
-// to blend border and background color together.
-// For that purpose we use the following helper methods, taken
-// from st-theme-node-drawing.c
-function _norm(x) {
-    return Math.round(x / 255);
-}
-
-function _over(srcColor, dstColor) {
-    let src = _premultiply(srcColor);
-    let dst = _premultiply(dstColor);
-    let result = new Clutter.Color();
-
-    result.alpha = src.alpha + _norm((255 - src.alpha) * dst.alpha);
-    result.red = src.red + _norm((255 - src.alpha) * dst.red);
-    result.green = src.green + _norm((255 - src.alpha) * dst.green);
-    result.blue = src.blue + _norm((255 - src.alpha) * dst.blue);
-
-    return _unpremultiply(result);
-}
-
-function _premultiply(color) {
-    return new Clutter.Color({ red: _norm(color.red * color.alpha),
-                               green: _norm(color.green * color.alpha),
-                               blue: _norm(color.blue * color.alpha),
-                               alpha: color.alpha });
-};
-
-function _unpremultiply(color) {
-    if (color.alpha == 0)
-        return new Clutter.Color();
-
-    let red = Math.min((color.red * 255 + 127) / color.alpha, 255);
-    let green = Math.min((color.green * 255 + 127) / color.alpha, 255);
-    let blue = Math.min((color.blue * 255 + 127) / color.alpha, 255);
-    return new Clutter.Color({ red: red, green: green,
-                               blue: blue, alpha: color.alpha });
 };
 
 /**
@@ -426,9 +375,6 @@ PanelManager.prototype = {
         let stash = [];     // panel id, monitor, panel type
 
         let monitorCount = global.display.get_n_monitors();
-        let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
-                              // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
-
         let panel_defs = getPanelsEnabledList();
         //
         // First pass through just to count the monitors, as there is no ordering to rely on
@@ -478,47 +424,23 @@ PanelManager.prototype = {
             setPanelsEnabledList(clean_defs);
         }
 
-        //
-        // initialise the array that records which panels are used (so combinations can be used to select corners)
-        //
-        for (let i = 0; i <= monitorCount; i++) {
-            panels_used.push([]);
-            panels_used[i][0] = false;
-            panels_used[i][1] = false;
-            panels_used[i][2] = false;
-            panels_used[i][3] = false;
-        }
-        //
         // set up the list of panels
-        //
         for (let i = 0, len = good_defs.length; i < len; i++) {
             let elements = good_defs[i].split(":");
 
             let jj = getPanelLocFromName(elements[PanelDefElement.POSITION]);  // panel orientation
 
             monitor = parseInt(elements[PanelDefElement.MONITOR]);
-            panels_used[monitor][jj] = true;
 
             stash[i] = [parseInt(elements[PanelDefElement.ID]), monitor, jj]; // load what we are going to use to call loadPanel into an array
         }
 
-        //
         // When using mixed horizontal and vertical panels draw the vertical panels first.
         // This is done so that when using a box shadow on the panel to create a border the border will be drawn over the
         // top of the vertical panel.
-        //
-        // Draw corners where necessary.  NB no corners necessary where there is no panel for a full screen window to butt up against.
-        // logic for loading up panels in the right order and drawing corners relies on ordering by monitor
-        // Corners will go on the left and right panels if there are any, else on the top and bottom
-        // corner drawing parameters passed are left, right for horizontals, top, bottom for verticals.
-        //
-        // panel corners are optional and not used in many themes. However there is no measurable gain in trying to suppress them
-        // if the theme does not have them
-
         for (let i = 0; i <= monitorCount; i++) {
             let pleft, pright;
             for (let j = 0, len = stash.length; j < len; j++) {
-                let drawcorner = [false,false];
                 if (stash[j][2] == PanelLoc.left && stash[j][1] == i) {
                     pleft = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
                 }
@@ -526,14 +448,10 @@ PanelManager.prototype = {
                     pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
                 }
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = !(panels_used[i][2]);
-                    drawcorner[1] = !(panels_used[i][3]);
-                    this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
+                    this._loadPanel(stash[j][0], stash[j][1], stash[j][2]);
                 }
                 if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
-                    drawcorner[0] = !(panels_used[i][2]);
-                    drawcorner[1] = !(panels_used[i][3]);
-                    this._loadPanel(stash[j][0], stash[j][1], stash[j][2], drawcorner);
+                    this._loadPanel(stash[j][0], stash[j][1], stash[j][2]);
                 }
             }
             //
@@ -834,7 +752,6 @@ PanelManager.prototype = {
      * @ID (integer): panel id
      * @monitorIndex (integer): index of monitor of panel
      * @panelPosition (integer): where the panel should be
-     * @drawcorner (array): whether to draw corners for [left, right]
      * @panelList (array): (optional) the list in which the new panel should be appended to (not necessarily this.panels, c.f. _onPanelsEnabledChanged) Default: this.panels
      * @metaList(array): (optional) the list in which the new panel metadata should be appended to (not necessarily this.panelsMeta, c.f. _onPanelsEnabledChanged)
      *                   Default: this.panelsMeta
@@ -843,7 +760,7 @@ PanelManager.prototype = {
      *
      * Returns (Panel.Panel): Panel created
      */
-    _loadPanel: function(ID, monitorIndex, panelPosition, drawcorner, panelList, metaList) {
+    _loadPanel: function(ID, monitorIndex, panelPosition, panelList, metaList) {
 
         if (!panelList) panelList = this.panels;
         if (!metaList) metaList = this.panelsMeta;
@@ -893,7 +810,7 @@ PanelManager.prototype = {
             return null;
         }
         let[toppheight,botpheight] = heightsUsedMonitor(monitorIndex, panelList);
-        panelList[ID] = new Panel(ID, monitorIndex, panelPosition, toppheight, botpheight, drawcorner); // create a new panel
+        panelList[ID] = new Panel(ID, monitorIndex, panelPosition, toppheight, botpheight);
         this.panelCount += 1;
 
         return panelList[ID];
@@ -926,8 +843,6 @@ PanelManager.prototype = {
 
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
-        let drawcorner = [false,false];
-
         let panelProperties = getPanelsEnabledList();
 
 
@@ -966,7 +881,6 @@ PanelManager.prototype = {
                 let panel = this._loadPanel(ID,
                                             mon,
                                             ploc,
-                                            drawcorner,
                                             newPanels,
                                             newMeta);
                 if (panel)
@@ -989,23 +903,16 @@ PanelManager.prototype = {
 
         this.panels = newPanels;
         this.panelsMeta = newMeta;
-        //
+
         // Adjust any vertical panel heights so as to fit snugly between horizontal panels
         // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
         // or if any change from making space for panel dummys needs to be reflected.
-        //
-        // Draw any corners that are necessary.  Note that updatePosition will have stripped off corners
-        // from moved panels, and the new panel is created without corners.  However unchanged panels may have corners
-        // that might not be wanted now.  Easiest thing is to strip every existing corner off and re-add
-        //
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i]) {
                 if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
                     this.panels[i]._moveResizePanel();
-                this.panels[i]._destroycorners();
             }
         }
-        this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
         this._checkCanAdd();
@@ -1022,101 +929,9 @@ PanelManager.prototype = {
         this.handling_panels_changed = false;
     },
 
-    /**
-     * _fullCornerLoad :
-     * @panelProperties : panels-enabled settings string
-     *
-     * Load all corners
-     */
-    _fullCornerLoad: function(panelProperties) {
-        let monitor = 0;
-        let monitorCount = -1;
-        let panels_used = []; // [monitor] [top, bottom, left, right].  Used to keep track of which panel types are in use,
-                              // as we need knowledge of the combinations in order to instruct the correct panel to create a corner
-        let stash = [];       // panel id, monitor, panel type
-
-        //
-        // First pass through just to count the monitors, as there is no ordering to rely on
-        //
-        for (let i = 0, len = panelProperties.length; i < len; i++) {
-            let elements = panelProperties[i].split(":");
-            if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panelProperties[i]);
-                continue;
-            }
-
-            monitor = parseInt(elements[1]);
-            if (monitor > monitorCount)
-                monitorCount = monitor;
-        }
-        //
-        // initialise the array that records which panels are used (so combinations can be used to select corners)
-        //
-        for (let i = 0; i <= monitorCount; i++) {
-            panels_used.push([]);
-            panels_used[i][0] = false;
-            panels_used[i][1] = false;
-            panels_used[i][2] = false;
-            panels_used[i][3] = false;
-        }
-        //
-        // set up the list of panels
-        //
-        for (let i = 0, len = panelProperties.length; i < len; i++) {
-            let elements = panelProperties[i].split(":");
-            if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panelProperties[i]);
-                continue;
-            }
-            let monitor = parseInt(elements[1]);
-            let jj = getPanelLocFromName(elements[2]);
-            panels_used[monitor][jj] =  true;
-
-            stash[i] = [parseInt(elements[0]),monitor,jj];
-        }
-
-        // draw corners on each monitor in turn.  Note that the panel.drawcorner
-        // variable needs to be set so the allocation code runs as desired
-
-        for (let i = 0; i <= monitorCount; i++) {
-            for (let j = 0, len = stash.length; j < len; j++) {
-                let drawcorner = [false, false];
-                if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
-                    drawcorner[0] = !(panels_used[i][2]);
-                    drawcorner[1] = !(panels_used[i][3]);
-                    if (this.panels[stash[j][0]]) {  // panel will not have loaded if previous monitor disconnected etc.
-                        this.panels[stash[j][0]].drawcorner = drawcorner;
-                        this.panels[stash[j][0]].drawCorners(drawcorner);
-                    }
-                }
-                if (stash[j][2] == PanelLoc.left && stash[j][1] == i) {
-                    if (this.panels[stash[j][0]]) {
-                        this.panels[stash[j][0]].drawcorner = [true,true];
-                        this.panels[stash[j][0]].drawCorners([true,true]);
-                    }
-                }
-                if (stash[j][2] == PanelLoc.right && stash[j][1] == i) {
-                    if (this.panels[stash[j][0]]) {
-                        this.panels[stash[j][0]].drawcorner = [true,true];
-                        this.panels[stash[j][0]].drawCorners([true,true]);
-                    }
-                }
-                if (stash[j][2] == PanelLoc.top && stash[j][1] == i) {
-                    drawcorner[0] = !(panels_used[i][2]);
-                    drawcorner[1] = !(panels_used[i][3]);
-                    if (this.panels[stash[j][0]]) {
-                        this.panels[stash[j][0]].drawcorner = drawcorner;
-                        this.panels[stash[j][0]].drawCorners(drawcorner);
-                    }
-                }
-            }
-        }
-    },
-
     _onMonitorsChanged: function() {
         const oldCount = this.monitorCount;
         this.monitorCount = global.display.get_n_monitors();
-        let drawcorner = [false, false];
 
         let panelProperties = getPanelsEnabledList()
         // adjust any changes to logical/xinerama monitor relationships
@@ -1131,7 +946,7 @@ PanelManager.prototype = {
                                                          // - the monitor may just have been reconnected
                 if (this.panelsMeta[i][0] < this.monitorCount)  // just check that the monitor is there
                 {
-                    let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1], drawcorner);
+                    let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1]);
                     if (panel)
                         AppletManager.loadAppletsOnPanel(panel);
                 }
@@ -1159,14 +974,6 @@ PanelManager.prototype = {
             this._destroyDummyPanels();
             this._showDummyPanels(this.dummyCallback);
         }
-
-        // clear corners, then re add them
-        for (let i = 0, len = this.panels.length; i < len; i++) {
-            if (this.panels[i])
-                this.panels[i]._destroycorners();
-        }
-
-        this._fullCornerLoad(panelProperties);
 
         this._setMainPanel();
         this._checkCanAdd();
@@ -1481,202 +1288,6 @@ TextShadower.prototype = {
         }
     }
 };
-    /**
-     * PanelCorner:
-     * @box: the box in a panel the corner is associated with
-     * @side: the side of the box a text or icon/text applet starts from (RTL or LTR driven)
-     * @cornertype:  top left, bottom right etc.
-     *
-     * Sets up a panel corner
-     *
-     * The panel corners are there for a non-obvious reason.  They are used as the positioning points for small
-     * drawing areas that use some optional css to draw small filled arcs (in the repaint function).  This allows
-     * windows with rounded corners to be blended into the panels in some distros, gnome shell in particular.
-     * In mint tiling and full screen removes any rounded window corners anyway, so this optional css is not there in
-     * the main mint themes, and the corner/cairo functionality is unused in this case. Where the corners are used they will be
-     * positioned so as to fill in the tiny gap at the corners of full screen windows, and if themed right they
-     * will be invisible to the user, other than the window will appear to go right up to the corner when full screen
-     */
-function PanelCorner(box, side, cornertype) {
-    this._init(box, side, cornertype);
-}
-
-PanelCorner.prototype = {
-    _init: function(box, side, cornertype) {
-        this._side = side;
-        this._box = box;
-        this._cornertype = cornertype;
-        this.cornerRadius = 0;
-
-        this.actor = new St.DrawingArea({ style_class: 'panel-corner' });
-
-        this.actor.connect('style-changed', Lang.bind(this, this._styleChanged));
-        this.actor.connect('repaint', Lang.bind(this, this._repaint));
-    },
-
-    _repaint: function() {
-    //
-    // This is all about painting corners just outside the panels so as to create a seamless visual impression for full screen windows
-    // with curved corners that butt up against a panel.
-    // So ... top left corner wants to be at the bottom left of the top panel. top right wants to be in the corresponding place on the right
-    // Bottom left corner wants to be at the top left of the bottom panel.  bottom right in the corresponding place on the right.
-    // No panel, no corner necessary.
-    // If there are vertical panels as well then we want to shift these in by the panel width so if there are vertical panels but no horizontal
-    // then the corners are top right and left to right of left panel, and same to left of right panel
-    //
-        if (this._cornertype == CornerType.dummy) return;
-
-        let node = this.actor.get_theme_node();
-
-        if (node) {
-            let xOffsetDirection = 0;
-            let yOffsetDirection = 0;
-
-            let cornerRadius = node.get_length("-panel-corner-radius");
-            let innerBorderWidth = node.get_length('-panel-corner-inner-border-width');
-            let outerBorderWidth = node.get_length('-panel-corner-outer-border-width');
-
-            let backgroundColor = node.get_color('-panel-corner-background-color');
-            let innerBorderColor = node.get_color('-panel-corner-inner-border-color');
-            let outerBorderColor = node.get_color('-panel-corner-outer-border-color');
-
-            // Save suitable offset directions for later use
-
-            xOffsetDirection = (this._cornertype == CornerType.topleft || this._cornertype == CornerType.bottomleft)
-                        ? -1 :  1;
-
-            yOffsetDirection = (this._cornertype == CornerType.topleft || this._cornertype == CornerType.topright)
-                        ? -1 : 1;
-
-            let cr = this.actor.get_context();
-            cr.setOperator(Cairo.Operator.SOURCE);
-            cr.save();
-
-            // Draw arc, lines and fill to create a concave triangle
-
-            if (this._cornertype == CornerType.topleft) {
-                cr.moveTo(0, 0);
-                cr.arc( cornerRadius,
-                        innerBorderWidth + cornerRadius,
-                        cornerRadius,
-                        Math.PI,
-                        3 * Math.PI / 2);  //xc, yc, radius, angle from, angle to.  NB note small offset in y direction
-                cr.lineTo(cornerRadius, 0);
-            } else if (this._cornertype == CornerType.topright) {
-                cr.moveTo(0, 0);
-                cr.arc( 0,
-                        innerBorderWidth + cornerRadius,
-                        cornerRadius,
-                        3 * Math.PI / 2,
-                        2 * Math.PI);
-                cr.lineTo(cornerRadius, 0);
-            } else if (this._cornertype == CornerType.bottomleft) {
-                cr.moveTo(0, cornerRadius);
-                cr.lineTo(cornerRadius,cornerRadius);
-                cr.lineTo(cornerRadius, cornerRadius-innerBorderWidth);
-                cr.arc( cornerRadius,
-                        -innerBorderWidth,
-                        cornerRadius,
-                        Math.PI/2,
-                        Math.PI);
-                cr.lineTo(0,cornerRadius);
-            } else if (this._cornertype == CornerType.bottomright) {
-                cr.moveTo(0,cornerRadius);
-                cr.lineTo(cornerRadius, cornerRadius);
-                cr.lineTo(cornerRadius, 0);
-                cr.arc( 0,
-                        -innerBorderWidth,
-                        cornerRadius,
-                        0,
-                        Math.PI/2);
-                cr.lineTo(0, cornerRadius);
-            }
-
-            cr.closePath();
-
-            let savedPath = cr.copyPath();                   // save basic shape for reuse
-
-            let over = _over(innerBorderColor,
-                             _over(outerBorderColor, backgroundColor));  // colour inner over outer over background.
-            Clutter.cairo_set_source_color(cr, over);
-            cr.fill();
-
-            over = _over(innerBorderColor, backgroundColor);             //colour inner over background
-            Clutter.cairo_set_source_color(cr, over);
-
-            // Draw basic shape with vertex shifted diagonally outwards by the border width
-
-            let offset = outerBorderWidth;
-            cr.translate(xOffsetDirection * offset, yOffsetDirection * offset);  // move by x,y
-            cr.appendPath(savedPath);
-            cr.fill();
-
-            // Draw a small rectangle over the end of the arc on the inwards side
-            // why ?  pre-existing code, reason for creating this squared off end to the shape is not clear.
-
-            if (this._cornertype == CornerType.topleft)
-                cr.rectangle(cornerRadius - offset,
-                             0,
-                             offset,
-                             outerBorderWidth);  // x,y,width,height
-            else if (this._cornertype == CornerType.topright)
-                cr.rectangle(0,
-                             0,
-                             offset,
-                             outerBorderWidth);
-            else if (this._cornertype == CornerType.bottomleft)
-                cr.rectangle(cornerRadius - offset,
-                             cornerRadius - offset,
-                             offset,
-                             outerBorderWidth);
-            else if (this._cornertype.bottomright)
-                cr.rectangle(0,
-                             cornerRadius - offset,
-                             offset,
-                             outerBorderWidth);
-            cr.fill();
-            offset = innerBorderWidth;
-            Clutter.cairo_set_source_color(cr, backgroundColor);  // colour background
-
-            // Draw basic shape with vertex shifted diagonally outwards by the border width, in background colour
-
-            cr.translate(xOffsetDirection * offset, yOffsetDirection * offset);
-            cr.appendPath(savedPath);
-            cr.fill();
-            cr.restore();
-
-            cr.$dispose();
-
-            // Trim things down to a neat and tidy box
-
-            this.actor.set_clip(0,0,cornerRadius,cornerRadius);
-        }
-    },
-
-    _styleChanged: function() {
-        let node = this.actor.get_theme_node();
-
-        let cornerRadius = node.get_length("-panel-corner-radius");
-        let innerBorderWidth = node.get_length('-panel-corner-inner-border-width');
-
-        this.actor.set_size(cornerRadius, cornerRadius);
-        this.actor.set_anchor_point(0, 0);
-
-        // since the corners are a child actor of the panel, we need to account
-        // for their size when setting the panel clip region. we keep track here
-        // so the panel can easily check it.
-        this.cornerRadius = cornerRadius;
-
-        if (this._box.is_finalized()) return;
-        // ugly hack: force the panel to reset its clip region since we just added
-        // to the total allocation after it has already clipped to its own
-        // allocation
-        let panel = this._box.get_parent();
-        // for some reason style-changed is called on destroy
-        if (panel && panel._delegate)
-            panel._delegate._setClipRegion(panel._delegate._hidden);
-    }
-}; // end of panel corner
 
 function SettingsLauncher(label, keyword, icon) {
     this._init(label, keyword, icon);
@@ -2059,7 +1670,6 @@ PanelZoneDNDHandler.prototype = {
  * @monitorIndex (int): the index of the monitor containing the panel
  * @toppanelHeight (int): the height already taken on the screen by a top panel
  * @bottompanelHeight (int): the height already taken on the screen by a bottom panel
- * @drawcorner (array): [left, right] whether to draw corners alongside the panel
  *
  * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
  * @panelPosition (integer): where the panel is on the screen
@@ -2075,15 +1685,14 @@ PanelZoneDNDHandler.prototype = {
  *
  * This represents a panel on the screen.
  */
-function Panel(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight, drawcorner) {
-    this._init(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight, drawcorner);
+function Panel(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight) {
+    this._init(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight);
 }
 
 Panel.prototype = {
-    _init : function(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight, drawcorner) {
+    _init : function(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight) {
 
         this.panelId = id;
-        this.drawcorner = drawcorner;
         this.monitorIndex = monitorIndex;
         this.monitor = global.display.get_monitor_geometry(monitorIndex);
         this.panelPosition = panelPosition;
@@ -2142,8 +1751,6 @@ Panel.prototype = {
         this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox, 'center', this.panelId);
         this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox, 'right', this.panelId);
 
-        this.drawCorners(drawcorner);
-
         this.addContextMenuToPanel(this.panelPosition);
 
         Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
@@ -2171,88 +1778,6 @@ Panel.prototype = {
         this._onPanelZoneSizesChanged();
     },
 
-    drawCorners: function(drawcorner)
-    {
-
-        if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {  // horizontal panels
-            if (drawcorner[0]) { // left corner
-                if (this.panelPosition == PanelLoc.top) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.topleft);
-                    else                            // left to right text direction
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.topleft);
-                } else { // bottom panel
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.LEFT, CornerType.bottomleft);
-                    else                            // left to right text direction
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.LEFT, CornerType.bottomleft);
-                }
-            }
-            if (drawcorner[1]) { // right corner
-                if (this.panelPosition == PanelLoc.top) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction e.g. arabic
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.topright);
-                    else                            // left to right text direction
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.topright);
-                } else { // bottom
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction e.g. arabic
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.RIGHT,CornerType.bottomright);
-                    else                            // left to right text direction
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.RIGHT,CornerType.bottomright);
-                }
-            }
-        } else {  // vertical panels
-            if (this.panelPosition == PanelLoc.left) {   // left panel
-                if (drawcorner[0]) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.TOP, CornerType.topleft);
-                    else
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.TOP, CornerType.topleft);
-                }
-                if (drawcorner[1])
-                {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.BOTTOM, CornerType.bottomleft);
-                    else
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomleft);
-                }
-            } else { // right panel
-                if (drawcorner[0]) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)   // right to left text direction
-                        this._leftCorner = new PanelCorner(this._rightBox, St.Side.TOP, CornerType.topright);
-                    else
-                        this._leftCorner = new PanelCorner(this._leftBox, St.Side.TOP, CornerType.topright);
-                }
-                if (drawcorner[1]) {
-                    if (this.actor.get_direction() == St.TextDirection.RTL)    // right to left text direction;
-                        this._rightCorner = new PanelCorner(this._leftBox, St.Side.BOTTOM, CornerType.bottomright);
-                    else
-                        this._rightCorner = new PanelCorner(this._rightBox, St.Side.BOTTOM, CornerType.bottomright);
-                }
-            }
-        }
-
-        if (this.actor.is_finalized()) return;
-
-        if (this._leftCorner)
-            this.actor.add_actor(this._leftCorner.actor);
-        if (this._rightCorner)
-            this.actor.add_actor(this._rightCorner.actor);
-    },
-
-    _destroycorners: function()
-    {
-    if (this._leftCorner) {
-        this._leftCorner.actor.destroy();
-        this._leftCorner = null;
-    }
-    if (this._rightCorner) {
-        this._rightCorner.actor.destroy();
-        this._rightCorner = null;
-    }
-    this.drawcorner = [false,false];
-    },
-
     /**
      * updatePosition:
      * @monitorIndex: integer, index of monitor
@@ -2266,11 +1791,6 @@ Panel.prototype = {
         this._positionChanged = true;
 
         this.monitor = global.display.get_monitor_geometry(monitorIndex);
-        //
-        // If there are any corners then remove them - they may or may not be required
-        // in the new position, so we cannot just move them
-        //
-        this._destroycorners();
 
         this._set_orientation();
 
@@ -2373,7 +1893,6 @@ Panel.prototype = {
         this._leftBox.destroy();
         this._centerBox.destroy();
         this._rightBox.destroy();
-        this._destroycorners();
 
         this._signalManager.disconnectAllSignals()
 
@@ -2792,15 +2311,6 @@ Panel.prototype = {
         let isHorizontal = this.panelPosition == PanelLoc.top
                            || this.panelPosition == PanelLoc.bottom;
 
-        // determine corners size so we can extend allocation when not
-        // hiding or animating.
-        let cornerRadius = 0;
-        if (this._leftCorner && this._leftCorner.cornerRadius > 0) {
-            cornerRadius = this._leftCorner.cornerRadius;
-        } else if (this._rightCorner && this._rightCorner.cornerRadius > 0) {
-            cornerRadius = this._rightCorner.cornerRadius;
-        }
-
         // determine exposed amount of panel
         let exposedAmount;
         if (isHorizontal) {
@@ -2821,8 +2331,8 @@ Panel.prototype = {
 
         // determine offset & set clip
         // top/left panels: must offset by the hidden amount
-        // bottom/right panels: if showing must offset by shadow size and corner radius
-        // all panels: if showing increase exposedAmount by shadow size and corner radius
+        // bottom/right panels: if showing must offset by shadow size
+        // all panels: if showing increase exposedAmount by shadow size
 
         // we use only the shadowbox x1 or y1 (offset) to determine shadow size
         // as some themes use an offset shadow to draw only on one side whereas
@@ -2834,10 +2344,10 @@ Panel.prototype = {
                 clipOffsetY = this.actor.height - exposedAmount;
             } else {
                 if (!hidden)
-                    clipOffsetY = this._shadowBox.y1 - cornerRadius;
+                    clipOffsetY = this._shadowBox.y1;
             }
             if (!hidden)
-                exposedAmount += Math.abs(this._shadowBox.y1) + cornerRadius;
+                exposedAmount += Math.abs(this._shadowBox.y1);
             this.actor.set_clip(0, clipOffsetY, this.actor.width, exposedAmount);
         } else {
             let clipOffsetX = 0;
@@ -2845,10 +2355,10 @@ Panel.prototype = {
                 clipOffsetX = this.actor.width - exposedAmount;
             } else {
                 if (!hidden)
-                    clipOffsetX = this._shadowBox.x1 - cornerRadius;
+                    clipOffsetX = this._shadowBox.x1;
             }
             if (!hidden)
-                exposedAmount += Math.abs(this._shadowBox.x1) + cornerRadius;
+                exposedAmount += Math.abs(this._shadowBox.x1);
             this.actor.set_clip(clipOffsetX, 0, exposedAmount, this.actor.height);
         }
         // Force the layout manager to update the input region
@@ -3524,14 +3034,6 @@ Panel.prototype = {
         return [leftBoundary, rightBoundary];
     },
 
-    _setCornerChildbox: function(childbox, x1, x2, y1, y2) {
-        childbox.x1 = x1;
-        childbox.x2 = x2;
-        childbox.y1 = y1;
-        childbox.y2 = y2;
-        return;
-    },
-
     _setVertChildbox: function(childbox, y1, y2) {
 
         childbox.y1 = y1;
@@ -3552,12 +3054,6 @@ Panel.prototype = {
     },
 
     _allocate: function(actor, box, flags) {
-
-        let cornerMinWidth = 0;
-        let cornerWidth = 0;
-        let cornerMinHeight = 0;
-        let cornerHeight = 0;
-
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
@@ -3591,38 +3087,6 @@ Panel.prototype = {
 
             this._setVertChildbox (childBox, rightBoundary, box.y2);
             this._rightBox.allocate(childBox, flags);
-
-            // Corners are in response to a bit of optional css and are about painting corners just outside the panels so as to create a seamless
-            // visual impression for windows with curved corners
-            // So ... top left corner wants to be at the bottom left of the top panel. top right wants to be in the correspondingplace on the right
-            // Bottom left corner wants to be at the top left of the bottom panel.  bottom right in the corresponding place on the right
-            // No panel, no corner necessary.
-            // If there are vertical panels as well then we want to shift these in by the panel width
-            // If there are vertical panels but no horizontal then the corners are top right and left to right of left panel,
-            // and same to left of right panel
-
-            if (this.drawcorner[0]) {
-                [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
-                [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
-                if (this.panelPosition === PanelLoc.left) { // left panel
-                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, 0, cornerWidth);
-                } else { // right panel
-                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x1, 0, cornerWidth);
-                }
-                this._leftCorner.actor.allocate(childBox, flags);
-            }
-
-            if (this.drawcorner[1]) {
-                [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
-                [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
-                if (this.panelPosition === PanelLoc.left) { // left panel
-                    this._setCornerChildbox(childBox, box.x2, box.x2+cornerWidth, this.actor.height-cornerHeight, this.actor.height);
-                } else { // right panel
-                    this._setCornerChildbox(childBox, box.x1-cornerWidth, box.x1, this.actor.height-cornerHeight, this.actor.height);
-                }
-                this._rightCorner.actor.allocate(childBox, flags);
-            }
-
         } else {           // horizontal panel
 
             /* Distribute sizes for the allocated width with points relative to
@@ -3639,36 +3103,14 @@ Panel.prototype = {
 
             this._setHorizChildbox (childBox, rightBoundary, box.x2, box.x1, rightBoundary);
             this._rightBox.allocate(childBox, flags);
-
-            if (this.drawcorner[0]) {
-                [cornerMinWidth, cornerWidth]   = this._leftCorner.actor.get_preferred_width(-1);
-                [cornerMinHeight, cornerHeight] = this._leftCorner.actor.get_preferred_height(-1);
-                if (this.panelPosition === PanelLoc.top) { // top panel
-                    this._setCornerChildbox(childBox, 0, cornerWidth, box.y2, box.y2+cornerHeight);
-                } else { // bottom panel
-                    this._setCornerChildbox(childBox, 0, cornerWidth, box.y1-cornerHeight, box.y2);
-                }
-                this._leftCorner.actor.allocate(childBox, flags);
-            }
-
-            if (this.drawcorner[1]) {
-                [cornerMinWidth, cornerWidth]   = this._rightCorner.actor.get_preferred_width(-1);
-                [cornerMinHeight, cornerHeight] = this._rightCorner.actor.get_preferred_height(-1);
-                if (this.panelPosition === PanelLoc.top) { // top panel
-                  this._setCornerChildbox(childBox, this.actor.width-cornerWidth, this.actor.width, box.y2, box.y2+cornerHeight);
-                } else { // bottom panel
-                  this._setCornerChildbox(childBox, this.actor.width-cornerWidth, this.actor.width, box.y1-cornerHeight, box.y1);
-                }
-                this._rightCorner.actor.allocate(childBox, flags);
-            }
         }
     },
 
     /**
      * _panelHasOpenMenus:
-     * 
+     *
      * Checks if panel has open menus in the global.menuStack
-     * @returns 
+     * @returns
      */
     _panelHasOpenMenus: function() {
         if (global.menuStack == null || global.menuStack.length == 0)
