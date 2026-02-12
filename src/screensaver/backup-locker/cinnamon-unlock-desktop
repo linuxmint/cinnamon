@@ -1,11 +1,3 @@
 #!/bin/sh
-# Try D-Bus first (clean shutdown)
-gdbus call --session \
-    --dest org.cinnamon.BackupLocker \
-    --object-path /org/cinnamon/BackupLocker \
-    --method org.cinnamon.BackupLocker.Quit 2>/dev/null
-
-# Fallback: kill process directly
 killall cinnamon-backup-locker 2>/dev/null
-
 gsettings set org.cinnamon session-locked-state false
