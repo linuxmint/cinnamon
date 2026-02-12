@@ -120,6 +120,8 @@ Recommends:
  ibus,
  libpam-gnome-keyring,
 Suggests: cinnamon-doc
+Breaks: cinnamon-screensaver
+Replaces: cinnamon-screensaver
 Provides: notification-daemon, x-window-manager, polkit-1-auth-agent, cinnamon-screensaver
 Description: Modern Linux desktop
  Cinnamon is a modern Linux desktop which provides advanced innovative
