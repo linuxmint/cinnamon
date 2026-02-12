@@ -1206,6 +1206,16 @@ function _shouldFilterKeybinding(entry) {
     // Check if current ActionMode is in the allowed modes for this binding
     // Use bitwise AND - if result is non-zero, the mode is allowed
     let allowed = (entry.allowedModes & actionMode) !== 0;
+
+    if (allowed) {
+        let lockModes = Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN;
+        if ((actionMode & lockModes) !== 0 && (entry.allowedModes & lockModes) !== 0) {
+            if (!screenShield._settings.get_boolean('allow-keyboard-shortcuts')) {
+                return true;
+            }
+        }
+    }
+
     return !allowed;
 }
 

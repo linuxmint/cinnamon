@@ -73,14 +73,14 @@ var ScreenSaverService = class ScreenSaverService {
     }
 
     GetActiveAsync(params, invocation) {
-        let isActive = Main.screenShield ? Main.screenShield.isLocked() : false;
+        let isActive = Main.screenShield.isLocked();
         invocation.return_value(GLib.Variant.new('(b)', [isActive]));
     }
 
     LockAsync(params, invocation) {
         let [message] = params;
 
-        if (Main.screenShield && !Main.lockdownSettings.get_boolean('disable-lock-screen')) {
+        if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
             Main.screenShield.lock();
         }
 

@@ -404,10 +404,14 @@ KeybindingManager.prototype = {
     },
 
     on_media_key_pressed: function(display, window, kb, action) {
+        let [, entry] = this._lookupEntry("media-keys-" + action.toString());
+        if (Main._shouldFilterKeybinding(entry))
+            return;
+
         // Check if this is the screensaver key and internal screensaver is enabled
         if (action === MK.SCREENSAVER && this.cinnamon_settings.get_boolean('internal-screensaver-enabled')) {
             // Use internal screensaver (unless locked down)
-            if (Main.screenShield && !Main.lockdownSettings.get_boolean('disable-lock-screen')) {
+            if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
                 Main.screenShield.lock();
             }
             return;
