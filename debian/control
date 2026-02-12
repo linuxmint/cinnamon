@@ -31,6 +31,8 @@ Build-Depends:
  libsecret-1-dev,
  libstartup-notification0-dev (>= 0.11),
  libxapp-dev (>= 2.6.0),
+ libxcomposite-dev (>= 1:0.4),
+ libxdo-dev,
  meson,
  pysassc,
  python3:any,
