@@ -83,9 +83,20 @@ static void setup_window_monitor (BackupLocker *self, gulong xid);
 static void release_grabs_internal (BackupLocker *self);
 static void check_can_restart (BackupLocker *self);
 
+static gboolean cow_x_error;
+
+static int
+cow_x_error_handler (Display *display, XErrorEvent *event)
+{
+    cow_x_error = TRUE;
+    return 0;
+}
+
 static void
 acquire_cow (BackupLocker *self)
 {
+    int (*old_handler) (Display *, XErrorEvent *);
+
     if (self->cow_display != NULL)
         return;
 
@@ -97,9 +108,22 @@ acquire_cow (BackupLocker *self)
         return;
     }
 
+    cow_x_error = FALSE;
+    old_handler = XSetErrorHandler (cow_x_error_handler);
+
     XCompositeGetOverlayWindow (self->cow_display,
                                 DefaultRootWindow (self->cow_display));
     XSync (self->cow_display, False);
+
+    XSetErrorHandler (old_handler);
+
+    if (cow_x_error)
+    {
+        g_warning ("acquire_cow: X error getting composite overlay window");
+        XCloseDisplay (self->cow_display);
+        self->cow_display = NULL;
+        return;
+    }
 
     g_debug ("acquire_cow: holding composite overlay window");
 }
@@ -107,13 +131,25 @@ acquire_cow (BackupLocker *self)
 static void
 release_cow (BackupLocker *self)
 {
+    int (*old_handler) (Display *, XErrorEvent *);
+
     if (self->cow_display == NULL)
         return;
 
     g_debug ("release_cow: releasing composite overlay window");
 
+    cow_x_error = FALSE;
+    old_handler = XSetErrorHandler (cow_x_error_handler);
+
     XCompositeReleaseOverlayWindow (self->cow_display,
                                     DefaultRootWindow (self->cow_display));
+    XSync (self->cow_display, False);
+
+    XSetErrorHandler (old_handler);
+
+    if (cow_x_error)
+        g_warning ("release_cow: X error releasing composite overlay window");
+
     XCloseDisplay (self->cow_display);
     self->cow_display = NULL;
 }
@@ -262,6 +298,11 @@ static gboolean
 update_for_compositing (BackupLocker *self)
 {
     GdkVisual *visual;
+
+    if (self->should_grab)
+    {
+        cs_event_grabber_release (self->grabber);
+    }
 
     if (gdk_screen_is_composited (gdk_screen_get_default ()))
     {
@@ -515,7 +556,7 @@ create_window (BackupLocker *self)
     gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 6);
     // This is the first line of text for the backup-locker, explaining how to switch to tty
     // and run 'cinnamon-unlock-desktop' command.  This appears if the screensaver crashes.
-    widget = gtk_label_new (_("Something went wrong with the screensaver."));
+    widget = gtk_label_new (_("Something went wrong with Cinnamon."));
     attrs = pango_attr_list_new ();
     pango_attr_list_insert (attrs, pango_attr_size_new (20 * PANGO_SCALE));
     pango_attr_list_insert (attrs, pango_attr_foreground_new (65535, 65535, 65535));
@@ -525,13 +566,14 @@ create_window (BackupLocker *self)
     gtk_box_pack_start (GTK_BOX (box), widget, FALSE, FALSE, 6);
 
     self->stack = gtk_stack_new ();
+    gtk_stack_set_homogeneous (GTK_STACK (self->stack), TRUE);
     gtk_stack_set_transition_type (GTK_STACK (self->stack), GTK_STACK_TRANSITION_TYPE_CROSSFADE);
     gtk_box_pack_start (GTK_BOX (box), self->stack, FALSE, FALSE, 6);
 
     // "auto" page: recovery button
-    self->recover_button = gtk_button_new_with_label (_("Attempt to recover automatically"));
+    self->recover_button = gtk_button_new_with_label (_("Attempt to restart"));
     gtk_widget_set_halign (self->recover_button, GTK_ALIGN_CENTER);
-    gtk_widget_set_valign (self->recover_button, GTK_ALIGN_START);
+    gtk_widget_set_valign (self->recover_button, GTK_ALIGN_CENTER);
     gtk_style_context_add_class (gtk_widget_get_style_context (self->recover_button), GTK_STYLE_CLASS_SUGGESTED_ACTION);
     g_signal_connect (self->recover_button, "clicked", G_CALLBACK (on_recover_clicked), self);
     gtk_stack_add_named (GTK_STACK (self->stack), self->recover_button, "auto");
