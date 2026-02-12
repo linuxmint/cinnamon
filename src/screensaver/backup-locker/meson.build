@@ -19,7 +19,7 @@ executable(
     ],
     link_args: ['-fno-lto'],
     include_directories: include_root,
-    dependencies: [config_h, X11, xext, gtk, glib, gdkx11, xdo],
+    dependencies: [config_h, X11, xcomposite, xext, gtk, glib, gdkx11, xdo],
     install: true,
     install_dir: libexecdir,
 )

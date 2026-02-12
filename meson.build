@@ -46,6 +46,7 @@ muffin_typelibdir = muffin.get_variable(pkgconfig: 'typelibdir')
 pango = dependency('muffin-cogl-pango-0')
 xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
+xcomposite = dependency('xcomposite')
 xext = dependency('xext')
 xml = dependency('libxml-2.0')
 

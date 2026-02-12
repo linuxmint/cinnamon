@@ -445,56 +445,6 @@ cs_event_grabber_release (CsEventGrabber *grab)
         gdk_flush ();
 }
 
-/* The Cinnamon Shell holds an X grab when we're in the overview;
- * ask it to bounce out before we try locking the screen.
- */
-static void
-request_shell_exit_overview (CsEventGrabber *grab)
-{
-        GDBusMessage *message;
-
-        /* Shouldn't happen, but... */
-        if (!grab->priv->session_bus)
-                return;
-
-        message = g_dbus_message_new_method_call ("org.Cinnamon",
-                                                  "/org/Cinnamon",
-                                                  "org.freedesktop.DBus.Properties",
-                                                  "Set");
-        g_dbus_message_set_body (message,
-                                 g_variant_new ("(ssv)",
-                                                "org.Cinnamon",
-                                                "OverviewActive",
-                                                g_variant_new ("b",
-                                                               FALSE)));
-
-        g_dbus_connection_send_message (grab->priv->session_bus,
-                                        message,
-                                        G_DBUS_SEND_MESSAGE_FLAGS_NONE,
-                                        NULL,
-                                        NULL);
-        g_object_unref (message);
-
-
-        message = g_dbus_message_new_method_call ("org.Cinnamon",
-                                                  "/org/Cinnamon",
-                                                  "org.freedesktop.DBus.Properties",
-                                                  "Set");
-        g_dbus_message_set_body (message,
-                                 g_variant_new ("(ssv)",
-                                                "org.Cinnamon",
-                                                "ExpoActive",
-                                                g_variant_new ("b",
-                                                               FALSE)));
-
-        g_dbus_connection_send_message (grab->priv->session_bus,
-                                        message,
-                                        G_DBUS_SEND_MESSAGE_FLAGS_NONE,
-                                        NULL,
-                                        NULL);
-        g_object_unref (message);
-}
-
 gboolean
 cs_event_grabber_grab_window (CsEventGrabber    *grab,
                      GdkWindow *window,
@@ -506,9 +456,6 @@ cs_event_grabber_grab_window (CsEventGrabber    *grab,
         int      i;
         int      retries = 4;
         gboolean focus_fuckus = FALSE;
-
-        /* First, have stuff we control in GNOME un-grab */
-        request_shell_exit_overview (grab);
 
  AGAIN:
 
