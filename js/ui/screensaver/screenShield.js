@@ -20,6 +20,7 @@ const PowerWidget = imports.ui.screensaver.powerWidget;
 
 const CINNAMON_SCHEMA = 'org.cinnamon';
 const SCREENSAVER_SCHEMA = 'org.cinnamon.desktop.screensaver';
+const POWER_SCHEMA = 'org.cinnamon.settings-daemon.plugins.power';
 const FADE_TIME = 200;
 
 const FLOAT_TIMER_INTERVAL = 30;
@@ -144,6 +145,7 @@ var ScreenShield = GObject.registerClass({
         _debug = this._cinnamonSettings.get_boolean('debug-screensaver');
 
         this._settings = new Gio.Settings({ schema_id: SCREENSAVER_SCHEMA });
+        this._powerSettings = new Gio.Settings({ schema_id: POWER_SCHEMA });
         this._allowFloating = this._settings.get_boolean('floating-widgets');
 
         let constraint = new Clutter.BindConstraint({
@@ -662,8 +664,8 @@ var ScreenShield = GObject.registerClass({
         if (aboutToSuspend) {
             _log('ScreenShield: System suspending');
 
-            // Lock before suspend if enabled
-            let lockOnSuspend = this._settings.get_boolean('lock-enabled');
+            // Lock before suspend if lock-on-suspend is enabled in power settings
+            let lockOnSuspend = this._powerSettings.get_boolean('lock-on-suspend');
             if (lockOnSuspend && !this.isLocked()) {
                 this.lock(false, true);
             }
