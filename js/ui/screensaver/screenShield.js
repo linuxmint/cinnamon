@@ -172,14 +172,7 @@ var ScreenShield = GObject.registerClass({
         this._capturedEventId = 0;
 
         this._idleMonitor = Meta.IdleMonitor.get_core();
-        this._idleWatchId = 0;
         this._becameActiveId = 0;
-
-        this._settings.connect('changed::idle-activation-enabled', this._updateIdleWatch.bind(this));
-        this._settings.connect('changed::lock-enabled', this._updateIdleWatch.bind(this));
-        this._settings.connect('changed::lock-delay', this._updateIdleWatch.bind(this));
-
-        this._updateIdleWatch();
 
         this._loginManager = LoginManager.getLoginManager();
         this._loginManager.connectPrepareForSleep(this._prepareForSleep.bind(this));
@@ -489,6 +482,12 @@ var ScreenShield = GObject.registerClass({
         }
 
         this._startLockDelay();
+
+        if (!this._becameActiveId) {
+            this._becameActiveId = this._idleMonitor.add_user_active_watch(
+                this._onUserBecameActive.bind(this)
+            );
+        }
     }
 
     _startLockDelay() {
@@ -569,56 +568,6 @@ var ScreenShield = GObject.registerClass({
 
     isAwake() {
         return this._state === State.UNLOCKING;
-    }
-
-    _updateIdleWatch() {
-        if (this._idleWatchId) {
-            this._idleMonitor.remove_watch(this._idleWatchId);
-            this._idleWatchId = 0;
-        }
-
-        let idleEnabled = this._settings.get_boolean('idle-activation-enabled');
-        if (!idleEnabled) {
-            this._syncInhibitor();
-            return;
-        }
-
-        let lockDelay = this._settings.get_uint('lock-delay');
-        if (lockDelay == 0) {
-            this._syncInhibitor();
-            return;
-        }
-
-        let idleDelay = lockDelay * 60 * 1000;
-
-        this._idleWatchId = this._idleMonitor.add_idle_watch(
-            idleDelay,
-            this._onUserBecameIdle.bind(this)
-        );
-
-        this._syncInhibitor();
-    }
-
-    _onUserBecameIdle() {
-        _log('ScreenShield: User became idle');
-
-        if (this._state !== State.HIDDEN)
-            return;
-
-        let shouldLock = this._settings.get_boolean('lock-enabled');
-
-        if (shouldLock) {
-            this.lock();
-        } else {
-            this.activate();
-        }
-
-        // Watch for user activity to wake up
-        if (!this._becameActiveId) {
-            this._becameActiveId = this._idleMonitor.add_user_active_watch(
-                this._onUserBecameActive.bind(this)
-            );
-        }
     }
 
     _onUserBecameActive() {
