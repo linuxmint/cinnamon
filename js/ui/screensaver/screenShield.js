@@ -22,6 +22,7 @@ const CINNAMON_SCHEMA = 'org.cinnamon';
 const SCREENSAVER_SCHEMA = 'org.cinnamon.desktop.screensaver';
 const POWER_SCHEMA = 'org.cinnamon.settings-daemon.plugins.power';
 const FADE_TIME = 200;
+const MOTION_THRESHOLD = 100;
 
 const FLOAT_TIMER_INTERVAL = 30;
 const DEBUG_FLOAT = false;  // Set to true for 5-second intervals during development
@@ -170,6 +171,8 @@ var ScreenShield = GObject.registerClass({
         this.add_child(this._dialog);
 
         this._capturedEventId = 0;
+        this._lastMotionX = -1;
+        this._lastMotionY = -1;
 
         this._idleMonitor = Meta.IdleMonitor.get_core();
         this._becameActiveId = 0;
@@ -267,24 +270,36 @@ var ScreenShield = GObject.registerClass({
      * This is connected to global.stage's captured-event signal when active.
      */
     _onCapturedEvent(actor, event) {
-        let interesting_events = [
-            Clutter.EventType.MOTION,
-            Clutter.EventType.BUTTON_PRESS,
-            Clutter.EventType.KEY_PRESS
-        ];
+        let type = event.type();
 
-        let events = interesting_events.includes(event.type());
-
-        // Only handle relevant input events
-        if (!events)
+        if (type !== Clutter.EventType.MOTION &&
+            type !== Clutter.EventType.BUTTON_PRESS &&
+            type !== Clutter.EventType.KEY_PRESS) {
             return Clutter.EVENT_PROPAGATE;
+        }
 
-        // Track pointer monitor for dialog positioning
-        if (event.type() === Clutter.EventType.MOTION)
+        // Apply motion threshold when not awake to prevent accidental wakeups
+        if (type === Clutter.EventType.MOTION) {
             this._updatePointerMonitor();
 
+            if (!this.isAwake()) {
+                let [x, y] = event.get_coords();
+
+                if (this._lastMotionX < 0 || this._lastMotionY < 0) {
+                    this._lastMotionX = x;
+                    this._lastMotionY = y;
+                    return Clutter.EVENT_PROPAGATE;
+                }
+
+                let distance = Math.max(Math.abs(this._lastMotionX - x),
+                                        Math.abs(this._lastMotionY - y));
+                if (distance < MOTION_THRESHOLD)
+                    return Clutter.EVENT_PROPAGATE;
+            }
+        }
+
         // Escape key cancels if not locked
-        if (event.type() === Clutter.EventType.KEY_PRESS) {
+        if (type === Clutter.EventType.KEY_PRESS) {
             let symbol = event.get_key_symbol();
             if (symbol === Clutter.KEY_Escape && !this.isLocked()) {
                 this.deactivate();
@@ -297,7 +312,7 @@ var ScreenShield = GObject.registerClass({
             this.showUnlockDialog();
 
             // Forward printable characters to the password entry
-            if (event.type() === Clutter.EventType.KEY_PRESS) {
+            if (type === Clutter.EventType.KEY_PRESS) {
                 let unichar = event.get_key_unicode();
                 if (GLib.unichar_isprint(unichar)) {
                     this._dialog.addCharacter(unichar);
@@ -446,6 +461,9 @@ var ScreenShield = GObject.registerClass({
         }
 
         _log(`ScreenShield: Activating screensaver (immediate=${immediate})`);
+
+        this._lastMotionX = -1;
+        this._lastMotionY = -1;
 
         this._setState(State.SHOWN);
 
