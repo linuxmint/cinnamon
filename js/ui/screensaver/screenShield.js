@@ -362,6 +362,8 @@ var ScreenShield = GObject.registerClass({
         _log('ScreenShield: Hiding unlock dialog');
 
         this._clearClipboards();
+        this._lastMotionX = -1;
+        this._lastMotionY = -1;
 
         this._dialog.ease({
             opacity: 0,

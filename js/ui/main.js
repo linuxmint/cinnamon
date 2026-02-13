@@ -478,6 +478,8 @@ function start() {
 
     layoutManager.init();
     lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
+
+    // if native enabled..
     screenShield = new ScreenShield.ScreenShield();
     screenSaverService = new ScreenSaver.ScreenSaverService();
     overview.init();
