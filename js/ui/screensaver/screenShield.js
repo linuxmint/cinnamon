@@ -146,6 +146,7 @@ var ScreenShield = GObject.registerClass({
         _debug = this._cinnamonSettings.get_boolean('debug-screensaver');
 
         this._settings = new Gio.Settings({ schema_id: SCREENSAVER_SCHEMA });
+        this._settings.connect('changed::lock-enabled', this._syncInhibitor.bind(this));
         this._powerSettings = new Gio.Settings({ schema_id: POWER_SCHEMA });
         this._allowFloating = this._settings.get_boolean('floating-widgets');
 
@@ -176,6 +177,7 @@ var ScreenShield = GObject.registerClass({
 
         this._loginManager = LoginManager.getLoginManager();
         this._loginManager.connectPrepareForSleep(this._prepareForSleep.bind(this));
+        this._syncInhibitor();
 
         this._loginManager.connect('lock', this._onSessionLock.bind(this));
         this._loginManager.connect('unlock', this._onSessionUnlock.bind(this));
@@ -584,9 +586,8 @@ var ScreenShield = GObject.registerClass({
 
     _syncInhibitor() {
         let lockEnabled = this._settings.get_boolean('lock-enabled');
-        // Inhibit sleep when: screensaver is active but not yet locked, and lock is enabled.
-        // This prevents suspending before the lock completes.
-        let shouldInhibit = lockEnabled && this._state === State.SHOWN;
+        let lockDisabled = Main.lockdownSettings.get_boolean('disable-lock-screen');
+        let shouldInhibit = this._state === State.HIDDEN && lockEnabled && !lockDisabled;
 
         if (shouldInhibit && !this._inhibitor) {
             _log('ScreenShield: Acquiring sleep inhibitor');
@@ -596,9 +597,10 @@ var ScreenShield = GObject.registerClass({
                     return;
                 }
 
-                // Check if we still need it - state may have changed during async request
-                let stillNeeded = this._settings.get_boolean('lock-enabled') &&
-                                  this._state === State.SHOWN;
+                // Re-check after async - conditions may have changed
+                let stillNeeded = this._state === State.HIDDEN &&
+                                  this._settings.get_boolean('lock-enabled') &&
+                                  !Main.lockdownSettings.get_boolean('disable-lock-screen');
                 if (stillNeeded) {
                     this._inhibitor = inhibitor;
                     _log('ScreenShield: Sleep inhibitor acquired');
@@ -618,7 +620,6 @@ var ScreenShield = GObject.registerClass({
         if (aboutToSuspend) {
             _log('ScreenShield: System suspending');
 
-            // Lock before suspend if lock-on-suspend is enabled in power settings
             let lockOnSuspend = this._powerSettings.get_boolean('lock-on-suspend');
             if (lockOnSuspend && !this.isLocked()) {
                 this.lock(false, true);
@@ -626,7 +627,6 @@ var ScreenShield = GObject.registerClass({
         } else {
             _log('ScreenShield: System resuming');
 
-            // Show unlock dialog immediately on resume if locked
             if (this._state === State.LOCKED) {
                 this.showUnlockDialog();
             }
