@@ -10,6 +10,9 @@ const ScreenSaverIface =
         <method name="GetActive"> \
             <arg type="b" direction="out" /> \
         </method> \
+        <method name="GetActiveTime"> \
+            <arg type="u" direction="out" /> \
+        </method> \
         <method name="Lock"> \
             <arg type="s" direction="in" /> \
         </method> \
@@ -77,11 +80,17 @@ var ScreenSaverService = class ScreenSaverService {
         invocation.return_value(GLib.Variant.new('(b)', [isActive]));
     }
 
+    GetActiveTimeAsync(params, invocation) {
+        let activeTime = Main.screenShield.getActiveTime();
+        invocation.return_value(GLib.Variant.new('(u)', [activeTime]));
+    }
+
     LockAsync(params, invocation) {
         let [message] = params;
 
         if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
-            Main.screenShield.lock();
+            let awayMessage = message || null;
+            Main.screenShield.lock(false, false, awayMessage);
         }
 
         invocation.return_value(null);

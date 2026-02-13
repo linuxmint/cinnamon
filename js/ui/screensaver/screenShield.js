@@ -133,6 +133,7 @@ var ScreenShield = GObject.registerClass({
         this._monitorsChangedId = 0;
         this._widgets = [];  // Array of screensaver widgets
         this._awayMessage = null;
+        this._activationTime = 0;
         this._floatTimerId = 0;
         this._floatersNeedUpdate = false;
         this._usedAwakePositions = new Set();  // Track used awake positions (as "halign:valign" keys)
@@ -388,9 +389,12 @@ var ScreenShield = GObject.registerClass({
         clipboard.set_text(St.ClipboardType.CLIPBOARD, '');
     }
 
-    lock(askForAwayMessage, immediate = false) {
+    lock(askForAwayMessage, immediate = false, awayMessage = null) {
         if (this.isLocked())
             return;
+
+        if (awayMessage)
+            this._awayMessage = awayMessage;
 
         if (askForAwayMessage && this._settings.get_boolean('ask-for-away-message')) {
             this._showAwayMessageDialog();
@@ -466,6 +470,7 @@ var ScreenShield = GObject.registerClass({
 
         this._lastMotionX = -1;
         this._lastMotionY = -1;
+        this._activationTime = GLib.get_monotonic_time();
 
         this._setState(State.SHOWN);
 
@@ -568,6 +573,7 @@ var ScreenShield = GObject.registerClass({
                 if (Main.deskletContainer)
                     Main.deskletContainer.actor.show();
 
+                this._activationTime = 0;
                 this._setState(State.HIDDEN);
 
                 if (emitUnlocked)
@@ -582,6 +588,12 @@ var ScreenShield = GObject.registerClass({
 
     isAwake() {
         return this._state === State.UNLOCKING;
+    }
+
+    getActiveTime() {
+        if (this._activationTime > 0)
+            return Math.floor((GLib.get_monotonic_time() - this._activationTime) / 1000000);
+        return 0;
     }
 
     _syncInhibitor() {
