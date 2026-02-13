@@ -3,8 +3,10 @@
 from gi.repository import GLib, Gio
 import sys
 import signal
+import shlex
 import argparse
 import gettext
+from subprocess import Popen, DEVNULL
 from enum import IntEnum
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -74,6 +76,12 @@ class ScreensaverCommand:
         self.action_id = args.action_id
         self.message = args.message
 
+        ss_settings = Gio.Settings.new("org.cinnamon.desktop.screensaver")
+        custom_saver = ss_settings.get_string("custom-screensaver-command").strip()
+        if custom_saver:
+            self._handle_custom_saver(custom_saver)
+            quit()
+
         # Create DBus proxy
         Gio.DBusProxy.new_for_bus(
             Gio.BusType.SESSION,
@@ -85,6 +93,15 @@ class ScreensaverCommand:
             None,
             self._on_proxy_ready
         )
+
+    def _handle_custom_saver(self, custom_saver):
+        if self.action_id in (Action.LOCK, Action.ACTIVATE):
+            try:
+                Popen(shlex.split(custom_saver), stdin=DEVNULL)
+            except OSError as e:
+                print("Error %d running %s: %s" % (e.errno, custom_saver, e.strerror))
+        else:
+            print("Action not supported with custom screensaver.")
 
     def _on_proxy_ready(self, source, result):
         try:

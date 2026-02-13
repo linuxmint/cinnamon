@@ -78,6 +78,7 @@ KeybindingManager.prototype = {
         this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
 
         this.cinnamon_settings = new Gio.Settings({ schema_id: "org.cinnamon" });
+        this.screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
 
         this.setup_media_keys();
     },
@@ -410,14 +411,17 @@ KeybindingManager.prototype = {
 
         // Check if this is the screensaver key and internal screensaver is enabled
         if (action === MK.SCREENSAVER && this.cinnamon_settings.get_boolean('internal-screensaver-enabled')) {
-            // Use internal screensaver (unless locked down)
-            if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    Main.screenShield.lock();
-                    return GLib.SOURCE_REMOVE;
-                });
+            // If a custom screensaver is configured, skip internal handling and
+            // let csd-media-keys run cinnamon-screensaver-command instead.
+            if (!this.screensaver_settings.get_string('custom-screensaver-command').trim()) {
+                if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
+                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                        Main.screenShield.lock();
+                        return GLib.SOURCE_REMOVE;
+                    });
+                }
+                return;
             }
-            return;
         }
 
         // Otherwise, forward to csd-media-keys (or other handler)
