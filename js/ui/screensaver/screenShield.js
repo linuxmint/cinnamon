@@ -324,6 +324,8 @@ var ScreenShield = GObject.registerClass({
 
         _log('ScreenShield: Showing unlock dialog');
 
+        this._clearClipboards();
+
         this._setState(State.UNLOCKING);
 
         this._lastPointerMonitor = global.display.get_current_monitor();
@@ -351,6 +353,8 @@ var ScreenShield = GObject.registerClass({
 
         _log('ScreenShield: Hiding unlock dialog');
 
+        this._clearClipboards();
+
         this._dialog.ease({
             opacity: 0,
             duration: FADE_TIME,
@@ -366,6 +370,12 @@ var ScreenShield = GObject.registerClass({
                 this._onSleep();
             }
         });
+    }
+
+    _clearClipboards() {
+        let clipboard = St.Clipboard.get_default();
+        clipboard.set_text(St.ClipboardType.PRIMARY, '');
+        clipboard.set_text(St.ClipboardType.CLIPBOARD, '');
     }
 
     lock(askForAwayMessage, immediate = false) {
