@@ -479,9 +479,10 @@ function start() {
     layoutManager.init();
     lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
-    // if native enabled..
-    screenShield = new ScreenShield.ScreenShield();
-    screenSaverService = new ScreenSaver.ScreenSaverService();
+    if (global.settings.get_boolean('internal-screensaver-enabled')) {
+        screenShield = new ScreenShield.ScreenShield();
+        screenSaverService = new ScreenSaver.ScreenSaverService();
+    }
     overview.init();
     expo.init();
 
@@ -1212,7 +1213,7 @@ function _shouldFilterKeybinding(entry) {
     if (allowed) {
         let lockModes = Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN;
         if ((actionMode & lockModes) !== 0 && (entry.allowedModes & lockModes) !== 0) {
-            if (!screenShield._settings.get_boolean('allow-keyboard-shortcuts')) {
+            if (!screenShield?._settings.get_boolean('allow-keyboard-shortcuts')) {
                 return true;
             }
         }
