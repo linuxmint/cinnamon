@@ -479,10 +479,6 @@ function start() {
     layoutManager.init();
     lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
-    if (global.settings.get_boolean('internal-screensaver-enabled')) {
-        screenShield = new ScreenShield.ScreenShield();
-        screenSaverService = new ScreenSaver.ScreenSaverService();
-    }
     overview.init();
     expo.init();
 
@@ -534,6 +530,11 @@ function start() {
             runDialog = null;
         }
     });
+
+    if (global.settings.get_boolean('internal-screensaver-enabled')) {
+        screenShield = new ScreenShield.ScreenShield();
+        screenSaverService = new ScreenSaver.ScreenSaverService();
+    }
 
     Promise.all([
         AppletManager.init(),

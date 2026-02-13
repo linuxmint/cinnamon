@@ -172,6 +172,25 @@ var ScreenShield = GObject.registerClass({
         this._dialog = new UnlockDialog.UnlockDialog(this);
         this.add_child(this._dialog);
 
+        this._keyboardBox = new St.Widget({
+            name: 'screensaverKeyboardBox',
+            layout_manager: new Clutter.BinLayout(),
+            visible: false,
+            reactive: true
+        });
+        this.add_child(this._keyboardBox);
+        this._oskVisible = false;
+
+        this._oskButton = new St.Button({
+            style_class: 'icon-button',
+            important: true,
+            can_focus: true,
+            reactive: true
+        });
+        this._oskButton.set_child(new St.Icon({ icon_name: 'xsi-input-keyboard-symbolic' }));
+        this._oskButton.connect('clicked', this._toggleScreensaverKeyboard.bind(this));
+        this._keyboardBox.add_child(this._oskButton);
+
         this._capturedEventId = 0;
         this._lastMotionX = -1;
         this._lastMotionY = -1;
@@ -335,6 +354,9 @@ var ScreenShield = GObject.registerClass({
 
         this._positionUnlockDialog();
 
+        this._keyboardBox.show();
+        this._positionKeyboardBox();
+
         this._dialog.ease({
             opacity: 255,
             duration: FADE_TIME,
@@ -350,6 +372,8 @@ var ScreenShield = GObject.registerClass({
 
         _log('ScreenShield: Hiding unlock dialog');
 
+        this._hideScreensaverKeyboard();
+        this._keyboardBox.hide();
         this._clearClipboards();
         this._lastMotionX = -1;
         this._lastMotionY = -1;
@@ -548,6 +572,8 @@ var ScreenShield = GObject.registerClass({
     }
 
     _hideShield(emitUnlocked) {
+        this._hideScreensaverKeyboard();
+        this._keyboardBox.hide();
         this._backupLockerCall('Unlock', null);
 
         if (this._capturedEventId) {
@@ -686,6 +712,9 @@ var ScreenShield = GObject.registerClass({
                 this._positionUnlockDialog();
             }
 
+            if (this._keyboardBox.visible)
+                this._positionKeyboardBox();
+
             if (this.isAwake()) {
                 _log(`ScreenShield: Repositioning ${this._widgets.length} widgets to monitor ${currentMonitor}`);
                 for (let widget of this._widgets) {
@@ -710,14 +739,87 @@ var ScreenShield = GObject.registerClass({
         let [minWidth, natWidth] = this._dialog.get_preferred_width(-1);
         let [minHeight, natHeight] = this._dialog.get_preferred_height(natWidth);
 
-        // Center on monitor
+        // When keyboard is visible, center dialog in the remaining space
+        let availableHeight = monitor.height;
+        let yOffset = monitor.y;
+        if (this._oskVisible) {
+            let size = Main.virtualKeyboardManager.getKeyboardSize();
+            let kbHeight = Math.floor(monitor.height / size);
+            let top = Main.virtualKeyboardManager.getKeyboardPosition() === 'top';
+
+            availableHeight = monitor.height - kbHeight;
+            if (top)
+                yOffset = monitor.y + kbHeight;
+        }
+
         let x = monitor.x + (monitor.width - natWidth) / 2;
-        let y = monitor.y + (monitor.height - natHeight) / 2;
+        let y = yOffset + (availableHeight - natHeight) / 2;
 
         this._dialog.set_position(x, y);
         this._dialog.set_size(natWidth, natHeight);
 
         _log(`ScreenShield: Positioned unlock dialog at ${x},${y} (${natWidth}x${natHeight}) on monitor ${monitorIndex}`);
+    }
+
+    _toggleScreensaverKeyboard() {
+        if (this._oskVisible)
+            this._hideScreensaverKeyboard();
+        else
+            this._showScreensaverKeyboard();
+    }
+
+    _showScreensaverKeyboard() {
+        if (this._oskVisible)
+            return;
+
+        this._oskButton.hide();
+        Main.virtualKeyboardManager.openForScreensaver(this._keyboardBox, this);
+        this._oskVisible = true;
+        this._positionKeyboardBox();
+        this._positionUnlockDialog();
+    }
+
+    _hideScreensaverKeyboard() {
+        if (!this._oskVisible)
+            return;
+
+        Main.virtualKeyboardManager.closeForScreensaver();
+        this._oskVisible = false;
+        this._oskButton.show();
+        this._positionKeyboardBox();
+        this._positionUnlockDialog();
+    }
+
+    _positionKeyboardBox() {
+        let monitorIndex = global.display.get_current_monitor();
+        let monitor = Main.layoutManager.monitors[monitorIndex];
+
+        if (this._oskVisible) {
+            let size = Main.virtualKeyboardManager.getKeyboardSize();
+            let top = Main.virtualKeyboardManager.getKeyboardPosition() === 'top';
+
+            let height = Math.floor(monitor.height / size);
+            let y = top ? monitor.y : monitor.y + monitor.height - height;
+
+            this._keyboardBox.set_position(monitor.x, y);
+            this._keyboardBox.set_size(monitor.width, height);
+
+            let keyboard = Main.virtualKeyboardManager.keyboardActor;
+            if (keyboard) {
+                keyboard.width = monitor.width;
+                keyboard.height = height;
+            }
+        } else {
+            let [, natWidth] = this._oskButton.get_preferred_width(-1);
+            let [, natHeight] = this._oskButton.get_preferred_height(natWidth);
+            let padding = 24 * global.ui_scale;
+
+            let x = monitor.x + (monitor.width - natWidth) / 2;
+            let y = monitor.y + monitor.height - natHeight - padding;
+
+            this._keyboardBox.set_position(Math.floor(x), Math.floor(y));
+            this._keyboardBox.set_size(natWidth, natHeight);
+        }
     }
 
     _onMonitorsChanged() {
@@ -729,6 +831,9 @@ var ScreenShield = GObject.registerClass({
         this._createBackgrounds();
 
         this._positionInfoPanel();
+
+        if (this._keyboardBox.visible)
+            this._positionKeyboardBox();
 
         if (this._state === State.UNLOCKING && this._dialog.visible) {
             this._lastPointerMonitor = -1;

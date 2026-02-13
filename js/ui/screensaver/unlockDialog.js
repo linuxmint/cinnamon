@@ -11,6 +11,7 @@ const Pango = imports.gi.Pango;
 
 const AuthClient = imports.misc.authClient;
 const CinnamonEntry = imports.ui.cinnamonEntry;
+const KeyboardManager = imports.ui.keyboardManager;
 const ScreenShield = imports.ui.screensaver.screenShield;
 const UserWidget = imports.ui.userWidget;
 const Util = imports.misc.util;
@@ -102,6 +103,20 @@ class UnlockDialog extends St.BoxLayout {
         this._messageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         passwordBox.add_child(this._messageLabel);
 
+        this._sourceChangedId = 0;
+        this._inputSourceManager = KeyboardManager.getInputSourceManager();
+        if (this._inputSourceManager.multipleSources) {
+            this._updateLayoutIndicator();
+            this._passwordEntry.connect('primary-icon-clicked', () => {
+                let currentIndex = this._inputSourceManager.currentSource.index;
+                let nextIndex = (currentIndex + 1) % this._inputSourceManager.numInputSources;
+                this._inputSourceManager.activateInputSourceIndex(nextIndex);
+            });
+
+            this._sourceChangedId = this._inputSourceManager.connect(
+                'current-source-changed', this._updateLayoutIndicator.bind(this));
+        }
+
         this._buttonLayout = new St.Widget({
             style_class: 'dialog-button-box',
             important: true,
@@ -170,6 +185,22 @@ class UnlockDialog extends St.BoxLayout {
 
         this._passwordEntry.clutter_text.connect('activate', this._onUnlock.bind(this));
         this.connect('key-press-event', this._onKeyPress.bind(this));
+    }
+
+    _updateLayoutIndicator() {
+        let source = this._inputSourceManager.currentSource;
+        if (!source)
+            return;
+
+        let icon = null;
+
+        if (this._inputSourceManager.showFlags)
+            icon = this._inputSourceManager.createFlagIcon(source, null, 16 * global.ui_scale);
+
+        if (!icon)
+            icon = new St.Label({ text: source.shortName });
+
+        this._passwordEntry.set_primary_icon(icon);
     }
 
     _onKeyPress(actor, event) {
@@ -315,6 +346,11 @@ class UnlockDialog extends St.BoxLayout {
     }
 
     vfunc_destroy() {
+        if (this._sourceChangedId && this._inputSourceManager) {
+            this._inputSourceManager.disconnect(this._sourceChangedId);
+            this._sourceChangedId = 0;
+        }
+
         if (this._authClient) {
             if (this._authClient.initialized) {
                 this._authClient.cancel();
