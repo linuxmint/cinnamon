@@ -30,7 +30,7 @@ const DEBUG_FLOAT = false;  // Set to true for 5-second intervals during develop
 const MAX_SCREENSAVER_WIDGETS = 3;
 const WIDGET_LOAD_DELAY = 1000;
 
-var _debug = false;
+var _debug = true;
 
 function _log(msg) {
     if (_debug)
@@ -174,9 +174,6 @@ var ScreenShield = GObject.registerClass({
         this._lastMotionX = -1;
         this._lastMotionY = -1;
 
-        this._idleMonitor = Meta.IdleMonitor.get_core();
-        this._becameActiveId = 0;
-
         this._loginManager = LoginManager.getLoginManager();
         this._loginManager.connectPrepareForSleep(this._prepareForSleep.bind(this));
 
@@ -298,9 +295,10 @@ var ScreenShield = GObject.registerClass({
             }
         }
 
-        // Escape key cancels if not locked
         if (type === Clutter.EventType.KEY_PRESS) {
             let symbol = event.get_key_symbol();
+
+            // Escape key cancels if not locked
             if (symbol === Clutter.KEY_Escape && !this.isLocked()) {
                 this.deactivate();
                 return Clutter.EVENT_STOP;
@@ -502,12 +500,6 @@ var ScreenShield = GObject.registerClass({
         }
 
         this._startLockDelay();
-
-        if (!this._becameActiveId) {
-            this._becameActiveId = this._idleMonitor.add_user_active_watch(
-                this._onUserBecameActive.bind(this)
-            );
-        }
     }
 
     _startLockDelay() {
@@ -588,23 +580,6 @@ var ScreenShield = GObject.registerClass({
 
     isAwake() {
         return this._state === State.UNLOCKING;
-    }
-
-    _onUserBecameActive() {
-        _log('ScreenShield: User became active');
-
-        if (this._becameActiveId) {
-            this._idleMonitor.remove_watch(this._becameActiveId);
-            this._becameActiveId = 0;
-        }
-
-        if (!this.isLocked() && this._state !== State.HIDDEN) {
-            this.deactivate();
-        }
-
-        if (this._state === State.LOCKED) {
-            this.showUnlockDialog();
-        }
     }
 
     _syncInhibitor() {
