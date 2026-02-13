@@ -278,24 +278,11 @@ var ScreenShield = GObject.registerClass({
             return Clutter.EVENT_PROPAGATE;
         }
 
-        // Apply motion threshold when not awake to prevent accidental wakeups
         if (type === Clutter.EventType.MOTION) {
             this._updatePointerMonitor();
 
-            if (!this.isAwake()) {
-                let [x, y] = event.get_coords();
-
-                if (this._lastMotionX < 0 || this._lastMotionY < 0) {
-                    this._lastMotionX = x;
-                    this._lastMotionY = y;
-                    return Clutter.EVENT_PROPAGATE;
-                }
-
-                let distance = Math.max(Math.abs(this._lastMotionX - x),
-                                        Math.abs(this._lastMotionY - y));
-                if (distance < MOTION_THRESHOLD)
-                    return Clutter.EVENT_PROPAGATE;
-            }
+            if (!this.isAwake() && !this._motionExceedsThreshold(event))
+                return Clutter.EVENT_PROPAGATE;
         }
 
         if (type === Clutter.EventType.KEY_PRESS) {
@@ -309,19 +296,20 @@ var ScreenShield = GObject.registerClass({
         }
 
         // Wake up on user activity
-        if (this._state === State.LOCKED) {
-            this.showUnlockDialog();
+        let wasLocked = this._state === State.LOCKED;
+        let wasShown = this._state === State.SHOWN;
+        this.simulateUserActivity();
 
-            // Forward printable characters to the password entry
-            if (type === Clutter.EventType.KEY_PRESS) {
-                let unichar = event.get_key_unicode();
-                if (GLib.unichar_isprint(unichar)) {
-                    this._dialog.addCharacter(unichar);
-                }
-            }
-        } else if (this._state === State.SHOWN) {
-            this.deactivate();
+        if (wasShown)
             return Clutter.EVENT_STOP;
+
+        // Forward the initial keypress that woke the unlock dialog,
+        // before the entry has focus.
+        if (wasLocked && type === Clutter.EventType.KEY_PRESS) {
+            let unichar = event.get_key_unicode();
+            if (GLib.unichar_isprint(unichar)) {
+                this._dialog.addCharacter(unichar);
+            }
         }
 
         return Clutter.EVENT_PROPAGATE;
@@ -541,6 +529,14 @@ var ScreenShield = GObject.registerClass({
         return GLib.SOURCE_REMOVE;
     }
 
+    simulateUserActivity() {
+        if (this._state === State.LOCKED) {
+            this.showUnlockDialog();
+        } else if (this._state === State.SHOWN) {
+            this.deactivate();
+        }
+    }
+
     deactivate() {
         if (this.isLocked()) {
             _log('ScreenShield: Cannot deactivate while locked');
@@ -664,6 +660,20 @@ var ScreenShield = GObject.registerClass({
         if (this._state === State.LOCKED) {
             this.showUnlockDialog();
         }
+    }
+
+    _motionExceedsThreshold(event) {
+        let [x, y] = event.get_coords();
+
+        if (this._lastMotionX < 0 || this._lastMotionY < 0) {
+            this._lastMotionX = x;
+            this._lastMotionY = y;
+            return false;
+        }
+
+        let distance = Math.max(Math.abs(this._lastMotionX - x),
+                                Math.abs(this._lastMotionY - y));
+        return distance >= MOTION_THRESHOLD;
     }
 
     _updatePointerMonitor() {

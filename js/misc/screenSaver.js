@@ -19,6 +19,8 @@ const ScreenSaverIface =
         <method name="SetActive"> \
             <arg type="b" direction="in" /> \
         </method> \
+        <method name="Quit" /> \
+        <method name="SimulateUserActivity" /> \
         <signal name="ActiveChanged"> \
             <arg type="b" direction="out" /> \
         </signal> \
@@ -96,12 +98,22 @@ var ScreenSaverService = class ScreenSaverService {
         invocation.return_value(null);
     }
 
+    QuitAsync(params, invocation) {
+        // No-op for internal screensaver (can't quit Cinnamon's built-in screen shield).
+        // Exists for compatibility with legacy cinnamon-screensaver-command --exit.
+        invocation.return_value(null);
+    }
+
+    SimulateUserActivityAsync(params, invocation) {
+        Main.screenShield.simulateUserActivity();
+        invocation.return_value(null);
+    }
+
     SetActiveAsync(params, invocation) {
         let [active] = params;
 
         if (Main.screenShield) {
             if (active) {
-                // Activate (not lock) - respects lock-enabled and lock-delay settings
                 Main.screenShield.activate();
             } else {
                 // Can't deactivate if locked
