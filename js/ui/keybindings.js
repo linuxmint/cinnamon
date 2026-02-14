@@ -17,6 +17,19 @@ const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
+const REPEATABLE_MEDIA_KEYS = [
+    MK.VOLUME_UP,
+    MK.VOLUME_UP_QUIET,
+    MK.VOLUME_DOWN,
+    MK.VOLUME_DOWN_QUIET,
+    MK.SCREEN_BRIGHTNESS_UP,
+    MK.SCREEN_BRIGHTNESS_DOWN,
+    MK.KEYBOARD_BRIGHTNESS_UP,
+    MK.KEYBOARD_BRIGHTNESS_DOWN,
+    MK.REWIND,
+    MK.FORWARD,
+];
+
 const OBSOLETE_MEDIA_KEYS = [
     MK.VIDEO_OUT,
     MK.ROTATE_VIDEO
@@ -70,10 +83,10 @@ KeybindingManager.prototype = {
         this.setup_custom_keybindings();
     },
 
-    addHotKey: function(name, bindings_string, callback) {
+    addHotKey: function(name, bindings_string, callback, flags) {
         if (!bindings_string)
             return false;
-        return this.addHotKeyArray(name, bindings_string.split("::"), callback);
+        return this.addHotKeyArray(name, bindings_string.split("::"), callback, flags);
     },
 
     _makeXletKey: function(xlet, name, binding) {
@@ -108,7 +121,7 @@ KeybindingManager.prototype = {
      *  }
      */
 
-    addXletHotKey: function(xlet, name, bindings_string, callback) {
+    addXletHotKey: function(xlet, name, bindings_string, callback, flags) {
         this._removeMatchingXletBindings(xlet, name);
 
         if (!bindings_string)
@@ -131,7 +144,7 @@ KeybindingManager.prototype = {
 
             xlet_set.set(instanceId, callback);
 
-            this._queueCommitXletHotKey(xlet_key, binding, xlet_set);
+            this._queueCommitXletHotKey(xlet_key, binding, xlet_set, flags);
         }
     },
 
@@ -225,7 +238,7 @@ KeybindingManager.prototype = {
         this._removeMatchingXletBindings(xlet, name);
     },
 
-    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set) {
+    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set, flags) {
         let id = xlet_set.get("commitTimeoutId") ?? 0;
 
         if (id > 0) {
@@ -233,7 +246,7 @@ KeybindingManager.prototype = {
         }
 
         id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key));
+            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key), flags);
             xlet_set.set("commitTimeoutId", 0);
             return GLib.SOURCE_REMOVE;
         });
@@ -253,7 +266,7 @@ KeybindingManager.prototype = {
         return [Meta.KeyBindingAction.NONE, undefined];
     },
 
-    addHotKeyArray: function(name, bindings, callback) {
+    addHotKeyArray: function(name, bindings, callback, flags=Meta.KeyBindingFlags.IGNORE_AUTOREPEAT) {
         let [existing_action_id, entry] = this._lookupEntry(name);
 
         if (entry !== undefined) {
@@ -278,8 +291,8 @@ KeybindingManager.prototype = {
             return true;
         }
 
-        action_id = global.display.add_custom_keybinding(name, bindings, callback);
-        // log(`set keybinding: ${name}, bindings: ${bindings} - action id: ${action_id}`);
+        action_id = global.display.add_custom_keybinding_full(name, bindings, flags, callback);
+        // log(`set keybinding: ${name}, bindings: ${bindings}, flags: ${flags} - action id: ${action_id}`);
 
         if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
@@ -340,10 +353,15 @@ KeybindingManager.prototype = {
                 continue;
             }
 
+            let flags = REPEATABLE_MEDIA_KEYS.includes(i)
+                ? Meta.KeyBindingFlags.NONE
+                : Meta.KeyBindingFlags.IGNORE_AUTOREPEAT;
+
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
-                           Lang.bind(this, this.on_global_media_key_pressed, i));
+                           Lang.bind(this, this.on_global_media_key_pressed, i),
+                           flags);
         }
 
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
@@ -351,10 +369,15 @@ KeybindingManager.prototype = {
                 continue;
             }
 
+            let flags = REPEATABLE_MEDIA_KEYS.includes(i)
+                ? Meta.KeyBindingFlags.NONE
+                : Meta.KeyBindingFlags.IGNORE_AUTOREPEAT;
+
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
-                           Lang.bind(this, this.on_media_key_pressed, i));
+                           Lang.bind(this, this.on_media_key_pressed, i),
+                           flags);
         }
         return true;
     },
