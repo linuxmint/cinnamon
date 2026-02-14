@@ -182,7 +182,7 @@ var ScreenShield = GObject.registerClass({
         this._oskVisible = false;
 
         this._oskButton = new St.Button({
-            style_class: 'icon-button',
+            style_class: 'osk-activate-button',
             important: true,
             can_focus: true,
             reactive: true
