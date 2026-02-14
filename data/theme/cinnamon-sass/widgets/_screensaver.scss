@@ -38,14 +38,36 @@
 }
 
 .clock-time-label {
+  font-size: 64pt;
+  font-weight: bold;
+  color: white;
+  text-align: center;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+}
+
+.clock-date-label {
+  font-size: 24pt;
+  font-weight: bold;
+  color: white;
   text-align: center;
   text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
 }
 
 .clock-message-label {
+  font-size: 14pt;
+  font-weight: bold;
+  color: #cccccc;
   text-align: center;
   text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
   margin-top: $base_margin;
+}
+
+.clock-message-author {
+  font-size: 12pt;
+  font-weight: bold;
+  color: #acacac;
+  text-align: center;
+  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 }
 
 .albumart-widget {

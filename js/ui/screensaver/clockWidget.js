@@ -4,7 +4,6 @@ const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
-const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
 
@@ -32,21 +31,27 @@ class ClockWidget extends ScreensaverWidget.ScreensaverWidget {
             style_class: 'clock-time-label',
             x_align: Clutter.ActorAlign.CENTER
         });
-        this._timeLabel.clutter_text.use_markup = true;
-        this._timeLabel.clutter_text.line_wrap = true;
-        this._timeLabel.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
-        this._timeLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.add_child(this._timeLabel);
+
+        this._dateLabel = new St.Label({
+            style_class: 'clock-date-label',
+            x_align: Clutter.ActorAlign.CENTER
+        });
+        this._dateLabel.clutter_text.line_wrap = true;
+        this.add_child(this._dateLabel);
 
         this._messageLabel = new St.Label({
             style_class: 'clock-message-label',
             x_align: Clutter.ActorAlign.CENTER
         });
-        this._messageLabel.clutter_text.use_markup = true;
         this._messageLabel.clutter_text.line_wrap = true;
-        this._messageLabel.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
-        this._messageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         this.add_child(this._messageLabel);
+
+        this._messageAuthor = new St.Label({
+            style_class: 'clock-message-author',
+            x_align: Clutter.ActorAlign.CENTER
+        });
+        this.add_child(this._messageAuthor);
 
         this._wallClock = new CinnamonDesktop.WallClock();
         this._wallClock.connect('notify::clock', this._updateClock.bind(this));
@@ -56,57 +61,41 @@ class ClockWidget extends ScreensaverWidget.ScreensaverWidget {
     }
 
     _setClockFormat() {
-        let dateFormat = '';
-        let timeFormat = '';
-
         if (this._settings.get_boolean('use-custom-format')) {
-            dateFormat = this._settings.get_string('date-format') || '%A %B %-e';
-            timeFormat = this._settings.get_string('time-format') || '%H:%M';
+            this._dateFormat = this._settings.get_string('date-format') || '%A %B %-e';
+            this._timeFormat = this._settings.get_string('time-format') || '%H:%M';
         } else {
-            dateFormat = this._wallClock.get_default_date_format();
-            timeFormat = this._wallClock.get_default_time_format();
+            this._dateFormat = this._wallClock.get_default_date_format();
+            this._timeFormat = this._wallClock.get_default_time_format();
 
             // %l is 12-hr hours, but it adds a space to 0-9, which looks bad
             // The '-' modifier tells the GDateTime formatter not to pad the value
-            timeFormat = timeFormat.replace('%l', '%-l');
+            this._timeFormat = this._timeFormat.replace('%l', '%-l');
         }
 
-        let timeFont = this._settings.get_string('font-time') || 'Ubuntu 64';
-        let dateFont = this._settings.get_string('font-date') || 'Ubuntu 24';
-
-        let format = '<b><span font_desc="' + timeFont + '" foreground="#FFFFFF">' + timeFormat + '</span></b>\n' +
-                     '<b><span font_desc="' + dateFont + '" foreground="#FFFFFF">' + dateFormat + '</span></b>';
-
-        this._wallClock.set_format_string(format);
+        this._wallClock.set_format_string(this._timeFormat);
     }
 
     _updateClock() {
-        this._timeLabel.clutter_text.set_markup(this._wallClock.get_clock());
+        this._timeLabel.text = this._wallClock.get_clock();
 
-        let messageFont = this._settings.get_string('font-message') || 'Ubuntu 14';
-        let markup = '';
+        let now = GLib.DateTime.new_now_local();
+        this._dateLabel.text = now.format(this._dateFormat);
 
         if (this._awayMessage && this._awayMessage !== '') {
-            let userName = GLib.get_real_name();
-            let escapedMessage = GLib.markup_escape_text(this._awayMessage, -1);
-            markup = '<span font_desc="' + messageFont + '">' +
-                     '<b><span foreground="#CCCCCC">' + escapedMessage + '</span></b>\n' +
-                     '<b><span font_size="smaller" foreground="#ACACAC">  ~ ' + userName + '</span></b>' +
-                     '</span>';
+            this._messageLabel.text = this._awayMessage;
+            this._messageAuthor.text = `  ~ ${GLib.get_real_name()}`;
+            this._messageLabel.visible = true;
+            this._messageAuthor.visible = true;
         } else {
             let defaultMessage = this._settings.get_string('default-message');
             if (defaultMessage && defaultMessage !== '') {
-                let escapedMessage = GLib.markup_escape_text(defaultMessage, -1);
-                markup = '<b><span font_desc="' + messageFont + '" foreground="#CCCCCC">' +
-                         escapedMessage + '</span></b>';
+                this._messageLabel.text = defaultMessage;
+                this._messageLabel.visible = true;
+            } else {
+                this._messageLabel.visible = false;
             }
-        }
-
-        if (markup !== '') {
-            this._messageLabel.clutter_text.set_markup(markup);
-            this._messageLabel.visible = true;
-        } else {
-            this._messageLabel.visible = false;
+            this._messageAuthor.visible = false;
         }
     }
 
