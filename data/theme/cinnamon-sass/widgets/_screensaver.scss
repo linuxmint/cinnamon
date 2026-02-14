@@ -2,226 +2,198 @@
 
 .screen-shield {
   background-color: black;
-}
 
-.screen-shield-background {
-  background-color: black;
-}
-
-// Unlock dialog - uses 'dialog' and 'prompt-dialog' base classes
-// Add lock-screen-specific elements here
-
-.unlock-dialog-clock {
-  font-size: 48pt;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: $base_margin;
-}
-
-.unlock-dialog-date {
-  font-size: 16pt;
-  @extend %caption;
-  text-align: center;
-  margin-bottom: $base_margin * 2;
-}
-
-.unlock-dialog-user-label {
-  font-size: 14pt;
-  font-weight: bold;
-  text-align: center;
-  margin-bottom: $base_margin * 3;
-}
-
-.clock-widget {
-  padding: 6px;
-  spacing: 6px;
-}
-
-.clock-time-label {
-  font-size: 64pt;
-  font-weight: bold;
-  color: white;
-  text-align: center;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.clock-date-label {
-  font-size: 24pt;
-  font-weight: bold;
-  color: white;
-  text-align: center;
-  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
-}
-
-.clock-message-label {
-  font-size: 14pt;
-  font-weight: bold;
-  color: #cccccc;
-  text-align: center;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-  margin-top: $base_margin;
-}
-
-.clock-message-author {
-  font-size: 12pt;
-  font-weight: bold;
-  color: #acacac;
-  text-align: center;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.albumart-widget {
-  padding: 10px;
-  spacing: 8px;
-}
-
-// Info container - dialog-like background for track info, controls, and volume
-.albumart-info-container {
-  background-color: $bg_color;
-  border-radius: 0;
-  border: 1px solid $borders_color;
-  spacing: $base_margin * 2;
-  min-width: 220px;
-
-  &:awake {
-    border-radius: 0 0 $modal_dialog_radius $modal_dialog_radius;
-  }
-}
-
-.albumart-cover-bin {
-  padding: 8px;
-  background-color: $bg_color;
-}
-
-// Track info overlay - positioned over bottom of album art
-.albumart-track-info-overlay {
-  spacing: 2px;
-  padding: 6px 6px;
-  background-gradient-direction: vertical;
-  background-gradient-start: transparentize($bg_color, 0.4);
-  background-gradient-end: $bg_color;
-}
-
-.albumart-title-overlay {
-  font-size: 11pt;
-  font-weight: bold;
-  text-align: center;
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.albumart-artist-overlay {
-  font-size: 10pt;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.9);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.albumart-album-overlay {
-  font-size: 10pt;
-  text-align: center;
-  color: rgba(255, 255, 255, 0.8);
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.albumart-controls {
-  spacing: 8px;
-}
-
-.albumart-control-button {
-  width: 36px;
-  height: 36px;
-  border-radius: 18px;
-  background-color: transparentize($fg_color, 0.9);
-
-  &:hover {
-    background-color: transparentize($fg_color, 0.8);
+  .screen-shield-background {
+    background-color: black;
   }
 
-  &:active {
-    background-color: transparentize($fg_color, 0.7);
+  // Clock widget
+
+  .clock-widget {
+    padding: 6px;
+    spacing: 6px;
+
+    .clock-time-label {
+      font-size: 64pt;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .clock-date-label {
+      font-size: 24pt;
+      font-weight: bold;
+      color: white;
+      text-align: center;
+      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+    }
+
+    .clock-message-label {
+      font-size: 14pt;
+      font-weight: bold;
+      color: #cccccc;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      margin-top: $base_margin;
+    }
+
+    .clock-message-author {
+      font-size: 12pt;
+      font-weight: bold;
+      color: #acacac;
+      text-align: center;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+    }
   }
 
-  &:insensitive {
-    color: transparentize($fg_color, 0.7);
-    background-color: transparentize($fg_color, 0.95);
+  // Album art widget
+
+  .albumart-widget {
+    padding: 10px;
+    spacing: 8px;
+
+    .albumart-info-container {
+      background-color: $bg_color;
+      border-radius: 0;
+      border: 1px solid $borders_color;
+      spacing: $base_margin * 2;
+      min-width: 220px;
+
+      &:awake {
+        border-radius: 0 0 $modal_dialog_radius $modal_dialog_radius;
+      }
+
+      .albumart-cover-bin {
+        padding: 8px;
+        background-color: $bg_color;
+      }
+
+      .albumart-track-info-overlay {
+        spacing: 2px;
+        padding: 6px 6px;
+        background-gradient-direction: vertical;
+        background-gradient-start: transparentize($bg_color, 0.4);
+        background-gradient-end: $bg_color;
+
+        .albumart-title-overlay {
+          font-size: 11pt;
+          font-weight: bold;
+          text-align: center;
+          color: white;
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .albumart-artist-overlay {
+          font-size: 10pt;
+          text-align: center;
+          color: rgba(255, 255, 255, 0.9);
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+
+        .albumart-album-overlay {
+          font-size: 10pt;
+          text-align: center;
+          color: rgba(255, 255, 255, 0.8);
+          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+        }
+      }
+
+      .albumart-controls {
+        spacing: 8px;
+
+        .albumart-control-button {
+          width: 36px;
+          height: 36px;
+          border-radius: 18px;
+          background-color: transparentize($fg_color, 0.9);
+
+          &:hover {
+            background-color: transparentize($fg_color, 0.8);
+          }
+
+          &:active {
+            background-color: transparentize($fg_color, 0.7);
+          }
+
+          &:insensitive {
+            color: transparentize($fg_color, 0.7);
+            background-color: transparentize($fg_color, 0.95);
+          }
+
+          StIcon {
+            icon-size: 20px;
+          }
+        }
+      }
+
+      .albumart-volume-box {
+        spacing: 8px;
+
+        .albumart-volume-icon {
+          icon-size: 16px;
+        }
+
+        .albumart-volume-slider {
+          height: 20px;
+          min-width: 150px;
+          -slider-height: 4px;
+          -slider-background-color: transparentize($fg_color, 0.8);
+          -slider-border-color: transparent;
+          -slider-active-background-color: $accent_bg_color;
+          -slider-active-border-color: transparent;
+          -slider-border-width: 0;
+          -slider-handle-radius: 8px;
+        }
+      }
+    }
   }
 
-  StIcon {
-    icon-size: 20px;
-  }
-}
+  // Info panel (notification count + battery indicator)
 
-// Volume control
-.albumart-volume-box {
-  spacing: 8px;
-}
+  .info-panel {
+    padding: 8px;
+    spacing: 12px;
 
-.albumart-volume-icon {
-  icon-size: 16px;
-}
+    .notification-widget {
+      spacing: 4px;
 
-.albumart-volume-slider {
-  height: 20px;
-  min-width: 150px;
-  -slider-height: 4px;
-  -slider-background-color: transparentize($fg_color, 0.8);
-  -slider-border-color: transparent;
-  -slider-active-background-color: $accent_bg_color;
-  -slider-active-border-color: transparent;
-  -slider-border-width: 0;
-  -slider-handle-radius: 8px;
-}
+      .notification-widget-label {
+        color: white;
+        font-size: 12pt;
+        font-weight: bold;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
 
-// Power Widget (battery indicator in upper-right corner)
-.power-widget {
-}
+      .notification-widget-icon {
+        color: white;
+        text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+      }
+    }
 
-.power-widget-box {
-  spacing: 4px;
-}
+    .power-widget-icon {
+      color: white;
+      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
 
-.power-widget-icon {
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.power-widget-icon-critical {
-  color: $error_color;
-}
-
-// Info Panel (notification count + battery indicator in upper-right corner)
-.info-panel {
-  padding: 8px;
-  spacing: 12px;
-}
-
-.notification-widget {
-  spacing: 4px;
-}
-
-.notification-widget-label {
-  color: white;
-  font-size: 12pt;
-  font-weight: bold;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.notification-widget-icon {
-  color: white;
-  text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-}
-
-.osk-activate-button {
-  @extend %button;
-
-  border-radius: 9999px;
-  padding: $base_padding;
-  min-height: 16px;
-
-  StIcon {
-    icon-size: 24px;
+      &-critical {
+        color: $error_color;
+      }
+    }
   }
 
-  &.flat { @extend %flat_button; }
+  // On-screen keyboard toggle
+
+  .osk-activate-button {
+    @extend %button;
+
+    border-radius: 9999px;
+    padding: $base_padding;
+    min-height: 16px;
+
+    StIcon {
+      icon-size: 24px;
+    }
+
+    &.flat { @extend %flat_button; }
+  }
 }
