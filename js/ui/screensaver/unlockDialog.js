@@ -105,6 +105,8 @@ class UnlockDialog extends St.BoxLayout {
 
         this._sourceChangedId = 0;
         this._inputSourceManager = KeyboardManager.getInputSourceManager();
+        this._systemSourceIndex = null;
+
         if (this._inputSourceManager.multipleSources) {
             this._updateLayoutIndicator();
             this._passwordEntry.connect('primary-icon-clicked', () => {
@@ -185,6 +187,53 @@ class UnlockDialog extends St.BoxLayout {
 
         this._passwordEntry.clutter_text.connect('activate', this._onUnlock.bind(this));
         this.connect('key-press-event', this._onKeyPress.bind(this));
+    }
+
+    saveSystemLayout() {
+        if (!this._inputSourceManager.multipleSources)
+            return;
+
+        let currentSource = this._inputSourceManager.currentSource;
+        if (currentSource)
+            this._systemSourceIndex = currentSource.index;
+    }
+
+    _applyLockscreenLayout() {
+        if (!this._inputSourceManager.multipleSources)
+            return;
+
+        let savedIndex = this._screensaverSettings.get_int('layout-group');
+
+        if (savedIndex < 0) {
+            savedIndex = this._inputSourceManager.currentSource.index;
+            this._screensaverSettings.set_int('layout-group', savedIndex);
+        }
+
+        if (savedIndex !== this._inputSourceManager.currentSource.index)
+            this._inputSourceManager.activateInputSourceIndex(savedIndex);
+    }
+
+    _saveLockscreenLayout() {
+        if (!this._inputSourceManager.multipleSources)
+            return;
+
+        let currentSource = this._inputSourceManager.currentSource;
+        if (currentSource)
+            this._screensaverSettings.set_int('layout-group', currentSource.index);
+    }
+
+    restoreSystemLayout() {
+        if (!this._inputSourceManager.multipleSources)
+            return;
+
+        this._saveLockscreenLayout();
+
+        if (this._systemSourceIndex !== null &&
+            this._systemSourceIndex !== this._inputSourceManager.currentSource.index) {
+            this._inputSourceManager.activateInputSourceIndex(this._systemSourceIndex);
+        }
+
+        this._systemSourceIndex = null;
     }
 
     _updateLayoutIndicator() {
@@ -309,6 +358,7 @@ class UnlockDialog extends St.BoxLayout {
         this._passwordEntry.reactive = true;
         this._passwordEntry.hint_text = _("Password");
 
+        this._applyLockscreenLayout();
         this._startIdleWatch();
 
         super.show();

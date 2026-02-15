@@ -446,6 +446,7 @@ var ScreenShield = GObject.registerClass({
             return;
 
         if (locked) {
+            this._dialog.saveSystemLayout();
             this._setState(State.LOCKED);
 
             let stageXid = global.get_stage_xwindow();
@@ -575,6 +576,9 @@ var ScreenShield = GObject.registerClass({
         this._hideScreensaverKeyboard();
         this._keyboardBox.hide();
         this._backupLockerCall('Unlock', null);
+
+        if (emitUnlocked)
+            this._dialog.restoreSystemLayout();
 
         if (this._capturedEventId) {
             global.stage.disconnect(this._capturedEventId);
