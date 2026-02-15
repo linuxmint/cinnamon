@@ -796,7 +796,7 @@ class EventList {
 
         for (let event_data of events) {
             if (first_row_done) {
-                this.events_box.add_actor(new Separator.Separator().actor);
+                this.events_box.add_actor(new Separator.Separator());
             }
 
             let row = new EventRow(
