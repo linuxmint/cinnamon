@@ -424,11 +424,16 @@ class ApplicationContextMenuItem extends PopupMenu.PopupBaseMenuItem {
                 this._action = "add_to_favorites";
                 closeMenu = false;
                 break;
+            case "app_info":
+                if (this._appButton.applet._mintinstallAvailable) {
+                    AppUtils.launchMintinstallForApp(this._appButton.app);
+                } else if (this._appButton.applet._pamacManagerAvailable) {
+                    AppUtils.launchPamacForApp(this._appButton.app);
+                }
+                closeMenu = true;
+                break;
             case "app_properties":
                 Util.spawnCommandLine("cinnamon-desktop-editor -mlauncher -o" + GLib.shell_quote(this._appButton.app.get_app_info().get_filename()));
-                break;
-            case "uninstall":
-                Util.spawnCommandLine("/usr/bin/cinnamon-remove-application '" + this._appButton.app.get_app_info().get_filename() + "'");
                 break;
             case "offload_launch":
                 try {
@@ -531,13 +536,17 @@ class GenericApplicationButton extends SimpleMenuItem {
 
         const appinfo = this.app.get_app_info();
 
-        if (appinfo.get_filename() != null) {
-            menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "xsi-document-properties-symbolic");
-            menu.addMenuItem(menuItem);
+        if (this.applet._pamacManagerAvailable || this.applet._mintinstallAvailable) {
+            const filePath = this.app.desktop_file_path;
+            // Software managers usually only know of system installed apps.
+            if (!filePath.startsWith("/home/") && !filePath.includes("cinnamon-settings")) {
+                menuItem = new ApplicationContextMenuItem(this, _("App Info"), "app_info", "xsi-dialog-information-symbolic");
+                menu.addMenuItem(menuItem);
+            }
         }
 
-        if (this.applet._canUninstallApps) {
-            menuItem = new ApplicationContextMenuItem(this, _("Uninstall"), "uninstall", "xsi-edit-delete");
+        if (appinfo.get_filename() != null) {
+            menuItem = new ApplicationContextMenuItem(this, _("Properties"), "app_properties", "xsi-document-properties-symbolic");
             menu.addMenuItem(menuItem);
         }
 
@@ -1230,7 +1239,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._activeActor = null;
         this._knownApps = new Set(); // Used to keep track of apps that are already installed, so we can highlight newly installed ones
         this._appsWereRefreshed = false;
-        this._canUninstallApps = GLib.file_test("/usr/bin/cinnamon-remove-application", GLib.FileTest.EXISTS);
+        this._pamacManagerAvailable = GLib.find_program_in_path("pamac-manager");
+        this._mintinstallAvailable = GLib.find_program_in_path("mintinstall");
         this.RecentManager = DocInfo.getDocManager();
         this.privacy_settings = new Gio.Settings( {schema_id: PRIVACY_SCHEMA} );
         this.noRecentDocuments = true;
