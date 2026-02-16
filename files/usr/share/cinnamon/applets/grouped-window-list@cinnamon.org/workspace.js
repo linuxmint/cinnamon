@@ -7,7 +7,7 @@ const {unref} = imports.misc.util;
 
 const createStore = require('./state');
 const AppGroup = require('./appGroup');
-const {RESERVE_KEYS, SCROLL_TO_APP_DEBOUNCE_TIME} = require('./constants');
+const {RESERVE_KEYS} = require('./constants');
 const ScrollBox = require('./scrollBox');
 
 
@@ -20,7 +20,7 @@ class Workspace {
             },
             currentWs: (state) => {
                 if (this.metaWorkspace && state.currentWs === this.metaWorkspace.index()) {
-                    this.scrollToFocusedApp();
+                    this.scrollToLastFocusedApp();
                 }
             }
         });
@@ -79,7 +79,7 @@ class Workspace {
 
     scrollToAppGroup(appGroup) {
         if (this.scrollToAppDebounceTimeoutId > 0) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
-        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SCROLL_TO_APP_DEBOUNCE_TIME, () => {
+        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
             this._scrollToAppGroup(appGroup);
             this.scrollToAppDebounceTimeoutId = 0;
             return GLib.SOURCE_REMOVE;
@@ -200,7 +200,7 @@ class Workspace {
         this.appGroups = [];
         this.loadFavorites();
         this.refreshApps();
-        this.scrollToFocusedApp();
+        this.scrollToLastFocusedApp();
     }
 
     loadFavorites() {
@@ -238,12 +238,22 @@ class Workspace {
         }
     }
 
-    scrollToFocusedApp() {
+    scrollToLastFocusedApp() {
+        let lastFocusedAppInWorkspace = null;
         for (let appGroup of this.appGroups) {
-            if (appGroup.groupState.lastFocused && appGroup.groupState.lastFocused.has_focus()) {
+            let lastFocusedInAppGroup = appGroup.groupState.lastFocused;
+            if (lastFocusedInAppGroup && lastFocusedInAppGroup.has_focus()) {
+                lastFocusedAppInWorkspace = appGroup;
                 this.scrollToAppGroup(appGroup);
                 return;
+            } else if ((this.workspaceState.lastFocusedApp === appGroup.groupState.appId)) {
+                lastFocusedAppInWorkspace = appGroup;
+            } else if (!lastFocusedAppInWorkspace && appGroup.groupState.metaWindows.length > 0) {
+                lastFocusedAppInWorkspace = appGroup;
             }
+        }
+        if (lastFocusedAppInWorkspace) {
+            this.scrollToAppGroup(lastFocusedAppInWorkspace);
         }
     }
 
