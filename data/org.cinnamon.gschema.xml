@@ -472,17 +472,6 @@
       </description>
     </key>
 
-    <key type="b" name="enable-edge-flip">
-      <default>false</default>
-      <summary>Whether edge flip is enabled</summary>
-    </key>
-
-    <key type="i" name="edge-flip-delay">
-      <default>1000</default>
-      <summary>Duration of the delay before switching the workspace</summary>
-      <description>Duration of the delay (in milliseconds)</description>
-    </key>
-
     <key type="b" name="cinnamon-settings-advanced">
       <default>false</default>
       <summary>Whether advanced mode is enabled in cinnamon-settings</summary>

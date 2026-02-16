@@ -16,7 +16,6 @@ const Signals = imports.signals;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
-const EdgeFlip = imports.ui.edgeFlip;
 const HotCorner = imports.ui.hotCorner;
 const DeskletManager = imports.ui.deskletManager;
 const Panel = imports.ui.panel;
@@ -277,12 +276,7 @@ LayoutManager.prototype = {
         this.primaryMonitor = null;
         this.primaryIndex = -1;
         this.hotCornerManager = null;
-        this.edgeRight = null;
-        this.edgeLeft = null;
         this._chrome = new Chrome(this);
-
-        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
-        this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
 
         this.keyboardBox = new St.Widget({ name: 'keyboardBox',
                                            layout_manager: new Clutter.BinLayout(),
@@ -298,18 +292,7 @@ LayoutManager.prototype = {
 
         this._monitorsChanged();
 
-        global.settings.connect("changed::enable-edge-flip", Lang.bind(this, this._onEdgeFlipChanged));
-        global.settings.connect("changed::edge-flip-delay", Lang.bind(this, this._onEdgeFlipChanged));
         Meta.MonitorManager.get().connect('monitors-changed', Lang.bind(this, this._monitorsChanged));
-    },
-
-    _onEdgeFlipChanged: function(){
-        this.enabledEdgeFlip = global.settings.get_boolean("enable-edge-flip");
-        this.edgeFlipDelay = global.settings.get_int("edge-flip-delay");
-        this.edgeRight.enabled = this.enabledEdgeFlip;
-        this.edgeRight.delay = this.edgeFlipDelay;
-        this.edgeLeft.enabled = this.enabledEdgeFlip;
-        this.edgeLeft.delay = this.edgeFlipDelay;
     },
 
     // This is called by Main after everything else is constructed;
@@ -317,14 +300,6 @@ LayoutManager.prototype = {
     // not exist yet when the LayoutManager was constructed.
     init: function() {
         this._chrome.init();
-
-        this.edgeRight = new EdgeFlip.EdgeFlipper(St.Side.RIGHT, Main.wm.actionFlipWorkspaceRight);
-        this.edgeLeft = new EdgeFlip.EdgeFlipper(St.Side.LEFT, Main.wm.actionFlipWorkspaceLeft);
-
-        this.edgeRight.enabled = this.enabledEdgeFlip;
-        this.edgeRight.delay = this.edgeFlipDelay;
-        this.edgeLeft.enabled = this.enabledEdgeFlip;
-        this.edgeLeft.delay = this.edgeFlipDelay;
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
     },
