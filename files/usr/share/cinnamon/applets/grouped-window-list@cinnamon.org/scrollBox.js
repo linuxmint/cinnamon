@@ -35,7 +35,6 @@ class ScrollBox {
         this.scrollActiveTimeoutId = 0;
 
         this.signals.connect(this.actor, 'scroll-event', (actor, event) => this._onScroll(actor, event));
-
         this.signals.connect(this.actor, 'motion-event', (actor, event) => this._onMotionEvent(actor, event));
         this.signals.connect(this.actor, 'leave-event', () => this._stopEdgeScroll());
 

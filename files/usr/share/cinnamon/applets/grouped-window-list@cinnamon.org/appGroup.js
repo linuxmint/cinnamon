@@ -639,7 +639,7 @@ class AppGroup {
         const {appId, metaWindows, lastFocused} = this.groupState;
 
         if (hasFocus === undefined) {
-            hasFocus = this.workspaceState.lastFocusedApp === appId;
+            hasFocus = this.workspaceState.lastFocusedApp === appId && getFocusState(lastFocused);
         }
 
         // If any of the windows associated with our app have focus,

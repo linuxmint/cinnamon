@@ -43,7 +43,8 @@ class Workspace {
             },
             updateFocusState: (focusedAppId) => {
                 this.appGroups.forEach( appGroup => {
-                    if (focusedAppId === appGroup.groupState.appId) {
+                    if (focusedAppId === appGroup.groupState.appId &&
+                        (!appGroup.groupState.lastFocused || appGroup.groupState.lastFocused.has_focus())) {
                         this.scrollToAppGroup(appGroup);
                         return;
                     };
