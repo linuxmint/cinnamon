@@ -100,7 +100,7 @@ StScrollBar {
 
   StBin#trough {
     background-color: transparentize($base_color, 0.9);
-    border_radius: $base_border_radius;
+    border-radius: $base_border_radius;
   }
 
   StButton#vhandle,
