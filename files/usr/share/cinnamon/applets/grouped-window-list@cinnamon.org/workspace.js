@@ -246,13 +246,15 @@ class Workspace {
                 lastFocusedAppInWorkspace = appGroup;
                 this.scrollToAppGroup(appGroup);
                 return;
-            } else if ((this.workspaceState.lastFocusedApp === appGroup.groupState.appId)) {
+            } else if (this.workspaceState.lastFocusedApp === appGroup.groupState.appId) {
                 lastFocusedAppInWorkspace = appGroup;
-            } else if (!lastFocusedAppInWorkspace && appGroup.groupState.metaWindows.length > 0) {
+            } else if ((!lastFocusedAppInWorkspace || lastFocusedAppInWorkspace.groupState.metaWindows.length === 0) &&
+                       appGroup.groupState.metaWindows.length > 0
+            ) {
                 lastFocusedAppInWorkspace = appGroup;
             }
         }
-        if (lastFocusedAppInWorkspace) {
+        if (lastFocusedAppInWorkspace && lastFocusedAppInWorkspace.groupState.metaWindows.length > 0) {
             this.scrollToAppGroup(lastFocusedAppInWorkspace);
         }
     }
