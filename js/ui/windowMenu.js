@@ -96,16 +96,17 @@ var MnemonicLeftOrnamentedMenuItem = class MnemonicLeftOrnamentedMenuItem extend
             this._icon = null;
             break;
         case PopupMenu.OrnamentType.DOT:
-            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof RadioButton.RadioBox))) {
+            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof RadioButton.RadioButton))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let radioOrn = new RadioButton.RadioBox(state);
-                this._ornament.child = radioOrn.actor;
-                radioOrn.actor.reactive = false;
+                let radioOrn = new RadioButton.RadioButton();
+                radioOrn.set_checked(state);
+                this._ornament.child = radioOrn;
+                radioOrn.reactive = false;
             } else {
-                this._ornament.child._delegate.setToggleState(state);
+                this._ornament.child.set_checked(state);
             }
             this._icon = null;
             break;
