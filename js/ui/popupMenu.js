@@ -498,15 +498,16 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
     setOrnament(ornamentType, state) {
         switch (ornamentType) {
         case OrnamentType.CHECK:
-            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
+            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof CheckBox.CheckBox))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let switchOrn = new CheckBox.CheckButton(state);
-                this._ornament.child = switchOrn.actor;
+                let switchOrn = new CheckBox.CheckBox();
+                switchOrn.set_checked(state);
+                this._ornament.child = switchOrn;
             } else {
-                this._ornament.child._delegate.setToggleState(state);
+                this._ornament.child.set_checked(state);
             }
             this._icon = null;
             break;
@@ -1164,15 +1165,16 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
     setOrnament(ornamentType, state) {
         switch (ornamentType) {
         case OrnamentType.CHECK:
-            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckButton))) {
+            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckBox))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
-                let switchOrn = new CheckBox.CheckButton(null, {}, state);
-                this._ornament.child = switchOrn.actor;
+                let switchOrn = new CheckBox.CheckBox();
+                switchOrn.set_checked(state);
+                this._ornament.child = switchOrn;
             } else {
-                this._ornament.child._delegate.setToggleState(state);
+                this._ornament.child.set_checked(state);
             }
             this._icon = null;
             break;
