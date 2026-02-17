@@ -110,12 +110,12 @@
 
   &-scrollbox {
     &.vfade {
-      -st-vfade-offset: 68px !important;
-      -st-hfade-offset: 0 !important;
+      -st-vfade-offset: 68px;
+      -st-hfade-offset: 0;
     }
     &.hfade {
-      -st-hfade-offset: 68px !important;
-      -st-vfade-offset: 0 !important;
+      -st-hfade-offset: 68px;
+      -st-vfade-offset: 0;
     }
   }
 }
