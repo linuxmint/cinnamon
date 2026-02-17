@@ -240,8 +240,10 @@ var Workspace = class Workspace {
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
 
-    windowWorkspaceChanged(display, metaWorkspace, metaWindow) {
-        this.windowAdded(metaWindow, metaWorkspace);
+    windowWorkspaceChanged(display, metaWindow, metaWorkspace) {
+        // If the window is removed the metaWorkspace will be null, in that
+        // case we wouldn't want to add the window again.
+        if (metaWorkspace) this.windowAdded(metaWorkspace, metaWindow);
     }
 
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {
