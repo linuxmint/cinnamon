@@ -523,7 +523,7 @@
 
     <key type="b" name="internal-screensaver-enabled">
       <default>true</default>
-      <summary>Use internal screensaver implementation</summary>
+      <summary>Use internal screensaver implementation. Requires cinnamon restart if changed.</summary>
       <description>If true, use Cinnamon's internal screensaver for locking instead of the external cinnamon-screensaver daemon.</description>
     </key>
 
