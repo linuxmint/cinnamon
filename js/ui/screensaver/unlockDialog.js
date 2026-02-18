@@ -267,14 +267,6 @@ class UnlockDialog extends St.BoxLayout {
         if (password.length == 0)
             return;
 
-        // Initialize auth client if needed
-        if (!this._authClient.initialized) {
-            if (!this._authClient.initialize()) {
-                this._messageLabel.text = _("Authentication system error");
-                return;
-            }
-        }
-
         this._authClient.sendPassword(password);
         this._passwordEntry.set_text('');
     }
@@ -349,6 +341,13 @@ class UnlockDialog extends St.BoxLayout {
 
     _onSwitchUser() {
         Util.switchToGreeter();
+    }
+
+    initializePam() {
+        if (!this._authClient.initialized)
+            return this._authClient.initialize();
+
+        return true;
     }
 
     show() {

@@ -349,6 +349,12 @@ var ScreenShield = GObject.registerClass({
 
         global.stage.show_cursor();
 
+        if (!this._dialog.initializePam()) {
+            global.logError('ScreenShield: PAM initialization failed, deactivating screensaver');
+            this._hideShield(false);
+            return;
+        }
+
         this._dialog.opacity = 0;
         this._dialog.show();
 
