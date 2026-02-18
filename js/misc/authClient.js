@@ -7,6 +7,8 @@ const Signals = imports.signals;
 
 const Config = imports.misc.config;
 
+const SIGTERM = 15;
+
 var AuthClient = class {
     constructor() {
         this.reset();
@@ -27,15 +29,7 @@ var AuthClient = class {
         this.cancellable = new Gio.Cancellable();
 
         try {
-            let helper_path = GLib.find_program_in_path('cinnamon-screensaver-pam-helper');
-            if (!helper_path) {
-                helper_path = GLib.build_filenamev([Config.LIBEXECDIR, 'cinnamon-screensaver-pam-helper']);
-            }
-
-            if (!GLib.file_test(helper_path, GLib.FileTest.EXISTS)) {
-                global.logError('authClient: critical Error: PAM Helper could not be found!');
-                return false;
-            }
+            let helper_path = GLib.build_filenamev([Config.LIBEXECDIR, 'cinnamon-screensaver-pam-helper']);
 
             this.proc = Gio.Subprocess.new(
                 [helper_path],
@@ -69,7 +63,7 @@ var AuthClient = class {
 
         this.cancellable.cancel();
         if (this.proc != null) {
-            this.proc.force_exit();
+            this.proc.send_signal(SIGTERM);
         }
 
         this.reset();
