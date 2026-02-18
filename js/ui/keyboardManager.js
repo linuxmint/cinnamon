@@ -235,6 +235,7 @@ var SubscriptableFlagIcon = GObject.registerClass({
         this._subscript = null;
         this._file = null;
         this._image = null;
+        this._loadHandle = 0;
 
         super._init({
             style_class: 'input-source-switcher-flag-icon',
@@ -251,10 +252,10 @@ var SubscriptableFlagIcon = GObject.registerClass({
 
         this.add_child(this._drawingArea);
 
-        this.connect("allocation-changed", () => {
-            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        this.connect('allocation-changed', () => {
+            if (this._image == null) {
                 this._load_file();
-            });
+            }
         });
     }
 
@@ -281,26 +282,22 @@ var SubscriptableFlagIcon = GObject.registerClass({
         }
 
         try {
-            St.TextureCache.get_default().load_image_from_file_async(
+            this._loadHandle = St.TextureCache.get_default().load_image_from_file_async(
                 this._file.get_path(),
                 -1, this.get_height(),
                 (cache, handle, actor) => {
-                    this._image = actor;
-                    let constraint = new Clutter.BindConstraint({
-                        source: actor,
-                        coordinate: Clutter.BindCoordinate.ALL
-                    })
+                    if (handle !== this._loadHandle) {
+                        return;
+                    }
 
-                    this._drawingArea.add_constraint(constraint);
+                    this._image = actor;
                     this._imageBin.set_child(actor);
+                    this._drawingArea.queue_repaint();
                 }
             );
-
         } catch (e) {
             global.logError(e);
         }
-
-        this._drawingArea.queue_relayout();
     }
 
     _drawingAreaRepaint(area) {
@@ -310,22 +307,13 @@ var SubscriptableFlagIcon = GObject.registerClass({
 
         const cr = area.get_context();
         const [w, h] = area.get_surface_size();
-        const surf_w = this._image.width;
-        const surf_h = this._image.height;
 
         cr.save();
 
-        // // Debugging...
-
-        // cr.setSourceRGBA(1.0, 1.0, 1.0, .2);
-        // cr.rectangle(0, 0, w, h);
-        // cr.fill();
-        // cr.save()
-
         if (this._subscript != null) {
-            let x = surf_w / 2;
+            let x = w / 2;
             let width = x;
-            let y = surf_h / 2;
+            let y = h / 2;
             let height = y;
             cr.setSourceRGBA(0.0, 0.0, 0.0, 0.5);
             cr.rectangle(x, y, width, height);
@@ -963,7 +951,7 @@ var InputSourceManager = class {
                 style_class: actorClass,
                 file: file,
                 subscript: source.dupeId > 0 ? String(source.dupeId) : null,
-                height: size,
+                height: size * global.ui_scale,
             });
         }
 

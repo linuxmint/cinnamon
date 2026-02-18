@@ -890,7 +890,8 @@ class Player extends PopupMenu.PopupMenuSection {
         }
         else {
             this._cover_path = cover_path;
-            this._cover_load_handle = St.TextureCache.get_default().load_image_from_file_async(cover_path, 300, 300, this._on_cover_loaded.bind(this));
+            const cover_size = 300 * global.ui_scale;
+            this._cover_load_handle = St.TextureCache.get_default().load_image_from_file_async(cover_path, cover_size, cover_size, this._on_cover_loaded.bind(this));
         }
     }
 
@@ -904,7 +905,7 @@ class Player extends PopupMenu.PopupMenuSection {
 
         // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
         // (and move the player controls as a result).
-        actor.margin_bottom = 300 - actor.height;
+        actor.margin_bottom = (300 * global.ui_scale) - actor.height;
 
         this.cover = actor;
         this.coverBox.add_actor(this.cover);
