@@ -58,6 +58,7 @@ static GCancellable *stdin_cancellable = NULL;
 
 #define CS_PAM_AUTH_SET_PROMPT_ "CS_PAM_AUTH_SET_PROMPT_"
 #define CS_PAM_AUTH_SET_INFO_ "CS_PAM_AUTH_SET_INFO_"
+#define CS_PAM_AUTH_SET_ERROR_ "CS_PAM_AUTH_SET_ERROR_"
 
 #define CS_PAM_AUTH_REQUEST_SUBPROCESS_EXIT "CS_PAM_AUTH_REQUEST_SUBPROCESS_EXIT"
 
@@ -156,6 +157,18 @@ send_info (const gchar *msg)
     fflush (stdout);
 }
 
+static void
+send_error (const gchar *msg)
+{
+    if (g_cancellable_is_cancelled (stdin_cancellable))
+    {
+        return;
+    }
+
+    g_printf (CS_PAM_AUTH_SET_ERROR_ "%s_\n", msg);
+    fflush (stdout);
+}
+
 static gboolean
 auth_message_handler (CsAuthMessageStyle style,
                       const char        *msg,
@@ -201,6 +214,11 @@ auth_message_handler (CsAuthMessageStyle style,
             break;
         case CS_AUTH_MESSAGE_ERROR_MSG:
             DEBUG ("CS_AUTH_MESSAGE_ERROR_MSG\n");
+
+            if (msg != NULL)
+            {
+              send_error (msg);
+            }
             break;
         case CS_AUTH_MESSAGE_TEXT_INFO:
             DEBUG ("CS_AUTH_MESSAGE_TEXT_INFO\n");
@@ -251,6 +269,7 @@ do_auth_check (void)
         if (error != NULL && !g_cancellable_is_cancelled (stdin_cancellable))
         {
             DEBUG ("cinnamon-screensaver-pam-helper: Verify user returned error: %s\n", error->message);
+            send_error (error->message);
             g_error_free (error);
         }
     }

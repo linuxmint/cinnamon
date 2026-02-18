@@ -198,6 +198,16 @@ var AuthClient = class {
                                 });
                             }
                         }
+                        if (output.includes('CS_PAM_AUTH_SET_ERROR')) {
+                            let match = output.match(/CS_PAM_AUTH_SET_ERROR_(.*)_/);
+                            if (match && match[1]) {
+                                let error = match[1];
+                                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                                    this.emit('auth-error', error);
+                                    return GLib.SOURCE_REMOVE;
+                                });
+                            }
+                        }
                         if (output.includes('CS_PAM_AUTH_SET_INFO')) {
                             let match = output.match(/CS_PAM_AUTH_SET_INFO_(.*)_/);
                             if (match && match[1]) {

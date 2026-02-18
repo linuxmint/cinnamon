@@ -184,6 +184,7 @@ class UnlockDialog extends St.BoxLayout {
         this._authClient.connect('auth-busy', this._onAuthBusy.bind(this));
         this._authClient.connect('auth-prompt', this._onAuthPrompt.bind(this));
         this._authClient.connect('auth-info', this._onAuthInfo.bind(this));
+        this._authClient.connect('auth-error', this._onAuthError.bind(this));
 
         this._passwordEntry.clutter_text.connect('activate', this._onUnlock.bind(this));
         this.connect('key-press-event', this._onKeyPress.bind(this));
@@ -272,25 +273,27 @@ class UnlockDialog extends St.BoxLayout {
     }
 
     _onAuthPrompt(authClient, prompt) {
-        // PAM is prompting for input (password, fingerprint, etc.)
-        // Update hint text based on prompt
         let hintText;
         if (prompt.toLowerCase().includes('password:')) {
             hintText = _("Please enter your password...");
         } else {
-            // Remove trailing colon from other prompts
             hintText = prompt.replace(/:$/, '');
         }
         if (ScreenShield._debug)
             global.log(`UnlockDialog: prompt='${prompt}', hintText='${hintText}'`);
 
+        this._infoLabel.text = '';
         this._passwordEntry.hint_text = hintText;
-        this._passwordEntry.queue_redraw();
+        this._setPasswordEntryVisible(true);
+        global.stage.set_key_focus(this._passwordEntry);
     }
 
     _onAuthInfo(authClient, info) {
-        // PAM is sending informational messages (e.g., fingerprint scan status)
         this._infoLabel.text = info;
+    }
+
+    _onAuthError(authClient, error) {
+        this._messageLabel.text = error;
     }
 
     _onAuthSuccess() {
@@ -303,9 +306,9 @@ class UnlockDialog extends St.BoxLayout {
     _onAuthFailure() {
         this._setBusy(false);
 
-        this._messageLabel.text = _("Incorrect password");
+        this._infoLabel.text = '';
         this._passwordEntry.set_text('');
-        global.stage.set_key_focus(this._passwordEntry);
+        this._setPasswordEntryVisible(false);
     }
 
     _onAuthCancel() {
@@ -327,7 +330,6 @@ class UnlockDialog extends St.BoxLayout {
             this._passwordEntry.hint_text = _("Checking...");
         } else {
             this._passwordEntry.reactive = true;
-            this._passwordEntry.hint_text = _("Password");
         }
     }
 
@@ -350,6 +352,18 @@ class UnlockDialog extends St.BoxLayout {
         return true;
     }
 
+    _setPasswordEntryVisible(visible) {
+        if (visible) {
+            this._passwordEntry.show();
+            this._unlockButton.show();
+            this._capsLockWarning.show();
+        } else {
+            this._passwordEntry.hide();
+            this._unlockButton.hide();
+            this._capsLockWarning.hide();
+        }
+    }
+
     show() {
         this._passwordEntry.text = '';
         this._messageLabel.text = '';
@@ -357,11 +371,12 @@ class UnlockDialog extends St.BoxLayout {
         this._passwordEntry.reactive = true;
         this._passwordEntry.hint_text = _("Password");
 
+        this._setPasswordEntryVisible(false);
+
         this._applyLockscreenLayout();
         this._startIdleWatch();
 
         super.show();
-        global.stage.set_key_focus(this._passwordEntry);
     }
 
     hide() {
