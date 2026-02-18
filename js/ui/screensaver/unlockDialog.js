@@ -309,6 +309,7 @@ class UnlockDialog extends St.BoxLayout {
         this._infoLabel.text = '';
         this._passwordEntry.set_text('');
         this._setPasswordEntryVisible(false);
+        Util.wiggle(this._dialogBox);
     }
 
     _onAuthCancel() {
