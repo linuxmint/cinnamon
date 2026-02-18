@@ -232,11 +232,14 @@ auth_message_handler (CsAuthMessageStyle style,
             g_assert_not_reached ();
     }
 
-    if (*response == NULL) {
-        DEBUG ("cinnamon-screensaver-pam-helper: Got no response\n");
-        ret = FALSE;
-    } else {
-        send_busy (TRUE);
+    if (style == CS_AUTH_MESSAGE_PROMPT_ECHO_OFF)
+    {
+        if (*response == NULL) {
+            DEBUG ("cinnamon-screensaver-pam-helper: Got no response to prompt\n");
+            ret = FALSE;
+        } else {
+            send_busy (TRUE);
+        }
     }
 
     /* we may have pending events that should be processed before continuing back into PAM */
