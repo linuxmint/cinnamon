@@ -44,7 +44,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
         }
 
         this._artSize = ALBUM_ART_SIZE_BASE * global.ui_scale;
-        this._controlIconSize = CONTROL_ICON_SIZE_BASE * global.ui_scale;
+        this._controlIconSize = CONTROL_ICON_SIZE_BASE;
 
         this.setAwakePosition(0, St.Align.END, St.Align.MIDDLE);
 

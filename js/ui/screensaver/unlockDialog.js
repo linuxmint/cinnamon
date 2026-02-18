@@ -245,7 +245,7 @@ class UnlockDialog extends St.BoxLayout {
         let icon = null;
 
         if (this._inputSourceManager.showFlags)
-            icon = this._inputSourceManager.createFlagIcon(source, null, 16 * global.ui_scale);
+            icon = this._inputSourceManager.createFlagIcon(source, null, 16);
 
         if (!icon)
             icon = new St.Label({ text: source.shortName });

@@ -26,7 +26,7 @@ var PowerWidget = GObject.registerClass({
             vertical: false
         });
 
-        this._iconSize = ICON_SIZE_BASE * global.ui_scale;
+        this._iconSize = ICON_SIZE_BASE;
         this._signalManager = new SignalManager.SignalManager(null);
         this._client = null;
         this._devices = [];

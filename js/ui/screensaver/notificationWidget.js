@@ -23,7 +23,7 @@ var NotificationWidget = GObject.registerClass({
         this._seenNotifications = new Set();
         this._signalId = 0;
 
-        let iconSize = ICON_SIZE_BASE * global.ui_scale;
+        let iconSize = ICON_SIZE_BASE;
 
         this._label = new St.Label({
             style_class: 'notification-widget-label',
