@@ -1733,9 +1733,16 @@ Panel.prototype = {
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
+        var bright = 0.9;
+        var sigma = 10;
+        Cinnamon.BlurEffect.new_for_actor(this.actor, Cinnamon.BlurMode.BACKGROUND, "panel", bright, sigma);
+
         this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
+        Cinnamon.BlurEffect.new_for_actor(this._leftBox, Cinnamon.BlurMode.BACKGROUND, "panelLeft", bright, sigma);
         this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', important: true });
+        Cinnamon.BlurEffect.new_for_actor(this._rightBox, Cinnamon.BlurMode.BACKGROUND, "panelRight", bright, sigma);
         this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
+        Cinnamon.BlurEffect.new_for_actor(this._centerBox, Cinnamon.BlurMode.BACKGROUND, "panelCenter", bright, sigma);
 
         if (this.is_vertical) {
             this._set_vertical_panel_style();
