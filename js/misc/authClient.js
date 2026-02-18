@@ -6,6 +6,7 @@ const GLib = imports.gi.GLib;
 const Signals = imports.signals;
 
 const Config = imports.misc.config;
+const ScreenShield = imports.ui.screensaver.screenShield;
 
 const SIGTERM = 15;
 
@@ -31,10 +32,16 @@ var AuthClient = class {
         try {
             let helper_path = GLib.build_filenamev([Config.LIBEXECDIR, 'cinnamon-screensaver-pam-helper']);
 
-            this.proc = Gio.Subprocess.new(
-                [helper_path],
-                Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_SILENCE
-            );
+            let argv = [helper_path];
+            let flags = Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDOUT_PIPE;
+
+            if (ScreenShield._debug) {
+                argv.push('--debug');
+            } else {
+                flags |= Gio.SubprocessFlags.STDERR_SILENCE;
+            }
+
+            this.proc = Gio.Subprocess.new(argv, flags);
         } catch (e) {
             global.logError('authClient: error starting cinnamon-screensaver-pam-helper: ' + e.message);
             return false;
@@ -146,6 +153,8 @@ var AuthClient = class {
                 for (let i = 0; i < lines.length; i++) {
                     let output = lines[i];
                     if (output.length > 0) {
+                        if (ScreenShield._debug)
+                            global.log(`authClient: received: '${output}'`);
 
                         if (output.includes('CS_PAM_AUTH_FAILURE')) {
                             GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
