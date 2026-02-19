@@ -696,6 +696,8 @@ Chrome.prototype = {
         global.display.connect('restacked',
                               Lang.bind(this, this._windowsRestacked));
         global.display.connect('in-fullscreen-changed', Lang.bind(this, this._updateVisibility));
+        global.display.connect('notify::focus-window', Lang.bind(this, this._updateVisibility));
+        global.display.connect('window-monitor-changed', Lang.bind(this, this._updateVisibility));
         global.window_manager.connect('switch-workspace', Lang.bind(this, this._queueUpdateRegions));
 
         // Need to update struts on new workspaces when they are added
@@ -832,37 +834,58 @@ Chrome.prototype = {
     },
 
     _updateVisibility: function() {
-        for (let i = 0; i < this._trackedActors.length; i++) {
-            let actorData = this._trackedActors[i], visible;
+        this._trackedActors.forEach( actorData => {
+            const monitor = this.findMonitorForActor(actorData.actor);
+            let visible = false;
             if (!actorData.isToplevel)
-                continue;
+                return;
             else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN) {
-                let monitor = this.findMonitorForActor(actorData.actor);
-
                 if (global.display.get_n_monitors() == 1 || !monitor.inFullscreen) {
                     visible = true;
-                } else {
-                    if (Main.modalActorFocusStack.length > 0) {
-                        let modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
+                } else if (Main.modalActorFocusStack.length > 0) {
+                    const modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
 
-                        if (this.findMonitorForActor(modalActor) == monitor) {
-                            visible = true;
-                        }
+                    if (this.findMonitorForActor(modalActor) == monitor) {
+                        visible = true;
                     }
                 }
-            } else if (this._inOverview)
+            } else if (this._inOverview || actorData.visibleInFullscreen || !monitor.inFullscreen)
                 visible = true;
             else {
-                let monitor = this.findMonitorForActor(actorData.actor);
-                
-                if (!actorData.visibleInFullscreen && monitor && monitor.inFullscreen)
-                    visible = false;
-                else
+                // This is used to show chrome over a fullscreened window by focusing the desktop window when an applet is opened by shortcut key.
+                const lastFocusedWindow = this._getLastFocusedWindowOnMonitor(monitor.index);
+                const lastFocusedWindowIsDesktop = lastFocusedWindow && lastFocusedWindow.get_window_type() === Meta.WindowType.DESKTOP;
+                if (lastFocusedWindowIsDesktop) {
                     visible = true;
+                }
             }
+
             Main.uiGroup.set_skip_paint(actorData.actor, !visible);
-        }
+        });
+
         this._queueUpdateRegions();
+    },
+
+    _getLastFocusedWindowOnMonitor: function(monitorIndex) {
+        const focusedWindow = global.display.get_focus_window();
+        if (focusedWindow && focusedWindow.get_monitor() === monitorIndex) {
+            return focusedWindow;
+        } else {
+            let topWindow = null, topWindowTime = 0;
+            global.get_window_actors().forEach(actor=> {
+                const window = actor.meta_window;
+                if (!window || window.get_monitor() !== monitorIndex ||
+                    window.minimized || !window.showing_on_its_workspace() ||
+                    window.get_workspace() !== global.workspace_manager.get_active_workspace())
+                    return;
+                if (window.get_user_time() > topWindowTime) {
+                    topWindowTime = window.get_user_time();
+                    topWindow = window;
+                }
+            });
+
+            return topWindow;
+        }
     },
 
     _overviewShowing: function() {
