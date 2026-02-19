@@ -374,10 +374,6 @@ class AppGroup {
     getPreferredWidth(actor, forHeight, alloc) {
         const [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         const [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
-        // The label text starts in the center of the icon, so we should allocate the space
-        // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = 1 * global.ui_scale;
-
         const {appId} = this.groupState;
 
         const allocateForLabel = this.labelVisiblePref ||
@@ -392,16 +388,18 @@ class AppGroup {
             } else {
                 alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
             }
+            alloc.min_size = alloc.natural_size;
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
+            alloc.min_size = 1 * global.ui_scale;
         }
     }
 
     getPreferredHeight(actor, forWidth, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
-        alloc.min_size = Math.min(iconMinSize, labelMinSize);
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
+        alloc.min_size = alloc.natural_size;
     }
 
     allocate(actor, box, flags) {
@@ -554,7 +552,7 @@ class AppGroup {
     }
 
     onEnter() {
-        if (this.state.panelEditMode) return false;
+        if (this.state.panelEditMode || this.state.scrollActive) return false;
 
         this.actor.add_style_pseudo_class('hover');
 
@@ -641,7 +639,7 @@ class AppGroup {
         const {appId, metaWindows, lastFocused} = this.groupState;
 
         if (hasFocus === undefined) {
-            hasFocus = this.workspaceState.lastFocusedApp === appId;
+            hasFocus = this.workspaceState.lastFocusedApp === appId && getFocusState(lastFocused);
         }
 
         // If any of the windows associated with our app have focus,

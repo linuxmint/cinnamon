@@ -109,7 +109,7 @@ class PinnedFavs {
             const currentWorkspace = this.params.state.trigger('getCurrentWorkspace');
             const newFavorites = [];
             let refActorFound = false;
-            currentWorkspace.actor.get_children().forEach( (actor, i) => {
+            currentWorkspace.container.get_children().forEach( (actor, i) => {
                 const appGroup = currentWorkspace.appGroups.find( appGroup => appGroup.actor === actor );
                 if (!appGroup) return;
                 const {app, appId, isFavoriteApp} = appGroup.groupState;
@@ -793,6 +793,18 @@ class GroupedWindowListApplet extends Applet.Applet {
             && St.Widget.get_default_direction () === St.TextDirection.RTL;
 
         const axis = this.state.isHorizontal ? [x, 'x2'] : [y, 'y2'];
+
+        let adjustmentValue = 0;
+        if (currentWorkspace.scrollBox) {
+            const adjustment = this.state.isHorizontal ?
+                currentWorkspace.scrollBox.actor.get_hscroll_bar().get_adjustment() :
+                currentWorkspace.scrollBox.actor.get_vscroll_bar().get_adjustment();
+            adjustmentValue = adjustment.get_value();
+        }
+
+        // Add scroll position to current coordinate
+        axis[0] += adjustmentValue;
+
         if(rtl_horizontal)
             axis[0] = this.actor.width - axis[0];
 
@@ -800,7 +812,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         if(this.state.dragging.posList === null){
             this.state.dragging.isForeign = !(source instanceof AppGroup);
             this.state.dragging.posList = [];
-            currentWorkspace.actor.get_children().forEach( child => {
+            currentWorkspace.container.get_children().forEach( child => {
                 let childPos;
                 if(rtl_horizontal)
                     childPos = this.actor.width - child.get_allocation_box()['x1'];
@@ -814,7 +826,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         let pos = 0;
         while(pos < this.state.dragging.posList.length && axis[0] > this.state.dragging.posList[pos])
             pos++;
-        
+
         let favLength = 0;
         for (const appGroup of currentWorkspace.appGroups) {
             if(appGroup.groupState.isFavoriteApp)
@@ -834,13 +846,13 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             if(this.state.dragging.isForeign) {
                 if (this.state.dragging.dragPlaceholder)
-                    currentWorkspace.actor.set_child_at_index(this.state.dragging.dragPlaceholder.actor, pos);
+                    currentWorkspace.container.set_child_at_index(this.state.dragging.dragPlaceholder.actor, pos);
                 else {
                     const iconSize = this.getPanelIconSize() * global.ui_scale;
                     this.state.dragging.dragPlaceholder = new DND.GenericDragPlaceholderItem();
                     this.state.dragging.dragPlaceholder.child.width = iconSize;
                     this.state.dragging.dragPlaceholder.child.height = iconSize;
-                    currentWorkspace.actor.insert_child_at_index(
+                    currentWorkspace.container.insert_child_at_index(
                         this.state.dragging.dragPlaceholder.actor,
                         this.state.dragging.pos
                     );
@@ -848,7 +860,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 }
             }
             else
-                currentWorkspace.actor.set_child_at_index(source.actor, pos);
+                currentWorkspace.container.set_child_at_index(source.actor, pos);
         }
 
         if(this.state.dragging.isForeign)

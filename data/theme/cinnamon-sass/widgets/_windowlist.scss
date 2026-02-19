@@ -107,6 +107,17 @@
   &-notifications-badge-label {
     font-size: 12px;
   }
+
+  &-scrollbox {
+    &.vfade {
+      -st-vfade-offset: 68px;
+      -st-hfade-offset: 0;
+    }
+    &.hfade {
+      -st-hfade-offset: 68px;
+      -st-vfade-offset: 0;
+    }
+  }
 }
 
 // classic window list

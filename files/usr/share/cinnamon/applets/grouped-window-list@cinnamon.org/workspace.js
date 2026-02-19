@@ -1,4 +1,6 @@
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
+const St = imports.gi.St;
 const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
@@ -6,12 +8,21 @@ const {unref} = imports.misc.util;
 const createStore = require('./state');
 const AppGroup = require('./appGroup');
 const {RESERVE_KEYS} = require('./constants');
+const ScrollBox = require('./scrollBox');
+
 
 class Workspace {
     constructor(params) {
         this.state = params.state;
         this.state.connect({
-            orientation: () => this.on_orientation_changed(false)
+            orientation: (state) => {
+                this.on_orientation_changed(state.orientation);
+            },
+            currentWs: (state) => {
+                if (this.metaWorkspace && state.currentWs === this.metaWorkspace.index()) {
+                    this.scrollToLastFocusedApp();
+                }
+            }
         });
         this.workspaceState = createStore({
             workspaceIndex: params.index,
@@ -28,11 +39,15 @@ class Workspace {
                 if (this.state.willUnmount) {
                     return;
                 }
-                this.actor.remove_child(actor);
+                this.container.remove_child(actor);
             },
             updateFocusState: (focusedAppId) => {
                 this.appGroups.forEach( appGroup => {
-                    if (focusedAppId === appGroup.groupState.appId) return;
+                    if (focusedAppId === appGroup.groupState.appId &&
+                        (!appGroup.groupState.lastFocused || appGroup.groupState.lastFocused.has_focus())) {
+                        this.scrollToAppGroup(appGroup);
+                        return;
+                    };
                     appGroup.onFocusChange(false);
                 });
             }
@@ -41,31 +56,39 @@ class Workspace {
         this.signals = new SignalManager(null);
         this.metaWorkspace = params.metaWorkspace;
 
-        const managerOrientation = this.state.isHorizontal ? 'HORIZONTAL' : 'VERTICAL';
-        this.manager = new Clutter.BoxLayout({orientation: Clutter.Orientation[managerOrientation]});
-        this.actor = new Clutter.Actor({layout_manager: this.manager});
+        this.scrollBox = new ScrollBox(this.state);
+        this.actor = this.scrollBox.actor;
+        this.container = this.scrollBox.box;
 
         this.appGroups = [];
         this.lastFocusedApp = null;
+        this.scrollToAppDebounceTimeoutId = 0;
 
         // Connect all the signals
         this.signals.connect(global.display, 'window-workspace-changed', (...args) => this.windowWorkspaceChanged(...args));
         // Ugly change: refresh the removed app instances from all workspaces
         this.signals.connect(this.metaWorkspace, 'window-removed', (...args) => this.windowRemoved(...args));
         this.signals.connect(global.window_manager, 'switch-workspace' , (...args) => this.reloadList(...args));
-        this.on_orientation_changed(null, true);
+
+        this.on_orientation_changed(this.state.orientation);
     }
 
-    on_orientation_changed() {
-        if (!this.manager) return;
-
-        if (!this.state.isHorizontal) {
-            this.manager.set_orientation(Clutter.Orientation.VERTICAL);
-            this.actor.set_x_align(Clutter.ActorAlign.CENTER);
-        } else {
-            this.manager.set_orientation(Clutter.Orientation.HORIZONTAL);
-        }
+    on_orientation_changed(orientation) {
         this.refreshList();
+    }
+
+    scrollToAppGroup(appGroup) {
+        if (this.scrollToAppDebounceTimeoutId > 0) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
+        this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
+            this._scrollToAppGroup(appGroup);
+            this.scrollToAppDebounceTimeoutId = 0;
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    _scrollToAppGroup(appGroup) {
+        if (!appGroup || !appGroup.actor) return;
+        this.scrollBox.scrollToChild(appGroup.actor);
     }
 
     getWindowCount(appId) {
@@ -177,6 +200,7 @@ class Workspace {
         this.appGroups = [];
         this.loadFavorites();
         this.refreshApps();
+        this.scrollToLastFocusedApp();
     }
 
     loadFavorites() {
@@ -211,6 +235,27 @@ class Workspace {
 
         for (let i = 0, len = windows.length; i < len; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
+        }
+    }
+
+    scrollToLastFocusedApp() {
+        let lastFocusedAppInWorkspace = null;
+        for (let appGroup of this.appGroups) {
+            let lastFocusedInAppGroup = appGroup.groupState.lastFocused;
+            if (lastFocusedInAppGroup && lastFocusedInAppGroup.has_focus()) {
+                lastFocusedAppInWorkspace = appGroup;
+                this.scrollToAppGroup(appGroup);
+                return;
+            } else if (this.workspaceState.lastFocusedApp === appGroup.groupState.appId) {
+                lastFocusedAppInWorkspace = appGroup;
+            } else if ((!lastFocusedAppInWorkspace || lastFocusedAppInWorkspace.groupState.metaWindows.length === 0) &&
+                       appGroup.groupState.metaWindows.length > 0
+            ) {
+                lastFocusedAppInWorkspace = appGroup;
+            }
+        }
+        if (lastFocusedAppInWorkspace && lastFocusedAppInWorkspace.groupState.metaWindows.length > 0) {
+            this.scrollToAppGroup(lastFocusedAppInWorkspace);
         }
     }
 
@@ -308,11 +353,11 @@ class Workspace {
             });
 
             if(idx > -1) {
-                this.actor.insert_child_at_index(appGroup.actor, idx);
+                this.container.insert_child_at_index(appGroup.actor, idx);
                 this.appGroups.splice(idx, 0, appGroup);
             }
             else {
-                this.actor.add_child(appGroup.actor);
+                this.container.add_child(appGroup.actor);
                 this.appGroups.push(appGroup);
             }
             appGroup.windowAdded(metaWindow);
@@ -339,7 +384,7 @@ class Workspace {
 
     updateAppGroupIndexes() {
         const newAppGroups = [];
-        this.actor.get_children().forEach( child => {
+        this.container.get_children().forEach( child => {
             const appGroup = this.appGroups.find( appGroup => appGroup.actor === child);
             if (appGroup) {
                 newAppGroups.push(appGroup);
@@ -403,7 +448,7 @@ class Workspace {
                         // in edge case when multiple apps of the same program are favorited, do not move other app
                         if(!otherAppObject.groupState.isFavoriteApp) {
                             this.appGroups.splice(otherApp, 1);
-                            this.actor.set_child_at_index(otherAppObject.actor, refApp);
+                            this.container.set_child_at_index(otherAppObject.actor, refApp);
                             this.appGroups.splice(refApp, 0, otherAppObject);
 
                             // change previously unpinned app status to pinned
@@ -420,11 +465,14 @@ class Workspace {
     }
 
     destroy() {
+        this.scrollBox.destroy();
+        if (this.scrollToAppDebounceTimeoutId > 0) {
+            GLib.source_remove(this.scrollToAppDebounceTimeoutId);
+            this.scrollToAppDebounceTimeoutId = 0;
+        }
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
         this.workspaceState.destroy();
-        this.manager = null;
-        this.actor.destroy();
         unref(this, RESERVE_KEYS);
     }
 }
