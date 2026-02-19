@@ -87,6 +87,21 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         // user needs to switch workspaces just to switch the window back. This should behave this way
         // when showAllWorkspaces is disabled as well since its a UX problem.
         if (hasWindows) {
+            // Always on top
+            if (this.groupState.lastFocused && this.groupState.lastFocused.is_above()) {
+                item = createMenuItem({label: _('Do not stay on top')});
+                this.signals.connect(item, 'activate', () => {
+                    this.groupState.lastFocused.unmake_above();
+                });
+                this.addMenuItem(item);
+            } else {
+                item = createMenuItem({label: _('Always on top')});
+                this.signals.connect(item, 'activate', () => {
+                    this.groupState.lastFocused.make_above();
+                });
+                this.addMenuItem(item);
+            }
+
             // Monitors
             if (Main.layoutManager.monitors.length > 1) {
                 const connectMonitorEvent = (item, i) => {

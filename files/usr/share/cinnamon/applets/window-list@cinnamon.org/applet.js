@@ -900,6 +900,21 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let item;
         let length;
 
+        // Always on top
+        if (mw.is_above()) {
+            item = new PopupMenu.PopupMenuItem(_("Do not stay on top"));
+            this._signals.connect(item, 'activate', function() {
+                mw.unmake_above();
+            });
+            this.addMenuItem(item);
+        } else {
+            item = new PopupMenu.PopupMenuItem(_("Always on top"));
+            this._signals.connect(item, 'activate', function() {
+                mw.make_above();
+            });
+            this.addMenuItem(item);
+        }
+
         // Move to monitor
         if ((length = Main.layoutManager.monitors.length) == 2) {
             Main.layoutManager.monitors.forEach(function (monitor, index) {
