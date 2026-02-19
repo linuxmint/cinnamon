@@ -22,6 +22,10 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
+        // Use tabular figures to prevent panel shifting when clock updates (issue #13336)
+        // This ensures all digits have equal width (e.g., "1" same width as "0")
+        this._applet_label.set_style('font-feature-settings: "tnum"');
+
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         try {
