@@ -716,6 +716,35 @@ class SearchProviderResultButton extends SimpleMenuItem {
     }
 }
 
+class PlaceSearchResultButton extends SimpleMenuItem {
+    constructor(applet, place) {
+        super(applet, {
+            name: place.name,
+            type: 'search-result',
+            styleClass: 'appmenu-application-button',
+            place: place,
+        });
+
+        this.icon = place.iconFactory(applet.applicationIconSize);
+        if (this.icon)
+            this.addActor(this.icon);
+        else
+            this.addIcon(applet.applicationIconSize, 'folder');
+
+        this.addLabel(this.name, 'appmenu-application-button-label');
+    }
+
+    activate() {
+        this.place.launch();
+        this.applet.menu.close();
+    }
+
+    destroy() {
+        delete this.place;
+        super.destroy();
+    }
+}
+
 class PlaceButton extends SimpleMenuItem {
     constructor(applet, place) {
         let selectedAppId = place.idDecoded.substr(place.idDecoded.indexOf(':') + 1);
@@ -1333,6 +1362,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this._searchIconClickedId = 0;
         this._applicationsButtons = [];
         this._placesButtons = [];
+        this._searchablePlaces = [];
         this._transientButtons = [];
         this.recentButton = null;
         this._recentButtons = [];
@@ -2247,50 +2277,61 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         //Load places again
         this._placesButtons = [];
+        // Store all default places for search (independent of show* settings)
+        this._searchablePlaces = [];
 
         let places = [...Main.placesManager.getDefaultPlaces(), ...Main.placesManager.getBookmarks()];
         for (let place of places) {
             let path = place.idDecoded.replace("bookmark:file://", "")
+            let isDefaultPlace = true;
+            let showInSidebar = true;
+
             switch (path) {
                 case "special:home":
-                    if (!this.showHome)
-                        continue;
+                    showInSidebar = this.showHome;
                     break;
                 case "special:desktop":
-                     if (!this.showDesktop)
-                        continue;
+                    showInSidebar = this.showDesktop;
                     break;
                 case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOWNLOAD):
-                    if (!this.showDownloads)
-                        continue;
+                    showInSidebar = this.showDownloads;
                     break;
                 case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DOCUMENTS):
-                    if (!this.showDocuments)
-                        continue;
+                    showInSidebar = this.showDocuments;
                     break;
                 case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_MUSIC):
-                    if (!this.showMusic)
-                        continue;
+                    showInSidebar = this.showMusic;
                     break;
                 case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES):
-                    if (!this.showPictures)
-                        continue;
+                    showInSidebar = this.showPictures;
                     break;
                 case GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_VIDEOS):
-                    if (!this.showVideos)
-                        continue;
+                    showInSidebar = this.showVideos;
                     break;
                 default:
-                    if (!this.showBookmarks)
-                        continue;
+                    // Bookmarks are not default places
+                    isDefaultPlace = false;
+                    showInSidebar = this.showBookmarks;
                     break;
             }
-            let button = new PlaceButton(this, place);
-            this._placesButtons.push(button);
-            this.placesBox.add(button.actor, {
-                y_align: St.Align.END,
-                y_fill: false
-            });
+
+            // Always add default places to searchable list
+            if (isDefaultPlace) {
+                this._searchablePlaces.push({
+                    place: place,
+                    searchString: AppUtils.decomp_string(place.name).replace(/\s/g, '')
+                });
+            }
+
+            // Only add to sidebar if setting is enabled
+            if (showInSidebar) {
+                let button = new PlaceButton(this, place);
+                this._placesButtons.push(button);
+                this.placesBox.add(button.actor, {
+                    y_align: St.Align.END,
+                    y_fill: false
+                });
+            }
         }
         this.placesBox.queue_relayout();
 
@@ -3124,6 +3165,17 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         buttons = [...buttons, ...result];
 
         this._displayButtons(null, buttons, acResultButtons);
+
+        // Search all default places (independent of sidebar visibility settings)
+        let regexpPattern = new RegExp(Util.escapeRegExp(pattern));
+        for (let placeInfo of this._searchablePlaces) {
+            let res = placeInfo.searchString.match(regexpPattern);
+            if (res) {
+                let button = new PlaceSearchResultButton(this, placeInfo.place);
+                this._searchProviderButtons.push(button);
+                this.applicationsBox.add_actor(button.actor);
+            }
+        }
 
         if (buttons.length || acResultButtons.length) {
             this.appBoxIter.reloadVisible();
