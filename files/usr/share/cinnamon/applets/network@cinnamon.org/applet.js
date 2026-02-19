@@ -2309,10 +2309,13 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
-        } else if (section != NMConnectionCategory.INVALID) {
-            let devices = this._devices[section].devices;
-            for (let i = 0; i < devices.length; i++)
-                devices[i].removeConnection(connection);
+            } else if (section != NMConnectionCategory.INVALID) {
+            // Fix: Check if devices exist before accessing length
+            if (this._devices[section] && this._devices[section].devices) {
+                let devices = this._devices[section].devices;
+                for (let i = 0; i < devices.length; i++)
+                    devices[i].removeConnection(connection);
+            }
         }
 
         connection._uuid = null;
