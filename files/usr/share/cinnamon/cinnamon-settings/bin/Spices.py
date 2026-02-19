@@ -14,6 +14,12 @@ try:
     from PIL import Image
     import datetime
     import time
+
+    # for package installations
+    import gi
+    gi.require_version('PackageKitGlib', '1.0')
+    from gi.repository import PackageKitGlib as packagekit
+    import apt
 except Exception as error_message:
     print(error_message)
     sys.exit(1)
@@ -852,7 +858,90 @@ class Spice_Harvester(GObject.Object):
     def errorMessage(self, msg, detail=None):
         ui_thread_do(self._ui_error_message, msg, detail)
 
+    def _check_dependencies(self, uuid):
+        if not uuid in self.meta_map:
+            return # spice installed as devtest
+
+        dependencies = self.meta_map[uuid].get('dependencies', [])
+        if not isinstance(dependencies, list) or len(dependencies) == 0:
+            return
+
+        try:
+            self.apt_cache = apt.Cache(None)
+            self.missing_packages = []
+            for dependency in dependencies:
+                if dependency in self.apt_cache:
+                    if not self.apt_cache[dependency].is_installed:
+                        package_id = self._get_package_id(self.apt_cache[dependency].candidate)
+                        if package_id not in self.missing_packages:
+                            self.missing_packages.append(package_id)
+                else:
+                    # show info message instead
+                    raise Exception(f"Unable to find a package for {dependency} in apt cache")
+            if len(self.missing_packages) > 0:
+                self.cancellable = Gio.Cancellable()
+                self.pk_task = packagekit.Task()
+                # ask for installation
+                dialog = Gtk.MessageDialog(
+                    destroy_with_parent=True,
+                    text=_("Do you want to install the missing necessary packages?"),
+                    secondary_text="\n".join(self.missing_packages),
+                    buttons=Gtk.ButtonsType.YES_NO
+                )
+                dialog.connect("response", self._on_install_dialog_response)
+                dialog.run()
+
+        except Exception as e:
+            # display a info message instead
+            dialog = Gtk.MessageDialog(
+                destroy_with_parent=True,
+                text=_("Please make sure that the necessary packages are installed."),
+                secondary_text="\n".join(dependencies),
+                buttons=Gtk.ButtonsType.CLOSE
+            )
+            dialog.connect("response", self._on_install_dialog_response)
+            dialog.run()
+
+    def _on_install_dialog_response(self, dialog, response):
+        if(response == Gtk.ResponseType.YES):
+            self.pk_task.install_packages_async(self.missing_packages,
+                self.cancellable,  # cancellable
+                self._on_package_install_changes_progress,
+                (None, ),  # progress data
+                self._on_package_install_changes_finish,  # GAsyncReadyCallback
+                None  # callback data
+            )
+            self._set_progressbar_text(_("Installing necessary packages..."))
+            self._set_progressbar_visible(True)
+        dialog.destroy()
+
+    def _get_package_id(self, ver):
+        """ Return the PackageKit package id """
+        assert isinstance(ver, apt.package.Version)
+        return "%s;%s;%s;" % (ver.package.shortname, ver.version, ver.package.architecture())
+
+    def _on_package_install_changes_progress(self, progress, ptype, data=None):
+        if ptype == packagekit.ProgressType.PERCENTAGE:
+            self._set_progressbar_fraction(progress.get_property('percentage') / 100.0)
+
+    def _on_package_install_changes_finish(self, source, result, installs):
+        self._set_progressbar_visible(False)
+        self._set_progressbar_fraction(0)
+        try:
+            self.pk_task.generic_finish(result)
+        except Exception as e:
+            dialog = Gtk.MessageDialog(
+                destroy_with_parent=True,
+                text=_("Error installing packages"),
+                secondary_text=str(e),
+                buttons=Gtk.ButtonsType.CLOSE
+            )
+            dialog.connect("response", self._on_install_dialog_response)
+            dialog.run()
+
     def enable_extension(self, uuid, panel=1, box='right', position=0):
+        self._check_dependencies(uuid)
+
         if self.collection_type == 'applet':
             entries = []
             applet_id = self.settings.get_int('next-applet-id')
