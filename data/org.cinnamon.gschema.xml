@@ -444,6 +444,12 @@
       <summary>Show all windows from all workspaces</summary>
     </key>
 
+    <key type="b" name="alttab-switcher-group-by-app">
+      <default>false</default>
+      <summary>Group windows by application</summary>
+      <description>When enabled, Alt+Tab will show only one entry per application instead of one per window. The most recently used window of each application will be shown.</description>
+    </key>
+
     <key type="b" name="alttab-switcher-warp-mouse-pointer">
       <default>false</default>
       <summary>Warp mouse pointer to the new focused window</summary>

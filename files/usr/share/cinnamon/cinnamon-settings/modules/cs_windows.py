@@ -180,6 +180,9 @@ class Module:
             widget = GSettingsSwitch(_("Show windows from all workspaces"), "org.cinnamon", "alttab-switcher-show-all-workspaces")
             settings.add_row(widget)
 
+            widget = GSettingsSwitch(_("Group windows by application"), "org.cinnamon", "alttab-switcher-group-by-app")
+            settings.add_row(widget)
+
             widget = GSettingsSwitch(_("Show windows from current monitor"), "org.cinnamon", "alttab-switcher-show-current-monitor")
             settings.add_row(widget)
 
