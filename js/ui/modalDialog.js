@@ -197,7 +197,7 @@ var ModalDialog = GObject.registerClass({
 
         this.dialogLayout.opacity = 255;
         if (this._lightbox)
-            this._lightbox.show();
+            this._lightbox.lightOn();
         this.opacity = 0;
         this.show();
         this.ease({
