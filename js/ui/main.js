@@ -464,7 +464,7 @@ function start() {
     }
 
     magnifier = new Magnifier.Magnifier();
-    locatePointer = new LocatePointer.locatePointer();
+    locatePointer = new LocatePointer.LocatePointer();
 
     layoutManager.init();
     overview.init();
