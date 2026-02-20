@@ -624,6 +624,14 @@ var LayoutManager = GObject.registerClass({
         return index;
     }
 
+    getWorkAreaForMonitor(monitorIndex) {
+        // Assume that all workspaces will have the same
+        // struts and pick the first one.
+        const workspaceManager = global.workspace_manager;
+        const ws = workspaceManager.get_workspace_by_index(0);
+        return ws.get_work_area_for_monitor(monitorIndex);
+    }
+
     /**
      * isTrackingChrome:
      * @actor (Clutter.Actor): the actor to check
