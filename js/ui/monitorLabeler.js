@@ -45,8 +45,9 @@ class MonitorLabel extends St.BoxLayout {
 
         Main.uiGroup.add_child(this);
 
-        this.x = monitor.x + 6 * global.ui_scale;
-        this.y = monitor.y + 6 * global.ui_scale;
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(monitor.index);
+        this.x = workArea.x + 6 * global.ui_scale;
+        this.y = workArea.y + 6 * global.ui_scale;
     }
 });
 
