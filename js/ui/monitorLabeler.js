@@ -1,3 +1,4 @@
+const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Gio = imports.gi.Gio;
@@ -14,37 +15,40 @@ const common_css =
   text-align: center;   \
 ";
 
-var MonitorLabel = class {
-    constructor(monitor, connector, info) {
+var MonitorLabel = GObject.registerClass(
+class MonitorLabel extends St.BoxLayout {
+    _init(monitor, connector, info) {
         this._monitor = monitor;
         this._connector = connector;
         this._index = info[0];
         this._cloned = info[1];
-        this._display_name = info[2];
+        this._displayName = info[2];
         this._color = info[3];
 
-        this.actor = new St.BoxLayout({ style: `${common_css} background-color: ${this._color};`,
-                                        vertical: true });
+        super._init({
+            style: `${common_css} background-color: ${this._color};`,
+            vertical: true,
+        });
 
-        let label_text;
+        let labelText;
 
         if (this._cloned) {
             let str = _("Mirrored Displays");
-            label_text = `<b>${str}</b>`;
+            labelText = `<b>${str}</b>`;
         } else {
-            label_text = `<b>${this._index}  ${this._display_name}</b>\n${this._connector}`
+            labelText = `<b>${this._index}  ${this._displayName}</b>\n${this._connector}`
         }
 
         this._label = new St.Label();
-        this._label.clutter_text.set_markup(label_text);
-        this.actor.add(this._label);
+        this._label.clutter_text.set_markup(labelText);
+        this.add_child(this._label);
 
-        Main.uiGroup.add_child(this.actor);
+        Main.uiGroup.add_child(this);
 
-        this.actor.x = monitor.x + 6 * global.ui_scale;
-        this.actor.y = monitor.y + 6 * global.ui_scale;
+        this.x = monitor.x + 6 * global.ui_scale;
+        this.y = monitor.y + 6 * global.ui_scale;
     }
-}
+});
 
 var MonitorLabeler = class {
     constructor() {
@@ -70,7 +74,7 @@ var MonitorLabeler = class {
 
     _real_show(dict) {
         for (let label of this._labels) {
-            label.actor.destroy();
+            label.destroy();
         }
 
         this._labels = [];
@@ -117,7 +121,7 @@ var MonitorLabeler = class {
         }
 
         for (let label of this._labels) {
-            label.actor.destroy();
+            label.destroy();
         }
 
         this._labels = [];
