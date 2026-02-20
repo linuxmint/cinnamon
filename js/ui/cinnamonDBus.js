@@ -1,6 +1,5 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
@@ -149,12 +148,8 @@ const CinnamonIface =
         </interface> \
     </node>';
 
-function CinnamonDBus() {
-    this._init();
-}
-
-CinnamonDBus.prototype = {
-    _init: function() {
+var CinnamonDBus = class {
+    constructor() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
 
@@ -163,7 +158,7 @@ CinnamonDBus.prototype = {
          * out chrome updates that don't actually change the workarea before emitting this
          * signal, which is desirable. */
         global.display.connect("workareas-changed", ()=> this.EmitMonitorsChanged());
-    },
+    }
 
     /**
      * Eval:
@@ -179,7 +174,7 @@ CinnamonDBus.prototype = {
      * [false, JSON.stringify(exception)];
      *
      */
-    Eval: function(code) {
+    Eval(code) {
         let returnValue;
         let success;
         try {
@@ -193,14 +188,14 @@ CinnamonDBus.prototype = {
             success = false;
         }
         return [success, returnValue];
-    },
+    }
 
-    _onScreenshotComplete: function(obj, result, area, flash) {
+    _onScreenshotComplete(obj, result, area, flash) {
         if (flash) {
             let flashspot = new Flashspot.Flashspot(area);
             flashspot.fire();
         }
-    },
+    }
 
     /**
      * ScreenshotArea:
@@ -217,11 +212,13 @@ CinnamonDBus.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotArea: function(include_cursor, x, y, width, height, flash, filename) {
+    ScreenshotArea(include_cursor, x, y, width, height, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_area(include_cursor, x, y, width, height, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash));
-    },
+            (obj, result, area) => {
+                this._onScreenshotComplete(obj, result, area, flash);
+            });
+    }
 
     /**
      * ScreenshotWindow:
@@ -235,11 +232,13 @@ CinnamonDBus.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    ScreenshotWindow: function(include_frame, include_cursor, flash, filename) {
+    ScreenshotWindow(include_frame, include_cursor, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_window(include_frame, include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash));
-    },
+            (obj, result, area) => {
+                this._onScreenshotComplete(obj, result, area, flash);
+            });
+    }
 
     /**
      * Screenshot:
@@ -252,13 +251,15 @@ CinnamonDBus.prototype = {
      * indicating whether the operation was successful or not.
      *
      */
-    Screenshot: function(include_cursor, flash, filename) {
+    Screenshot(include_cursor, flash, filename) {
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot(include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash));
-    },
+            (obj, result, area) => {
+                this._onScreenshotComplete(obj, result, area, flash);
+            });
+    }
 
-    ShowOSD: function(params) {
+    ShowOSD(params) {
         for (let param in params)
             params[param] = params[param].deep_unpack();
 
@@ -274,9 +275,9 @@ CinnamonDBus.prototype = {
             icon = Gio.Icon.new_for_string(params['icon']);
 
         Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], false);
-    },
+    }
 
-    FlashArea: function(x, y, width, height) {
+    FlashArea(x, y, width, height) {
         let flashspot = new Flashspot.Flashspot({
             x: x,
             y: y,
@@ -284,31 +285,31 @@ CinnamonDBus.prototype = {
             height: height
         });
         flashspot.fire();
-    },
+    }
 
     get OverviewActive() {
         return Main.overview.visible;
-    },
+    }
 
     set OverviewActive(visible) {
         if (visible)
             Main.overview.show();
         else
             Main.overview.hide();
-    },
+    }
 
     get ExpoActive() {
         return Main.expo.visible;
-    },
+    }
 
     set ExpoActive(visible) {
         if (visible)
             Main.expo.show();
         else
             Main.expo.hide();
-    },
+    }
 
-    _getXletObject: function(uuid, instance_id) {
+    _getXletObject(uuid, instance_id) {
         var obj = null;
 
         obj = AppletManager.get_object_for_uuid(uuid, instance_id);
@@ -322,13 +323,13 @@ CinnamonDBus.prototype = {
         }
 
         return obj;
-    },
+    }
 
-    EmitXletAddedComplete: function(success, uuid, name) {
+    EmitXletAddedComplete(success, uuid, name) {
         this._dbusImpl.emit_signal('XletAddedComplete', GLib.Variant.new('(bs)', [success, uuid]));
-    },
+    }
 
-    GetRunningXletUUIDs: function(type) {
+    GetRunningXletUUIDs(type) {
         let list = null;
         let res = [];
 
@@ -347,37 +348,37 @@ CinnamonDBus.prototype = {
         }
 
         return res;
-    },
+    }
 
-    ReloadXlet: function(uuid, type) {
+    ReloadXlet(uuid, type) {
         Extension.reloadExtension(uuid, Extension.Type[type]);
-    },
+    }
 
-    highlightXlet: function(uuid, instance_id, highlight) {
+    highlightXlet(uuid, instance_id, highlight) {
         let obj = this._getXletObject(uuid, instance_id);
         if (obj && obj.highlight) obj.highlight(highlight);
-    },
+    }
 
-    highlightPanel: function(id, highlight) {
+    highlightPanel(id, highlight) {
         if (Main.panelManager.panels[id])
             Main.panelManager.panels[id].highlight(highlight);
-    },
+    }
 
-    addPanelQuery: function() {
+    addPanelQuery() {
         Main.panelManager.addPanelQuery();
-    },
+    }
 
-    destroyDummyPanels: function() {
+    destroyDummyPanels() {
         Main.panelManager._destroyDummyPanels();
-    },
+    }
 
-    activateCallback: function(callback, uuid, instance_id) {
+    activateCallback(callback, uuid, instance_id) {
         let obj = this._getXletObject(uuid, instance_id);
-        let cb = Lang.bind(obj, obj[callback]);
+        let cb = obj[callback].bind(obj);
         cb();
-    },
+    }
 
-    updateSetting: function(uuid, instance_id, key, payload) {
+    updateSetting(uuid, instance_id, key, payload) {
         if (!Main.settingsManager.uuids[uuid]) {
             global.logWarning(
                 `[CinnamonDBus] [${uuid}] Unable to find UUID from SettingsManager - ` +
@@ -386,70 +387,70 @@ CinnamonDBus.prototype = {
             return;
         }
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
-    },
+    }
 
-    induceSegfault: function() {
+    induceSegfault() {
         global.segfault();
-    },
+    }
 
-    leakMemory: function(mb) {
+    leakMemory(mb) {
         global.alloc_leak(mb);
-    },
+    }
 
-    switchWorkspaceLeft: function() {
+    switchWorkspaceLeft() {
         Main.wm.actionMoveWorkspaceLeft();
-    },
+    }
 
-    switchWorkspaceRight: function() {
+    switchWorkspaceRight() {
         Main.wm.actionMoveWorkspaceRight();
-    },
+    }
 
-    switchWorkspaceUp: function() {
+    switchWorkspaceUp() {
         Main.overview.toggle();
-    },
+    }
 
-    switchWorkspaceDown: function() {
+    switchWorkspaceDown() {
         Main.expo.toggle();
-    },
+    }
 
-    JumpToNewWorkspace: function() {
+    JumpToNewWorkspace() {
         Main._addWorkspace();
         let num = global.workspace_manager.get_n_workspaces();
         if (global.workspace_manager.get_workspace_by_index(num - 1) != null) {
             global.workspace_manager.get_workspace_by_index(num - 1).activate(global.get_current_time());
         }
-    },
+    }
 
-    RemoveCurrentWorkspace: function() {
+    RemoveCurrentWorkspace() {
         let index = global.workspace_manager.get_active_workspace_index();
         if (global.workspace_manager.get_workspace_by_index(index) != null) {
             Main._removeWorkspace(global.workspace_manager.get_workspace_by_index(index));
         }
-    },
+    }
 
-    ShowExpo: function() {
+    ShowExpo() {
         if (!Main.expo.animationInProgress)
             Main.expo.toggle();
-    },
+    }
 
-    ShowOverview: function() {
+    ShowOverview() {
         if (!Main.overview.animationInProgress)
             Main.overview.toggle();
-    },
+    }
 
-    PushSubprocessResult: function(process_id, result, success) {
+    PushSubprocessResult(process_id, result, success) {
         if (Util.subprocess_callbacks[process_id]) {
             if (success)
                 Util.subprocess_callbacks[process_id](result);
             delete Util.subprocess_callbacks[process_id];
         }
-    },
+    }
 
-    ToggleKeyboard: function() {
+    ToggleKeyboard() {
         Main.virtualKeyboardManager.manualToggle();
-    },
+    }
 
-    GetMonitors: function() {
+    GetMonitors() {
         let monitors = [];
 
         try {
@@ -470,9 +471,9 @@ CinnamonDBus.prototype = {
         }
 
         return monitors;
-    },
+    }
 
-    GetMonitorWorkRect: function(index) {
+    GetMonitorWorkRect(index) {
         let n_mons = global.display.get_n_monitors();
 
         if ((index < 0) || index > (n_mons - 1)) {
@@ -483,63 +484,63 @@ CinnamonDBus.prototype = {
         let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(logical_index);
 
         return [rect.x, rect.y, rect.width, rect.height];
-    },
+    }
 
-    GetRunState: function() {
+    GetRunState() {
         return Main.runState;
-    },
+    }
 
-    RestartCinnamon: function(showOsd) {
+    RestartCinnamon(showOsd) {
         Main.restartCinnamon(showOsd);
-    },
+    }
 
-    ReloadTheme: function() {
+    ReloadTheme() {
         Main.themeManager._changeTheme()
-    },
+    }
 
-    EmitRunStateChanged: function() {
+    EmitRunStateChanged() {
         this._dbusImpl.emit_signal('RunStateChanged', null);
-    },
+    }
 
-    EmitMonitorsChanged: function() {
+    EmitMonitorsChanged() {
         this._dbusImpl.emit_signal('MonitorsChanged', null);
-    },
+    }
 
-    EmitXletsLoadedComplete: function() {
+    EmitXletsLoadedComplete() {
         this._dbusImpl.emit_signal('XletsLoadedComplete', null);
-    },
+    }
 
     get AnimationsEnabled() {
         return Main.animations_enabled;
-    },
+    }
 
     notifyAnimationsEnabled() {
         let variant = new GLib.Variant('b', Main.animations_enabled);
         this._dbusImpl.emit_property_changed('AnimationsEnabled', variant);
-    },
+    }
 
     ShowMonitorLabelsAsync(monitor_info, invocation) {
         if (Main.monitorLabeler != null) {
             Main.monitorLabeler.show(monitor_info[0], invocation.get_sender());
         }
-    },
+    }
 
     HideMonitorLabelsAsync(tuple, invocation) {
         if (Main.monitorLabeler != null) {
             Main.monitorLabeler.hide(invocation.get_sender());
         }
-    },
+    }
 
     ShowEndSessionDialog(mode) {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             Main.showEndSessionDialog(mode);
             return GLib.SOURCE_REMOVE;
         });
-    },
+    }
 
     CloseEndSessionDialog() {
         Main.closeEndSessionDialog();
-    },
+    }
 
     GetInputSources() {
         const is_mgr = KeyboardManager.getInputSourceManager();
@@ -565,20 +566,22 @@ CinnamonDBus.prototype = {
             ]);
         }
         return ret;
-    },
+    }
 
     ActivateInputSourceIndex(index) {
         const is_mgr = KeyboardManager.getInputSourceManager();
         is_mgr.activateInputSourceIndex(index);
-    },
+    }
 
-    EmitCurrentInputSourceChanged: function(id) {
+    EmitCurrentInputSourceChanged(id) {
         this._dbusImpl.emit_signal('CurrentInputSourceChanged', GLib.Variant.new('(s)', [id]));
-    },
+    }
 
-    EmitInputSourcesChanged: function() {
+    EmitInputSourcesChanged() {
         this._dbusImpl.emit_signal('InputSourcesChanged', null);
-    },
+    }
 
-    CinnamonVersion: Config.PACKAGE_VERSION
+    get CinnamonVersion() {
+        return Config.PACKAGE_VERSION;
+    }
 };
