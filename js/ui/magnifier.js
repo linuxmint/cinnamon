@@ -1,13 +1,12 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Meta = imports.gi.Meta;
 const Gio = imports.gi.Gio;
 const Cinnamon = imports.gi.Cinnamon;
 const St = imports.gi.St;
-const Lang = imports.lang;
-const Mainloop = imports.mainloop;
 const Signals = imports.signals;
 
 const Main = imports.ui.main;
@@ -155,13 +154,8 @@ var MouseSpriteContent = GObject.registerClass({
     }
 });
 
-
-function Magnifier() {
-    this._init();
-}
-
-Magnifier.prototype = {
-    _init: function() {
+var Magnifier = class Magnifier {
+    constructor() {
         // Magnifier is a manager of ZoomRegions.
         this._zoomRegions = [];
 
@@ -169,7 +163,7 @@ Magnifier.prototype = {
         this._settings = new Gio.Settings({ schema_id: MAGNIFIER_SCHEMA });
 
         this._initialized = false;
-        this.update_mag_id = 0;
+        this.updateMagId = 0;
         this.enabled = this._appSettings.get_boolean(SHOW_KEY);
 
         this._appSettings.connect('changed::' + SHOW_KEY,
@@ -194,28 +188,28 @@ Magnifier.prototype = {
         let factor = parseFloat(this._settings.get_double(MAG_FACTOR_KEY).toFixed(2));
         if (this.enabled && factor > 1.0)
             this.setActive(true);
-    },
+    }
 
-    _initialize: function() {
+    _initialize() {
         if (this._initialized)
             return;
 
         this._initialized = true;
         // Create small clutter tree for the magnified mouse.
-        let cursor_tracker = Meta.CursorTracker.get_for_display(global.display);
+        let cursorTracker = Meta.CursorTracker.get_for_display(global.display);
 
         this._mouseSprite = new Clutter.Actor({ request_mode: Clutter.RequestMode.CONTENT_SIZE });
         this._mouseSprite.content = new MouseSpriteContent();
-        this._cursor_tracker = cursor_tracker;
+        this._cursorTracker = cursorTracker;
 
         this._updateMouseSprite();
 
-        this._cursorRoot = new Clutter.Group();
-        this._cursorRoot.add_actor(this._mouseSprite);
+        this._cursorRoot = new Clutter.Actor();
+        this._cursorRoot.add_child(this._mouseSprite);
 
         [this.xMouse, this.yMouse, ] = global.get_pointer();
 
-        cursor_tracker.connect('cursor-changed', Lang.bind(this, this._updateMouseSprite));
+        cursorTracker.connect('cursor-changed', this._updateMouseSprite.bind(this));
 
         // Create the first ZoomRegion and initialize it according to the
         // magnification settings.
@@ -223,38 +217,38 @@ Magnifier.prototype = {
         this._zoomRegions.push(aZoomRegion);
         aZoomRegion.scrollContentsTo(this.xMouse, this.yMouse);
         this._settingsInit(aZoomRegion);
-    },
+    }
 
     /**
      * showSystemCursor:
      * Show the system mouse pointer.
      */
-    showSystemCursor: function() {
+    showSystemCursor() {
         this._initialize();
-        this._cursor_tracker.set_pointer_visible(true);
-    },
+        this._cursorTracker.set_pointer_visible(true);
+    }
 
     /**
      * hideSystemCursor:
      * Hide the system mouse pointer.
      */
-    hideSystemCursor: function() {
+    hideSystemCursor() {
         this._initialize();
-        this._cursor_tracker.set_pointer_visible(false);
-    },
+        this._cursorTracker.set_pointer_visible(false);
+    }
 
     /**
      * setActive:
      * Show/hide all the zoom regions.
      * @activate:   Boolean to activate or de-activate the magnifier.
      */
-    setActive: function(activate) {
+    setActive(activate) {
         if (!activate && !this._initialized)
             return;
 
         this._initialize();
 
-        this._zoomRegions.forEach (function(zoomRegion, index, array) {
+        this._zoomRegions.forEach ((zoomRegion, index, array) => {
             zoomRegion.setActive(activate);
         });
 
@@ -266,17 +260,17 @@ Magnifier.prototype = {
         // Make sure system mouse pointer is shown when all zoom regions are
         // invisible.
         if (!activate)
-            this._cursor_tracker.set_pointer_visible(true);
+            this._cursorTracker.set_pointer_visible(true);
 
         // Notify interested parties of this change
         this.emit('active-changed', activate);
-    },
+    }
 
-    _write_back_mag_factor: function(factor) {
+    _writeBackMagFactor(factor) {
         this._settings.set_double(MAG_FACTOR_KEY, factor);
-        this.update_mag_id = 0;
+        this.updateMagId = 0;
         return false;
-    },
+    }
 
     /**
      * setMagFactor:
@@ -286,63 +280,64 @@ Magnifier.prototype = {
      * @yMagFactor:     The power to set the vertical magnification factor to
      *                  of the magnified view.
      */
-    setMagFactor: function(xMagFactor, yMagFactor) {
+    setMagFactor(xMagFactor, yMagFactor) {
         this._initialize();
 
         let zr = this.getZoomRegions()[0];
         zr.setMagFactor(xMagFactor, yMagFactor);
 
-        if (this.update_mag_id > 0) {
-            Mainloop.source_remove (this.update_mag_id);
-            this.update_mag_id = 0;
+        if (this.updateMagId > 0) {
+            GLib.source_remove (this.updateMagId);
+            this.updateMagId = 0;
         }
-        this.update_mag_id = Mainloop.timeout_add(1000, Lang.bind(this, this._write_back_mag_factor, xMagFactor));
-    },
+        this.updateMagId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000,
+            this._writeBackMagFactor.bind(this, xMagFactor));
+    }
 
     /**
      * isActive:
      * @return  Whether the magnifier is active (boolean).
      */
-    isActive: function() {
+    isActive() {
         // Sufficient to check one ZoomRegion since Magnifier's active
         // state applies to all of them.
         if (this._zoomRegions.length == 0)
             return false;
         else
             return this._zoomRegions[0].isActive();
-    },
+    }
 
     /**
      * startTrackingMouse:
      * Turn on mouse tracking, if not already doing so.
      */
-    startTrackingMouse: function() {
+    startTrackingMouse() {
         this._initialize();
         if (!this._mouseTrackingId)
-            this._mouseTrackingId = Mainloop.timeout_add(
+            this._mouseTrackingId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
                 MOUSE_POLL_FREQUENCY,
-                Lang.bind(this, this.scrollToMousePos)
+                this.scrollToMousePos.bind(this)
             );
-    },
+    }
 
     /**
      * stopTrackingMouse:
      * Turn off mouse tracking, if not already doing so.
      */
-    stopTrackingMouse: function() {
+    stopTrackingMouse() {
         if (this._mouseTrackingId)
-            Mainloop.source_remove(this._mouseTrackingId);
+            GLib.source_remove(this._mouseTrackingId);
 
         this._mouseTrackingId = null;
-    },
+    }
 
     /**
      * isTrackingMouse:
      * Is the magnifier tracking the mouse currently?
      */
-    isTrackingMouse: function() {
+    isTrackingMouse() {
         return !!this._mouseTrackingId;
-    },
+    }
 
     /**
      * scrollToMousePos:
@@ -350,7 +345,7 @@ Magnifier.prototype = {
      * system pointer.
      * @return      true.
      */
-    scrollToMousePos: function() {
+    scrollToMousePos() {
         this._initialize();
 
         let [xMouse, yMouse, mask] = global.get_pointer();
@@ -360,7 +355,7 @@ Magnifier.prototype = {
             this.yMouse = yMouse;
 
             let sysMouseOverAny = false;
-            this._zoomRegions.forEach(function(zoomRegion, index, array) {
+            this._zoomRegions.forEach((zoomRegion, index, array) => {
                 if (zoomRegion.scrollToMousePos())
                     sysMouseOverAny = true;
             });
@@ -370,7 +365,7 @@ Magnifier.prototype = {
                 this.showSystemCursor();
         }
         return true;
-    },
+    }
 
     /**
      * createZoomRegion:
@@ -387,7 +382,7 @@ Magnifier.prototype = {
      *                  the position of the ZoomRegion on screen.
      * @return          The newly created ZoomRegion.
      */
-    createZoomRegion: function(xMagFactor, yMagFactor, roi, viewPort) {
+    createZoomRegion(xMagFactor, yMagFactor, roi, viewPort) {
         this._initialize();
 
         let zoomRegion = new ZoomRegion(this, this._cursorRoot);
@@ -401,7 +396,7 @@ Magnifier.prototype = {
 
         zoomRegion.addCrosshairs(this._crossHairs);
         return zoomRegion;
-    },
+    }
 
     /**
      * addZoomRegion:
@@ -409,7 +404,7 @@ Magnifier.prototype = {
      * for this Magnifier instance.
      * @zoomRegion:     The zoomRegion to add.
      */
-    addZoomRegion: function(zoomRegion) {
+    addZoomRegion(zoomRegion) {
         this._initialize();
 
         if(zoomRegion) {
@@ -417,22 +412,22 @@ Magnifier.prototype = {
             if (!this.isTrackingMouse())
                 this.startTrackingMouse();
         }
-    },
+    }
 
     /**
      * getZoomRegions:
      * Return a list of ZoomRegion's for this Magnifier.
      * @return:     The Magnifier's zoom region list (array).
      */
-    getZoomRegions: function() {
+    getZoomRegions() {
         return this._zoomRegions;
-    },
+    }
 
     /**
      * clearAllZoomRegions:
      * Remove all the zoom regions from this Magnfier's ZoomRegion list.
      */
-    clearAllZoomRegions: function() {
+    clearAllZoomRegions() {
         if (!this._initialized)
             return;
 
@@ -442,13 +437,13 @@ Magnifier.prototype = {
         this._zoomRegions.length = 0;
         this.stopTrackingMouse();
         this.showSystemCursor();
-    },
+    }
 
     /**
      * addCrosshairs:
      * Add and show a cross hair centered on the magnified mouse.
      */
-    addCrosshairs: function() {
+    addCrosshairs() {
         this._initialize();
 
         if (!this._crossHairs)
@@ -467,54 +462,53 @@ Magnifier.prototype = {
         this.setCrosshairsClip(clip);
 
         let theCrossHairs = this._crossHairs;
-        this._zoomRegions.forEach (function(zoomRegion, index, array) {
+        this._zoomRegions.forEach ((zoomRegion, index, array) => {
             zoomRegion.addCrosshairs(theCrossHairs);
         });
-    },
+    }
 
     /**
      * setCrosshairsVisible:
      * Show or hide the cross hair.
      * @visible    Flag that indicates show (true) or hide (false).
      */
-    setCrosshairsVisible: function(visible) {
+    setCrosshairsVisible(visible) {
         if (visible) {
             if (!this._crossHairs)
                 this.addCrosshairs();
             this._crossHairs.show();
-        }
-        else {
+        } else {
             if (this._crossHairs)
                 this._crossHairs.hide();
         }
-    },
+    }
 
     /**
      * setCrosshairsColor:
      * Set the color of the crosshairs for all ZoomRegions.
      * @color:  The color as a string, e.g. '#ff0000ff' or 'red'.
      */
-    setCrosshairsColor: function(color) {
+    setCrosshairsColor(color) {
         if (this._crossHairs) {
             let [success, cc] = Clutter.Color.from_string(color);
             if (success)
                 this._crossHairs.setColor(cc);
         }
-    },
+    }
 
     /**
      * getCrosshairsColor:
      * Get the color of the crosshairs.
      * @return: The color as a string, e.g. '#0000ffff' or 'blue'.
      */
-    getCrosshairsColor: function() {
+    getCrosshairsColor() {
         if (this._crossHairs) {
             let clutterColor = this._crossHairs.getColor();
             return clutterColor.to_string();
-        }
-        else
+        } else {
             return '#00000000';
-    },
+        }
+    }
 
     /**
      * setCrosshairsThickness:
@@ -522,10 +516,10 @@ Magnifier.prototype = {
      * @thickness:  The width of the vertical and horizontal lines of the
      *              crosshairs.
      */
-    setCrosshairsThickness: function(thickness) {
+    setCrosshairsThickness(thickness) {
         if (this._crossHairs)
             this._crossHairs.setThickness(thickness);
-    },
+    }
 
     /**
      * getCrosshairsThickness:
@@ -533,32 +527,32 @@ Magnifier.prototype = {
      * @return: The width of the vertical and horizontal lines of the
      *          crosshairs.
      */
-    getCrosshairsThickness: function() {
+    getCrosshairsThickness() {
         if (this._crossHairs)
             return this._crossHairs.getThickness();
         else
             return 0;
-    },
+    }
 
     /**
      * setCrosshairsOpacity:
      * @opacity:    Value between 0.0 (transparent) and 1.0 (fully opaque).
      */
-    setCrosshairsOpacity: function(opacity) {
+    setCrosshairsOpacity(opacity) {
         if (this._crossHairs)
             this._crossHairs.setOpacity(opacity * 255);
-    },
+    }
 
     /**
      * getCrosshairsOpacity:
      * @return:     Value between 0.0 (transparent) and 1.0 (fully opaque).
      */
-    getCrosshairsOpacity: function() {
+    getCrosshairsOpacity() {
         if (this._crossHairs)
             return this._crossHairs.getOpacity() / 255.0;
         else
             return 0.0;
-    },
+    }
 
     /**
      * setCrosshairsLength:
@@ -566,10 +560,10 @@ Magnifier.prototype = {
      * @length: The length of the vertical and horizontal lines making up the
      *          crosshairs.
      */
-    setCrosshairsLength: function(length) {
+    setCrosshairsLength(length) {
         if (this._crossHairs)
             this._crossHairs.setLength(length);
-    },
+    }
 
     /**
      * getCrosshairsLength:
@@ -577,54 +571,53 @@ Magnifier.prototype = {
      * @return: The length of the vertical and horizontal lines making up the
      *          crosshairs.
      */
-    getCrosshairsLength: function() {
+    getCrosshairsLength() {
         if (this._crossHairs)
             return this._crossHairs.getLength();
         else
             return 0;
-    },
+    }
 
     /**
      * setCrosshairsClip:
      * Set whether the crosshairs are clipped at their intersection.
      * @clip:   Flag to indicate whether to clip the crosshairs.
      */
-    setCrosshairsClip: function(clip) {
+    setCrosshairsClip(clip) {
         if (clip) {
             if (this._crossHairs)
                 this._crossHairs.setClip(CROSSHAIRS_CLIP_SIZE);
-        }
-        else {
+        } else {
             // Setting no clipping on crosshairs means a zero sized clip
             // rectangle.
             if (this._crossHairs)
                 this._crossHairs.setClip([0, 0]);
         }
-    },
+    }
 
     /**
      * getCrosshairsClip:
      * Get whether the crosshairs are clipped by the mouse image.
      * @return:   Whether the crosshairs are clipped.
      */
-    getCrosshairsClip: function() {
+    getCrosshairsClip() {
         if (this._crossHairs) {
             let [clipWidth, clipHeight] = this._crossHairs.getClip();
             return (clipWidth > 0 && clipHeight > 0);
-        }
-        else
+        } else {
             return false;
-    },
+        }
+    }
 
     //// Private methods ////
 
-    _updateMouseSprite: function() {
-        this._mouseSprite.content.texture = this._cursor_tracker.get_sprite();
-        let [xHot, yHot] = this._cursor_tracker.get_hot();
+    _updateMouseSprite() {
+        this._mouseSprite.content.texture = this._cursorTracker.get_sprite();
+        let [xHot, yHot] = this._cursorTracker.get_hot();
         this._mouseSprite.set_anchor_point(xHot, yHot);
-    },
+    }
 
-    _updateZoomRegion: function(zoomRegion) {
+    _updateZoomRegion(zoomRegion) {
         if (zoomRegion._lensMode) {
             let pref = this._settings.get_enum(LENS_SHAPE_KEY);
             zoomRegion.setLensShape(pref);
@@ -632,9 +625,9 @@ Magnifier.prototype = {
             let pref = this._settings.get_enum(SCREEN_POSITION_KEY);
             zoomRegion.setScreenPosition(pref);
         }
-    },
+    }
 
-    _settingsInit: function(zoomRegion) {
+    _settingsInit(zoomRegion) {
         let ret = 1.0;
         if (zoomRegion) {
             // Mag factor is accurate to two decimal places.
@@ -658,52 +651,46 @@ Magnifier.prototype = {
         this.setCrosshairsVisible(showCrosshairs);
 
         this._settings.connect('changed::' + SCREEN_POSITION_KEY,
-                               Lang.bind(this, this._updateScreenPosition));
+                               this._updateScreenPosition.bind(this));
         this._settings.connect('changed::' + LENS_SHAPE_KEY,
-                               Lang.bind(this, this._updateLensShape));
+                               this._updateLensShape.bind(this));
         this._settings.connect('changed::' + MAG_FACTOR_KEY,
-                               Lang.bind(this, this._updateMagFactor));
+                               this._updateMagFactor.bind(this));
         this._settings.connect('changed::' + LENS_MODE_KEY,
-                               Lang.bind(this, this._updateLensShape));
+                               this._updateLensShape.bind(this));
         this._settings.connect('changed::' + CLAMP_MODE_KEY,
-                               Lang.bind(this, this._updateClampMode));
+                               this._updateClampMode.bind(this));
         this._settings.connect('changed::' + MOUSE_TRACKING_KEY,
-                               Lang.bind(this, this._updateMouseTrackingMode));
+                               this._updateMouseTrackingMode.bind(this));
 
-        this._settings.connect('changed::' + SHOW_CROSS_HAIRS_KEY,
-                               Lang.bind(this, function() {
+        this._settings.connect('changed::' + SHOW_CROSS_HAIRS_KEY, () => {
             this.setCrosshairsVisible(this._settings.get_boolean(SHOW_CROSS_HAIRS_KEY));
-        }));
+        });
 
-        this._settings.connect('changed::' + CROSS_HAIRS_THICKNESS_KEY,
-                               Lang.bind(this, function() {
+        this._settings.connect('changed::' + CROSS_HAIRS_THICKNESS_KEY, () => {
             this.setCrosshairsThickness(this._settings.get_int(CROSS_HAIRS_THICKNESS_KEY));
-        }));
+        });
 
-        this._settings.connect('changed::' + CROSS_HAIRS_COLOR_KEY,
-                               Lang.bind(this, function() {
+        this._settings.connect('changed::' + CROSS_HAIRS_COLOR_KEY, () => {
             this.setCrosshairsColor(this._settings.get_string(CROSS_HAIRS_COLOR_KEY));
-        }));
+        });
 
-        this._settings.connect('changed::' + CROSS_HAIRS_OPACITY_KEY,
-                               Lang.bind(this, function() {
+        this._settings.connect('changed::' + CROSS_HAIRS_OPACITY_KEY, () => {
             this.setCrosshairsOpacity(this._settings.get_double(CROSS_HAIRS_OPACITY_KEY));
-        }));
+        });
 
-        this._settings.connect('changed::' + CROSS_HAIRS_LENGTH_KEY,
-                               Lang.bind(this, function() {
+        this._settings.connect('changed::' + CROSS_HAIRS_LENGTH_KEY, () => {
             this.setCrosshairsLength(this._settings.get_int(CROSS_HAIRS_LENGTH_KEY));
-        }));
+        });
 
-        this._settings.connect('changed::' + CROSS_HAIRS_CLIP_KEY,
-                               Lang.bind(this, function() {
+        this._settings.connect('changed::' + CROSS_HAIRS_CLIP_KEY, () => {
             this.setCrosshairsClip(this._settings.get_boolean(CROSS_HAIRS_CLIP_KEY));
-        }));
+        });
 
         return ret > 1.0;
-    },
+    }
 
-    _updateScreenPosition: function() {
+    _updateScreenPosition() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             let position = this._settings.get_enum(SCREEN_POSITION_KEY);
@@ -711,18 +698,18 @@ Magnifier.prototype = {
             if (position != ScreenPosition.FULL_SCREEN)
                 this._updateLensMode();
         }
-    },
+    }
 
-    _updateLensShape: function() {
+    _updateLensShape() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             let shape = this._settings.get_enum(LENS_SHAPE_KEY);
             this._zoomRegions[0].setLensShape(shape);
             this._updateLensMode();
         }
-    },
+    }
 
-    _updateMagFactor: function() {
+    _updateMagFactor() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             // Mag factor is accurate to two decimal places.
@@ -730,25 +717,25 @@ Magnifier.prototype = {
             this._zoomRegions[0].setMagFactor(magFactor, magFactor);
             this.setActive(this.enabled && magFactor > 1.0);
         }
-    },
+    }
 
-    _updateLensMode: function() {
+    _updateLensMode() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             this._zoomRegions[0].setLensMode(this._settings.get_boolean(LENS_MODE_KEY));
         }
-    },
+    }
 
-    _updateClampMode: function() {
+    _updateClampMode() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             this._zoomRegions[0].setClampScrollingAtEdges(
                 !this._settings.get_boolean(CLAMP_MODE_KEY)
             );
         }
-    },
+    }
 
-    _updateMouseTrackingMode: function() {
+    _updateMouseTrackingMode() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
             this._zoomRegions[0].setMouseTrackingMode(
@@ -759,12 +746,8 @@ Magnifier.prototype = {
 };
 Signals.addSignalMethods(Magnifier.prototype);
 
-function ZoomRegion(magnifier, mouseSourceActor) {
-    this._init(magnifier, mouseSourceActor);
-}
-
-ZoomRegion.prototype = {
-    _init: function(magnifier, mouseSourceActor) {
+var ZoomRegion = class ZoomRegion {
+    constructor(magnifier, mouseSourceActor) {
         this._magnifier = magnifier;
 
         this._mouseTrackingMode = MouseTrackingMode.NONE;
@@ -788,13 +771,13 @@ ZoomRegion.prototype = {
         this._xMagFactor = 1;
         this._yMagFactor = 1;
         this._followingCursor = false;
-    },
+    }
 
     /**
      * setActive:
      * @activate:   Boolean to show/hide the ZoomRegion.
      */
-    setActive: function(activate) {
+    setActive(activate) {
         if (activate && !this.isActive()) {
             this._createActors();
             if (this._isMouseOverRegion())
@@ -807,15 +790,15 @@ ZoomRegion.prototype = {
             global.reparentActor(global.top_window_group, global.stage);
             this._destroyActors();
         }
-    },
+    }
 
     /**
      * isActive:
      * @return  Whether this ZoomRegion is active (boolean).
      */
-    isActive: function() {
+    isActive() {
         return this._magView != null;
-    },
+    }
 
     /**
      * setMagFactor:
@@ -825,11 +808,11 @@ ZoomRegion.prototype = {
      * @yMagFactor:     The power to set the vertical magnification factor to
      *                  of the magnified view.
      */
-    setMagFactor: function(xMagFactor, yMagFactor) {
+    setMagFactor(xMagFactor, yMagFactor) {
         this._changeROI({ xMagFactor: xMagFactor,
                           yMagFactor: yMagFactor,
                           redoCursorTracking: this._followingCursor });
-    },
+    }
 
     /**
      * getMagFactor:
@@ -838,26 +821,26 @@ ZoomRegion.prototype = {
      *          magnification.  A value of 2.0 means the contents are doubled
      *          in size, and so on.
      */
-    getMagFactor: function() {
+    getMagFactor() {
         return [this._xMagFactor, this._yMagFactor];
-    },
+    }
 
     /**
      * setMouseTrackingMode
      * @mode:     One of the enum MouseTrackingMode values.
      */
-    setMouseTrackingMode: function(mode) {
+    setMouseTrackingMode(mode) {
         if (mode >= MouseTrackingMode.NONE && mode <= MouseTrackingMode.PUSH)
             this._mouseTrackingMode = mode;
-    },
+    }
 
     /**
      * getMouseTrackingMode
      * @return:     One of the enum MouseTrackingMode values.
      */
-    getMouseTrackingMode: function() {
+    getMouseTrackingMode() {
         return this._mouseTrackingMode;
-    },
+    }
 
     /**
      * setViewPort
@@ -866,10 +849,10 @@ ZoomRegion.prototype = {
      *              It has members x, y, width, height.  The values are in
      *              stage coordinate space.
      */
-    setViewPort: function(viewPort) {
+    setViewPort(viewPort) {
         this._setViewPort(viewPort);
         this._screenPosition = ScreenPosition.NONE;
-    },
+    }
 
     /**
      * setROI
@@ -878,7 +861,7 @@ ZoomRegion.prototype = {
      *          has members x, y, width, height.  The values are in
      *          screen (unmagnified) coordinate space.
      */
-    setROI: function(roi) {
+    setROI(roi) {
         if (roi.width <= 0 || roi.height <= 0)
             return;
 
@@ -887,7 +870,7 @@ ZoomRegion.prototype = {
                           yMagFactor: this._viewPortHeight / roi.height,
                           xCenter: roi.x + roi.width  / 2,
                           yCenter: roi.y + roi.height / 2 });
-    },
+    }
 
     /**
      * getROI:
@@ -897,14 +880,14 @@ ZoomRegion.prototype = {
      * @return  an array, [x, y, width, height], representing the bounding
      *          rectangle of what is shown in the magnified view.
      */
-    getROI: function() {
+    getROI() {
         let roiWidth = this._viewPortWidth / this._xMagFactor;
         let roiHeight = this._viewPortHeight / this._yMagFactor;
 
         return [this._xCenter - roiWidth / 2,
                 this._yCenter - roiHeight / 2,
                 roiWidth, roiHeight];
-    },
+    }
 
     /**
      * setLensMode:
@@ -912,22 +895,22 @@ ZoomRegion.prototype = {
      * a lens the size of the screen is pointless.
      * @lensMode:   A boolean to set the sense of lens mode.
      */
-    setLensMode: function(lensMode) {
+    setLensMode(lensMode) {
         this._lensMode = lensMode;
         if (this._lensMode)
             this.setLensShape(this._lensShape);
         else
             this.setScreenPosition(this._screenPosition);
-    },
+    }
 
     /**
      * isLensMode:
      * Is lens mode on or off?
      * @return  The lens mode state as a boolean.
      */
-    isLensMode: function() {
+    isLensMode() {
         return this._lensMode;
-    },
+    }
 
     /**
      * setClampScrollingAtEdges:
@@ -935,17 +918,17 @@ ZoomRegion.prototype = {
      * the edges of the screen.
      * @clamp:   Boolean to turn on/off clamping.
      */
-    setClampScrollingAtEdges: function(clamp) {
+    setClampScrollingAtEdges(clamp) {
         this._clampScrollingAtEdges = clamp;
         if (clamp)
             this._changeROI();
-    },
+    }
 
     /**
      * setSquareLens:
      * Magnifier view occupies a square on the screen.
      */
-    setSquareLens: function() {
+    setSquareLens() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
@@ -953,13 +936,13 @@ ZoomRegion.prototype = {
         viewPort.width = global.screen_height / 2; /* Keep it square */
         this._setViewPort(viewPort);
         this._lensShape = LensShape.SQUARE;
-    },
+    }
 
     /**
      * setHorizontalLens:
      * Magnifier view occupies the top half of the screen.
      */
-    setHorizontalLens: function() {
+    setHorizontalLens() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
@@ -967,13 +950,13 @@ ZoomRegion.prototype = {
         viewPort.height = global.screen_height/2;
         this._setViewPort(viewPort);
         this._lensShape = LensShape.HORIZONTAL;
-    },
+    }
 
     /**
      * setVerticalLens:
      * Magnifier view occupies the left half of the screen.
      */
-    setVerticalLens: function() {
+    setVerticalLens() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
@@ -981,13 +964,13 @@ ZoomRegion.prototype = {
         viewPort.height = global.screen_height;
         this._setViewPort(viewPort);
         this._lensShape = LensShape.VERTICAL;
-    },
+    }
 
     /**
      * setTopHalf:
      * Magnifier view occupies the top half of the screen.
      */
-    setTopHalf: function() {
+    setTopHalf() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
@@ -995,13 +978,13 @@ ZoomRegion.prototype = {
         viewPort.height = global.screen_height/2;
         this._setViewPort(viewPort);
         this._screenPosition = ScreenPosition.TOP_HALF;
-    },
+    }
 
     /**
      * setBottomHalf:
      * Magnifier view occupies the bottom half of the screen.
      */
-    setBottomHalf: function() {
+    setBottomHalf() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = global.screen_height/2;
@@ -1009,13 +992,13 @@ ZoomRegion.prototype = {
         viewPort.height = global.screen_height/2;
         this._setViewPort(viewPort);
         this._screenPosition = ScreenPosition.BOTTOM_HALF;
-    },
+    }
 
     /**
      * setLeftHalf:
      * Magnifier view occupies the left half of the screen.
      */
-    setLeftHalf: function() {
+    setLeftHalf() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
@@ -1023,13 +1006,13 @@ ZoomRegion.prototype = {
         viewPort.height = global.screen_height;
         this._setViewPort(viewPort);
         this._screenPosition = ScreenPosition.LEFT_HALF;
-    },
+    }
 
     /**
      * setRightHalf:
      * Magnifier view occupies the right half of the screen.
      */
-    setRightHalf: function() {
+    setRightHalf() {
         let viewPort = {};
         viewPort.x = global.screen_width/2;
         viewPort.y = 0;
@@ -1037,14 +1020,14 @@ ZoomRegion.prototype = {
         viewPort.height = global.screen_height;
         this._setViewPort(viewPort);
         this._screenPosition = ScreenPosition.RIGHT_HALF;
-    },
+    }
 
     /**
      * setFullScreenMode:
      * Set the ZoomRegion to full-screen mode.
      * Note:  disallows lens mode.
      */
-    setFullScreenMode: function() {
+    setFullScreenMode() {
         let viewPort = {};
         viewPort.x = 0;
         viewPort.y = 0;
@@ -1053,7 +1036,7 @@ ZoomRegion.prototype = {
         this.setViewPort(viewPort);
 
         this._screenPosition = ScreenPosition.FULL_SCREEN;
-    },
+    }
 
     /**
      * setScreenPosition:
@@ -1063,7 +1046,7 @@ ZoomRegion.prototype = {
      *              ScreenPosition.BOTTOM_HALF,ScreenPosition.LEFT_HALF, or
      *              ScreenPosition.RIGHT_HALF.
      */
-    setScreenPosition: function(position) {
+    setScreenPosition(position) {
         switch (position) {
             case ScreenPosition.FULL_SCREEN:
                 this.setFullScreenMode();
@@ -1081,14 +1064,14 @@ ZoomRegion.prototype = {
                 this.setRightHalf();
                 break;
         }
-    },
+    }
 
     /**
      * setLensShape:
      * Sets the shape of the zoom lens
      * @shape:      LensShape.SQUARE, LensShape.HORIZONTAL, LensShape.VERTICAL.
      */
-    setLensShape: function(shape) {
+    setLensShape(shape) {
         switch (shape) {
             case LensShape.SQUARE:
                 this.setSquareLens();
@@ -1100,7 +1083,7 @@ ZoomRegion.prototype = {
                 this.setVerticalLens();
                 break;
         }
-    },
+    }
 
     /**
      * getScreenPosition:
@@ -1108,9 +1091,9 @@ ZoomRegion.prototype = {
      * top half, bottom half, etc.
      * @return:  the current mode.
      */
-    getScreenPosition: function() {
+    getScreenPosition() {
         return this._screenPosition;
-    },
+    }
 
     /**
      * getLensShape:
@@ -1118,16 +1101,16 @@ ZoomRegion.prototype = {
      *
      * @return:  the current shape.
      */
-    getLensShape: function() {
+    getLensShape() {
         return this._lensShape;
-    },
+    }
 
     /**
      * scrollToMousePos:
      * Set the region of interest based on the position of the system pointer.
      * @return:     Whether the system mouse pointer is over the magnified view.
      */
-    scrollToMousePos: function() {
+    scrollToMousePos() {
         this._followingCursor = true;
         if (this._mouseTrackingMode != MouseTrackingMode.NONE)
             this._changeROI({ redoCursorTracking: true });
@@ -1136,7 +1119,7 @@ ZoomRegion.prototype = {
 
         // Determine whether the system mouse pointer is over this zoom region.
         return this._isMouseOverRegion();
-    },
+    }
 
     /**
      * scrollContentsTo:
@@ -1145,18 +1128,18 @@ ZoomRegion.prototype = {
      * @x:      The x-coord of the point to center on.
      * @y:      The y-coord of the point to center on.
      */
-    scrollContentsTo: function(x, y) {
+    scrollContentsTo(x, y) {
         this._followingCursor = false;
         this._changeROI({ xCenter: x,
                           yCenter: y });
-    },
+    }
 
     /**
      * addCrosshairs:
      * Add crosshairs centered on the magnified mouse.
      * @crossHairs: Crosshairs instance
      */
-    addCrosshairs: function(crossHairs) {
+    addCrosshairs(crossHairs) {
         this._crossHairs = crossHairs;
 
         // If the crossHairs is not already within a larger container, add it
@@ -1164,34 +1147,41 @@ ZoomRegion.prototype = {
         if (crossHairs && this.isActive()) {
             this._crossHairsActor = crossHairs.addToZoomRegion(this, this._mouseActor);
         }
-    },
+    }
 
     //// Private methods ////
 
-    _createActors: function() {
+    _createActors() {
         global.reparentActor(global.top_window_group, Main.uiGroup);
         // The root actor for the zoom region
-        this._magView = new St.Bin({ style_class: 'magnifier-zoom-region', x_fill: true, y_fill: true });
-        global.stage.add_actor(this._magView);
+        this._magView = new St.Bin({
+            style_class: 'magnifier-zoom-region',
+            x_fill: true,
+            y_fill: true,
+        });
+        global.stage.add_child(this._magView);
 
         // hide the magnified region from CLUTTER_PICK_ALL
         Cinnamon.util_set_hidden_from_pick (this._magView, true);
 
-        // Append a Clutter.Group to clip the contents of the magnified view.
-        let mainGroup = new Clutter.Group({ clip_to_allocation: true });
+        // Append a group to clip the contents of the magnified view.
+        let mainGroup = new Clutter.Actor({ clip_to_allocation: true });
         this._magView.set_child(mainGroup);
 
         // Add a background for when the magnified uiGroup is scrolled
         // out of view (don't want to see desktop showing through).
-        let background = new Clutter.Rectangle({ color: Main.DEFAULT_BACKGROUND_COLOR });
-        mainGroup.add_actor(background);
+        let background = new Clutter.Actor({
+            background_color: Main.DEFAULT_BACKGROUND_COLOR,
+            width: global.screen_width,
+            height: global.screen_height,
+        });
+        mainGroup.add_child(background);
 
         // Clone the group that contains all of UI on the screen.  This is the
         // chrome, the windows, etc.
         this._uiGroupClone = new Clutter.Clone({ source: Main.uiGroup });
-        mainGroup.add_actor(this._uiGroupClone);
+        mainGroup.add_child(this._uiGroupClone);
         Main.uiGroup.set_size(global.screen_width, global.screen_height);
-        background.set_size(global.screen_width, global.screen_height);
 
         // Add either the given mouseSourceActor to the ZoomRegion, or a clone of
         // it.
@@ -1199,15 +1189,15 @@ ZoomRegion.prototype = {
             this._mouseActor = new Clutter.Clone({ source: this._mouseSourceActor });
         else
             this._mouseActor = this._mouseSourceActor;
-        mainGroup.add_actor(this._mouseActor);
+        mainGroup.add_child(this._mouseActor);
 
         if (this._crossHairs)
             this._crossHairsActor = this._crossHairs.addToZoomRegion(this, this._mouseActor);
         else
             this._crossHairsActor = null;
-    },
+    }
 
-    _destroyActors: function() {
+    _destroyActors() {
         if (this._mouseActor == this._mouseSourceActor)
             this._mouseActor.get_parent().remove_actor (this._mouseActor);
         if (this._crossHairs)
@@ -1218,9 +1208,9 @@ ZoomRegion.prototype = {
         this._uiGroupClone = null;
         this._mouseActor = null;
         this._crossHairsActor = null;
-    },
+    }
 
-    _setViewPort: function(viewPort, fromROIUpdate) {
+    _setViewPort(viewPort, fromROIUpdate) {
         // Sets the position of the zoom region on the screen
 
         let width = Math.round(Math.min(viewPort.width, global.screen_width));
@@ -1243,9 +1233,9 @@ ZoomRegion.prototype = {
 
         if (this.isActive() && this._isMouseOverRegion())
             this._magnifier.hideSystemCursor();
-    },
+    }
 
-    _changeROI: function(params) {
+    _changeROI(params) {
         // Updates the area we are viewing; the magnification factors
         // and center can be set explicitly, or we can recompute
         // the position based on the mouse cursor position
@@ -1294,9 +1284,9 @@ ZoomRegion.prototype = {
 
         this._updateCloneGeometry();
         this._updateMousePosition();
-    },
+    }
 
-    _isMouseOverRegion: function() {
+    _isMouseOverRegion() {
         // Return whether the system mouse sprite is over this ZoomRegion.  If the
         // mouse's position is not given, then it is fetched.
         let mouseIsOver = false;
@@ -1310,9 +1300,9 @@ ZoomRegion.prototype = {
             );
         }
         return mouseIsOver;
-    },
+    }
 
-    _isFullScreen: function() {
+    _isFullScreen() {
         // Does the magnified view occupy the whole screen? Note that this
         // doesn't necessarily imply
         // this._screenPosition = ScreenPosition.FULL_SCREEN;
@@ -1323,9 +1313,9 @@ ZoomRegion.prototype = {
             this._viewPortHeight != global.screen_height)
             return false;
         return true;
-    },
+    }
 
-    _centerFromMousePosition: function() {
+    _centerFromMousePosition() {
         // Determines where the center should be given the current cursor
         // position and mouse tracking mode
 
@@ -1343,9 +1333,9 @@ ZoomRegion.prototype = {
         }
 
         return null; // Should never be hit
-    },
+    }
 
-    _centerFromMousePush: function(xMouse, yMouse) {
+    _centerFromMousePush(xMouse, yMouse) {
         let [xRoi, yRoi, widthRoi, heightRoi] = this.getROI();
         let [cursorWidth, cursorHeight] = this._mouseSourceActor.get_size();
         let xPos = xRoi + widthRoi / 2;
@@ -1364,9 +1354,9 @@ ZoomRegion.prototype = {
             yPos += (yMouse - yRoiBottom);
 
         return [xPos, yPos];
-    },
+    }
 
-    _centerFromMouseProportional: function(xMouse, yMouse) {
+    _centerFromMouseProportional(xMouse, yMouse) {
         let [xRoi, yRoi, widthRoi, heightRoi] = this.getROI();
         let halfScreenWidth = global.screen_width / 2;
         let halfScreenHeight = global.screen_height / 2;
@@ -1381,20 +1371,20 @@ ZoomRegion.prototype = {
         let yPos = yMouse - yProportion * (heightRoi /2 - yPadding);
 
         return [xPos, yPos];
-    },
+    }
 
-    _centerFromMouseCentered: function(xMouse, yMouse) {
+    _centerFromMouseCentered(xMouse, yMouse) {
         return [xMouse, yMouse];
-    },
+    }
 
-    _screenToViewPort: function(screenX, screenY) {
+    _screenToViewPort(screenX, screenY) {
         // Converts coordinates relative to the (unmagnified) screen to coordinates
         // relative to the origin of this._magView
         return [this._viewPortWidth / 2 + (screenX - this._xCenter) * this._xMagFactor,
                 this._viewPortHeight / 2 + (screenY - this._yCenter) * this._yMagFactor];
-    },
+    }
 
-    _updateMagViewGeometry: function() {
+    _updateMagViewGeometry() {
         if (!this.isActive())
             return;
 
@@ -1405,9 +1395,9 @@ ZoomRegion.prototype = {
 
         this._magView.set_size(this._viewPortWidth, this._viewPortHeight);
         this._magView.set_position(this._viewPortX, this._viewPortY);
-    },
+    }
 
-    _updateCloneGeometry: function() {
+    _updateCloneGeometry() {
         if (!this.isActive())
             return;
 
@@ -1418,9 +1408,9 @@ ZoomRegion.prototype = {
         this._uiGroupClone.set_position(x, y);
 
         this._updateMousePosition();
-    },
+    }
 
-    _updateMousePosition: function() {
+    _updateMousePosition() {
         if (!this.isActive())
             return;
 
@@ -1440,36 +1430,32 @@ ZoomRegion.prototype = {
     }
 };
 
-function Crosshairs() {
-    this._init();
-}
-
-Crosshairs.prototype = {
-    _init: function() {
-
+var Crosshairs = GObject.registerClass(
+class Crosshairs extends Clutter.Actor {
+    _init() {
         // Set the group containing the crosshairs to three times the desktop
         // size in case the crosshairs need to appear to be infinite in
         // length (i.e., extend beyond the edges of the view they appear in).
         let groupWidth = global.screen_width * 3;
         let groupHeight = global.screen_height * 3;
 
-        this._actor = new Clutter.Group({
+        super._init({
             clip_to_allocation: false,
             width: groupWidth,
-            height: groupHeight
+            height: groupHeight,
         });
-        this._horizLeftHair = new Clutter.Rectangle();
-        this._horizRightHair = new Clutter.Rectangle();
-        this._vertTopHair = new Clutter.Rectangle();
-        this._vertBottomHair = new Clutter.Rectangle();
-        this._actor.add_actor(this._horizLeftHair);
-        this._actor.add_actor(this._horizRightHair);
-        this._actor.add_actor(this._vertTopHair);
-        this._actor.add_actor(this._vertBottomHair);
+        this._horizLeftHair = new Clutter.Actor();
+        this._horizRightHair = new Clutter.Actor();
+        this._vertTopHair = new Clutter.Actor();
+        this._vertBottomHair = new Clutter.Actor();
+        this.add_child(this._horizLeftHair);
+        this.add_child(this._horizRightHair);
+        this.add_child(this._vertTopHair);
+        this.add_child(this._vertBottomHair);
         this._clipSize = [0, 0];
         this._clones = [];
         this.reCenter();
-    },
+    }
 
    /**
     * addToZoomRegion
@@ -1483,30 +1469,30 @@ Crosshairs.prototype = {
     *                   the mouse.
     * @return           The crosshairs actor, or its clone.
     */
-    addToZoomRegion: function(zoomRegion, magnifiedMouse) {
+    addToZoomRegion(zoomRegion, magnifiedMouse) {
         let crosshairsActor = null;
         if (zoomRegion && magnifiedMouse) {
             let container = magnifiedMouse.get_parent();
             if (container) {
-                crosshairsActor = this._actor;
-                if (this._actor.get_parent() != null) {
-                    crosshairsActor = new Clutter.Clone({ source: this._actor });
+                crosshairsActor = this;
+                if (this.get_parent() != null) {
+                    crosshairsActor = new Clutter.Clone({ source: this });
                     this._clones.push(crosshairsActor);
-                }
-                if (this._actor.visible)
-                    crosshairsActor.show();
-                else
-                    crosshairsActor.hide();
 
-                container.add_actor(crosshairsActor);
-                container.raise_child(magnifiedMouse, crosshairsActor);
+                    this.bind_property('visible',
+                    crosshairsActor, 'visible',
+                    GObject.BindingFlags.SYNC_CREATE);
+                }
+
+                container.add_child(crosshairsActor);
+                container.set_child_above_sibling(magnifiedMouse, crosshairsActor);
                 let [xMouse, yMouse] = magnifiedMouse.get_position();
                 let [crosshairsWidth, crosshairsHeight] = crosshairsActor.get_size();
                 crosshairsActor.set_position(xMouse - crosshairsWidth / 2 , yMouse - crosshairsHeight / 2);
             }
         }
         return crosshairsActor;
-    },
+    }
 
     /**
      * removeFromParent:
@@ -1514,64 +1500,64 @@ Crosshairs.prototype = {
      * Remove the crosshairs actor from its parent container, or destroy the
      * child actor if it was just a clone of the crosshairs actor.
      */
-    removeFromParent: function(childActor) {
-        if (childActor == this._actor)
+    removeFromParent(childActor) {
+        if (childActor == this)
             childActor.get_parent().remove_actor(childActor);
         else
             childActor.destroy();
-    },
+    }
 
     /**
      * setColor:
      * Set the color of the crosshairs.
      * @clutterColor:   The color as a Clutter.Color.
      */
-    setColor: function(clutterColor) {
-        this._horizLeftHair.set_color(clutterColor);
-        this._horizRightHair.set_color(clutterColor);
-        this._vertTopHair.set_color(clutterColor);
-        this._vertBottomHair.set_color(clutterColor);
-    },
+    setColor(clutterColor) {
+        this._horizLeftHair.background_color = clutterColor;
+        this._horizRightHair.background_color = clutterColor;
+        this._vertTopHair.background_color = clutterColor;
+        this._vertBottomHair.background_color = clutterColor;
+    }
 
     /**
      * getColor:
      * Get the color of the crosshairs.
      * @color:  The color as a Clutter.Color.
      */
-    getColor: function() {
+    getColor() {
         let clutterColor = new Clutter.Color();
         this._horizLeftHair.get_color(clutterColor);
         return clutterColor;
-    },
+    }
 
     /**
      * setThickness:
      * Set the width of the vertical and horizontal lines of the crosshairs.
      * @thickness
      */
-    setThickness: function(thickness) {
+    setThickness(thickness) {
         this._horizLeftHair.set_height(thickness);
         this._horizRightHair.set_height(thickness);
         this._vertTopHair.set_width(thickness);
         this._vertBottomHair.set_width(thickness);
         this.reCenter();
-    },
+    }
 
     /**
      * getThickness:
      * Get the width of the vertical and horizontal lines of the crosshairs.
      * @return:     The thickness of the crosshairs.
      */
-    getThickness: function() {
+    getThickness() {
         return this._horizLeftHair.get_height();
-    },
+    }
 
     /**
      * setOpacity:
      * Set how opaque the crosshairs are.
      * @opacity:    Value between 0 (fully transparent) and 255 (full opaque).
      */
-    setOpacity: function(opacity) {
+    setOpacity(opacity) {
         // set_opacity() throws an exception for values outside the range
         // [0, 255].
         if (opacity < 0)
@@ -1583,38 +1569,38 @@ Crosshairs.prototype = {
         this._horizRightHair.set_opacity(opacity);
         this._vertTopHair.set_opacity(opacity);
         this._vertBottomHair.set_opacity(opacity);
-    },
+    }
 
     /**
      * getOpacity:
      * Retrieve how opaque the crosshairs are.
      * @return: A value between 0 (transparent) and 255 (opaque).
      */
-    getOpacity: function() {
+    getOpacity() {
         return this._horizLeftHair.get_opacity();
-    },
+    }
 
     /**
      * setLength:
      * Set the length of the vertical and horizontal lines in the crosshairs.
      * @length: The length of the crosshairs.
      */
-    setLength: function(length) {
+    setLength(length) {
         this._horizLeftHair.set_width(length);
         this._horizRightHair.set_width(length);
         this._vertTopHair.set_height(length);
         this._vertBottomHair.set_height(length);
         this.reCenter();
-    },
+    }
 
     /**
      * getLength:
      * Get the length of the vertical and horizontal lines in the crosshairs.
      * @return: The length of the crosshairs.
      */
-    getLength: function() {
+    getLength() {
         return this._horizLeftHair.get_width();
-    },
+    }
 
     /**
      * setClip:
@@ -1623,7 +1609,7 @@ Crosshairs.prototype = {
      * @size:   Array of [width, height] defining the size of the clip
      *          rectangle.
      */
-    setClip: function(size) {
+    setClip(size) {
         if (size) {
             // Take a chunk out of the crosshairs where it intersects the
             // mouse.
@@ -1635,38 +1621,16 @@ Crosshairs.prototype = {
             this._clipSize = [0, 0];
             this.reCenter();
         }
-     },
+     }
 
     /**
      * getClip:
      * Get the dimensions of the clip rectangle.
      * @return:   An array of the form [width, height].
      */
-    getClip: function() {
+    getClip() {
         return this._clipSize;
-    },
-
-    /**
-     * show:
-     * Show the crosshairs.
-     */
-    show: function() {
-        this._actor.show();
-        // Clones don't share visibility.
-        for (let i = 0; i < this._clones.length; i++)
-            this._clones[i].show();
-    },
-
-    /**
-     * hide:
-     * Hide the crosshairs.
-     */
-    hide: function() {
-        this._actor.hide();
-        // Clones don't share visibility.
-        for (let i = 0; i < this._clones.length; i++)
-            this._clones[i].hide();
-    },
+    }
 
     /**
      * reCenter:
@@ -1675,8 +1639,8 @@ Crosshairs.prototype = {
      * the clip rectangle, these are used to update the size of the clip.
      * @clipSize:  Optional.  If present, an array of the form [width, height].
      */
-    reCenter: function(clipSize) {
-        let [groupWidth, groupHeight] = this._actor.get_size();
+    reCenter(clipSize) {
+        let [groupWidth, groupHeight] = this.get_size();
         let leftLength = this._horizLeftHair.get_width();
         let rightLength = this._horizRightHair.get_width();
         let topLength = this._vertTopHair.get_height();
@@ -1700,129 +1664,125 @@ Crosshairs.prototype = {
         this._vertTopHair.set_position((groupWidth - thickness) / 2, top);
         this._vertBottomHair.set_position((groupWidth - thickness) / 2, bottom);
     }
-};
+});
 
 const INCR = 0.1;
 const MAX_ZOOM = 15.0; /* from range of org.cinnamon.desktop.a11y.magnifier mag-factor key */
 
-function MagnifierInputHandler(magnifier) {
-    this._init(magnifier);
-}
-
-MagnifierInputHandler.prototype = {
-    _init: function(magnifier) {
+var MagnifierInputHandler = class MagnifierInputHandler {
+    constructor(magnifier) {
         this.magnifier = magnifier;
 
-        this._zoom_in_id = 0;
-        this._zoom_out_id = 0;
-        this._zoom_enabled = false;
+        this._zoomInId = 0;
+        this._zoomOutId = 0;
+        this._zoomEnabled = false;
 
-        this.a11y_settings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
-        this.a11y_settings.connect("changed::" + SHOW_KEY, Lang.bind(this, this._refresh_state));
+        this._a11ySettings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
+        this._a11ySettings.connect("changed::" + SHOW_KEY, this._refreshState.bind(this));
 
-        this.keybinding_settings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
-        this.keybinding_settings.connect("changed", Lang.bind(this, this._refresh_state));
+        this.keybindingSettings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
+        this.keybindingSettings.connect("changed", this._refreshState.bind(this));
 
-        this._refresh_state();
-    },
+        this._refreshState();
+    }
 
-    _enable_zoom: function() {
-        if (this._zoom_in_id > 0 || this._zoom_out_id > 0)
-            this._disable_zoom();
-        this._zoom_in_id = global.display.connect('zoom-scroll-in', Lang.bind(this, this._zoom_in));
-        this._zoom_out_id = global.display.connect('zoom-scroll-out', Lang.bind(this, this._zoom_out));
-        this._zoom_enabled = true;
-    },
+    _enableZoom() {
+        if (this._zoomInId > 0 || this._zoomOutId > 0)
+            this._disableZoom();
+        this._zoomInId = global.display.connect('zoom-scroll-in', this._zoomIn.bind(this));
+        this._zoomOutId = global.display.connect('zoom-scroll-out', this._zoomOut.bind(this));
+        this._zoomEnabled = true;
+    }
 
-    _disable_zoom: function() {
-        if (this._zoom_in_id > 0)
-            global.display.disconnect(this._zoom_in_id)
-        if (this._zoom_out_id > 0)
-            global.display.disconnect(this._zoom_out_id);
+    _disableZoom() {
+        if (this._zoomInId > 0)
+            global.display.disconnect(this._zoomInId)
+        if (this._zoomOutId > 0)
+            global.display.disconnect(this._zoomOutId);
 
-        this._zoom_in_id = 0;
-        this._zoom_out_id = 0;
+        this._zoomInId = 0;
+        this._zoomOutId = 0;
 
         Main.keybindingManager.removeHotKey("magnifier-zoom-in");
         Main.keybindingManager.removeHotKey("magnifier-zoom-out");
         Main.keybindingManager.removeHotKey("magnifier-zoom-reset");
 
-        this._zoom_enabled = false;
-    },
+        this._zoomEnabled = false;
+    }
 
-    _setup_keybindings: function() {
-        let kb = this.keybinding_settings.get_strv(ZOOM_IN_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, Lang.bind(this, this._zoom_in));
-        kb = this.keybinding_settings.get_strv(ZOOM_OUT_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-out", kb, Lang.bind(this, this._zoom_out));
-        kb = this.keybinding_settings.get_strv(ZOOM_RESET_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-reset", kb, Lang.bind(this, this._zoom_out));
-    },
+    _setupKeybindings() {
+        let kb = this.keybindingSettings.get_strv(ZOOM_IN_KEY);
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, this._zoomIn.bind(this));
+        kb = this.keybindingSettings.get_strv(ZOOM_OUT_KEY);
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-out", kb, this._zoomOut.bind(this));
+        kb = this.keybindingSettings.get_strv(ZOOM_RESET_KEY);
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-reset", kb, this._zoomOut.bind(this));
+    }
 
-    _refresh_state: function() {
-        this.zoom_active = this.magnifier.isActive();
-        this.current_zoom = 1.0;
+    _refreshState() {
+        this.zoomActive = this.magnifier.isActive();
+        this.currentZoom = 1.0;
 
-        if (this.zoom_active) {
+        if (this.zoomActive) {
             let zr = this.magnifier.getZoomRegions()[0];
-            this.current_zoom = zr.getMagFactor()[0];
+            this.currentZoom = zr.getMagFactor()[0];
         }
 
-        let should_enable = this.a11y_settings.get_boolean(SHOW_KEY);
+        let shouldEnable = this._a11ySettings.get_boolean(SHOW_KEY);
 
-        if (should_enable && !this._zoom_enabled) {
-            this._enable_zoom();
-        } else if (!should_enable && this._zoom_enabled) {
-            this._disable_zoom();
+        if (shouldEnable && !this._zoomEnabled) {
+            this._enableZoom();
+        } else if (!shouldEnable && this._zoomEnabled) {
+            this._disableZoom();
         }
 
-        if (this._zoom_enabled) {
-            this._setup_keybindings();
+        if (this._zoomEnabled) {
+            this._setupKeybindings();
         }
-    },
+    }
 
-    _zoom_in: function(display, screen, event, kb, action) {
-        if (this.zoom_active) {
-            this.current_zoom = Math.min(this.current_zoom * (1.0 + INCR), MAX_ZOOM);
+    _zoomIn(display, screen, event, kb, action) {
+        if (this.zoomActive) {
+            this.currentZoom = Math.min(this.currentZoom * (1.0 + INCR), MAX_ZOOM);
         } else {
-            this.current_zoom *= Math.min(this.current_zoom * (1.0 + INCR), MAX_ZOOM);
+            this.currentZoom *= Math.min(this.currentZoom * (1.0 + INCR), MAX_ZOOM);
             this.magnifier.setActive(true)
-            this.zoom_active = true;
+            this.zoomActive = true;
         }
         try {
-            this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
+            this.magnifier.setMagFactor(this.currentZoom, this.currentZoom)
         } catch (e) {
-            this._refresh_state();
+            this._refreshState();
         }
-    },
+    }
 
-    _zoom_out: function(display, screen, event, kb, action) {
-        if (this.zoom_active) {
-            this.current_zoom *= (1.0 - INCR);
-            if (this.current_zoom <= 1.0) {
-                this.current_zoom = 1.0;
+    _zoomOut(display, screen, event, kb, action) {
+        if (this.zoomActive) {
+            this.currentZoom *= (1.0 - INCR);
+            if (this.currentZoom <= 1.0) {
+                this.currentZoom = 1.0;
                 this.magnifier.setActive(false);
-                this.zoom_active = false;
+                this.zoomActive = false;
             }
             try {
-                this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
+                this.magnifier.setMagFactor(this.currentZoom, this.currentZoom)
             } catch (e) {
-                this._refresh_state();
-            }
-        }
-    },
-
-    _zoom_reset: function(display, screen, event, kb, action) {
-        if (this.zoom_active) {
-            this.current_zoom = 1.0
-            this.magnifier.setActive(false);
-            this.zoom_active = false;
-
-            try {
-                this.magnifier.setMagFactor(this.current_zoom, this.current_zoom)
-            } catch (e) {
-                this._refresh_state();
+                this._refreshState();
             }
         }
     }
-}
+
+    _zoomReset(display, screen, event, kb, action) {
+        if (this.zoomActive) {
+            this.currentZoom = 1.0
+            this.magnifier.setActive(false);
+            this.zoomActive = false;
+
+            try {
+                this.magnifier.setMagFactor(this.currentZoom, this.currentZoom)
+            } catch (e) {
+                this._refreshState();
+            }
+        }
+    }
+};

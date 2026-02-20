@@ -504,11 +504,11 @@ var ZoomAction = class extends BaseAction {
         }
 
         if (zoom_in) {
-            Magnifier.magInputHandler._zoom_in();
+            Magnifier.magInputHandler._zoomIn();
         }
         else
         {
-            Magnifier.magInputHandler._zoom_out();
+            Magnifier.magInputHandler._zoomOut();
         }
 
         this.last_time = time;
