@@ -1081,24 +1081,26 @@ var PanelManager = GObject.registerClass({
  * #PanelDummy creates some boxes at possible panel locations for users to
  * select where to place their new panels
  */
-function PanelDummy(monitorIndex, panelPosition, callback) {
-    this._init(monitorIndex, panelPosition, callback);
-}
+var PanelDummy = GObject.registerClass(
+class PanelDummy extends St.Widget {
+    _init(monitorIndex, panelPosition, callback) {
+        super._init({
+            style_class: 'panel-dummy',
+            reactive: true,
+            track_hover: true,
+            important: true,
+        });
 
-PanelDummy.prototype = {
-    _init: function(monitorIndex, panelPosition, callback) {
         this.monitorIndex = monitorIndex;
         this.panelPosition = panelPosition;
         this.callback = callback;
         this.monitor = global.display.get_monitor_geometry(monitorIndex);
-        let defaultheight = 40 * global.ui_scale;
+        const defaultheight = 40 * global.ui_scale;
 
-        this.actor = new Cinnamon.GenericContainer({style_class: "panel-dummy", reactive: true, track_hover: true, important: true});
+        Main.layoutManager.addChrome(this, { addToWindowgroup: false });
 
-        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
-        //
-        // layouts set to be full width horizontal panels, and vertical panels set to use as much available space as is left
-        //
+        // layouts set to be full width horizontal panels,
+        // and vertical panels set to use as much available space as is left
         let tpanelHeight = 0;
         let bpanelHeight = 0;
 
@@ -1111,55 +1113,56 @@ PanelDummy.prototype = {
 
         switch (panelPosition) {
             case PanelLoc.top:
-                this.actor.set_size(this.monitor.width, defaultheight);
-                this.actor.set_position(this.monitor.x,  this.monitor.y);
+                this.set_size(this.monitor.width, defaultheight);
+                this.set_position(this.monitor.x,  this.monitor.y);
                 break;
             case PanelLoc.bottom:
-                this.actor.set_size(this.monitor.width, defaultheight);
-                this.actor.set_position(this.monitor.x, this.monitor.y + this.monitor.height - defaultheight);
+                this.set_size(this.monitor.width, defaultheight);
+                this.set_position(this.monitor.x, this.monitor.y + this.monitor.height - defaultheight);
                 break;
             case PanelLoc.left:
-                this.actor.set_size( defaultheight,this.monitor.height - tpanelHeight - bpanelHeight);
-                this.actor.set_position(this.monitor.x,  this.monitor.y + tpanelHeight);
+                this.set_size( defaultheight,this.monitor.height - tpanelHeight - bpanelHeight);
+                this.set_position(this.monitor.x,  this.monitor.y + tpanelHeight);
                 break;
             case PanelLoc.right:
-                this.actor.set_size( defaultheight,this.monitor.height - tpanelHeight - bpanelHeight);
-                this.actor.set_position(this.monitor.x + this.monitor.width - defaultheight, this.monitor.y + tpanelHeight);
+                this.set_size( defaultheight,this.monitor.height - tpanelHeight - bpanelHeight);
+                this.set_position(this.monitor.x + this.monitor.width - defaultheight, this.monitor.y + tpanelHeight);
                 break;
             default:
-                global.log("paneDummy - unrecognised panel position "+panelPosition);
+                global.log("paneDummy - unrecognised panel position " + panelPosition);
         }
+    }
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onClicked));
-        this.actor.connect('enter-event', Lang.bind(this, this._onEnter));
-        this.actor.connect('leave-event', Lang.bind(this, this._onLeave));
-    },
-
-    _onClicked: function() {
+    vfunc_button_press_event(event) {
         this.callback(this.monitorIndex, this.panelPosition);
-    },
+        return Clutter.EVENT_STOP;
+    }
 
-    _onEnter: function() {
-        this.actor.add_style_pseudo_class('entered');
+    vfunc_enter_event(event) {
+        this.add_style_pseudo_class('entered');
         if (this.noStyle)
-            this.actor.opacity = 160;
-    },
+            this.opacity = 160;
+        return Clutter.EVENT_STOP;
+    }
 
-    _onLeave: function() {
-        this.actor.remove_style_pseudo_class('entered');
+    vfunc_leave_event(event) {
+        this.remove_style_pseudo_class('entered');
         if (this.noStyle)
-            this.actor.opacity = 100;
-    },
+            this.opacity = 100;
+        return Clutter.EVENT_STOP;
+    }
 
     /**
      * destroy:
      *
      * Destroys panel dummy actor
      */
-    destroy: function() {
-        Main.layoutManager.removeChrome(this.actor);
+    destroy() {
+        Main.layoutManager.removeChrome(this);
+
+        super.destroy();
     }
-}
+});
 
 function AnimatedIcon(name, size) {
     this._init(name, size);
