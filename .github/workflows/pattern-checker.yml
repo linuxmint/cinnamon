@@ -1,0 +1,25 @@
+name: Pattern Check
+
+on:
+    pull_request_target:
+        branches: [ master ]
+
+permissions:
+    pull-requests: write
+
+jobs:
+    pattern-check:
+        name: Pattern Check
+        runs-on: ubuntu-latest
+
+        steps:
+            - name: Checkout github-actions
+              uses: actions/checkout@v6
+              with:
+                  repository: linuxmint/github-actions
+                  path: _github-actions
+
+            - name: Pattern Check
+              uses: ./_github-actions/pattern-checker
+              with:
+                  github_token: ${{ github.token }}
