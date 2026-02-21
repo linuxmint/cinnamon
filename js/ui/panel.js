@@ -1175,118 +1175,82 @@ var SettingsLauncher = class SettingsLauncher extends PopupMenu.PopupIconMenuIte
     }
 }
 
-function PanelContextMenu(launcher, orientation, panelId) {
-    this._init(launcher, orientation, panelId);
-}
+var PanelContextMenu = class PanelContextMenu extends PopupMenu.PopupMenu {
+    _init(launcher, orientation, panelId) {
+        super._init.call(this, launcher.actor, orientation);
 
-PanelContextMenu.prototype = {
-    __proto__: PopupMenu.PopupMenu.prototype,
-
-    _init: function(launcher, orientation, panelId) {
-        PopupMenu.PopupMenu.prototype._init.call(this, launcher.actor, orientation);
         Main.uiGroup.add_actor(this.actor);
         this.actor.hide();
         this.panelId = panelId;
 
-        let moreSettingsMenuItem = new SettingsLauncher(_("Panel settings"), "panel --panel " + panelId, "xsi-cog");
+        const moreSettingsMenuItem = new SettingsLauncher(
+            _("Panel settings"), "panel --panel " + panelId, "xsi-cog");
         this.addMenuItem(moreSettingsMenuItem);
 
-        let applet_settings_item = new SettingsLauncher(_("Applets"), "applets --panel " + panelId, "xsi-addon");
+        const applet_settings_item = new SettingsLauncher(
+            _("Applets"), "applets --panel " + panelId, "xsi-addon");
         this.addMenuItem(applet_settings_item);
 
         let menu = this;
 
-        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Panel Edit mode
         let editMode = global.settings.get_boolean("panel-edit-mode");
         let panelEditMode = new PopupMenu.PopupSwitchMenuItem(_("Panel edit mode"), editMode);
-        panelEditMode.connect('toggled', function(item) {
+        panelEditMode.connect('toggled', (item) => {
             global.settings.set_boolean("panel-edit-mode", item.state);
         });
-        menu.addMenuItem(panelEditMode);        // menu item for panel edit mode
-        this.panel_edit_setting_id = global.settings.connect('changed::panel-edit-mode', function() {
+        menu.addMenuItem(panelEditMode);
+        this._panelEditSettingId = global.settings.connect('changed::panel-edit-mode', () => {
             panelEditMode.setToggleState(global.settings.get_boolean("panel-edit-mode"));
         });
 
-        this.connect("destroy", Lang.bind(this, function() {
-            global.settings.disconnect(this.panel_edit_setting_id);
-            this.panel_edit_setting_id = 0;
-        }))
+        this.connect("destroy", () => {
+            global.settings.disconnect(this._panelEditSettingId);
+            this._panelEditSettingId = 0;
+        });
 
-        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "xsi-move", St.IconType.SYMBOLIC); // submenu item move panel
-        menu.movePanelItem.activate = Lang.bind(menu, function() {
+        menu.movePanelItem = new PopupMenu.PopupIconMenuItem(_("Move"), "xsi-move", St.IconType.SYMBOLIC);
+        menu.movePanelItem.activate = () => {
             Main.panelManager.movePanelQuery(this.panelId);
             this.close(true);
-        });
+        };
         menu.addMenuItem(menu.movePanelItem);
 
         let menuItem = new PopupMenu.PopupIconMenuItem(_("Remove"), "xsi-list-remove", St.IconType.SYMBOLIC);  // submenu item remove panel
-        menuItem.activate = Lang.bind(menu, function() {
+        menuItem.activate = () => {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to remove this panel?"),
-                    function() {
+                    () => {
                         Main.panelManager.removePanel(panelId);
                     });
             confirm.open();
-        });
+        };
         menu.addMenuItem(menuItem);
 
         menu.addPanelItem = new PopupMenu.PopupIconMenuItem(_("Add a new panel"), "xsi-list-add", St.IconType.SYMBOLIC); // submenu item add panel
-        menu.addPanelItem.activate = Lang.bind(menu, function() {
+        menu.addPanelItem.activate = () => {
             Main.panelManager.addPanelQuery();
             this.close(true);
-        });
+        };
         menu.addMenuItem(menu.addPanelItem);
 
-        // menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
-
-
-        // menu.copyAppletItem = new PopupMenu.PopupIconMenuItem(_("Copy applets"), "xsi-edit-copy", St.IconType.SYMBOLIC);
-        // menu.copyAppletItem.activate = Lang.bind(menu, function() {
-        //     AppletManager.copyAppletConfiguration(this.panelId);
-        //     this.close(true);
-        // });
-        // menu.addMenuItem(menu.copyAppletItem);  // submenu item copy applet config
-
-        // menu.pasteAppletItem = new PopupMenu.PopupIconMenuItem(_("Paste applets"), "xsi-edit-paste", St.IconType.SYMBOLIC);
-        // menu.pasteAppletItem.activate = Lang.bind(menu, function() {
-        //     let dialog = new ModalDialog.ConfirmDialog(
-        //             _("Pasting applet configuration will remove all existing applets on this panel. Do you want to continue?") + "\n\n",
-        //             Lang.bind(this, function() {
-        //                 AppletManager.pasteAppletConfiguration(this.panelId);
-        //             }));
-        //     dialog.open();
-        // });
-        // menu.addMenuItem(menu.pasteAppletItem); // submenu item paste applet config
-
-        // menu.clearAppletItem = new PopupMenu.PopupIconMenuItem(_("Clear all applets"), "xsi-edit-clear-all", St.IconType.SYMBOLIC);
-        // menu.clearAppletItem.activate = Lang.bind(menu, function() {
-        //     let dialog = new ModalDialog.ConfirmDialog(
-        //             _("Are you sure you want to clear all applets on this panel?") + "\n\n",
-        //             Lang.bind(this, function() {
-        //                 AppletManager.clearAppletConfiguration(this.panelId);
-        //             }));
-        //     dialog.open();
-        // });
-
-        // menu.addMenuItem(menu.clearAppletItem);  // submenu item clear all applets
-
-        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
-        menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), function(event) {
+        menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), (event) => {
             Main.restartCinnamon(true);
         });
 
-        menu.troubleshootItem.menu.addAction(_("Looking Glass"), function(event) {
+        menu.troubleshootItem.menu.addAction(_("Looking Glass"), (event) => {
             Main.createLookingGlass().open();
         });
 
-        menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), function(event) {
+        menu.troubleshootItem.menu.addAction(_("Restore all settings to default"), (event) => {
             let confirm = new ModalDialog.ConfirmDialog(_("Are you sure you want to restore all settings to default?\n\n"),
-                    function() {
+                    () => {
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon");
                         Util.spawnCommandLine("gsettings reset-recursively org.cinnamon.desktop.input-sources");
                         Main.restartCinnamon(true);
@@ -1294,18 +1258,17 @@ PanelContextMenu.prototype = {
             confirm.open();
         });
 
-        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem()); // separator line
+        menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
         menu.addMenuItem(menu.troubleshootItem);
 
         this.addMenuItem(new SettingsLauncher(_("System Settings"), "", "xsi-preferences"));
-    },
+    }
 
-    open: function(animate) {
-        PopupMenu.PopupMenu.prototype.open.call(this, animate);
+    open(animate) {
+        super.open.call(this, animate);
 
         this.movePanelItem.setSensitive(Main.panelManager.canAddPanel);
         this.addPanelItem.setSensitive(Main.panelManager.canAddPanel);
-        // this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
         let {definitions} = AppletManager;
         let nonEmpty = false;
@@ -1315,10 +1278,8 @@ PanelContextMenu.prototype = {
                 break;
             }
         }
-        //this.copyAppletItem.setSensitive(nonEmpty);
-        //this.clearAppletItem.setSensitive(nonEmpty);
     }
-}
+};
 
 function PanelZoneDNDHandler(panelZone, zoneString, panelId){
     this._init(panelZone, zoneString, panelId);
