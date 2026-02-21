@@ -99,7 +99,7 @@ class AspectContainer extends St.Widget {
         return [min, nat];
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (box.get_width() > 0 && box.get_height() > 0) {
             let sizeRatio = box.get_width() / box.get_height();
 
@@ -117,7 +117,7 @@ class AspectContainer extends St.Widget {
             }
         }
 
-        super.vfunc_allocate(box, flags);
+        super.vfunc_allocate(box);
     }
 });
 

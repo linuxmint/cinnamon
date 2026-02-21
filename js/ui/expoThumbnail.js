@@ -1588,7 +1588,7 @@ ExpoThumbnailsBox.prototype = {
             themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
     },
 
-    allocate: function(actor, box, flags) {
+    allocate: function(actor, box) {
         this.box = box;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
@@ -1654,7 +1654,7 @@ ExpoThumbnailsBox.prototype = {
         childBox.y1 = box.y1;
         childBox.y2 = box.y2 + this.thumbnails[0].title.height;
 
-        this.background.allocate(childBox, flags);
+        this.background.allocate(childBox);
 
         let x;
         let y = spacing + Math.floor((availY - nRows * thumbnailHeight) / 2);
@@ -1688,7 +1688,7 @@ ExpoThumbnailsBox.prototype = {
 
             let scale = this._scale * (1 - thumbnail.slidePosition);
             thumbnail.actor.set_scale(scale, scale);
-            thumbnail.actor.allocate(childBox, flags);  
+            thumbnail.actor.allocate(childBox);
 
             let framethemeNode = thumbnail.frame.get_theme_node();
             let borderWidth = framethemeNode.get_border_width(St.Side.BOTTOM);
@@ -1697,14 +1697,14 @@ ExpoThumbnailsBox.prototype = {
             childBox.y1 = y1 - borderWidth;
             childBox.y2 = y2 + borderWidth;
             thumbnail.frame.set_scale((1 - thumbnail.slidePosition), (1 - thumbnail.slidePosition));
-            thumbnail.frame.allocate(childBox, flags);
+            thumbnail.frame.allocate(childBox);
 
             let thumbnailx = Math.round(x + (thumbnailWidth * thumbnail.slidePosition / 2));
             childBox.x1 = Math.max(thumbnailx, thumbnailx + Math.round(thumbnailWidth/2) - Math.round(thumbnail.title.width/2));
             childBox.x2 = Math.min(thumbnailx + thumbnailWidth, childBox.x1 + thumbnail.title.width);
             childBox.y1 = y + thumbnailHeight + thTitleMargin;
             childBox.y2 = childBox.y1 + thumbnail.title.height;
-            thumbnail.title.allocate(childBox, flags);
+            thumbnail.title.allocate(childBox);
 
             x += thumbnailWidth + spacing;
             y += (i + 1) % nColumns > 0 ? 0 : thumbnailHeight + extraHeight + thTitleMargin;
@@ -1728,7 +1728,7 @@ ExpoThumbnailsBox.prototype = {
         childBox.y1 = y;
         childBox.y2 = childBox.y1 + buttonHeight;
         
-        this.button.allocate(childBox, flags);
+        this.button.allocate(childBox);
 
         this.emit('allocated');
     },

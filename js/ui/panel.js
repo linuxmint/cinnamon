@@ -1242,7 +1242,7 @@ TextShadower.prototype = {
         alloc.natural_size = natHeight + 2;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(actor, box) {
         let children = this.actor.get_children();
 
         let availWidth = box.x2 - box.x1;
@@ -1284,7 +1284,7 @@ TextShadower.prototype = {
             }
             childBox.x2 = childBox.x1 + childWidth;
             childBox.y2 = childBox.y1 + childHeight;
-            child.allocate(childBox, flags);
+            child.allocate(childBox);
         }
     }
 };
@@ -3053,7 +3053,7 @@ Panel.prototype = {
         return;
     },
 
-    _allocate: function(actor, box, flags) {
+    _allocate: function(actor, box) {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
@@ -3080,13 +3080,13 @@ Panel.prototype = {
             rightBoundary += box.y1;
 
             this._setVertChildbox (childBox, box.y1, leftBoundary);
-            this._leftBox.allocate(childBox, flags);
+            this._leftBox.allocate(childBox);
 
             this._setVertChildbox (childBox, leftBoundary, rightBoundary);
-            this._centerBox.allocate(childBox, flags);
+            this._centerBox.allocate(childBox);
 
             this._setVertChildbox (childBox, rightBoundary, box.y2);
-            this._rightBox.allocate(childBox, flags);
+            this._rightBox.allocate(childBox);
         } else {           // horizontal panel
 
             /* Distribute sizes for the allocated width with points relative to
@@ -3096,13 +3096,13 @@ Panel.prototype = {
             rightBoundary += box.x1;
 
             this._setHorizChildbox (childBox, box.x1, leftBoundary, leftBoundary, box.x2);
-            this._leftBox.allocate(childBox, flags);
+            this._leftBox.allocate(childBox);
 
             this._setHorizChildbox (childBox, leftBoundary, rightBoundary, rightBoundary, leftBoundary);
-            this._centerBox.allocate(childBox, flags);
+            this._centerBox.allocate(childBox);
 
             this._setHorizChildbox (childBox, rightBoundary, box.x2, box.x1, rightBoundary);
-            this._rightBox.allocate(childBox, flags);
+            this._rightBox.allocate(childBox);
         }
     },
 

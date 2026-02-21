@@ -92,7 +92,7 @@ ClassicSwitcher.prototype = {
         alloc.natural_size = global.screen_height;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (actor, box) {
         let childBox = new Clutter.ActorBox();
         let monitor = this._activeMonitor;
 
@@ -110,7 +110,7 @@ ClassicSwitcher.prototype = {
         childBox.x2 = Math.min(monitor.x + monitor.width - rightPadding, childBox.x1 + childNaturalWidth);
         childBox.y1 = monitor.y + Math.floor((monitor.height - childNaturalHeight) / 2);
         childBox.y2 = childBox.y1 + childNaturalHeight;
-        this._appList.actor.allocate(childBox, flags);
+        this._appList.actor.allocate(childBox);
 
         // Allocate the thumbnails
         // We try to avoid overflowing the screen so we base the resulting size on
@@ -133,7 +133,7 @@ ClassicSwitcher.prototype = {
             this._thumbnails.addClones(monitor.y + monitor.height - bottomPadding - childBox.y1);
             let [childMinHeight, childNaturalHeight] = this._thumbnails.actor.get_preferred_height(-1);
             childBox.y2 = childBox.y1 + childNaturalHeight;
-            this._thumbnails.actor.allocate(childBox, flags);
+            this._thumbnails.actor.allocate(childBox);
         }
     },
 
@@ -518,7 +518,7 @@ SwitcherList.prototype = {
         this._activeMonitor = activeMonitor;
     },
 
-    _allocateTop: function(actor, box, flags) {
+    _allocateTop: function(actor, box) {
         if (this._list.spacing === -1) {
             this._list.spacing = this._list.get_theme_node().get_length('spacing');
         }
@@ -529,20 +529,20 @@ SwitcherList.prototype = {
         let childBox = new Clutter.ActorBox();
         let scrollable = this._minSize > box.x2 - box.x1;
 
-        this._clipBin.allocate(box, flags);
+        this._clipBin.allocate(box);
 
         childBox.x1 = 0;
         childBox.y1 = 0;
         childBox.x2 = this._leftGradient.width;
         childBox.y2 = this.actor.height;
-        this._leftGradient.allocate(childBox, flags);
+        this._leftGradient.allocate(childBox);
         this._leftGradient.opacity = (this._scrollableLeft && scrollable) ? 255 : 0;
 
         childBox.x1 = (this.actor.allocation.x2 - this.actor.allocation.x1) - this._rightGradient.width;
         childBox.y1 = 0;
         childBox.x2 = childBox.x1 + this._rightGradient.width;
         childBox.y2 = this.actor.height;
-        this._rightGradient.allocate(childBox, flags);
+        this._rightGradient.allocate(childBox);
         this._rightGradient.opacity = (this._scrollableRight && scrollable) ? 255 : 0;
 
         let arrowWidth = Math.floor(leftPadding / 3);
@@ -551,7 +551,7 @@ SwitcherList.prototype = {
         childBox.y1 = this.actor.height / 2 - arrowWidth;
         childBox.x2 = childBox.x1 + arrowWidth;
         childBox.y2 = childBox.y1 + arrowHeight;
-        this._leftArrow.allocate(childBox, flags);
+        this._leftArrow.allocate(childBox);
         this._leftArrow.opacity = this._leftGradient.opacity;
 
         arrowWidth = Math.floor(rightPadding / 3);
@@ -560,7 +560,7 @@ SwitcherList.prototype = {
         childBox.y1 = this.actor.height / 2 - arrowWidth;
         childBox.x2 = childBox.x1 + arrowWidth;
         childBox.y2 = childBox.y1 + arrowHeight;
-        this._rightArrow.allocate(childBox, flags);
+        this._rightArrow.allocate(childBox);
         this._rightArrow.opacity = this._rightGradient.opacity;
     },
 
@@ -699,7 +699,7 @@ SwitcherList.prototype = {
         alloc.natural_size = maxChildNat;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (actor, box) {
         let childHeight = box.y2 - box.y1;
 
         let [maxChildMin, maxChildNat] = this._maxChildWidth();
@@ -730,7 +730,7 @@ SwitcherList.prototype = {
                 childBox.y1 = vSpacing;
                 childBox.x2 = x + childWidth;
                 childBox.y2 = childBox.y1 + childNat;
-                children[i].allocate(childBox, flags);
+                children[i].allocate(childBox);
 
                 x += this._list.spacing + childWidth;
             } else {
