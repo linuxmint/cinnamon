@@ -1281,12 +1281,8 @@ var PanelContextMenu = class PanelContextMenu extends PopupMenu.PopupMenu {
     }
 };
 
-function PanelZoneDNDHandler(panelZone, zoneString, panelId){
-    this._init(panelZone, zoneString, panelId);
-}
-
-PanelZoneDNDHandler.prototype = {
-    _init : function(panelZone, zoneString, panelId) {
+var PanelZoneDNDHandler = class {
+    constructor(panelZone, zoneString, panelId) {
         this._panelZone = panelZone;
         this._panelZone._delegate = this;
         this._zoneString = zoneString;
@@ -1297,16 +1293,15 @@ PanelZoneDNDHandler.prototype = {
         this._origAppletCenters = null;
         this._origAppletPos = -1;
 
-        this._panelZone.connect('leave-event', Lang.bind(this, this._handleLeaveEvent));
-    },
+        this._panelZone.connect('leave-event', this._handleLeaveEvent.bind(this));
+    }
 
-    handleDragOver: function(source, actor, x, y, time) {
-
-        if (!(source instanceof Applet.Applet)) return DND.DragMotionResult.NO_DROP;
-
-        if (!this._hasSupportedLayout(source)) {
+    handleDragOver(source, actor, x, y, time) {
+        if (!(source instanceof Applet.Applet))
             return DND.DragMotionResult.NO_DROP;
-        }
+
+        if (!this._hasSupportedLayout(source))
+            return DND.DragMotionResult.NO_DROP;
 
         let vertical_panel = this._panelZone.get_parent()._delegate.is_vertical;
         let children = this._panelZone.get_children();
@@ -1321,18 +1316,16 @@ PanelZoneDNDHandler.prototype = {
             for (j = 0; j < children.length; j++) {
                 let allocation = children[j].get_allocation_box();
                 let center = 0;
-                if (vertical_panel) {
+                if (vertical_panel)
                     center = (allocation.y1 + allocation.y2) / 2;
-                } else {
+                else
                     center = (allocation.x1 + allocation.x2) / 2;
-                }
 
                 this._origAppletCenters.push(center);
             }
 
-            if(horizontal_rtl) {
+            if(horizontal_rtl)
                 this._origAppletCenters.reverse();
-            }
         }
 
         let dragPos = vertical_panel ? y : x;
@@ -1342,11 +1335,10 @@ PanelZoneDNDHandler.prototype = {
             i++;
         }
 
-        if(horizontal_rtl) {
+        if(horizontal_rtl)
             pos = this._origAppletCenters.length - i;
-        } else {
+        else
             pos = i;
-        }
 
         if (pos != this._dragPlaceholderPos) {
             this._dragPlaceholderPos = pos;
@@ -1383,28 +1375,28 @@ PanelZoneDNDHandler.prototype = {
         }
 
         return DND.DragMotionResult.MOVE_DROP;
-    },
+    }
 
-    _handleLeaveEvent: function() {
+    _handleLeaveEvent() {
         this._clearDragPlaceholder();
-    },
+    }
 
-    handleDragOut: function() {
+    handleDragOut() {
         this._clearDragPlaceholder();
-    },
+    }
 
-    acceptDrop: function(source, actor, x, y, time) {
+    acceptDrop(source, actor, x, y, time) {
         this._origAppletCenters = null;
 
-        if (!(source instanceof Applet.Applet)) return false;
+        if (!(source instanceof Applet.Applet))
+            return false;
 
         //  We want to ensure that applets placed in a panel can be shown correctly
         //  If the applet is of type Icon Applet then should be fine
         //  otherwise we look to see if it has declared itself suitable
         if (source instanceof Applet.TextIconApplet || !(source instanceof Applet.IconApplet)) {
-            if (!this._hasSupportedLayout(source)) {
+            if (!this._hasSupportedLayout(source))
                     return false;
-            }
         }
 
         let children = this._panelZone.get_children();
@@ -1417,10 +1409,10 @@ PanelZoneDNDHandler.prototype = {
         } = source.actor._applet;
 
         for (let i = 0, len = children.length; i < len; i++) {
-            if (children[i]._delegate instanceof Applet.Applet){
+            if (children[i]._delegate instanceof Applet.Applet) {
                 children[i]._applet._newOrder = curAppletPos;
                 curAppletPos++;
-            } else if (children[i] == this._dragPlaceholder.actor){
+            } else if (children[i] == this._dragPlaceholder.actor) {
                 insertAppletPos = curAppletPos;
                 curAppletPos++;
             }
@@ -1431,7 +1423,8 @@ PanelZoneDNDHandler.prototype = {
             && sourceAppletLocation === this._zoneString
             && insertAppletPos === -1
         );
-        if (!isSameLocation) source.actor._applet._newOrder = insertAppletPos === -1 ? 0 : insertAppletPos;
+        if (!isSameLocation)
+            source.actor._applet._newOrder = insertAppletPos === -1 ? 0 : insertAppletPos;
         source.actor._applet._newPanelLocation = this._panelZone;
         source.actor._applet._zoneString = this._zoneString;
         source.actor._applet._newPanelId = this._panelId;
@@ -1467,30 +1460,36 @@ PanelZoneDNDHandler.prototype = {
         }
 
         return true;
-    },
+    }
 
-    _clearDragPlaceholder: function() {
+    _clearDragPlaceholder() {
         if (this._dragPlaceholder) {
             this._dragPlaceholder.animateOutAndDestroy();
             this._dragPlaceholder = null;
             this._dragPlaceholderPos = -1;
         }
-    },
+    }
 
-    _hasSupportedLayout: function(applet) {
+    _hasSupportedLayout(applet) {
         let layout = applet.getAllowedLayout();
-        if (layout == Applet.AllowedLayout.BOTH) return true;
-        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet)) return true;
-        if (layout == ((this._panelZone.get_parent()._delegate.is_vertical) ? Applet.AllowedLayout.VERTICAL : Applet.AllowedLayout.HORIZONTAL)) return true;
-        return false;
-    },
+        if (layout == Applet.AllowedLayout.BOTH)
+            return true;
 
-    reset: function() {
+        if (applet instanceof Applet.IconApplet && !(applet instanceof Applet.TextIconApplet))
+            return true;
+
+        if (layout == ((this._panelZone.get_parent()._delegate.is_vertical) ? Applet.AllowedLayout.VERTICAL : Applet.AllowedLayout.HORIZONTAL))
+            return true;
+
+        return false;
+    }
+
+    reset() {
         this._origAppletCenters = null;
         this._origAppletPos = -1;
         this._clearDragPlaceholder();
     }
-}
+};
 
 /**
  * #Panel:
