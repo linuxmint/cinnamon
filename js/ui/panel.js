@@ -9,6 +9,7 @@
  */
 const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
+const GObject = imports.gi.GObject;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
@@ -325,108 +326,110 @@ function updatePanelsMeta(meta, panel_props) {
  * #PanelManager creates panels and startup and
  * provides methods for easier access of panels
  */
-function PanelManager() {
-    this._init();
-}
+var PanelManager = GObject.registerClass({
+    Signals: {
+        'monitors-changed': {},
+    },
+}, class PanelManager extends GObject.Object {
+    _init() {
+        super._init();
 
-PanelManager.prototype = {
-    _init: function() {
         this.dummyPanels = [];
         this.panelCount = 0;
         this.panels = [];
         this.panelsMeta = [];   // Properties of panels in format [<monitor index>, <panelPosition>]
-        this.canAdd = true;     // Whether there is space for more panels to be added
+        this.canAddPanel = true;
         this.monitorCount = global.display.get_n_monitors();
 
+        // don't start up in edit mode, can loop with empty vertical panels
         let editMode = global.settings.get_boolean("panel-edit-mode");
         if (editMode == true)
-            global.settings.set_boolean("panel-edit-mode", false);  // don't start up in edit mode, can loop with empty vertical panels
+            global.settings.set_boolean("panel-edit-mode", false);
 
         this._fullPanelLoad();
-
         this._setMainPanel();
 
         this.addPanelMode = false;
-        this.handling_panels_changed = false;
+        this.handlingPanelsChanged = false;
 
-        this._panelsEnabledId   = global.settings.connect("changed::panels-enabled", Lang.bind(this, this._onPanelsEnabledChanged));
-        this._panelEditModeId   = global.settings.connect("changed::panel-edit-mode", Lang.bind(this, this._onPanelEditModeChanged));
-        this._monitorsChangedId = Main.layoutManager.connect("monitors-changed", Lang.bind(this, this._onMonitorsChanged));
+        global.settings.connect("changed::panels-enabled", this._onPanelsEnabledChanged.bind(this));
+        global.settings.connect("changed::panel-edit-mode", this._onPanelEditModeChanged.bind(this));
+        Main.layoutManager.connect("monitors-changed", this._onMonitorsChanged.bind(this));
 
-        this._addOsd  = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
+        this._addOsd = new ModalDialog.InfoOSD(_("Select position of new panel. Esc to cancel."));
         this._moveOsd = new ModalDialog.InfoOSD(_("Select new position of panel. Esc to cancel."));
         this._addOsd.hide();
         this._moveOsd.hide();
 
-        this._checkCanAdd();
+        this._checkCanAddPanel();
         this._updateAllPointerBarriers();
-    },
+    }
 
     /**
      * #_fullPanelLoad
      *
      * @short_description: Does a full load of all panels
      *
-     * #_fullPanelLoad loads all panels in order, and makes any adjustments to permit vertical panels to fit snugly
-     *                 between horizontal ones
+     * #_fullPanelLoad loads all panels in order, and makes any adjustments to permit
+     *                 vertical panels to fit snugly between horizontal ones
      */
-    _fullPanelLoad : function () {
+    _fullPanelLoad() {
         let monitor = 0;
         let stash = [];     // panel id, monitor, panel type
 
         let monitorCount = global.display.get_n_monitors();
-        let panel_defs = getPanelsEnabledList();
+        let panelDefs = getPanelsEnabledList();
         //
         // First pass through just to count the monitors, as there is no ordering to rely on
         //
-        let good_defs = [];
+        let goodDefs = [];
         let removals = [];
-        for (let i = 0, len = panel_defs.length; i < len; i++) {
-            let elements = panel_defs[i].split(":");
+        for (let i = 0, len = panelDefs.length; i < len; i++) {
+            let elements = panelDefs[i].split(":");
             if (elements.length != 3) {
-                global.log("Invalid panel definition: " + panel_defs[i]);
+                global.log("Invalid panel definition: " + panelDefs[i]);
                 removals.push(i);
                 continue;
             }
 
             if (elements[PanelDefElement.MONITOR] >= monitorCount) {
                 // Ignore, but don't remove. Less monitors can be a temporary condition.
-                global.log("Ignoring panel definition for nonexistent monitor: " + panel_defs[i]);
+                global.log("Ignoring panel definition for nonexistent monitor: " + panelDefs[i]);
                 continue;
             }
 
             // Some sanitizing
-            if (good_defs.find((good_def) => {
-                const good_elements = good_def.split(":");
+            if (goodDefs.find((goodDef) => {
+                const goodElements = goodDef.split(":");
                 // Ignore any duplicate IDs
-                if (good_elements[PanelDefElement.ID] === elements[PanelDefElement.ID]) {
-                    global.log("Duplicate ID detected in panel definition: " + panel_defs[i]);
+                if (goodElements[PanelDefElement.ID] === elements[PanelDefElement.ID]) {
+                    global.log("Duplicate ID detected in panel definition: " + panelDefs[i]);
                     return true;
                 }
                 // Ignore any duplicate monitor/position combinations
-                if ((good_elements[PanelDefElement.MONITOR] === elements[PanelDefElement.MONITOR]) && (good_elements[PanelDefElement.POSITION] === elements[PanelDefElement.POSITION])) {
-                    global.log("Duplicate monitor+position detected in panel definition: " + panel_defs[i]);
+                if ((goodElements[PanelDefElement.MONITOR] === elements[PanelDefElement.MONITOR]) && (goodElements[PanelDefElement.POSITION] === elements[PanelDefElement.POSITION])) {
+                    global.log("Duplicate monitor+position detected in panel definition: " + panelDefs[i]);
                     return true;
                 }
 
                 return false;
             })) {
-                removals.push(panel_defs[i]);
+                removals.push(panelDefs[i]);
                 continue;
             }
 
-            good_defs.push(panel_defs[i]);
+            goodDefs.push(panelDefs[i]);
         }
 
         if (removals.length > 0) {
-            let clean_defs = panel_defs.filter((def) => !removals.includes(def));
+            let cleanDefs = panelDefs.filter((def) => !removals.includes(def));
             global.log("Removing invalid panel definitions: " + removals);
-            setPanelsEnabledList(clean_defs);
+            setPanelsEnabledList(cleanDefs);
         }
 
         // set up the list of panels
-        for (let i = 0, len = good_defs.length; i < len; i++) {
-            let elements = good_defs[i].split(":");
+        for (let i = 0, len = goodDefs.length; i < len; i++) {
+            let elements = goodDefs[i].split(":");
 
             let jj = getPanelLocFromName(elements[PanelDefElement.POSITION]);  // panel orientation
 
@@ -481,31 +484,31 @@ PanelManager.prototype = {
                 if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
                     this.panels[i]._moveResizePanel();
         }
-    },
+    }
 
    /**
      * disablePanels:
      *
      * Disables (hide and lock) all panels
      */
-    disablePanels: function() {
+    disablePanels() {
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i])
                 this.panels[i].disable();
         }
-    },
+    }
 
     /**
      * enablePanels:
      *
      * Enables all panels
      */
-    enablePanels: function() {
+    enablePanels() {
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i])
                 this.panels[i].enable();
         }
-    },
+    }
 
     /**
      * setPanelsOpacity:
@@ -513,12 +516,12 @@ PanelManager.prototype = {
      *
      * Sets the opacity of all panels to @opacity
      */
-    setPanelsOpacity: function(opacity) {
+    setPanelsOpacity(opacity) {
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i])
                 this.panels[i].actor.opacity = opacity;
         }
-    },
+    }
 
     /**
      * lowerActorBelowPanels:
@@ -526,7 +529,7 @@ PanelManager.prototype = {
      *
      * Lowers actor to just under the panel actors
      */
-    lowerActorBelowPanels: function(actor, group) {
+    lowerActorBelowPanels(actor, group) {
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (!this.panels[i])
                 continue;
@@ -544,7 +547,7 @@ PanelManager.prototype = {
             } else
                 break;
         }
-    },
+    }
 
     /**
      * removePanel:
@@ -552,7 +555,7 @@ PanelManager.prototype = {
      *
      * Remove the panel from the list panels-enabled
      */
-    removePanel: function(panelId) {
+    removePanel(panelId) {
         this.panelCount -= 1;
         let list = getPanelsEnabledList();
         for (let i = 0, len = list.length; i < len; i++) {
@@ -563,7 +566,7 @@ PanelManager.prototype = {
         }
 
         setPanelsEnabledList(list);
-    },
+    }
 
     /**
      * addPanel:
@@ -572,7 +575,7 @@ PanelManager.prototype = {
      *
      * Adds a new panel to the specified position
      */
-    addPanel: function(monitorIndex, panelPosition) {
+    addPanel(monitorIndex, panelPosition) {
         let list = getPanelsEnabledList();
         let i = 0; // Start counting at 1 for compatibility
 
@@ -609,14 +612,14 @@ PanelManager.prototype = {
                 list.push(i + ":" + monitorIndex + ":" + "right");
                 break;
             default:
-                global.log("addPanel - unrecognised panel position "+panelPosition);
+                global.log("addPanel - unrecognised panel position " + panelPosition);
         }
         setPanelsEnabledList(list);
 
         // Delete all panel dummies
         if (this.addPanelMode)
             this._destroyDummyPanels();
-    },
+    }
 
     /**
      * movePanel:
@@ -625,7 +628,7 @@ PanelManager.prototype = {
      *
      * Moves the panel of id this.moveId to the specified position
      */
-    movePanel: function(monitorIndex, panelPosition) {
+    movePanel(monitorIndex, panelPosition) {
         let list = getPanelsEnabledList();
         let i = -1;
 
@@ -657,14 +660,14 @@ PanelManager.prototype = {
         // Delete all panel dummies
         if (this.addPanelMode)
             this._destroyDummyPanels();
-    },
+    }
 
     /**
      * _destroyDummyPanels:
      *
      * Destroys all panel dummies
      */
-    _destroyDummyPanels: function() {
+    _destroyDummyPanels() {
         for (let i = 0, len = this.dummyPanels.length; i < len; i++) {
             let removedDummyPanelIndexes = [];
             for (let j = 0, len = this.dummyPanels[i].length; j < len; j++) {
@@ -682,7 +685,7 @@ PanelManager.prototype = {
         this._addOsd.hide();
         this._moveOsd.hide();
         Main.keybindingManager.removeHotKey('close-add-panel');
-    },
+    }
 
     /**
      * getPanelsInMonitor:
@@ -692,14 +695,14 @@ PanelManager.prototype = {
      *
      * Returns: an array of panels
      */
-    getPanelsInMonitor: function(monitorIndex) {
+    getPanelsInMonitor(monitorIndex) {
         let returnValue = [];
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i] && this.panels[i].monitorIndex == monitorIndex)
                 returnValue.push(this.panels[i]);
         }
         return returnValue;
-    },
+    }
 
     /**
      * getPanels:
@@ -709,9 +712,9 @@ PanelManager.prototype = {
      * Returns: an array of panels
      */
 
-    getPanels: function() {
+    getPanels() {
         return this.panels;
-    },
+    }
 
     /**
      * getPanel:
@@ -722,7 +725,7 @@ PanelManager.prototype = {
      *
      * Returns: the panel required (null if panel not found)
      */
-    getPanel: function(monitorIndex, panelPosition) {
+    getPanel(monitorIndex, panelPosition) {
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (!this.panels[i])
                 continue;
@@ -730,7 +733,7 @@ PanelManager.prototype = {
                 return this.panels[i];
         }
         return null;
-    },
+    }
 
     /**
      * updatePanelsVisibility:
@@ -739,13 +742,13 @@ PanelManager.prototype = {
      * by WindowManager after window map/tile/etc animations, and after popup
      * menus close.
      */
-    updatePanelsVisibility: function() {
+    updatePanelsVisibility() {
         for (let i = 0, len = this.panels.length; i < len; i++) {
              if (!this.panels[i])
                  continue;
              this.panels[i]._updatePanelVisibility();
         }
-    },
+    }
 
     /**
      * _loadPanel:
@@ -760,7 +763,7 @@ PanelManager.prototype = {
      *
      * Returns (Panel.Panel): Panel created
      */
-    _loadPanel: function(ID, monitorIndex, panelPosition, panelList, metaList) {
+    _loadPanel(ID, monitorIndex, panelPosition, panelList, metaList) {
 
         if (!panelList) panelList = this.panels;
         if (!metaList) metaList = this.panelsMeta;
@@ -814,21 +817,20 @@ PanelManager.prototype = {
         this.panelCount += 1;
 
         return panelList[ID];
-    },
+    }
 
-    _checkCanAdd: function() {
-        let panelCount = (this.monitorCount * 4) - this.panelCount;          // max of 4 panels on a monitor, one per edge
+    _checkCanAddPanel() {
+        let panelCount = (this.monitorCount * 4) - this.panelCount;
+        this.canAddPanel = panelCount > 0;
+    }
 
-        this.canAdd = panelCount > 0;
-    },
-
-    _updateAllPointerBarriers: function() {
+    _updateAllPointerBarriers() {
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i]) {
                 this.panels[i]._updatePanelBarriers();
             }
         }
-    },
+    }
 
     /**
      * _onPanelsEnabledChanged:
@@ -836,10 +838,10 @@ PanelManager.prototype = {
      * This will be called whenever the panels-enabled settings key is changed
      * i.e. when panels are added, moved or removed.
      */
-    _onPanelsEnabledChanged: function() {
-        if (this.handling_panels_changed)
+    _onPanelsEnabledChanged() {
+        if (this.handlingPanelsChanged)
             return;
-        this.handling_panels_changed = true;
+        this.handlingPanelsChanged = true;
 
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
@@ -854,30 +856,28 @@ PanelManager.prototype = {
                 continue;
             }
 
-            let ID   = parseInt(elements[0]);       // each panel is stored as ID:monitor:panelposition
-            let mon  = parseInt(elements[1]);
+            // each panel is stored as ID:monitor:panelposition
+            let ID = parseInt(elements[0]);
+            let mon = parseInt(elements[1]);
             let ploc = getPanelLocFromName(elements[2]);
 
             if (this.panels[ID]) {                  // If (existing) panel is moved
-
                 newMeta[ID] = [mon, ploc];          //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
 
                 newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
                 this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
                 delete this.panels[ID];
 
-                if (newMeta[ID][0] != this.panelsMeta[ID][0]           // monitor changed
-                    ||
+                if (newMeta[ID][0] != this.panelsMeta[ID][0] ||        // monitor changed
                     newMeta[ID][1] != this.panelsMeta[ID][1]) {        // or panel position changed
-
                     newPanels[ID].updatePosition(newMeta[ID][0], newMeta[ID][1]);
 
-                    AppletManager.updateAppletsOnPanel(newPanels[ID]); // Asymmetrical applets such as panel launchers, systray etc.
-                                                                       // need reorienting within the applet using their
-                                                                         // on_orientation_changed function
+                    // Asymmetrical applets such as panel launchers, systray etc.
+                    // need reorienting within the applet using their
+                    // on_orientation_changed function
+                    AppletManager.updateAppletsOnPanel(newPanels[ID]);
                 }
-            } else {                                                       // new panel
-
+            } else {  // new panel
                 let panel = this._loadPanel(ID,
                                             mon,
                                             ploc,
@@ -915,21 +915,21 @@ PanelManager.prototype = {
         }
 
         this._setMainPanel();
-        this._checkCanAdd();
+        this._checkCanAddPanel();
         this._updateAllPointerBarriers();
 
         // If the user removed the last panel, pop up a dialog to ask if they want to open panel settings
         if (panelProperties.length == 0) {
             let lastPanelRemovedDialog = new ModalDialog.ConfirmDialog(
                 _("You don't have any panels added.\nDo you want to open panel settings?"),
-                Lang.bind(this, function() { Util.spawnCommandLine("cinnamon-settings panel"); }));
+                () => { Util.spawnCommandLine("cinnamon-settings panel"); });
             lastPanelRemovedDialog.open();
         }
 
-        this.handling_panels_changed = false;
-    },
+        this.handlingPanelsChanged = false;
+    }
 
-    _onMonitorsChanged: function() {
+    _onMonitorsChanged() {
         const oldCount = this.monitorCount;
         this.monitorCount = global.display.get_n_monitors();
 
@@ -976,29 +976,29 @@ PanelManager.prototype = {
         }
 
         this._setMainPanel();
-        this._checkCanAdd();
+        this._checkCanAddPanel();
         this._updateAllPointerBarriers();
-    },
+    }
 
-    _onPanelEditModeChanged: function() {
+    _onPanelEditModeChanged() {
         if (!global.settings.get_boolean("panel-edit-mode")) {
             if (this.addPanelMode)
                 this._destroyDummyPanels();
         }
-    },
+    }
 
     /**
      * addPanelQuery:
      *
      * Prompts user where to add the panel
      */
-    addPanelQuery: function() {
-        if (this.addPanelMode || !this.canAdd)
+    addPanelQuery() {
+        if (this.addPanelMode || !this.canAddPanel)
             return;
 
-        this._showDummyPanels(Lang.bind(this, this.addPanel));
+        this._showDummyPanels(this.addPanel.bind(this));
         this._addOsd.show();
-    },
+    }
 
     /**
      * movePanelQuery:
@@ -1006,14 +1006,14 @@ PanelManager.prototype = {
      *
      * Prompts user where to move the panel
      */
-    movePanelQuery: function(id) {
-        if (this.addPanelMode || !this.canAdd)
+    movePanelQuery(id) {
+        if (this.addPanelMode || !this.canAddPanel)
             return;
 
         this.moveId = id;
-        this._showDummyPanels(Lang.bind(this, this.movePanel));
+        this._showDummyPanels(this.movePanel.bind(this));
         this._moveOsd.show();
-    },
+    }
 
     /**
      * _showDummyPanels:
@@ -1021,7 +1021,7 @@ PanelManager.prototype = {
      *
      * shows the dummy panels
      */
-    _showDummyPanels: function(callback) {
+    _showDummyPanels(callback) {
         this.dummyCallback = callback;
         this.dummyPanels = [];
 
@@ -1046,25 +1046,25 @@ PanelManager.prototype = {
         }
 
         this.addPanelMode = true;
-        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', Lang.bind(this, function() {
+        Main.keybindingManager.addHotKey('close-add-panel', 'Escape', () => {
             if (this.addPanelMode)
                 this._destroyDummyPanels();
-        }));
+        });
 
        return true;
-    },
+    }
 
     // Set Main.panel so that applets that look for it don't break
-    _setMainPanel: function() {
+    _setMainPanel() {
         for (let i = 0; i < this.panels.length; i++) {
             if (this.panels[i]) {
                 Main.panel = this.panels[i];
                 break;
             }
         }
-    },
+    }
 
-    resetPanelDND: function() {
+    resetPanelDND() {
         for (let i = 0; i < this.panels.length; i++) {
             if (this.panels[i]) {
                 this.panels[i].resetDNDZones();
@@ -1072,9 +1072,7 @@ PanelManager.prototype = {
         }
     }
 
-};  // end of panel manager
-Signals.addSignalMethods(PanelManager.prototype);
-
+});
 
 /**
  * #PanelDummy
@@ -1351,8 +1349,8 @@ PanelContextMenu.prototype = {
     open: function(animate) {
         PopupMenu.PopupMenu.prototype.open.call(this, animate);
 
-        this.movePanelItem.setSensitive(Main.panelManager.canAdd);
-        this.addPanelItem.setSensitive(Main.panelManager.canAdd);
+        this.movePanelItem.setSensitive(Main.panelManager.canAddPanel);
+        this.addPanelItem.setSensitive(Main.panelManager.canAddPanel);
         // this.pasteAppletItem.setSensitive(AppletManager.clipboard.length != 0);
 
         let {definitions} = AppletManager;
