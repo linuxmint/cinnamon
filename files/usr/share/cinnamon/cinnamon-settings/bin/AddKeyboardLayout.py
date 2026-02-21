@@ -44,9 +44,10 @@ LAYOUT_LAYOUT_COLUMN = 3
 LAYOUT_VARIANT_COLUMN = 4
 
 class AddKeyboardLayoutDialog():
-    def __init__(self, used_ids):
+    def __init__(self, used_ids, xkb_only=False):
         self.input_source_settings = Gio.Settings(schema_id=INPUT_SOURCE_SETTINGS)
         self.original_used_ids = set(used_ids)
+        self.xkb_only = xkb_only
 
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
@@ -84,12 +85,17 @@ class AddKeyboardLayoutDialog():
         column.pack_start(cell, True)
         column.add_attribute(cell, "text", LAYOUT_DISPLAY_NAME_COLUMN)
 
-        column = Gtk.TreeViewColumn(title=_("Input method"))
-        column.set_sort_column_id(LAYOUT_TYPE_COLUMN)
-        self.layouts_view.append_column(column)
+        self.ibus_column = Gtk.TreeViewColumn(title=_("Input method"))
+        self.ibus_column.set_sort_column_id(LAYOUT_TYPE_COLUMN)
+        self.layouts_view.append_column(self.ibus_column)
         cell = Gtk.CellRendererText(xpad=10)
-        column.pack_start(cell, False)
-        column.set_cell_data_func(cell, self.layout_type_data_func)
+        self.ibus_column.pack_start(cell, False)
+        self.ibus_column.set_cell_data_func(cell, self.layout_type_data_func)
+
+        # Hide IBus column and change title when in XKB-only mode
+        if self.xkb_only:
+            self.ibus_column.set_visible(False)
+            self.dialog.set_title(_("Choose a Layout"))
 
         self.response_id = None
 
@@ -124,6 +130,10 @@ class AddKeyboardLayoutDialog():
         ibus.list_engines_async(5000, None, self._list_ibus_engines_completed)
 
     def _list_ibus_engines_completed(self, ibus, res, data=None):
+        # Skip IBus engines in XKB-only mode
+        if self.xkb_only:
+            return
+
         try:
             engines = ibus.list_engines_async_finish(res)
         except GLib.Error as e:
