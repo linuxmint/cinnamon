@@ -1514,12 +1514,13 @@ var PanelZoneDNDHandler = class {
  *
  * This represents a panel on the screen.
  */
-function Panel(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight) {
-    this._init(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight);
-}
+// function Panel(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight) {
+//     this._init(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight);
+// }
 
-Panel.prototype = {
-    _init : function(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight) {
+// Panel.prototype = {
+var Panel = class {
+    constructor(id, monitorIndex, panelPosition, toppanelHeight, bottompanelHeight) {
 
         this.panelId = id;
         this.monitorIndex = monitorIndex;
@@ -1605,7 +1606,7 @@ Panel.prototype = {
         this._signalManager.connect(global.settings, "changed::no-adjacent-panel-barriers", this._updatePanelBarriers, this);
 
         this._onPanelZoneSizesChanged();
-    },
+    }
 
     /**
      * updatePosition:
@@ -1614,7 +1615,7 @@ Panel.prototype = {
      *
      * Moves the panel to the monitor @monitorIndex and position @panelPosition
      */
-    updatePosition: function(monitorIndex, panelPosition) {
+    updatePosition(monitorIndex, panelPosition) {
         this.monitorIndex = monitorIndex
         this.panelPosition = panelPosition;
         this._positionChanged = true;
@@ -1626,7 +1627,7 @@ Panel.prototype = {
         this.addContextMenuToPanel(panelPosition);
         this.addPanelStyleClass(panelPosition);
         this._moveResizePanel();
-    },
+    }
 
     /**
      * addContextMenuToPanel:
@@ -1634,7 +1635,7 @@ Panel.prototype = {
      *
      *  Adds a context menu to the panel
      */
-    addContextMenuToPanel:  function(panelPosition) {
+    addContextMenuToPanel(panelPosition) {
         switch (panelPosition)
         {
             case PanelLoc.top:
@@ -1655,7 +1656,7 @@ Panel.prototype = {
         this._menus.addMenu(this._context_menu);
 
         return;
-    },
+    }
 
      /**
      * addPanelStyleClass:
@@ -1663,7 +1664,7 @@ Panel.prototype = {
      *
      *  Adds the panel style class.  NB the original #panel style class is kept
      */
-    addPanelStyleClass:  function(panelPosition) {
+    addPanelStyleClass(panelPosition) {
         switch (panelPosition)
         {
             case PanelLoc.top:
@@ -1694,7 +1695,7 @@ Panel.prototype = {
                 global.log("addPanelStyleClass - unrecognised panel position "+panelPosition);
         }
         return;
-    },
+    }
 
     /**
      * destroy:
@@ -1702,7 +1703,7 @@ Panel.prototype = {
      *
      * Destroys the panel
      */
-    destroy: function(removeIconSizes = true) {
+    destroy(removeIconSizes = true) {
         if (this._destroyed) return;
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
@@ -1729,9 +1730,9 @@ Panel.prototype = {
         this.monitor = null;
 
         return;
-    },
+    }
 
-    peekPanel: function() {
+    peekPanel() {
         if (!this._hidden || this._peeking)
             return;
 
@@ -1748,7 +1749,7 @@ Panel.prototype = {
             this._updatePanelVisibility();
             return false;
         });
-    },
+    }
 
     /**
      * highlight:
@@ -1756,7 +1757,7 @@ Panel.prototype = {
      *
      * Turns on/off the highlight of the panel
      */
-    highlight: function(highlight) {
+    highlight(highlight) {
         if (highlight == this.actor.has_style_pseudo_class('highlight'))
             return;
 
@@ -1764,16 +1765,16 @@ Panel.prototype = {
 
         this._highlighted = highlight;
         this._updatePanelVisibility();
-    },
+    }
 
     /**
      * isHideable:
      *
      * Returns: whether the panel can be hidden (auto-hide or intellihide)
      */
-    isHideable: function() {
+    isHideable() {
         return this._autohideSettings != "false";
-    },
+    }
 
     /**
      * _getProperty
@@ -1784,7 +1785,7 @@ Panel.prototype = {
      *
      * Returns: property required
      */
-    _getProperty: function(key, type){
+    _getProperty(key, type){
         let values = global.settings.get_strv(key);
         let property;
         for (let i = 0; i < values.length; i++){
@@ -1806,7 +1807,7 @@ Panel.prototype = {
         default:
             return property;
         }
-    },
+    }
 
     /**
      * _getJSONProperty
@@ -1816,7 +1817,7 @@ Panel.prototype = {
      *
      * Returns: property required
      */
-    _getJSONProperty: function(key){
+    _getJSONProperty(key){
         let json = global.settings.get_string(key);
 
         Util.tryFn(function() {
@@ -1828,9 +1829,9 @@ Panel.prototype = {
         });
 
         return json;
-    },
+    }
 
-    handleDragOver: function(source, actor, x, y, time) {
+    handleDragOver(source, actor, x, y, time) {
 //
 // For empty panels. If over left,right,center box then will not get here.
 //
@@ -1855,13 +1856,13 @@ Panel.prototype = {
         this._dragShowId = Mainloop.timeout_add(500, leaveIfOut);
 
         return DND.DragMotionResult.NO_DROP;
-    },
+    }
     /**
      * _updatePanelBarriers:
      *
      * https://cgit.freedesktop.org/cgit/?url=xorg/proto/fixesproto/plain/fixesproto.txt
      */
-    _updatePanelBarriers: function() {
+    _updatePanelBarriers() {
 
         this._clearPanelBarriers();
 
@@ -1964,9 +1965,9 @@ Panel.prototype = {
         } else {            // actor without width or height
             this._clearPanelBarriers();
         }
-    },
+    }
 
-    _clearPanelBarriers: function() {
+    _clearPanelBarriers() {
         if (this._leftPanelBarrier)
             this._leftPanelBarrier.destroy();
         if (this._rightPanelBarrier)
@@ -1980,9 +1981,9 @@ Panel.prototype = {
         this._rightPanelBarrier = null;
         this._topPanelBarrier = null;
         this._bottomPanelBarrier = null;
-    },
+    }
 
-    _onPanelEditModeChanged: function() {
+    _onPanelEditModeChanged() {
         let old_mode = this._panelEditMode;
 
         this._panelEditMode = global.settings.get_boolean("panel-edit-mode");
@@ -2027,9 +2028,9 @@ Panel.prototype = {
         }
 
         this.actor.queue_relayout();
-    },
+    }
 
-    _onButtonPressEvent: function (actor, event) {
+    _onButtonPressEvent(actor, event) {
         if (event.get_button() == 1) {
             if (this._context_menu.isOpen)
                 this._context_menu.toggle();
@@ -2062,9 +2063,9 @@ Panel.prototype = {
             }
         }
         return;
-    },
+    }
 
-    _onFocusChanged: function() {
+    _onFocusChanged() {
         if (global.display.focus_window && this._focusWindow !== undefined &&
             this._focusWindow == global.display.focus_window)
             return;
@@ -2079,9 +2080,9 @@ Panel.prototype = {
         this._signalManager.connect(this._focusWindow, "position-changed", this._updatePanelVisibility, this);
         this._signalManager.connect(this._focusWindow, "size-changed", this._updatePanelVisibility, this);
         this._updatePanelVisibility();
-    },
+    }
 
-    _processPanelAutoHide: function() {
+    _processPanelAutoHide() {
         this._autohideSettings = this._getProperty(PANEL_AUTOHIDE_KEY, "s");
 
         if (this._autohideSettings == "intel") {
@@ -2102,7 +2103,7 @@ Panel.prototype = {
 
         this._updatePanelVisibility();
         Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
-    },
+    }
     /**
      * _getScaledPanelHeight:
      *
@@ -2110,11 +2111,11 @@ Panel.prototype = {
      *
      * returns : panelheight
      */
-    _getScaledPanelHeight: function() {
+    _getScaledPanelHeight() {
         let panelHeight = 0;
         panelHeight = this._getProperty(PANEL_HEIGHT_KEY, "i") * global.ui_scale;
         return panelHeight < 20 ? 40 : panelHeight;
-    },
+    }
 
    /**
     * _setClipRegion:
@@ -2128,7 +2129,7 @@ Panel.prototype = {
     * @offset is only used during tweens. If provided, it is used to offset the
     * current position in order to calculate the exposed size.
     */
-    _setClipRegion: function(hidden, offset) {
+    _setClipRegion(hidden, offset) {
         if (!this._shouldClipPanel()) {
             // important during monitor layout changes.
             this.actor.remove_clip(); // no-op if there wasn't any clipping to begin with.
@@ -2192,9 +2193,9 @@ Panel.prototype = {
         }
         // Force the layout manager to update the input region
         Main.layoutManager.updateChrome()
-    },
+    }
 
-    _shouldClipPanel: function() {
+    _shouldClipPanel() {
         const n_monitors = global.display.get_n_monitors();
 
         if (n_monitors === 1)  {
@@ -2242,7 +2243,7 @@ Panel.prototype = {
         }
 
         return false;
-    },
+    }
 
     /**
      * _moveResizePanel:
@@ -2250,7 +2251,7 @@ Panel.prototype = {
      * Function to update the panel position, size, and clip region according to settings
      * values.  Note that this is also called when the style changes.
      */
-    _moveResizePanel: function() {
+    _moveResizePanel() {
         if (this._destroyed)
             return false;
 
@@ -2400,9 +2401,9 @@ Panel.prototype = {
             if (AppletManager.appletsLoaded) this._setPanelHeight();
         }
         return true;
-    },
+    }
 
-    _set_orientation: function() {
+    _set_orientation() {
         //
         // cater for the style/alignment for different panel orientations
         //
@@ -2414,9 +2415,9 @@ Panel.prototype = {
             this._set_vertical_panel_style();
             this.is_vertical = true;
         }
-    },
+    }
 
-    _set_vertical_panel_style: function() {
+    _set_vertical_panel_style() {
         this._leftBox.add_style_class_name('vertical');
         this._leftBox.set_vertical(true);
         this._leftBox.set_x_align(Clutter.ActorAlign.FILL);
@@ -2431,9 +2432,9 @@ Panel.prototype = {
         this._rightBox.set_vertical(true);
         this._rightBox.set_x_align(Clutter.ActorAlign.FILL);
         this._rightBox.set_y_align(Clutter.ActorAlign.END);
-    },
+    }
 
-    _set_horizontal_panel_style: function() {
+    _set_horizontal_panel_style() {
         this._leftBox.remove_style_class_name('vertical');
         this._leftBox.set_vertical(false);
         this._leftBox.set_x_align(Clutter.ActorAlign.START);
@@ -2448,9 +2449,9 @@ Panel.prototype = {
         this._rightBox.set_vertical(false);
         this._rightBox.set_x_align(Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
-    },
+    }
 
-    _setPanelHeight: function() {
+    _setPanelHeight() {
         let height = setHeightForPanel(this);
         if (height === this.height) return;
 
@@ -2460,9 +2461,9 @@ Panel.prototype = {
         this._onPanelZoneSizesChanged();
 
         this.emit('size-changed', height);
-    },
+    }
 
-    _createEmptyZoneSizes: function() {
+    _createEmptyZoneSizes() {
         let typeStruct = {
             "left" : 0,
             "center" : 0,
@@ -2476,9 +2477,9 @@ Panel.prototype = {
         };
 
         return sizes;
-    },
+    }
 
-    _onPanelZoneSizesChanged: function(value, key) {
+    _onPanelZoneSizesChanged(value, key) {
         if (this._destroyed) return;
 
         let changed = false;
@@ -2573,9 +2574,9 @@ Panel.prototype = {
         });
 
         if (changed) this.emit('icon-size-changed');
-    },
+    }
 
-    _clampPanelZoneTextSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+    _clampPanelZoneTextSize(panelZoneSizeSet, typeString, zoneString, defaults) {
         let iconSize = panelZoneSizeSet.maybeGet(zoneString);
 
         if (iconSize == undefined) {
@@ -2587,9 +2588,9 @@ Panel.prototype = {
         }
 
         return iconSize;
-    },
+    }
 
-    _clampPanelZoneColorIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+    _clampPanelZoneColorIconSize(panelZoneSizeSet, typeString, zoneString, defaults) {
         let iconSize = panelZoneSizeSet.maybeGet(zoneString);
 
         if (iconSize == undefined) {
@@ -2605,9 +2606,9 @@ Panel.prototype = {
         }
 
         return iconSize; // Always return a value above 0 or St will spam the log.
-    },
+    }
 
-    _clampPanelZoneSymbolicIconSize: function(panelZoneSizeSet, typeString, zoneString, defaults) {
+    _clampPanelZoneSymbolicIconSize(panelZoneSizeSet, typeString, zoneString, defaults) {
         let iconSize = panelZoneSizeSet.maybeGet(zoneString);
 
         if (iconSize == undefined) {
@@ -2618,9 +2619,9 @@ Panel.prototype = {
 
         let new_size = iconSize.clamp(MIN_SYMBOLIC_SIZE_PX, Math.min(MAX_SYMBOLIC_SIZE_PX, panelHeight));
         return new_size;
-    },
+    }
 
-    getPanelZoneIconSize: function(locationLabel, iconType) {
+    getPanelZoneIconSize(locationLabel, iconType) {
         let zoneConfig = this._panelZoneSizes;
         let typeString = "fullcolor";
 
@@ -2629,9 +2630,9 @@ Panel.prototype = {
         }
 
         return this._panelZoneSizes[typeString][locationLabel];
-    },
+    }
 
-    _removeZoneIconSizes: function() {
+    _removeZoneIconSizes() {
         let sizeSets = [
             ["fullcolor", PANEL_ZONE_ICON_SIZES],
             ["symbolic", PANEL_ZONE_SYMBOLIC_ICON_SIZES],
@@ -2662,9 +2663,9 @@ Panel.prototype = {
         });
 
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
-    },
+    }
 
-    _getPreferredWidth: function(actor, forHeight, alloc) {
+    _getPreferredWidth(actor, forHeight, alloc) {
 
         alloc.min_size = -1;
         alloc.natural_size = -1;
@@ -2672,9 +2673,9 @@ Panel.prototype = {
  /*       if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
             alloc.natural_size = Main.layoutManager.primaryMonitor.width;
         } */
-    },
+    }
 
-    _getPreferredHeight: function(actor, forWidth, alloc) {
+    _getPreferredHeight(actor, forWidth, alloc) {
 
         alloc.min_size = -1;
         alloc.natural_size = -1;
@@ -2683,7 +2684,7 @@ Panel.prototype = {
             alloc.natural_size = Main.layoutManager.primaryMonitor.height;
             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
         } */
-    },
+    }
 
     /**
      * _calcBoxSizes:
@@ -2735,7 +2736,7 @@ Panel.prototype = {
      *
      * Returns (array): The left and right widths to be allocated.
      */
-    _calcBoxSizes: function(allocWidth, allocHeight, vertical) {
+    _calcBoxSizes(allocWidth, allocHeight, vertical) {
         let leftBoundary, rightBoundary = 0;
         let leftMinWidth       = 0;
         let leftNaturalWidth   = 0;
@@ -2861,17 +2862,17 @@ Panel.prototype = {
         }
 
         return [leftBoundary, rightBoundary];
-    },
+    }
 
-    _setVertChildbox: function(childbox, y1, y2) {
+    _setVertChildbox(childbox, y1, y2) {
 
         childbox.y1 = y1;
         childbox.y2 = y2;
 
         return;
-    },
+    }
 
-    _setHorizChildbox: function(childbox, x1, x2, x1_rtl, x2_rtl) {
+    _setHorizChildbox(childbox, x1, x2, x1_rtl, x2_rtl) {
         if (this.actor.get_direction() == St.TextDirection.RTL) {
             childbox.x1 = x1_rtl;
             childbox.x2 = x2_rtl;
@@ -2880,9 +2881,9 @@ Panel.prototype = {
             childbox.x2 = x2;
         }
         return;
-    },
+    }
 
-    _allocate: function(actor, box, flags) {
+    _allocate(actor, box, flags) {
         let allocHeight  = box.y2 - box.y1;
         let allocWidth   = box.x2 - box.x1;
 
@@ -2933,7 +2934,7 @@ Panel.prototype = {
             this._setHorizChildbox (childBox, rightBoundary, box.x2, box.x1, rightBoundary);
             this._rightBox.allocate(childBox, flags);
         }
-    },
+    }
 
     /**
      * _panelHasOpenMenus:
@@ -2941,7 +2942,7 @@ Panel.prototype = {
      * Checks if panel has open menus in the global.menuStack
      * @returns
      */
-    _panelHasOpenMenus: function() {
+    _panelHasOpenMenus() {
         if (global.menuStack == null || global.menuStack.length == 0)
             return false;
 
@@ -2955,7 +2956,7 @@ Panel.prototype = {
         }
 
         return false;
-    },
+    }
 
     /**
      * _updatePanelVisibility:
@@ -2966,7 +2967,7 @@ Panel.prototype = {
      *
      * true = autohide, false = always show, intel = Intelligent
      */
-    _updatePanelVisibility: function() {
+    _updatePanelVisibility() {
         this._mouseEntered = this._mouseOnPanel();
 
         if (this._panelEditMode || this._highlighted || this._peeking || this._panelHasOpenMenus())
@@ -3027,7 +3028,7 @@ Panel.prototype = {
         }
 
         this._queueShowHidePanel();
-    },
+    }
 
     /**
      * _queueShowHidePanel:
@@ -3035,7 +3036,7 @@ Panel.prototype = {
      * Makes the panel show or hide after a delay specified by
      * panels-show-delay and panels-hide-delay.
      */
-    _queueShowHidePanel: function() {
+    _queueShowHidePanel() {
         if (this._showHideTimer) {
             Mainloop.source_remove(this._showHideTimer);
             this._showHideTimer = 0;
@@ -3056,18 +3057,18 @@ Panel.prototype = {
             let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
             this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
         }
-    },
+    }
 
-    _enterPanel: function(actor=null, event=null) {
+    _enterPanel(actor=null, event=null) {
         if (!this._mouseEntered) {
             this._updatePanelVisibility();
         }
-    },
+    }
 
-    _leavePanel:function(actor=null, event=null) {
+    _leavePanel(actor=null, event=null) {
         // Panel gives false leave-event's when mouse is still on panel so we determine this._mouseEntered
         // manually with this._mouseOnPanel() in this._updatePanelVisibility()
-        
+
         if (this._mouseEntered) {
             this._updatePanelVisibility();
             if (this.isHideable() && event !== null && this._mouseOnPanel()) {
@@ -3076,15 +3077,15 @@ Panel.prototype = {
                 setTimeout(this._updatePanelVisibility.bind(this), 250);
             }
         }
-    },
+    }
 
-    _mouseOnPanel: function() {
+    _mouseOnPanel() {
         this.actor.sync_hover();
         const [x, y] = global.get_pointer();
 
         return (this.actor.x <= x && x <= this.actor.x + this.actor.width &&
             this.actor.y <= y && y <= this.actor.y + this.actor.height);
-    },
+    }
 
     /**
      * disable:
@@ -3092,7 +3093,7 @@ Panel.prototype = {
      * Disables the panel by settings the opacity to 0 and hides if autohide is
      * enable. The actor is then hidden after the animation.
      */
-    disable: function() {
+    disable() {
         this._disabled = true;
         this.actor.ease({
             opacity: 0,
@@ -3102,14 +3103,14 @@ Panel.prototype = {
                 this.actor.hide();
             }
         });
-    },
+    }
 
     /**
      * enable:
      *
      * Reverses the effects of the disable function.
      */
-    enable: function() {
+    enable() {
         this._disabled = false;
         this.actor.show();
         this.actor.ease({
@@ -3117,7 +3118,7 @@ Panel.prototype = {
             duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
-    },
+    }
 
     /**
      * _showPanel:
@@ -3125,7 +3126,7 @@ Panel.prototype = {
      * A function to force the panel to show. This has no effect if the panel
      * is disabled.
      */
-    _showPanel: function() {
+    _showPanel() {
         this._showHideTimer = 0;
 
         if (this._disabled) return;
@@ -3181,14 +3182,14 @@ Panel.prototype = {
         this._rightBox.ease(boxParams);
 
         this._hidden = false;
-    },
+    }
 
     /**
      * _hidePanel:
      *
      * This hides the panel.
      */
-    _hidePanel: function() {
+    _hidePanel() {
         if (this._destroyed) return;
         this._showHideTimer = 0;
 
@@ -3242,13 +3243,13 @@ Panel.prototype = {
         this._rightBox.ease(boxParams);
 
         this._hidden = true;
-    },
+    }
 
-    getIsVisible: function() {
+    getIsVisible() {
         return !this._hidden || this._shouldShow;
-    },
+    }
 
-    resetDNDZones: function() {
+    resetDNDZones() {
         this._leftBoxDNDHandler.reset();
         this._centerBoxDNDHandler.reset();
         this._rightBoxDNDHandler.reset();
