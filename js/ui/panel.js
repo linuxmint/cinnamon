@@ -1164,22 +1164,16 @@ class PanelDummy extends St.Widget {
     }
 });
 
-function SettingsLauncher(label, keyword, icon) {
-    this._init(label, keyword, icon);
-}
-
-SettingsLauncher.prototype = {
-    __proto__: PopupMenu.PopupIconMenuItem.prototype,
-
-    _init: function (label, keyword, icon) {
-        PopupMenu.PopupIconMenuItem.prototype._init.call(this, label, icon, St.IconType.SYMBOLIC);
+var SettingsLauncher = class SettingsLauncher extends PopupMenu.PopupIconMenuItem {
+    _init (label, keyword, icon) {
+        super._init.call(this, label, icon, St.IconType.SYMBOLIC);
 
         this._keyword = keyword;
-        this.connect('activate', Lang.bind(this, function() {
+        this.connect('activate', () => {
             Util.spawnCommandLine("cinnamon-settings " + this._keyword);
-        }));
-    },
-};
+        });
+    }
+}
 
 function PanelContextMenu(launcher, orientation, panelId) {
     this._init(launcher, orientation, panelId);
