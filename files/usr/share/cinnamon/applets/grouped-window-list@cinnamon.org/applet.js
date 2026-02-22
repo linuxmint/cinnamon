@@ -14,14 +14,15 @@ const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
 
-const createStore = require('./state');
-const AppGroup = require('./appGroup');
-const Workspace = require('./workspace');
+const Me = imports.ui.extension.getCurrentExtension();
+const {createStore} = Me.imports.state;
+const {AppGroup} = Me.imports.appGroup;
+const {Workspace} = Me.imports.workspace;
 const {
-  RESERVE_KEYS,
-  TitleDisplay,
-  autoStartStrDir
-}  = require('./constants');
+    RESERVE_KEYS,
+    TitleDisplay,
+    autoStartStrDir
+} = Me.imports.constants;
 
 class PinnedFavs {
     constructor(params) {
