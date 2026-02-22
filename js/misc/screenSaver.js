@@ -40,9 +40,7 @@ const ScreenSaverInfo = Gio.DBusInterfaceInfo.new_for_xml(ScreenSaverIface);
  */
 var ScreenSaverService = class ScreenSaverService {
     constructor() {
-        this._settings = new Gio.Settings({ schema_id: 'org.cinnamon' });
-
-        if (!this._settings.get_boolean('internal-screensaver-enabled')) {
+        if (!global.settings.get_boolean('internal-screensaver-enabled')) {
             global.log('ScreenSaverService: internal-screensaver-enabled is false, not providing DBus service');
             return;
         }

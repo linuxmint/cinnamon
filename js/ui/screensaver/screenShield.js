@@ -17,7 +17,6 @@ const ClockWidget = imports.ui.screensaver.clockWidget;
 const AlbumArtWidget = imports.ui.screensaver.albumArtWidget;
 const InfoPanel = imports.ui.screensaver.infoPanel;
 
-const CINNAMON_SCHEMA = 'org.cinnamon';
 const SCREENSAVER_SCHEMA = 'org.cinnamon.desktop.screensaver';
 const POWER_SCHEMA = 'org.cinnamon.settings-daemon.plugins.power';
 const FADE_TIME = 200;
@@ -117,6 +116,8 @@ var ScreenShield = GObject.registerClass({
             layout_manager: new Clutter.FixedLayout()
         });
 
+        _debug = global.settings.get_boolean('debug-screensaver');
+
         // Register stock widgets (only do this once, on first init)
         if (_widgetRegistry.length === 0) {
             registerScreensaverWidget(ClockWidget.ClockWidget);
@@ -142,8 +143,6 @@ var ScreenShield = GObject.registerClass({
         this._widgetLoadIdleId = 0;
         this._infoPanel = null;
         this._inhibitor = null;
-        this._cinnamonSettings = new Gio.Settings({ schema_id: CINNAMON_SCHEMA });
-        _debug = this._cinnamonSettings.get_boolean('debug-screensaver');
 
         this._settings = new Gio.Settings({ schema_id: SCREENSAVER_SCHEMA });
         this._settings.connect('changed::lock-enabled', this._syncInhibitor.bind(this));
@@ -205,7 +204,7 @@ var ScreenShield = GObject.registerClass({
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed',
             this._onMonitorsChanged.bind(this));
 
-        if (this._cinnamonSettings.get_boolean('session-locked-state')) {
+        if (global.settings.get_boolean('session-locked-state')) {
             _log('ScreenShield: Restoring locked state from previous session');
             this._backupLockerCall('ReleaseGrabs', null, () => {
                 this.lock(false, true);
@@ -238,7 +237,7 @@ var ScreenShield = GObject.registerClass({
         let locked = newState === State.LOCKED || newState === State.UNLOCKING;
         let wasLocked = oldState === State.LOCKED || oldState === State.UNLOCKING;
         if (locked !== wasLocked) {
-            this._cinnamonSettings.set_boolean('session-locked-state', locked);
+            global.settings.set_boolean('session-locked-state', locked);
         }
 
         this._syncInhibitor();
