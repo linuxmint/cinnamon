@@ -290,7 +290,7 @@ class EventDataList {
     }
 }
 
-class EventsManager {
+var EventsManager = class EventsManager {
     constructor(settings, desktop_settings) {
         this.settings = settings;
         this.desktop_settings = desktop_settings;

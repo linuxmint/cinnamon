@@ -10,6 +10,7 @@ const WindowUtils = imports.misc.windowUtils;
 const Mainloop = imports.mainloop;
 
 const {tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
+const Me = imports.ui.extension.getCurrentExtension();
 const {
     CLOSE_BTN_SIZE,
     CLOSED_BUTTON_STYLE,
@@ -17,7 +18,7 @@ const {
     RESERVE_KEYS,
     FavType,
     autoStartStrDir
-} = require('./constants');
+} = Me.imports.constants;
 
 const convertRange = function(value, r1, r2) {
     return ((value - r1[0]) * (r2[1] - r2[0])) / (r1[1] - r1[0]) + r2[0];
@@ -39,7 +40,7 @@ const setOpacity = (peekTime, window_actor, targetOpacity, cb) => {
     window_actor.ease(easeConfig);
 };
 
-class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
+var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
     constructor(params, orientation) {
         super(params, orientation);
         this.state = params.state;
@@ -413,7 +414,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
     }
 }
 
-class HoverMenuController extends PopupMenu.PopupMenuManager {
+var HoverMenuController = class HoverMenuController extends PopupMenu.PopupMenuManager {
     constructor(actor, groupState) {
         super({actor}, false); // owner, shouldGrab
         this.groupState = groupState;
@@ -860,7 +861,7 @@ class WindowThumbnail {
     }
 }
 
-class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
+var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
     _init(state, groupState) {
         super._init.call(this, groupState.trigger('getActor'), state.orientation, 0.5);
         this.state = state;
@@ -1227,9 +1228,3 @@ class AppThumbnailHoverMenu extends PopupMenu.PopupMenu {
         unref(this, RESERVE_KEYS);
     }
 }
-
-module.exports = {
-    AppMenuButtonRightClickMenu,
-    HoverMenuController,
-    AppThumbnailHoverMenu
-};
