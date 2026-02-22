@@ -11,7 +11,6 @@ const Desklet = imports.ui.desklet;
 const DND = imports.ui.dnd;
 const Extension = imports.ui.extension;
 const Main = imports.ui.main;
-const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 
 // Maps uuid -> importer object (desklet directory tree)
@@ -332,7 +331,7 @@ function _createDesklets(extension, deskletDefinition) {
 
     let desklet;
     try {
-        desklet = getModuleByIndex(extension.moduleIndex).main(extension.meta, desklet_id);
+        desklet = extension.module.main(extension.meta, desklet_id);
     } catch (e) {
         Extension.logError('Failed to evaluate \'main\' function on desklet: ' + uuid + "/" + desklet_id, e);
         return null;

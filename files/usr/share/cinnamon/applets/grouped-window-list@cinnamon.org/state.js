@@ -137,7 +137,7 @@ function clone(object, refs = [], cache = null) {
  * to be used at the end of the application life cycle.
  *
  */
-function createStore(state = {}, listeners = [], connections = 0) {
+var createStore = function(state = {}, listeners = [], connections = 0) {
     const publicAPI = Object.freeze({
         get,
         set,
@@ -316,6 +316,4 @@ function createStore(state = {}, listeners = [], connections = 0) {
     }
 
     return getAPIWithObject(state);
-}
-
-module.exports = createStore;
+};

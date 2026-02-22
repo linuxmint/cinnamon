@@ -12,8 +12,9 @@ const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
 
-const createStore = require('./state');
-const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
+const Me = imports.ui.extension.getCurrentExtension();
+const {createStore} = Me.imports.state;
+const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = Me.imports.menus;
 const {
     FLASH_INTERVAL,
     FLASH_MAX_COUNT,
@@ -21,7 +22,7 @@ const {
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
     TitleDisplay
-} = require('./constants');
+} = Me.imports.constants;
 
 const _reLetterRtl = new RegExp("\\p{Script=Hebrew}|\\p{Script=Arabic}", "u");
 const _reLetter = new RegExp("\\p{L}", "u");
@@ -60,7 +61,7 @@ const getFocusState = function(metaWindow) {
     return false;
 };
 
-class AppGroup {
+var AppGroup = class AppGroup {
     constructor(params) {
         this.state = params.state;
         this.workspaceState = params.workspaceState;
@@ -1224,5 +1225,3 @@ class AppGroup {
         }
     }
 }
-
-module.exports = AppGroup;

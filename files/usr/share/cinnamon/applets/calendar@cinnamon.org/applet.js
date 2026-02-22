@@ -8,11 +8,13 @@ const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
 const UPowerGlib = imports.gi.UPowerGlib;
 const Settings = imports.ui.settings;
-const Calendar = require('./calendar');
-const EventView = require('./eventView');
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Main = imports.ui.main;
 const Separator = imports.ui.separator;
+
+const Me = imports.ui.extension.getCurrentExtension();
+const Calendar = Me.imports.calendar;
+const EventView = Me.imports.eventView;
 
 const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 const DATE_FORMAT_SHORT = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%B %-e, %Y"));

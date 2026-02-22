@@ -295,6 +295,12 @@ function start() {
     global.logError = _logError;
     global.log = _logInfo;
 
+    try {
+        imports.clearCache;
+    } catch (e) {
+        global.logWarning('CJS clearCache not available. Xlet reloading may not work correctly (cjs update required).');
+    }
+
     let cinnamonStartTime = new Date().getTime();
 
     log(`About to start Cinnamon (${Meta.is_wayland_compositor() ? "Wayland" : "X11"} backend)`);
