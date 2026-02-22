@@ -1,9 +1,14 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const ByteArray = imports.byteArray;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Signals = imports.signals;
+
+function _log(msg) {
+    if (global.settings.get_boolean('debug-screensaver')) {
+        global.log(msg);
+    }
+}
 
 const SystemdLoginManagerIface = `
 <node>
@@ -75,7 +80,7 @@ var LoginManagerSystemd = class {
     }
 
     _initSession() {
-        global.log('LoginManager: Connecting to logind...');
+        _log('LoginManager: Connecting to logind...');
 
         try {
             this._managerProxy = new SystemdLoginManagerProxy(
@@ -91,37 +96,42 @@ var LoginManagerSystemd = class {
     }
 
     _getCurrentSession() {
-        try {
-            let username = GLib.get_user_name();
-            let [result, stdout, stderr, status] = GLib.spawn_command_line_sync(
-                `loginctl show-user ${username} -pDisplay --value`
-            );
+        let username = GLib.get_user_name();
+        let proc = Gio.Subprocess.new(
+            ['loginctl', 'show-user', username, '-pDisplay', '--value'],
+            Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+        );
 
-            if (!result || status !== 0) {
-                throw new Error('loginctl command failed');
-            }
+        proc.communicate_utf8_async(null, null, (proc, result) => {
+            try {
+                let [, stdout] = proc.communicate_utf8_finish(result);
 
-            let sessionId = ByteArray.toString(stdout).trim();
-            if (!sessionId) {
-                throw new Error('No session ID found');
-            }
-
-            global.log(`LoginManager: Found session ID: ${sessionId}`);
-
-            this._managerProxy.GetSessionRemote(sessionId, (result, error) => {
-                if (error) {
-                    global.logError('LoginManager: Failed to get session path: ' + error);
-                    return;
+                if (!proc.get_successful()) {
+                    throw new Error('loginctl command failed');
                 }
 
-                let [sessionPath] = result;
-                global.log(`LoginManager: Got session path: ${sessionPath}`);
+                let sessionId = stdout.trim();
+                if (!sessionId) {
+                    throw new Error('No session ID found');
+                }
 
-                this._connectToSession(sessionPath);
-            });
-        } catch (e) {
-            global.logError('LoginManager: Error getting logind session: ' + e.message);
-        }
+                _log(`LoginManager: Found session ID: ${sessionId}`);
+
+                this._managerProxy.GetSessionRemote(sessionId, (result, error) => {
+                    if (error) {
+                        global.logError('LoginManager: Failed to get session path: ' + error);
+                        return;
+                    }
+
+                    let [sessionPath] = result;
+                    _log(`LoginManager: Got session path: ${sessionPath}`);
+
+                    this._connectToSession(sessionPath);
+                });
+            } catch (e) {
+                global.logError('LoginManager: Error getting logind session: ' + e.message);
+            }
+        });
     }
 
     _connectToSession(sessionPath) {
@@ -132,24 +142,24 @@ var LoginManagerSystemd = class {
                 sessionPath
             );
 
-            global.log('LoginManager: Successfully connected to logind session');
+            _log('LoginManager: Successfully connected to logind session');
 
             this._sessionProxy.connectSignal('Lock', () => {
-                global.log('LoginManager: Received Lock signal from logind, emitting lock');
+                _log('LoginManager: Received Lock signal from logind, emitting lock');
                 this.emit('lock');
             });
 
             this._sessionProxy.connectSignal('Unlock', () => {
-                global.log('LoginManager: Received Unlock signal from logind, emitting unlock');
+                _log('LoginManager: Received Unlock signal from logind, emitting unlock');
                 this.emit('unlock');
             });
 
             this._sessionProxy.connect('g-properties-changed', (proxy, changed, invalidated) => {
                 if ('Active' in changed.deep_unpack()) {
                     let active = this._sessionProxy.Active;
-                    global.log(`LoginManager: Session Active property changed: ${active}`);
+                    _log(`LoginManager: Session Active property changed: ${active}`);
                     if (active) {
-                        global.log('LoginManager: Session became active, emitting active');
+                        _log('LoginManager: Session became active, emitting active');
                         this.emit('active');
                     }
                 }
@@ -167,19 +177,19 @@ var LoginManagerSystemd = class {
         }
 
         return this._managerProxy.connectSignal('PrepareForSleep', (proxy, sender, [aboutToSuspend]) => {
-            global.log(`LoginManager: PrepareForSleep signal received (aboutToSuspend=${aboutToSuspend})`);
+            _log(`LoginManager: PrepareForSleep signal received (aboutToSuspend=${aboutToSuspend})`);
             callback(aboutToSuspend);
         });
     }
 
     inhibit(reason, callback) {
         if (!this._managerProxy) {
-            global.log('LoginManager: inhibit() called but no manager proxy');
+            _log('LoginManager: inhibit() called but no manager proxy');
             callback(null);
             return;
         }
 
-        global.log(`LoginManager: Requesting sleep inhibitor: "${reason}"`);
+        _log(`LoginManager: Requesting sleep inhibitor: "${reason}"`);
 
         let inVariant = GLib.Variant.new('(ssss)',
             ['sleep', 'cinnamon-screensaver', reason, 'delay']);
@@ -190,7 +200,7 @@ var LoginManagerSystemd = class {
                 try {
                     let [outVariant_, fdList] = proxy.call_with_unix_fd_list_finish(result);
                     let fd = fdList.steal_fds()[0];
-                    global.log(`LoginManager: Sleep inhibitor acquired (fd=${fd})`);
+                    _log(`LoginManager: Sleep inhibitor acquired (fd=${fd})`);
                     callback(new Gio.UnixInputStream({ fd }));
                 } catch (e) {
                     global.logError('LoginManager: Error getting inhibitor: ' + e.message);
@@ -210,7 +220,7 @@ var LoginManagerConsoleKit = class {
     }
 
     _initSession() {
-        global.log('LoginManager: Connecting to ConsoleKit...');
+        _log('LoginManager: Connecting to ConsoleKit...');
 
         try {
             this._managerProxy = new ConsoleKitManagerProxy(
@@ -227,7 +237,7 @@ var LoginManagerConsoleKit = class {
                 }
 
                 let [sessionPath] = result;
-                global.log(`LoginManager: Got ConsoleKit session path: ${sessionPath}`);
+                _log(`LoginManager: Got ConsoleKit session path: ${sessionPath}`);
 
                 this._connectToSession(sessionPath);
             });
@@ -245,22 +255,22 @@ var LoginManagerConsoleKit = class {
                 sessionPath
             );
 
-            global.log('LoginManager: Successfully connected to ConsoleKit session');
+            _log('LoginManager: Successfully connected to ConsoleKit session');
 
             this._sessionProxy.connectSignal('Lock', () => {
-                global.log('LoginManager: Received Lock signal from ConsoleKit, emitting lock');
+                _log('LoginManager: Received Lock signal from ConsoleKit, emitting lock');
                 this.emit('lock');
             });
 
             this._sessionProxy.connectSignal('Unlock', () => {
-                global.log('LoginManager: Received Unlock signal from ConsoleKit, emitting unlock');
+                _log('LoginManager: Received Unlock signal from ConsoleKit, emitting unlock');
                 this.emit('unlock');
             });
 
             this._sessionProxy.connectSignal('ActiveChanged', (proxy, sender, [active]) => {
-                global.log(`LoginManager: ConsoleKit ActiveChanged: ${active}`);
+                _log(`LoginManager: ConsoleKit ActiveChanged: ${active}`);
                 if (active) {
-                    global.log('LoginManager: Session became active, emitting active');
+                    _log('LoginManager: Session became active, emitting active');
                     this.emit('active');
                 }
             });
