@@ -13,7 +13,6 @@ const LoginManager = imports.misc.loginManager;
 const Util = imports.misc.util;
 const Main = imports.ui.main;
 const UnlockDialog = imports.ui.screensaver.unlockDialog;
-const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
 const ClockWidget = imports.ui.screensaver.clockWidget;
 const AlbumArtWidget = imports.ui.screensaver.albumArtWidget;
 const InfoPanel = imports.ui.screensaver.infoPanel;
@@ -407,17 +406,12 @@ var ScreenShield = GObject.registerClass({
         clipboard.set_text(St.ClipboardType.CLIPBOARD, '');
     }
 
-    lock(askForAwayMessage, immediate = false, awayMessage = null) {
+    lock(immediate = false, awayMessage = null) {
         if (this.isLocked())
             return;
 
         if (awayMessage)
             this._awayMessage = awayMessage;
-
-        if (askForAwayMessage && this._settings.get_boolean('ask-for-away-message')) {
-            this._showAwayMessageDialog();
-            return;
-        }
 
         _log(`ScreenShield: Locking screen (immediate=${immediate})`);
 
@@ -427,24 +421,6 @@ var ScreenShield = GObject.registerClass({
 
         this._stopLockDelay();
         this._setLocked(true);
-    }
-
-    _showAwayMessageDialog() {
-        if (this._awayMessageDialog) {
-            return;
-        }
-
-        this._awayMessageDialog = new AwayMessageDialog.AwayMessageDialog((message) => {
-            this._awayMessageDialog = null;
-            this._awayMessage = message;
-            this.lock(false);
-        });
-
-        this._awayMessageDialog.connect('closed', () => {
-            this._awayMessageDialog = null;
-        });
-
-        this._awayMessageDialog.open();
     }
 
     _setLocked(locked) {

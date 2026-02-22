@@ -118,6 +118,7 @@ const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const Screenshot = imports.ui.screenshot;
 const ScreenShield = imports.ui.screensaver.screenShield;
+const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
 const ScreenSaver = imports.misc.screenSaver;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
@@ -153,6 +154,8 @@ var panelManager = null;
 var osdWindowManager = null;
 var screenShield = null;
 var screenSaverService = null;
+var _screenSaverProxy = null;
+var _screensaverSettings = null;
 var lockdownSettings = null;
 var overview = null;
 var expo = null;
@@ -1728,4 +1731,37 @@ function closeEndSessionDialog() {
 
     endSessionDialog.close();
     endSessionDialog = null;
+}
+
+function lockScreen(askForAwayMessage) {
+    if (lockdownSettings.get_boolean('disable-lock-screen')) {
+        return;
+    }
+
+    if (_screensaverSettings === null) {
+        _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
+    }
+
+    if (askForAwayMessage && _screensaverSettings.get_boolean('ask-for-away-message')) {
+        let dialog = new AwayMessageDialog.AwayMessageDialog((message) => {
+            _doLock(message);
+        });
+        dialog.open();
+        return;
+    }
+
+    _doLock(null);
+}
+
+function _doLock(awayMessage) {
+    if (screenShield) {
+        screenShield.lock(false, awayMessage);
+        return;
+    }
+
+    if (_screenSaverProxy === null) {
+        _screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+    }
+
+    _screenSaverProxy.LockRemote(awayMessage || "");
 }

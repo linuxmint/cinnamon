@@ -78,20 +78,14 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
         item = new PopupMenu.PopupIconMenuItem(_("Lock Screen"), "xsi-lock-screen", St.IconType.SYMBOLIC);
         item.connect('activate', Lang.bind(this, function() {
-            if (Main.screenShield) {
-                Main.screenShield.lock(true);  // Ask for away message
-            }
+            Main.lockScreen(true);
         }));
         this.menu.addMenuItem(item);
 
         if (!Main.lockdownSettings.get_boolean('disable-user-switching')) {
             item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
-                // Lock before switching
-                if (Main.screenShield) {
-                    Main.screenShield.lock(false);
-                }
-                // Switch to greeter
+                Main.lockScreen(false);
                 Util.switchToGreeter();
             }));
             this.menu.addMenuItem(item);

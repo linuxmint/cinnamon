@@ -91,8 +91,7 @@ var ScreenSaverService = class ScreenSaverService {
         let [message] = params;
 
         if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
-            let awayMessage = message || null;
-            Main.screenShield.lock(false, false, awayMessage);
+            Main.screenShield.lock(false, message || null);
         }
 
         invocation.return_value(null);

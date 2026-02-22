@@ -414,12 +414,10 @@ KeybindingManager.prototype = {
             // If a custom screensaver is configured, skip internal handling and
             // let csd-media-keys run cinnamon-screensaver-command instead.
             if (!this.screensaver_settings.get_string('custom-screensaver-command').trim()) {
-                if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
-                    GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                        Main.screenShield.lock();
-                        return GLib.SOURCE_REMOVE;
-                    });
-                }
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    Main.lockScreen(false);
+                    return GLib.SOURCE_REMOVE;
+                });
                 return;
             }
         }
