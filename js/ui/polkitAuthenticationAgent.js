@@ -256,6 +256,14 @@ var AuthenticationDialog = GObject.registerClass({
         });
         CinnamonEntry.addContextMenu(this._passwordEntry);
         this._passwordEntry.clutter_text.connect('activate', this._onEntryActivate.bind(this));
+        // Handle keyboard layout switching (Alt+Shift, etc.)
+        this._passwordEntry.clutter_text.connect('key-press-event', (actor, event) => {
+            let layoutResult = Util.handleKeyboardLayoutSwitchingInTextEntry(actor, event);
+            if (layoutResult !== null) {
+                return layoutResult;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
         this._passwordEntry.bind_property('reactive',
             this._passwordEntry.clutter_text, 'editable',
             GObject.BindingFlags.SYNC_CREATE);
