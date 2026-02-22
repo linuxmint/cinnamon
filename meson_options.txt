@@ -39,4 +39,14 @@ option('exclude_users_settings',
     value : false,
     description: 'Exclude Users settings'
 )
+option('pam_prefix',
+    type : 'string',
+    value : '',
+    description: 'Specify where pam files go'
+)
+option('use_debian_pam',
+    type : 'boolean',
+    value : false,
+    description: 'Use the debian pam file'
+)
 

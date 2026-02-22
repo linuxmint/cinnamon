@@ -127,6 +127,8 @@ void     cinnamon_global_segfault                  (CinnamonGlobal  *global);
 void     cinnamon_global_alloc_leak                (CinnamonGlobal  *global,
                                                     gint             mb);
 
+gulong   cinnamon_global_get_stage_xwindow         (CinnamonGlobal  *global);
+
 G_END_DECLS
 
 #endif /* __CINNAMON_GLOBAL_H__ */

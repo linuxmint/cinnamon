@@ -12,6 +12,8 @@ const Main = imports.ui.main;
 const PageIndicators = imports.ui.pageIndicators;
 const PopupMenu = imports.ui.popupMenu;
 
+let _popupContainer = null;
+
 var KEYBOARD_REST_TIME = 50;
 var KEY_LONG_PRESS_TIME = 250;
 var PANEL_SWITCH_ANIMATION_TIME = 500;
@@ -280,7 +282,11 @@ var Key = GObject.registerClass({
 
         this._boxPointer = new BoxPointer.BoxPointer(St.Side.BOTTOM);
         this._boxPointer.hide();
-        Main.layoutManager.addChrome(this._boxPointer);
+        if (_popupContainer) {
+            _popupContainer.add_child(this._boxPointer);
+        } else {
+            Main.layoutManager.addChrome(this._boxPointer);
+        }
         this._boxPointer.setPosition(this.keyButton, 0.5);
 
         // Adds style to existing keyboard style to avoid repetition
@@ -687,6 +693,7 @@ var VirtualKeyboardManager = GObject.registerClass({
     constructor() {
         super();
         this._keyboard = null;
+        this._screensaverMode = false;
         this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
         this._a11yApplicationsSettings.connect('changed::screen-keyboard-enabled', this._keyboardEnabledChanged.bind(this));
 
@@ -732,6 +739,9 @@ var VirtualKeyboardManager = GObject.registerClass({
     }
 
     _syncEnabled() {
+        if (this._screensaverMode)
+            return;
+
         let enabled = this._shouldEnable();
         if (!enabled && !this._keyboard)
             return;
@@ -744,6 +754,9 @@ var VirtualKeyboardManager = GObject.registerClass({
     }
 
     destroyKeyboard() {
+        if (this._screensaverMode)
+            return;
+
         if (this._keyboard == null) {
             return;
         }
@@ -810,6 +823,35 @@ var VirtualKeyboardManager = GObject.registerClass({
         return Main.layoutManager.keyboardBox.contains(actor) ||
                !!actor._extendedKeys || !!actor.extendedKey;
     }
+
+    ensureKeyboard() {
+        if (!this._keyboard)
+            this._keyboard = new Keyboard(true);
+        return this._keyboard;
+    }
+
+    openForScreensaver(keyboardContainer, popupContainer) {
+        this._screensaverMode = true;
+        let keyboard = this.ensureKeyboard();
+        Main.layoutManager.untrackChrome(keyboard);
+        global.reparentActor(keyboard, keyboardContainer);
+        keyboard.setScreensaverMode(true, popupContainer);
+    }
+
+    closeForScreensaver() {
+        if (!this._keyboard) {
+            this._screensaverMode = false;
+            return;
+        }
+
+        this._keyboard.setScreensaverMode(false);
+        global.reparentActor(this._keyboard, Main.layoutManager.keyboardBox);
+        Main.layoutManager.trackChrome(this._keyboard);
+        this._screensaverMode = false;
+
+        if (!this._shouldEnable())
+            this.destroyKeyboard();
+    }
 });
 
 var Keyboard = GObject.registerClass(
@@ -856,6 +898,7 @@ class Keyboard extends St.BoxLayout {
             this._keyboardVisible = visible;
         });
         this._keyboardRequested = false;
+        this._screensaverMode = false;
         this._keyboardRestingId = 0;
 
         this._connectSignal(Main.layoutManager, 'monitors-changed', this._relayout.bind(this));
@@ -892,8 +935,10 @@ class Keyboard extends St.BoxLayout {
 
         this._keyboardController.destroy();
 
-        Main.layoutManager.untrackChrome(this);
-        Main.layoutManager.keyboardBox.remove_actor(this);
+        if (!this._screensaverMode) {
+            Main.layoutManager.untrackChrome(this);
+            Main.layoutManager.keyboardBox.remove_actor(this);
+        }
 
         if (this._languagePopup) {
             this._languagePopup.destroy();
@@ -954,6 +999,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     _onKeyFocusChanged() {
+        if (this._screensaverMode)
+            return;
+
         let focus = global.stage.key_focus;
 
         // Showing an extended key popup and clicking a key from the extended keys
@@ -1252,6 +1300,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     _relayout() {
+        if (this._screensaverMode)
+            return;
+
         this._suggestions.visible = this._keyboardController.getIbusInputActive();
 
         let monitor = Main.layoutManager.keyboardMonitor;
@@ -1313,6 +1364,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     _onKeyboardStateChanged(controller, state) {
+        if (this._screensaverMode)
+            return;
+
         let enabled;
         if (state == Clutter.InputPanelState.OFF)
             enabled = false;
@@ -1365,6 +1419,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     open(monitor) {
+        if (this._screensaverMode)
+            return;
+
         this._clearShowIdle();
         this._keyboardRequested = true;
 
@@ -1397,6 +1454,12 @@ class Keyboard extends St.BoxLayout {
     }
 
     close() {
+        if (this._screensaverMode) {
+            if (Main.screenShield)
+                Main.screenShield._hideScreensaverKeyboard();
+            return;
+        }
+
         this._clearShowIdle();
         this._keyboardRequested = false;
 
@@ -1439,6 +1502,48 @@ class Keyboard extends St.BoxLayout {
             return;
         GLib.source_remove(this._showIdleId);
         this._showIdleId = 0;
+    }
+
+    setScreensaverMode(active, popupContainer = null) {
+        // Clear extended key popups before changing container so they
+        // are destroyed from their current parent context.
+        this._clearExtendedKeyPopups();
+
+        this._screensaverMode = active;
+        _popupContainer = active ? popupContainer : null;
+
+        if (active) {
+            this._keyboardVisible = true;
+            this._keyboardRequested = true;
+        } else {
+            this._keyboardVisible = false;
+            this._keyboardRequested = false;
+            this._relayout();
+        }
+    }
+
+    _clearExtendedKeyPopups() {
+        if (!this._groups)
+            return;
+
+        for (let groupName in this._groups) {
+            let layers = this._groups[groupName];
+            if (!layers)
+                continue;
+
+            for (let level in layers) {
+                let keyContainer = layers[level];
+                if (!keyContainer)
+                    continue;
+
+                for (let child of keyContainer.get_children()) {
+                    if (child._boxPointer) {
+                        child._boxPointer.destroy();
+                        child._boxPointer = null;
+                    }
+                }
+            }
+        }
     }
 });
 

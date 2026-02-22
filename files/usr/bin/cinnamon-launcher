@@ -20,6 +20,22 @@ from gi.repository import Gtk, GLib, Gio, GLib
 FALLBACK_COMMAND = "metacity"
 FALLBACK_ARGS = ("--replace",)
 
+LAUNCHER_BUS_NAME = "org.cinnamon.Launcher"
+LAUNCHER_BUS_PATH = "/org/cinnamon/Launcher"
+
+INTERFACE_XML = (
+    "<node>"
+    "  <interface name='org.cinnamon.Launcher'>"
+    "    <method name='CanRestart'>"
+    "      <arg type='b' name='result' direction='out'/>"
+    "    </method>"
+    "    <method name='TryRestart'>"
+    "      <arg type='b' name='result' direction='out'/>"
+    "    </method>"
+    "  </interface>"
+    "</node>"
+)
+
 gettext.install("cinnamon", "/usr/share/locale")
 
 panel_process_name = None
@@ -57,6 +73,8 @@ class Launcher:
 
         self.polkit_agent_proc = None
         self.nm_applet_proc = None
+        self.can_restart = False
+        self.dialog = None
 
         self.cinnamon_pid = os.fork()
         if self.cinnamon_pid == 0:
@@ -68,12 +86,42 @@ class Launcher:
             if self.settings.get_boolean("memory-limit-enabled"):
                 print("Cinnamon memory limit enabled: %d MB" % self.settings.get_int("memory-limit"))
                 self.monitor_memory()
+            self.setup_dbus()
             self.wait_for_process()
             Gtk.main()
 
     def on_settings_changed(self, settings, key):
         print("Memory profiler status changed, restarting Cinnamon.")
         self.restart_cinnamon()
+
+    def setup_dbus(self):
+        self.node_info = Gio.DBusNodeInfo.new_for_xml(INTERFACE_XML)
+        Gio.bus_own_name(
+            Gio.BusType.SESSION,
+            LAUNCHER_BUS_NAME,
+            Gio.BusNameOwnerFlags.NONE,
+            self.on_bus_acquired,
+            None,
+            None
+        )
+
+    def on_bus_acquired(self, connection, name):
+        connection.register_object(
+            LAUNCHER_BUS_PATH,
+            self.node_info.interfaces[0],
+            self.on_method_call
+        )
+
+    def on_method_call(self, connection, sender, object_path,
+                       interface_name, method_name, parameters, invocation):
+        if method_name == "CanRestart":
+            invocation.return_value(GLib.Variant("(b)", (self.can_restart,)))
+        elif method_name == "TryRestart":
+            result = False
+            if self.can_restart and self.dialog is not None:
+                GLib.idle_add(self.dialog.response, Gtk.ResponseType.YES)
+                result = True
+            invocation.return_value(GLib.Variant("(b)", (result,)))
 
     @async_function
     def wait_for_process(self):
@@ -168,6 +216,8 @@ class Launcher:
 
     @idle_function
     def confirm_restart(self):
+        self.can_restart = True
+
         d = Gtk.MessageDialog(title=None, parent=None, flags=0, message_type=Gtk.MessageType.WARNING)
         d.add_buttons(_("No"),  Gtk.ResponseType.NO,
                       _("Yes"), Gtk.ResponseType.YES)
@@ -185,7 +235,11 @@ class Launcher:
         box.set_border_width(20)
         box.add(checkbutton)
         checkbutton.show_all()
+
+        self.dialog = d
         resp = d.run()
+        self.dialog = None
+        self.can_restart = False
         d.destroy()
         if resp == Gtk.ResponseType.YES:
             if checkbutton.get_active():

@@ -28,7 +28,6 @@ jobs:
         linuxmint/cinnamon-control-center,
         linuxmint/cinnamon-desktop,
         linuxmint/cinnamon-menus,
-        linuxmint/cinnamon-screensaver,
         linuxmint/cinnamon-session,
         linuxmint/cinnamon-settings-daemon,
         linuxmint/cinnamon-translations,

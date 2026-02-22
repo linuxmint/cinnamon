@@ -5,6 +5,7 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
+const Cinnamon = imports.gi.Cinnamon;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 
@@ -75,6 +76,9 @@ KeybindingManager.prototype = {
 
         this.media_key_settings = new Gio.Settings({ schema_id: MEDIA_KEYS_SCHEMA });
         this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
+
+        this.screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
+
         this.setup_media_keys();
     },
 
@@ -83,10 +87,10 @@ KeybindingManager.prototype = {
         this.setup_custom_keybindings();
     },
 
-    addHotKey: function(name, bindings_string, callback, flags) {
+    addHotKey: function(name, bindings_string, callback, flags, allowedModes) {
         if (!bindings_string)
             return false;
-        return this.addHotKeyArray(name, bindings_string.split("::"), callback, flags);
+        return this.addHotKeyArray(name, bindings_string.split("::"), callback, flags, allowedModes);
     },
 
     _makeXletKey: function(xlet, name, binding) {
@@ -121,7 +125,7 @@ KeybindingManager.prototype = {
      *  }
      */
 
-    addXletHotKey: function(xlet, name, bindings_string, callback, flags) {
+    addXletHotKey: function(xlet, name, bindings_string, callback, flags, allowedModes) {
         this._removeMatchingXletBindings(xlet, name);
 
         if (!bindings_string)
@@ -144,7 +148,7 @@ KeybindingManager.prototype = {
 
             xlet_set.set(instanceId, callback);
 
-            this._queueCommitXletHotKey(xlet_key, binding, xlet_set, flags);
+            this._queueCommitXletHotKey(xlet_key, binding, xlet_set, flags, allowedModes);
         }
     },
 
@@ -238,7 +242,7 @@ KeybindingManager.prototype = {
         this._removeMatchingXletBindings(xlet, name);
     },
 
-    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set, flags) {
+    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set, flags, allowedModes) {
         let id = xlet_set.get("commitTimeoutId") ?? 0;
 
         if (id > 0) {
@@ -246,7 +250,7 @@ KeybindingManager.prototype = {
         }
 
         id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key), flags);
+            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key), flags, allowedModes);
             xlet_set.set("commitTimeoutId", 0);
             return GLib.SOURCE_REMOVE;
         });
@@ -266,7 +270,13 @@ KeybindingManager.prototype = {
         return [Meta.KeyBindingAction.NONE, undefined];
     },
 
-    addHotKeyArray: function(name, bindings, callback, flags=Meta.KeyBindingFlags.IGNORE_AUTOREPEAT) {
+    getBindingById: function(action_id) {
+        return this.bindings.get(action_id);
+    },
+
+    addHotKeyArray: function(name, bindings, callback,
+                             flags=Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+                             allowedModes=Cinnamon.ActionMode.NORMAL) {
         let [existing_action_id, entry] = this._lookupEntry(name);
 
         if (entry !== undefined) {
@@ -292,16 +302,17 @@ KeybindingManager.prototype = {
         }
 
         action_id = global.display.add_custom_keybinding_full(name, bindings, flags, callback);
-        // log(`set keybinding: ${name}, bindings: ${bindings}, flags: ${flags} - action id: ${action_id}`);
+        // log(`set keybinding: ${name}, bindings: ${bindings}, flags: ${flags}, allowedModes: ${allowedModes} - action id: ${action_id}`);
 
         if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             return false;
         }
         this.bindings.set(action_id, {
-            "name"    : name,
-            "bindings": bindings,
-            "callback": callback
+            "name"        : name,
+            "bindings"    : bindings,
+            "callback"    : callback,
+            "allowedModes": allowedModes
         });
 
         return true;
@@ -348,6 +359,13 @@ KeybindingManager.prototype = {
     },
 
     setup_media_keys: function() {
+        // Media keys before SEPARATOR work in all modes (global keys)
+        // These should work during lock screen, unlock dialog, etc.
+        let globalModes = Cinnamon.ActionMode.NORMAL | Cinnamon.ActionMode.OVERVIEW |
+                         Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN |
+                         Cinnamon.ActionMode.SYSTEM_MODAL | Cinnamon.ActionMode.LOOKING_GLASS |
+                         Cinnamon.ActionMode.POPUP;
+
         for (let i = 0; i < MK.SEPARATOR; i++) {
             if (is_obsolete_mk(i)) {
                 continue;
@@ -360,10 +378,12 @@ KeybindingManager.prototype = {
             let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
-                           Lang.bind(this, this.on_global_media_key_pressed, i),
-                           flags);
+                           Lang.bind(this, this.on_media_key_pressed, i),
+                           flags,
+                           globalModes);
         }
 
+        // Media keys after SEPARATOR only work in normal mode
         for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
             if (is_obsolete_mk(i)) {
                 continue;
@@ -377,20 +397,32 @@ KeybindingManager.prototype = {
             this.addHotKeyArray("media-keys-" + i.toString(),
                            bindings,
                            Lang.bind(this, this.on_media_key_pressed, i),
-                           flags);
+                           flags,
+                           Cinnamon.ActionMode.NORMAL);
         }
         return true;
     },
 
-    on_global_media_key_pressed: function(display, window, kb, action) {
-        // log(`global media key ${display}, ${window}, ${kb}, ${action}`);
-        this._proxy.HandleKeybindingRemote(action);
-    },
-
     on_media_key_pressed: function(display, window, kb, action) {
-        // log(`media key ${display}, ${window}, ${kb}, ${action}`);
-        if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
-            this._proxy.HandleKeybindingRemote(action);
+        let [, entry] = this._lookupEntry("media-keys-" + action.toString());
+        if (Main._shouldFilterKeybinding(entry))
+            return;
+
+        // Check if this is the screensaver key and internal screensaver is enabled
+        if (action === MK.SCREENSAVER && global.settings.get_boolean('internal-screensaver-enabled')) {
+            // If a custom screensaver is configured, skip internal handling and
+            // let csd-media-keys run cinnamon-screensaver-command instead.
+            if (!this.screensaver_settings.get_string('custom-screensaver-command').trim()) {
+                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    Main.lockScreen(false);
+                    return GLib.SOURCE_REMOVE;
+                });
+                return;
+            }
+        }
+
+        // Otherwise, forward to csd-media-keys (or other handler)
+        this._proxy.HandleKeybindingRemote(action);
     },
 
     invoke_keybinding_action_by_id: function(id) {

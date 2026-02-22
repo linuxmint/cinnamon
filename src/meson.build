@@ -198,6 +198,8 @@ executable(
     install: true,
 )
 
+subdir('screensaver')
+
 cinnamon_gir_includes = [
     'Clutter-0',
     'ClutterX11-0',

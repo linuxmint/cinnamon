@@ -20,7 +20,8 @@ override_dh_auto_configure:
 		-D deprecated_warnings=false \
 		-D exclude_info_settings=true \
 		-D exclude_users_settings=true \
-		-D py3modules_dir=/usr/lib/python3/dist-packages
+		-D py3modules_dir=/usr/lib/python3/dist-packages \
+		-D use_debian_pam=true
 
 # workaround for fix lmde4 build
 override_dh_dwz:

@@ -769,3 +769,163 @@ function wiggle(actor, params) {
         }
     });
 }
+
+/**
+ * switchToGreeter:
+ *
+ * Switches to the display manager's login greeter, allowing another user
+ * to log in without logging out the current user. Tries multiple display
+ * manager methods in order of preference.
+ */
+function switchToGreeter() {
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+}
+
+function _doSwitchToGreeter() {
+    // Check if user switching is locked down
+    if (Main.lockdownSettings.get_boolean('disable-user-switching')) {
+        global.logWarning("User switching is locked down");
+        return GLib.SOURCE_REMOVE;
+    }
+
+    if (_processIsRunning('gdm')) {
+        // Old GDM
+        try {
+            spawn(['gdmflexiserver', '--startnew', 'Standard']);
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling gdmflexiserver: ' + e.message);
+        }
+    }
+
+    if (_processIsRunning('gdm3')) {
+        // Newer GDM
+        try {
+            spawn(['gdmflexiserver']);
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling gdmflexiserver: ' + e.message);
+        }
+    }
+
+    // Try freedesktop.org standard DBus method (works with most modern display managers)
+    let seat_path = GLib.getenv('XDG_SEAT_PATH');
+    if (seat_path) {
+        try {
+            let bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, null);
+            bus.call_sync(
+                'org.freedesktop.DisplayManager',
+                seat_path,
+                'org.freedesktop.DisplayManager.Seat',
+                'SwitchToGreeter',
+                null,
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null
+            );
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling SwitchToGreeter: ' + e.message);
+        }
+    }
+
+    return GLib.SOURCE_REMOVE;
+}
+
+function _processIsRunning(name) {
+    try {
+        let [success, stdout] = GLib.spawn_command_line_sync('pidof ' + name);
+        return success && stdout.length > 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * getTtyVals:
+ * @debug: (boolean): if true, log verbose debug output
+ *
+ * Determines the tty number for a free text console and the tty number
+ * of the current graphical session. Used by the backup locker to tell
+ * the user which Ctrl+Alt+F key to use.
+ *
+ * Returns: (array): [termTty, sessionTty] as strings
+ */
+function getTtyVals(debug) {
+    let sessionTty = null;
+    let termTty = null;
+    let username = GLib.get_user_name().substring(0, 8);
+    let usedTty = [];
+
+    function _log(msg) {
+        if (debug)
+            global.log(msg);
+    }
+
+    try {
+        let [ok, stdout] = GLib.spawn_command_line_sync('w -h');
+        _log(`getTtyVals: w -h ok=${ok}, has stdout=${stdout != null}`);
+        if (ok && stdout) {
+            let output = imports.byteArray.toString(stdout);
+            let lines = output.split('\n');
+
+            _log(`getTtyVals: w -h output (username='${username}'):\n${output}`);
+
+            for (let line of lines) {
+                if (line.startsWith(username)) {
+                    if (line.includes('cinnamon-session') && line.includes('tty')) {
+                        let parts = line.trim().split(/\s+/);
+                        if (parts.length >= 2) {
+                            sessionTty = parts[1].replace('tty', '');
+                            usedTty.push(sessionTty);
+                            _log(`getTtyVals: Found session tty=${sessionTty} from: ${line.trim()}`);
+                        }
+                    } else if (line.includes('tty')) {
+                        let parts = line.trim().split(/\s+/);
+                        if (parts.length >= 2) {
+                            termTty = parts[1].replace('tty', '');
+                            _log(`getTtyVals: Found term tty=${termTty} from: ${line.trim()}`);
+                        }
+                    }
+                } else if (line.includes('tty')) {
+                    let parts = line.trim().split(/\s+/);
+                    if (parts.length >= 2) {
+                        usedTty.push(parts[1].replace('tty', ''));
+                        _log(`getTtyVals: Other user tty=${parts[1].replace('tty', '')} from: ${line.trim()}`);
+                    }
+                }
+            }
+
+            usedTty.sort();
+            _log(`getTtyVals: After parsing: sessionTty=${sessionTty}, termTty=${termTty}, usedTty=[${usedTty}]`);
+
+            if (termTty === null) {
+                for (let i = 1; i <= 5; i++) {
+                    if (!usedTty.includes(String(i))) {
+                        termTty = String(i);
+                        _log(`getTtyVals: Picked unused tty=${termTty} for terminal`);
+                        break;
+                    }
+                }
+            }
+        }
+    } catch (e) {
+        global.logWarning(`getTtyVals: Failed to get tty numbers using w -h: ${e.message}`);
+    }
+
+    if (sessionTty === null) {
+        sessionTty = GLib.getenv('XDG_VTNR');
+        _log(`getTtyVals: sessionTty fallback to XDG_VTNR=${sessionTty}`);
+        if (sessionTty === null)
+            sessionTty = '7';
+    }
+
+    if (termTty === null) {
+        termTty = sessionTty !== '2' ? '2' : '1';
+        _log(`getTtyVals: termTty fallback to ${termTty}`);
+    }
+
+    _log(`getTtyVals: Final tty values: term=${termTty}, session=${sessionTty}`);
+    return [termTty, sessionTty];
+}

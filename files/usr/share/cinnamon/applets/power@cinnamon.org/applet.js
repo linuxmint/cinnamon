@@ -3,6 +3,7 @@ const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
+const PowerUtils = imports.misc.powerUtils;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
 const UPowerGlib = imports.gi.UPowerGlib;
@@ -18,147 +19,16 @@ const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
 const {
-    DeviceKind: UPDeviceKind,
-    DeviceLevel: UPDeviceLevel,
-    DeviceState: UPDeviceState,
-    Device: UPDevice
-} = UPowerGlib
+    UPDeviceKind,
+    UPDeviceLevel,
+    UPDeviceState
+} = PowerUtils;
 
 const POWER_PROFILES = {
     "power-saver": _("Power Saver"),
     "balanced": _("Balanced"),
     "performance": _("Performance")
 };
-
-function deviceLevelToString(level) {
-    switch (level) {
-        case UPDeviceLevel.FULL:
-            return _("Battery full");
-        case UPDeviceLevel.HIGH:
-            return _("Battery almost full");
-        case UPDeviceLevel.NORMAL:
-            return _("Battery good");
-        case UPDeviceLevel.LOW:
-            return _("Low battery");
-        case UPDeviceLevel.CRITICAL:
-            return _("Critically low battery");
-        default:
-            return _("Unknown");
-    }
-}
-
-function deviceKindToString(kind) {
-    switch (kind) {
-        case UPDeviceKind.LINE_POWER:
-            return _("AC adapter");
-        case UPDeviceKind.BATTERY:
-            return _("Laptop battery");
-        case UPDeviceKind.UPS:
-            return _("UPS");
-        case UPDeviceKind.MONITOR:
-            return _("Monitor");
-        case UPDeviceKind.MOUSE:
-            return _("Mouse");
-        case UPDeviceKind.KEYBOARD:
-            return _("Keyboard");
-        case UPDeviceKind.PDA:
-            return _("PDA");
-        case UPDeviceKind.PHONE:
-            return _("Cell phone");
-        case UPDeviceKind.MEDIA_PLAYER:
-            return _("Media player");
-        case UPDeviceKind.TABLET:
-            return _("Tablet");
-        case UPDeviceKind.COMPUTER:
-            return _("Computer");
-        case UPDeviceKind.GAMING_INPUT:
-            return _("Gaming input");
-        case UPDeviceKind.PEN:
-            return _("Pen");
-        case UPDeviceKind.TOUCHPAD:
-            return _("Touchpad");
-        case UPDeviceKind.MODEM:
-            return _("Modem");
-        case UPDeviceKind.NETWORK:
-            return _("Network");
-        case UPDeviceKind.HEADSET:
-            return _("Headset");
-        case UPDeviceKind.SPEAKERS:
-            return _("Speakers");
-        case UPDeviceKind.HEADPHONES:
-            return _("Headphones");
-        case UPDeviceKind.VIDEO:
-            return _("Video");
-        case UPDeviceKind.OTHER_AUDIO:
-            return _("Audio device");
-        case UPDeviceKind.REMOTE_CONTROL:
-            return _("Remote control");
-        case UPDeviceKind.PRINTER:
-            return _("Printer");
-        case UPDeviceKind.SCANNER:
-            return _("Scanner");
-        case UPDeviceKind.CAMERA:
-            return _("Camera");
-        case UPDeviceKind.WEARABLE:
-            return _("Wearable");
-        case UPDeviceKind.TOY:
-            return _("Toy");
-        case UPDeviceKind.BLUETOOTH_GENERIC:
-            return _("Bluetooth device");
-        default: {
-            try {
-                return UPDevice.kind_to_string(kind).replaceAll("-", " ").capitalize();
-            } catch {
-                return _("Unknown");
-            }
-        }
-    }
-}
-
-function deviceKindToIcon(kind, icon) {
-    switch (kind) {
-        case UPDeviceKind.MONITOR:
-            return ("xsi-video-display");
-        case UPDeviceKind.MOUSE:
-            return ("xsi-input-mouse");
-        case UPDeviceKind.KEYBOARD:
-            return ("xsi-input-keyboard");
-        case UPDeviceKind.PHONE:
-        case UPDeviceKind.MEDIA_PLAYER:
-            return ("xsi-phone-apple-iphone");
-        case UPDeviceKind.TABLET:
-            return ("xsi-input-tablet");
-        case UPDeviceKind.COMPUTER:
-            return ("xsi-computer");
-        case UPDeviceKind.GAMING_INPUT:
-            return ("xsi-input-gaming");
-        case UPDeviceKind.TOUCHPAD:
-            return ("xsi-input-touchpad");
-        case UPDeviceKind.HEADSET:
-            return ("xsi-audio-headset");
-        case UPDeviceKind.SPEAKERS:
-            return ("xsi-audio-speakers");
-        case UPDeviceKind.HEADPHONES:
-            return ("xsi-audio-headphones");
-        case UPDeviceKind.PRINTER:
-            return ("xsi-printer");
-        case UPDeviceKind.SCANNER:
-            return ("xsi-scanner");
-        case UPDeviceKind.CAMERA:
-            return ("xsi-camera-photo");
-        default:
-            if (icon) {
-                return icon;
-            }
-            else {
-                return ("xsi-battery-level-100");
-            }
-    }
-}
-
-function reportsPreciseLevels(battery_level) {
-    return battery_level == UPDeviceLevel.NONE;
-}
 
 class DeviceItem extends PopupMenu.PopupBaseMenuItem {
     constructor(device, status, aliases) {
@@ -169,7 +39,7 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true });
 
-        let description = deviceKindToString(device_kind);
+        let description = PowerUtils.deviceKindToString(device_kind);
         if (vendor != "" || model != "") {
             description = "%s %s".format(vendor, model);
         }
@@ -195,10 +65,10 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
             statusLabel = new St.Label({ text: "%s".format(status), style_class: 'popup-inactive-menu-item' });
         } else {
             this.label = new St.Label({ text: "%s".format(description) });
-            statusLabel = new St.Label({ text: "%s".format(deviceLevelToString(battery_level)), style_class: 'popup-inactive-menu-item' });
+            statusLabel = new St.Label({ text: "%s".format(PowerUtils.deviceLevelToString(battery_level)), style_class: 'popup-inactive-menu-item' });
         }
 
-        let device_icon = deviceKindToIcon(device_kind, icon);
+        let device_icon = PowerUtils.deviceKindToIcon(device_kind, icon);
         if (device_icon == icon) {
             this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon), icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
         }
@@ -692,12 +562,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         if (state == UPDeviceState.UNKNOWN)
                             continue;
 
-                        if (reportsPreciseLevels(battery_level)) {
+                        if (PowerUtils.reportsPreciseLevels(battery_level)) {
                             // Devices that give accurate % charge will return this for battery level.
                             pct_support_count++;
                         }
 
-                        let stats = "%s (%d%%)".format(deviceKindToString(device_kind), percentage);
+                        let stats = "%s (%d%%)".format(PowerUtils.deviceKindToString(device_kind), percentage);
                         devices_stats.push(stats);
                         _devices.push(devices[i]);
 
@@ -749,7 +619,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                                 let [, , , , , percentage, , battery_level, seconds] = this._devices[i];
 
                                 // Skip devices without accurate reporting
-                                if (!reportsPreciseLevels(battery_level)) {
+                                if (!PowerUtils.reportsPreciseLevels(battery_level)) {
                                     continue;
                                 }
 
