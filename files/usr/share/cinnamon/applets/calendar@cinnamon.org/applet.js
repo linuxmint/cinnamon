@@ -274,6 +274,8 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         }
 
         this.set_applet_label(label_string);
+        // Force relayout to fix rendering artifacts when clock updates (issue #13441)
+        this.actor.queue_relayout();
 
         let dateFormattedTooltip = this.clock.get_clock_for_format(DATE_FORMAT_FULL).capitalize();
         if (this.use_custom_format) {
