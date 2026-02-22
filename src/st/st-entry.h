@@ -68,7 +68,7 @@ StWidget *            st_entry_new              (const gchar *text);
 const gchar *         st_entry_get_text         (StEntry     *entry);
 void                  st_entry_set_text         (StEntry     *entry,
                                                  const gchar *text);
-ClutterActor*         st_entry_get_clutter_text (StEntry     *entry);
+ClutterText *         st_entry_get_clutter_text (StEntry     *entry);
 
 void                  st_entry_set_hint_text    (StEntry     *entry,
                                                  const gchar *text);

@@ -1,5 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const config = imports.misc.config;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const ByteArray = imports.byteArray;
@@ -24,9 +25,19 @@ var cinnamonImportNames = [
     'misc',
     'perf'
 ];
-var giImportNames = imports.gi.GIRepository.Repository
-    .get_default()
-    .get_loaded_namespaces();
+
+var giImportNames = null;
+
+if (config.USE_GIR20) {
+    giImportNames = imports.gi.GIRepository.Repository
+        .dup_default()
+        .get_loaded_namespaces();
+} else {
+    giImportNames = imports.gi.GIRepository.Repository
+        .get_default()
+        .get_loaded_namespaces();
+}
+
 var LoadedModules = [];
 var FunctionConstructor = Symbol();
 var Symbols = {};
