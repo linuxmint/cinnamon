@@ -361,7 +361,7 @@ var Workspace = class Workspace {
             && global.workspace_manager.get_active_workspace_index()
             !== metaWorkspace.index())) return;
 
-        // If the window is on all workspaces or we're showing all workspaces,
+        // If the window is on all workspaces or we're showing windows in all workspaces,
         // make sure to remove the window from all workspaces.
         if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
             && !this.state.removingWindowFromWorkspaces) {
