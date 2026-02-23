@@ -989,6 +989,8 @@ var AppGroup = class AppGroup {
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
+        this.signals.disconnect('notify::icon', metaWindow);
+        this.signals.disconnect('notify::progress', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
 

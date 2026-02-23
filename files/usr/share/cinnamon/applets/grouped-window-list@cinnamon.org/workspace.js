@@ -352,15 +352,17 @@ var Workspace = class Workspace {
     windowRemoved(metaWorkspace, metaWindow) {
         if (!this.state) return;
 
-        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces
-            || !this.state.settings.showAllWorkspaces)
+        // Abort the remove if the window is just changing workspaces, window
+        // should always remain indexed on all workspaces while its mapped.
+        // if (!metaWindow.showing_on_its_workspace()) return;
+        if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
+            && global.workspace_manager.get_active_workspace_index()
+            !== metaWorkspace.index())) return;
+
+        // If the window is on all workspaces or we're showing all workspaces,
+        // make sure to remove the window from all workspaces.
+        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
             && !this.state.removingWindowFromWorkspaces) {
-            // Abort the remove if the window is just changing workspaces, window
-            // should always remain indexed on all workspaces while its mapped.
-            // if (!metaWindow.showing_on_its_workspace()) return;
-            if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
-                && global.workspace_manager.get_active_workspace_index()
-                !== metaWorkspace.index())) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
