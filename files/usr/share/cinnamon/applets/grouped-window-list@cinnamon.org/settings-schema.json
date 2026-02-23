@@ -27,7 +27,7 @@
       "title" : "Behavior",
       "keys": [
         "group-apps",
-        "scroll-behavior",
+        "list-scroll-behavior",
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces",
@@ -96,7 +96,7 @@
     "default": true,
     "description": "Group windows by application"
   },
-  "scroll-behavior": {
+  "list-scroll-behavior": {
     "type": "combobox",
     "default": 4,
     "description": "Mouse wheel scroll action",

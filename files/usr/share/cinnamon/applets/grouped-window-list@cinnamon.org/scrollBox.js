@@ -217,6 +217,11 @@ class ScrollBox {
     _onScroll(actor, event) {
         if (this.state.panelEditMode) return Clutter.EVENT_PROPAGATE;
 
+        if (this.state.settings.scrollBehavior !== 4) {
+            this.state.trigger('handleScroll', event);
+            return;
+        }
+
         // Handle horizontal scrolling with vertical wheel
         if (this.state.isHorizontal) {
             const direction = event.get_scroll_direction();

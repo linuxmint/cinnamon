@@ -253,6 +253,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             removeFavorite: (id) => this.pinnedFavorites.removeFavorite(id),
             getFavorites: () => this.pinnedFavorites._favorites,
             cycleWindows: (e, source) => this.handleScroll(e, source),
+            handleScroll: (e) => this.handleScroll(e),
             openAbout: () => this.openAbout(),
             configureApplet: () => this.configureApplet(),
             removeApplet: (event) => this.confirmRemoveApplet(event)
@@ -299,7 +300,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     bindSettings() {
         const settingsProps = [
             {key: 'group-apps', value: 'groupApps', cb: this.refreshAllWorkspaces},
-            {key: 'scroll-behavior', value: 'scrollBehavior', cb: null},
+            {key: 'list-scroll-behavior', value: 'scrollBehavior', cb: null},
             {key: 'left-click-action', value: 'leftClickAction', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},
             {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllWorkspaces},
