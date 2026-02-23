@@ -41,6 +41,14 @@ class KeyringDialog extends ModalDialog.ModalDialog {
         });
         CinnamonEntry.addContextMenu(this._passwordEntry);
         this._passwordEntry.clutter_text.connect('activate', this._onPasswordActivate.bind(this));
+        // Handle keyboard layout switching (Alt+Shift, etc.)
+        this._passwordEntry.clutter_text.connect('key-press-event', (actor, event) => {
+            let layoutResult = Util.handleKeyboardLayoutSwitchingInTextEntry(actor, event);
+            if (layoutResult !== null) {
+                return layoutResult;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
         this.prompt.bind_property('password-visible',
             this._passwordEntry, 'visible', GObject.BindingFlags.SYNC_CREATE);
         passwordBox.add_child(this._passwordEntry);
@@ -52,6 +60,14 @@ class KeyringDialog extends ModalDialog.ModalDialog {
         });
         CinnamonEntry.addContextMenu(this._confirmEntry);
         this._confirmEntry.clutter_text.connect('activate', this._onConfirmActivate.bind(this));
+        // Handle keyboard layout switching (Alt+Shift, etc.)
+        this._confirmEntry.clutter_text.connect('key-press-event', (actor, event) => {
+            let layoutResult = Util.handleKeyboardLayoutSwitchingInTextEntry(actor, event);
+            if (layoutResult !== null) {
+                return layoutResult;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
         this.prompt.bind_property('confirm-visible',
             this._confirmEntry, 'visible', GObject.BindingFlags.SYNC_CREATE);
         passwordBox.add_child(this._confirmEntry);

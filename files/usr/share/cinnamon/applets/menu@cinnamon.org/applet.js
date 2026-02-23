@@ -1835,17 +1835,15 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         }
 
-        /* check for a keybinding and quit early, otherwise we get a double hit
-           of the keybinding callback */
-        let action = global.display.get_keybinding_action(keyCode, modifierState);
-
-        if (action == Meta.KeyBindingAction.CUSTOM) {
-            return Clutter.EVENT_STOP;
-        }
-
-        if (this.searchEntryText.has_preedit()) {
-            // There is an uncommitted text in the search box, let the input method to handle this.
-            return Clutter.EVENT_PROPAGATE;
+        /* Handle keyboard layout switching (Alt+Shift, etc.)
+         * This uses a helper function from util.js that respects:
+         * - Input methods (has_preedit check)
+         * - Custom keybindings (switch-input-source)
+         * - XKB-based layout switching (modifier-only keys)
+         */
+        let layoutResult = Util.handleKeyboardLayoutSwitchingInTextEntry(this.searchEntryText, event);
+        if (layoutResult !== null) {
+            return layoutResult;
         }
 
         let ctrlKey = modifierState & Clutter.ModifierType.CONTROL_MASK;
