@@ -33,17 +33,14 @@ const ScreenSaverInfo = Gio.DBusInterfaceInfo.new_for_xml(ScreenSaverIface);
  * ScreenSaverService:
  *
  * Implements the org.cinnamon.ScreenSaver DBus interface.
- * Routes calls to the internal screensaver (Main.screenShield).
+ * Routes calls to the internal screensaver (this._screenShield).
  *
  * Note: If internal-screensaver-enabled is false, Cinnamon must be restarted
  * to allow the external cinnamon-screensaver daemon to claim the bus name.
  */
 var ScreenSaverService = class ScreenSaverService {
-    constructor() {
-        if (!global.settings.get_boolean('internal-screensaver-enabled')) {
-            global.log('ScreenSaverService: internal-screensaver-enabled is false, not providing DBus service');
-            return;
-        }
+    constructor(screenShield) {
+        this._screenShield = screenShield;
 
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(ScreenSaverIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/cinnamon/ScreenSaver');
@@ -52,9 +49,9 @@ var ScreenSaverService = class ScreenSaverService {
                                    Gio.BusNameOwnerFlags.REPLACE,
                                    null, null);
 
-        if (Main.screenShield) {
-            Main.screenShield.connect('locked', this._onLocked.bind(this));
-            Main.screenShield.connect('unlocked', this._onUnlocked.bind(this));
+        if (this._screenShield) {
+            this._screenShield.connect('locked', this._onLocked.bind(this));
+            this._screenShield.connect('unlocked', this._onUnlocked.bind(this));
         }
 
         global.log('ScreenSaverService: providing org.cinnamon.ScreenSaver interface');
@@ -76,12 +73,12 @@ var ScreenSaverService = class ScreenSaverService {
     }
 
     GetActiveAsync(params, invocation) {
-        let isActive = Main.screenShield.isLocked();
+        let isActive = this._screenShield.isLocked();
         invocation.return_value(GLib.Variant.new('(b)', [isActive]));
     }
 
     GetActiveTimeAsync(params, invocation) {
-        let activeTime = Main.screenShield.getActiveTime();
+        let activeTime = this._screenShield.getActiveTime();
         invocation.return_value(GLib.Variant.new('(u)', [activeTime]));
     }
 
@@ -89,7 +86,7 @@ var ScreenSaverService = class ScreenSaverService {
         let [message] = params;
 
         if (!Main.lockdownSettings.get_boolean('disable-lock-screen')) {
-            Main.screenShield.lock(true, message || null);
+            this._screenShield.lock(true, message || null);
         }
 
         invocation.return_value(null);
@@ -102,20 +99,20 @@ var ScreenSaverService = class ScreenSaverService {
     }
 
     SimulateUserActivityAsync(params, invocation) {
-        Main.screenShield.simulateUserActivity();
+        this._screenShield.simulateUserActivity();
         invocation.return_value(null);
     }
 
     SetActiveAsync(params, invocation) {
         let [active] = params;
 
-        if (Main.screenShield) {
+        if (this._screenShield) {
             if (active) {
-                Main.screenShield.activate();
+                this._screenShield.activate();
             } else {
                 // Can't deactivate if locked
-                if (!Main.screenShield.isLocked()) {
-                    Main.screenShield.deactivate();
+                if (!this._screenShield.isLocked()) {
+                    this._screenShield.deactivate();
                 }
             }
         }

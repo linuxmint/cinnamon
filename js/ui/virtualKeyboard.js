@@ -1455,8 +1455,7 @@ class Keyboard extends St.BoxLayout {
 
     close() {
         if (this._screensaverMode) {
-            if (Main.screenShield)
-                Main.screenShield._hideScreensaverKeyboard();
+            Main.screenShieldHideKeyboard();
             return;
         }
 

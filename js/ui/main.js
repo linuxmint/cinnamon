@@ -152,10 +152,9 @@ var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
 var osdWindowManager = null;
-var screenShield = null;
-var screenSaverService = null;
-var _screenSaverProxy = null;
-var _screensaverSettings = null;
+let _screenShield = null;
+let _screenSaverProxy = null;
+let _screensaverSettings = null;
 var lockdownSettings = null;
 var overview = null;
 var expo = null;
@@ -533,9 +532,20 @@ function start() {
         }
     });
 
+    _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
+
     if (global.settings.get_boolean('internal-screensaver-enabled')) {
-        screenShield = new ScreenShield.ScreenShield();
-        screenSaverService = new ScreenSaver.ScreenSaverService();
+        _screenShield = new ScreenShield.ScreenShield();
+        new ScreenSaver.ScreenSaverService(_screenShield);
+    }
+
+    // Protect security-critical exported functions from being replaced by extensions.
+    for (let fnName of ['lockScreen', 'screenShieldHideKeyboard']) {
+        Object.defineProperty(imports.ui.main, fnName, {
+            value: imports.ui.main[fnName],
+            writable: false,
+            configurable: false
+        });
     }
 
     Promise.all([
@@ -1216,7 +1226,7 @@ function _shouldFilterKeybinding(entry) {
     if (allowed) {
         let lockModes = Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN;
         if ((actionMode & lockModes) !== 0 && (entry.allowedModes & lockModes) !== 0) {
-            if (!screenShield?._settings.get_boolean('allow-keyboard-shortcuts')) {
+            if (_screenShield && !_screensaverSettings.get_boolean('allow-keyboard-shortcuts')) {
                 return true;
             }
         }
@@ -1758,10 +1768,6 @@ function lockScreen(askForAwayMessage) {
         return;
     }
 
-    if (_screensaverSettings === null) {
-        _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
-    }
-
     if (askForAwayMessage && _screensaverSettings.get_boolean('ask-for-away-message')) {
         let dialog = new AwayMessageDialog.AwayMessageDialog((message) => {
             _doLock(message);
@@ -1774,8 +1780,8 @@ function lockScreen(askForAwayMessage) {
 }
 
 function _doLock(awayMessage) {
-    if (screenShield) {
-        screenShield.lock(false, awayMessage);
+    if (_screenShield) {
+        _screenShield.lock(false, awayMessage);
         return;
     }
 
@@ -1784,4 +1790,8 @@ function _doLock(awayMessage) {
     }
 
     _screenSaverProxy.LockRemote(awayMessage || "");
+}
+
+function screenShieldHideKeyboard() {
+    _screenShield?._hideScreensaverKeyboard();
 }
