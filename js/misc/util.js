@@ -842,3 +842,22 @@ function _processIsRunning(name) {
         return false;
     }
 }
+
+/**
+ * getTtyVals:
+ *
+ * Determines the VT number of the current graphical session and a free
+ * text console VT. Used by the backup locker to tell the user which
+ * Ctrl+Alt+F key to use for recovery.
+ *
+ * Returns: (array): [termTty, sessionTty] as integers
+ */
+function getTtyVals() {
+    let sessionTty = parseInt(GLib.getenv('XDG_VTNR'));
+    if (isNaN(sessionTty))
+        sessionTty = 7;
+
+    let termTty = sessionTty !== 2 ? 2 : 1;
+
+    return [termTty, sessionTty];
+}

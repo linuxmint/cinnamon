@@ -22,3 +22,5 @@ executable(
     install: true,
     install_dir: libexecdir,
 )
+
+subdir('backup-locker')

@@ -192,6 +192,13 @@ var ScreenShield = GObject.registerClass({
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed',
             this._onMonitorsChanged.bind(this));
 
+        if (global.settings.get_boolean('session-locked-state')) {
+            _log('ScreenShield: Restoring locked state from previous session');
+            this._backupLockerCall('ReleaseGrabs', null, () => {
+                this.lock(true);
+            }, true);
+
+        }
     }
 
     _setState(newState) {
@@ -424,6 +431,7 @@ var ScreenShield = GObject.registerClass({
 
         if (immediate) {
             this.opacity = 255;
+            this._activateBackupLocker();
             this._scheduleWidgetLoading();
         } else {
             this.opacity = 0;
@@ -432,6 +440,7 @@ var ScreenShield = GObject.registerClass({
                 duration: FADE_TIME,
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onComplete: () => {
+                    this._activateBackupLocker();
                     this._scheduleWidgetLoading();
                 }
             });
@@ -493,6 +502,7 @@ var ScreenShield = GObject.registerClass({
     _hideShield(emitUnlocked) {
         this._hideScreensaverKeyboard();
         this._keyboardBox.hide();
+        this._backupLockerCall('Unlock', null);
 
         if (emitUnlocked)
             this._dialog.restoreSystemLayout();
@@ -1113,6 +1123,36 @@ var ScreenShield = GObject.registerClass({
         this._updateFloaters();
     }
 
+    _activateBackupLocker() {
+        let stageXid = global.get_stage_xwindow();
+        let [termTty, sessionTty] = Util.getTtyVals();
+        this._backupLockerCall('Lock',
+            GLib.Variant.new('(tuu)', [stageXid, termTty, sessionTty]));
+    }
+
+    _backupLockerCall(method, params, callback, noAutoStart = false) {
+        Gio.DBus.session.call(
+            'org.cinnamon.BackupLocker',
+            '/org/cinnamon/BackupLocker',
+            'org.cinnamon.BackupLocker',
+            method,
+            params,
+            null,
+            noAutoStart ? Gio.DBusCallFlags.NO_AUTO_START : Gio.DBusCallFlags.NONE,
+            5000,
+            null,
+            (connection, result) => {
+                try {
+                    connection.call_finish(result);
+                } catch (e) {
+                    global.logWarning(`ScreenShield: BackupLocker.${method} failed: ${e.message}`);
+                }
+                if (callback)
+                    callback();
+            }
+        );
+    }
+
     _createBackgrounds() {
         this._destroyBackgrounds();
 
@@ -1159,6 +1199,7 @@ var ScreenShield = GObject.registerClass({
     vfunc_destroy() {
         this._stopLockDelay();
         this._cancelWidgetLoading();
+        this._backupLockerCall('Unlock', null);
 
         if (this._inhibitor) {
             this._inhibitor.close(null);

@@ -46,6 +46,8 @@ muffin_typelibdir = muffin.get_variable(pkgconfig: 'typelibdir')
 pango = dependency('muffin-cogl-pango-0')
 xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
+xcomposite = dependency('xcomposite')
+xext = dependency('xext')
 xml = dependency('libxml-2.0')
 
 nm_deps = []
@@ -80,6 +82,10 @@ message('Building recorder: @0@'.format(get_option('build_recorder')))
 cc = meson.get_compiler('c')
 math = cc.find_library('m', required: false)
 
+xdo = dependency('libxdo', required: false)
+if not xdo.found()
+    xdo = cc.find_library('xdo')
+endif
 
 # PAM authentication library
 pam_compile = '''#include <stdio.h>
@@ -142,6 +148,11 @@ if have_nl_time_first_weekday
     cinnamon_conf.set10('HAVE__NL_TIME_FIRST_WEEKDAY', true)
 endif
 
+# Check for X11 Shape extension (needed by backup-locker)
+if cc.has_header('X11/extensions/shape.h', dependencies: [X11, xext])
+    cinnamon_conf.set('HAVE_SHAPE_EXT', 1)
+endif
+
 config_h_file = configure_file(
     output : 'config.h',
     configuration : cinnamon_conf
@@ -197,6 +208,7 @@ config_js_conf = configuration_data()
 config_js_conf.set('PACKAGE_NAME', meson.project_name().to_lower())
 config_js_conf.set('PACKAGE_VERSION', version)
 config_js_conf.set10('BUILT_NM_AGENT', internal_nm_agent)
+config_js_conf.set('LIBEXECDIR', join_paths(prefix, libexecdir))
 
 configure_file(
     input: 'js/misc/config.js.in',
