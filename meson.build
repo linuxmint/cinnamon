@@ -12,6 +12,7 @@ datadir = get_option('datadir')
 libdir = join_paths(prefix, get_option('libdir'))
 includedir = get_option('includedir')
 libexecdir = get_option('libexecdir')
+sysconfdir = join_paths(prefix, get_option('sysconfdir'))
 desktopdir = join_paths(datadir, 'applications')
 x_sessiondir = join_paths(datadir, 'xsessions')
 wayland_sessiondir = join_paths(datadir, 'wayland-sessions')
@@ -79,6 +80,23 @@ message('Building recorder: @0@'.format(get_option('build_recorder')))
 cc = meson.get_compiler('c')
 math = cc.find_library('m', required: false)
 
+
+# PAM authentication library
+pam_compile = '''#include <stdio.h>
+                 #include <stdlib.h>
+                 #include <security/pam_appl.h>
+                 int main ()
+                 {
+                     pam_handle_t *pamh = 0;
+                     char *s = pam_strerror(pamh, PAM_SUCCESS);
+                     return 0;
+                 }'''
+
+pam = cc.find_library('pam')
+if not cc.has_function('sigtimedwait')
+  pam = [pam, cc.find_library('rt')]
+endif
+
 python = find_program('python3')
 
 # generate config.h
@@ -90,6 +108,24 @@ cinnamon_conf.set('BUILT_NM_AGENT', internal_nm_agent)
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
     cinnamon_conf.set10('HAVE_MALLINFO', true)
+endif
+
+# Check for unistd.h (needed by PAM helper)
+if cc.has_header('unistd.h')
+    cinnamon_conf.set('HAVE_UNISTD_H', true)
+endif
+
+# Check for sigaction (needed by PAM helper)
+if cc.has_function('sigaction', args: '-D_GNU_SOURCE')
+    cinnamon_conf.set('HAVE_SIGACTION', true)
+endif
+
+# PAM configuration checks
+if cc.compiles(pam_compile, dependencies: pam)
+  cinnamon_conf.set('PAM_STRERROR_TWO_ARGS', 1)
+endif
+if cc.has_function('pam_syslog', dependencies: pam)
+  cinnamon_conf.set('HAVE_PAM_SYSLOG', 1)
 endif
 
 langinfo_test = '''

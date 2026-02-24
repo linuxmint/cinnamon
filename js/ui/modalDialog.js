@@ -305,14 +305,15 @@ var ModalDialog = GObject.registerClass({
      * pushModal:
      * @timestamp (int): (optional) timestamp optionally used to associate the
      * call with a specific user initiated event
+     * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
      *
      * Pushes the modal to the modal stack so that it grabs the required
      * inputs.
      */
-    pushModal(timestamp) {
+    pushModal(timestamp, mode) {
         if (this._hasModal)
             return true;
-        if (!Main.pushModal(this, timestamp))
+        if (!Main.pushModal(this, timestamp, undefined, mode))
             return false;
 
         this._hasModal = true;

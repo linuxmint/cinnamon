@@ -4,6 +4,7 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
+const Cinnamon = imports.gi.Cinnamon;
 const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 
@@ -611,7 +612,7 @@ DeskletContainer.prototype = {
             global.stage.connect('leave-event', Lang.bind(this, this.handleStageEvent))
         ];
 
-        if (Main.pushModal(this.actor)) {
+        if (Main.pushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.POPUP)) {
             this.isModal = true;
         }
     },

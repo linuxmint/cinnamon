@@ -14,7 +14,6 @@ const Gio = imports.gi.Gio;
 const XApp = imports.gi.XApp;
 const AccountsService = imports.gi.AccountsService;
 const GnomeSession = imports.misc.gnomeSession;
-const ScreenSaver = imports.misc.screenSaver;
 const FileUtils = imports.misc.fileUtils;
 const Util = imports.misc.util;
 const DND = imports.ui.dnd;
@@ -1367,8 +1366,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.orderDirty = false;
 
         this._session = new GnomeSession.SessionManager();
-        this._screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-
         // We shouldn't need to call refreshAll() here... since we get a "icon-theme-changed" signal when CSD starts.
         // The reason we do is in case the Cinnamon icon theme is the same as the one specified in GTK itself (in .config)
         // In that particular case we get no signal at all.
@@ -2516,20 +2513,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         button.activate = () => {
             this.menu.close();
-
-            let screensaver_settings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.screensaver" });
-            let screensaver_dialog = GLib.find_program_in_path("cinnamon-screensaver-command");
-            if (screensaver_dialog) {
-                if (screensaver_settings.get_boolean("ask-for-away-message")) {
-                    Util.spawnCommandLine("cinnamon-screensaver-lock-dialog");
-                }
-                else {
-                    Util.spawnCommandLine("cinnamon-screensaver-command --lock");
-                }
-            }
-            else {
-                this._screenSaverProxy.LockRemote("");
-            }
+            Main.lockScreen(true);
         };
 
         this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });

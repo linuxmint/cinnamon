@@ -3489,7 +3489,7 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     _grab() {
-        if (!Main.pushModal(this._owner.actor)) {
+        if (!Main.pushModal(this._owner.actor, undefined, undefined, Cinnamon.ActionMode.POPUP)) {
             return;
         }
         this._signals.connect(global.stage, 'captured-event', this._onEventCapture, this);

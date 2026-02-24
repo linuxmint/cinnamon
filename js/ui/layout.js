@@ -304,6 +304,20 @@ var LayoutManager = GObject.registerClass({
         this._chrome.init();
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
+
+        // Create container for screen shield (above all other UI)
+        this.screenShieldGroup = new St.Widget({
+            name: 'screenShieldGroup',
+            visible: false,
+            clip_to_allocation: true,
+            layout_manager: new Clutter.BinLayout()
+        });
+        this.screenShieldGroup.add_constraint(new Clutter.BindConstraint({
+            source: global.stage,
+            coordinate: Clutter.BindCoordinate.ALL
+        }));
+        global.stage.add_actor(this.screenShieldGroup);
+        this.screenShieldGroup.raise_top();
     }
 
     _toggleExpo() {
