@@ -6,3 +6,5 @@ var PACKAGE_NAME = '@PACKAGE_NAME@';
 var PACKAGE_VERSION = '@PACKAGE_VERSION@';
 /* 1 if networkmanager is available, 0 otherwise */
 var BUILT_NM_AGENT = @BUILT_NM_AGENT@;
+/* libexec directory */
+var LIBEXECDIR = '@LIBEXECDIR@';

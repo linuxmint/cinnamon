@@ -161,7 +161,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             let actor = null;
 
             if (this._inputSourcesManager.showFlags) {
-                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22 * global.ui_scale);
+                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22);
             }
 
             if (actor == null) {

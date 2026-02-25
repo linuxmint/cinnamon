@@ -1690,7 +1690,6 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
                                              StTextureCacheLoadImageCallback  callback,
                                              gpointer                         user_data)
 {
-  gint scale;
   if (callback == NULL)
     {
       g_warning ("st_texture_cache_load_image_from_file_async callback cannot be NULL");
@@ -1699,10 +1698,9 @@ st_texture_cache_load_image_from_file_async (StTextureCache                  *ca
 
   ImageFromFileAsyncData *data;
   GTask *result;
-  scale = st_theme_context_get_scale_for_stage (),
   data = g_new0 (ImageFromFileAsyncData, 1);
-  data->width = width == -1 ? -1 : width * scale;
-  data->height = height == -1 ? -1 : height * scale;
+  data->width = width;
+  data->height = height;
 
   static gint handles = 1;
   data->handle = handles++;

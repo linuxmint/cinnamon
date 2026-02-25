@@ -7,7 +7,7 @@ const EDGE_SCROLL_ZONE_SIZE = 68;
 const EDGE_SCROLL_SPEED = 8;
 const EDGE_SCROLL_INTERVAL = 16;
 
-class ScrollBox {
+var ScrollBox = class ScrollBox {
     constructor(state) {
         this.state = state;
         this.signals = new SignalManager(null);
@@ -259,5 +259,3 @@ class ScrollBox {
         return Clutter.EVENT_PROPAGATE;
     }
 }
-
-module.exports = ScrollBox;

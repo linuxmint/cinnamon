@@ -5,13 +5,13 @@ const Main = imports.ui.main;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
 
-const createStore = require('./state');
-const AppGroup = require('./appGroup');
-const {RESERVE_KEYS} = require('./constants');
-const ScrollBox = require('./scrollBox');
+const Me = imports.ui.extension.getCurrentExtension();
+const {createStore} = Me.imports.state;
+const {AppGroup} = Me.imports.appGroup;
+const {ScrollBox} = Me.imports.scrollBox;
+const {RESERVE_KEYS} = Me.imports.constants;
 
-
-class Workspace {
+var Workspace = class Workspace {
     constructor(params) {
         this.state = params.state;
         this.state.connect({
@@ -476,5 +476,3 @@ class Workspace {
         unref(this, RESERVE_KEYS);
     }
 }
-
-module.exports = Workspace;

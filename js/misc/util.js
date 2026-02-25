@@ -769,3 +769,95 @@ function wiggle(actor, params) {
         }
     });
 }
+
+/**
+ * switchToGreeter:
+ *
+ * Switches to the display manager's login greeter, allowing another user
+ * to log in without logging out the current user. Tries multiple display
+ * manager methods in order of preference.
+ */
+function switchToGreeter() {
+    GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+}
+
+function _doSwitchToGreeter() {
+    // Check if user switching is locked down
+    if (Main.lockdownSettings.get_boolean('disable-user-switching')) {
+        global.logWarning("User switching is locked down");
+        return GLib.SOURCE_REMOVE;
+    }
+
+    if (_processIsRunning('gdm')) {
+        // Old GDM
+        try {
+            spawn(['gdmflexiserver', '--startnew', 'Standard']);
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling gdmflexiserver: ' + e.message);
+        }
+    }
+
+    if (_processIsRunning('gdm3')) {
+        // Newer GDM
+        try {
+            spawn(['gdmflexiserver']);
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling gdmflexiserver: ' + e.message);
+        }
+    }
+
+    // Try freedesktop.org standard DBus method (works with most modern display managers)
+    let seat_path = GLib.getenv('XDG_SEAT_PATH');
+    if (seat_path) {
+        try {
+            let bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, null);
+            bus.call_sync(
+                'org.freedesktop.DisplayManager',
+                seat_path,
+                'org.freedesktop.DisplayManager.Seat',
+                'SwitchToGreeter',
+                null,
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null
+            );
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling SwitchToGreeter: ' + e.message);
+        }
+    }
+
+    global.logWarning('switchToGreeter: No supported display manager method available');
+    return GLib.SOURCE_REMOVE;
+}
+
+function _processIsRunning(name) {
+    try {
+        let [success, stdout] = GLib.spawn_command_line_sync('pidof ' + name);
+        return success && stdout.length > 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * getTtyVals:
+ *
+ * Determines the VT number of the current graphical session and a free
+ * text console VT. Used by the backup locker to tell the user which
+ * Ctrl+Alt+F key to use for recovery.
+ *
+ * Returns: (array): [termTty, sessionTty] as integers
+ */
+function getTtyVals() {
+    let sessionTty = parseInt(GLib.getenv('XDG_VTNR'));
+    if (isNaN(sessionTty))
+        sessionTty = 7;
+
+    let termTty = sessionTty !== 2 ? 2 : 1;
+
+    return [termTty, sessionTty];
+}

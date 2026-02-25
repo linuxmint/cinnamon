@@ -841,11 +841,16 @@ var WindowManager = class WindowManager {
     }
 
     _filterKeybinding(shellwm, binding) {
-        // TODO: We can use ActionModes to manage what keybindings are
-        // available where. For now, this allows global keybindings in a non-
-        // modal state. 
+        // Builtin keybindings (defined by Muffin) work in NORMAL mode by default
+        if (Main.actionMode == Cinnamon.ActionMode.NORMAL && binding.is_builtin())
+            return false;
 
-        return global.stage_input_mode !== Cinnamon.StageInputMode.NORMAL;
+        // Look up the binding in our keybinding manager
+        let bindingName = binding.get_name();
+        let [action_id, entry] = Main.keybindingManager._lookupEntry(bindingName);
+
+        // Use the common filtering logic from main.js
+        return Main._shouldFilterKeybinding(entry);
     }
 
     _hasAttachedDialogs(window, ignoreWindow) {
