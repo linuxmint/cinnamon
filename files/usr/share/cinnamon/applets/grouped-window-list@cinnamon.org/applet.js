@@ -448,12 +448,16 @@ class GroupedWindowListApplet extends Applet.Applet {
         return false;
     }
 
-    onWindowMonitorChanged(display, metaWindow, metaWorkspace) {
-        if (this.state.monitorWatchList.length !== this.numberOfMonitors) {
-            const currentWorkspace = this.getCurrentWorkspace();
-            if (currentWorkspace !== null) {
-                currentWorkspace.windowRemoved(metaWorkspace, metaWindow);
-                currentWorkspace.windowAdded(metaWorkspace, metaWindow);
+    onWindowMonitorChanged(display, metaWindow, monitor) {
+        const metaWorkspace = metaWindow.get_workspace();
+        if ((this.state.monitorWatchList.length !== this.numberOfMonitors) && metaWorkspace) {
+            const windowWorkspace = this.workspaces.find(
+                workspace => workspace.metaWorkspace && workspace.metaWorkspace.index() === metaWorkspace.index()
+            );
+
+            if (windowWorkspace !== null) {
+                windowWorkspace.windowRemoved(metaWorkspace, metaWindow);
+                windowWorkspace.windowAdded(metaWorkspace, metaWindow);
             }
         }
     }
@@ -769,7 +773,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWorkspace.appGroups[z].groupState.lastFocused
                 : source.groupState.metaWindows[z];
             Main.activateWindow(_window, global.get_current_time());
-            setTimeout(() => this.state.set({scrollActive: false}, 4000));
+            setTimeout(() => this.state.set({scrollActive: false}), 4000);
         }
     }
 
@@ -1018,10 +1022,14 @@ class GroupedWindowListApplet extends Applet.Applet {
     _onWindowAppChanged(tracker, metaWindow) {
         if (!metaWindow) return;
 
+        const windowWorkspace = metaWindow.get_workspace();
+
         this.workspaces.forEach(workspace => {
             if (!workspace) return;
-            workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
-            workspace.windowAdded(workspace.metaWorkspace, metaWindow);
+            if (windowWorkspace && (workspace.metaWorkspace.index() === windowWorkspace.index())) {
+                workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
+                workspace.windowAdded(workspace.metaWorkspace, metaWindow);
+            }
         });
     }
 

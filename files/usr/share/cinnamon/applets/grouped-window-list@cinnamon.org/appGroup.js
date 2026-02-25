@@ -61,6 +61,16 @@ const getFocusState = function(metaWindow) {
     return false;
 };
 
+const getLastFocusedWindow = function(metaWindows) {
+    let lastFocusedWindow = null;
+    for (let i = 0; i < metaWindows.length; i++) {
+        if (!lastFocusedWindow || (metaWindows[i].get_user_time() > lastFocusedWindow.get_user_time())) {
+            lastFocusedWindow = metaWindows[i];
+        }
+    }
+    return lastFocusedWindow;
+};
+
 var AppGroup = class AppGroup {
     constructor(params) {
         this.state = params.state;
@@ -992,19 +1002,21 @@ var AppGroup = class AppGroup {
         this.signals.disconnect('notify::icon', metaWindow);
         this.signals.disconnect('notify::progress', metaWindow);
 
-        this.groupState.metaWindows.splice(refWindow, 1);
+        const metaWindows = this.groupState.metaWindows.filter((w) => w != metaWindow);        
 
         if (this.progressOverlay.visible) this.onProgressChange();
 
-        if (this.groupState.metaWindows.length > 0 && !this.groupState.willUnmount) {
-            this.onWindowTitleChanged(this.groupState.lastFocused);
-            this.groupState.set({
-                metaWindows: this.groupState.metaWindows,
-                lastFocused: this.groupState.metaWindows[this.groupState.metaWindows.length - 1]
-            }, true);
+        if (!this.groupState.willUnmount) {
+            const lastFocused = this.groupState.lastFocused === metaWindow
+                ? getLastFocusedWindow(metaWindows)
+                : this.groupState.lastFocused;
+            this.groupState.set({metaWindows: metaWindows, lastFocused: lastFocused}, true);
+            this.onWindowTitleChanged(lastFocused);
             if (this.hoverMenu) this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
             this.calcWindowNumber();
-        } else {
+        }
+
+        if (metaWindows.length === 0) {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in workspace to put the final nail in the coffin.
             if (typeof cb === 'function') {
@@ -1125,10 +1137,12 @@ var AppGroup = class AppGroup {
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        this.groupState.set({windowCount: this.groupState.metaWindows ? this.groupState.metaWindows.length : 0});
-        
-        if (this.groupState.windowCount > 1 && this.state.settings.enableWindowCountBadges) {
-            this.windowsBadgeLabel.text = this.groupState.windowCount.toString();
+        const windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
+
+        this.groupState.set({windowCount: windowCount});
+
+        if (windowCount > 1 && this.state.settings.enableWindowCountBadges) {
+            this.windowsBadgeLabel.text = windowCount.toString();
             this.windowsBadge.show();
         } else {
             this.windowsBadge.hide();
