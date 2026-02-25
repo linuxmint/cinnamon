@@ -995,36 +995,36 @@ var AppGroup = class AppGroup {
     }
 
     windowRemoved(metaWorkspace, metaWindow, refWindow, cb) {
-        if (refWindow === -1) return;
+        if (!metaWindow) return;
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
         this.signals.disconnect('notify::icon', metaWindow);
         this.signals.disconnect('notify::progress', metaWindow);
 
-        const metaWindows = this.groupState.metaWindows.filter((w) => w != metaWindow);        
+        const metaWindows = this.groupState.metaWindows.filter((w) => w != metaWindow);
 
         if (this.progressOverlay.visible) this.onProgressChange();
 
-        if (!this.groupState.willUnmount) {
-            const lastFocused = this.groupState.lastFocused === metaWindow
-                ? getLastFocusedWindow(metaWindows)
-                : this.groupState.lastFocused;
-            this.groupState.set({metaWindows: metaWindows, lastFocused: lastFocused}, true);
-            this.onWindowTitleChanged(lastFocused);
-            if (this.hoverMenu) this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
-            this.calcWindowNumber();
-        }
+        const lastFocused = this.groupState.lastFocused === metaWindow
+            ? getLastFocusedWindow(metaWindows)
+            : this.groupState.lastFocused;
 
-        if (metaWindows.length === 0) {
+        this.groupState.set({metaWindows: metaWindows, lastFocused: lastFocused}, true);
+
+        if (lastFocused) this.onWindowTitleChanged(lastFocused);
+
+        if (this.hoverMenu) this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
+
+        this.calcWindowNumber();
+
+        if ((metaWindows.length === 0 || this.groupState.willUnmount) && typeof cb === 'function') {
             // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
             // in workspace to put the final nail in the coffin.
-            if (typeof cb === 'function') {
-                if (this.hoverMenu && this.groupState.isFavoriteApp) {
-                    this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
-                }
-                cb(this.groupState.appId, this.groupState.isFavoriteApp);
+            if (this.hoverMenu && this.groupState.isFavoriteApp) {
+                this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
             }
+            cb(this.groupState.appId, this.groupState.isFavoriteApp);
         }
     }
 
