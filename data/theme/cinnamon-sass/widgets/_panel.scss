@@ -11,6 +11,8 @@
   &Left {
     spacing: 4px;
 
+    // background-color: blue;
+
     &:dnd { background-color: rgba(255,0,0,0.2); } // For panel edit mode
     &:ltr { padding-right: 4px; }
     &:rtl { padding-left: 4px; }
@@ -23,6 +25,8 @@
   }
 
   &Right {
+
+    // background-color: red;
 
     &:dnd { background-color: rgba(0,0,255,0.2); }
 
@@ -51,6 +55,8 @@
 
   &Center {
     spacing: 4px;
+
+    // background-color: green;
 
     &:dnd { background-color: rgba(0,255,0,0.2); }
 
