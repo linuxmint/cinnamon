@@ -449,16 +449,12 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onWindowMonitorChanged(display, metaWindow, monitor) {
-        const metaWorkspace = metaWindow.get_workspace();
-        if ((this.state.monitorWatchList.length !== this.numberOfMonitors) && metaWorkspace) {
-            const windowWorkspace = this.workspaces.find(
-                workspace => workspace.metaWorkspace && workspace.metaWorkspace.index() === metaWorkspace.index()
-            );
-
-            if (windowWorkspace !== null) {
-                windowWorkspace.windowRemoved(metaWorkspace, metaWindow);
-                windowWorkspace.windowAdded(metaWorkspace, metaWindow);
-            }
+        if ((this.state.monitorWatchList.length !== this.numberOfMonitors)) {
+            this.workspaces.forEach( workspace => {
+                if (!workspace) return;
+                workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
+                workspace.windowAdded(workspace.metaWorkspace, metaWindow);
+            });
         }
     }
 
@@ -1021,15 +1017,10 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     _onWindowAppChanged(tracker, metaWindow) {
         if (!metaWindow) return;
-
-        const windowWorkspace = metaWindow.get_workspace();
-
         this.workspaces.forEach(workspace => {
             if (!workspace) return;
-            if (windowWorkspace && (workspace.metaWorkspace.index() === windowWorkspace.index())) {
-                workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
-                workspace.windowAdded(workspace.metaWorkspace, metaWindow);
-            }
+            workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
+            workspace.windowAdded(workspace.metaWorkspace, metaWindow);
         });
     }
 
@@ -1040,7 +1031,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
      _onNotificationReceived(mtray, notification) {
         let appId = notification.source.app?.get_id();
-      
+
         if (!appId) {
             return;
         }

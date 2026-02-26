@@ -64,8 +64,9 @@ const getFocusState = function(metaWindow) {
 const getLastFocusedWindow = function(metaWindows) {
     let lastFocusedWindow = null;
     for (let i = 0; i < metaWindows.length; i++) {
-        if (!lastFocusedWindow || (metaWindows[i].get_user_time() > lastFocusedWindow.get_user_time())) {
-            lastFocusedWindow = metaWindows[i];
+        const metaWindow = metaWindows[i];
+        if (!lastFocusedWindow || (metaWindow.get_user_time() > lastFocusedWindow.get_user_time())) {
+            lastFocusedWindow = metaWindow;
         }
     }
     return lastFocusedWindow;
@@ -1019,11 +1020,6 @@ var AppGroup = class AppGroup {
         this.calcWindowNumber();
 
         if ((metaWindows.length === 0 || this.groupState.willUnmount) && typeof cb === 'function') {
-            // This is the last window, so this group needs to be destroyed. We'll call back windowRemoved
-            // in workspace to put the final nail in the coffin.
-            if (this.hoverMenu && this.groupState.isFavoriteApp) {
-                this.groupState.trigger('removeThumbnailFromMenu', metaWindow);
-            }
             cb(this.groupState.appId, this.groupState.isFavoriteApp);
         }
     }

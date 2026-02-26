@@ -234,16 +234,15 @@ var Workspace = class Workspace {
 
     shouldWindowBeAdded(metaWindow) {
         return (this.state.settings.showAllWorkspaces
-            || metaWindow.is_on_all_workspaces()
-            || metaWindow.get_workspace() === this.metaWorkspace)
+                || metaWindow.is_on_all_workspaces()
+                || (metaWindow.get_workspace().index() === this.metaWorkspace.index()))
         && Main.isInteresting(metaWindow)
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
 
     windowWorkspaceChanged(display, metaWindow, metaWorkspace) {
-        // If the window is removed the metaWorkspace will be null, in that
-        // case we wouldn't want to add the window again.
-        if (metaWorkspace && this.metaWorkspace.index() === metaWorkspace.index()) {
+        // If the window is removed the metaWorkspace will be null.
+        if (metaWorkspace) {
             this.windowAdded(metaWorkspace, metaWindow);
         } else {
             this.windowRemoved(metaWorkspace, metaWindow);
