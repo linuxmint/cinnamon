@@ -32,6 +32,7 @@ ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global
 CinnamonScreen *cinnamon_global_get_screen                (CinnamonGlobal *global);
 MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
 GList         *cinnamon_global_get_window_actors         (CinnamonGlobal *global);
+GList         *cinnamon_global_get_background_actors     (CinnamonGlobal *global);
 GSettings     *cinnamon_global_get_settings              (CinnamonGlobal *global);
 guint32        cinnamon_global_get_current_time          (CinnamonGlobal *global);
 pid_t          cinnamon_global_get_pid                   (CinnamonGlobal *global);

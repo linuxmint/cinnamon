@@ -247,18 +247,9 @@ Overview.prototype = {
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        this._background = new Clutter.Actor();
+        this._background = Main.createFullScreenBackground();
         this._background.set_position(0, 0);
         this._group.add_actor(this._background);
-
-        let desktopBackground;
-        if (!Meta.is_wayland_compositor()) {
-            desktopBackground = Meta.X11BackgroundActor.new_for_display(global.display);
-        } else {
-            desktopBackground = new Clutter.Actor();
-        }
-
-        this._background.add_actor(desktopBackground);
 
         let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
         backgroundShade.set_size(global.screen_width, global.screen_height);

@@ -9,7 +9,6 @@
 #include <meta/meta-x11-display.h>
 #include <meta/compositor-muffin.h>
 #include <meta/meta-cursor-tracker.h>
-#include <meta/meta-background-actor.h>
 #include <meta/meta-settings.h>
 #include <meta/meta-backend.h>
 #include <meta/util.h>
@@ -145,6 +144,8 @@ cinnamon_global_get_property(GObject         *object,
       g_value_set_object (value, meta_get_top_window_group_for_display (global->meta_display));
       break;
     case PROP_BACKGROUND_ACTOR:
+      g_warning_once ("global.background_actor is deprecated and X11-only. "
+                      "Use global.get_background_actors() instead.");
       g_value_set_object (value, meta_get_x11_background_actor_for_display (global->meta_display));
       break;
     case PROP_DESKLET_CONTAINER:
@@ -392,9 +393,9 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    PROP_BACKGROUND_ACTOR,
                                    g_param_spec_object ("background-actor",
                                                         "Background Actor",
-                                                        "Actor drawing root window background",
+                                                        "Actor drawing root window background (X11 only, deprecated)",
                                                         CLUTTER_TYPE_ACTOR,
-                                                        G_PARAM_READABLE));
+                                                        G_PARAM_READABLE | G_PARAM_DEPRECATED));
   g_object_class_install_property (gobject_class,
                                    PROP_DESKLET_CONTAINER,
                                    g_param_spec_object ("desklet-container",
@@ -758,6 +759,23 @@ cinnamon_global_get_window_actors (CinnamonGlobal *global)
   g_return_val_if_fail (CINNAMON_IS_GLOBAL (global), NULL);
 
   return meta_get_window_actors (global->meta_display);
+}
+
+/**
+ * cinnamon_global_get_background_actors:
+ *
+ * Gets the list of per-monitor background actors created by
+ * meta_create_background_for_monitor(). These are the live actors in the
+ * scene graph and can have effects applied to them directly.
+ *
+ * Return value: (element-type Clutter.Actor) (transfer none): the list of background actors
+ */
+GList *
+cinnamon_global_get_background_actors (CinnamonGlobal *global)
+{
+  g_return_val_if_fail (CINNAMON_IS_GLOBAL (global), NULL);
+
+  return meta_get_background_actors_for_display (global->meta_display);
 }
 
 static void
