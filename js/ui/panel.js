@@ -10,7 +10,6 @@
 const Cairo = imports.cairo;
 const Clutter = imports.gi.Clutter;
 const GObject = imports.gi.GObject;
-const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
@@ -361,7 +360,6 @@ var PanelManager = GObject.registerClass({
         this._addOsd.hide();
         this._moveOsd.hide();
 
-        this._onPanelsEnabledChanged();
         this._checkCanAddPanel();
         this._updateAllPointerBarriers();
     }
@@ -446,10 +444,10 @@ var PanelManager = GObject.registerClass({
             let pleft, pright;
             for (let j = 0, len = stash.length; j < len; j++) {
                 if (stash[j][2] == PanelLoc.left && stash[j][1] == i) {
-                    pleft = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
+                    pleft = this._loadPanel(stash[j][0], stash[j][1], stash[j][2]);
                 }
                 if (stash[j][2] == PanelLoc.right && stash[j][1] == i) {
-                    pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2], [true,true]);
+                    pright = this._loadPanel(stash[j][0], stash[j][1], stash[j][2]);
                 }
                 if (stash[j][2] == PanelLoc.bottom && stash[j][1] == i) {
                     this._loadPanel(stash[j][0], stash[j][1], stash[j][2]);
@@ -558,7 +556,6 @@ var PanelManager = GObject.registerClass({
      */
     removePanel(panelId) {
         this.panelCount -= 1;
-        global.log("Removing panel with panelId of: " + panelId);
         let list = getPanelsEnabledList();
         for (let i = 0, len = list.length; i < len; i++) {
             if (list[i].split(":")[0] == panelId) {
@@ -766,7 +763,6 @@ var PanelManager = GObject.registerClass({
      * Returns (Panel.Panel): Panel created
      */
     _loadPanel(ID, monitorIndex, panelPosition, panelList, metaList) {
-        global.log("Loading panel with ID: " + ID);
         if (!panelList) panelList = this.panels;
         if (!metaList) metaList = this.panelsMeta;
 
@@ -849,8 +845,6 @@ var PanelManager = GObject.registerClass({
         let newMeta = new Array(this.panels.length);
         let panelProperties = getPanelsEnabledList();
 
-        global.log("The current panelProperties are: " + panelProperties);
-
         for (let i = 0; i < panelProperties.length; i ++) {
 
             let elements = panelProperties[i].split(":");
@@ -864,14 +858,10 @@ var PanelManager = GObject.registerClass({
             let mon = parseInt(elements[1]);
             let ploc = getPanelLocFromName(elements[2]);
 
-            global.log("Panels enabled changed panel ID: " + ID);
-
             if (this.panels[ID]) {                  // If (existing) panel is moved
                 newMeta[ID] = [mon, ploc];          //Note: meta [i][0] is the monitor  meta [i][1] is the panelposition
 
                 newPanels[ID] = this.panels[ID];                       // Move panel object to newPanels
-                global.log("About to delete panel: " + ID);
-                global.log(this.panels[ID]);
                 this.panels[ID] = null;                                // avoids triggering the destroy logic that follows
                 delete this.panels[ID];
 
@@ -899,7 +889,6 @@ var PanelManager = GObject.registerClass({
         let removedPanelIndexes = [];
         for (let i = 0, len = this.panels.length; i < len; i++) {
             if (this.panels[i]) {
-                global.log("Getting ready to destroy: " + this.panels[i]);
                 this.panels[i].destroy();
                 removedPanelIndexes.push(i);
             }
@@ -1510,7 +1499,6 @@ var PanelZoneDNDHandler = class {
  *
  * @monitor (Meta.Rectangle): the geometry (bounding box) of the monitor
  * @panelPosition (integer): where the panel is on the screen
- * @actor (Cinnamon.GenericContainer): the actor of the panel
  *
  * @_leftBox (St.BoxLayout): the box containing all the applets in the left region
  * @_centerBox (St.BoxLayout): the box containing all the applets in the center region
@@ -1522,8 +1510,6 @@ var PanelZoneDNDHandler = class {
  *
  * This represents a panel on the screen.
  */
-
-// var Panel = class {
 var Panel = GObject.registerClass({
     Signals: {
         'size-changed': { param_types: [GObject.TYPE_INT] },
@@ -1535,10 +1521,9 @@ var Panel = GObject.registerClass({
             name: 'panel',
             reactive: true,
         });
-        // this._delegate = this;
+        // Keeping this to avoid breaking things
         this.actor = this;
 
-        global.log("Creating a panel with a panel.Id of: " + id);
         this.panelId = id;
         this.monitorIndex = monitorIndex;
         this.monitor = global.display.get_monitor_geometry(monitorIndex);
@@ -1572,31 +1557,28 @@ var Panel = GObject.registerClass({
         this._peeking = false;
 
         this.themeSettings = new Gio.Settings({ schema_id: 'org.cinnamon.theme' });
-
-        // this.actor = new Cinnamon.GenericContainer({ name: 'panel', reactive: true });
         this.addPanelStyleClass(this.panelPosition);
 
         this.actor._delegate = this;
 
         this._menus = new PopupMenu.PopupMenuManager(this);
 
-        this._leftBox    = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
-        this._rightBox   = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', important: true });
-        this._centerBox  = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
+        this._leftBox = new St.BoxLayout({ name: 'panelLeft', style_class: 'panelLeft', important: true });
+        this._rightBox = new St.BoxLayout({ name: 'panelRight', style_class: 'panelRight', important: true });
+        this._centerBox = new St.BoxLayout({ name: 'panelCenter',  style_class: 'panelCenter', important: true });
 
-        if (this.is_vertical) {
+        if (this.is_vertical)
             this._set_vertical_panel_style();
-        } else {
+        else
             this._set_horizontal_panel_style();
-        }
 
         this.actor.add_actor(this._leftBox);
         this.actor.add_actor(this._centerBox);
         this.actor.add_actor(this._rightBox);
 
-        this._leftBoxDNDHandler   = new PanelZoneDNDHandler(this._leftBox, 'left', this.panelId);
+        this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox, 'left', this.panelId);
         this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox, 'center', this.panelId);
-        this._rightBoxDNDHandler  = new PanelZoneDNDHandler(this._rightBox, 'right', this.panelId);
+        this._rightBoxDNDHandler = new PanelZoneDNDHandler(this._rightBox, 'right', this.panelId);
 
         this.addContextMenuToPanel(this.panelPosition);
 
@@ -1605,13 +1587,6 @@ var Panel = GObject.registerClass({
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.actor.connect('button-press-event', Lang.bind(this, this._onButtonPressEvent));
-        this.actor.connect('style-changed', Lang.bind(this, this._moveResizePanel));
-        this.actor.connect('leave-event', Lang.bind(this, this._leavePanel));
-        this.actor.connect('enter-event', Lang.bind(this, this._enterPanel));
-        // this.actor.connect('get-preferred-width', Lang.bind(this, this._getPreferredWidth));
-        // this.actor.connect('get-preferred-height', Lang.bind(this, this._getPreferredHeight));
-        // this.actor.connect('allocate', Lang.bind(this, this._allocate));
         this.actor.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
@@ -1746,7 +1721,7 @@ var Panel = GObject.registerClass({
         this._menus = null;
         this.monitor = null;
 
-        return;
+        super.destroy();
     }
 
     peekPanel() {
@@ -1856,7 +1831,7 @@ var Panel = GObject.registerClass({
         if (this._dragShowId && this._dragShowId > 0)
             Mainloop.source_remove(this._dragShowId);
 
-        let leaveIfOut = Lang.bind(this, function() {
+        let leaveIfOut = () => {
             this._dragShowId = 0;
             let [x, y, whatever] = global.get_pointer();
             this.actor.sync_hover();
@@ -1868,7 +1843,7 @@ var Panel = GObject.registerClass({
                 this._leavePanel();
                 return false;
             }
-        });  // end of bind
+        };
 
         this._dragShowId = Mainloop.timeout_add(500, leaveIfOut);
 
@@ -2047,19 +2022,19 @@ var Panel = GObject.registerClass({
         this.queue_relayout();
     }
 
-    _onButtonPressEvent(actor, event) {
-        if (event.get_button() == 1) {
+    vfunc_button_press_event(event) {
+        if (event.button === 1) {
             if (this._context_menu.isOpen)
                 this._context_menu.toggle();
         }
-        if (event.get_button() == 3) {  // right click
+        if (event.button === 3) {
             try {
-                let [x, y] = event.get_coords();
+                let { x, y } = event;
                 let target = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
 
                 // NB test on parent fails with centre aligned vertical box, but works for the test against the actor
                 if (this._context_menu._getMenuItems().length > 0 &&
-                   (target.get_parent() == this.actor || target == this.actor)) {
+                   (target.get_parent() === this || target === this)) {
                     if (!this._context_menu.isOpen) {
                         switch (this.panelPosition) {
                             case PanelLoc.top:
@@ -2079,7 +2054,8 @@ var Panel = GObject.registerClass({
                 global.log(e);
             }
         }
-        return;
+
+        return Clutter.EVENT_STOP;
     }
 
     _onFocusChanged() {
@@ -2262,6 +2238,12 @@ var Panel = GObject.registerClass({
         return false;
     }
 
+    vfunc_style_changed() {
+        super.vfunc_style_changed();
+
+        this._moveResizePanel();
+    }
+
     /**
      * _moveResizePanel:
      *
@@ -2393,7 +2375,6 @@ var Panel = GObject.registerClass({
                                         : this.monitor.x + this.monitor.width - panelHeight;
                 }
                 this.set_size(panelHeight, newVertPanelHeight);
-                global.log("------------ Setting actor size " + panelHeight + " " + newVertPanelHeight);
             }
 
             // update position and clip region
@@ -2683,32 +2664,11 @@ var Panel = GObject.registerClass({
         global.log(`[Panel ${this.panelId}] Removing zone configuration`);
     }
 
-//     _getPreferredWidth(actor, forHeight, alloc) {
-
-//         alloc.min_size = -1;
-//         alloc.natural_size = -1;
-
-//  /*       if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-//             alloc.natural_size = Main.layoutManager.primaryMonitor.width;
-//         } */
-//     }
-
-//     _getPreferredHeight(actor, forWidth, alloc) {
-
-//         alloc.min_size = -1;
-//         alloc.natural_size = -1;
-
-// /*        if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-//             alloc.natural_size = Main.layoutManager.primaryMonitor.height;
-//             alloc.natural_size = alloc.natural_size - this.toppanelHeight - this.bottompanelHeight - this.margin_top - this.margin_bottom;
-//         } */
-//     }
-
     /**
-     * _calcBoxSizes:
+     * _calculateBoxes:
      * @allocWidth (real): allocated total width
      * @allocHeight (real): allocated total height
-     * @vertical (boolean): if on vertical panel
+     * @isVertical (boolean): if on vertical panel
      *
      * Given the minimum and natural width requested by each box, this function
      * calculates how much width should actually allocated to each box. The
@@ -2754,189 +2714,22 @@ var Panel = GObject.registerClass({
      *
      * Returns (array): The left and right widths to be allocated.
      */
-    _calcBoxSizes(allocWidth, allocHeight, vertical) {
-        let leftBoundary, rightBoundary = 0;
-        let leftMinWidth       = 0;
-        let leftNaturalWidth   = 0;
-        let rightMinWidth      = 0;
-        let rightNaturalWidth  = 0;
-        let centerMinWidth     = 0;
-        let centerNaturalWidth = 0;
-
-        if (vertical)
-        {
-            [leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_height(-1);
-            [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_height(-1);
-            [rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_height(-1);
-        } else {
-            [leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_width(-1);
-            [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
-            [rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_width(-1);
-        }
-
-        let centerBoxOccupied = this._centerBox.get_n_children() > 0;
-
-        /* If panel edit mode, pretend central box is occupied and give it at
-         * least a minimum width so that things can be dropped into it.
-           Note that this has to be combined with the box being given Clutter.ActorAlign.FILL */
-        if (this._panelEditMode) {
-            centerBoxOccupied  = true;
-            centerMinWidth     = Math.max(centerMinWidth, EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-            centerNaturalWidth = Math.max(centerNaturalWidth, EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
-        }
-
-        let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
-        let totalNaturalWidth         = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
-
-        let sideMinWidth              = Math.max(leftMinWidth, rightMinWidth);
-        let sideNaturalWidth          = Math.max(leftNaturalWidth, rightNaturalWidth);
-        let totalCenteredMinWidth     = centerMinWidth + 2 * sideMinWidth;
-        let totalCenteredNaturalWidth = centerNaturalWidth + 2 * sideNaturalWidth;
-
-        let leftWidth, rightWidth;
-
-        if (centerBoxOccupied) {
-            if (totalCenteredNaturalWidth < allocWidth) {
-                /* center the central box and butt the left and right up to it. */
-                leftWidth  = (allocWidth - centerNaturalWidth) / 2;
-                rightWidth = leftWidth;
-            } else if (totalCenteredMinWidth < allocWidth) {
-                /* Center can be centered as without shrinking things too much.
-                 * First give everything the minWidth they want, and then
-                 * distribute the remaining space proportional to how much the
-                 * regions want. */
-                let totalRemaining = allocWidth - totalCenteredMinWidth;
-                let totalWant      = totalCenteredNaturalWidth - totalCenteredMinWidth;
-
-                leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
-                rightWidth = leftWidth;
-            } else if (totalMinWidth < allocWidth) {
-                /* There is enough space for minWidth if we don't care about
-                 * centering. Make center things as center as possible */
-                if (leftMinWidth > rightMinWidth) {
-                    leftWidth = leftMinWidth;
-
-                    if (leftMinWidth + centerNaturalWidth + rightNaturalWidth < allocWidth) {
-                        rightWidth = allocWidth - leftMinWidth - centerNaturalWidth;
-                    } else {
-                        let totalRemaining = allocWidth - totalMinWidth;
-                        let totalWant      = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
-
-                        rightWidth = rightMinWidth;
-                        if (totalWant > 0)
-                            rightWidth += (rightNaturalWidth - rightMinWidth) / totalWant * totalRemaining;
-                    }
-                } else {
-                    rightWidth = rightMinWidth;
-
-                    if (rightMinWidth + centerNaturalWidth + leftNaturalWidth < allocWidth) {
-                        leftWidth = allocWidth - rightMinWidth - centerNaturalWidth;
-                    } else {
-                        let totalRemaining = allocWidth - totalMinWidth;
-                        let totalWant      = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
-
-                        leftWidth = leftMinWidth;
-                        if (totalWant > 0)
-                            leftWidth += (leftNaturalWidth - leftMinWidth) / totalWant * totalRemaining;
-                    }
-                }
-            } else {
-                /* Scale everything down according to their minWidth. */
-                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
-                rightWidth = rightMinWidth / totalMinWidth * allocWidth;
-            }
-        } else {  // center box not occupied
-            if (totalNaturalWidth < allocWidth) {
-                /* Everything's fine. Allocate as usual. */
-                if (vertical) {
-                    leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
-                    rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
-                } else {
-                    leftWidth  = leftNaturalWidth;
-                    rightWidth = rightNaturalWidth;
-                }
-            } else if (totalMinWidth < allocWidth) {
-                /* There is enough space for minWidth but not for naturalWidth.
-                 * Allocate the minWidth and then divide the remaining space
-                 * according to how much more they want. */
-                let totalRemaining = allocWidth - totalMinWidth;
-                let totalWant      = totalNaturalWidth - totalMinWidth;
-
-                leftWidth  = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
-                rightWidth = rightMinWidth + ((rightNaturalWidth - rightMinWidth) / totalWant) * totalRemaining;
-            } else {
-                /* Scale everything down according to their minWidth. */
-                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
-                rightWidth = rightMinWidth / totalMinWidth * allocWidth;
-            }
-        }
-
-        leftBoundary  = Math.round(leftWidth);
-        rightBoundary = Math.round(allocWidth - rightWidth);
-
-        if (!vertical && (this.actor.get_direction() === St.TextDirection.RTL)) {
-            leftBoundary  = Math.round(allocWidth - leftWidth);
-            rightBoundary = Math.round(rightWidth);
-        }
-
-        return [leftBoundary, rightBoundary];
-    }
-
-    _setVertChildbox(childbox, y1, y2) {
-
-        childbox.y1 = y1;
-        childbox.y2 = y2;
-
-        return;
-    }
-
-    _setHorizChildbox(childbox, x1, x2, x1_rtl, x2_rtl) {
-        if (this.actor.get_direction() == St.TextDirection.RTL) {
-            childbox.x1 = x1_rtl;
-            childbox.x2 = x2_rtl;
-        } else {
-            childbox.x1 = x1;
-            childbox.x2 = x2;
-        }
-        return;
-    }
-
-    // vfunc_get_preferred_height(forWidth) {
-    //     let [min, nat] = super.vfunc_get_preferred_height(forWidth);
-    //     global.log("xxxxxxx This monitors height is " + this.monitor.height);
-    //     if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)
-    //         return [min, this.monitor.height];
-    //     else
-    //         return [min, nat];
-    // }
-
-    // vfunc_get_preferred_width(forHeight) {
-    //     let [min, nat] = super.vfunc_get_preferred_width(forHeight);
-    //     global.log("xxxxxxx This monitors width is " + this.monitor.width);
-    //     if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right)
-    //         return [min, nat];
-    //     else
-    //         return [min, this.monitor.width];
-    // }
-
     _calculateBoxes(allocWidth, allocHeight, isVertical) {
         let leftBoundary = 0;
         let rightBoundary = 0;
-        let leftMinWidth       = 0;
-        let leftNaturalWidth   = 0;
-        let rightMinWidth      = 0;
-        let rightNaturalWidth  = 0;
-        let centerMinWidth     = 0;
+        let leftMinWidth = 0;
+        let leftNaturalWidth = 0;
+        let rightMinWidth = 0;
+        let rightNaturalWidth = 0;
+        let centerMinWidth = 0;
         let centerNaturalWidth = 0;
 
         let centerBoxOccupied = this._centerBox.get_n_children() > 0;
 
-        // global.log(isVertical);
-
         if (isVertical) {
-            [leftMinWidth, leftNaturalWidth]     = this._leftBox.get_preferred_height(-1);
+            [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_height(-1);
             [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_height(-1);
-            [rightMinWidth, rightNaturalWidth]   = this._rightBox.get_preferred_height(-1);
+            [rightMinWidth, rightNaturalWidth] = this._rightBox.get_preferred_height(-1);
         } else {
             [leftMinWidth, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
             [centerMinWidth, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
@@ -2951,12 +2744,12 @@ var Panel = GObject.registerClass({
             centerNaturalWidth = Math.max(centerNaturalWidth, EDIT_MODE_MIN_BOX_SIZE * global.ui_scale);
         }
 
-        let totalMinWidth             = leftMinWidth + centerMinWidth + rightMinWidth;
-        let totalNaturalWidth         = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
+        let totalMinWidth = leftMinWidth + centerMinWidth + rightMinWidth;
+        let totalNaturalWidth = leftNaturalWidth + centerNaturalWidth + rightNaturalWidth;
 
-        let sideMinWidth              = Math.max(leftMinWidth, rightMinWidth);
-        let sideNaturalWidth          = Math.max(leftNaturalWidth, rightNaturalWidth);
-        let totalCenteredMinWidth     = centerMinWidth + 2 * sideMinWidth;
+        let sideMinWidth = Math.max(leftMinWidth, rightMinWidth);
+        let sideNaturalWidth = Math.max(leftNaturalWidth, rightNaturalWidth);
+        let totalCenteredMinWidth = centerMinWidth + 2 * sideMinWidth;
         let totalCenteredNaturalWidth = centerNaturalWidth + 2 * sideNaturalWidth;
 
         let leftWidth, rightWidth;
@@ -2964,7 +2757,7 @@ var Panel = GObject.registerClass({
         if (centerBoxOccupied) {
             if (totalCenteredNaturalWidth < allocWidth) {
                 /* center the central box and butt the left and right up to it. */
-                leftWidth  = (allocWidth - centerNaturalWidth) / 2;
+                leftWidth = (allocWidth - centerNaturalWidth) / 2;
                 rightWidth = leftWidth;
             } else if (totalCenteredMinWidth < allocWidth) {
                 /* Center can be centered as without shrinking things too much.
@@ -2972,7 +2765,7 @@ var Panel = GObject.registerClass({
                  * distribute the remaining space proportional to how much the
                  * regions want. */
                 let totalRemaining = allocWidth - totalCenteredMinWidth;
-                let totalWant      = totalCenteredNaturalWidth - totalCenteredMinWidth;
+                let totalWant = totalCenteredNaturalWidth - totalCenteredMinWidth;
 
                 leftWidth = sideMinWidth + (sideNaturalWidth - sideMinWidth) / totalWant * totalRemaining;
                 rightWidth = leftWidth;
@@ -2986,7 +2779,7 @@ var Panel = GObject.registerClass({
                         rightWidth = allocWidth - leftMinWidth - centerNaturalWidth;
                     } else {
                         let totalRemaining = allocWidth - totalMinWidth;
-                        let totalWant      = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
+                        let totalWant = centerNaturalWidth + rightNaturalWidth - (centerMinWidth + rightMinWidth);
 
                         rightWidth = rightMinWidth;
                         if (totalWant > 0)
@@ -2999,7 +2792,7 @@ var Panel = GObject.registerClass({
                         leftWidth = allocWidth - rightMinWidth - centerNaturalWidth;
                     } else {
                         let totalRemaining = allocWidth - totalMinWidth;
-                        let totalWant      = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
+                        let totalWant = centerNaturalWidth + leftNaturalWidth - (centerMinWidth + leftMinWidth);
 
                         leftWidth = leftMinWidth;
                         if (totalWant > 0)
@@ -3008,17 +2801,17 @@ var Panel = GObject.registerClass({
                 }
             } else {
                 /* Scale everything down according to their minWidth. */
-                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
+                leftWidth = leftMinWidth / totalMinWidth * allocWidth;
                 rightWidth = rightMinWidth / totalMinWidth * allocWidth;
             }
         } else {  // center box not occupied
             if (totalNaturalWidth < allocWidth) {
                 /* Everything's fine. Allocate as usual. */
                 if (isVertical) {
-                    leftWidth  = Math.max(leftNaturalWidth, leftMinWidth);
+                    leftWidth = Math.max(leftNaturalWidth, leftMinWidth);
                     rightWidth = Math.max(rightNaturalWidth, rightMinWidth);
                 } else {
-                    leftWidth  = leftNaturalWidth;
+                    leftWidth = leftNaturalWidth;
                     rightWidth = rightNaturalWidth;
                 }
             } else if (totalMinWidth < allocWidth) {
@@ -3026,18 +2819,18 @@ var Panel = GObject.registerClass({
                  * Allocate the minWidth and then divide the remaining space
                  * according to how much more they want. */
                 let totalRemaining = allocWidth - totalMinWidth;
-                let totalWant      = totalNaturalWidth - totalMinWidth;
+                let totalWant = totalNaturalWidth - totalMinWidth;
 
-                leftWidth  = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
+                leftWidth = leftMinWidth + ((leftNaturalWidth - leftMinWidth) / totalWant) * totalRemaining;
                 rightWidth = rightMinWidth + ((rightNaturalWidth - rightMinWidth) / totalWant) * totalRemaining;
             } else {
                 /* Scale everything down according to their minWidth. */
-                leftWidth  = leftMinWidth / totalMinWidth * allocWidth;
+                leftWidth = leftMinWidth / totalMinWidth * allocWidth;
                 rightWidth = rightMinWidth / totalMinWidth * allocWidth;
             }
         }
 
-        leftBoundary  = Math.round(leftWidth);
+        leftBoundary = Math.round(leftWidth);
         rightBoundary = Math.round(allocWidth - rightWidth);
 
         return [leftBoundary, rightBoundary];
@@ -3049,129 +2842,60 @@ var Panel = GObject.registerClass({
         const allocWidth = box.x2 - box.x1;
         const allocHeight = box.y2 - box.y1;
 
-        // global.log("panelId " + this.panelId);
-        // global.log("allocWidth " + allocWidth);
-        // global.log("allocHeight " + allocHeight);
-
-        // const [, leftNaturalWidth] = this._leftBox.get_preferred_width(-1);
-        // const [, centerNaturalWidth] = this._centerBox.get_preferred_width(-1);
-        // const [, rightNaturalWidth] = this._rightBox.get_preferred_width(-1);
-
-        // const centerWidth = centerNaturalWidth;
-        // const sideWidth = Math.max(0, (allocWidth - centerWidth) / 2);
-
         const childBox = new Clutter.ActorBox();
 
         if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
             let [leftBoundary, rightBoundary] = this._calculateBoxes(allocHeight, allocWidth, true);
 
-            // global.log("Sizes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            // global.log("Left Boundary: " + leftBoundary);
-            // global.log("Right Boundary: " + rightBoundary);
-            // global.log("Alloc Width: " + allocWidth);
-            // global.log("Alloc Height: " + allocHeight);
-            childBox.y1 = 0;
-            childBox.y2 = leftBoundary;
             childBox.x1 = 0;
             childBox.x2 = allocWidth;
+
+            childBox.y1 = 0;
+            childBox.y2 = leftBoundary;
             this._leftBox.allocate(childBox, flags);
 
             childBox.y1 = leftBoundary;
             childBox.y2 = rightBoundary;
-            childBox.x1 = 0;
-            childBox.x2 = allocWidth;
             this._centerBox.allocate(childBox, flags);
 
             childBox.y1 = rightBoundary;
             childBox.y2 = allocHeight;
-            childBox.x1 = 0;
-            childBox.x2 = allocWidth;
             this._rightBox.allocate(childBox, flags);
         } else {
             let [leftBoundary, rightBoundary] = this._calculateBoxes(allocWidth, allocHeight, false);
-            // global.log(this.panelId);
-            // global.log("Sizes xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
-            // global.log("Left Boundary: " + leftBoundary);
-            // global.log("Right Boundary: " + rightBoundary);
+            const isRTL = this.get_direction() === St.TextDirection.RTL;
+
             childBox.y1 = 0;
             childBox.y2 = allocHeight;
-            childBox.x1 = 0;
-            childBox.x2 = leftBoundary;
-            // childBox.x2 = Math.min(Math.floor(sideWidth), leftNaturalWidth);
+
+            if (isRTL) {
+                childBox.x1 = leftBoundary;
+                childBox.x2 = allocWidth;
+            } else {
+                childBox.x1 = 0;
+                childBox.x2 = leftBoundary;
+            }
             this._leftBox.allocate(childBox, flags);
 
-            childBox.y1 = 0;
-            childBox.y2 = allocHeight;
-            // childBox.x1 = Math.ceil(sideWidth);
-            childBox.x1 = leftBoundary;
-            // childBox.x2 = childBox.x1 + centerWidth;
-            childBox.x2 = rightBoundary;
+            if (isRTL) {
+                childBox.x1 = rightBoundary;
+                childBox.x2 = leftBoundary;
+            } else {
+                childBox.x1 = leftBoundary;
+                childBox.x2 = rightBoundary;
+            }
             this._centerBox.allocate(childBox, flags);
 
-            childBox.y1 = 0;
-            childBox.y2 = allocHeight;
-            // childBox.x1 = Math.max(allocWidth - Math.min(Math.floor(sideWidth), rightNaturalWidth), 0);
-            childBox.x1 = rightBoundary;
-            childBox.x2 = allocWidth;
+            if (isRTL) {
+                childBox.x1 = 0;
+                childBox.x2 = rightBoundary;
+            } else {
+                childBox.x1 = rightBoundary;
+                childBox.x2 = allocWidth;
+            }
             this._rightBox.allocate(childBox, flags);
         }
     }
-
-    // _allocate(actor, box, flags) {
-    // // vfunc_allocate(box, flags) {
-    //     // this.set_allocation(box, flags);
-
-    //     let allocHeight  = box.y2 - box.y1;
-    //     let allocWidth   = box.x2 - box.x1;
-
-    //     /* Left, center and right panel sections will fit inside this box, which is
-    //        equivalent to the CSS content-box (imaginary box inside borders and paddings) */
-    //     let childBox = box.copy();
-
-    //     /* The boxes are layout managers, so they rubber-band around their contents and have a few
-    //        characteristics that they enforce on their contents.  Of particular note is that the alignment
-    //        - LEFT, CENTER, RIGHT - is not independent of the fill as it probably ought to be, and that there
-    //        is this hybrid FILL alignment that also comes with implied left alignment (probably locale dependent).
-    //        Which is not a great problem when there is something in the box, but if there is nothing in the box and
-    //        something other than FILL alignment is chosen, then the boxes will have no size allocated.
-    //        Which is a bit of a bummer if you need to drag something into an empty box. So we need to work
-    //        around this. That's a manual size set when turning on edit mode, combined with adjustments after drop.
-    //        Note also that settings such as x_fill and y_fill only apply to the children of the box, not to the box itself */
-
-    //     if (this.panelPosition == PanelLoc.left || this.panelPosition == PanelLoc.right) {
-
-    //         /* Distribute sizes for the allocated height with points relative to
-    //            the children allocation box, inside borders and paddings. */
-    //         let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocHeight, allocWidth, true);
-    //         leftBoundary += box.y1;
-    //         rightBoundary += box.y1;
-
-    //         this._setVertChildbox (childBox, box.y1, leftBoundary);
-    //         this._leftBox.allocate(childBox, flags);
-
-    //         this._setVertChildbox (childBox, leftBoundary, rightBoundary);
-    //         this._centerBox.allocate(childBox, flags);
-
-    //         this._setVertChildbox (childBox, rightBoundary, box.y2);
-    //         this._rightBox.allocate(childBox, flags);
-    //     } else {           // horizontal panel
-
-    //         /* Distribute sizes for the allocated width with points relative to
-    //            the children allocation box, inside borders and paddings. */
-    //         let [leftBoundary, rightBoundary] = this._calcBoxSizes(allocWidth, allocHeight, false);
-    //         leftBoundary += box.x1;
-    //         rightBoundary += box.x1;
-
-    //         this._setHorizChildbox (childBox, box.x1, leftBoundary, leftBoundary, box.x2);
-    //         this._leftBox.allocate(childBox, flags);
-
-    //         this._setHorizChildbox (childBox, leftBoundary, rightBoundary, rightBoundary, leftBoundary);
-    //         this._centerBox.allocate(childBox, flags);
-
-    //         this._setHorizChildbox (childBox, rightBoundary, box.x2, box.x1, rightBoundary);
-    //         this._rightBox.allocate(childBox, flags);
-    //     }
-    // }
 
     /**
      * _panelHasOpenMenus:
@@ -3289,17 +3013,25 @@ var Panel = GObject.registerClass({
          * by the coming enter-event, and the panel remains open. */
         if (this._shouldShow) {
             let showDelay = this._getProperty(PANEL_SHOW_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(showDelay, Lang.bind(this, this._showPanel))
+            this._showHideTimer = Mainloop.timeout_add(showDelay, this._showPanel.bind(this));
         } else {
             let hideDelay = this._getProperty(PANEL_HIDE_DELAY_KEY, "i");
-            this._showHideTimer = Mainloop.timeout_add(hideDelay, Lang.bind(this, this._hidePanel))
+            this._showHideTimer = Mainloop.timeout_add(hideDelay, this._hidePanel.bind(this));
         }
+    }
+
+    vfunc_enter_event() {
+        this._enterPanel();
     }
 
     _enterPanel(actor=null, event=null) {
         if (!this._mouseEntered) {
             this._updatePanelVisibility();
         }
+    }
+
+    vfunc_leave_event(event) {
+        this._leavePanel(null, event);
     }
 
     _leavePanel(actor=null, event=null) {
@@ -3492,5 +3224,3 @@ var Panel = GObject.registerClass({
         this._rightBoxDNDHandler.reset();
     }
 });
-
-// Signals.addSignalMethods(Panel.prototype);

@@ -359,15 +359,6 @@ CinnamonDBus.prototype = {
     },
 
     highlightPanel: function(id, highlight) {
-        global.log("Panel Id " + id);
-        let hasId = Main.panelManager.panels[id];
-        global.log("Have iD: " + hasId);
-        // Main.panelManager.panels.forEach((panel) => {
-        //     global.log("The panels id is: " + panel.Id);
-        // })
-        // for (const element of Main.panelManager.panels) {
-        //     global.log(element[id]);
-        // }
         if (Main.panelManager.panels[id])
             Main.panelManager.panels[id].highlight(highlight);
     },
