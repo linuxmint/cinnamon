@@ -200,7 +200,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this.set_applet_tooltip(selected.displayName);
 
         let actor = null;
-        const iconSize = this.getPanelIconSize(St.IconType.SYMBOLIC);
+        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
 
         if (this._inputSourcesManager.showFlags) {
             actor = this._inputSourcesManager.createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
