@@ -1586,9 +1586,9 @@ var Panel = GObject.registerClass({
         else
             this._set_horizontal_panel_style();
 
-        this.actor.add_actor(this._leftBox);
-        this.actor.add_actor(this._centerBox);
-        this.actor.add_actor(this._rightBox);
+        this.add_child(this._leftBox);
+        this.add_child(this._centerBox);
+        this.add_child(this._rightBox);
 
         this._leftBoxDNDHandler = new PanelZoneDNDHandler(this._leftBox, 'left', this.panelId);
         this._centerBoxDNDHandler = new PanelZoneDNDHandler(this._centerBox, 'center', this.panelId);
@@ -1596,12 +1596,12 @@ var Panel = GObject.registerClass({
 
         this.addContextMenuToPanel(this.panelPosition);
 
-        Main.layoutManager.addChrome(this.actor, { addToWindowgroup: false });
+        Main.layoutManager.addChrome(this, { addToWindowgroup: false });
         this._moveResizePanel();
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.actor.connect('queue-relayout', () => this._setPanelHeight());
+        this.connect('queue-relayout', () => this._setPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
@@ -1672,28 +1672,28 @@ var Panel = GObject.registerClass({
         switch (panelPosition)
         {
             case PanelLoc.top:
-                this.actor.remove_style_class_name('panel-bottom');
-                this.actor.remove_style_class_name('panel-left');
-                this.actor.remove_style_class_name('panel-right');
-                this.actor.add_style_class_name('panel-top');
+                this.remove_style_class_name('panel-bottom');
+                this.remove_style_class_name('panel-left');
+                this.remove_style_class_name('panel-right');
+                this.add_style_class_name('panel-top');
                 break;
             case PanelLoc.bottom:
-                this.actor.remove_style_class_name('panel-top');
-                this.actor.remove_style_class_name('panel-left');
-                this.actor.remove_style_class_name('panel-right');
-                this.actor.add_style_class_name('panel-bottom');
+                this.remove_style_class_name('panel-top');
+                this.remove_style_class_name('panel-left');
+                this.remove_style_class_name('panel-right');
+                this.add_style_class_name('panel-bottom');
                 break;
             case PanelLoc.left:
-                this.actor.remove_style_class_name('panel-bottom');
-                this.actor.remove_style_class_name('panel-top');
-                this.actor.remove_style_class_name('panel-right');
-                this.actor.add_style_class_name('panel-left');
+                this.remove_style_class_name('panel-bottom');
+                this.remove_style_class_name('panel-top');
+                this.remove_style_class_name('panel-right');
+                this.add_style_class_name('panel-left');
                 break;
             case PanelLoc.right:
-                this.actor.remove_style_class_name('panel-bottom');
-                this.actor.remove_style_class_name('panel-left');
-                this.actor.remove_style_class_name('panel-top');
-                this.actor.add_style_class_name('panel-right');
+                this.remove_style_class_name('panel-bottom');
+                this.remove_style_class_name('panel-left');
+                this.remove_style_class_name('panel-top');
+                this.add_style_class_name('panel-right');
                 break;
             default:
                 global.log("addPanelStyleClass - unrecognised panel position "+panelPosition);
@@ -1713,7 +1713,7 @@ var Panel = GObject.registerClass({
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
-        Main.layoutManager.removeChrome(this.actor);
+        Main.layoutManager.removeChrome(this);
 
         if (removeIconSizes)
             this._removeZoneIconSizes();
@@ -1764,10 +1764,10 @@ var Panel = GObject.registerClass({
      * Turns on/off the highlight of the panel
      */
     highlight(highlight) {
-        if (highlight == this.actor.has_style_pseudo_class('highlight'))
+        if (highlight == this.has_style_pseudo_class('highlight'))
             return;
 
-        this.actor.change_style_pseudo_class('highlight', highlight);
+        this.change_style_pseudo_class('highlight', highlight);
 
         this._highlighted = highlight;
         this._updatePanelVisibility();
@@ -1848,10 +1848,10 @@ var Panel = GObject.registerClass({
         let leaveIfOut = () => {
             this._dragShowId = 0;
             let [x, y, whatever] = global.get_pointer();
-            this.actor.sync_hover();
+            this.sync_hover();
 
-            if (this.actor.x < x && x < this.actor.x + this.actor.width &&
-                this.actor.y < y && y < this.actor.y + this.actor.height) {
+            if (this.x < x && x < this.x + this.width &&
+                this.y < y && y < this.y + this.height) {
                 return true;
             } else {
                 this._leavePanel();
@@ -1884,7 +1884,7 @@ var Panel = GObject.registerClass({
 
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
 
-        if (this.actor.height && this.actor.width) {
+        if (this.height && this.width) {
             let panelTop = 0;
             let panelBottom = 0;
             let panelLeft = 0;
@@ -1895,10 +1895,10 @@ var Panel = GObject.registerClass({
                     switch (this.panelPosition) {
                         case PanelLoc.top:
                             panelTop    = this.monitor.y;
-                            panelBottom = this.monitor.y + this.actor.height;
+                            panelBottom = this.monitor.y + this.height;
                             break;
                         case PanelLoc.bottom:
-                            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.actor.height);
+                            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.height);
                             panelBottom = this.monitor.y + this.monitor.height -1;
                             break;
                     }
@@ -1928,10 +1928,10 @@ var Panel = GObject.registerClass({
                     switch (this.panelPosition) {
                         case PanelLoc.left:
                             panelLeft  = this.monitor.x;
-                            panelRight = this.monitor.x + Math.floor(this.actor.width);
+                            panelRight = this.monitor.x + Math.floor(this.width);
                             break;
                         case PanelLoc.right:
-                            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.actor.width);
+                            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.width);
                             panelRight = this.monitor.x + this.monitor.width-1;
                             break;
                         default:
@@ -2108,7 +2108,7 @@ var Panel = GObject.registerClass({
         }
 
         this._updatePanelVisibility();
-        Main.layoutManager._chrome.modifyActorParams(this.actor, { affectsStruts: this._autohideSettings == "false" });
+        Main.layoutManager._chrome.modifyActorParams(this, { affectsStruts: this._autohideSettings == "false" });
     }
     /**
      * _getScaledPanelHeight:
@@ -2138,7 +2138,7 @@ var Panel = GObject.registerClass({
     _setClipRegion(hidden, offset) {
         if (!this._shouldClipPanel()) {
             // important during monitor layout changes.
-            this.actor.remove_clip(); // no-op if there wasn't any clipping to begin with.
+            this.remove_clip(); // no-op if there wasn't any clipping to begin with.
             Main.layoutManager.updateChrome()
             return;
         }
@@ -2151,18 +2151,18 @@ var Panel = GObject.registerClass({
         let exposedAmount;
         if (isHorizontal) {
             if (hidden)
-                exposedAmount = animating ? Math.abs(this.actor.y - offset) + 1
+                exposedAmount = animating ? Math.abs(this.y - offset) + 1
                                           : 1;
             else
-                exposedAmount = animating ? Math.abs(this.actor.y - offset)
-                                          : this.actor.height;
+                exposedAmount = animating ? Math.abs(this.y - offset)
+                                          : this.height;
         } else {
             if (hidden)
-                exposedAmount = animating ? Math.abs(this.actor.x - offset) + 1
+                exposedAmount = animating ? Math.abs(this.x - offset) + 1
                                           : 1;
             else
-                exposedAmount = animating ? Math.abs(this.actor.x - offset)
-                                          : this.actor.width;
+                exposedAmount = animating ? Math.abs(this.x - offset)
+                                          : this.width;
         }
 
         // determine offset & set clip
@@ -2177,25 +2177,25 @@ var Panel = GObject.registerClass({
         if (isHorizontal) {
             let clipOffsetY = 0;
             if (this.panelPosition == PanelLoc.top) {
-                clipOffsetY = this.actor.height - exposedAmount;
+                clipOffsetY = this.height - exposedAmount;
             } else {
                 if (!hidden)
                     clipOffsetY = this._shadowBox.y1;
             }
             if (!hidden)
                 exposedAmount += Math.abs(this._shadowBox.y1);
-            this.actor.set_clip(0, clipOffsetY, this.actor.width, exposedAmount);
+            this.set_clip(0, clipOffsetY, this.width, exposedAmount);
         } else {
             let clipOffsetX = 0;
             if (this.panelPosition == PanelLoc.left) {
-                clipOffsetX = this.actor.width - exposedAmount;
+                clipOffsetX = this.width - exposedAmount;
             } else {
                 if (!hidden)
                     clipOffsetX = this._shadowBox.x1;
             }
             if (!hidden)
                 exposedAmount += Math.abs(this._shadowBox.x1);
-            this.actor.set_clip(clipOffsetX, 0, exposedAmount, this.actor.height);
+            this.set_clip(clipOffsetX, 0, exposedAmount, this.height);
         }
         // Force the layout manager to update the input region
         Main.layoutManager.updateChrome()
@@ -2219,8 +2219,8 @@ var Panel = GObject.registerClass({
             switch (this.panelPosition) {
                 case PanelLoc.top:
                 case PanelLoc.bottom:
-                    test_rect.x = this.actor.x;
-                    test_rect.width = this.actor.width;
+                    test_rect.x = this.x;
+                    test_rect.width = this.width;
                     test_rect.height = this.heightForZones;
 
                     if (this.panelPosition === PanelLoc.top) {
@@ -2231,8 +2231,8 @@ var Panel = GObject.registerClass({
                     break;
                 case PanelLoc.left:
                 case PanelLoc.right:
-                    test_rect.y = this.actor.y;
-                    test_rect.height = this.actor.height;
+                    test_rect.y = this.y;
+                    test_rect.height = this.height;
                     test_rect.width = this.heightForZones;
 
                     if (this.panelPosition === PanelLoc.left) {
@@ -2286,7 +2286,7 @@ var Panel = GObject.registerClass({
         if (Main.panelManager && !horizontal_panel)
             [this.toppanelHeight, this.bottompanelHeight] = heightsUsedMonitor(this.monitorIndex, Main.panelManager.panels);
         // get shadow and margins
-        let themeNode = this.actor.get_theme_node();
+        let themeNode = this.get_theme_node();
 
         // FIXME: inset shadows will probably break clipping.
         // I haven't seen a theme with inset panel shadows, but if there
@@ -2350,16 +2350,16 @@ var Panel = GObject.registerClass({
 
         // and determine if this panel's size changed
         if (horizontal_panel) {
-            if (this.actor.width != newHorizPanelWidth || this.actor.height != panelHeight)
+            if (this.width != newHorizPanelWidth || this.height != panelHeight)
                 panelChanged = true;
         } else {
-            if (this.actor.width != panelHeight || this.actor.height != newVertPanelHeight)
+            if (this.width != panelHeight || this.height != newVertPanelHeight)
                 panelChanged = true;
         }
 
         if (panelChanged) {
             // remove any tweens that might be active for autohide
-            this.actor.remove_all_transitions();
+            this.remove_all_transitions();
 
             this.margin_top = newMarginTop;
             this.margin_bottom = newMarginBottom;
@@ -2377,7 +2377,7 @@ var Panel = GObject.registerClass({
                     newY = this._hidden ? this.monitor.y + this.monitor.height - 1
                                         : this.monitor.y + this.monitor.height - panelHeight;
                 }
-                this.actor.set_size(newHorizPanelWidth, panelHeight);
+                this.set_size(newHorizPanelWidth, panelHeight);
             } else {
                 newY = this.monitor.y + this.toppanelHeight;
                 if (this.panelPosition == PanelLoc.left) {
@@ -2391,7 +2391,7 @@ var Panel = GObject.registerClass({
             }
 
             // update position and clip region
-            this.actor.set_position(newX, newY)
+            this.set_position(newX, newY)
             this._setClipRegion(this._hidden);
 
             // only needed here for when this routine is called when the style changes
@@ -2927,7 +2927,7 @@ var Panel = GObject.registerClass({
             let menu = global.menuStack[i];
             if (menu.customStyleClass && menu.customStyleClass.includes("thumbnail"))
                 continue;
-            if (menu.getPanel() === this.actor) {
+            if (menu.getPanel() === this) {
                 return true;
             }
         }
@@ -2977,19 +2977,19 @@ var Panel = GObject.registerClass({
                             y = this.monitor.y;
                             break;
                         case PanelLoc.bottom:
-                            y = this.monitor.y + this.monitor.height - this.actor.height;
+                            y = this.monitor.y + this.monitor.height - this.height;
                             break;
                         case PanelLoc.left:
                             x = this.monitor.x;
                             break;
                         case PanelLoc.right:
-                            x = this.monitor.x + this.monitor.width - this.actor.width;
+                            x = this.monitor.x + this.monitor.width - this.width;
                             break;
                         default:
                             global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
                     }
 
-                    let a = this.actor;
+                    let a = this;
                     let b = global.display.focus_window.get_frame_rect();
                     /* Magic to check whether the panel position overlaps with the
                     * current focused window */
@@ -3065,11 +3065,11 @@ var Panel = GObject.registerClass({
     }
 
     _mouseOnPanel() {
-        this.actor.sync_hover();
+        this.sync_hover();
         const [x, y] = global.get_pointer();
 
-        return (this.actor.x <= x && x <= this.actor.x + this.actor.width &&
-            this.actor.y <= y && y <= this.actor.y + this.actor.height);
+        return (this.x <= x && x <= this.x + this.width &&
+            this.y <= y && y <= this.y + this.height);
     }
 
     /**
@@ -3080,12 +3080,12 @@ var Panel = GObject.registerClass({
      */
     disable() {
         this._disabled = true;
-        this.actor.ease({
+        this.ease({
             opacity: 0,
             duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
-                this.actor.hide();
+                this.hide();
             }
         });
     }
@@ -3097,8 +3097,8 @@ var Panel = GObject.registerClass({
      */
     enable() {
         this._disabled = false;
-        this.actor.show();
-        this.actor.ease({
+        this.show();
+        this.ease({
             opacity: 255,
             duration: AUTOHIDE_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
@@ -3132,7 +3132,7 @@ var Panel = GObject.registerClass({
         // destination parameter
         let origPos, destPos;
         if (isHorizontal) {
-            let height = this.actor.get_height();
+            let height = this.get_height();
             if (this.panelPosition == PanelLoc.top) {
                 destPos = this.monitor.y;
                 origPos = this.monitor.y - height;
@@ -3142,7 +3142,7 @@ var Panel = GObject.registerClass({
             }
             panelParams['y'] = destPos;
         } else {
-            let width = this.actor.get_width();
+            let width = this.get_width();
             if (this.panelPosition == PanelLoc.left) {
                 destPos = this.monitor.x;
                 origPos = this.monitor.x - width;
@@ -3164,7 +3164,7 @@ var Panel = GObject.registerClass({
         this._leftBox.show();
         this._centerBox.show();
         this._rightBox.show();
-        this.actor.ease(panelParams);
+        this.ease(panelParams);
         this._leftBox.ease(boxParams);
         this._centerBox.ease(boxParams);
         this._rightBox.ease(boxParams);
@@ -3197,14 +3197,14 @@ var Panel = GObject.registerClass({
         // will become inaccessible
         let destPos;
         if (isHorizontal) {
-            let height = this.actor.get_height();
+            let height = this.get_height();
             if (this.panelPosition == PanelLoc.top)
                 destPos = this.monitor.y - height + 1;
             else
                 destPos = this.monitor.y + this.monitor.height - 1;
             panelParams['y'] = destPos;
         } else {
-            let width = this.actor.get_width();
+            let width = this.get_width();
             if (this.panelPosition == PanelLoc.left)
                 destPos = this.monitor.x - width + 1;
             else
@@ -3227,7 +3227,7 @@ var Panel = GObject.registerClass({
                           mode: Clutter.AnimationMode.EASE_OUT_QUAD };
 
         // add all tweens
-        this.actor.ease(panelParams);
+        this.ease(panelParams);
         this._leftBox.ease(boxParams);
         this._centerBox.ease(boxParams);
         this._rightBox.ease(boxParams);
