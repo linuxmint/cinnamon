@@ -539,6 +539,14 @@ function start() {
         }
     });
 
+    if (!global.session_running || Meta.is_wayland_compositor()) {
+        // If the session is *not* already running, clear the internal locked
+        // state. This is used in x11 sessions to restore the screensaver after
+        // cinnamon restarts. Wayland doesn't support restarts (yet) so it should
+        // always be false.
+        global.settings.set_boolean("session-locked-state", false);
+    }
+
     _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
 
     // The internal screensaver is the only option for wayland sessions. X11 sessions can use either

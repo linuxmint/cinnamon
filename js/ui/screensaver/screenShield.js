@@ -223,7 +223,7 @@ var ScreenShield = GObject.registerClass({
 
         let locked = newState === State.LOCKED || newState === State.UNLOCKING;
         let wasLocked = oldState === State.LOCKED || oldState === State.UNLOCKING;
-        if (locked !== wasLocked) {
+        if (locked !== wasLocked && !Metа.is_wayland_compositor()) {
             global.settings.set_boolean('session-locked-state', locked);
         }
 
