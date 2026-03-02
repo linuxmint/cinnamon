@@ -1164,23 +1164,13 @@ var ScreenShield = GObject.registerClass({
     _createBackgrounds() {
         this._destroyBackgrounds();
 
-        if (Meta.is_wayland_compositor()) {
-            // TODO: Waiting on:
-            //   muffin: https://github.com/linuxmint/muffin/pull/784
-            //   cinnamon-settings-daemon: https://github.com/linuxmint/cinnamon-settings-daemon/pull/437
-            // 
-            // Once those are merged we can access the layer-shell surfaces of csd-background and avoid
-            // having to load them in Cinnamon.
-            //
-            // For now, there is only a black background for the screensaver.
-            return;
-        }
-
         let nMonitors = Main.layoutManager.monitors.length;
 
         for (let i = 0; i < nMonitors; i++) {
             let monitor = Main.layoutManager.monitors[i];
-            let background = Meta.X11BackgroundActor.new_for_display(global.display);
+            let background = Meta.create_background_for_monitor(global.display, i);
+            if (!background)
+                continue;
 
             background.reactive = false;
 

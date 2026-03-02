@@ -38,12 +38,7 @@ Expo.prototype = {
         // one. Instances of this class share a single CoglTexture behind the
         // scenes which allows us to show the background with different
         // rendering options without duplicating the texture data.
-        if (!Meta.is_wayland_compositor()) {
-            this._background = Meta.X11BackgroundActor.new_for_display(global.display);
-        } else {
-            this._background = new Clutter.Actor();
-        }
-
+        this._background = Main.createFullScreenBackground();
         this._background.hide();
         global.overlay_group.add_actor(this._background);
 
@@ -348,13 +343,6 @@ Expo.prototype = {
         }));
         this._gradient.show();
         Main.panelManager.disablePanels();
-
-        this._background.dim_factor = 1;
-        this._background.ease({
-            dim_factor: 0.4,
-            duration: Main.animations_enabled ? ANIMATION_TIME : 0,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD
-        });
 
         activeWorkspace.setOverviewMode(true);
 

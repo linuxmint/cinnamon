@@ -672,6 +672,32 @@ function getPanels() {
     return panelManager.getPanels();
 }
 
+/**
+ * createFullScreenBackground:
+ *
+ * Creates a full-stage background actor containing one background per monitor.
+ * On X11, each child is the root pixmap actor positioned at the monitor's
+ * location. On Wayland, each child is a clone of the layer-shell background
+ * surface for that monitor.
+ *
+ * Returns: a ClutterActor covering all monitors
+ */
+function createFullScreenBackground() {
+    let container = new imports.gi.Clutter.Actor();
+
+    for (let i = 0; i < layoutManager.monitors.length; i++) {
+        let monitor = layoutManager.monitors[i];
+        let bg = Meta.create_background_for_monitor(global.display, i);
+        if (bg) {
+            bg.set_position(monitor.x, monitor.y);
+            bg.set_size(monitor.width, monitor.height);
+            container.add_child(bg);
+        }
+    }
+
+    return container;
+}
+
 let _workspaces = [];
 let _checkWorkspacesId = 0;
 
