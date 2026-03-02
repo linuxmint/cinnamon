@@ -1131,6 +1131,14 @@ var ScreenShield = GObject.registerClass({
     }
 
     _backupLockerCall(method, params, callback, noAutoStart = false) {
+        // BackupLocker is only useful for x11 sessions at the moment.
+        if (Meta.is_wayland_compositor()) {
+            _log(`ScreenShield: Skipping BackupLocker.${method} call on Wayland`);
+            if (callback)
+                callback();
+            return;
+        }
+
         Gio.DBus.session.call(
             'org.cinnamon.BackupLocker',
             '/org/cinnamon/BackupLocker',
