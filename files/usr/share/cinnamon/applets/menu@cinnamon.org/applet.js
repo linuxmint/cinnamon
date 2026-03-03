@@ -843,7 +843,7 @@ class PathContextMenuItem extends ContextMenuItem {
     _openContainingFolderViaMimeApp() {
         let app = Gio.AppInfo.get_default_for_type("inode/directory", true);
         if (app === null) {
-            log.logError(`Could not open containing folder via MIME app: No associated file manager found`);
+            global.logError("Could not open containing folder via MIME app: No associated file manager found");
             return;
         }
         let file = Gio.file_new_for_uri(this._button.uri);
