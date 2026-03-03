@@ -29,7 +29,7 @@ const Placeholder = imports.ui.placeholder;
 
 const INITIAL_BUTTON_LOAD = 30;
 
-const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
+const USER_DESKTOP_PATH = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP);
 
 const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";
