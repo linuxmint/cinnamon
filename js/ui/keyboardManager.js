@@ -159,7 +159,9 @@ var KeyboardManager = class {
     }
 
     _buildGroupStrings(_group) {
-        let group = _group.concat(this._localeLayoutInfo);
+        let dominated = _group.some(g => g.layout === this._localeLayoutInfo.layout &&
+                                         g.variant === this._localeLayoutInfo.variant);
+        let group = dominated ? _group : _group.concat(this._localeLayoutInfo);
         let layouts = group.map(g => g.layout).join(',');
         let variants = group.map(g => g.variant).join(',');
         return [layouts, variants];
