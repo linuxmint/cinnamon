@@ -8,6 +8,8 @@ const Magnifier = imports.ui.magnifier;
 
 const touchpad_settings = new  Gio.Settings({ schema_id: "org.cinnamon.desktop.peripherals.touchpad" });
 
+const CONTINUOUS_ACTION_POLL_INTERVAL = 50 * 1000;
+
 var make_action = (settings, definition, device) => {
     var threshold = 100;
 
@@ -320,9 +322,12 @@ var VolumeAction = class extends BaseAction {
             this.max_volume = mixer.get_vol_max_norm();
 
         this.pct_step = Math.ceil(this.max_volume / 100);
+
+        this.last_time = 0;
+        this.poll_interval = CONTINUOUS_ACTION_POLL_INTERVAL;
     }
 
-    _set_volume(up, percentage) {
+    _set_volume(up, percentage, time) {
         const sink = mixer.get_default_sink();
 
         if (sink == null) {
@@ -356,7 +361,12 @@ var VolumeAction = class extends BaseAction {
             sink.change_is_muted(false);
         }
 
+        if (time < (this.last_time + this.poll_interval)) {
+            return;
+        }
+
         Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct, false);
+        this.last_time = time;
     }
 
     _toggle_muted() {
@@ -395,16 +405,17 @@ var VolumeAction = class extends BaseAction {
             return;
         };
 
+        this.last_time = 0;
         this.update(direction, percentage, time);
     }
 
     update(direction, percentage, time) {
         if (this.definition.action === "VOLUME_UP") {
-            this._set_volume(true, percentage);
+            this._set_volume(true, percentage, time);
         }
         else
         if (this.definition.action === "VOLUME_DOWN") {
-            this._set_volume(false, 100 - percentage);
+            this._set_volume(false, 100 - percentage, time);
         }
     }
 
@@ -417,6 +428,13 @@ var VolumeAction = class extends BaseAction {
         if (percentage < this.threshold) {
             return;
         }
+
+        var int_pct = Math.ceil(percentage);
+        if (this.definition.action === "VOLUME_DOWN") {
+            int_pct = 100 - int_pct;
+        }
+
+        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct), null, int_pct, false);
     }
 }
 
@@ -462,7 +480,7 @@ var ZoomAction = class extends BaseAction {
         super(definition, device, threshold);
         this.last_percentage = 0;
         this.last_time = 0;
-        this.poll_interval = 50 * 1000;
+        this.poll_interval = CONTINUOUS_ACTION_POLL_INTERVAL;
 
         if (definition.custom_value !== "") {
             try {
