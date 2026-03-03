@@ -2,6 +2,8 @@
 #ifndef __CINNAMON_GLOBAL_PRIVATE_H__
 #define __CINNAMON_GLOBAL_PRIVATE_H__
 
+#include "config.h"
+
 #include <errno.h>
 #include <math.h>
 #include <stdarg.h>
@@ -10,7 +12,13 @@
 
 #include "cinnamon-global.h"
 #include <gio/gio.h>
+
+#if USE_GIR20
+#include <girepository/girepository.h>
+#else
 #include <girepository.h>
+#endif
+
 #include <meta/meta-plugin.h>
 
 

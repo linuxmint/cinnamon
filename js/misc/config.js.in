@@ -8,3 +8,5 @@ var PACKAGE_VERSION = '@PACKAGE_VERSION@';
 var BUILT_NM_AGENT = @BUILT_NM_AGENT@;
 /* libexec directory */
 var LIBEXECDIR = '@LIBEXECDIR@';
+
+var USE_GIR20 = @USE_GIR20@;
