@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Settings = imports.ui.settings;
@@ -9,22 +10,6 @@ const Util = imports.misc.util;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 const APPLET_PATH = imports.ui.appletManager.appletMeta['printers@cinnamon.org'].path;
-
-
-function formatBytes(bytesStr) {
-    const bytes = parseInt(bytesStr, 10);
-    if (isNaN(bytes) || bytes === 0) return "0 Bytes";
-
-    const k = 1024;
-    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    const value = bytes / Math.pow(k, i);
-
-    return value.toLocaleString(undefined, {
-        minimumFractionDigits: 1,
-        maximumFractionDigits: 1
-    }) + " " + sizes[i];
-}
 
 
 function parseLpq(lpq_output) {
@@ -224,14 +209,15 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                             let printer = line.slice(0, -1).join('-');
                             let doc = jobInfo[job][2];
                             let user = jobInfo[job][1];
-                            let size = formatBytes(jobInfo[job][3]);
+                            let size = GLib.format_size_for_display(jobInfo[job][3]);
 
                             if(doc.length > 30) {
-                                doc = doc + '...';
+                                doc = doc.slice(0, 30) + '...';
                             }
                             
-                            let text = '(' + job + ') ' + _("'%s' on %s").format(doc, printer);
-                            text = text + ' (' + size + ')' + _(" - by %s").format(user);
+                            // Translators: strings are job number, document name, printer name, size, username
+                            // example: (23) 'README.md' on HP_Stupid_Tank_5100_series (44.0 KB) - by kevin
+                            let text = _("(%s) '%s' on %s (%s) - by %s").format(job, doc, printer, size, user);
                             let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xsi-edit-delete', St.IconType.SYMBOLIC);
                             if(jobInfo[job][0] == 'active') {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-printer-printing', icon_type: St.IconType.SYMBOLIC }));
