@@ -110,6 +110,7 @@ libcinnamon_deps = [
     polkit,
     st_dep,
     xapp,
+    xdo,
     xml,
 ]
 
