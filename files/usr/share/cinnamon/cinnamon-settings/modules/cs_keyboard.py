@@ -12,8 +12,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, Gtk
 
-from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
-from SettingsWidgets import SidePage, Keybinding
+from bin.KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
+from bin.SettingsWidgets import SidePage, Keybinding
 from bin import util
 from bin import InputSources
 from bin import XkbSettings

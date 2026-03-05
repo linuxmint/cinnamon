@@ -139,6 +139,12 @@ var _Draggable = new Lang.Class({
         if (Tweener.getTweenCount(actor))
             return false;
 
+        // Clean up any existing grab before starting a new one (fixes #13462)
+        // This prevents pointer grabs from accumulating during rapid clicks
+        if (this._onEventId) {
+            this._ungrabActor(event);
+        }
+
         this._buttonDown = true;
         this._grabActor(event);
 
@@ -172,7 +178,7 @@ var _Draggable = new Lang.Class({
 
     _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
-            this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
+            this._eventsGrabbed = Main.pushModal(_getEventHandlerActor(), undefined, undefined, Cinnamon.ActionMode.NORMAL);
             if (this._eventsGrabbed) {
                 this.drag_device = event.get_device()
                 this.drag_device.grab(_getEventHandlerActor());

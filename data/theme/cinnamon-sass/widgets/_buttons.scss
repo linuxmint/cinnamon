@@ -1,0 +1,21 @@
+.button {
+  @extend %button;
+
+  min-height: 22px;
+
+  &.flat { @extend %flat_button; }
+}
+
+.icon-button {
+  @extend %button;
+
+  border-radius: 9999px;
+  padding: $base_padding;
+  min-height: 16px;
+
+  StIcon {
+    icon-size: 16px;
+  }
+
+  &.flat { @extend %flat_button; }
+}

@@ -27,9 +27,7 @@ CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
 PYTHON_CS_MODULE_PATH = os.path.join(CURRENT_PATH, "modules")
 PYTHON_CS_MODULE_GLOB = os.path.join(PYTHON_CS_MODULE_PATH, "cs_*.py")
 PYTHON_CS_MODULES = [Path(file).stem for file in glob.glob(PYTHON_CS_MODULE_GLOB)]
-BIN_PATH = os.path.join(CURRENT_PATH, "bin")
 sys.path.append(PYTHON_CS_MODULE_PATH)
-sys.path.append(BIN_PATH)
 from bin import capi
 from bin import proxygsettings
 from bin import SettingsWidgets

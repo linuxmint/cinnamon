@@ -629,6 +629,14 @@ class KeybindingTable(GObject.Object):
             enabled_extensions.add(extension)
             enabled_spices.add((extension, 'extensions', None))
 
+        # Build set of enabled instance IDs per uuid, so we only process
+        # config files for instances that are actually running.
+        enabled_ids = {}
+        for uuid, _type, instance_id in enabled_spices:
+            enabled_ids.setdefault(uuid, set())
+            if instance_id is not None:
+                enabled_ids[uuid].add(instance_id)
+
         keyboard_spices = sorted(enabled_spices)
         spice_keybinds = {}
         spice_properties = {}
@@ -638,11 +646,10 @@ class KeybindingTable(GObject.Object):
                 config_path = Path.joinpath(settings_dir, uuid)
                 if Path.exists(config_path):
                     configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
-                    # If we encounted numbered and non-numbered, config files, filter out the uuid-named one 
-                    if not all(x.split(".json")[0].isdigit() for x in configs) and any(x.split(".json")[0].isdigit() for x in configs):
-                        for index, value in enumerate(configs):
-                            if not value.split(".json")[0].isdigit():
-                                configs.pop(index)
+                    # Filter out config files for instances that aren't running
+                    ids_for_uuid = enabled_ids.get(uuid, set())
+                    configs = [x for x in configs
+                               if not x.split(".json")[0].isdigit() or x.split(".json")[0] in ids_for_uuid]
                     for config in configs:
                         config_json = Path.joinpath(config_path, config)
                         _id = config.split(".json")[0]
@@ -687,7 +694,7 @@ class KeybindingTable(GObject.Object):
                     with open(system_metadata_path, encoding="utf-8") as metadata:
                         json_data = json.load(metadata)
                         category_label = _(json_data["name"])
-            if not _id:
+            if not _id or len(enabled_ids.get(uuid, set())) <= 1:
                 cat_label = category_label if category_label else uuid
                 new_categories.append([cat_label, uuid, "spices", None, spice_props])
                 instance_num = 1
@@ -717,7 +724,7 @@ class KeybindingTable(GObject.Object):
                     gettext.textdomain(uuid)
                     binding_label = gettext.gettext(list(binding_values.keys())[0])
                 binding_schema = spice_properties[spice]["path"]
-                binding_category = f"{uuid}_{instance_num - 1}" if _id else uuid
+                binding_category = f"{uuid}_{instance_num - 1}" if _id and len(enabled_ids.get(uuid, set())) > 1 else uuid
                 new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
                 self._spice_categories[binding_category] = category_label
 

@@ -41,6 +41,9 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this._panel_icon_box.set_fill(true, false);
         this._panel_icon_box.set_alignment(St.Align.MIDDLE, St.Align.MIDDLE);
 
+        // Force the container to hold its width while the new flag image loads into memory
+        this._panel_icon_box.set_style("min-width: 2.5em;");
+
         this._signalManager = new SignalManager.SignalManager(null);
         this._signalManager.connect(this.panel, "icon-size-changed", () => this._syncGroup());
 
@@ -161,7 +164,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             let actor = null;
 
             if (this._inputSourcesManager.showFlags) {
-                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22 * global.ui_scale);
+                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22);
             }
 
             if (actor == null) {
@@ -200,7 +203,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this.set_applet_tooltip(selected.displayName);
 
         let actor = null;
-        const iconSize = this.getPanelIconSize(St.IconType.SYMBOLIC);
+        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
 
         if (this._inputSourcesManager.showFlags) {
             actor = this._inputSourcesManager.createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
@@ -211,6 +214,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
                 text: selected.shortName,
                 style_class: "applet-label"
             });
+            // Enforce a constant width and center the text
+            actor.set_style("min-width: 2.5em; text-align: center;");
         }
 
         this._panel_icon_box.set_child(actor);
@@ -229,6 +234,9 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             text: label,
             style_class: "applet-label"
         });
+
+        // Enforce a constant width and center the text
+        actor.set_style("min-width: 2.5em; text-align: center;");
 
         this._panel_icon_box.set_child(actor);
     }

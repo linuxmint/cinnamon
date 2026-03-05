@@ -1179,12 +1179,12 @@ st_entry_set_text (StEntry     *entry,
  * Returns: (transfer none): the #ClutterText used by #StEntry. The entry is
  * owned by the #StEntry and should not be unref'ed by the application.
  */
-ClutterActor*
+ClutterText *
 st_entry_get_clutter_text (StEntry *entry)
 {
   g_return_val_if_fail (ST_ENTRY (entry), NULL);
 
-  return entry->priv->entry;
+  return (ClutterText *) entry->priv->entry;
 }
 
 /**

@@ -10,7 +10,6 @@ const Applet = imports.ui.applet;
 const Extension = imports.ui.extension;
 const ModalDialog = imports.ui.modalDialog;
 const Dialog = imports.ui.dialog;
-const {getModuleByIndex} = imports.misc.fileUtils;
 const {queryCollection} = imports.misc.util;
 const Gettext = imports.gettext;
 const Panel = imports.ui.panel;
@@ -592,14 +591,13 @@ function createApplet(extension, appletDefinition, panel = null) {
 
     let applet;
     try {
-        let module = getModuleByIndex(extension.moduleIndex);
-        if (!module) {
+        if (!extension.module) {
             return null;
         }
         // FIXME: Panel height is now available before an applet is initialized,
         // so we don't need to pass it to the constructor anymore, but would
         // require a compatibility clean-up effort.
-        applet = module.main(extension.meta, orientation, panel.height, applet_id);
+        applet = extension.module.main(extension.meta, orientation, panel.height, applet_id);
     } catch (e) {
         Extension.logError(`Failed to evaluate 'main' function on applet: ${uuid}/${applet_id}`, uuid, e);
         return null;

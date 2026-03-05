@@ -155,20 +155,14 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                 if (canSuspend) {
                     this.addButton({
                         label: _("Suspend"),
-                        action: () => {
-                            this._dialogProxy.SuspendRemote();
-                            this.close();
-                        },
+                        action: this._dialogProxy.SuspendRemote.bind(this._dialogProxy),
                     });
                 }
 
                 if (canHibernate) {
                     this.addButton({
                         label: _("Hibernate"),
-                        action: () => {
-                            this._dialogProxy.HibernateRemote();
-                            this.close();
-                        }
+                        action: this._dialogProxy.HibernateRemote.bind(this._dialogProxy),
                     });
                 }
 
@@ -278,6 +272,7 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
     _presentInhibitorInfo(inhibitorInfos) {
         this._removeDelayTimer();
         this.clearButtons();
+        this._applicationsSection.list.destroy_all_children();
         this._messageDialogContent.description = null;
 
         const infos = inhibitorInfos;

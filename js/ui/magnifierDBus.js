@@ -101,49 +101,45 @@ const ZoomRegionIface =
 // '/org/gnome/Magnifier/ZoomRegion/zoomer1', etc.
 let _zoomRegionInstanceCount = 0;
 
-function CinnamonMagnifier() {
-    this._init();
-}
-
-CinnamonMagnifier.prototype = {
-    _init: function() {
+var CinnamonMagnifier = class CinnamonMagnifier {
+    constructor() {
         this._zoomers = {};
 
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(MagnifierIface, this);
         this._dbusImpl.export(Gio.DBus.session, MAG_SERVICE_PATH);
-    },
+    }
 
     /**
      * setActive:
      * @activate:   Boolean to activate or de-activate the magnifier.
      */
-    setActive: function(activate) {
+    setActive(activate) {
         Main.magnifier.setActive(activate);
-    },
+    }
 
     /**
      * isActive:
      * @return  Whether the magnifier is active (boolean).
      */
-    isActive: function() {
+    isActive() {
         return Main.magnifier.isActive();
-    },
+    }
 
     /**
      * showCursor:
      * Show the system mouse pointer.
      */
-    showCursor: function() {
+    showCursor() {
         Main.magnifier.showSystemCursor();
-    },
+    }
 
     /**
      * hideCursor:
      * Hide the system mouse pointer.
      */
-    hideCursor: function() {
+    hideCursor() {
         Main.magnifier.hideSystemCursor();
-    },
+    }
 
     /**
      * createZoomRegion:
@@ -165,7 +161,7 @@ CinnamonMagnifier.prototype = {
      *
      * @return          The newly created ZoomRegion.
      */
-    createZoomRegion: function(xMagFactor, yMagFactor, roi, viewPort) {
+    createZoomRegion(xMagFactor, yMagFactor, roi, viewPort) {
         let ROI = { x: roi[0], y: roi[1], width: roi[2] - roi[0], height: roi[3] - roi[1] };
         let viewBox = { x: viewPort[0], y: viewPort[1], width: viewPort[2] - viewPort[0], height: viewPort[3] - viewPort[1] };
         let realZoomRegion = Main.magnifier.createZoomRegion(xMagFactor, yMagFactor, ROI, viewBox);
@@ -178,22 +174,22 @@ CinnamonMagnifier.prototype = {
         proxyAndZoomRegion.zoomRegion = realZoomRegion;
         this._zoomers[objectPath] = proxyAndZoomRegion;
         return objectPath;
-    },
+    }
 
     /**
      * addZoomRegion:
      * Append the given ZoomRegion to the magnifier's list of ZoomRegions.
      * @zoomerObjectPath:   The object path for the zoom region proxy.
      */
-    addZoomRegion: function(zoomerObjectPath) {
+    addZoomRegion(zoomerObjectPath) {
         let proxyAndZoomRegion = this._zoomers[zoomerObjectPath];
         if (proxyAndZoomRegion && proxyAndZoomRegion.zoomRegion) {
             Main.magnifier.addZoomRegion(proxyAndZoomRegion.zoomRegion);
             return true;
-        }
-        else
+        } else {
             return false;
-    },
+        }
+    }
 
     /**
      * getZoomRegions:
@@ -201,7 +197,7 @@ CinnamonMagnifier.prototype = {
      * @return:     The Magnifier's zoom region list as an array of DBus object
      *              paths.
      */
-    getZoomRegions: function() {
+    getZoomRegions() {
         // There may be more ZoomRegions in the magnifier itself than have
         // been added through dbus.  Make sure all of them are associated with
         // an object path and proxy.
@@ -231,13 +227,13 @@ CinnamonMagnifier.prototype = {
             }
         });
         return objectPaths;
-    },
+    }
 
     /**
      * clearAllZoomRegions:
      * Remove all the zoom regions from this Magnfier's ZoomRegion list.
      */
-    clearAllZoomRegions: function() {
+    clearAllZoomRegions() {
         Main.magnifier.clearAllZoomRegions();
         for (let objectPath in this._zoomers) {
             let proxyAndZoomer = this._zoomers[objectPath];
@@ -247,86 +243,86 @@ CinnamonMagnifier.prototype = {
             delete this._zoomers[objectPath];
         }
         this._zoomers = {};
-    },
+    }
 
     /**
      * fullScreenCapable:
      * Consult if the Magnifier can magnify in full-screen mode.
      * @return  Always return true.
      */
-    fullScreenCapable: function() {
+    fullScreenCapable() {
         return true;
-    },
+    }
 
     /**
      * setCrosswireSize:
      * Set the crosswire size of all ZoomRegions.
      * @size:   The thickness of each line in the cross wire.
      */
-     setCrosswireSize: function(size) {
+     setCrosswireSize(size) {
         Main.magnifier.setCrosshairsThickness(size);
-     },
+     }
 
     /**
      * getCrosswireSize:
      * Get the crosswire size of all ZoomRegions.
      * @return:   The thickness of each line in the cross wire.
      */
-     getCrosswireSize: function() {
+     getCrosswireSize() {
         return Main.magnifier.getCrosshairsThickness();
-     },
+     }
 
     /**
      * setCrosswireLength:
      * Set the crosswire length of all zoom-regions..
      * @size:   The length of each line in the cross wire.
      */
-     setCrosswireLength: function(length) {
+     setCrosswireLength(length) {
         Main.magnifier.setCrosshairsLength(length);
-     },
+     }
 
     /**
      * setCrosswireSize:
      * Set the crosswire size of all zoom-regions.
      * @size:   The thickness of each line in the cross wire.
      */
-     getCrosswireLength: function() {
+     getCrosswireLength() {
         return Main.magnifier.getCrosshairsLength();
-     },
+     }
 
     /**
      * setCrosswireClip:
      * Set if the crosswire will be clipped by the cursor image..
      * @clip:   Flag to indicate whether to clip the crosswire.
      */
-     setCrosswireClip: function(clip) {
+     setCrosswireClip(clip) {
         Main.magnifier.setCrosshairsClip(clip);
-     },
+     }
 
     /**
      * getCrosswireClip:
      * Get the crosswire clip value.
      * @return:   Whether the crosswire is clipped by the cursor image.
      */
-     getCrosswireClip: function() {
+     getCrosswireClip() {
         return Main.magnifier.getCrosshairsClip();
-     },
+     }
 
     /**
      * setCrosswireColor:
      * Set the crosswire color of all ZoomRegions.
      * @color:   Unsigned int of the form rrggbbaa.
      */
-     setCrosswireColor: function(color) {
+     setCrosswireColor(color) {
         Main.magnifier.setCrosshairsColor('#%08x'.format(color));
-     },
+     }
 
     /**
      * getCrosswireClip:
      * Get the crosswire color of all ZoomRegions.
      * @return:   The crosswire color as an unsigned int in the form rrggbbaa.
      */
-     getCrosswireColor: function() {
+     getCrosswireColor() {
         let colorString = Main.magnifier.getCrosshairsColor();
         // Drop the leading '#'.
         return parseInt(colorString.slice(1), 16);
@@ -339,17 +335,13 @@ CinnamonMagnifier.prototype = {
  * @zoomerObjectPath:   String that is the path to a DBus ZoomRegion.
  * @zoomRegion:         The actual zoom region associated with the object path.
  */
-function CinnamonMagnifierZoomRegion(zoomerObjectPath, zoomRegion) {
-    this._init(zoomerObjectPath, zoomRegion);
-}
-
-CinnamonMagnifierZoomRegion.prototype = {
-    _init: function(zoomerObjectPath, zoomRegion) {
+var CinnamonMagnifierZoomRegion = class CinnamonMagnifierZoomRegion {
+    constructor(zoomerObjectPath, zoomRegion) {
         this._zoomRegion = zoomRegion;
 
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(ZoomRegionIface, this);
         this._dbusImpl.export(Gio.DBus.session, zoomerObjectPath);
-    },
+    }
 
     /**
      * setMagFactor:
@@ -359,9 +351,9 @@ CinnamonMagnifierZoomRegion.prototype = {
      * @yMagFactor:     The power to set the vertical magnification factor to
      *                  of the magnified view.
      */
-    setMagFactor: function(xMagFactor, yMagFactor) {
+    setMagFactor(xMagFactor, yMagFactor) {
         this._zoomRegion.setMagFactor(xMagFactor, yMagFactor);
-    },
+    }
 
     /**
      * getMagFactor:
@@ -370,9 +362,9 @@ CinnamonMagnifierZoomRegion.prototype = {
      *          magnification.  A value of 2.0 means the contents are doubled
      *          in size, and so on.
      */
-    getMagFactor: function() {
+    getMagFactor() {
         return this._zoomRegion.getMagFactor();
-    },
+    }
 
     /**
      * setRoi:
@@ -381,10 +373,10 @@ CinnamonMagnifierZoomRegion.prototype = {
      *          screen to magnify. The values are in screen (unmagnified)
      *          coordinate space.
      */
-    setRoi: function(roi) {
+    setRoi(roi) {
         let roiObject = { x: roi[0], y: roi[1], width: roi[2] - roi[0], height: roi[3] - roi[1] };
         this._zoomRegion.setROI(roiObject);
-    },
+    }
 
     /**
      * getRoi:
@@ -394,12 +386,12 @@ CinnamonMagnifierZoomRegion.prototype = {
      * @return  an array, [left, top, right, bottom], representing the bounding
      *          rectangle of what is shown in the magnified view.
      */
-    getRoi: function() {
+    getRoi() {
         let roi = this._zoomRegion.getROI();
         roi[2] += roi[0];
         roi[3] += roi[1];
         return roi;
-    },
+    }
 
     /**
      * Set the "region of interest" by centering the given screen coordinate
@@ -409,10 +401,10 @@ CinnamonMagnifierZoomRegion.prototype = {
      * @return  Whether the shift was successful (for GS-mag, this is always
      *          true).
      */
-    shiftContentsTo: function(x, y) {
+    shiftContentsTo(x, y) {
         this._zoomRegion.scrollContentsTo(x, y);
         return true;
-    },
+    }
 
     /**
      * moveResize
@@ -420,12 +412,12 @@ CinnamonMagnifierZoomRegion.prototype = {
      * @viewPort    Array, [left, top, right, bottom], defining the position and
      *              size on screen to place the zoom region.
      */
-    moveResize: function(viewPort) {
+    moveResize(viewPort) {
         let viewRect = { x: viewPort[0], y: viewPort[1], width: viewPort[2] - viewPort[0], height: viewPort[3] - viewPort[1] };
         this._zoomRegion.setViewPort(viewRect);
-    },
+    }
 
-    destroy: function() {
+    destroy() {
         this._dbusImpl.unexport();
     }
 };

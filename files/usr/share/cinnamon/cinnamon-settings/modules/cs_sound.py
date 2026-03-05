@@ -4,7 +4,7 @@ import gi
 gi.require_version('Cvc', '1.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Cvc, Gdk, GdkPixbuf, Gio, Pango
-from SettingsWidgets import SidePage, GSettingsSoundFileChooser
+from bin.SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
 from bin import util
 
