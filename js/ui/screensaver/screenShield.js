@@ -129,6 +129,7 @@ var ScreenShield = GObject.registerClass({
         this._widgetLoadIdleId = 0;
         this._infoPanel = null;
         this._inhibitor = null;
+        this._activationPending = false;
 
         this._nameBlocker = new NameBlocker.NameBlocker();
 
@@ -356,19 +357,26 @@ var ScreenShield = GObject.registerClass({
     }
 
     lock(immediate = false, awayMessage = null) {
-        if (this.isLocked())
+        if (this.isLocked() || this._activationPending) {
+            _log('ScreenShield: Already locked or activation pending, ignoring lock request');
             return;
+        }
 
         this._awayMessage = awayMessage;
 
         _log(`ScreenShield: Locking screen (immediate=${immediate})`);
 
         if (this._state === State.HIDDEN) {
-            this.activate(immediate);
+            this.activate(immediate, (success) => {
+                if (success) {
+                    this._stopLockDelay();
+                    this._setLocked(true);
+                }
+            });
+        } else {
+            this._stopLockDelay();
+            this._setLocked(true);
         }
-
-        this._stopLockDelay();
-        this._setLocked(true);
     }
 
     _setLocked(locked) {
@@ -397,9 +405,9 @@ var ScreenShield = GObject.registerClass({
         this._hideShield(true);
     }
 
-    activate(immediate = false) {
-        if (this._state !== State.HIDDEN) {
-            _log('ScreenShield: Already active');
+    activate(immediate = false, lock_callback = null) {
+        if (this._state !== State.HIDDEN || this._activationPending) {
+            _log('ScreenShield: Already active or activation pending');
             return;
         }
 
@@ -409,44 +417,87 @@ var ScreenShield = GObject.registerClass({
         this._lastMotionY = -1;
         this._activationTime = GLib.get_monotonic_time();
 
-        if (!Main.pushModal(this, global.get_current_time(), 0, Cinnamon.ActionMode.LOCK_SCREEN)) {
-            global.logError('ScreenShield: Failed to acquire modal grab');
-            return;
-        }
+        this._activationPending = true;
+        _log('ScreenShield: requesting screensaver modal grab');
+        Main.pushScreensaverModal(this, global.get_current_time(), Cinnamon.ActionMode.LOCK_SCREEN,
+            (success) => {
+                this._activationPending = false;
 
-        this._setState(State.SHOWN);
+                if (success) {
+                    _log('ScreenShield: modal grab acquired, finishing activation');
 
-        this._createBackgrounds();
+                    if (this._finishActivation(immediate)) {
+                        if (lock_callback)
+                            lock_callback(true);
 
-        this._capturedEventId = global.stage.connect('captured-event',
-            this._onCapturedEvent.bind(this));
-
-        global.stage.hide_cursor();
-
-        if (Main.deskletContainer)
-            Main.deskletContainer.actor.hide();
-
-        Main.layoutManager.screenShieldGroup.show();
-        this.show();
-
-        if (immediate) {
-            this.opacity = 255;
-            this._activateBackupLocker();
-            this._scheduleWidgetLoading();
-        } else {
-            this.opacity = 0;
-            this.ease({
-                opacity: 255,
-                duration: FADE_TIME,
-                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                onComplete: () => {
-                    this._activateBackupLocker();
-                    this._scheduleWidgetLoading();
+                        return;
+                    } else {
+                        Main.popModal(this);
+                    }
                 }
-            });
-        }
 
-        this._startLockDelay();
+                global.logWarning('ScreenShield: Failed to acquire modal grab (or cancelled)');
+                this._activationTime = 0;
+                this._syncInhibitor();
+                if (lock_callback)
+                    lock_callback(false);
+            });
+    }
+
+    _finishActivation(immediate) {
+        try {
+            this._createBackgrounds();
+
+            this._capturedEventId = global.stage.connect('captured-event',
+                this._onCapturedEvent.bind(this));
+
+            global.stage.hide_cursor();
+
+            if (Main.deskletContainer)
+                Main.deskletContainer.actor.hide();
+
+            Main.layoutManager.screenShieldGroup.show();
+            this.show();
+
+            if (immediate) {
+                this.opacity = 255;
+                this._activateBackupLocker();
+                this._scheduleWidgetLoading();
+            } else {
+                this.opacity = 0;
+                this.ease({
+                    opacity: 255,
+                    duration: FADE_TIME,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+                    onComplete: () => {
+                        this._activateBackupLocker();
+                        this._scheduleWidgetLoading();
+                    }
+                });
+            }
+
+            this._setState(State.SHOWN);
+            this._startLockDelay();
+            return true;
+        } catch (e) {
+            global.logError(`ScreenShield: error during activation: ${e.message}`);
+
+            if (this._capturedEventId) {
+                global.stage.disconnect(this._capturedEventId);
+                this._capturedEventId = 0;
+            }
+
+            global.stage.show_cursor();
+
+            if (Main.deskletContainer)
+                Main.deskletContainer.actor.show();
+
+            Main.layoutManager.screenShieldGroup.hide();
+            this.hide();
+            this._destroyBackgrounds();
+
+            return false;
+        }
     }
 
     _startLockDelay() {
@@ -492,6 +543,12 @@ var ScreenShield = GObject.registerClass({
     deactivate() {
         if (this.isLocked()) {
             _log('ScreenShield: Cannot deactivate while locked');
+            return;
+        }
+
+        if (this._activationPending) {
+            _log('ScreenShield: Cancelling pending activation');
+            global.end_modal(global.get_current_time());
             return;
         }
 
@@ -552,7 +609,8 @@ var ScreenShield = GObject.registerClass({
     _syncInhibitor() {
         let lockEnabled = this._settings.get_boolean('lock-enabled');
         let lockDisabled = Main.lockdownSettings.get_boolean('disable-lock-screen');
-        let shouldInhibit = this._state === State.HIDDEN && lockEnabled && !lockDisabled;
+        let shouldInhibit = (this._state === State.HIDDEN || this._activationPending) &&
+                            lockEnabled && !lockDisabled;
 
         if (shouldInhibit && !this._inhibitor) {
             _log('ScreenShield: Acquiring sleep inhibitor');
@@ -563,7 +621,7 @@ var ScreenShield = GObject.registerClass({
                 }
 
                 // Re-check after async - conditions may have changed
-                let stillNeeded = this._state === State.HIDDEN &&
+                let stillNeeded = (this._state === State.HIDDEN || this._activationPending) &&
                                   this._settings.get_boolean('lock-enabled') &&
                                   !Main.lockdownSettings.get_boolean('disable-lock-screen');
                 if (stillNeeded) {

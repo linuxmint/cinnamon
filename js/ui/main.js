@@ -1318,6 +1318,40 @@ function _findModal(actor) {
     return -1;
 }
 
+function _completeModalSetup(actor, mode) {
+    if (modalCount == 0)
+        Meta.disable_unredirect_for_display(global.display);
+
+    global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
+
+    actionMode = mode;
+
+    modalCount += 1;
+    let actorDestroyId = actor.connect('destroy', function() {
+        let index = _findModal(actor);
+        if (index >= 0)
+            popModal(actor);
+    });
+
+    let record = {
+        actor: actor,
+        focus: global.stage.get_key_focus(),
+        destroyId: actorDestroyId,
+        actionMode: mode
+    };
+    if (record.focus != null) {
+        record.focusDestroyId = record.focus.connect('destroy', function() {
+            record.focus = null;
+            record.focusDestroyId = null;
+        });
+    }
+    modalActorFocusStack.push(record);
+
+    global.stage.set_key_focus(actor);
+
+    layoutManager.updateChrome(true);
+}
+
 /**
  * pushModal:
  * @actor (Clutter.Actor): actor which will be given keyboard focus
@@ -1356,38 +1390,44 @@ function pushModal(actor, timestamp, options, mode) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
-        Meta.disable_unredirect_for_display(global.display);
     }
 
-    global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
-
-    actionMode = mode;
-
-    modalCount += 1;
-    let actorDestroyId = actor.connect('destroy', function() {
-        let index = _findModal(actor);
-        if (index >= 0)
-            popModal(actor);
-    });
-
-    let record = {
-        actor: actor,
-        focus: global.stage.get_key_focus(),
-        destroyId: actorDestroyId,
-        actionMode: mode
-    };
-    if (record.focus != null) {
-        record.focusDestroyId = record.focus.connect('destroy', function() {
-            record.focus = null;
-            record.focusDestroyId = null;
-        });
-    }
-    modalActorFocusStack.push(record);
-
-    global.stage.set_key_focus(actor);
-
-    layoutManager.updateChrome(true);
+    _completeModalSetup(actor, mode);
     return true;
+}
+
+/**
+ * pushScreensaverModal:
+ * @actor (Clutter.Actor): actor which will be given keyboard focus.
+ * @timestamp (number): optional X server timestamp.
+ * @mode (Cinnamon.ActionMode): the action mode for the modal grab.
+ * @callback (function): called with (success) when the grab completes.
+ *
+ * Like pushModal(), but uses begin_modal_with_retry() to asynchronously
+ * retry the grab on X11, using libxdo to break stuck grabs from popup
+ * menus. The callback is called with true on success, false on failure.
+ */
+function pushScreensaverModal(actor, timestamp, mode, callback) {
+    if (timestamp == undefined)
+        timestamp = global.get_current_time();
+
+    global.begin_modal_with_retry(timestamp, 0,
+        (obj, success) => {
+            if (!success) {
+                log('pushScreensaverModal: failed to acquire modal grab after retries (or cancelled)');
+                callback(false);
+                return;
+            }
+
+            try {
+                _completeModalSetup(actor, mode);
+                callback(true);
+            } catch (e) {
+                global.logError(`pushScreensaverModal: error during modal setup: ${e.message}`);
+                global.end_modal(global.get_current_time());
+                callback(false);
+            }
+        });
 }
 
 /**
