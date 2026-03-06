@@ -1,6 +1,7 @@
 <!DOCTYPE Menu PUBLIC "-//freedesktop//DTD Menu 1.0//EN"
  "http://www.freedesktop.org/standards/menu-spec/1.0/menu.dtd">
 
+<!-- Category selection logic in this file should be kept in sync with same in cinnamon-desktop-editor.py -->
 <Menu>
 
   <Name>Applications</Name>
@@ -20,10 +21,10 @@
     <Include>
       <And>
         <Category>Utility</Category>
-	<!-- Accessibility spec must have either the Utility or Settings
-	     category, and we display an accessibility submenu already for
-	     the ones that do not have Settings, so don't display accessibility
-	     applications here -->
+    <!-- Accessibility spec must have either the Utility or Settings
+         category, and we display an accessibility submenu already for
+         the ones that do not have Settings, so don't display accessibility
+         applications here -->
         <Not><Category>Accessibility</Category></Not>
         <Not><Category>System</Category></Not>
       </And>
@@ -129,12 +130,6 @@
       </Include>
   </Menu>
 
-  <!-- System Tools-->
-  <Menu>
-    <Name>System</Name>
-    <Directory>cinnamon-system-tools.directory</Directory>    
-  </Menu>   <!-- End System Tools -->
-
   <!-- Other -->
   <Menu>
     <Name>Other</Name>
@@ -176,36 +171,27 @@
     <Name>Administration</Name>
     <Directory>cinnamon-settings-system.directory</Directory>
     <Include>
-      <And>
-        <Category>Settings</Category>
-        <Category>System</Category>
-      </And>
-    </Include>
-    <Include>
-      <And>
-        <Category>System</Category>
-        <Not><Category>Settings</Category></Not>
-      </And>
+      <Category>System</Category>
     </Include>
   </Menu>     <!-- End System Settings -->
 
   <Layout>
-	<Merge type="menus"/>
-	<Menuname>Accessories</Menuname>
-	<Menuname>Education</Menuname>
-	<Menuname>Games</Menuname>
-	<Menuname>Graphics</Menuname>
-	<Menuname>Internet</Menuname>
-	<Menuname>Office</Menuname>
-	<Menuname>Other</Menuname>
-	<Menuname>Development</Menuname>
-	<Menuname>Multimedia</Menuname>
-	<Menuname>System</Menuname>
-	<Menuname>Universal Access</Menuname>
-	<Menuname>wine-wine</Menuname>
-	<Menuname>Preferences</Menuname>
-	<Menuname>Administration</Menuname>
-	<Merge type="files"/>
+    <Merge type="menus"/>
+    <Menuname>Accessories</Menuname>
+    <Menuname>Education</Menuname>
+    <Menuname>Games</Menuname>
+    <Menuname>Graphics</Menuname>
+    <Menuname>Internet</Menuname>
+    <Menuname>Office</Menuname>
+    <Menuname>Other</Menuname>
+    <Menuname>Development</Menuname>
+  <Menuname>Science</Menuname>
+    <Menuname>Multimedia</Menuname>
+    <Menuname>Universal Access</Menuname>
+    <Menuname>wine-wine</Menuname>
+    <Menuname>Preferences</Menuname>
+    <Menuname>Administration</Menuname>
+    <Merge type="files"/>
   </Layout>
 
 </Menu>  <!-- End Applications -->
