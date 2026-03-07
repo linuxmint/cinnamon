@@ -109,13 +109,29 @@
   }
 
   &-scrollbox {
-    &.vfade {
-      -st-vfade-offset: 68px;
-      -st-hfade-offset: 0;
+    &-scrollview {
+      &.vfade {
+        -st-vfade-offset: 68px;
+        -st-hfade-offset: 0;
+      }
+      &.hfade {
+        -st-hfade-offset: 68px;
+        -st-vfade-offset: 0;
+      }
     }
-    &.hfade {
-      -st-hfade-offset: 68px;
-      -st-vfade-offset: 0;
+
+    &-button {
+      &-start,
+      &-end,
+      &-up,
+      &-down {
+        margin: 0;
+        padding: 0;
+      }
+
+      &-icon {
+        icon-size: $scalable_icon_size;
+      }
     }
   }
 }

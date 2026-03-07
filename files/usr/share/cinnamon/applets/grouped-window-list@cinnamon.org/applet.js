@@ -799,8 +799,8 @@ class GroupedWindowListApplet extends Applet.Applet {
         let adjustmentValue = 0;
         if (currentWorkspace.scrollBox) {
             const adjustment = this.state.isHorizontal ?
-                currentWorkspace.scrollBox.actor.get_hscroll_bar().get_adjustment() :
-                currentWorkspace.scrollBox.actor.get_vscroll_bar().get_adjustment();
+                currentWorkspace.scrollBox.scrollView.get_hscroll_bar().get_adjustment() :
+                currentWorkspace.scrollBox.scrollView.get_vscroll_bar().get_adjustment();
             adjustmentValue = adjustment.get_value();
         }
 
