@@ -20,7 +20,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('Gdk', '3.0')
 gi.require_version('Gio', '2.0')
-from gi.repository import Gdk, Gtk, Gio, GLib
+from gi.repository import Gdk, GdkPixbuf, Gtk, Gio, GLib
 
 from . import logger
 from . import proxygsettings
@@ -37,33 +37,46 @@ try:
 except:
     pass
 
+home = os.path.expanduser("~")
+locale_inst = f'{home}/.local/share/locale'
+settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
+
 URL_SPICES_HOME = "https://cinnamon-spices.linuxmint.com"
 
 SPICE_MAP = {
     "applet": {
         "url": URL_SPICES_HOME + "/json/applets.json",
         "enabled-schema": "org.cinnamon",
-        "enabled-key": "enabled-applets"
+        "enabled-key": "enabled-applets",
+        "install-folders": (os.path.join(home, ".local/share/cinnamon/applets"),)
     },
     "desklet": {
         "url": URL_SPICES_HOME + "/json/desklets.json",
         "enabled-schema": "org.cinnamon",
-        "enabled-key": "enabled-desklets"
+        "enabled-key": "enabled-desklets",
+        "install-folders": (os.path.join(home, ".local/share/cinnamon/desklets"),)
     },
     "extension": {
         "url": URL_SPICES_HOME + "/json/extensions.json",
         "enabled-schema": "org.cinnamon",
-        "enabled-key": "enabled-extensions"
+        "enabled-key": "enabled-extensions",
+        "install-folders": (os.path.join(home, ".local/share/cinnamon/extensions"),)
     },
     "action": {
         "url": URL_SPICES_HOME + "/json/actions.json",
         "enabled-schema": "org.nemo.plugins",
-        "enabled-key": "disabled-actions"
+        "enabled-key": "disabled-actions",
+        "install-folders": (os.path.join(home, ".local/share/nemo/actions"),)
     },
     "theme": {
         "url": URL_SPICES_HOME + "/json/themes.json",
         "enabled-schema": "org.cinnamon.theme",
-        "enabled-key": "name"
+        "enabled-key": "name",
+        "install-folders": (
+            os.path.join(home, ".themes"),
+            os.path.join(GLib.get_user_data_dir(), "themes"),
+            os.path.join(home, ".local/share/cinnamon/themes"),
+        )
     }
 }
 
@@ -71,9 +84,6 @@ TIMEOUT_DOWNLOAD_JSON = 15
 TIMEOUT_DOWNLOAD_THUMB = 60
 TIMEOUT_DOWNLOAD_ZIP = 120
 
-home = os.path.expanduser("~")
-locale_inst = f'{home}/.local/share/locale'
-settings_dir = os.path.join(GLib.get_user_config_dir(), 'cinnamon', 'spices')
 
 activity_logger = logger.ActivityLogger()
 
@@ -164,13 +174,8 @@ class Harvester:
 
         self.index_file = os.path.join(self.cache_folder, "index.json")
 
-        self.install_folder = f"{home}/.local/share/nemo/actions" if self.actions else os.path.join(home, ".local/share/cinnamon", f"{self.spice_type}s")
-
-        if self.themes:
-            old_install_folder = f'{home}/.themes/'
-            self.spices_directories = (old_install_folder, self.install_folder)
-        else:
-            self.spices_directories = (self.install_folder, )
+        self.spices_directories = SPICE_MAP[self.spice_type]["install-folders"]
+        self.install_folder = self.spices_directories[0]
 
         self.disabled = not self.anything_installed()
 
@@ -308,6 +313,8 @@ class Harvester:
                     subdirectory = os.path.join(directory, uuid)
                     if uuid.endswith('.nemo_action'):
                         continue
+                    if uuid in self.meta_map:
+                        continue
                     # For actions, ignore any other normal files, an action may place other support scripts in here.
                     if self.actions and not os.path.isdir(subdirectory):
                         continue
@@ -433,11 +440,11 @@ class Harvester:
                                        os.path.join(locale_dir, f'{uuid}.mo')],
                                        check=True)
 
+        os.makedirs(self.install_folder, mode=0o755, exist_ok=True)
+
+        self._remove_spice_from_all_directories(uuid)
+
         dest = os.path.join(self.install_folder, uuid)
-        if os.path.exists(dest):
-            shutil.rmtree(dest)
-        if self.actions and os.path.exists(dest + '.nemo_action'):
-            os.remove(dest + '.nemo_action')
         if not self.actions:
             shutil.copytree(folder, dest)
         else:
@@ -464,6 +471,18 @@ class Harvester:
 
         with open(meta_path, "w+", encoding='utf-8') as f:
             json.dump(md, f, indent=4)
+
+    def _remove_spice_from_all_directories(self, uuid):
+        for directory in self.spices_directories:
+            dest = os.path.join(directory, uuid)
+            if os.path.isdir(dest):
+                shutil.rmtree(dest, ignore_errors=True)
+            if self.actions:
+                action_file = os.path.join(directory, f"{uuid}.nemo_action")
+                try:
+                    os.remove(action_file)
+                except FileNotFoundError:
+                    pass
 
     def write_to_log(self, uuid, action):
         new_version = "<none>"
