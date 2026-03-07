@@ -402,6 +402,7 @@ cinnamon_tray_manager_child_redisplay (gpointer socket_pointer, gpointer child_p
 
   if (child->actor && CLUTTER_IS_ACTOR(child->actor)) {
     clutter_actor_destroy(child->actor);
+    g_clear_object (&child->actor);
   }
 
   on_plug_added(socket_pointer, child->manager);
