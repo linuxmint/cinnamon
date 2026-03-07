@@ -208,7 +208,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         // applet to avoid passing down the parent class down the constructor chain and creating circular references.
         // In addition to manual event emitting, store.js can emit updates on property changes when set through
         // store.set. Any keys emitted through store.trigger that are not declared here first will throw an error.
-        this.state.connect({
+        this.stateConnectionId = this.state.connect({
             setSettingsValue: (k, v) => this.settings.setValue(k, v),
             getPanel: () => (this.panel ? this.panel : null),
             getPanelHeight: () => this._panelHeight,
@@ -428,6 +428,9 @@ class GroupedWindowListApplet extends Applet.Applet {
                 workspace.destroy();
             }
         });
+        if (this.stateConnectionId) {
+            this.state.disconnect(this.stateConnectionId);
+        }
         this.settings.finalize();
         unref(this, RESERVE_KEYS);
         MessageTray.extensionsHandlingNotifications--;
@@ -445,13 +448,13 @@ class GroupedWindowListApplet extends Applet.Applet {
         return false;
     }
 
-    onWindowMonitorChanged(display, metaWindow, metaWorkspace) {
-        if (this.state.monitorWatchList.length !== this.numberOfMonitors) {
-            const currentWorkspace = this.getCurrentWorkspace();
-            if (currentWorkspace !== null) {
-                currentWorkspace.windowRemoved(metaWorkspace, metaWindow);
-                currentWorkspace.windowAdded(metaWorkspace, metaWindow);
-            }
+    onWindowMonitorChanged(display, metaWindow, monitor) {
+        if ((this.state.monitorWatchList.length !== this.numberOfMonitors)) {
+            this.workspaces.forEach( workspace => {
+                if (!workspace) return;
+                workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
+                workspace.windowAdded(workspace.metaWorkspace, metaWindow);
+            });
         }
     }
 
@@ -620,21 +623,8 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     updateTitleDisplay(titleDisplay) {
-        if (titleDisplay === TitleDisplay.None
-            || this.state.lastTitleDisplay === TitleDisplay.None) {
-            this.refreshCurrentWorkspace();
-        }
-
-        this.workspaces.forEach( workspace => {
-            workspace.appGroups.forEach( appGroup => {
-                if (titleDisplay === TitleDisplay.Focused) {
-                    appGroup.hideLabel();
-                }
-                appGroup.handleTitleDisplayChange();
-            });
-        });
-
         this.state.set({lastTitleDisplay: titleDisplay});
+        this.refreshAllWorkspaces();
     }
 
     getAppFromWindow(metaWindow) {
@@ -779,7 +769,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWorkspace.appGroups[z].groupState.lastFocused
                 : source.groupState.metaWindows[z];
             Main.activateWindow(_window, global.get_current_time());
-            setTimeout(() => this.state.set({scrollActive: false}, 4000));
+            setTimeout(() => this.state.set({scrollActive: false}), 4000);
         }
     }
 
@@ -1027,7 +1017,6 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     _onWindowAppChanged(tracker, metaWindow) {
         if (!metaWindow) return;
-
         this.workspaces.forEach(workspace => {
             if (!workspace) return;
             workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
@@ -1042,7 +1031,7 @@ class GroupedWindowListApplet extends Applet.Applet {
 
      _onNotificationReceived(mtray, notification) {
         let appId = notification.source.app?.get_id();
-      
+
         if (!appId) {
             return;
         }
