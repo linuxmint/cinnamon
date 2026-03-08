@@ -22,7 +22,7 @@ const POWER_SCHEMA = 'org.cinnamon.settings-daemon.plugins.power';
 const FADE_TIME = 200;
 const MOTION_THRESHOLD = 100;
 
-const FLOAT_TIMER_INTERVAL = 30;
+const FLOAT_TIMER_INTERVAL = 5;
 const DEBUG_FLOAT = false;  // Set to true for 5-second intervals during development
 
 const MAX_SCREENSAVER_WIDGETS = 3;
@@ -136,7 +136,6 @@ var ScreenShield = GObject.registerClass({
         this._settings = new Gio.Settings({ schema_id: SCREENSAVER_SCHEMA });
         this._settings.connect('changed::lock-enabled', this._syncInhibitor.bind(this));
         this._powerSettings = new Gio.Settings({ schema_id: POWER_SCHEMA });
-        this._allowFloating = this._settings.get_boolean('floating-widgets');
 
         let constraint = new Clutter.BindConstraint({
             source: global.stage,
@@ -416,6 +415,7 @@ var ScreenShield = GObject.registerClass({
         this._lastMotionX = -1;
         this._lastMotionY = -1;
         this._activationTime = GLib.get_monotonic_time();
+        this._allowFloating = this._settings.get_boolean('floating-widgets');
 
         this._activationPending = true;
         _log('ScreenShield: requesting screensaver modal grab');
@@ -934,7 +934,7 @@ var ScreenShield = GObject.registerClass({
             this._assignRandomPositionToWidget(widget);
             widget.applyNextPosition();
 
-            if (this._widgets.length === 0) {
+            if (this._widgets.length !== 0) {
                 this._startFloatTimer();
             }
         }
