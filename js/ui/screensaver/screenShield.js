@@ -303,6 +303,7 @@ var ScreenShield = GObject.registerClass({
             return;
         }
 
+        this._dialog._updateLayoutIndicator();
         this._dialog.opacity = 0;
         this._dialog.show();
 
