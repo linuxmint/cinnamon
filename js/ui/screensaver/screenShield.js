@@ -457,6 +457,7 @@ var ScreenShield = GObject.registerClass({
             if (Main.deskletContainer)
                 Main.deskletContainer.actor.hide();
 
+            global.stage.set_child_above_sibling(Main.layoutManager.screenShieldGroup, null);
             Main.layoutManager.screenShieldGroup.show();
             this.show();
 
