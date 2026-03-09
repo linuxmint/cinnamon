@@ -914,6 +914,31 @@ st_entry_key_press_event (ClutterActor    *actor,
   return CLUTTER_ACTOR_CLASS (st_entry_parent_class)->key_press_event (actor, event);
 }
 
+static gboolean
+st_entry_captured_event (ClutterActor *actor,
+                         ClutterEvent *event)
+{
+  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
+
+  if (clutter_event_type (event) != CLUTTER_KEY_PRESS)
+    return CLUTTER_EVENT_PROPAGATE;
+
+  // Instead of having to check this everywhere an StEntry is used, filter
+  // the event before it gets to the normal handlers.
+  //
+  // Original PR: https://github.com/linuxmint/cinnamon/pull/13317
+  // ref: https://github.com/linuxmint/mint22.3-beta/issues/60
+
+  if (clutter_text_has_preedit (CLUTTER_TEXT (priv->entry)))
+    {
+      CLUTTER_ACTOR_GET_CLASS (priv->entry)->key_press_event (priv->entry,
+                                                              (ClutterKeyEvent *) event);
+      return CLUTTER_EVENT_STOP;
+    }
+
+  return CLUTTER_EVENT_PROPAGATE;
+}
+
 static void
 st_entry_key_focus_in (ClutterActor *actor)
 {
@@ -997,6 +1022,7 @@ st_entry_class_init (StEntryClass *klass)
   actor_class->allocate = st_entry_allocate;
   actor_class->paint = st_entry_paint;
 
+  actor_class->captured_event = st_entry_captured_event;
   actor_class->key_press_event = st_entry_key_press_event;
   actor_class->key_focus_in = st_entry_key_focus_in;
 

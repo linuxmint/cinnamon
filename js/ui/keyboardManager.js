@@ -530,14 +530,30 @@ var InputSourceManager = class {
 
     _setupKeybindings() {
         let kb = this._kb_settings.get_strv("switch-input-source");
-        Main.keybindingManager.addHotKeyArray("switch-input-source", kb, () => this._modifiersSwitcher(false));
+        Main.keybindingManager.addHotKeyArray(
+            "switch-input-source", kb,
+            () => this._modifiersSwitcher(false),
+            undefined,
+            Cinnamon.ActionMode.ALL
+        );
+
         kb = this._kb_settings.get_strv("switch-input-source-backward");
-        Main.keybindingManager.addHotKeyArray("switch-input-source-backward", kb, () => this._modifiersSwitcher(true));
+        Main.keybindingManager.addHotKeyArray(
+            "switch-input-source-backward", kb,
+            () => this._modifiersSwitcher(true),
+            undefined,
+            Cinnamon.ActionMode.ALL
+        );
 
         for (let i = 0; i <= 3; i++) {
             const name = `switch-input-source-${i}`;
             kb = this._kb_settings.get_strv(name);
-            Main.keybindingManager.addHotKeyArray(name, kb, () => this.activateInputSourceIndex(i));
+            Main.keybindingManager.addHotKeyArray(
+                name, kb,
+                () => this.activateInputSourceIndex(i),
+                undefined,
+                Cinnamon.ActionMode.ALL
+            );
         }
     }
 

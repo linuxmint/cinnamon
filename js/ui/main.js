@@ -1278,32 +1278,90 @@ function _shouldFilterKeybinding(entry) {
     return !allowed;
 }
 
-// This function encapsulates hacks to make certain global keybindings
-// work even when we are in one of our modes where global keybindings
-// are disabled with a global grab. (When there is a global grab, then
-// all key events will be delivered to the stage, so ::captured-event
-// on the stage can be used for global keybindings.)
+/* This mimics some of the behavior in muffin's keybindings.c, to allow multi-key keybindings
+ * to work properly while pushModal is active and our input events are bypassing muffin's normal
+ * event handling.
+ *
+ * In normal input modes, single key (modifier) keybindings are activated on key-release, and multi-
+ * key bindings are activated on key-press.
+ *
+ * This needs to work in our pushModal state also, for things like layout-switching. We check the
+ * keyval of the event - if it's a modifier key it can potentially be a single-key binding or part
+ * of a multi-key binding, so we defer activating any single-key modifier bindings until key-release,
+ * to give the multi-key binding a chance to activate on key-press.
+ */
+let _modifierOnlyAction = 0;
+
+function _isModifierKeyval(symbol) {
+    return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
+           symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R ||
+           symbol === Clutter.KEY_Alt_L     || symbol === Clutter.KEY_Alt_R     ||
+           symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
+}
+
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
 
-    if (event.type() != Clutter.EventType.KEY_PRESS) {
-        if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
+    let eventType = event.type();
+
+    if (eventType !== Clutter.EventType.KEY_PRESS &&
+        eventType !== Clutter.EventType.KEY_RELEASE) {
+        if (!popup_rendering_actor || eventType !== Clutter.EventType.BUTTON_RELEASE)
             return false;
         return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
+    }
+
+    if (event.get_source() instanceof Clutter.Text &&
+        (event.get_flags() & Clutter.EventFlags.INPUT_METHOD)) {
+        return false;
     }
 
     let keyCode = event.get_key_code();
     let modifierState = Cinnamon.get_event_state(event);
 
-    let action = global.display.get_keybinding_action(keyCode, modifierState);
-    if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.INPUT_METHOD))) {
+    if (eventType === Clutter.EventType.KEY_PRESS) {
+        if (_isModifierKeyval(event.get_key_symbol())) {
+            let action = global.display.get_keybinding_action(keyCode, modifierState);
+            if (action > 0) {
+                let entry = keybindingManager.getBindingById(action);
+                if (!_shouldFilterKeybinding(entry)) {
+                    _modifierOnlyAction = action;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        // A non-modifier key was pressed while a modifier was held.
+        // Use -1 to indicate the modifier release should be consumed.
+        _modifierOnlyAction = -1;
+
+        let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
                 keybindingManager.invoke_keybinding_action_by_id(action);
                 return true;
             }
+        }
+
+        return false;
+    }
+
+    // Release event - activate the single-key keybinding, or eat the release if
+    // a multi-key combo was used.
+    if (_isModifierKeyval(event.get_key_symbol())) {
+        if (_modifierOnlyAction > 0) {
+            let action = _modifierOnlyAction;
+            _modifierOnlyAction = 0;
+            keybindingManager.invoke_keybinding_action_by_id(action);
+            return true;
+        }
+
+        if (_modifierOnlyAction === -1) {
+            _modifierOnlyAction = 0;
+            return true;
         }
     }
 
@@ -1319,6 +1377,8 @@ function _findModal(actor) {
 }
 
 function _completeModalSetup(actor, mode) {
+    _modifierOnlyAction = 0;
+
     if (modalCount == 0)
         Meta.disable_unredirect_for_display(global.display);
 

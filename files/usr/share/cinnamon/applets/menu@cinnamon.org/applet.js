@@ -1833,19 +1833,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             }
         }
 
-        /* check for a keybinding and quit early, otherwise we get a double hit
-           of the keybinding callback */
-        let action = global.display.get_keybinding_action(keyCode, modifierState);
-
-        if (action == Meta.KeyBindingAction.CUSTOM) {
-            return Clutter.EVENT_STOP;
-        }
-
-        if (this.searchEntryText.has_preedit()) {
-            // There is an uncommitted text in the search box, let the input method to handle this.
-            return Clutter.EVENT_PROPAGATE;
-        }
-
         let ctrlKey = modifierState & Clutter.ModifierType.CONTROL_MASK;
 
         // If a context menu is open, hijack keyboard navigation and concentrate on the context menu.
