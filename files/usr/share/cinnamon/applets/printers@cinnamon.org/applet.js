@@ -58,6 +58,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.printWarning = false;
         this.printStatus = '';
         this.updating = false;
+        this.removed = false;
         this.showLater = false;
         this.printers = [];
         this.jobs = [];
@@ -77,6 +78,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
+        this.removed = true;
         this.settings.finalize();
         global.settings.disconnect(this.panelEditModeHandler);
     }
@@ -188,7 +190,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     }
 
     update() {
-        if(this.updating || this.menu.isOpen) return;
+        if(this.updating || this.menu.isOpen || this.removed) return;
         this.updating = true;
         this.printError = false;
         this.menu.removeAll();
