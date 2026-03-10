@@ -102,21 +102,20 @@ class UnlockDialog extends St.BoxLayout {
         this._messageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         passwordBox.add_child(this._messageLabel);
 
-        this._sourceChangedId = 0;
         this._inputSourceManager = KeyboardManager.getInputSourceManager();
         this._systemSourceIndex = null;
 
-        if (this._inputSourceManager.multipleSources) {
-            this._updateLayoutIndicator();
-            this._passwordEntry.connect('primary-icon-clicked', () => {
-                let currentIndex = this._inputSourceManager.currentSource.index;
-                let nextIndex = (currentIndex + 1) % this._inputSourceManager.numInputSources;
-                this._inputSourceManager.activateInputSourceIndex(nextIndex);
-            });
+        this._updateLayoutIndicator();
+        this._passwordEntry.connect('primary-icon-clicked', () => {
+            if (!this._inputSourceManager.multipleSources)
+                return;
+            let currentIndex = this._inputSourceManager.currentSource.index;
+            let nextIndex = (currentIndex + 1) % this._inputSourceManager.numInputSources;
+            this._inputSourceManager.activateInputSourceIndex(nextIndex);
+        });
 
-            this._sourceChangedId = this._inputSourceManager.connect(
-                'current-source-changed', this._updateLayoutIndicator.bind(this));
-        }
+        this._sourceChangedId = this._inputSourceManager.connect(
+            'current-source-changed', this._updateLayoutIndicator.bind(this));
 
         this._buttonLayout = new St.Widget({
             style_class: 'dialog-button-box',
@@ -237,6 +236,11 @@ class UnlockDialog extends St.BoxLayout {
     }
 
     _updateLayoutIndicator() {
+        if (!this._inputSourceManager.multipleSources) {
+            this._passwordEntry.set_primary_icon(null);
+            return;
+        }
+
         let source = this._inputSourceManager.currentSource;
         if (!source)
             return;

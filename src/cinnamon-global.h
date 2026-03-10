@@ -43,6 +43,17 @@ void           cinnamon_global_dump_gjs_stack            (CinnamonGlobal *global
 gboolean cinnamon_global_begin_modal            (CinnamonGlobal         *global,
                                               guint32              timestamp,
                                               MetaModalOptions    options);
+
+typedef void (*CinnamonModalCallback) (CinnamonGlobal *global,
+                                       gboolean        success,
+                                       gpointer        user_data);
+
+void     cinnamon_global_begin_modal_with_retry (CinnamonGlobal        *global,
+                                                 guint32                timestamp,
+                                                 MetaModalOptions       options,
+                                                 CinnamonModalCallback  callback,
+                                                 gpointer               user_data);
+
 void     cinnamon_global_end_modal              (CinnamonGlobal         *global,
                                               guint32              timestamp);
 
