@@ -1345,9 +1345,7 @@ function _stageEventHandler(actor, event) {
             return false;
         }
 
-        // A non-modifier key was pressed while a modifier was held.
-        // Use -1 to indicate the modifier release should be consumed.
-        _modifierOnlyAction = -1;
+        _modifierOnlyAction = 0;
 
         let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
@@ -1361,20 +1359,12 @@ function _stageEventHandler(actor, event) {
         return false;
     }
 
-    // Release event - activate the single-key keybinding, or eat the release if
-    // a multi-key combo was used.
-    if (_isModifierKeyval(event.get_key_symbol())) {
-        if (_modifierOnlyAction > 0) {
-            let action = _modifierOnlyAction;
-            _modifierOnlyAction = 0;
-            keybindingManager.invoke_keybinding_action_by_id(action);
-            return true;
-        }
-
-        if (_modifierOnlyAction === -1) {
-            _modifierOnlyAction = 0;
-            return true;
-        }
+    // Release event - activate the single-key modifier keybinding if one was stored.
+    if (_isModifierKeyval(event.get_key_symbol()) && _modifierOnlyAction > 0) {
+        let action = _modifierOnlyAction;
+        _modifierOnlyAction = 0;
+        keybindingManager.invoke_keybinding_action_by_id(action);
+        return true;
     }
 
     return false;
