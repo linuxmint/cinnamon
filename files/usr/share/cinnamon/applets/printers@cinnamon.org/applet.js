@@ -145,45 +145,78 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         Util.spawn(['lp', '-i', item.job, '-H', 'immediate']);
     }
 
+    formatCommand(cmdList) {
+        let command = ['python3', APPLET_PATH + '/tool.py'];
+        for(let i=0;i<cmdList.length;i++) {
+            command.push(cmdList[i]);
+        }
+        return command;
+    }
+
+    formatOutput(cmdOutput) {
+        //Works only for outputs starting with 'OK:\n'
+        return cmdOutput.slice(4);
+    }
+
+    checkError(output) {
+        if(output.slice(0,7)=="ERRORS:") {
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    handleError(message) {
+        this.printError = true;
+        message = message.slice(7);
+        if(message.length>70) {
+            message = message.slice(0, 69) + "...";
+        }
+        Mainloop.timeout_add_seconds(10, () => this.update());
+        this.set_applet_label('');
+        if(this.show_icon == 'always' || global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+            this.actor.show();
+            this.set_applet_tooltip(message);
+            this.set_applet_icon_symbolic_name('xsi-printer-error');
+        } else {
+            this.actor.hide();
+        }
+        this.menu.removeAll();
+        let printers = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
+        printers.connect('activate', () => this.onShowPrintersClicked());
+        this.menu.addMenuItem(printers);
+    }
+
     update() {
         if(this.updating || this.menu.isOpen) return;
         this.updating = true;
-        this.jobs = [];
-        this.jobsCount = 0;
-        this.printers = [];
-        this.printersCount = 0;
+        this.printError = false;
         this.menu.removeAll();
         let printers = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
         printers.connect('activate', () => this.onShowPrintersClicked());
         this.menu.addMenuItem(printers);
 
         this.out1 = [];
+        this.out2 = "";
+        this.out3 = [];
 
         //Get available printers
-        Util.spawn_async(['python3', APPLET_PATH + '/tool.py', 'lpstat-a'], (out) => {
-            this.out1 = out.split('\n');
-            if(this.out1[0]=="ERRORS:") {
-                if(this.out1[1]=="lpstat: Scheduler is not running.") {
-                    //Update Icon
-                    this.set_applet_label('');
-                    if(this.show_icon == 'always' || global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
-                        this.actor.show();
-                        this.set_applet_tooltip(_("CUPS is not running"));
-                        this.set_applet_icon_symbolic_name('xsi-printer-error');
-                    } else {
-                        this.actor.hide();
-                    }
+        Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-a']), (out) => {
+            if(!this.checkError(out)) {
+                this.handleError(out);
+                this.updating = false;
+                return;
+            }
+            this.out1 = this.formatOutput(out).split('\n');
+
+            //Update icon
+            Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-l']), (out) => {
+                if(!this.checkError(out)) {
+                    this.handleError(out);
                     this.updating = false;
                     return;
                 }
-                this.out1 = [];
-            }
-
-            this.out2 = "";
-            this.out3 = [];
-
-            //Update icon
-            Util.spawn_async(['/usr/bin/lpstat', '-l'], (out) => {
+                out = this.formatOutput(out);
                 if(out != "") {
                     let printStatus = out.split('\n')[1].trim();
                     this.set_applet_tooltip(printStatus);
@@ -200,17 +233,25 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
             });
 
             //Check default printer and add printers
-            Util.spawn_async(['/usr/bin/lpstat', '-d'], (out) => {
+            Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-d']), (out) => {
+                if(!this.checkError(out)) {
+                    this.handleError(out);
+                    this.updating = false;
+                    return;
+                }
                 this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
                 
+                out = this.formatOutput(out);
+
                 if(out.split(': ')[1] != undefined) {
                     this.out2 = out.split(': ')[1].trim();
                 } else {
                     this.out2 = 'no default';
                 }
                 
-                this.printersCount = this.out1.length - 2;
-                for(var n = 0; n < this.printersCount; n++) {
+                this.printersCount = this.out1.length - 1;
+                this.printers = [];
+                for(var n = 0; n < this.out1.length - 1; n++) {
                     let printer = this.out1[n].split(' ')[0].trim();
                     this.printers.push(printer);
                     let printerItem = new PopupMenu.PopupIconMenuItem(printer, 'xsi-emblem-documents', St.IconType.SYMBOLIC);
@@ -223,8 +264,13 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                 
                 
                 //Get job-list
-                Util.spawn_async(['/usr/bin/lpstat', '-o'], (out) => {
-                    this.out3 = out.split(/\n/);
+                Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-o']), (out) => {
+                    if(!this.checkError(out)) {
+                        this.handleError(out);
+                        this.updating = false;
+                        return;
+                    }
+                    this.out3 = this.formatOutput(out).split(/\n/);
                     this.jobsCount = this.out3.length - 1;
                     //Add cancel-all-action
                     if(this.jobsCount > 0) {
@@ -241,35 +287,47 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                     
                     
                     //Get job-details
-                    Util.spawn_async(['/usr/bin/lpq', '-a'], (out) => {
-                        let jobInfo = parseLpq(out);
+                    Util.spawn_async(this.formatCommand(['/usr/bin/lpq', '-a']), (out) => {
+                        let lpq_present = false;
+                        let jobInfo = [];
+                        if(this.checkError(out)) {
+                            lpq_present = true;
+                            jobInfo = parseLpq(this.formatOutput(out));
+                        }
+
                         let sendJobs = [];
-                        for(var n = 0; n < this.jobsCount; n++) {
+                        this.jobs = [];
+                        for(var n = 0; n < this.out3.length - 1; n++) {
                             let line = this.out3[n].split(' ')[0].split('-');
                             let job = line.slice(-1)[0];
                             let printer = line.slice(0, -1).join('-');
-                            let doc = jobInfo[job][2];
-                            let user = jobInfo[job][1];
-                            let size = GLib.format_size_for_display(jobInfo[job][3]);
+                            let doc = "unknown";
+                            let user = "unknown";
+                            let size = "unknown";
+                            if (lpq_present) {
+                                doc = jobInfo[job][2];
+                                user = jobInfo[job][1];
+                                size = GLib.format_size_for_display(jobInfo[job][3]);
+                            }
                             
-                            if(doc.length > 30) {
-                                doc = doc.slice(0, 30) + '...';
+                            if(doc.length > 28) {
+                                doc = doc.slice(0, 28) + '...';
                             }
                             
                             // Translators: strings are job number, document name, printer name, size, username
                             // example: (23) 'README.md' on HP_Stupid_Tank_5100_series (44.0 KB) - by kevin
                             let text = _("(%s) '%s' on %s (%s) - by %s").format(job, doc, printer, size, user);
                             let jobItem = new PopupMenu.PopupIconMenuItem(text, 'xsi-edit-delete', St.IconType.SYMBOLIC);
-                            if(jobInfo[job][0] == 'active') {
+                            if(lpq_present && jobInfo[job][0] == 'active') {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-printer-printing', icon_type: St.IconType.SYMBOLIC }));
-                            } else {
+                            } else if (lpq_present) {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-time', icon_type: St.IconType.SYMBOLIC }));
                             }
                             jobItem.job = job;
                             jobItem.connect('activate', () => this.onCancelJobClicked(jobItem));
                             this.cancelSubMenu.addMenuItem(jobItem);
                             this.jobs.push(jobItem);
-                            if(jobInfo[job][0] != 'active' && jobInfo[job][0] != '1st') {
+                            if(lpq_present && jobInfo[job][0] != 'active' && jobInfo[job][0] != '1st') {
                                 sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC));
                                 sendJobs[sendJobs.length - 1].job = job;
                                 sendJobs[sendJobs.length - 1].connect('activate', () => this.onSendToFrontClicked(sendJobs[sendJobs.length - 1]));
@@ -305,6 +363,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                         } else {
                             this.actor.hide();
                         }
+                        Mainloop.timeout_add_seconds(20, () => this.update());
                         this.updating = false;
                     });
                 });
