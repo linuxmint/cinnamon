@@ -365,7 +365,6 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                         } else {
                             this.actor.hide();
                         }
-                        Mainloop.timeout_add_seconds(20, () => this.update());
                         this.updating = false;
                     });
                 });
