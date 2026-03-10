@@ -92,7 +92,7 @@ var ScreenShield = GObject.registerClass({
         'unlocked': {}
     }
 }, class ScreenShield extends St.Widget {
-    _init() {
+    _init(screenShieldGroup) {
         super._init({
             name: 'screenShield',
             style_class: 'screen-shield',
@@ -143,7 +143,8 @@ var ScreenShield = GObject.registerClass({
         });
         this.add_constraint(constraint);
 
-        Main.layoutManager.screenShieldGroup.add_actor(this);
+        this._screenShieldGroup = screenShieldGroup;
+        this._screenShieldGroup.add_actor(this);
 
         this._backgroundLayer = new St.Widget({
             name: 'screenShieldBackground',
@@ -457,8 +458,8 @@ var ScreenShield = GObject.registerClass({
             if (Main.deskletContainer)
                 Main.deskletContainer.actor.hide();
 
-            global.stage.set_child_above_sibling(Main.layoutManager.screenShieldGroup, null);
-            Main.layoutManager.screenShieldGroup.show();
+            global.stage.set_child_above_sibling(this._screenShieldGroup, null);
+            this._screenShieldGroup.show();
             this.show();
 
             if (immediate) {
@@ -494,7 +495,7 @@ var ScreenShield = GObject.registerClass({
             if (Main.deskletContainer)
                 Main.deskletContainer.actor.show();
 
-            Main.layoutManager.screenShieldGroup.hide();
+            this._screenShieldGroup.hide();
             this.hide();
             this._destroyBackgrounds();
 
@@ -578,7 +579,7 @@ var ScreenShield = GObject.registerClass({
             onComplete: () => {
                 Main.popModal(this);
                 this.hide();
-                Main.layoutManager.screenShieldGroup.hide();
+                this._screenShieldGroup.hide();
                 this._destroyAllWidgets();
                 global.stage.show_cursor();
 

@@ -552,7 +552,19 @@ function start() {
     // The internal screensaver is the only option for wayland sessions. X11 sessions can use either
     // the internal one or cinnamon-screensaver (>= 6.7).
     if (Meta.is_wayland_compositor() || global.settings.get_boolean('internal-screensaver-enabled')) {
-        _screenShield = new ScreenShield.ScreenShield();
+        let screenShieldGroup = new St.Widget({
+            name: 'screenShieldGroup',
+            visible: false,
+            clip_to_allocation: true,
+            layout_manager: new Clutter.BinLayout()
+        });
+        screenShieldGroup.add_constraint(new Clutter.BindConstraint({
+            source: global.stage,
+            coordinate: Clutter.BindCoordinate.ALL
+        }));
+        global.stage.add_actor(screenShieldGroup);
+
+        _screenShield = new ScreenShield.ScreenShield(screenShieldGroup);
         new ScreenSaver.ScreenSaverService(_screenShield);
     }
 
