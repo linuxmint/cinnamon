@@ -4,32 +4,14 @@ const GLib = imports.gi.GLib;
 const PopupMenu = imports.ui.popupMenu;
 const Mainloop = imports.mainloop;
 const Settings = imports.ui.settings;
+const ModalDialog = imports.ui.modalDialog;
 const St = imports.gi.St;
 const Util = imports.misc.util;
+
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 const APPLET_PATH = imports.ui.appletManager.appletMeta['printers@cinnamon.org'].path;
 
-
-function parseLpq(lpq_output) {
-    var parsedData = {};
-    lpq_output = lpq_output.split(/\n/);
-    let line = [];
-    let joined_line = [];
-
-    for(var n = 0; n < lpq_output.length - 1; n++) {
-        line = lpq_output[n].split(/\s+/);
-        if (line.length < 5) continue;
-        joined_line = [];
-        joined_line.push(line[0]);
-        joined_line.push(line[1]);
-        joined_line.push(line.slice(3, -2).join(' '));
-        joined_line.push(line[line.length-2]);
-        parsedData[line[2]] = joined_line;
-    }
-
-    return parsedData;
-}
 
 
 class CinnamonPrintersApplet extends Applet.TextIconApplet {
@@ -53,10 +35,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
         this.panelEditModeHandler = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, () => this._on_panel_edit_mode_changed());
 
-        this.jobsCount = 0;
-        this.printersCount = 0;
         this.printWarning = false;
-        this.printStatus = '';
         this.updating = false;
         this.removed = false;
         this.showLater = false;
@@ -126,58 +105,55 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     }
 
     onCancelAllJobsClicked() {
-        Util.spawn_async(['python3', APPLET_PATH + '/cancel-print-dialog.py', 'all'], (out) => {
-            if(out.trim() == "Cancel") {
-                for(var n = 0; n < this.jobs.length; n++) {
-                    Util.spawn(['cancel', this.jobs[n].job]);
-                }
+        let text = _("Do you really want to cancel all print jobs?");
+        new ModalDialog.ConfirmDialog(text, () => {
+            for(var n = 0; n < this.jobs.length; n++) {
+                Util.spawn(['cancel', this.jobs[n].job]);
             }
-        });
+        }).open();
     }
 
     onCancelJobClicked(item) {
-        Util.spawn_async(['python3', APPLET_PATH + '/cancel-print-dialog.py'], (out) => {
-            if(out.trim() == "Cancel") {
-                Util.spawn(['cancel', item.job]);
-            }
-        });
+        // Translators: string is the print job title or the job id
+        let text = _("Do you want to cancel printing of '%s'?").format((item.doc && item.doc != "unknown")? item.doc : item.job.toString());
+        new ModalDialog.ConfirmDialog(text, () => {
+            Util.spawn(['cancel', item.job]);
+        }).open();
     }
 
     onSendToFrontClicked(item) {
         Util.spawn(['lp', '-i', item.job, '-H', 'immediate']);
     }
 
-    formatCommand(cmdList) {
-        let command = ['python3', APPLET_PATH + '/tool.py'];
-        for(let i=0;i<cmdList.length;i++) {
-            command.push(cmdList[i]);
-        }
-        return command;
-    }
+    parseLpq(lpq_output) {
+        var parsedData = {};
+        lpq_output = lpq_output.split("\n");
+        let line = [];
+        let joined_line = [];
 
-    formatOutput(cmdOutput) {
-        //Works only for outputs starting with 'OK:\n'
-        return cmdOutput.slice(4);
-    }
-
-    checkError(output) {
-        if(output.slice(0,7)=="ERRORS:") {
-            return false;
-        } else {
-            return true;
+        for(var n = 0; n < lpq_output.length - 1; n++) {
+            line = lpq_output[n].split(/\s+/);
+            if (line.length < 5) continue;
+            joined_line = [];
+            joined_line.push(line[0]);
+            joined_line.push(line[1]);
+            joined_line.push(line.slice(3, -2).join(' '));
+            joined_line.push(line[line.length-2]);
+            parsedData[line[2]] = joined_line;
         }
+
+        return parsedData;
     }
 
     handleError(message) {
-        message = message.slice(8, -1);
         if(message.length>70) {
-            message = message.slice(0, 70) + "...";
+            message = message.slice(0, 69) + "...";
         }
         Mainloop.timeout_add_seconds(10, () => this.update());
         this.set_applet_label('');
         if(this.show_icon == 'always' || global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
             this.actor.show();
-            this.set_applet_tooltip(message);
+            this.set_applet_tooltip(message.trim());
             this.set_applet_icon_symbolic_name('xsi-printer-error');
         } else {
             this.actor.hide();
@@ -191,6 +167,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     update() {
         if(this.updating || this.menu.isOpen || this.removed) return;
         this.updating = true;
+        this.printError = false;
         this.menu.removeAll();
         let printers = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
         printers.connect('activate', () => this.onShowPrintersClicked());
@@ -201,31 +178,32 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.out3 = [];
 
         //Get available printers
-        Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-a']), (out) => {
-            if(!this.checkError(out)) {
-                this.handleError(out);
+        Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -a', (stdout, stderr, exitCode) => {
+            if(exitCode) {
+                this.handleError(stderr);
                 this.updating = false;
                 return;
             }
-            this.out1 = this.formatOutput(out).split('\n');
+            if(stdout.trim()) {
+                this.out1 = stdout.trim().split('\n');
+            }
 
             //Update icon
-            Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-l']), (out) => {
-                if(!this.checkError(out)) {
-                    this.handleError(out);
+            Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -l', (stdout, stderr, exitCode) => {
+                if(exitCode) {
+                    this.handleError(stderr);
                     this.updating = false;
                     return;
                 }
-                out = this.formatOutput(out);
-                if(out != "") {
-                    let printStatus = out.split('\n')[1].trim();
-                    this.set_applet_tooltip(printStatus);
+
+                if(stdout.trim()) {
+                    this.set_applet_tooltip(stdout.trim().split('\n')[1].trim());
                 } else {
                     this.set_applet_tooltip(_("Printers"));
                 }
                 if(this.printWarning) {
                     this.set_applet_icon_symbolic_name('xsi-printer-warning');
-                } else if(this.jobsCount > 0) {
+                } else if(this.jobs.length > 0) {
                     this.set_applet_icon_symbolic_name('xsi-printer-printing');
                 } else {
                     this.set_applet_icon_symbolic_name('xsi-printer');
@@ -233,25 +211,22 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
             });
 
             //Check default printer and add printers
-            Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-d']), (out) => {
-                if(!this.checkError(out)) {
-                    this.handleError(out);
+            Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -d', (stdout, stderr, exitCode) => {
+                if(exitCode) {
+                    this.handleError(stderr);
                     this.updating = false;
                     return;
                 }
                 this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
-                
-                out = this.formatOutput(out);
 
-                if(out.split(': ')[1] != undefined) {
-                    this.out2 = out.split(': ')[1].trim();
+                if(stdout.trim().split(': ')[1] != undefined) {
+                    this.out2 = stdout.split(': ')[1].trim();
                 } else {
                     this.out2 = 'no default';
                 }
                 
-                this.printersCount = this.out1.length - 1;
                 this.printers = [];
-                for(var n = 0; n < this.out1.length - 1; n++) {
+                for(var n = 0; n < this.out1.length; n++) {
                     let printer = this.out1[n].split(' ')[0].trim();
                     this.printers.push(printer);
                     let printerItem = new PopupMenu.PopupIconMenuItem(printer, 'xsi-emblem-documents', St.IconType.SYMBOLIC);
@@ -264,16 +239,16 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                 
                 
                 //Get job-list
-                Util.spawn_async(this.formatCommand(['/usr/bin/lpstat', '-o']), (out) => {
-                    if(!this.checkError(out)) {
-                        this.handleError(out);
+                Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -o', (stdout, stderr, exitCode) => {
+                    if(exitCode) {
+                        this.handleError(stderr);
                         this.updating = false;
                         return;
                     }
-                    this.out3 = this.formatOutput(out).split(/\n/);
-                    this.jobsCount = this.out3.length - 1;
+
                     //Add cancel-all-action
-                    if(this.jobsCount > 0) {
+                    if(stdout.trim() != "") {
+                        this.out3 = stdout.trim().split("\n");
                         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem);
                         let cancelAll = new PopupMenu.PopupIconMenuItem(_("Cancel all jobs"), 'xsi-edit-delete', St.IconType.SYMBOLIC);
                         cancelAll.connect('activate', () => this.onCancelAllJobsClicked());
@@ -287,27 +262,26 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                     
                     
                     //Get job-details
-                    Util.spawn_async(this.formatCommand(['/usr/bin/lpq', '-a']), (out) => {
+                    Util.spawnCommandLineAsyncIO('/usr/bin/lpq -a', (stdout, stderr, exitCode) => {
                         let lpq_present = false;
                         let jobInfo = [];
-                        if(this.checkError(out)) {
+                        if(!exitCode) {
                             lpq_present = true;
-                            jobInfo = parseLpq(this.formatOutput(out));
+                            jobInfo = this.parseLpq(stdout);
                         }
 
                         let sendJobs = [];
                         this.jobs = [];
-                        for(var n = 0; n < this.out3.length - 1; n++) {
+                        for(var n = 0; n < this.out3.length; n++) {
                             let line = this.out3[n].split(' ')[0].split('-');
                             let job = line.slice(-1)[0];
+                            let user = this.out3[n].split(' ')[1];
                             let printer = line.slice(0, -1).join('-');
                             let doc = "unknown";
-                            let user = "unknown";
                             let size = "unknown";
                             if (lpq_present) {
                                 doc = jobInfo[job][2];
-                                user = jobInfo[job][1];
-                                size = GLib.format_size_for_display(jobInfo[job][3]);
+                                size = GLib.format_size(jobInfo[job][3]);
                             }
                             
                             if(doc.length > 28) {
@@ -324,13 +298,15 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                                 jobItem.addActor(new St.Icon({ style_class: 'popup-menu-icon', icon_name: 'xsi-time', icon_type: St.IconType.SYMBOLIC }));
                             }
                             jobItem.job = job;
+                            jobItem.doc = doc;
                             jobItem.connect('activate', () => this.onCancelJobClicked(jobItem));
                             this.cancelSubMenu.addMenuItem(jobItem);
                             this.jobs.push(jobItem);
                             if(lpq_present && jobInfo[job][0] != 'active' && jobInfo[job][0] != '1st') {
-                                sendJobs.push(new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC));
-                                sendJobs[sendJobs.length - 1].job = job;
-                                sendJobs[sendJobs.length - 1].connect('activate', () => this.onSendToFrontClicked(sendJobs[sendJobs.length - 1]));
+                                let item = new PopupMenu.PopupIconMenuItem(text, 'xsi-go-up', St.IconType.SYMBOLIC);
+                                item.job = job;
+                                item.connect('activate', () => this.onSendToFrontClicked(item));
+                                sendJobs.push(item);
                             }
                         }
                         
@@ -353,12 +329,12 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                         }
 
                         //Update icon
-                        if(this.jobsCount > 0) {
-                            this.set_applet_label(this.jobsCount.toString());
+                        if(this.jobs.length > 0) {
+                            this.set_applet_label(this.jobs.length.toString());
                         } else {
                             this.set_applet_label('');
                         }
-                        if(this.show_icon == 'always' || (this.show_icon == 'printers' && this.printersCount > 0) || (this.show_icon == 'jobs' && this.jobsCount > 0) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
+                        if(this.show_icon == 'always' || (this.show_icon == 'printers' && this.printers.length > 0) || (this.show_icon == 'jobs' && this.jobs.length > 0) || global.settings.get_boolean(PANEL_EDIT_MODE_KEY)) {
                             this.actor.show();
                         } else {
                             this.actor.hide();
