@@ -147,7 +147,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
     handleError(message) {
         if(message.length>70) {
-            message = message.slice(0, 69) + "...";
+            message = message.slice(0, 70) + "...";
         }
         Mainloop.timeout_add_seconds(10, () => this.update());
         this.set_applet_label('');
@@ -167,7 +167,6 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
     update() {
         if(this.updating || this.menu.isOpen || this.removed) return;
         this.updating = true;
-        this.printError = false;
         this.menu.removeAll();
         let printers = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
         printers.connect('activate', () => this.onShowPrintersClicked());
