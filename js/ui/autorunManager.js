@@ -7,8 +7,6 @@ const CheckBox = imports.ui.checkBox;
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
 
-Gio._promisify(Gio.Mount.prototype, 'guess_content_type');
-
 const hotplugSnifferIface =
 ' \
 <node> \
@@ -40,7 +38,7 @@ const AUTORUN_ITEM_APP = 0;
 const AUTORUN_ITEM_OPEN_FOLDER = 1;
 const AUTORUN_ITEM_DO_NOTHING = 2;
 
-var LIST_ITEM_ICON_SIZE = 24;
+var LIST_ITEM_ICON_SIZE = 36;
 
 function shouldAutorunMount(mount) {
     let root = mount.get_root();
@@ -86,36 +84,36 @@ function startAppForMount(app, mount) {
 }
 
 function _getMediaGreeting(contentType) {
-    if (contentType === 'x-content/audio-cdda')
-        return _("You have just inserted an Audio CD.");
-    if (contentType === 'x-content/audio-dvd')
-        return _("You have just inserted an Audio DVD.");
-    if (contentType === 'x-content/video-dvd')
-        return _("You have just inserted a Video DVD.");
-    if (contentType === 'x-content/video-vcd')
-        return _("You have just inserted a Video CD.");
-    if (contentType === 'x-content/video-svcd')
-        return _("You have just inserted a Super Video CD.");
-    if (contentType === 'x-content/blank-cd')
-        return _("You have just inserted a blank CD.");
-    if (contentType === 'x-content/blank-dvd')
-        return _("You have just inserted a blank DVD.");
-    if (contentType === 'x-content/blank-bd')
-        return _("You have just inserted a blank Blu-Ray disc.");
-    if (contentType === 'x-content/blank-hddvd')
-        return _("You have just inserted a blank HD DVD.");
-    if (contentType === 'x-content/image-photocd')
-        return _("You have just inserted a Photo CD.");
-    if (contentType === 'x-content/image-picturecd')
-        return _("You have just inserted a Picture CD.");
-    if (contentType === 'x-content/image-dcf')
-        return _("You have just inserted a medium with digital photos.");
-    if (contentType === 'x-content/audio-player')
-        return _("You have just inserted a digital audio player.");
-    if (contentType && Gio.content_type_is_a(contentType, 'x-content/software'))
-        return _("You have just inserted a medium with software intended to be automatically started.");
+    // if (contentType === 'x-content/audio-cdda')
+    //     return _("You have just inserted an Audio CD.");
+    // if (contentType === 'x-content/audio-dvd')
+    //     return _("You have just inserted an Audio DVD.");
+    // if (contentType === 'x-content/video-dvd')
+    //     return _("You have just inserted a Video DVD.");
+    // if (contentType === 'x-content/video-vcd')
+    //     return _("You have just inserted a Video CD.");
+    // if (contentType === 'x-content/video-svcd')
+    //     return _("You have just inserted a Super Video CD.");
+    // if (contentType === 'x-content/blank-cd')
+    //     return _("You have just inserted a blank CD.");
+    // if (contentType === 'x-content/blank-dvd')
+    //     return _("You have just inserted a blank DVD.");
+    // if (contentType === 'x-content/blank-bd')
+    //     return _("You have just inserted a blank Blu-Ray disc.");
+    // if (contentType === 'x-content/blank-hddvd')
+    //     return _("You have just inserted a blank HD DVD.");
+    // if (contentType === 'x-content/image-photocd')
+    //     return _("You have just inserted a Photo CD.");
+    // if (contentType === 'x-content/image-picturecd')
+    //     return _("You have just inserted a Picture CD.");
+    // if (contentType === 'x-content/image-dcf')
+    //     return _("You have just inserted a medium with digital photos.");
+    // if (contentType === 'x-content/audio-player')
+    //     return _("You have just inserted a digital audio player.");
+    // if (contentType && Gio.content_type_is_a(contentType, 'x-content/software'))
+    //     return _("You have just inserted a medium with software intended to be automatically started.");
 
-    return _("You have just inserted a medium.");
+    return _("Media inserted");
 }
 
 function _setAutorunPreferences(contentType, startApp, ignore, openFolder) {
@@ -149,25 +147,41 @@ var ContentTypeDiscoverer = class {
         this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
     }
 
-    async guessContentTypes(mount) {
+    guessContentTypes(mount, callback) {
         let autorunEnabled = !this._settings.get_boolean(SETTING_DISABLE_AUTORUN);
         let shouldScan = autorunEnabled && !isMountNonLocal(mount);
 
-        let contentTypes = [];
-        if (shouldScan) {
+        if (!shouldScan) {
+            callback([], []);
+            return;
+        }
+
+        mount.guess_content_type(false, null, (mount, res) => {
+            let contentTypes = [];
+
             try {
-                contentTypes = await mount.guess_content_type(false, null);
+                contentTypes = mount.guess_content_type_finish(res);
             } catch (e) {
                 log(`Unable to guess content types on added mount ${mount.get_name()}: ${e}`);
             }
 
             if (contentTypes.length === 0) {
-                const root = mount.get_root();
-                const hotplugSniffer = new HotplugSniffer();
-                [contentTypes] = await hotplugSniffer.SniffURIAsync(root.get_uri());
-            }
-        }
+                let root = mount.get_root();
+                let hotplugSniffer = new HotplugSniffer();
+                hotplugSniffer.SniffURIRemote(root.get_uri(), (result, error) => {
+                    if (!error && result)
+                        contentTypes = result[0] || [];
 
+                    this._resolveApps(contentTypes, callback);
+                });
+                return;
+            }
+
+            this._resolveApps(contentTypes, callback);
+        });
+    }
+
+    _resolveApps(contentTypes, callback) {
         contentTypes = contentTypes.filter(
             type => type !== 'x-content/win32-software');
 
@@ -179,7 +193,7 @@ var ContentTypeDiscoverer = class {
                 apps.push(app);
         });
 
-        return [apps, contentTypes];
+        callback(apps, contentTypes);
     }
 };
 
@@ -202,22 +216,22 @@ var AutorunManager = class {
         this._volumeMonitor.disconnectObject(this);
     }
 
-    async _onMountAdded(monitor, mount) {
+    _onMountAdded(monitor, mount) {
         if (!shouldAutorunMount(mount))
             return;
 
         const discoverer = new ContentTypeDiscoverer();
-        const [apps, contentTypes] = await discoverer.guessContentTypes(mount);
+        discoverer.guessContentTypes(mount, (apps, contentTypes) => {
+            log(`autorunManager: mount=${mount.get_name()} contentTypes=[${contentTypes}] apps=[${apps.map(a => a.get_name())}]`);
 
-        log(`autorunManager: mount=${mount.get_name()} contentTypes=[${contentTypes}] apps=[${apps.map(a => a.get_name())}]`);
+            if (apps.length === 0) {
+                if (this._settings.get_boolean(SETTING_AUTOMOUNT_OPEN))
+                    this._openFolderForMount(mount);
+                return;
+            }
 
-        if (apps.length === 0) {
-            if (this._settings.get_boolean(SETTING_AUTOMOUNT_OPEN))
-                this._openFolderForMount(mount);
-            return;
-        }
-
-        this._dispatcher.addMount(mount, apps, contentTypes);
+            this._dispatcher.addMount(mount, apps, contentTypes);
+        });
     }
 
     _openFolderForMount(mount) {
@@ -276,9 +290,6 @@ var AutorunDispatcher = class {
         if (this._settings.get_boolean(SETTING_DISABLE_AUTORUN))
             return;
 
-        if (!shouldAutorunMount(mount))
-            return;
-
         let contentType = contentTypes.length > 0 ? contentTypes[0] : null;
 
         let setting;
@@ -325,8 +336,8 @@ class AutorunDialog extends ModalDialog.ModalDialog {
 
         let mountName = mount.get_name();
 
-        let greeting = _getMediaGreeting(contentType);
-        let title = `${greeting} ${_("Choose what application to launch.")}`;
+        // let greeting = _getMediaGreeting(contentType);
+        let title = _("Media inserted");
 
         let contentDescription = contentType
             ? Gio.content_type_get_description(contentType)
@@ -334,10 +345,9 @@ class AutorunDialog extends ModalDialog.ModalDialog {
 
         let description;
         if (contentDescription) {
-            description = _("Select how to open \"%s\" and whether to perform this action in the future for other media of type \"%s\".")
-                .format(mountName, contentDescription);
+            description = `${mountName}\n(${contentDescription})\n\n${_("Choose an action")}`;
         } else {
-            description = _("Select how to open \"%s\".").format(mountName);
+            description = _("Select how to open '%s'.").format(mountName);
         }
 
         this._content = new Dialog.MessageDialogContent({ title, description });
@@ -392,7 +402,7 @@ class AutorunDialog extends ModalDialog.ModalDialog {
         });
 
         let openFolderItem = new Dialog.ListSectionItem({
-            icon_actor: new St.Icon({ icon_name: 'folder-open', icon_size: LIST_ITEM_ICON_SIZE }),
+            icon_actor: new St.Icon({ icon_name: 'folder-open', icon_size: LIST_ITEM_ICON_SIZE, icon_type: St.IconType.FULLCOLOR }),
             title: _("Open Folder"),
         });
         openFolderItem._autorunType = AUTORUN_ITEM_OPEN_FOLDER;
