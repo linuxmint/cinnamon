@@ -47,12 +47,12 @@ var ScrollBox = class ScrollBox {
             y_align: St.Align.MIDDLE
         });
         this.startIcon = new St.Icon({
-            icon_name: 'xsi-go-previous-symbolic',
+            icon_name: 'xsi-pan-start-symbolic',
             icon_type: St.IconType.SYMBOLIC,
             style_class: 'popup-menu-icon grouped-window-list-scrollbox-button-icon'
         });
         this.endIcon = new St.Icon({
-            icon_name: 'xsi-go-next-symbolic',
+            icon_name: 'xsi-pan-end-symbolic',
             icon_type: St.IconType.SYMBOLIC,
             style_class: 'popup-menu-icon grouped-window-list-scrollbox-button-icon'
         });
@@ -146,8 +146,8 @@ var ScrollBox = class ScrollBox {
             this.scrollView.remove_style_class_name('vfade');
             this.scrollView.add_style_class_name('hfade');
 
-            this.startIcon.set_icon_name('xsi-go-previous-symbolic');
-            this.endIcon.set_icon_name('xsi-go-next-symbolic');
+            this.startIcon.set_icon_name('xsi-pan-start-symbolic');
+            this.endIcon.set_icon_name('xsi-pan-end-symbolic');
 
             this.startButton.set_x_expand(false);
             this.startButton.set_y_expand(true);
@@ -160,8 +160,8 @@ var ScrollBox = class ScrollBox {
             this.scrollView.remove_style_class_name('hfade');
             this.scrollView.add_style_class_name('vfade');
 
-            this.startIcon.set_icon_name('xsi-go-up-symbolic');
-            this.endIcon.set_icon_name('xsi-go-down-symbolic');
+            this.startIcon.set_icon_name('xsi-pan-up-symbolic');
+            this.endIcon.set_icon_name('xsi-pan-down-symbolic');
 
             this.startButton.set_x_expand(true);
             this.startButton.set_y_expand(false);
