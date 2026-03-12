@@ -160,7 +160,9 @@ var KeyboardManager = class {
     }
 
     _buildGroupStrings(_group) {
-        let group = _group.concat(this._localeLayoutInfo);
+        let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout &&
+                                                g.variant === this._localeLayoutInfo.variant);
+        let group = alreadyIncluded ? _group : _group.concat(this._localeLayoutInfo);
         let layouts = group.map(g => g.layout).join(',');
         let variants = group.map(g => g.variant).join(',');
         return [layouts, variants];
