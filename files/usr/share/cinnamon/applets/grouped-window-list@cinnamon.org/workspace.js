@@ -464,13 +464,13 @@ var Workspace = class Workspace {
     }
 
     destroy() {
-        this.scrollBox.destroy();
         if (this.scrollToAppDebounceTimeoutId > 0) {
             GLib.source_remove(this.scrollToAppDebounceTimeoutId);
             this.scrollToAppDebounceTimeoutId = 0;
         }
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
+        this.scrollBox.destroy();
         this.workspaceState.destroy();
         unref(this, RESERVE_KEYS);
     }
