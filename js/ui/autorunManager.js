@@ -3,9 +3,9 @@
 
 const { Clutter, Gio, GObject, St } = imports.gi;
 
-const GnomeSession = imports.misc.gnomeSession;
-const Main = imports.ui.main;
-const MessageTray = imports.ui.messageTray;
+const CheckBox = imports.ui.checkBox;
+const Dialog = imports.ui.dialog;
+const ModalDialog = imports.ui.modalDialog;
 
 Gio._promisify(Gio.Mount.prototype, 'guess_content_type');
 
@@ -27,6 +27,7 @@ const SETTING_DISABLE_AUTORUN = 'autorun-never';
 const SETTING_START_APP = 'autorun-x-content-start-app';
 const SETTING_IGNORE = 'autorun-x-content-ignore';
 const SETTING_OPEN_FOLDER = 'autorun-x-content-open-folder';
+const SETTING_AUTOMOUNT_OPEN = 'automount-open';
 
 var AutorunSetting = {
     RUN: 0,
@@ -35,13 +36,22 @@ var AutorunSetting = {
     ASK: 3,
 };
 
-// misc utils
+const AUTORUN_ITEM_APP = 0;
+const AUTORUN_ITEM_OPEN_FOLDER = 1;
+const AUTORUN_ITEM_DO_NOTHING = 2;
+
+var LIST_ITEM_ICON_SIZE = 24;
+
 function shouldAutorunMount(mount) {
     let root = mount.get_root();
     let volume = mount.get_volume();
 
     if (!volume || !volume.allowAutorun)
         return false;
+
+    // Consume the flag so subsequent mounts of the same volume
+    // (e.g. user manually mounting via Nemo) don't re-trigger autorun.
+    volume.allowAutorun = false;
 
     if (root.is_native() && isMountRootHidden(root))
         return false;
@@ -52,14 +62,10 @@ function shouldAutorunMount(mount) {
 function isMountRootHidden(root) {
     let path = root.get_path();
 
-    // skip any mounts in hidden directory hierarchies
     return path.includes('/.');
 }
 
 function isMountNonLocal(mount) {
-    // If the mount doesn't have an associated volume, that means it's
-    // an uninteresting filesystem. Most devices that we care about will
-    // have a mount, like media players and USB sticks.
     let volume = mount.get_volume();
     if (volume == null)
         return true;
@@ -68,19 +74,67 @@ function isMountNonLocal(mount) {
 }
 
 function startAppForMount(app, mount) {
-    let files = [];
     let root = mount.get_root();
-    let retval = false;
-
-    files.push(root);
 
     try {
-        retval = app.launch(files, global.create_app_launch_context());
+        return app.launch([root], global.create_app_launch_context());
     } catch (e) {
         log(`Unable to launch the app ${app.get_name()}: ${e}`);
     }
 
-    return retval;
+    return false;
+}
+
+function _getMediaGreeting(contentType) {
+    if (contentType === 'x-content/audio-cdda')
+        return _("You have just inserted an Audio CD.");
+    if (contentType === 'x-content/audio-dvd')
+        return _("You have just inserted an Audio DVD.");
+    if (contentType === 'x-content/video-dvd')
+        return _("You have just inserted a Video DVD.");
+    if (contentType === 'x-content/video-vcd')
+        return _("You have just inserted a Video CD.");
+    if (contentType === 'x-content/video-svcd')
+        return _("You have just inserted a Super Video CD.");
+    if (contentType === 'x-content/blank-cd')
+        return _("You have just inserted a blank CD.");
+    if (contentType === 'x-content/blank-dvd')
+        return _("You have just inserted a blank DVD.");
+    if (contentType === 'x-content/blank-bd')
+        return _("You have just inserted a blank Blu-Ray disc.");
+    if (contentType === 'x-content/blank-hddvd')
+        return _("You have just inserted a blank HD DVD.");
+    if (contentType === 'x-content/image-photocd')
+        return _("You have just inserted a Photo CD.");
+    if (contentType === 'x-content/image-picturecd')
+        return _("You have just inserted a Picture CD.");
+    if (contentType === 'x-content/image-dcf')
+        return _("You have just inserted a medium with digital photos.");
+    if (contentType === 'x-content/audio-player')
+        return _("You have just inserted a digital audio player.");
+    if (contentType && Gio.content_type_is_a(contentType, 'x-content/software'))
+        return _("You have just inserted a medium with software intended to be automatically started.");
+
+    return _("You have just inserted a medium.");
+}
+
+function _setAutorunPreferences(contentType, startApp, ignore, openFolder) {
+    let settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
+
+    let startAppTypes = settings.get_strv(SETTING_START_APP).filter(t => t !== contentType);
+    if (startApp)
+        startAppTypes.push(contentType);
+    settings.set_strv(SETTING_START_APP, startAppTypes);
+
+    let ignoreTypes = settings.get_strv(SETTING_IGNORE).filter(t => t !== contentType);
+    if (ignore)
+        ignoreTypes.push(contentType);
+    settings.set_strv(SETTING_IGNORE, ignoreTypes);
+
+    let openFolderTypes = settings.get_strv(SETTING_OPEN_FOLDER).filter(t => t !== contentType);
+    if (openFolder)
+        openFolderTypes.push(contentType);
+    settings.set_strv(SETTING_OPEN_FOLDER, openFolderTypes);
 }
 
 const HotplugSnifferProxy = Gio.DBusProxy.makeProxyWrapper(hotplugSnifferIface);
@@ -114,7 +168,6 @@ var ContentTypeDiscoverer = class {
             }
         }
 
-        // we're not interested in win32 software content types here
         contentTypes = contentTypes.filter(
             type => type !== 'x-content/win32-software');
 
@@ -126,17 +179,14 @@ var ContentTypeDiscoverer = class {
                 apps.push(app);
         });
 
-        if (apps.length === 0)
-            apps.push(Gio.app_info_get_default_for_type('inode/directory', false));
-
         return [apps, contentTypes];
     }
 };
 
 var AutorunManager = class {
     constructor() {
-        // this._session = new GnomeSession.SessionManager();
         this._volumeMonitor = Gio.VolumeMonitor.get();
+        this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
 
         this._dispatcher = new AutorunDispatcher(this);
         this.enable();
@@ -153,14 +203,27 @@ var AutorunManager = class {
     }
 
     async _onMountAdded(monitor, mount) {
-        // don't do anything if our session is not the currently
-        // active one
-        // if (!this._session.SessionIsActive)
-        //     return;
+        if (!shouldAutorunMount(mount))
+            return;
 
         const discoverer = new ContentTypeDiscoverer();
         const [apps, contentTypes] = await discoverer.guessContentTypes(mount);
+
+        log(`autorunManager: mount=${mount.get_name()} contentTypes=[${contentTypes}] apps=[${apps.map(a => a.get_name())}]`);
+
+        if (apps.length === 0) {
+            if (this._settings.get_boolean(SETTING_AUTOMOUNT_OPEN))
+                this._openFolderForMount(mount);
+            return;
+        }
+
         this._dispatcher.addMount(mount, apps, contentTypes);
+    }
+
+    _openFolderForMount(mount) {
+        let app = Gio.app_info_get_default_for_type('inode/directory', false);
+        if (app)
+            startAppForMount(app, mount);
     }
 
     _onMountRemoved(monitor, mount) {
@@ -171,7 +234,7 @@ var AutorunManager = class {
 var AutorunDispatcher = class {
     constructor(manager) {
         this._manager = manager;
-        this._sources = [];
+        this._dialogs = [];
         this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
     }
 
@@ -191,123 +254,241 @@ var AutorunDispatcher = class {
         return AutorunSetting.ASK;
     }
 
-    _getSourceForMount(mount) {
-        let filtered = this._sources.filter(source => source.mount == mount);
-
-        // we always make sure not to add two sources for the same
-        // mount in addMount(), so it's safe to assume filtered.length
-        // is always either 1 or 0.
-        if (filtered.length == 1)
-            return filtered[0];
-
-        return null;
+    _getDialogForMount(mount) {
+        return this._dialogs.find(d => d.mount === mount) ?? null;
     }
 
-    _addSource(mount, apps) {
-        // if we already have a source showing for this
-        // mount, return
-        if (this._getSourceForMount(mount))
+    _showDialog(mount, apps, contentType) {
+        if (this._getDialogForMount(mount))
             return;
 
-        // add a new source
-        this._sources.push(new AutorunSource(this._manager, mount, apps));
+        let dialog = new AutorunDialog(mount, apps, contentType);
+        this._dialogs.push(dialog);
+
+        dialog.connect('destroy', () => {
+            this._dialogs = this._dialogs.filter(d => d !== dialog);
+        });
+
+        dialog.open();
     }
 
     addMount(mount, apps, contentTypes) {
-        // if autorun is disabled globally, return
         if (this._settings.get_boolean(SETTING_DISABLE_AUTORUN))
             return;
 
-        // if the mount doesn't want to be autorun, return
         if (!shouldAutorunMount(mount))
             return;
 
+        let contentType = contentTypes.length > 0 ? contentTypes[0] : null;
+
         let setting;
-        if (contentTypes.length > 0)
-            setting = this._getAutorunSettingForType(contentTypes[0]);
+        if (contentType)
+            setting = this._getAutorunSettingForType(contentType);
         else
             setting = AutorunSetting.ASK;
 
-        // check at the settings for the first content type
-        // to see whether we should ask
-        if (setting == AutorunSetting.IGNORE)
-            return; // return right away
+        if (setting === AutorunSetting.IGNORE)
+            return;
 
         let success = false;
         let app = null;
 
-        if (setting == AutorunSetting.RUN)
-            app = Gio.app_info_get_default_for_type(contentTypes[0], false);
-        else if (setting == AutorunSetting.FILES)
+        if (setting === AutorunSetting.RUN && contentType)
+            app = Gio.app_info_get_default_for_type(contentType, false);
+        else if (setting === AutorunSetting.FILES)
             app = Gio.app_info_get_default_for_type('inode/directory', false);
 
         if (app)
             success = startAppForMount(app, mount);
 
-        // we fallback here also in case the settings did not specify 'ask',
-        // but we failed launching the default app or the default file manager
         if (!success)
-            this._addSource(mount, apps);
+            this._showDialog(mount, apps, contentType);
     }
 
     removeMount(mount) {
-        let source = this._getSourceForMount(mount);
-
-        // if we aren't tracking this mount, don't do anything
-        if (!source)
+        let dialog = this._getDialogForMount(mount);
+        if (!dialog)
             return;
 
-        // destroy the notification source
-        source.destroy();
+        dialog.close();
     }
 };
 
-var AutorunSource = class extends MessageTray.Source {
-    constructor(manager, mount, apps) {
-        super(mount.get_name());
+var AutorunDialog = GObject.registerClass(
+class AutorunDialog extends ModalDialog.ModalDialog {
+    _init(mount, apps, contentType) {
+        super._init({ styleClass: 'autorun-dialog' });
 
-        this._manager = manager;
         this.mount = mount;
-        this.apps = apps;
+        this._apps = apps;
+        this._contentType = contentType;
 
-        this._notification = new AutorunNotification(this._manager, this);
+        let mountName = mount.get_name();
 
-        // add ourselves as a source, and popup the notification
-        Main.messageTray.add(this);
-        this.notify(this._notification);
+        let greeting = _getMediaGreeting(contentType);
+        let title = `${greeting} ${_("Choose what application to launch.")}`;
+
+        let contentDescription = contentType
+            ? Gio.content_type_get_description(contentType)
+            : null;
+
+        let description;
+        if (contentDescription) {
+            description = _("Select how to open \"%s\" and whether to perform this action in the future for other media of type \"%s\".")
+                .format(mountName, contentDescription);
+        } else {
+            description = _("Select how to open \"%s\".").format(mountName);
+        }
+
+        this._content = new Dialog.MessageDialogContent({ title, description });
+        this.contentLayout.add_child(this._content);
+
+        this._appSection = new Dialog.ListSection({ selectable: true });
+        this.contentLayout.add_child(this._appSection);
+
+        this._populateAppList();
+        this._appSection.selectIndex(0);
+
+        this._alwaysCheckBox = new CheckBox.CheckBox(_("Always perform this action"));
+        this.contentLayout.add_child(this._alwaysCheckBox);
+
+        let canEject = mount.can_eject();
+        let ejectLabel = canEject ? _("Eject") : _("Unmount");
+
+        this.setButtons([
+            {
+                label: _("Cancel"),
+                action: () => this.close(),
+                key: Clutter.KEY_Escape,
+            },
+            {
+                label: ejectLabel,
+                action: () => this._onEject(),
+            },
+            {
+                label: _("OK"),
+                action: () => this._onOk(),
+                default: true,
+            },
+        ]);
+
+        this._unmountedId = mount.connect('unmounted', () => this.close());
     }
 
-    createNotificationIcon () {
-        return new St.Icon({
-            gicon: this.mount.get_symbolic_icon(),
-            icon_type: St.IconType.SYMBOLIC,
-            icon_size: this.ICON_SIZE
+    _populateAppList() {
+        this._apps.forEach((app, idx) => {
+            let icon = app.get_icon();
+            let iconActor = icon
+                ? new St.Icon({ gicon: icon, icon_size: LIST_ITEM_ICON_SIZE })
+                : new St.Icon({ icon_name: 'application-x-executable', icon_size: LIST_ITEM_ICON_SIZE });
+
+            let item = new Dialog.ListSectionItem({
+                icon_actor: iconActor,
+                title: app.get_name(),
+            });
+            item._autorunType = AUTORUN_ITEM_APP;
+            item._appIndex = idx;
+            this._appSection.addItem(item);
         });
+
+        let openFolderItem = new Dialog.ListSectionItem({
+            icon_actor: new St.Icon({ icon_name: 'folder-open', icon_size: LIST_ITEM_ICON_SIZE }),
+            title: _("Open Folder"),
+        });
+        openFolderItem._autorunType = AUTORUN_ITEM_OPEN_FOLDER;
+        this._appSection.addItem(openFolderItem);
+
+        let doNothingItem = new Dialog.ListSectionItem({
+            icon_actor: new St.Icon({ icon_name: 'window-close', icon_size: LIST_ITEM_ICON_SIZE }),
+            title: _("Do Nothing"),
+        });
+        doNothingItem._autorunType = AUTORUN_ITEM_DO_NOTHING;
+        this._appSection.addItem(doNothingItem);
     }
-};
 
-var AutorunNotification = class extends MessageTray.Notification {
-    constructor(manager, source) {
-        super(source, source.title);
+    _onOk() {
+        let selected = this._appSection.selectedItem;
+        if (!selected)
+            return;
 
-        this._manager = manager;
-        this._mount = source.mount;
+        let remember = this._alwaysCheckBox.checked;
 
-        this.source.apps.forEach(app => {
-            this.addButton(app.get_id(), _("Open with %s").format(app.get_name()));
-        });
+        if (selected._autorunType === AUTORUN_ITEM_DO_NOTHING) {
+            if (remember && this._contentType)
+                _setAutorunPreferences(this._contentType, false, true, false);
+            else if (this._contentType)
+                _setAutorunPreferences(this._contentType, false, false, false);
 
-        this.connect("action-invoked", (notification, id) => {
-            let app = this.source.apps.find(a => a.get_id() == id);
+            this.close();
+            return;
+        }
+
+        if (selected._autorunType === AUTORUN_ITEM_OPEN_FOLDER) {
+            if (remember && this._contentType)
+                _setAutorunPreferences(this._contentType, false, false, true);
+            else if (this._contentType)
+                _setAutorunPreferences(this._contentType, false, false, false);
+
+            let app = Gio.app_info_get_default_for_type('inode/directory', false);
             if (app)
-                startAppForMount(app, this._mount);
-        });
+                startAppForMount(app, this.mount);
+
+            this.close();
+            return;
+        }
+
+        // App selected
+        let app = this._apps[selected._appIndex];
+        if (remember && this._contentType) {
+            _setAutorunPreferences(this._contentType, true, false, false);
+            if (app)
+                app.set_as_default_for_type(this._contentType);
+        } else if (this._contentType) {
+            _setAutorunPreferences(this._contentType, false, false, false);
+        }
+
+        if (app)
+            startAppForMount(app, this.mount);
+
+        this.close();
     }
 
-    activate() {
-        super.activate();
+    _onEject() {
+        if (this.mount.can_eject()) {
+            this.mount.eject_with_operation(
+                Gio.MountUnmountFlags.NONE, null, null,
+                (mount, res) => {
+                    try {
+                        mount.eject_with_operation_finish(res);
+                    } catch (e) {
+                        if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED))
+                            log(`Failed to eject: ${e}`);
+                    }
+                }
+            );
+        } else {
+            this.mount.unmount_with_operation(
+                Gio.MountUnmountFlags.NONE, null, null,
+                (mount, res) => {
+                    try {
+                        mount.unmount_with_operation_finish(res);
+                    } catch (e) {
+                        if (!e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.FAILED_HANDLED))
+                            log(`Failed to unmount: ${e}`);
+                    }
+                }
+            );
+        }
 
-        let app = Gio.app_info_get_default_for_type('inode/directory', false);
-        startAppForMount(app, this._mount);
+        this.close();
     }
-};
+
+    close() {
+        if (this._unmountedId) {
+            this.mount.disconnect(this._unmountedId);
+            this._unmountedId = 0;
+        }
+
+        super.close();
+    }
+});

@@ -115,7 +115,6 @@ var CinnamonMountOperation = class {
     }
 
     _onAskQuestion(op, message, choices) {
-        global.log("askQuestion", message, choices);
         this._closeExistingDialog();
         this._dialog = new CinnamonMountQuestionDialog();
 
@@ -132,7 +131,6 @@ var CinnamonMountOperation = class {
     }
 
     _onAskPassword(op, message, defaultUser, defaultDomain, flags) {
-        global.log("askPassword", message, defaultUser, defaultDomain, flags);
         if (this._existingDialog) {
             this._dialog = this._existingDialog;
             this._dialog.reaskPassword();
@@ -177,7 +175,6 @@ var CinnamonMountOperation = class {
 
     _onShowProcesses2(op) {
         this._closeExistingDialog();
-        global.log("showProcesses");
         let processes = op.get_show_processes_pids();
         let choices = op.get_show_processes_choices();
         let message = op.get_show_processes_message();
@@ -204,7 +201,6 @@ var CinnamonMountOperation = class {
     }
 
     _onShowUnmountProgress(op, message, timeLeft, bytesLeft) {
-        global.log("show unmount prog", message, timeLeft, bytesLeft);
         if (!this._notifier)
             this._notifier = new CinnamonUnmountNotifier();
 
@@ -543,7 +539,6 @@ var CinnamonProcessesDialog = GObject.registerClass({
     _setAppsForPids(pids) {
         // remove all the items
         this._applicationSection.list.destroy_all_children();
-        global.log(pids);
         pids.forEach(pid => {
             let tracker = Cinnamon.WindowTracker.get_default();
             let app = tracker.get_app_from_pid(pid);
@@ -655,7 +650,6 @@ var CinnamonMountOpHandler = class {
      */
     AskPasswordAsync(params, invocation) {
         let [id, message, iconName_, defaultUser_, defaultDomain_, flags] = params;
-        global.log("ask pass", message);
         if (this._setCurrentRequest(invocation, id, CinnamonMountOperationType.ASK_PASSWORD)) {
             this._dialog.reaskPassword();
             return;
@@ -705,8 +699,6 @@ var CinnamonMountOpHandler = class {
      */
     AskQuestionAsync(params, invocation) {
         let [id, message, iconName_, choices] = params;
-        global.log("ask question", message);
-
         if (this._setCurrentRequest(invocation, id, CinnamonMountOperationType.ASK_QUESTION)) {
             this._dialog.update(message, choices);
             return;
@@ -760,7 +752,6 @@ var CinnamonMountOpHandler = class {
         }
 
         this._closeDialog();
-        global.log("show processes ");
         this._dialog = new CinnamonProcessesDialog();
         this._dialog.connect('response', (object, choice) => {
             let response;

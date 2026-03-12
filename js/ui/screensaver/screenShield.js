@@ -188,7 +188,7 @@ var ScreenShield = GObject.registerClass({
 
         this._loginManager.connect('lock', this._onSessionLock.bind(this));
         this._loginManager.connect('unlock', this._onSessionUnlock.bind(this));
-        this._loginManager.connect('active', this._onSessionActive.bind(this));
+        this._loginManager.connect('active-changed', this._onSessionActiveChanged.bind(this));
 
         this._monitorsChangedId = Main.layoutManager.connect('monitors-changed',
             this._onMonitorsChanged.bind(this));
@@ -671,8 +671,10 @@ var ScreenShield = GObject.registerClass({
         }
     }
 
-    _onSessionActive() {
-        _log(`ScreenShield: Received active signal from LoginManager (state=${this._state})`);
+    _onSessionActiveChanged(lm, active) {
+        _log(`ScreenShield: Received active-changed signal from LoginManager (active=${active}, state=${this._state})`);
+        if (!active)
+            return;
         if (this._state === State.LOCKED) {
             this.showUnlockDialog();
         }

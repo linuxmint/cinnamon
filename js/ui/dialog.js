@@ -280,10 +280,19 @@ var ListSection = GObject.registerClass({
             GObject.ParamFlags.READWRITE |
             GObject.ParamFlags.CONSTRUCT,
             null),
+        'selectable': GObject.ParamSpec.boolean(
+            'selectable', 'selectable', 'selectable',
+            GObject.ParamFlags.READWRITE |
+            GObject.ParamFlags.CONSTRUCT,
+            false),
+    },
+    Signals: {
+        'selection-changed': { param_types: [GObject.TYPE_INT] },
     },
 }, class ListSection extends St.BoxLayout {
     _init(params) {
         this._title = new St.Label({ style_class: 'dialog-list-title' });
+        this._selectedIndex = -1;
 
         this.list = new St.BoxLayout({
             style_class: 'dialog-list-box',
@@ -317,6 +326,58 @@ var ListSection = GObject.registerClass({
         _setLabel(this._title, title);
         this.notify('title');
     }
+
+    get selectedIndex() {
+        return this._selectedIndex;
+    }
+
+    get selectedItem() {
+        if (this._selectedIndex < 0)
+            return null;
+
+        let children = this.list.get_children();
+        return children[this._selectedIndex] ?? null;
+    }
+
+    selectIndex(index) {
+        let children = this.list.get_children();
+
+        if (index < 0 || index >= children.length)
+            return;
+
+        if (index === this._selectedIndex)
+            return;
+
+        children.forEach((child, i) => {
+            if (i === index)
+                child.add_style_pseudo_class('selected');
+            else
+                child.remove_style_pseudo_class('selected');
+        });
+
+        this._selectedIndex = index;
+        this.emit('selection-changed', index);
+    }
+
+    _onItemClicked(item) {
+        let children = this.list.get_children();
+        let index = children.indexOf(item);
+        if (index >= 0)
+            this.selectIndex(index);
+    }
+
+    addItem(item) {
+        this.list.add_child(item);
+
+        if (this.selectable) {
+            item.reactive = true;
+            item.track_hover = true;
+            item.connect('button-release-event', () => {
+                this._onItemClicked(item);
+                return Clutter.EVENT_STOP;
+            });
+        }
+    }
 });
 
 var ListSectionItem = GObject.registerClass({
@@ -336,7 +397,7 @@ var ListSectionItem = GObject.registerClass({
             GObject.ParamFlags.CONSTRUCT,
             null),
     },
-}, class ListSectionItem extends St.BoxLayout{
+}, class ListSectionItem extends St.BoxLayout {
     _init(params) {
         this._iconActorBin = new St.Bin();
 
@@ -360,7 +421,6 @@ var ListSectionItem = GObject.registerClass({
             important: true,
             ...params,
         });
-
 
         this.label_actor = this._title;
         this.add_child(this._iconActorBin);
