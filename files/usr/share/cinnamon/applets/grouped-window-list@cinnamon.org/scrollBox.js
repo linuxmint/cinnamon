@@ -24,46 +24,38 @@ var ScrollBox = class ScrollBox {
         this.scrollView.set_clip_to_allocation(true);
         this.scrollView.set_policy(St.PolicyType.EXTERNAL, St.PolicyType.EXTERNAL);
 
-        this.box = new St.BoxLayout({
+        this.container = new St.BoxLayout({
             vertical: !this.state.isHorizontal,
             style_class: 'grouped-window-list-scrollbox-container',
         });
 
-        this.scrollView.add_actor(this.box);
+        this.scrollView.add_actor(this.container);
 
         // Slider buttons
-        const buttonStyle = 'min-width: 15px; min-height: 20px; margin: 0px; padding: 0px;';
-
         this.startButton = new St.Bin({
             style_class: 'grouped-window-list-scrollbox-button-start',
-            style: buttonStyle,
             visible: false,
             reactive: true,
             x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE
         });
-
         this.endButton = new St.Bin({
             style_class: 'grouped-window-list-scrollbox-button-end',
-            style: buttonStyle,
             visible: false,
             reactive: true,
             x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE
         });
-
         this.startIcon = new St.Icon({
             icon_name: 'xsi-go-previous-symbolic',
             icon_type: St.IconType.SYMBOLIC,
             style_class: 'popup-menu-icon grouped-window-list-scrollbox-button-icon'
         });
-
         this.endIcon = new St.Icon({
             icon_name: 'xsi-go-next-symbolic',
             icon_type: St.IconType.SYMBOLIC,
             style_class: 'popup-menu-icon grouped-window-list-scrollbox-button-icon'
         });
-
         this.startButton.set_child(this.startIcon);
         this.endButton.set_child(this.endIcon);
 
@@ -98,7 +90,7 @@ var ScrollBox = class ScrollBox {
         this.signals.connect(this.scrollView, 'leave-event', () => this._stopSlide());
 
         // Track content size changes
-        this.signals.connect(this.box, 'allocation-changed', () => this.updateScrollButtonVisibility());
+        this.signals.connect(this.container, 'allocation-changed', () => this.updateScrollButtonVisibility());
 
         this.stateConnectionID = this.state.connect({
             orientation: (state) => this.on_orientation_changed()
@@ -143,7 +135,7 @@ var ScrollBox = class ScrollBox {
     }
 
     on_orientation_changed() {
-        this.box.vertical = !this.state.isHorizontal;
+        this.container.vertical = !this.state.isHorizontal;
 
         const managerOrientation = this.state.isHorizontal
             ? Clutter.Orientation.HORIZONTAL : Clutter.Orientation.VERTICAL;
@@ -183,8 +175,19 @@ var ScrollBox = class ScrollBox {
         this.updateScrollButtonVisibility();
     }
 
+    _getFadeOffset() {
+        const fade_eff = this.scrollView.get_effect('fade');
+
+        let fade_offset = 0;
+        if (fade_eff) {
+            fade_offset = this.state.isHorizontal ? fade_eff.hfade_offset : fade_eff.vfade_offset;
+        }
+
+        return fade_offset > 0 ? fade_offset : EDGE_SCROLL_ZONE_SIZE * global.ui_scale;
+    }
+
     scrollToChild(childActor) {
-        if (!childActor) return;
+        if (!childActor || !childActor.has_allocation()) return;
 
         // Get allocation of child relative to container
         const allocation = childActor.get_allocation_box();
@@ -211,13 +214,7 @@ var ScrollBox = class ScrollBox {
             const current = adjustment.value;
             const page_size = adjustment.page_size;
 
-            let fade_offset = 30;
-
-            const fade_eff = this.scrollView.get_effect('fade');
-
-            if (fade_eff) {
-                fade_offset = this.state.isHorizontal ? fade_eff.hfade_offset : fade_eff.vfade_offset;
-            }
+            let fade_offset = this._getFadeOffset();
 
             if (c1 < current + fade_offset || c2 > current + page_size - fade_offset) {
                 const newValue = (c1 + c2) / 2 - page_size / 2;
@@ -321,23 +318,25 @@ var ScrollBox = class ScrollBox {
             return Clutter.EVENT_PROPAGATE;
         }
 
+        const fadeOffset = this._getFadeOffset();
+
         if (this.state.isHorizontal) {
             // Check left edge
-            if (relX < EDGE_SCROLL_ZONE_SIZE && adjustment.value > adjustment.lower) {
+            if (relX < fadeOffset && adjustment.value > adjustment.lower) {
                 scrollDirection = -1;
             }
             // Check right edge
-            else if (relX > actorWidth - EDGE_SCROLL_ZONE_SIZE &&
+            else if (relX > actorWidth - fadeOffset &&
                 adjustment.value < adjustment.upper - adjustment.page_size) {
                 scrollDirection = 1;
             }
         } else {
             // Check top edge
-            if (relY < EDGE_SCROLL_ZONE_SIZE && adjustment.value > adjustment.lower) {
+            if (relY < fadeOffset && adjustment.value > adjustment.lower) {
                 scrollDirection = -1;
             }
             // Check bottom edge
-            else if (relY > actorHeight - EDGE_SCROLL_ZONE_SIZE &&
+            else if (relY > actorHeight - fadeOffset &&
                 adjustment.value < adjustment.upper - adjustment.page_size) {
                 scrollDirection = 1;
             }

@@ -46,7 +46,7 @@ var Workspace = class Workspace {
                         (!appGroup.groupState.lastFocused || appGroup.groupState.lastFocused.has_focus())) {
                         this.scrollToAppGroup(appGroup);
                         return;
-                    };
+                    }
                     appGroup.onFocusChange(false);
                 });
             }
@@ -57,7 +57,7 @@ var Workspace = class Workspace {
 
         this.scrollBox = new ScrollBox(this.state);
         this.actor = this.scrollBox.actor;
-        this.container = this.scrollBox.box;
+        this.container = this.scrollBox.container;
 
         this.appGroups = [];
         this.lastFocusedApp = null;
