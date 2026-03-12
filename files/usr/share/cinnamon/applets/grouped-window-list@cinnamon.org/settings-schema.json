@@ -52,7 +52,8 @@
         "launcher-animation-effect",
         "enable-window-count-badges",
         "enable-notification-badges",
-        "enable-app-button-dragging"
+        "enable-app-button-dragging",
+        "enable-slide-to-focused-app-button"
       ]
     },
     "thumbnailsSection": {
@@ -202,6 +203,12 @@
     "type": "checkbox",
     "default": true,
     "description": "Enable app button dragging"
+  },
+  "enable-slide-to-focused-app-button": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Enable slide to focused app button",
+    "tooltip": "When enabled, if you have many windows open and the app buttons don't fit in the panel, the view will automatically slide to the app button of the focused window."
   },
   "thumbnail-scroll-behavior": {
     "type": "checkbox",
