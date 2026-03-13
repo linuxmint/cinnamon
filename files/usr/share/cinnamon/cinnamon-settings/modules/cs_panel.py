@@ -52,6 +52,11 @@ class PanelSettingsPage(SettingsPage):
                 if item.split(":")[0] == panel_id:
                     return item.split(":")[1] != "false"
 
+        def can_show_dodge_all(vlist, possible):
+            for item in vlist:
+                if item.split(":")[0] == panel_id:
+                    return item.split(":")[1] == "intel"
+
         section = SettingsSection(_("Panel Visibility"))
         self.add(section)
 
@@ -60,6 +65,9 @@ class PanelSettingsPage(SettingsPage):
         options = [["true", _("Auto hide panel")], ["false", _("Always show panel")], ["intel", _("Intelligently hide panel")]]
         widget = PanelComboBox(_("Auto-hide panel"), "org.cinnamon", "panels-autohide", self.panel_id, options, size_group=self.size_group)
         section.add_row(widget)
+
+        widget = PanelSwitch(_("Include non-focased windows"), "org.cinnamon", "panels-dodge-all", self.panel_id)
+        section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show_dodge_all)
 
         widget = PanelSpinButton(_("Show delay"), "org.cinnamon", "panels-show-delay", self.panel_id, _("milliseconds"), 0, 2000, 50, 200)#, dep_key="org.cinnamon/panels-autohide")
         section.add_reveal_row(widget, "org.cinnamon", "panels-autohide", check_func=can_show)
