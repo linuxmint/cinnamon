@@ -392,28 +392,11 @@ var Notification = class Notification {
     _setBodyArea(text, allowMarkup) {
         if (text) {
             if (!this._scrollArea) {
-                /* FIXME: vscroll should be enabled
-                 * -vfade covers too much for this size of scrollable
-                 * -scrollview min-height is broken inside tray with a scrollview
-                 *
-                 * TODO: when scrollable:
-                 *
-                 * applet connects to this signal to enable captured-event passthru so you can grab the scrollbar:
-                 * let vscroll = this._scrollArea.get_vscroll_bar();
-                 * vscroll.connect('scroll-start', () => { this.emit('scrolling-changed', true) });
-                 * vscroll.connect('scroll-stop', () => { this.emit('scrolling-changed', false) });
-                 *
-                 * `enable_mouse_scrolling` makes it difficult to scroll when there are many notifications
-                 * in the tray because most of the area is these smaller scrollviews which capture the event.
-                 * ideally, this should only be disabled when the notification is in the tray and there are
-                 * many notifications.
-                 */
                 this._scrollArea = new St.ScrollView({
                     name: 'notification-scrollview',
-                    vscrollbar_policy: St.PolicyType.NEVER,
+                    vscrollbar_policy: St.PolicyType.AUTOMATIC,
                     hscrollbar_policy: St.PolicyType.NEVER,
-                    enable_mouse_scrolling: false/*,
-                                                       style_class: 'vfade'*/ });
+                    enable_mouse_scrolling: true});
 
                 this._table.add(this._scrollArea, {
                     row: 1,
@@ -429,6 +412,22 @@ var Notification = class Notification {
                 // body label
                 this._bodyUrlHighlighter = new URLHighlighter("", true, false);
                 content.add(this._bodyUrlHighlighter.actor);
+
+                this._scrollArea.connect('notify::allocation', () => {
+                    if (!this._bodyUrlHighlighter || this._scrollArea.width === 0) return;
+
+                    const monitor =  Main.layoutManager.findMonitorForActor(this.actor);
+
+                    const maxHeightToEnforce = Math.floor(monitor.height / 3);
+
+                    const [min_h, nat_h] = this._bodyUrlHighlighter.actor.get_preferred_height(this._scrollArea.width);
+
+                    let targetHeight = (maxHeightToEnforce > 0 && nat_h > maxHeightToEnforce) ? maxHeightToEnforce : nat_h;
+
+                    if (this._scrollArea.height !== targetHeight) {
+                        this._scrollArea.height = targetHeight;
+                    }
+                });
             }
             this._bodyUrlHighlighter.setMarkup(text, allowMarkup);
         } else {
@@ -461,6 +460,12 @@ var Notification = class Notification {
             adjustment.value = adjustment.lower;
         else if (side == St.Side.BOTTOM)
             adjustment.value = adjustment.upper;
+    }
+
+    setMouseScrolling(enabled) {
+        if (this._scrollArea) {
+            this._scrollArea.enable_mouse_scrolling = enabled;
+        }
     }
 
     _updateLayout() {
