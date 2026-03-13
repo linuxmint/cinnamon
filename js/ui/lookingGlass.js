@@ -341,11 +341,11 @@ var Inspector = GObject.registerClass({
         }
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (!this._eventHandler)
             return;
 
-        this.set_allocation(box, flags);
+        this.set_allocation(box);
 
         let primary = Main.layoutManager.primaryMonitor;
 
@@ -357,7 +357,7 @@ var Inspector = GObject.registerClass({
         childBox.x2 = childBox.x1 + natWidth;
         childBox.y1 = primary.y + Math.floor((primary.height - natHeight) / 2);
         childBox.y2 = childBox.y1 + natHeight;
-        this._eventHandler.allocate(childBox, flags);
+        this._eventHandler.allocate(childBox);
     }
 
     _close() {

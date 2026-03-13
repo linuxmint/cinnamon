@@ -76,16 +76,15 @@ cinnamon_slicer_get_preferred_height (ClutterActor *self,
 
 static void
 cinnamon_slicer_allocate (ClutterActor           *self,
-                       const ClutterActorBox  *box,
-                       ClutterAllocationFlags  flags)
+                       const ClutterActorBox  *box)
 {
   ClutterActor *child;
 
-  clutter_actor_set_allocation (self, box, flags);
+  clutter_actor_set_allocation (self, box);
 
   child = st_bin_get_child (ST_BIN (self));
   if (child)
-    clutter_actor_allocate_preferred_size (child, flags);
+    clutter_actor_allocate_preferred_size (child);
 }
 
 static void

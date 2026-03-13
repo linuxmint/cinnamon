@@ -405,7 +405,7 @@ var AppGroup = class AppGroup {
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
     }
 
-    allocate(actor, box, flags) {
+    allocate(actor, box) {
         const allocWidth = box.x2 - box.x1;
         const allocHeight = box.y2 - box.y1;
         const childBox = new Clutter.ActorBox();
@@ -431,7 +431,7 @@ var AppGroup = class AppGroup {
             [childBox.x1, childBox.x2] = center(allocWidth + offset, naturalWidth);
         }
 
-        this.iconBox.allocate(childBox, flags);
+        this.iconBox.allocate(childBox);
 
         // Set windows badge position
         const windowBadgeOffset = 3 * global.ui_scale;
@@ -447,7 +447,7 @@ var AppGroup = class AppGroup {
         const windowLabelPosY = Math.floor((windowBadgesize - wLabelNaturalHeight) / 2);
         this.windowsBadgeLabel.set_anchor_point(-windowLabelPosX, -windowLabelPosY);
         this.windowsBadge.set_size(windowBadgesize, windowBadgesize);
-        this.windowsBadge.allocate(windowBadgeBox, flags);
+        this.windowsBadge.allocate(windowBadgeBox);
 
         // Set notifications badge position
         const notifBadgeOffset = 3 * global.ui_scale;
@@ -463,7 +463,7 @@ var AppGroup = class AppGroup {
         const notifLabelPosY = Math.floor((notifBadgesize - nLabelNaturalHeight) / 2);
         this.notificationsBadgeLabel.set_anchor_point(-notifLabelPosX, -notifLabelPosY);
         this.notificationsBadge.set_size(notifBadgesize, notifBadgesize);
-        this.notificationsBadge.allocate(notifBadgeBox, flags);
+        this.notificationsBadge.allocate(notifBadgeBox);
 
         // Set label position
         if (this.drawLabel) {
@@ -493,7 +493,7 @@ var AppGroup = class AppGroup {
                 else
                     this.label.set_style('text-align: right;');
 
-            this.label.allocate(childBox, flags);
+            this.label.allocate(childBox);
         }
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
@@ -508,7 +508,7 @@ var AppGroup = class AppGroup {
             });
         }
 
-        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
+        if (this.progressOverlay.visible) this.allocateProgress(childBox);
     }
 
     showLabel(animate = false) {
@@ -611,7 +611,7 @@ var AppGroup = class AppGroup {
         return total / count;
     }
 
-    allocateProgress(childBox = null, flags = 0) {
+    allocateProgress(childBox = null) {
         if (!childBox) childBox = new Clutter.ActorBox();
         childBox.y1 = 0;
         childBox.y2 = this.actor.height;
@@ -622,7 +622,7 @@ var AppGroup = class AppGroup {
             childBox.x1 = 0;
             childBox.x2 = Math.max(this.actor.width * (this.progress / 100.0), 1.0);
         }
-        this.progressOverlay.allocate(childBox, flags);
+        this.progressOverlay.allocate(childBox);
     }
 
     onProgressChange(metaWindow) {

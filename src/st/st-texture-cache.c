@@ -1157,7 +1157,7 @@ st_texture_cache_load_from_pixbuf (GdkPixbuf *pixbuf,
                         "request-mode", CLUTTER_REQUEST_CONTENT_SIZE,
                         NULL);
 
-  clutter_actor_get_resource_scale (actor, &resource_scale);
+  resource_scale = clutter_actor_get_resource_scale (actor);
 
   image = pixbuf_to_st_content_image (pixbuf,
                                       size, size,
