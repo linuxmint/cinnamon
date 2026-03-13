@@ -117,9 +117,7 @@ const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
 const Screenshot = imports.ui.screenshot;
-const ScreenShield = imports.ui.screensaver.screenShield;
-const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
-const ScreenSaver = imports.misc.screenSaver;
+const ScreensaverController = imports.ui.screensaver.controller;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const LocatePointer = imports.ui.locatePointer;
@@ -152,9 +150,7 @@ var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
 var osdWindowManager = null;
-let _screenShield = null;
-let _screenSaverProxy = null;
-let _screensaverSettings = null;
+var screensaverController = null;
 var lockdownSettings = null;
 var overview = null;
 var expo = null;
@@ -539,43 +535,14 @@ function start() {
         }
     });
 
-    if (!global.session_running || Meta.is_wayland_compositor()) {
-        // If the session is *not* already running, clear the internal locked
-        // state. This is used in x11 sessions to restore the screensaver after
-        // cinnamon restarts. Wayland doesn't support restarts (yet) so it should
-        // always be false.
-        global.settings.set_boolean("session-locked-state", false);
-    }
+    screensaverController = new ScreensaverController.ScreensaverController();
 
-    _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
-
-    // The internal screensaver is the only option for wayland sessions. X11 sessions can use either
-    // the internal one or cinnamon-screensaver (>= 6.7).
-    if (Meta.is_wayland_compositor() || global.settings.get_boolean('internal-screensaver-enabled')) {
-        let screenShieldGroup = new St.Widget({
-            name: 'screenShieldGroup',
-            visible: false,
-            clip_to_allocation: true,
-            layout_manager: new Clutter.BinLayout()
-        });
-        screenShieldGroup.add_constraint(new Clutter.BindConstraint({
-            source: global.stage,
-            coordinate: Clutter.BindCoordinate.ALL
-        }));
-        global.stage.add_actor(screenShieldGroup);
-
-        _screenShield = new ScreenShield.ScreenShield(screenShieldGroup);
-        new ScreenSaver.ScreenSaverService(_screenShield);
-    }
-
-    // Protect security-critical exported functions from being replaced by extensions.
-    for (let fnName of ['lockScreen', 'screenShieldHideKeyboard', 'toggleKeyboard']) {
-        Object.defineProperty(imports.ui.main, fnName, {
-            value: imports.ui.main[fnName],
-            writable: false,
-            configurable: false
-        });
-    }
+    // Protect from being replaced by extensions.
+    Object.defineProperty(imports.ui.main, 'screensaverController', {
+        value: imports.ui.main.screensaverController,
+        writable: false,
+        configurable: false
+    });
 
     Promise.all([
         AppletManager.init(),
@@ -1281,7 +1248,7 @@ function _shouldFilterKeybinding(entry) {
     if (allowed) {
         let lockModes = Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN;
         if ((actionMode & lockModes) !== 0 && (entry.allowedModes & lockModes) !== 0) {
-            if (_screenShield && !_screensaverSettings.get_boolean('allow-keyboard-shortcuts')) {
+            if (screensaverController?.locked && !screensaverController.allowKeyboardShortcuts) {
                 return true;
             }
         }
@@ -1864,42 +1831,7 @@ function closeEndSessionDialog() {
     endSessionDialog = null;
 }
 
-function lockScreen(askForAwayMessage) {
-    if (lockdownSettings.get_boolean('disable-lock-screen')) {
-        return;
-    }
-
-    if (askForAwayMessage && _screensaverSettings.get_boolean('ask-for-away-message')) {
-        let dialog = new AwayMessageDialog.AwayMessageDialog((message) => {
-            _doLock(message);
-        });
-        dialog.open();
-        return;
-    }
-
-    _doLock(null);
-}
-
-function _doLock(awayMessage) {
-    if (_screenShield) {
-        _screenShield.lock(false, awayMessage);
-        return;
-    }
-
-    if (_screenSaverProxy === null) {
-        _screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-    }
-
-    _screenSaverProxy.LockRemote(awayMessage || "");
-}
-
-function screenShieldHideKeyboard() {
-    _screenShield?._hideScreensaverKeyboard();
-}
-
 function toggleKeyboard() {
-    if (_screenShield?.visible)
-        _screenShield._toggleScreensaverKeyboard();
-    else
+    if (!screensaverController?.toggleScreensaverKeyboard())
         virtualKeyboardManager.manualToggle();
 }

@@ -447,7 +447,7 @@ KeybindingManager.prototype = {
             // let csd-media-keys run cinnamon-screensaver-command instead.
             if (!this.screensaver_settings.get_string('custom-screensaver-command').trim()) {
                 GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    Main.lockScreen(false);
+                    Main.screensaverController.lockScreen(false);
                     return GLib.SOURCE_REMOVE;
                 });
                 return;
