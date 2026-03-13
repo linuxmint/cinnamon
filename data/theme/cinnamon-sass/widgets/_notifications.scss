@@ -19,7 +19,10 @@ $notification_width: 34em;
   &-body { spacing: $base_padding; }
   &-actions { spacing: $base_padding * 2; }
 
-  &-scrollview {}
+  &-scrollview {
+    max-height: $notification_width * 0.75;
+    min-height: $notification_width * 0.25;
+  }
 
   StEntry {}
 }
