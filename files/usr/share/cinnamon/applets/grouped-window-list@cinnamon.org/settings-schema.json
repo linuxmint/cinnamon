@@ -27,7 +27,7 @@
       "title" : "Behavior",
       "keys": [
         "group-apps",
-        "scroll-behavior",
+        "list-scroll-behavior",
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces",
@@ -52,7 +52,8 @@
         "launcher-animation-effect",
         "enable-window-count-badges",
         "enable-notification-badges",
-        "enable-app-button-dragging"
+        "enable-app-button-dragging",
+        "enable-slide-to-focused-app-button"
       ]
     },
     "thumbnailsSection": {
@@ -96,14 +97,15 @@
     "default": true,
     "description": "Group windows by application"
   },
-  "scroll-behavior": {
+  "list-scroll-behavior": {
     "type": "combobox",
-    "default": 1,
+    "default": 4,
     "description": "Mouse wheel scroll action",
     "options": {
       "None": 1,
       "Cycle apps": 2,
-      "Cycle windows": 3
+      "Cycle windows": 3,
+      "Slide app list": 4
     }
   },
   "left-click-action": {
@@ -201,6 +203,12 @@
     "type": "checkbox",
     "default": true,
     "description": "Enable app button dragging"
+  },
+  "enable-slide-to-focused-app-button": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Enable slide to focused app button",
+    "tooltip": "When enabled, if you have many windows open and the app buttons don't fit in the panel, the view will automatically slide to the app button of the focused window."
   },
   "thumbnail-scroll-behavior": {
     "type": "checkbox",
