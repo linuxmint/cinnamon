@@ -40,7 +40,7 @@ class GtkSettingsEditor:
             keyfile.load_from_file(self._path, 0)
         except:
             pass
-        finally:
+
             return keyfile
 
     def get_boolean(self, key):
