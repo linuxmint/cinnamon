@@ -374,6 +374,10 @@ var CinnamonDBus = class {
 
     activateCallback(callback, uuid, instance_id) {
         let obj = this._getXletObject(uuid, instance_id);
+        if (!obj) {
+            global.logWarning(`[CinnamonDBus] activateCallback: xlet not found (uuid=${uuid}, instance_id=${instance_id})`);
+            return;
+        }
         let cb = obj[callback].bind(obj);
         cb();
     }
