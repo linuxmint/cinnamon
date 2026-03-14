@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /* exported Component */
 
-const { Clutter, Gio, GObject, St } = imports.gi;
+const { Clutter, Gio, GObject, Pango, St } = imports.gi;
 
 const CheckBox = imports.ui.checkBox;
 const Dialog = imports.ui.dialog;
@@ -81,39 +81,6 @@ function startAppForMount(app, mount) {
     }
 
     return false;
-}
-
-function _getMediaGreeting(contentType) {
-    // if (contentType === 'x-content/audio-cdda')
-    //     return _("You have just inserted an Audio CD.");
-    // if (contentType === 'x-content/audio-dvd')
-    //     return _("You have just inserted an Audio DVD.");
-    // if (contentType === 'x-content/video-dvd')
-    //     return _("You have just inserted a Video DVD.");
-    // if (contentType === 'x-content/video-vcd')
-    //     return _("You have just inserted a Video CD.");
-    // if (contentType === 'x-content/video-svcd')
-    //     return _("You have just inserted a Super Video CD.");
-    // if (contentType === 'x-content/blank-cd')
-    //     return _("You have just inserted a blank CD.");
-    // if (contentType === 'x-content/blank-dvd')
-    //     return _("You have just inserted a blank DVD.");
-    // if (contentType === 'x-content/blank-bd')
-    //     return _("You have just inserted a blank Blu-Ray disc.");
-    // if (contentType === 'x-content/blank-hddvd')
-    //     return _("You have just inserted a blank HD DVD.");
-    // if (contentType === 'x-content/image-photocd')
-    //     return _("You have just inserted a Photo CD.");
-    // if (contentType === 'x-content/image-picturecd')
-    //     return _("You have just inserted a Picture CD.");
-    // if (contentType === 'x-content/image-dcf')
-    //     return _("You have just inserted a medium with digital photos.");
-    // if (contentType === 'x-content/audio-player')
-    //     return _("You have just inserted a digital audio player.");
-    // if (contentType && Gio.content_type_is_a(contentType, 'x-content/software'))
-    //     return _("You have just inserted a medium with software intended to be automatically started.");
-
-    return _("Media inserted");
 }
 
 function _setAutorunPreferences(contentType, startApp, ignore, openFolder) {
@@ -335,23 +302,29 @@ class AutorunDialog extends ModalDialog.ModalDialog {
         this._contentType = contentType;
 
         let mountName = mount.get_name();
-
-        // let greeting = _getMediaGreeting(contentType);
-        let title = _("Media inserted");
-
         let contentDescription = contentType
             ? Gio.content_type_get_description(contentType)
             : null;
 
-        let description;
-        if (contentDescription) {
-            description = `${mountName}\n(${contentDescription})\n\n${_("Choose an action")}`;
-        } else {
-            description = _("Select how to open '%s'.").format(mountName);
-        }
+        let heading = new St.Label({
+            style_class: 'autorun-dialog-heading',
+            text: _("New media detected"),
+            x_align: Clutter.ActorAlign.CENTER,
+        });
+        this.contentLayout.add_child(heading);
 
-        this._content = new Dialog.MessageDialogContent({ title, description });
-        this.contentLayout.add_child(this._content);
+        let descriptionText;
+        descriptionText = _("Select how to open '%s' and whether to perform this action in the future.")
+                .format(mountName, contentDescription);
+
+        let description = new St.Label({
+            style_class: 'autorun-dialog-description',
+            text: descriptionText,
+        });
+        description.clutter_text.line_wrap = true;
+        description.clutter_text.line_wrap_mode = Pango.WrapMode.WORD_CHAR;
+        description.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this.contentLayout.add_child(description);
 
         this._appSection = new Dialog.ListSection({ selectable: true });
         this.contentLayout.add_child(this._appSection);
@@ -359,8 +332,10 @@ class AutorunDialog extends ModalDialog.ModalDialog {
         this._populateAppList();
         this._appSection.selectIndex(0);
 
-        this._alwaysCheckBox = new CheckBox.CheckBox(_("Always perform this action"));
-        this.contentLayout.add_child(this._alwaysCheckBox);
+        if (contentDescription) {
+            this._alwaysCheckBox = new CheckBox.CheckBox(_("Always perform this action for type '%s'").format(contentDescription));
+            this.contentLayout.add_child(this._alwaysCheckBox);
+        }
 
         let canEject = mount.can_eject();
         let ejectLabel = canEject ? _("Eject") : _("Unmount");
