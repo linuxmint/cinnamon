@@ -390,6 +390,13 @@ var CinnamonDBus = class {
             );
             return;
         }
+        if (!Main.settingsManager.uuids[uuid][instance_id]) {
+            global.logWarning(
+                `[CinnamonDBus] [${uuid}] Unable to find instance '${instance_id}' from SettingsManager - ` +
+                'this is likely due to configuring settings from a removed xlet instance.'
+            );
+            return;
+        }
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
     }
 
