@@ -374,6 +374,10 @@ var CinnamonDBus = class {
 
     activateCallback(callback, uuid, instance_id) {
         let obj = this._getXletObject(uuid, instance_id);
+        if (!obj) {
+            global.logWarning(`[CinnamonDBus] activateCallback: xlet not found (uuid=${uuid}, instance_id=${instance_id})`);
+            return;
+        }
         let cb = obj[callback].bind(obj);
         cb();
     }
@@ -383,6 +387,13 @@ var CinnamonDBus = class {
             global.logWarning(
                 `[CinnamonDBus] [${uuid}] Unable to find UUID from SettingsManager - ` +
                 'this is likely due to configuring settings from a removed xlet.'
+            );
+            return;
+        }
+        if (!Main.settingsManager.uuids[uuid][instance_id]) {
+            global.logWarning(
+                `[CinnamonDBus] [${uuid}] Unable to find instance '${instance_id}' from SettingsManager - ` +
+                'this is likely due to configuring settings from a removed xlet instance.'
             );
             return;
         }
@@ -549,7 +560,6 @@ var CinnamonDBus = class {
 
         for (let idx in sources) {
             const source = sources[idx];
-            // global.log(source.preferences);
             ret.push([
                 source.type,
                 source.id,
