@@ -54,8 +54,8 @@ STATIC_KEYBINDINGS = \
       ]
     ],
     [
-      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down"],
-      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up"],
+      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-window-selection"],
+      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-workspace-selection"],
       [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop"],
       [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets"],
       [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows"],
@@ -107,8 +107,6 @@ STATIC_KEYBINDINGS = \
           [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new"],
           [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left"],
           [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right"],
-          [_("Move window to workspace above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-up"],
-          [_("Move window to workspace below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-down"],
           [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1"],
           [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2"],
           [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3"],

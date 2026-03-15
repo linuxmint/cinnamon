@@ -38,6 +38,9 @@ const SystemdLoginSessionIface = `
     <signal name="Lock"/>
     <signal name="Unlock"/>
     <property name="Active" type="b" access="read"/>
+    <method name="SetLockedHint">
+      <arg type="b" direction="in"/>
+    </method>
   </interface>
 </node>`;
 
@@ -75,6 +78,7 @@ var LoginManagerSystemd = class {
     constructor() {
         this._managerProxy = null;
         this._sessionProxy = null;
+        this.isLocked = false;
 
         this._initSession();
     }
@@ -208,6 +212,16 @@ var LoginManagerSystemd = class {
                 }
             });
     }
+
+    setLockedHint(locked) {
+        if (!this._sessionProxy)
+            return;
+
+        this._sessionProxy.SetLockedHintRemote(locked, (result, error) => {
+            if (error)
+                global.logError('LoginManager: SetLockedHint failed: ' + error);
+        });
+    }
 };
 Signals.addSignalMethods(LoginManagerSystemd.prototype);
 
@@ -290,6 +304,10 @@ var LoginManagerConsoleKit = class {
     inhibit(reason, callback) {
         // ConsoleKit doesn't have inhibitors
         callback(null);
+    }
+
+    setLockedHint(_locked) {
+        // ConsoleKit doesn't have SetLockedHint
     }
 };
 Signals.addSignalMethods(LoginManagerConsoleKit.prototype);

@@ -447,7 +447,7 @@ var CinnamonDBus = class {
     }
 
     ToggleKeyboard() {
-        Main.toggleKeyboard();
+        Main.screensaverController.toggleKeyboard();
     }
 
     GetMonitors() {

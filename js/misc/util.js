@@ -215,6 +215,52 @@ function spawnCommandLineAsync(command_line, callback, errback) {
     });
 }
 
+function _runSubprocessAsyncIO(subprocess, callback, input, stripBash) {
+    subprocess.init(null);
+    let cancellable = new Gio.Cancellable();
+
+    subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
+        let success, stdout, stderr, exitCode;
+        // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
+        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
+        if (typeof callback === 'function' && !cancellable.is_cancelled()) {
+            if (stripBash && stderr && stderr.indexOf('bash: ') > -1) {
+                stderr = stderr.replace(/bash: /, '');
+            }
+            exitCode = success ? subprocess.get_exit_status() : -1;
+            callback(stdout, stderr, exitCode);
+        }
+        subprocess.cancellable = null;
+    });
+    subprocess.cancellable = cancellable;
+
+    return subprocess;
+}
+
+/**
+ * spawnAsyncIO:
+ * @argv: an argument array
+ * @callback (function): called on success or failure
+ * @opts (object): options: flags, input
+ *
+ * Runs @argv in the background. Callback has three arguments -
+ * stdout, stderr, and exitCode.
+ *
+ * Returns (object): a Gio.Subprocess instance
+ */
+function spawnAsyncIO(argv, callback, opts = {}) {
+    let {flags, input} = opts;
+    if (!input) input = null;
+
+    let subprocess = new Gio.Subprocess({
+        argv: argv,
+        flags: flags ? flags
+            : Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
+    });
+
+    return _runSubprocessAsyncIO(subprocess, callback, input, false);
+}
+
 /**
  * spawnCommandLineAsyncIO:
  * @command: a command
@@ -223,6 +269,9 @@ function spawnCommandLineAsync(command_line, callback, errback) {
  *
  * Runs @command in the background. Callback has three arguments -
  * stdout, stderr, and exitCode.
+ *
+ * If you have an argument array instead of a command string, use
+ * spawnAsyncIO() instead.
  *
  * Returns (object): a Gio.Subprocess instance
  */
@@ -235,25 +284,8 @@ function spawnCommandLineAsyncIO(command, callback, opts = {}) {
         flags: flags ? flags
             : Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
     });
-    subprocess.init(null);
-    let cancellable = new Gio.Cancellable();
 
-    subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
-        let success, stdout, stderr, exitCode;
-        // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
-        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
-        if (typeof callback === 'function' && !cancellable.is_cancelled()) {
-            if (stderr && stderr.indexOf('bash: ') > -1) {
-                stderr = stderr.replace(/bash: /, '');
-            }
-            exitCode = success ? subprocess.get_exit_status() : -1;
-            callback(stdout, stderr, exitCode);
-        }
-        subprocess.cancellable = null;
-    });
-    subprocess.cancellable = cancellable;
-
-    return subprocess;
+    return _runSubprocessAsyncIO(subprocess, callback, input, !argv);
 }
 
 function _handleSpawnError(command, err) {

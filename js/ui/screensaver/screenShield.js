@@ -371,26 +371,23 @@ var ScreenShield = GObject.registerClass({
             this.activate(immediate, (success) => {
                 if (success) {
                     this._stopLockDelay();
-                    this._setLocked(true);
+                    this._setLocked();
                 }
             });
         } else {
             this._stopLockDelay();
-            this._setLocked(true);
+            this._setLocked();
         }
     }
 
-    _setLocked(locked) {
-        if (locked === this.isLocked())
+    _setLocked() {
+        if (this.isLocked())
             return;
 
-        if (locked) {
-            this._dialog.saveSystemLayout();
-            this._setState(State.LOCKED);
-            this.emit('locked');
-        } else {
-            this._setState(State.SHOWN);
-        }
+        this._dialog.saveSystemLayout();
+        this._setState(State.LOCKED);
+        this._loginManager.setLockedHint(true);
+        this.emit('locked');
     }
 
     unlock() {
@@ -398,6 +395,7 @@ var ScreenShield = GObject.registerClass({
             return;
 
         _log('ScreenShield: Unlocking screen');
+        this._loginManager.setLockedHint(false);
 
         if (this._state === State.UNLOCKING) {
             this._dialog.hide();
@@ -512,7 +510,7 @@ var ScreenShield = GObject.registerClass({
         let lockDelay = this._settings.get_uint('lock-delay');
 
         if (lockDelay === 0) {
-            this._setLocked(true);
+            this._setLocked();
         } else {
             this._lockTimeoutId = GLib.timeout_add_seconds(
                 GLib.PRIORITY_DEFAULT,
@@ -531,7 +529,7 @@ var ScreenShield = GObject.registerClass({
 
     _onLockDelayTimeout() {
         this._lockTimeoutId = 0;
-        this._setLocked(true);
+        this._setLocked();
         return GLib.SOURCE_REMOVE;
     }
 

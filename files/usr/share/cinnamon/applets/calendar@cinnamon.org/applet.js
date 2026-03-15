@@ -266,6 +266,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             label_string = this.clock.get_clock_for_format(this.custom_format);
         }
 
+        if (label_string)
+            this.set_applet_label(label_string);
+
         this.go_home_button.reactive = !this._calendar.todaySelected();
         if (this._calendar.todaySelected()) {
             this.go_home_button.reactive = false;
@@ -275,12 +278,11 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.go_home_button.set_style_class_name("calendar-today-home-button-enabled");
         }
 
-        this.set_applet_label(label_string);
-
         let dateFormattedTooltip = this.clock.get_clock_for_format(DATE_FORMAT_FULL).capitalize();
         if (this.use_custom_format) {
-            dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
-            if (!dateFormattedTooltip) {
+            try {
+                dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
+            } catch (e) {
                 global.logError("Calendar applet: bad tooltip time format string - check your string.");
                 dateFormattedTooltip = this.clock.get_clock_for_format("~CLOCK FORMAT ERROR~ %l:%M %p");
             }
