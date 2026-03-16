@@ -389,6 +389,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onEntryActivate() {
+        this._passwordEntry.start_busy();
         let response = this._passwordEntry.get_text();
         if (response.length === 0)
             return;
@@ -409,6 +410,8 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionCompleted(session, gainedAuthorization) {
+        this._passwordEntry.end_busy();
+
         if (this._completed || this._doneEmitted)
             return;
 
@@ -466,6 +469,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionShowError(session, text) {
+        this._passwordEntry.end_busy();
         this._passwordEntry.set_text('');
         this._errorMessageLabel.set_text(text);
         this._errorMessageLabel.show();
@@ -475,6 +479,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionShowInfo(session, text) {
+        this._passwordEntry.end_busy();
         this._passwordEntry.set_text('');
         this._infoMessageLabel.set_text(text);
         this._infoMessageLabel.show();
