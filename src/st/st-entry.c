@@ -81,6 +81,7 @@ enum
   PROP_HINT_TEXT,
   PROP_HINT_ACTOR,
   PROP_TEXT,
+  PROP_PROGRESS,
 };
 
 /* signals */
@@ -112,7 +113,21 @@ struct _StEntryPrivate
   CoglPipeline *text_shadow_material;
   gfloat        shadow_width;
   gfloat        shadow_height;
+
+  gdouble       progress_fraction;
+  gdouble       progress_pulse_position;
+  guint         progress_timeout;
+  gboolean      progress_visible;
+  gboolean      progress_pulse_way_back;
+  ClutterColor  progress_color;
+  gfloat        progress_height;
+  CoglPipeline *progress_pipeline;
 };
+
+#define PROGRESS_PULSE_FRACTION 0.2
+#define PROGRESS_PULSE_STEP 0.02
+#define PROGRESS_PULSE_INTERVAL_MS 30
+#define PROGRESS_DEFAULT_HEIGHT 2.0
 
 static guint entry_signals[LAST_SIGNAL] = { 0, };
 
@@ -140,6 +155,10 @@ st_entry_set_property (GObject      *gobject,
 
     case PROP_TEXT:
       st_entry_set_text (entry, g_value_get_string (value));
+      break;
+
+    case PROP_PROGRESS:
+      st_entry_set_progress (entry, g_value_get_double (value));
       break;
 
     default:
@@ -172,6 +191,10 @@ st_entry_get_property (GObject    *gobject,
 
     case PROP_TEXT:
       g_value_set_string (value, clutter_text_get_text (CLUTTER_TEXT (priv->entry)));
+      break;
+
+    case PROP_PROGRESS:
+      g_value_set_double (value, priv->progress_fraction);
       break;
 
     default:
@@ -230,6 +253,13 @@ st_entry_dispose (GObject *object)
   ClutterSeat *seat;
 
   cogl_clear_object (&priv->text_shadow_material);
+  cogl_clear_object (&priv->progress_pipeline);
+
+  if (priv->progress_timeout)
+    {
+      g_source_remove (priv->progress_timeout);
+      priv->progress_timeout = 0;
+    }
 
   seat = clutter_backend_get_default_seat (clutter_get_default_backend ());
   keymap = clutter_seat_get_keymap (seat);
@@ -264,6 +294,7 @@ st_entry_style_changed (StWidget *self)
   gdouble size;
 
   cogl_clear_object (&priv->text_shadow_material);
+  cogl_clear_object (&priv->progress_pipeline);
 
   theme_node = st_widget_get_theme_node (self);
 
@@ -278,6 +309,14 @@ st_entry_style_changed (StWidget *self)
 
   if (st_theme_node_lookup_color (theme_node, "selected-color", TRUE, &color))
     clutter_text_set_selected_text_color (CLUTTER_TEXT (priv->entry), &color);
+
+  if (st_theme_node_lookup_color (theme_node, "-st-progress-color", TRUE, &color))
+    priv->progress_color = color;
+  else if (st_theme_node_lookup_color (theme_node, "caret-color", TRUE, &color))
+    priv->progress_color = color;
+
+  if (st_theme_node_lookup_length (theme_node, "-st-progress-height", TRUE, &size))
+    priv->progress_height = size;
 
   _st_set_text_from_style ((ClutterText *)priv->entry, theme_node);
 
@@ -784,6 +823,53 @@ st_entry_paint (ClutterActor        *actor,
         }
     }
 
+  if (priv->progress_visible)
+    {
+      CoglFramebuffer *framebuffer =
+        clutter_paint_context_get_framebuffer (paint_context);
+      ClutterActorBox content_box, actor_box;
+      gfloat bar_x, bar_y, bar_width, bar_height;
+      gfloat total_width;
+
+      clutter_actor_get_allocation_box (actor, &actor_box);
+      st_theme_node_get_content_box (theme_node, &actor_box, &content_box);
+      total_width = content_box.x2 - content_box.x1;
+      bar_height = priv->progress_height;
+      bar_y = content_box.y2 - bar_height;
+
+      if (priv->progress_timeout)
+        {
+          bar_width = PROGRESS_PULSE_FRACTION * total_width;
+          bar_x = content_box.x1 + priv->progress_pulse_position * (total_width - bar_width);
+        }
+      else
+        {
+          bar_x = content_box.x1;
+          bar_width = priv->progress_fraction * total_width;
+        }
+
+      if (bar_width > 0)
+        {
+          if (priv->progress_pipeline == NULL)
+            {
+              CoglContext *ctx =
+                clutter_backend_get_cogl_context (clutter_get_default_backend ());
+              priv->progress_pipeline = cogl_pipeline_new (ctx);
+            }
+
+          cogl_pipeline_set_color4ub (priv->progress_pipeline,
+                                      priv->progress_color.red,
+                                      priv->progress_color.green,
+                                      priv->progress_color.blue,
+                                      priv->progress_color.alpha);
+          cogl_framebuffer_draw_rectangle (framebuffer,
+                                           priv->progress_pipeline,
+                                           bar_x, bar_y,
+                                           bar_x + bar_width,
+                                           bar_y + bar_height);
+        }
+    }
+
   /* Since we paint the background ourselves, chain to the parent class
    * of StWidget, to avoid painting it twice.
    * This is needed as we still want to paint children.
@@ -844,6 +930,20 @@ st_entry_class_init (StEntryClass *klass)
                                "Text of the entry",
                                NULL, G_PARAM_READWRITE);
   g_object_class_install_property (gobject_class, PROP_TEXT, pspec);
+
+  /**
+   * StEntry:progress:
+   *
+   * A value between 0.0 and 1.0 indicating the fraction of work completed.
+   * Setting this to a value greater than 0.0 will display a progress bar
+   * inside the entry. Setting it to 0.0 hides the progress bar.
+   */
+  pspec = g_param_spec_double ("progress",
+                                "Progress",
+                                "Progress fraction",
+                                0.0, 1.0, 0.0,
+                                G_PARAM_READWRITE);
+  g_object_class_install_property (gobject_class, PROP_PROGRESS, pspec);
 
   /* signals */
   /**
@@ -906,6 +1006,9 @@ st_entry_init (StEntry *entry)
   priv->text_shadow_material = NULL;
   priv->shadow_width = -1.;
   priv->shadow_height = -1.;
+
+  priv->progress_height = PROGRESS_DEFAULT_HEIGHT;
+  priv->progress_color = (ClutterColor) { 0x4a, 0x90, 0xd9, 0xff };
 
   clutter_actor_add_child (CLUTTER_ACTOR (entry), priv->entry);
   clutter_actor_set_reactive ((ClutterActor *) entry, TRUE);
@@ -1237,6 +1340,145 @@ st_entry_get_hint_actor (StEntry *entry)
 
   priv = entry->priv;
   return priv->hint_actor;
+}
+
+static gboolean
+progress_pulse_cb (gpointer data)
+{
+  StEntry *entry = ST_ENTRY (data);
+  StEntryPrivate *priv = entry->priv;
+
+  if (priv->progress_pulse_way_back)
+    {
+      priv->progress_pulse_position -= PROGRESS_PULSE_STEP;
+
+      if (priv->progress_pulse_position < 0.0)
+        {
+          priv->progress_pulse_position = 0.0;
+          priv->progress_pulse_way_back = FALSE;
+        }
+    }
+  else
+    {
+      priv->progress_pulse_position += PROGRESS_PULSE_STEP;
+
+      if (priv->progress_pulse_position > 1.0)
+        {
+          priv->progress_pulse_position = 1.0;
+          priv->progress_pulse_way_back = TRUE;
+        }
+    }
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (entry));
+  return G_SOURCE_CONTINUE;
+}
+
+/**
+ * st_entry_set_progress:
+ * @entry: a #StEntry
+ * @fraction: value between 0.0 and 1.0
+ *
+ * Sets the progress fraction to display in a bar inside the entry.
+ * A value greater than 0.0 will display a proportional progress bar.
+ * Setting this to 0.0 will hide the progress bar. This also stops
+ * any active busy pulse animation.
+ */
+void
+st_entry_set_progress (StEntry *entry,
+                       gdouble  fraction)
+{
+  StEntryPrivate *priv;
+
+  g_return_if_fail (ST_IS_ENTRY (entry));
+
+  priv = entry->priv;
+  fraction = CLAMP (fraction, 0.0, 1.0);
+
+  if (priv->progress_timeout)
+    {
+      g_source_remove (priv->progress_timeout);
+      priv->progress_timeout = 0;
+    }
+
+  priv->progress_fraction = fraction;
+  priv->progress_visible = (fraction > 0.0);
+
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (entry));
+  g_object_notify (G_OBJECT (entry), "progress");
+}
+
+/**
+ * st_entry_get_progress:
+ * @entry: a #StEntry
+ *
+ * Gets the current progress fraction.
+ *
+ * Returns: the progress fraction between 0.0 and 1.0
+ */
+gdouble
+st_entry_get_progress (StEntry *entry)
+{
+  g_return_val_if_fail (ST_IS_ENTRY (entry), 0.0);
+
+  return entry->priv->progress_fraction;
+}
+
+/**
+ * st_entry_start_busy:
+ * @entry: a #StEntry
+ *
+ * Starts a pulsing progress bar animation inside the entry.
+ * The bar bounces back and forth to indicate ongoing activity.
+ * Call st_entry_end_busy() to stop the animation.
+ */
+void
+st_entry_start_busy (StEntry *entry)
+{
+  StEntryPrivate *priv;
+
+  g_return_if_fail (ST_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  if (priv->progress_timeout)
+    return;
+
+  priv->progress_visible = TRUE;
+  priv->progress_pulse_position = 0.0;
+  priv->progress_pulse_way_back = FALSE;
+  priv->progress_fraction = 0.0;
+
+  priv->progress_timeout =
+    clutter_threads_add_timeout (PROGRESS_PULSE_INTERVAL_MS,
+                                 progress_pulse_cb,
+                                 entry);
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (entry));
+}
+
+/**
+ * st_entry_end_busy:
+ * @entry: a #StEntry
+ *
+ * Stops the pulsing progress bar animation started by
+ * st_entry_start_busy().
+ */
+void
+st_entry_end_busy (StEntry *entry)
+{
+  StEntryPrivate *priv;
+
+  g_return_if_fail (ST_IS_ENTRY (entry));
+
+  priv = entry->priv;
+
+  if (priv->progress_timeout)
+    {
+      g_source_remove (priv->progress_timeout);
+      priv->progress_timeout = 0;
+    }
+
+  priv->progress_visible = FALSE;
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (entry));
 }
 
 /******************************************************************************/
