@@ -3,7 +3,7 @@
 const { GLib, Gio, Cinnamon, Meta, Cvc } = imports.gi;
 const Main = imports.ui.main;
 const { GestureType } = imports.ui.gestures.gestureTypes;
-const { MprisController } = imports.ui.gestures.mprisController;
+const { getMprisPlayerManager } = imports.misc.mprisPlayer;
 const Magnifier = imports.ui.magnifier;
 
 const touchpad_settings = new  Gio.Settings({ schema_id: "org.cinnamon.desktop.peripherals.touchpad" });
@@ -65,10 +65,7 @@ var cleanup = () => {
         mixer = null;
     }
 
-    if (mpris_controller != null) {
-        mpris_controller.shutdown();
-        mpris_controller = null;
-    }
+    mpris_manager = null;
 }
 
 var BaseAction = class {
@@ -438,13 +435,13 @@ var VolumeAction = class extends BaseAction {
     }
 }
 
-var mpris_controller = null;
+var mpris_manager = null;
 var init_mpris_controller = () => {
-    if (mpris_controller != null) {
+    if (mpris_manager != null) {
         return;
     }
 
-    mpris_controller = new MprisController();
+    mpris_manager = getMprisPlayerManager();
 }
 
 var MediaAction = class extends BaseAction {
@@ -453,22 +450,22 @@ var MediaAction = class extends BaseAction {
     }
 
     do_action(direction, percentage, time) {
-        const player = mpris_controller.get_player();
+        const player = mpris_manager.getBestPlayer();
 
         if (player == null) {
             return;
         }
 
         if (this.definition.action === "MEDIA_PLAY_PAUSE") {
-            player.toggle_play()
+            player.playPause();
         }
         else
         if (this.definition.action === "MEDIA_NEXT") {
-            player.next_track();
+            player.next();
         }
         else
         if (this.definition.action === "MEDIA_PREVIOUS") {
-            player.previous_track();
+            player.previous();
         }
     }
 }
