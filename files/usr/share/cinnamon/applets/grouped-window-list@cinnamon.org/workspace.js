@@ -235,7 +235,7 @@ var Workspace = class Workspace {
     shouldWindowBeAdded(metaWindow) {
         return (this.state.settings.showAllWorkspaces
                 || metaWindow.is_on_all_workspaces()
-                || (metaWindow.get_workspace().index() === this.metaWorkspace.index()))
+                || (metaWindow.get_workspace() === this.metaWorkspace))
         && Main.isInteresting(metaWindow)
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
