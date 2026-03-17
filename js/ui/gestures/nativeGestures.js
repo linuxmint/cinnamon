@@ -139,6 +139,8 @@ var TouchpadSwipeGesture = class {
         this._percentage += (delta / this._baseDistance) * 100;
         this._percentage = Math.max(0, this._percentage);
 
+        const handling = this._state === TouchpadState.HANDLING;
+
         switch (phase) {
         case Clutter.TouchpadGesturePhase.BEGIN:
         case Clutter.TouchpadGesturePhase.UPDATE:
@@ -164,7 +166,7 @@ var TouchpadSwipeGesture = class {
             break;
         }
 
-        return this._state === TouchpadState.HANDLING
+        return handling
             ? Clutter.EVENT_STOP
             : Clutter.EVENT_PROPAGATE;
     }
@@ -259,6 +261,8 @@ var TouchpadPinchGesture = class {
         }
         this._percentage = Math.max(0, this._percentage);
 
+        const handling = this._state === TouchpadState.HANDLING;
+
         switch (phase) {
         case Clutter.TouchpadGesturePhase.BEGIN:
         case Clutter.TouchpadGesturePhase.UPDATE:
@@ -284,7 +288,7 @@ var TouchpadPinchGesture = class {
             break;
         }
 
-        return this._state === TouchpadState.HANDLING
+        return handling
             ? Clutter.EVENT_STOP
             : Clutter.EVENT_PROPAGATE;
     }
