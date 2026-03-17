@@ -47,10 +47,6 @@ typedef struct _StThemeClass StThemeClass;
 
 GType  st_theme_get_type (void) G_GNUC_CONST;
 
-StTheme *st_theme_new (const char *application_stylesheet,
-                       const char *theme_stylesheet,
-                       const char *default_stylesheet);
-
 gboolean  st_theme_load_stylesheet        (StTheme *theme, const char *path, GError **error);
 void      st_theme_unload_stylesheet      (StTheme *theme, const char *path);
 GSList   *st_theme_get_custom_stylesheets (StTheme *theme);
