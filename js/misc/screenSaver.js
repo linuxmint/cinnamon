@@ -122,8 +122,11 @@ var ScreenSaverService = class ScreenSaverService {
 };
 
 /**
- * Legacy proxy for backward compatibility.
  * Creates a proxy to the DBus service (which may be internal or external).
+ * (Deprecated as of 6.8)
+ * Extensions should connect to Main.screensaverController. Continuing to
+ * use this is still reliable, but is not as immediately up-to-date when the
+ * internal screensaver is in use.
  */
 function ScreenSaverProxy() {
     var self = new Gio.DBusProxy({
@@ -136,22 +139,6 @@ function ScreenSaverProxy() {
                  Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES)
     });
     self.init(null);
-    self.screenSaverActive = false;
-
-    self.connectSignal('ActiveChanged', function(proxy, senderName, [isActive]) {
-        self.screenSaverActive = isActive;
-    });
-    self.connect('notify::g-name-owner', function() {
-        if (self.g_name_owner) {
-            self.GetActiveRemote(function(result, excp) {
-                if (result) {
-                    let [isActive] = result;
-                    self.screenSaverActive = isActive;
-                }
-            });
-        } else
-            self.screenSaverActive = false;
-    });
 
     return self;
 }

@@ -28,6 +28,8 @@ var ScreensaverController = class {
             global.settings.set_boolean("session-locked-state", false);
         }
 
+        this.#screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
+
         // The internal screensaver is the only option for wayland sessions. X11 sessions can use either
         // the internal one or cinnamon-screensaver (>= 6.7).
         if (Meta.is_wayland_compositor() || global.settings.get_boolean('internal-screensaver-enabled')) {
@@ -53,6 +55,26 @@ var ScreensaverController = class {
             this.#screenShield.connect('unlocked', () => {
                 this.#locked = false;
                 this.emit('locked-changed', false);
+            });
+        } else {
+            this.#screenSaverProxy.connectSignal('ActiveChanged', (proxy, senderName, [isActive]) => {
+                this.#locked = isActive;
+                this.emit('locked-changed', isActive);
+            });
+
+            this.#screenSaverProxy.connect('notify::g-name-owner', () => {
+                if (this.#screenSaverProxy.g_name_owner) {
+                    this.#screenSaverProxy.GetActiveRemote((result, error) => {
+                        if (result) {
+                            let [isActive] = result;
+                            this.#locked = isActive;
+                            this.emit('locked-changed', isActive);
+                        }
+                    });
+                } else {
+                    this.#locked = false;
+                    this.emit('locked-changed', false);
+                }
             });
         }
     }
@@ -85,9 +107,6 @@ var ScreensaverController = class {
             this.#screenShield.lock(false, awayMessage);
             return;
         }
-
-        if (this.#screenSaverProxy === null)
-            this.#screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
         this.#screenSaverProxy.LockRemote(awayMessage || "");
     }
