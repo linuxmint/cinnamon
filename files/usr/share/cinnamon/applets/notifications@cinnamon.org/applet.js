@@ -144,7 +144,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             return;
         }
 
-        notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) { // This notification is already listed.
             if (notification._destroyed) {
