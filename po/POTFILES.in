@@ -12,7 +12,6 @@ data/cinnamon2d.desktop.in.in
 # data/org.cinnamon.gestures.gschema.xml
 # data/org.cinnamon.gschema.xml
 
-src/cinnamon-touchegg-client.c
 src/cinnamon-doc-system.c
 src/cinnamon-tray-manager.c
 src/cinnamon-window-tracker.c
@@ -107,6 +106,7 @@ src/cinnamon-recorder.c
 src/cinnamon-screen.c
 src/cinnamon-screenshot.c
 src/cinnamon-secure-text-buffer.c
+src/cinnamon-touchegg-client.c
 
 files/usr/share/cinnamon/cinnamon-desktop-editor/directory-editor.ui
 files/usr/share/cinnamon/cinnamon-desktop-editor/launcher-editor.ui
@@ -200,10 +200,13 @@ js/ui/expoThumbnail.js
 js/ui/extension.js
 js/ui/extensionSystem.js
 js/ui/flashspot.js
-js/ui/gestures/ToucheggTypes.js
+js/ui/gestures/gestureTypes.js
 js/ui/gestures/actions.js
 js/ui/gestures/gesturesManager.js
 js/ui/gestures/mprisController.js
+js/ui/gestures/nativeGestures.js
+js/ui/gestures/nativeGestureSource.js
+js/ui/gestures/toucheggGestureSource.js
 js/ui/hotCorner.js
 js/ui/ibusCandidatePopup.js
 js/ui/iconGrid.js

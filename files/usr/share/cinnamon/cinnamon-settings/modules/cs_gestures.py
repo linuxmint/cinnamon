@@ -90,8 +90,15 @@ class Module:
         self.disabled_box = None
 
     def on_module_selected(self):
-        installed = GLib.find_program_in_path("touchegg")
-        alive = self.test_daemon_alive()
+        self.is_wayland = util.get_session_type() == "wayland"
+
+        # On X11, check for touchegg; on Wayland, native gestures are used
+        if self.is_wayland:
+            installed = True
+            alive = True
+        else:
+            installed = GLib.find_program_in_path("touchegg")
+            alive = self.test_daemon_alive()
 
         if self.gesture_settings is None:
             self.gesture_settings = Gio.Settings(schema_id=SCHEMA)
@@ -263,21 +270,24 @@ class Module:
         self.disabled_retry_button.set_visible(False)
         self.disabled_page_disable_button.set_visible(False)
 
-        if not installed:
-            text = _("The touchegg package must be installed for gesture support.")
-            self.disabled_retry_button.show()
-        elif not self.gesture_settings.get_boolean("enabled"):
+        text = ""
+        if not self.gesture_settings.get_boolean("enabled"):
             self.disabled_page_switch.set_visible(True)
             text = _("Gestures are disabled")
-        elif not alive:
-            text = _("The Touchegg service is not running")
-            if self.gesture_settings.get_boolean("enabled"):
-                self.disabled_page_disable_button.set_visible(True)
-            self.disabled_retry_button.show()
+        elif not self.is_wayland:
+            # X11-specific: check for touchegg
+            if not installed:
+                text = _("The touchegg package must be installed for gesture support.")
+                self.disabled_retry_button.show()
+            elif not alive:
+                text = _("The Touchegg service is not running")
+                if self.gesture_settings.get_boolean("enabled"):
+                    self.disabled_page_disable_button.set_visible(True)
+                self.disabled_retry_button.show()
 
         self.sidePage.stack.set_transition_type(Gtk.StackTransitionType.NONE)
 
-        if not enabled or not alive or not installed:
+        if not enabled or (not self.is_wayland and (not alive or not installed)):
             self.disabled_label.set_markup(f"<big><b>{text}</b></big>")
             page = "disabled"
         else:

@@ -2,13 +2,13 @@
 
 const { GLib, Gio, Cinnamon, Meta, Cvc } = imports.gi;
 const Main = imports.ui.main;
-const { GestureType } = imports.ui.gestures.ToucheggTypes;
+const { GestureType } = imports.ui.gestures.gestureTypes;
 const { MprisController } = imports.ui.gestures.mprisController;
 const Magnifier = imports.ui.magnifier;
 
 const touchpad_settings = new  Gio.Settings({ schema_id: "org.cinnamon.desktop.peripherals.touchpad" });
 
-const CONTINUOUS_ACTION_POLL_INTERVAL = 50 * 1000;
+const CONTINUOUS_ACTION_POLL_INTERVAL = 50; // milliseconds
 
 var make_action = (settings, definition, device) => {
     var threshold = 100;
@@ -473,8 +473,6 @@ var MediaAction = class extends BaseAction {
     }
 }
 
-const ZOOM_SAMPLE_RATE = 20 * 1000 // 20 ms; g_get_monotonic_time() returns microseconds
-
 var ZoomAction = class extends BaseAction {
     constructor(definition, device, threshold) {
         super(definition, device, threshold);
@@ -484,7 +482,7 @@ var ZoomAction = class extends BaseAction {
 
         if (definition.custom_value !== "") {
             try {
-                let adjust = parseInt(definition.custom_value) * 1000;
+                let adjust = parseInt(definition.custom_value);
                 this.poll_interval = this.poll_interval + adjust;
             } catch (e) {}
         }
