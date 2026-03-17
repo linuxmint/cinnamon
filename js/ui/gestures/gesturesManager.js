@@ -2,7 +2,7 @@
 
 const { Gio, Meta } = imports.gi;
 const SignalManager = imports.misc.signalManager;
-const ScreenSaver = imports.misc.screenSaver;
+const Main = imports.ui.main;
 
 const actions = imports.ui.gestures.actions;
 const {
@@ -86,7 +86,6 @@ var GesturesManager = class {
     constructor(wm) {
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
-        this.screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
         this.current_gesture = null;
         this.live_actions = new Map();
 
@@ -236,7 +235,7 @@ var GesturesManager = class {
             this.current_gesture = null;
         }
 
-        if (this.screenSaverProxy.screenSaverActive) {
+        if (Main.screensaverController?.locked) {
             debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
             return;
         }
