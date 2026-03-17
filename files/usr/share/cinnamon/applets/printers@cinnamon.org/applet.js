@@ -187,28 +187,6 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                 this.out1 = stdout.trim().split('\n');
             }
 
-            //Update icon
-            Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -l', (stdout, stderr, exitCode) => {
-                if(exitCode) {
-                    this.handleError(stderr);
-                    this.updating = false;
-                    return;
-                }
-
-                if(stdout.trim()) {
-                    this.set_applet_tooltip(stdout.trim().split('\n')[1].trim());
-                } else {
-                    this.set_applet_tooltip(_("Printers"));
-                }
-                if(this.printWarning) {
-                    this.set_applet_icon_symbolic_name('xsi-printer-warning');
-                } else if(this.jobs.length > 0) {
-                    this.set_applet_icon_symbolic_name('xsi-printer-printing');
-                } else {
-                    this.set_applet_icon_symbolic_name('xsi-printer');
-                }
-            });
-
             //Check default printer and add printers
             Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -d', (stdout, stderr, exitCode) => {
                 if(exitCode) {
@@ -328,6 +306,30 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
                         }
 
                         //Update icon
+                        Util.spawnCommandLineAsyncIO('/usr/bin/lpstat -l', (stdout, stderr, exitCode) => {
+                            if(exitCode) {
+                                if(stderr.length>70) {
+                                    stderr = stderr.slice(0, 70) + "...";
+                                }
+                                this.set_applet_tooltip(stderr.trim());
+                                return;
+                            }
+
+                            if(stdout.trim()) {
+                                this.set_applet_tooltip(stdout.trim().split('\n')[1].trim());
+                            } else {
+                                this.set_applet_tooltip(_("Printers"));
+                            }
+                            if(this.printWarning) {
+                                this.set_applet_icon_symbolic_name('xsi-printer-warning');
+                            } else if(this.jobs.length > 0) {
+                                this.set_applet_icon_symbolic_name('xsi-printer-printing');
+                            } else {
+                                this.set_applet_icon_symbolic_name('xsi-printer');
+                            }
+                        });
+                        
+                        //Update job count
                         if(this.jobs.length > 0) {
                             this.set_applet_label(this.jobs.length.toString());
                         } else {
