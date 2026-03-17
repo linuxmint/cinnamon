@@ -139,7 +139,7 @@ var WindowOpAction = class extends BaseAction {
         const window = global.display.get_focus_window();
 
         if (window == null) {
-            global.logWarning("WorkspaceSwitchAction: no focus window");
+            global.logWarning("WindowOpAction: no focus window");
             return
         }
 

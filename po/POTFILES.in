@@ -203,7 +203,6 @@ js/ui/flashspot.js
 js/ui/gestures/gestureTypes.js
 js/ui/gestures/actions.js
 js/ui/gestures/gesturesManager.js
-js/ui/gestures/mprisController.js
 js/ui/gestures/nativeGestures.js
 js/ui/gestures/nativeGestureSource.js
 js/ui/gestures/toucheggGestureSource.js
