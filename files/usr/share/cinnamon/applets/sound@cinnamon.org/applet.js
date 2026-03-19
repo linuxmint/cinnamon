@@ -899,7 +899,10 @@ class Player extends PopupMenu.PopupMenuSection {
             return;
         }
 
-        this.coverBox.remove_actor(this.cover);
+        this.coverBox.get_children().forEach(child => { //Fix bug where it would render the previous tracks under the current one
+            if (child !== this.trackInfo)
+                this.coverBox.remove_actor(child);
+        });
 
         // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
         // (and move the player controls as a result).
