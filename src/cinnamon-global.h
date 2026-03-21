@@ -85,7 +85,8 @@ typedef enum {
   CINNAMON_CURSOR_RESIZE_TOP_RIGHT,
   CINNAMON_CURSOR_RESIZE_TOP_LEFT,
   CINNAMON_CURSOR_CROSSHAIR,
-  CINNAMON_CURSOR_TEXT
+  CINNAMON_CURSOR_TEXT,
+  CINNAMON_CURSOR_GRABBING
 } CinnamonCursor;
 
 void    cinnamon_global_set_cursor              (CinnamonGlobal         *global,

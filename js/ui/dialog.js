@@ -45,7 +45,7 @@ class Dialog extends St.Widget {
             vertical: true
         });
 
-        // modal dialogs are fixed width and grow vertically; set the request
+        // Dialogs are fixed width and grow vertically; set the request
         // mode accordingly so wrapped labels are handled correctly during
         // size requests.
         this._dialog.set_offscreen_redirect(Clutter.OffscreenRedirect.ALWAYS);

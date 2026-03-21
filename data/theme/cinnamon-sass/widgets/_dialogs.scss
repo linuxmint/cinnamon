@@ -194,3 +194,10 @@
     }
   }
 }
+
+// Popup dialog (non-modal, draggable)
+.popup-dialog {
+  .dialog {
+    box-shadow: 0 0 3px 2px transparentize($accent_bg_color, 0.6);
+  }
+}
