@@ -37,7 +37,7 @@ const Meta = imports.gi.Meta;
 
 const Dialog = imports.ui.dialog;
 const Main = imports.ui.main;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 const PopupMenu = imports.ui.popupMenu;
 const UserWidget = imports.ui.userWidget;
@@ -45,8 +45,6 @@ const Util = imports.misc.util;
 
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
-
-const MAX_MODAL_RETRIES = 2;
 
 var RootUser = class {
     constructor(name) {
@@ -115,7 +113,7 @@ var AdminUser = class {
 
 var AuthenticationDialog = GObject.registerClass({
     Signals: { 'done': { param_types: [GObject.TYPE_BOOLEAN] } }
-}, class AuthenticationDialog extends ModalDialog.ModalDialog {
+}, class AuthenticationDialog extends PopupDialog.PopupDialog {
     _init(actionId, description, cookie, userNames) {
         super._init({ styleClass: 'prompt-dialog' });
 
@@ -127,8 +125,6 @@ var AuthenticationDialog = GObject.registerClass({
         this._user = null;
         this._visibleAvatar = null;
         this._adminUsers = [];
-
-        this._modalRetryCount = 0;
 
         this._sessionCompletedId = 0;
         this._sessionRequestId = 0;
@@ -356,29 +352,10 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _ensureOpen(focusEntry=false) {
-        // NOTE: ModalDialog.open() is safe to call if the dialog is
-        // already open - it just returns true without side-effects
-        if (!this.open(global.get_current_time())) {
-            // This can fail if e.g. unable to get input grab (double-click admin:// folder in nemo).
-            if (this._modalRetryCount < MAX_MODAL_RETRIES) {
-                this._modalRetryCount++;
-                GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 1, () => {
-                    this._ensureOpen(focusEntry);
-                    return GLib.SOURCE_REMOVE;
-                });
+        this.open();
 
-                return;
-            }
-
-            log('polkitAuthenticationAgent: Failed to show modal dialog.' +
-                ' Dismissing authentication request for action-id ' + this.actionId +
-                ' cookie ' + this._cookie);
-            this._emitDone(true);
-        } else {
-            if (focusEntry) {
-                this._passwordEntry.grab_key_focus();
-            }
-        }
+        if (focusEntry)
+            this._passwordEntry.grab_key_focus();
     }
 
     _emitDone(dismissed) {
@@ -515,7 +492,7 @@ var AuthenticationDialog = GObject.registerClass({
         }
 
         let resetDialog = () => {
-            if (this.state != ModalDialog.State.OPENED)
+            if (this.state != PopupDialog.State.OPENED)
                 return;
 
             this._passwordEntry.hide();
@@ -614,7 +591,7 @@ var AuthenticationAgent = class {
     }
 
     _completeRequest(dismissed) {
-        this._currentDialog.close(global.get_current_time());
+        this._currentDialog.close();
         this._currentDialog = null;
 
         this._native.complete(dismissed);
