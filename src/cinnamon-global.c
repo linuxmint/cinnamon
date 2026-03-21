@@ -673,6 +673,9 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
     case CINNAMON_CURSOR_TEXT:
       ret_curs = META_CURSOR_TEXT;
       break;
+    case CINNAMON_CURSOR_GRABBING:
+      ret_curs = META_CURSOR_GRABBING;
+      break;
     default:
       g_return_if_reached ();
     }
@@ -883,6 +886,17 @@ ui_scaling_factor_changed (MetaSettings *settings,
 }
 
 
+static void
+entry_cursor_func (StEntry  *entry,
+                   gboolean  use_ibeam,
+                   gpointer  user_data)
+{
+  CinnamonGlobal *global = user_data;
+
+  meta_display_set_cursor (global->meta_display,
+                           use_ibeam ? META_CURSOR_TEXT : META_CURSOR_DEFAULT);
+}
+
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
                           MetaPlugin  *plugin)
@@ -907,6 +921,7 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   global->stage = CLUTTER_STAGE (meta_get_stage_for_display (global->meta_display));
   st_clipboard_set_selection (meta_display_get_selection (global->meta_display));
+  st_entry_set_cursor_func (entry_cursor_func, global);
 
   g_signal_connect (global->stage, "notify::width",
                     G_CALLBACK (global_stage_notify_width), global);
