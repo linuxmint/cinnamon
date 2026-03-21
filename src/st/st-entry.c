@@ -109,6 +109,7 @@ struct _StEntryPrivate
 
   gboolean      hint_visible;
   gboolean      capslock_warning_shown;
+  gboolean      has_ibeam;
 
   CoglPipeline *text_shadow_material;
   gfloat        shadow_width;
@@ -878,6 +879,54 @@ st_entry_paint (ClutterActor        *actor,
   parent_class->paint (actor, paint_context);
 }
 
+static StEntryCursorFunc cursor_func = NULL;
+static gpointer         cursor_func_data = NULL;
+
+/**
+ * st_entry_set_cursor_func: (skip)
+ *
+ * Set a callback for changing the mouse cursor when hovering over the entry.
+ */
+void
+st_entry_set_cursor_func (StEntryCursorFunc func,
+                          gpointer          data)
+{
+  cursor_func = func;
+  cursor_func_data = data;
+}
+
+static void
+st_entry_set_cursor (StEntry  *entry,
+                     gboolean  use_ibeam)
+{
+  if (cursor_func)
+    cursor_func (entry, use_ibeam, cursor_func_data);
+
+  ST_ENTRY_PRIV (entry)->has_ibeam = use_ibeam;
+}
+
+static gboolean
+st_entry_enter_event (ClutterActor         *actor,
+                      ClutterCrossingEvent *event)
+{
+  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
+
+  if (event->source == priv->entry &&
+      event->related != NULL)
+    st_entry_set_cursor (ST_ENTRY (actor), TRUE);
+
+  return CLUTTER_ACTOR_CLASS (st_entry_parent_class)->enter_event (actor, event);
+}
+
+static gboolean
+st_entry_leave_event (ClutterActor         *actor,
+                      ClutterCrossingEvent *event)
+{
+  st_entry_set_cursor (ST_ENTRY (actor), FALSE);
+
+  return CLUTTER_ACTOR_CLASS (st_entry_parent_class)->leave_event (actor, event);
+}
+
 static void
 st_entry_class_init (StEntryClass *klass)
 {
@@ -896,6 +945,8 @@ st_entry_class_init (StEntryClass *klass)
   actor_class->paint = st_entry_paint;
 
   actor_class->captured_event = st_entry_captured_event;
+  actor_class->enter_event = st_entry_enter_event;
+  actor_class->leave_event = st_entry_leave_event;
   actor_class->key_press_event = st_entry_key_press_event;
   actor_class->key_focus_in = st_entry_key_focus_in;
 
