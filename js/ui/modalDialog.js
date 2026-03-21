@@ -111,6 +111,8 @@ class ModalDialog extends BaseDialog.BaseDialog {
     _fadeOpen() {
         this._monitorConstraint.index = global.display.get_current_monitor();
 
+        Main.uiGroup.set_child_above_sibling(this, null);
+
         if (this._lightbox)
             this._lightbox.lightOn();
 
