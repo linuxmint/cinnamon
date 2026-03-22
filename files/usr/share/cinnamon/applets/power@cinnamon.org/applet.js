@@ -3,10 +3,10 @@ const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
+const LoginManager = imports.misc.loginManager;
 const PowerUtils = imports.misc.powerUtils;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
-const UPowerGlib = imports.gi.UPowerGlib;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
@@ -336,6 +336,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 this._devicesChanged();
             }));
         }, null);
+
+        this._loginManager = LoginManager.getLoginManager();
+        this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
+            if (!aboutToSuspend)
+                this._devicesChanged();
+        });
 
         this.set_show_label_in_vertical_panels(false);
     }

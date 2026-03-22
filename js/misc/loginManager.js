@@ -93,6 +93,7 @@ var LoginManagerSystemd = class {
                 '/org/freedesktop/login1'
             );
 
+            this._connectPrepareForSleep();
             this._getCurrentSession();
         } catch (e) {
             global.logError('LoginManager: Failed to connect to logind: ' + e.message);
@@ -175,14 +176,13 @@ var LoginManagerSystemd = class {
         }
     }
 
-    connectPrepareForSleep(callback) {
-        if (!this._managerProxy) {
-            return null;
-        }
+    _connectPrepareForSleep() {
+        if (!this._managerProxy)
+            return;
 
-        return this._managerProxy.connectSignal('PrepareForSleep', (proxy, sender, [aboutToSuspend]) => {
+        this._managerProxy.connectSignal('PrepareForSleep', (proxy, sender, [aboutToSuspend]) => {
             _log(`LoginManager: PrepareForSleep signal received (aboutToSuspend=${aboutToSuspend})`);
-            callback(aboutToSuspend);
+            this.emit('prepare-for-sleep', aboutToSuspend);
         });
     }
 
@@ -294,11 +294,6 @@ var LoginManagerConsoleKit = class {
             global.logError('LoginManager: Failed to connect to ConsoleKit session: ' + e.message);
             global.logError('LoginManager: Automatic unlocking from greeter will not work');
         }
-    }
-
-    connectPrepareForSleep(callback) {
-        // ConsoleKit doesn't have PrepareForSleep
-        return null;
     }
 
     inhibit(reason, callback) {

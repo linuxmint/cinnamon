@@ -183,7 +183,7 @@ var ScreenShield = GObject.registerClass({
         this._lastMotionY = -1;
 
         this._loginManager = LoginManager.getLoginManager();
-        this._loginManager.connectPrepareForSleep(this._prepareForSleep.bind(this));
+        this._loginManager.connect('prepare-for-sleep', this._prepareForSleep.bind(this));
         this._syncInhibitor();
 
         this._loginManager.connect('lock', this._onSessionLock.bind(this));
