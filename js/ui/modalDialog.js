@@ -23,15 +23,13 @@ const Main = imports.ui.main;
 
 const Gettext = imports.gettext;
 
-const FADE_OUT_DIALOG_TIME = 1000;
-
 var State = BaseDialog.State;
 
 /**
  * #ModalDialog:
  * @short_description: A generic object that displays a modal dialog
  * @state (ModalDialog.State): The state of the modal dialog, which may be
- * `ModalDialog.State.OPENED`, `CLOSED`, `OPENING`, `CLOSING` or `FADED_OUT`.
+ * `ModalDialog.State.OPENED`, `CLOSED`, `OPENING` or `CLOSING`.
  * @contentLayout (St.BoxLayout): The box containing the contents of the modal
  * dialog (excluding the buttons)
  *
@@ -218,41 +216,6 @@ class ModalDialog extends BaseDialog.BaseDialog {
         return true;
     }
 
-    /**
-     * _fadeOutDialog:
-     * @timestamp (int): (optional) timestamp optionally used to associate the
-     * call with a specific user initiated event
-     *
-     * This method is like %close(), but fades the dialog out much slower,
-     * and leaves the lightbox in place. Once in the faded out state,
-     * the dialog can be brought back by an open call, or the lightbox
-     * can be dismissed by a close call.
-     *
-     * The main point of this method is to give some indication to the user
-     * that the dialog response has been acknowledged but will take a few
-     * moments before being processed.
-     *
-     * e.g., if a user clicked "Log Out" then the dialog should go away
-     * immediately, but the lightbox should remain until the logout is
-     * complete.
-     */
-     _fadeOutDialog(timestamp) {
-        if (this.state == State.CLOSED || this.state == State.CLOSING)
-            return;
-
-        if (this.state == State.FADED_OUT)
-            return;
-
-        this.popModal(timestamp);
-        this.dialogLayout.ease({
-            opacity: 0,
-            duration: FADE_OUT_DIALOG_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
-                this._setState(State.FADED_OUT);
-            }
-        });
-    }
 });
 
 /**

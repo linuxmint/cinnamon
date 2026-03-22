@@ -39,15 +39,26 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this._windowFocusChangedId = 0;
         this._dragCaptureId = 0;
         this._savedKeyFocus = null;
+        this._savedKeyFocusDestroyId = 0;
 
         this.dialogLayout = new Dialog.Dialog(this, params.styleClass);
         this._initDialogLayout(this.dialogLayout);
 
-        this.dialogLayout._dialog.x_align = Clutter.ActorAlign.FILL;
-
         Main.uiGroup.add_actor(this);
 
         this._setupDragging();
+
+        this.connect('destroy', () => {
+            if (this._dragCaptureId)
+                this._endDrag();
+
+            if (this._windowFocusChangedId) {
+                global.display.disconnect(this._windowFocusChangedId);
+                this._windowFocusChangedId = 0;
+            }
+
+            this._clearSavedKeyFocus();
+        });
     }
 
     open() {
@@ -73,10 +84,15 @@ class PopupDialog extends BaseDialog.BaseDialog {
         if (this.state == State.CLOSED || this.state == State.CLOSING)
             return;
 
+        if (this._dragCaptureId)
+            this._endDrag();
+
         if (this._windowFocusChangedId) {
             global.display.disconnect(this._windowFocusChangedId);
             this._windowFocusChangedId = 0;
         }
+
+        this._clearSavedKeyFocus();
 
         Main.layoutManager.untrackChrome(this);
         global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
@@ -103,10 +119,25 @@ class PopupDialog extends BaseDialog.BaseDialog {
         global.set_stage_input_mode(Cinnamon.StageInputMode.FOCUSED);
     }
 
+    _clearSavedKeyFocus() {
+        if (this._savedKeyFocusDestroyId) {
+            this._savedKeyFocus.disconnect(this._savedKeyFocusDestroyId);
+            this._savedKeyFocusDestroyId = 0;
+        }
+        this._savedKeyFocus = null;
+    }
+
     _saveAndClearFocus() {
+        this._clearSavedKeyFocus();
+
         let focus = global.stage.key_focus;
-        if (focus && this.contains(focus))
+        if (focus && this.contains(focus)) {
             this._savedKeyFocus = focus;
+            this._savedKeyFocusDestroyId = focus.connect('destroy', () => {
+                this._savedKeyFocus = null;
+                this._savedKeyFocusDestroyId = 0;
+            });
+        }
 
         global.stage.set_key_focus(null);
     }
@@ -115,8 +146,9 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this._focusStage();
 
         if (this._savedKeyFocus) {
-            this._savedKeyFocus.grab_key_focus();
-            this._savedKeyFocus = null;
+            let actor = this._savedKeyFocus;
+            this._clearSavedKeyFocus();
+            actor.grab_key_focus();
         } else {
             this._grabInitialKeyFocus();
         }
@@ -166,6 +198,11 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this._saveAndClearFocus();
 
         this._dragGrabbed = global.begin_modal(global.get_current_time(), 0);
+        if (!this._dragGrabbed) {
+            this._restoreFocus();
+            return;
+        }
+
         global.display.set_cursor(Meta.Cursor.GRABBING);
 
         this._dragCaptureId = global.stage.connect('captured-event', (stageActor, ev) => {

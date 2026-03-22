@@ -11,7 +11,6 @@ var State = {
     CLOSED: 1,
     OPENING: 2,
     CLOSING: 3,
-    FADED_OUT: 4
 };
 
 var BaseDialog = GObject.registerClass({
