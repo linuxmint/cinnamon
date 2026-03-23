@@ -627,6 +627,9 @@ var InputSourceManager = class {
     }
 
     activateInputSource(is) {
+        if (is === this._currentSource)
+            return;
+
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
