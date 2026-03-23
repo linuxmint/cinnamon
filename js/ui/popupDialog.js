@@ -65,7 +65,10 @@ class PopupDialog extends BaseDialog.BaseDialog {
         if (this.state == State.OPENED || this.state == State.OPENING)
             return true;
 
-        this._centerOnMonitor();
+        if (this.state == State.CLOSING)
+            this.remove_all_transitions();
+        else
+            this._centerOnMonitor();
 
         Main.layoutManager.trackChrome(this, { affectsInputRegion: true });
 
@@ -128,10 +131,9 @@ class PopupDialog extends BaseDialog.BaseDialog {
     }
 
     _saveAndClearFocus() {
-        this._clearSavedKeyFocus();
-
         let focus = global.stage.key_focus;
         if (focus && this.contains(focus)) {
+            this._clearSavedKeyFocus();
             this._savedKeyFocus = focus;
             this._savedKeyFocusDestroyId = focus.connect('destroy', () => {
                 this._savedKeyFocus = null;
@@ -163,6 +165,8 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this.connect('button-press-event', (actor, event) => {
             if (event.get_button() !== 1)
                 return Clutter.EVENT_PROPAGATE;
+
+            Main.uiGroup.set_child_above_sibling(this, null);
 
             let source = event.get_source();
             if (this._isInteractiveActor(source)) {
