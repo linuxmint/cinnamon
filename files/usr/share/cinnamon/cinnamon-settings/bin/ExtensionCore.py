@@ -160,10 +160,12 @@ def sanitize_html(string):
 
 
 class ManageSpicesRow(Gtk.ListBoxRow):
-    def __init__(self, extension_type, metadata, size_groups):
+    def __init__(self, extension_type, metadata, size_groups, use_inline_toggle=False, toggle_callback=None):
         super().__init__()
         self.extension_type = extension_type
         self.metadata = metadata
+        self.use_inline_toggle = use_inline_toggle
+        self.toggle_callback = toggle_callback
 
         self.status_ids = {}
 
@@ -225,16 +227,31 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
         enabled_box = Gtk.Box()
         enabled_box.set_spacing(4)
+        enabled_box.set_halign(Gtk.Align.CENTER)
+        enabled_box.set_valign(Gtk.Align.CENTER)
         size_groups[0].add_widget(enabled_box)
-        self.enabled_image = Gtk.Image.new_from_icon_name('xsi-object-select-symbolic', 2)
-        if self.extension_type == "applet":
-            self.enabled_image.set_tooltip_text(_("This applet is currently enabled"))
-        elif self.extension_type == "desklet":
-            self.enabled_image.set_tooltip_text(_("This desklet is currently enabled"))
-        elif self.extension_type == "extension":
-            self.enabled_image.set_tooltip_text(_("This extension is currently enabled"))
-        self.enabled_image.set_no_show_all(True)
-        enabled_box.pack_end(self.enabled_image, False, False, 0)
+        self.enabled_image = None
+        self.enabled_toggle = None
+        self.enabled_toggle_id = None
+
+        if self.use_inline_toggle:
+            self.enabled_toggle = Gtk.CheckButton()
+            self.enabled_toggle.set_valign(Gtk.Align.CENTER)
+            self.enabled_toggle.set_halign(Gtk.Align.CENTER)
+            self.enabled_toggle.set_size_request(32, 32)
+            self.enabled_toggle.set_tooltip_text(_("Enable or disable this extension"))
+            self.enabled_toggle_id = self.enabled_toggle.connect('toggled', self.on_enabled_toggled)
+            enabled_box.pack_end(self.enabled_toggle, False, False, 0)
+        else:
+            self.enabled_image = Gtk.Image.new_from_icon_name('xsi-object-select-symbolic', 2)
+            if self.extension_type == "applet":
+                self.enabled_image.set_tooltip_text(_("This applet is currently enabled"))
+            elif self.extension_type == "desklet":
+                self.enabled_image.set_tooltip_text(_("This desklet is currently enabled"))
+            elif self.extension_type == "extension":
+                self.enabled_image.set_tooltip_text(_("This extension is currently enabled"))
+            self.enabled_image.set_no_show_all(True)
+            enabled_box.pack_end(self.enabled_image, False, False, 0)
         enabled_box.show()
         grid.attach(enabled_box, 0, 0, 1, 1)
 
@@ -375,10 +392,20 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         self.status_ids[status_id].destroy()
         del self.status_ids[status_id]
 
+    def on_enabled_toggled(self, button):
+        if self.toggle_callback is None:
+            return
+
+        self.toggle_callback(self, button.get_active())
+
     def set_enabled(self, enabled):
         self.enabled = enabled
 
-        if self.enabled:
+        if self.enabled_toggle is not None:
+            self.enabled_toggle.handler_block(self.enabled_toggle_id)
+            self.enabled_toggle.set_active(self.enabled > 0)
+            self.enabled_toggle.handler_unblock(self.enabled_toggle_id)
+        elif self.enabled:
             self.enabled_image.show()
         else:
             self.enabled_image.hide()
@@ -425,6 +452,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
 
 
 class ManageSpicesPage(SettingsPage):
+    use_inline_toggle = False
+
     def __init__(self, parent, collection_type, spices, window):
         super().__init__()
         self.expand = True
@@ -589,6 +618,18 @@ class ManageSpicesPage(SettingsPage):
         extension_row = self.list_box.get_selected_row()
         self.enable_extension(extension_row.uuid, extension_row.name, extension_row.version_supported)
 
+    def on_row_toggle_enabled(self, extension_row, enabled):
+        self.list_box.select_row(extension_row)
+
+        if enabled:
+            if extension_row.enabled == 0:
+                self.enable_extension(extension_row.uuid, extension_row.name, extension_row.version_supported)
+        elif extension_row.enabled:
+            self.spices.disable_extension(extension_row.uuid)
+
+        extension_row.set_enabled(self.spices.get_enabled(extension_row.uuid))
+        self.update_button_states()
+
     def enable_extension(self, uuid, name, version_check=True):
         if not version_check:
             show_message(_("Extension %s is not compatible with your version of Cinnamon.") % uuid, self.window)
@@ -654,7 +695,13 @@ class ManageSpicesPage(SettingsPage):
 
         for uuid, metadata in self.spices.get_installed().items():
             try:
-                extension_row = ManageSpicesRow(self.collection_type, metadata, size_groups)
+                extension_row = ManageSpicesRow(
+                    self.collection_type,
+                    metadata,
+                    size_groups,
+                    use_inline_toggle=self.use_inline_toggle,
+                    toggle_callback=self.on_row_toggle_enabled,
+                )
                 self.list_box.add(extension_row)
                 self.extension_rows.append(extension_row)
                 extension_row.set_enabled(self.spices.get_enabled(uuid))
