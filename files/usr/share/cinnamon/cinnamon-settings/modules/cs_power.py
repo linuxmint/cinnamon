@@ -267,6 +267,13 @@ class Module:
             section = page.add_section(_("Screen brightness"))
             section.add_row(BrightnessSlider(section, proxy, _("Screen brightness")))
 
+            try:
+                ambient_supported = proxy.get_cached_property("AmbientLightSupported")
+                if ambient_supported is not None and ambient_supported.unpack():
+                    section.add_row(GSettingsSwitch(_("Adjust automatically"), CSD_SCHEMA, "ambient-enabled"))
+            except Exception as e:
+                print(f"Power module ambient light check failed: {e}")
+
             section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), CSD_SCHEMA, "idle-dim-battery"))
 
             section.add_reveal_row(GSettingsComboBox(_("Brightness level when inactive"), CSD_SCHEMA, "idle-brightness", IDLE_BRIGHTNESS_OPTIONS, valtype=int, size_group=size_group), CSD_SCHEMA, "idle-dim-battery")
