@@ -112,7 +112,6 @@ const KeyringPrompt = imports.ui.keyringPrompt;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
-const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
@@ -450,7 +449,7 @@ function start() {
     // NM Agent
     if (Config.BUILT_NM_AGENT) {
         if (global.settings.get_boolean("enable-nm-agent")) {
-            networkAgent = new NetworkAgent.NetworkAgent();
+            networkAgent = new imports.ui.networkAgent.NetworkAgent();
             global.log('NetworkManager agent: enabled')
         } else {
             global.log('NetworkManager agent: disabled by settings')
