@@ -882,7 +882,11 @@ class Player extends PopupMenu.PopupMenuSection {
 
     _showCover(cover_path) {
         if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-            this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+            let newCover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+            this.coverBox.remove_actor(this.cover);
+            this.cover = newCover;
+            this.coverBox.add_actor(this.cover);
+            this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
             this._cover_path = null;
             this._applet.setAppletTextIcon(this, null);
         }
