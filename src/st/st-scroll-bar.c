@@ -192,8 +192,7 @@ st_scroll_bar_unmap (ClutterActor *actor)
 
 static void
 scroll_bar_allocate_children (StScrollBar           *bar,
-                              const ClutterActorBox *box,
-                              ClutterAllocationFlags flags)
+                              const ClutterActorBox *box)
 {
   StScrollBarPrivate *priv = st_scroll_bar_get_instance_private (bar);
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (bar));
@@ -207,7 +206,7 @@ scroll_bar_allocate_children (StScrollBar           *bar,
       trough_box.y1 = content_box.y1;
       trough_box.x2 = content_box.x2;
       trough_box.y2 = content_box.y2;
-      clutter_actor_allocate (priv->trough, &trough_box, flags);
+      clutter_actor_allocate (priv->trough, &trough_box);
     }
   else
     {
@@ -215,7 +214,7 @@ scroll_bar_allocate_children (StScrollBar           *bar,
       trough_box.y1 = content_box.y1;
       trough_box.x2 = content_box.x2;
       trough_box.y2 = content_box.y2;
-      clutter_actor_allocate (priv->trough, &trough_box, flags);
+      clutter_actor_allocate (priv->trough, &trough_box);
     }
 
 
@@ -275,8 +274,7 @@ scroll_bar_allocate_children (StScrollBar           *bar,
         }
 
       clutter_actor_allocate (priv->handle,
-                              &handle_box,
-                              flags);
+                              &handle_box);
     }
 }
 
@@ -362,14 +360,13 @@ st_scroll_bar_get_preferred_height (ClutterActor *self,
 
 static void
 st_scroll_bar_allocate (ClutterActor          *actor,
-                        const ClutterActorBox *box,
-                        ClutterAllocationFlags flags)
+                        const ClutterActorBox *box)
 {
   StScrollBar *bar = ST_SCROLL_BAR (actor);
 
-  clutter_actor_set_allocation (actor, box, flags);
+  clutter_actor_set_allocation (actor, box);
 
-  scroll_bar_allocate_children (bar, box, flags);
+  scroll_bar_allocate_children (bar, box);
 }
 
 static void
@@ -392,7 +389,7 @@ scroll_bar_update_positions (StScrollBar *bar)
     return;
 
   clutter_actor_get_allocation_box (CLUTTER_ACTOR (bar), &box);
-  scroll_bar_allocate_children (bar, &box, CLUTTER_ALLOCATION_NONE);
+  scroll_bar_allocate_children (bar, &box);
 }
 
 static void

@@ -194,9 +194,9 @@ function zoomOutActorAtPos(actor, x, y) {
     });
 }
 
-function animateIconPosition(icon, box, flags, nChangedIcons) {
+function animateIconPosition(icon, box, nChangedIcons) {
     if (!icon.has_allocation() || icon.allocation.equal(box) || icon.opacity === 0) {
-        icon.allocate(box, flags);
+        icon.allocate(box);
         return false;
     }
 
@@ -204,7 +204,7 @@ function animateIconPosition(icon, box, flags, nChangedIcons) {
     icon.set_easing_mode(Clutter.AnimationMode.EASE_OUT_QUAD);
     icon.set_easing_delay(nChangedIcons * ICON_POSITION_DELAY);
 
-    icon.allocate(box, flags);
+    icon.allocate(box);
 
     icon.restore_easing_state();
 
@@ -348,8 +348,8 @@ var IconGrid = GObject.registerClass({
         return themeNode.adjust_preferred_height(height, height);
     }
 
-    vfunc_allocate(box, flags) {
-        this.set_allocation(box, flags);
+    vfunc_allocate(box) {
+        this.set_allocation(box);
 
         let themeNode = this.get_theme_node();
         box = themeNode.get_content_box(box);
@@ -395,7 +395,7 @@ var IconGrid = GObject.registerClass({
                 if (!animating)
                     children[i].opacity = 255;
 
-                if (animateIconPosition(children[i], childBox, flags, nChangedIcons))
+                if (animateIconPosition(children[i], childBox, nChangedIcons))
                     nChangedIcons++;
             }
 
@@ -878,11 +878,11 @@ class PaginatedIconGrid extends IconGrid {
         return [height, height];
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (this._childrenPerPage == 0)
             log('computePages() must be called before allocate(); pagination will not work.');
 
-        this.set_allocation(box, flags);
+        this.set_allocation(box);
 
         if (this._fillParent) {
             // Reset the passed in box to fill the parent
@@ -915,7 +915,7 @@ class PaginatedIconGrid extends IconGrid {
         for (let i = 0; i < children.length; i++) {
             let childBox = this._calculateChildBox(children[i], x, y, box);
 
-            if (animateIconPosition(children[i], childBox, flags, nChangedIcons))
+            if (animateIconPosition(children[i], childBox, nChangedIcons))
                 nChangedIcons++;
 
             children[i].show();

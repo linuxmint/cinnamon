@@ -717,7 +717,7 @@ class AppMenuButton {
         }
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(actor, box) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
 
@@ -750,7 +750,7 @@ class AppMenuButton {
             childBox.x1 = box.x1 + Math.floor(Math.max(0, allocWidth - naturalWidth) / 2);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         }
-        this._iconBox.allocate(childBox, flags);
+        this._iconBox.allocate(childBox);
 
         // Set notifications badge position
         const notifBadgeOffset = 3 * global.ui_scale;
@@ -766,7 +766,7 @@ class AppMenuButton {
         const notifLabelPosY = Math.floor((notifBadgesize - nLabelNaturalHeight) / 2);
         this.notificationsBadgeLabel.set_anchor_point(-notifLabelPosX, -notifLabelPosY);
         this.notificationsBadge.set_size(notifBadgesize, notifBadgesize);
-        this.notificationsBadge.allocate(notifBadgeBox, flags);
+        this.notificationsBadge.allocate(notifBadgeBox);
 
         if (this.drawLabel) {
             [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
@@ -783,7 +783,7 @@ class AppMenuButton {
                 childBox.x1 = box.x1;
             }
 
-            this._label.allocate(childBox, flags);
+            this._label.allocate(childBox);
         }
 
         if (!this.progressOverlay.visible) {
@@ -795,7 +795,7 @@ class AppMenuButton {
         childBox.x2 = this.actor.width;
         childBox.y2 = this.actor.height;
 
-        this.progressOverlay.allocate(childBox, flags);
+        this.progressOverlay.allocate(childBox);
 
         let clip_width = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
         this.progressOverlay.set_clip(0, 0, clip_width, this.actor.height);
