@@ -1060,6 +1060,16 @@ var PopupIconMenuItem = class PopupIconMenuItem extends PopupBaseMenuItem {
         this._icon.set_icon_name(iconName);
         this._icon.set_icon_type(St.IconType.FULLCOLOR);
     }
+
+    /**
+     * setGIcon:
+     * @gicon (Gio.Icon): the icon to set
+     *
+     * Changes the icon to the #Gio.Icon @gicon.
+     */
+    setGIcon (gicon) {
+        this._icon.set_gicon(gicon);
+    }
 }
 
 // Deprecated. Do not use
