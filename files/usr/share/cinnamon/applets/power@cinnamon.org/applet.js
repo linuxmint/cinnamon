@@ -244,8 +244,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
 
-        Main.systrayManager.registerTrayIconReplacement("power", metadata.uuid);
-        Main.systrayManager.registerTrayIconReplacement("battery", metadata.uuid);
+        Main.systrayManager.registerTrayIconReplacement("power", metadata.uuid, this.instance_id);
+        Main.systrayManager.registerTrayIconReplacement("battery", metadata.uuid, this.instance_id);
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);
         this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -732,7 +732,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
-        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid, this.instance_id);
 
         if (!this._profilesProxy)
             return;
