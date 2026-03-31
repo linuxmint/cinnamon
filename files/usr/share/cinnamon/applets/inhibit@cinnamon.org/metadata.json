@@ -2,5 +2,6 @@
  "uuid": "inhibit@cinnamon.org",
  "name": "Inhibit Applet",
  "icon": "preferences-desktop-screensaver",
- "description": "This applet is used to disable notifications and power management (including the screensaver and the session from going idle)"
+ "description": "This applet is used to disable notifications and power management (including the screensaver and the session from going idle)",
+ "max-instances": -1
 }
