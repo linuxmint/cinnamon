@@ -426,21 +426,21 @@ var LayoutManager = GObject.registerClass({
             switch (panel.panelPosition) {
                 case Panel.PanelLoc.top:
                     if (top) {
-                        kb_height -= panel.actor.height;
-                        kb_y += panel.actor.height;
+                        kb_height -= panel.get_height();
+                        kb_y += panel.get_height();
                     }
                     break;
                 case Panel.PanelLoc.bottom:
                     if (!top) {
-                        kb_height -= panel.actor.height;
+                        kb_height -= panel.get_height();
                     }
                     break;
                 case Panel.PanelLoc.left:
-                    kb_x += panel.actor.width;
-                    kb_width -= panel.actor.width;
+                    kb_x += panel.get_width();
+                    kb_width -= panel.get_width();
                     break;
                 case Panel.PanelLoc.right:
-                    kb_width -= panel.actor.width;
+                    kb_width -= panel.get_width();
                     break;
             }
         }

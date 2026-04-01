@@ -2013,10 +2013,10 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
         for (let panel of panels) {
             if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom) {
-                maxHeight -= panel.actor.height;
+                maxHeight -= panel.get_height();
             }
             else {
-                maxWidth -= panel.actor.width;
+                maxWidth -= panel.get_width();
             }
         }
 
@@ -2047,16 +2047,16 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             if (!panel.getIsVisible()) continue;
             switch (panel.panelPosition) {
                 case PanelLoc.top:
-                    y1 += panel.actor.height;
+                    y1 += panel.get_height();
                     break;
                 case PanelLoc.bottom:
-                    y2 -= panel.actor.height;
+                    y2 -= panel.get_height();
                     break;
                 case PanelLoc.left:
-                    x1 += panel.actor.width;
+                    x1 += panel.get_width();
                     break;
                 case PanelLoc.right:
-                    x2 -= panel.actor.width;
+                    x2 -= panel.get_width();
                     break;
             }
         }
