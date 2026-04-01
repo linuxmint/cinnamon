@@ -165,9 +165,9 @@ function heightsUsedMonitor(monitorIndex, listofpanels) {
         if (listofpanels[i]) {
             if (listofpanels[i].monitorIndex == monitorIndex) {
                 if (listofpanels[i].panelPosition == PanelLoc.top)
-                    toppanelHeight = listofpanels[i].actor.height;
+                    toppanelHeight = listofpanels[i].get_height();
                 else if (listofpanels[i].panelPosition == PanelLoc.bottom)
-                    bottompanelHeight = listofpanels[i].actor.height;
+                    bottompanelHeight = listofpanels[i].get_height();
             }
         }
     }
@@ -225,9 +225,9 @@ function setHeightForPanel(panel) {
 
     // for vertical panels use the width instead of the height
     if (panel.panelPosition > 1)
-        height = panel.actor.get_width();
+        height = panel.get_width();
     else
-        height = panel.actor.get_height();
+        height = panel.get_height();
 
     if (height < 20)
         height = 40;
@@ -1615,6 +1615,20 @@ var Panel = GObject.registerClass({
     }
 
     /**
+     * height:
+     *
+     * Deprecated: Third-party applets should use Applet._panelHeight (available since 4.0).
+     * For the actual actor pixel height, use panel.get_height().
+     */
+    get height() {
+        global.logWarning(`panel.height should no longer be accessed. ` +
+            `Third-party applets should use applet._panelHeight (available since 4.0) ` +
+            `to get the panel size for zone/icon calculations. Use panel.get_height() ` +
+            `for the actual actor height.`);
+        return this.heightForZones;
+    }
+
+    /**
      * updatePosition:
      * @monitorIndex: integer, index of monitor
      * @panelPosition, integer, where the panel should be placed
@@ -1850,8 +1864,8 @@ var Panel = GObject.registerClass({
             let [x, y, whatever] = global.get_pointer();
             this.sync_hover();
 
-            if (this.x < x && x < this.x + this.width &&
-                this.y < y && y < this.y + this.height) {
+            if (this.x < x && x < this.x + this.get_width() &&
+                this.y < y && y < this.y + this.get_height()) {
                 return true;
             } else {
                 this._leavePanel();
@@ -1884,7 +1898,7 @@ var Panel = GObject.registerClass({
 
         let noBarriers = global.settings.get_boolean("no-adjacent-panel-barriers");
 
-        if (this.height && this.width) {
+        if (this.get_height() && this.get_width()) {
             let panelTop = 0;
             let panelBottom = 0;
             let panelLeft = 0;
@@ -1895,10 +1909,10 @@ var Panel = GObject.registerClass({
                     switch (this.panelPosition) {
                         case PanelLoc.top:
                             panelTop    = this.monitor.y;
-                            panelBottom = this.monitor.y + this.height;
+                            panelBottom = this.monitor.y + this.get_height();
                             break;
                         case PanelLoc.bottom:
-                            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.height);
+                            panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.get_height());
                             panelBottom = this.monitor.y + this.monitor.height -1;
                             break;
                     }
@@ -1928,10 +1942,10 @@ var Panel = GObject.registerClass({
                     switch (this.panelPosition) {
                         case PanelLoc.left:
                             panelLeft  = this.monitor.x;
-                            panelRight = this.monitor.x + Math.floor(this.width);
+                            panelRight = this.monitor.x + Math.floor(this.get_width());
                             break;
                         case PanelLoc.right:
-                            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.width);
+                            panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.get_width());
                             panelRight = this.monitor.x + this.monitor.width-1;
                             break;
                         default:
@@ -2155,14 +2169,14 @@ var Panel = GObject.registerClass({
                                           : 1;
             else
                 exposedAmount = animating ? Math.abs(this.y - offset)
-                                          : this.height;
+                                          : this.get_height();
         } else {
             if (hidden)
                 exposedAmount = animating ? Math.abs(this.x - offset) + 1
                                           : 1;
             else
                 exposedAmount = animating ? Math.abs(this.x - offset)
-                                          : this.width;
+                                          : this.get_width();
         }
 
         // determine offset & set clip
@@ -2177,25 +2191,25 @@ var Panel = GObject.registerClass({
         if (isHorizontal) {
             let clipOffsetY = 0;
             if (this.panelPosition == PanelLoc.top) {
-                clipOffsetY = this.height - exposedAmount;
+                clipOffsetY = this.get_height() - exposedAmount;
             } else {
                 if (!hidden)
                     clipOffsetY = this._shadowBox.y1;
             }
             if (!hidden)
                 exposedAmount += Math.abs(this._shadowBox.y1);
-            this.set_clip(0, clipOffsetY, this.width, exposedAmount);
+            this.set_clip(0, clipOffsetY, this.get_width(), exposedAmount);
         } else {
             let clipOffsetX = 0;
             if (this.panelPosition == PanelLoc.left) {
-                clipOffsetX = this.width - exposedAmount;
+                clipOffsetX = this.get_width() - exposedAmount;
             } else {
                 if (!hidden)
                     clipOffsetX = this._shadowBox.x1;
             }
             if (!hidden)
                 exposedAmount += Math.abs(this._shadowBox.x1);
-            this.set_clip(clipOffsetX, 0, exposedAmount, this.height);
+            this.set_clip(clipOffsetX, 0, exposedAmount, this.get_height());
         }
         // Force the layout manager to update the input region
         Main.layoutManager.updateChrome()
@@ -2220,7 +2234,7 @@ var Panel = GObject.registerClass({
                 case PanelLoc.top:
                 case PanelLoc.bottom:
                     test_rect.x = this.x;
-                    test_rect.width = this.width;
+                    test_rect.width = this.get_width();
                     test_rect.height = this.heightForZones;
 
                     if (this.panelPosition === PanelLoc.top) {
@@ -2232,7 +2246,7 @@ var Panel = GObject.registerClass({
                 case PanelLoc.left:
                 case PanelLoc.right:
                     test_rect.y = this.y;
-                    test_rect.height = this.height;
+                    test_rect.height = this.get_height();
                     test_rect.width = this.heightForZones;
 
                     if (this.panelPosition === PanelLoc.left) {
@@ -2350,10 +2364,10 @@ var Panel = GObject.registerClass({
 
         // and determine if this panel's size changed
         if (horizontal_panel) {
-            if (this.width != newHorizPanelWidth || this.height != panelHeight)
+            if (this.get_width() != newHorizPanelWidth || this.get_height() != panelHeight)
                 panelChanged = true;
         } else {
-            if (this.width != panelHeight || this.height != newVertPanelHeight)
+            if (this.get_width() != panelHeight || this.get_height() != newVertPanelHeight)
                 panelChanged = true;
         }
 
@@ -2849,6 +2863,11 @@ var Panel = GObject.registerClass({
         leftBoundary = Math.round(leftWidth);
         rightBoundary = Math.round(allocWidth - rightWidth);
 
+        if (!isVertical && (this.get_direction() === St.TextDirection.RTL)) {
+            leftBoundary = Math.round(allocWidth - leftWidth);
+            rightBoundary = Math.round(rightWidth);
+        }
+
         return [leftBoundary, rightBoundary];
     }
 
@@ -2977,28 +2996,27 @@ var Panel = GObject.registerClass({
                             y = this.monitor.y;
                             break;
                         case PanelLoc.bottom:
-                            y = this.monitor.y + this.monitor.height - this.height;
+                            y = this.monitor.y + this.monitor.height - this.get_height();
                             break;
                         case PanelLoc.left:
                             x = this.monitor.x;
                             break;
                         case PanelLoc.right:
-                            x = this.monitor.x + this.monitor.width - this.width;
+                            x = this.monitor.x + this.monitor.width - this.get_width();
                             break;
                         default:
                             global.log("updatePanelVisibility - unrecognised panel position "+this.panelPosition);
                     }
 
-                    let a = this;
-                    let b = global.display.focus_window.get_frame_rect();
+                    let rect = global.display.focus_window.get_frame_rect();
                     /* Magic to check whether the panel position overlaps with the
                     * current focused window */
                     if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
-                        this._shouldShow = !(Math.max(a.x, b.x) < Math.min(a.x + a.width, b.x + b.width) &&
-                                            Math.max(y, b.y) < Math.min(y + a.height, b.y + b.height));
+                        this._shouldShow = !(Math.max(this.x, rect.x) < Math.min(this.x + this.get_width(), rect.x + rect.width) &&
+                                            Math.max(y, rect.y) < Math.min(y + this.get_height(), rect.y + rect.height));
                     } else {
-                        this._shouldShow = !(Math.max(x, b.x) < Math.min(x + a.width, b.x + b.width) &&
-                                            Math.max(a.y, b.y) < Math.min(a.y + a.height, b.y + b.height));
+                        this._shouldShow = !(Math.max(x, rect.x) < Math.min(x + this.get_width(), rect.x + rect.width) &&
+                                            Math.max(this.y, rect.y) < Math.min(this.y + this.get_height(), rect.y + rect.height));
                     }
 
             } // end of switch on autohidesettings
@@ -3068,8 +3086,8 @@ var Panel = GObject.registerClass({
         this.sync_hover();
         const [x, y] = global.get_pointer();
 
-        return (this.x <= x && x <= this.x + this.width &&
-            this.y <= y && y <= this.y + this.height);
+        return (this.x <= x && x <= this.x + this.get_width() &&
+            this.y <= y && y <= this.y + this.get_height());
     }
 
     /**
