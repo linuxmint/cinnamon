@@ -1615,7 +1615,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let size;
 
         if (this.menuCustom) {
-            size = Math.min(this.menuIconSize, this.panel.height);
+            size = Math.min(this.menuIconSize, this._panelHeight);
         } else {
             size = this.getPanelIconSize(icon_type);
         }
