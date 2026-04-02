@@ -445,6 +445,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                 status = ngettext("Charging - %d minute until fully charged", "Charging - %d minutes until fully charged", minutes).format(minutes);
             }
         }
+        else if (state == UPDeviceState.PENDING_CHARGE) {
+            status = _("Pending charge");
+        }
         else if (state == UPDeviceState.FULLY_CHARGED) {
             status = _("Fully charged");
         }
