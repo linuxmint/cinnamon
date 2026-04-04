@@ -14,6 +14,8 @@ from xapp.SettingsWidgets import SettingsStack, SettingsPage, SettingsSection, S
 
 BOLT_BUS_NAME = "org.freedesktop.bolt"
 BOLT_OBJECT_PATH = "/org/freedesktop/bolt"
+BOLT_MANAGER_IFACE = "org.freedesktop.bolt1.Manager"
+BOLT_DEVICE_IFACE = "org.freedesktop.bolt1.Device"
 
 
 def build_detail_row(key, value):
@@ -38,52 +40,38 @@ def format_generation(gen):
     raise ValueError("undefined thunderbolt generation")
 
 
-class DBusProps:
-    pass
+class DBusProperty:
+    """A read-only property for use with the DBusObject class."""
+    def __init__(self, dbus_name):
+        self.dbus_name = dbus_name
+
+    def __get__(self, instance, owner=None):
+        if instance is None:
+            return self
+        variant = instance._proxy.get_cached_property(self.dbus_name)
+        return variant.unpack() if variant else None
 
 
-class DBusProxy:
-    def __init__(self, name, object_path, interface_name):
+class DBusObject:
+    """A wrapper class around a DBusProxy instance."""
+    def __init__(self, bus_name, object_path, interface_name):
         # Save the dbus info
-        self.name = name
+        self.bus_name = bus_name
         self.object_path = object_path
         self.interface_name = interface_name
-
-        # Callback for when properties are changed
-        self.on_property_changed = None
-        self.on_property_invalidated = None
-
-        # List of signals that the proxy is connected to
-        self._sig_handles = []
-
-        # Get the initial properties for this DBus Proxy
-        var = Gio.DBusConnection.call_sync(
-            Gio.bus_get_sync(Gio.BusType.SYSTEM),
-            name,
-            object_path,
-            "org.freedesktop.DBus.Properties",
-            "GetAll",
-            GLib.Variant("(s)", (interface_name,)),
-            None,
-            0,
-            -1,
-            None)
-
-        self.props = DBusProps()
-        (props,) = var.unpack()
-        for key, value in props.items():
-            setattr(self.props, key, value)
-
         # Main proxy for DBus Object
         self._proxy = Gio.DBusProxy.new_for_bus_sync(
             Gio.BusType.SYSTEM,
             Gio.DBusProxyFlags.NONE,
             None,
-            name,
+            bus_name,
             object_path,
             interface_name,
             None)
-
+        # List of signals that self._proxy is connected to
+        self._sig_handles = []
+        # Callback for when properties are changed
+        self.on_property_changed = None
         # Register for future changes to properties
         self.signal_connect("g-properties-changed", self._on_g_properties_changed)
 
@@ -97,26 +85,18 @@ class DBusProxy:
         self._proxy = None
 
     def _on_g_properties_changed(self, proxy, changed, invalidated):
-        for key, value in changed.unpack().items():
-            setattr(self.props, key, value)
-            if self.on_property_changed:
-                self.on_property_changed(key, value)
-        # do nothing with invalidated at this time
+        if self.on_property_changed:
+            self.on_property_changed()
 
 
-class BoltManagerProxy(DBusProxy):
+class BoltManager(DBusObject):
+    """A DBusObject class for interacting with bolt's Manager interface."""
     def __init__(self):
         # Perform parent initialization
-        super().__init__(
-            BOLT_BUS_NAME,
-            BOLT_OBJECT_PATH,
-            "org.freedesktop.bolt1.Manager"
-            )
-
+        super().__init__(BOLT_BUS_NAME, BOLT_OBJECT_PATH, BOLT_MANAGER_IFACE)
         # Callbacks
         self.on_device_added = None
         self.on_device_removed = None
-
         # Connect to g-signal for event handling
         self.signal_connect('g-signal', self._on_g_signal)
 
@@ -128,38 +108,44 @@ class BoltManagerProxy(DBusProxy):
             (obj_path,) = parameters.unpack()
             self.on_device_removed(obj_path)
 
-    def list_domains(self):
+    def ListDomains(self):
         return self._proxy.ListDomains()
 
-    def list_devices(self):
+    def ListDevices(self):
         return self._proxy.ListDevices()
 
-    def enroll_device(self, uid):
+    def EnrollDevice(self, uid):
         self._proxy.EnrollDevice('(sss)', uid, 'auto', '')
 
-    def forget_device(self, uid):
+    def ForgetDevice(self, uid):
         self._proxy.ForgetDevice('(s)', uid)
 
 
-class BoltDeviceProxy(DBusProxy):
-    def __init__(self, obj_path):
-        super().__init__(
-            BOLT_BUS_NAME,
-            obj_path,
-            "org.freedesktop.bolt1.Device"
-            )
+class BoltDevice(DBusObject):
+    """A DBusObject class for interacting with bolt's Device interface."""
 
-    def authorize(self):
+    Vendor = DBusProperty("Vendor")
+    Name = DBusProperty("Name")
+    Generation = DBusProperty("Generation")
+    Type = DBusProperty("Type")
+    Uid = DBusProperty("Uid")
+    Status = DBusProperty("Status")
+    Stored = DBusProperty("Stored")
+    LinkSpeed = DBusProperty("LinkSpeed")
+
+    def __init__(self, obj_path):
+        super().__init__(BOLT_BUS_NAME, obj_path, BOLT_DEVICE_IFACE)
+
+    def Authorize(self):
         self._proxy.Authorize('(s)', 'auto')
 
 
 class BoltSection(SettingsSection):
-
     def __init__(self, bolt_manager, bolt_device):
         self.bolt_manager = bolt_manager
         self.bolt_device = bolt_device
-        self.bolt_device.on_property_changed = lambda k, v: self.refresh()
-        super().__init__("{0} {1}".format(bolt_device.props.Vendor, bolt_device.props.Name))
+        self.bolt_device.on_property_changed = lambda: self.refresh()
+        super().__init__("{0} {1}".format(bolt_device.Vendor, bolt_device.Name))
 
         widget = SettingsWidget()
         self.status_label = SettingsLabel()
@@ -167,7 +153,7 @@ class BoltSection(SettingsSection):
         self.details_btn = Gtk.ToggleButton(label=_("Details"))
         self.details_btn.connect("toggled", lambda w: self.details_revealer.set_reveal_child(w.get_active()))
         self.auth_btn = Gtk.Button(label=_("Authorize"))
-        self.auth_btn.connect("clicked", lambda w: self.bolt_device.authorize())
+        self.auth_btn.connect("clicked", lambda w: self.bolt_device.Authorize())
         self.trust_btn = Gtk.Button(label=_("Trust"))
         self.trust_btn.connect("clicked", self.on_trust_btn_clicked)
         button_box = Gtk.ButtonBox(orientation=Gtk.Orientation.HORIZONTAL)
@@ -181,36 +167,34 @@ class BoltSection(SettingsSection):
         list_box = Gtk.ListBox()
         list_box.set_selection_mode(Gtk.SelectionMode.NONE)
         list_box.set_header_func(self.update_header)
-        generation = self.bolt_device.props.Generation
+        generation = self.bolt_device.Generation
         list_box.add(build_detail_row(_("Generation"), format_generation(generation)))
         self.details_bandwidth_label = Gtk.Label(label="-")
         list_box.add(build_detail_row(_("Bandwidth"), self.details_bandwidth_label))
-        dev_type = self.bolt_device.props.Type
+        dev_type = self.bolt_device.Type
         list_box.add(build_detail_row(_("Type"), dev_type))
-        uid = self.bolt_device.props.Uid
+        uid = self.bolt_device.Uid
         list_box.add(build_detail_row("Uid", uid))
         self.details_revealer = self.add_reveal_row(list_box)
 
         self.refresh()
 
     def on_trust_btn_clicked(self, widget):
-        uid = self.bolt_device.props.Uid
-        stored = self.bolt_device.props.Stored
+        uid = self.bolt_device.Uid
+        stored = self.bolt_device.Stored
         if stored:
-            self.bolt_manager.forget_device(uid)
+            self.bolt_manager.ForgetDevice(uid)
         else:
-            self.bolt_manager.enroll_device(uid)
+            self.bolt_manager.EnrollDevice(uid)
 
     def update_header(self, row, before):
         if before:
             row.set_header(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL))
 
     def refresh(self):
-        status = self.bolt_device.props.Status
-        stored = self.bolt_device.props.Stored
-        link_speed = None
-        if hasattr(self.bolt_device.props, "LinkSpeed"):
-            link_speed = self.bolt_device.props.LinkSpeed
+        status = self.bolt_device.Status
+        stored = self.bolt_device.Stored
+        link_speed = self.bolt_device.LinkSpeed
 
         # Update the status label
         text = _("Disconnected")
@@ -307,64 +291,65 @@ class Module:
 
         # Check that org.freedesktop.bolt is available on the system
         if not self.is_bolt_available():
-            text = _("'%s' D-Bus service is not available on your system.") % BOLT_BUS_NAME
+            text = _("The %s service is missing or not activatable.") % BOLT_BUS_NAME
             self.disabled_label.set_markup(f"<big><b>{text}</b></big>")
-            self.disabled_retry_button.set_visible(False)
+            self.disabled_retry_button.set_visible(True)
+            self.disabled_retry_button.set_sensitive(True)
             page = "disabled"
-            GLib.idle_add(self.set_initial_page, page)
+            GLib.idle_add(self.set_page, page)
             return
 
         # Initialilze the bolt manager
         if not self.bolt_manager:
-            self.bolt_manager = BoltManagerProxy()
+            self.bolt_manager = BoltManager()
             self.bolt_manager.on_device_added = self.bolt_device_added
             self.bolt_manager.on_device_removed = self.bolt_device_removed
 
         # Check if there are any domains
         # If thunderbolt or usb4 is available, there will be 1 domain per controller
         # Each domain has a corresponding device with the same uuid
-        if not self.bolt_manager.list_domains():
+        if not self.bolt_manager.ListDomains():
             text = _("Thunderbolt or USB4 is not detected on your system.")
             self.disabled_label.set_markup(f"<big><b>{text}</b></big>")
             self.disabled_retry_button.set_visible(False)
             page = "disabled"
-            GLib.idle_add(self.set_initial_page, page)
+            GLib.idle_add(self.set_page, page)
             return
 
         # Setup and display the page
         self.setup()
-        page = self.page_name()
-        GLib.idle_add(self.set_initial_page, page)
+        GLib.idle_add(self.set_page, self.page_name())
 
     def disable_retry_on_clicked(self, widget):
         self.disabled_retry_button.set_sensitive(False)
-        self.on_module_selected()
+        GLib.idle_add(self.on_module_selected)
 
-    def set_initial_page(self, page):
+    def set_page(self, page):
         self.sidePage.stack.set_visible_child_name(page)
 
-    def dispose_manager(self):
-        if self.bolt_manager:
-            self.bolt_manager.dispose()
-            self.bolt_manager = None
-
-    def dispose_device_sections(self):
-        for obj_path in list(self.bolt_devices.keys()):
-            self.bolt_device_removed(obj_path, False)
-
     def setup(self):
-        for obj_path in self.bolt_manager.list_devices():
-            device = BoltDeviceProxy(obj_path)
-            # Skip the host device
-            if device.props.Type == "host":
+        for obj_path in self.bolt_manager.ListDevices():
+            params = GLib.Variant("(ss)", (BOLT_DEVICE_IFACE, "Type"))
+            var = Gio.DBusConnection.call_sync(
+                Gio.bus_get_sync(Gio.BusType.SYSTEM),
+                BOLT_BUS_NAME,
+                obj_path,
+                "org.freedesktop.DBus.Properties",
+                "Get",
+                params,
+                GLib.VariantType("(v)"),
+                0,
+                -1,
+                None)
+            (device_type,) = var.unpack()
+            if device_type == 'host':
                 continue
-            # Add the device
             self.bolt_device_added(obj_path, False)
 
     def bolt_device_added(self, obj_path, change_page=True):
         if obj_path not in self.bolt_devices:
             # Build the section
-            device = BoltDeviceProxy(obj_path)
+            device = BoltDevice(obj_path)
             section = BoltSection(self.bolt_manager, device)
             section.show_all()
             # Add to the page
@@ -372,7 +357,7 @@ class Module:
             page = self.sidePage.stack.get_child_by_name("settings")
             page.pack_start(section, False, False, 0)
         if change_page:
-            self.sidePage.stack.set_visible_child_name(self.page_name())
+            GLib.idle_add(self.set_page, self.page_name())
 
     def bolt_device_removed(self, obj_path, change_page=True):
         if obj_path in self.bolt_devices:
@@ -385,14 +370,13 @@ class Module:
             # Finally - remove the settings section from the paths dict
             del self.bolt_devices[obj_path]
         if change_page:
-            self.sidePage.stack.set_visible_child_name(self.page_name())
+            GLib.idle_add(self.set_page, self.page_name())
 
     def page_name(self):
         return "settings" if len(self.bolt_devices) > 0 else "empty"
 
     def is_bolt_available(self):
         try:
-            # bolt is an activatable d-bus service - ask d-bus if it knows about it
             var = Gio.DBusConnection.call_sync(
                 Gio.bus_get_sync(Gio.BusType.SYSTEM),
                 "org.freedesktop.DBus",
@@ -400,13 +384,12 @@ class Module:
                 "org.freedesktop.DBus",
                 "ListActivatableNames",
                 None,
-                None,
+                GLib.VariantType("(as)"),
                 0,
                 -1,
-                None
-            )
+                None)
             (bus_names,) = var.unpack()
             return BOLT_BUS_NAME in bus_names
-        except GLib.Error:
-            pass
+        except Exception as e:
+            print(e)
         return False
