@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Gio = imports.gi.Gio;
+const GioUnix = imports.gi.GioUnix;
 const GLib = imports.gi.GLib;
 const Signals = imports.signals;
 
@@ -205,7 +206,7 @@ var LoginManagerSystemd = class {
                     let [outVariant_, fdList] = proxy.call_with_unix_fd_list_finish(result);
                     let fd = fdList.steal_fds()[0];
                     _log(`LoginManager: Sleep inhibitor acquired (fd=${fd})`);
-                    callback(new Gio.UnixInputStream({ fd }));
+                    callback(new GioUnix.InputStream({ fd }));
                 } catch (e) {
                     global.logError('LoginManager: Error getting inhibitor: ' + e.message);
                     callback(null);
