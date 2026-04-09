@@ -137,7 +137,7 @@ const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
-const {KeyboardManager} = imports.ui.keyboardManager;
+const {KeyboardManager, getInputSourceManager} = imports.ui.keyboardManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -1323,6 +1323,13 @@ function _stageEventHandler(actor, event) {
         }
 
         _modifierOnlyAction = 0;
+
+        // During modal, muffin's process_iso_next_group doesn't run, handle xkb 'grp'
+        // here.
+        if (event.get_key_symbol() === Clutter.KEY_ISO_Next_Group) {
+            getInputSourceManager()._modifiersSwitcher(false);
+            return true;
+        }
 
         let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
