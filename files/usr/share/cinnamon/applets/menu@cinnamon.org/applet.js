@@ -1804,6 +1804,16 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
     _onMenuKeyPress(actor, event) {
         let symbol = event.get_key_symbol();
+
+        // Allow layout switching (Caps_Lock / ISO_Next_Group) when menu is open
+        if (symbol === Clutter.KEY_ISO_Next_Group ||
+            symbol === Clutter.KEY_ISO_Prev_Group ||
+            symbol === Clutter.KEY_Caps_Lock) {
+            let inputSourceManager = imports.ui.keyboardManager.getInputSourceManager();
+            inputSourceManager._modifiersSwitcher(false);
+            return Clutter.EVENT_STOP;
+        }
+
         let item_actor;
         this.appBoxIter.reloadVisible();
         this.catBoxIter.reloadVisible();
