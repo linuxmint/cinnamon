@@ -647,6 +647,14 @@ var _Draggable = new Lang.Class({
     },
 
     _onAnimationComplete : function (dragActor, eventTime) {
+        if (dragActor.is_finalized()) {
+            global.unset_cursor();
+            this.emit('drag-end', eventTime, false);
+            this._animationInProgress = false;
+            if (!this._buttonDown)
+                this._dragComplete();
+            return;
+        }
         if (this._dragOrigParent) {
             global.reparentActor (dragActor, this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
@@ -663,7 +671,7 @@ var _Draggable = new Lang.Class({
     },
 
     _dragComplete: function() {
-        if (this._dragOrigParent)
+        if (this._dragOrigParent && this._dragActor && !this._dragActor.is_finalized())
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
         this._ungrabEvents();
