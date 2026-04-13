@@ -273,7 +273,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     on_applet_clicked(event) {
-        this._openMenu();
+        if (!this.menu.isOpen){
+            this._openMenu();
+        } else {
+            this.menu.toggle();
+        }
     }
 
     on_btn_open_system_settings_clicked() {
