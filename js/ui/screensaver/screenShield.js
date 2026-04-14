@@ -130,6 +130,7 @@ var ScreenShield = GObject.registerClass({
         this._infoPanel = null;
         this._inhibitor = null;
         this._activationPending = false;
+        this._deactivating = false;
 
         this._nameBlocker = new NameBlocker.NameBlocker();
 
@@ -397,9 +398,7 @@ var ScreenShield = GObject.registerClass({
         _log('ScreenShield: Unlocking screen');
         this._loginManager.setLockedHint(false);
 
-        if (this._state === State.UNLOCKING) {
-            this._dialog.hide();
-        }
+        this._dialog.hide();
 
         this._hideShield(true);
     }
@@ -558,6 +557,7 @@ var ScreenShield = GObject.registerClass({
     }
 
     _hideShield(emitUnlocked) {
+        this._deactivating = true;
         this._hideScreensaverKeyboard();
         this._keyboardBox.hide();
         this._backupLockerCall('Unlock', null);
@@ -586,6 +586,7 @@ var ScreenShield = GObject.registerClass({
 
                 this._activationTime = 0;
                 this._setState(State.HIDDEN);
+                this._deactivating = false;
 
                 if (emitUnlocked)
                     this.emit('unlocked');
@@ -674,6 +675,8 @@ var ScreenShield = GObject.registerClass({
     _onSessionActiveChanged(lm, active) {
         _log(`ScreenShield: Received active-changed signal from LoginManager (active=${active}, state=${this._state})`);
         if (!active)
+            return;
+        if (this._deactivating)
             return;
         if (this._state === State.LOCKED) {
             this.showUnlockDialog();
