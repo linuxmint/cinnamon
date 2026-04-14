@@ -1117,10 +1117,9 @@ modal_retry_timeout (gpointer user_data)
              data->attempt, MODAL_MAX_RETRIES,
              data->tried_xdo ? "true" : "false");
 
-  global->has_modal = modal_try_grab (global, data->options, data->timestamp);
-
-  if (global->has_modal)
+  if (modal_try_grab (global, data->options, data->timestamp))
     {
+      global->has_modal = TRUE;
       debug_grab ("grab succeeded on attempt %d", data->attempt);
       sync_input_region (global);
       modal_retry_complete (data, TRUE);
@@ -1197,10 +1196,9 @@ cinnamon_global_begin_modal_with_retry (CinnamonGlobal    *global,
     }
 
   debug_grab ("trying initial grab");
-  global->has_modal = modal_try_grab (global, options, timestamp);
-
-  if (global->has_modal)
+  if (modal_try_grab (global, options, timestamp))
     {
+      global->has_modal = TRUE;
       debug_grab ("initial grab succeeded");
       sync_input_region (global);
       callback (global, TRUE, user_data);
@@ -1244,17 +1242,17 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
   if (!meta_display_get_compositor (global->meta_display))
     return;
 
-  if (global->modal_retry_data != NULL)
+  if (!global->has_modal)
     {
-      ModalRetryData *data = global->modal_retry_data;
-      debug_grab ("end_modal: cancelling in-progress retry");
-      g_source_remove (global->modal_retry_source_id);
-      modal_retry_complete (data, FALSE);
+      if (global->modal_retry_data != NULL)
+        {
+          ModalRetryData *data = global->modal_retry_data;
+          debug_grab ("end_modal: cancelling in-progress retry");
+          g_source_remove (global->modal_retry_source_id);
+          modal_retry_complete (data, FALSE);
+        }
       return;
     }
-
-  if (!global->has_modal)
-    return;
 
   meta_plugin_end_modal (global->plugin, timestamp);
   global->has_modal = FALSE;
