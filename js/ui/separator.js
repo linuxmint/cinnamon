@@ -1,23 +1,19 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Cairo = imports.cairo;
-const Lang = imports.lang;
+const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 
-function Separator() {
-    this._init();
-}
+var Separator = GObject.registerClass(
+class Separator extends St.DrawingArea {
+    _init() {
+        super._init({ style_class: 'separator' });
+    }
 
-Separator.prototype = {
-    _init: function() {
-        this.actor = new St.DrawingArea({ style_class: 'separator' });
-        this.actor.connect('repaint', Lang.bind(this, this._onRepaint));
-    },
-
-    _onRepaint: function(area) {
-        let cr = area.get_context();
-        let themeNode = area.get_theme_node();
-        let [width, height] = area.get_surface_size();
+    vfunc_repaint() {
+        let cr = this.get_context();
+        let themeNode = this.get_theme_node();
+        let [width, height] = this.get_surface_size();
         let margin = themeNode.get_length('-margin-horizontal');
         let gradientHeight = themeNode.get_length('-gradient-height');
         let startColor = themeNode.get_color('-gradient-start');
@@ -35,4 +31,4 @@ Separator.prototype = {
 
         cr.$dispose();
     }
-};
+});

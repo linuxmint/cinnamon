@@ -87,7 +87,7 @@ class KeyringDialog extends ModalDialog.ModalDialog {
         passwordBox.add_child(warningBox);
         content.add_child(passwordBox);
 
-        this._choice = new CheckBox.CheckBox2();
+        this._choice = new CheckBox.CheckBox();
         this.prompt.bind_property('choice-label', this._choice.getLabelActor(),
             'text', GObject.BindingFlags.SYNC_CREATE);
         this.prompt.bind_property('choice-chosen', this._choice,

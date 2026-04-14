@@ -6,13 +6,15 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
-const UPowerGlib = imports.gi.UPowerGlib;
+const LoginManager = imports.misc.loginManager;
 const Settings = imports.ui.settings;
-const Calendar = require('./calendar');
-const EventView = require('./eventView');
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Main = imports.ui.main;
 const Separator = imports.ui.separator;
+
+const Me = imports.ui.extension.getCurrentExtension();
+const Calendar = Me.imports.calendar;
+const EventView = Me.imports.eventView;
 
 const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 const DATE_FORMAT_SHORT = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%B %-e, %Y"));
@@ -149,13 +151,11 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
                 this._onSettingsChanged();
             }));
 
-            // https://bugzilla.gnome.org/show_bug.cgi?id=655129
-            this._upClient = new UPowerGlib.Client();
-            try {
-                this._upClient.connect('notify-resume', Lang.bind(this, this._updateClockAndDate));
-            } catch (e) {
-                this._upClient.connect('notify::resume', Lang.bind(this, this._updateClockAndDate));
-            }
+            this._loginManager = LoginManager.getLoginManager();
+            this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
+                if (!aboutToSuspend)
+                    this._updateClockAndDate();
+            });
 
             // Change the format string if the mouse is over the calender to account for the tooltip.
             this._is_entered = false;
@@ -264,6 +264,9 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             label_string = this.clock.get_clock_for_format(this.custom_format);
         }
 
+        if (label_string)
+            this.set_applet_label(label_string);
+
         this.go_home_button.reactive = !this._calendar.todaySelected();
         if (this._calendar.todaySelected()) {
             this.go_home_button.reactive = false;
@@ -273,12 +276,11 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.go_home_button.set_style_class_name("calendar-today-home-button-enabled");
         }
 
-        this.set_applet_label(label_string);
-
         let dateFormattedTooltip = this.clock.get_clock_for_format(DATE_FORMAT_FULL).capitalize();
         if (this.use_custom_format) {
-            dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
-            if (!dateFormattedTooltip) {
+            try {
+                dateFormattedTooltip = this.clock.get_clock_for_format(this.custom_tooltip_format).capitalize();
+            } catch (e) {
                 global.logError("Calendar applet: bad tooltip time format string - check your string.");
                 dateFormattedTooltip = this.clock.get_clock_for_format("~CLOCK FORMAT ERROR~ %l:%M %p");
             }

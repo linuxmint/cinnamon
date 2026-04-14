@@ -5,7 +5,7 @@ import math
 
 from gi.repository import Gio, GLib
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 _270_DEG = 270.0 * (math.pi/180.0)

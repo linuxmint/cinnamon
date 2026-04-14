@@ -1,10 +1,10 @@
 #!/usr/bin/python3
 
 import sys
-from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
-from SettingsWidgets import SidePage
+from bin.ExtensionCore import ManageSpicesPage, DownloadSpicesPage
+from bin.SettingsWidgets import SidePage
 from xapp.SettingsWidgets import SettingsStack
-from Spices import Spice_Harvester
+from bin.Spices import Spice_Harvester
 from gi.repository import GLib, Gtk, Gdk
 import config
 

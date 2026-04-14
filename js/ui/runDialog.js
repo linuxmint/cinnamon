@@ -187,6 +187,14 @@ class RunDialog extends ModalDialog.ModalDialog {
         this._commandError = false;
 
         this._entryText.connect('key-press-event', this._onKeyPress.bind(this));
+        this._entryText.connect('key-release-event', (o, e) => {
+            let symbol = e.get_key_symbol();
+            if (symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
+                this.close();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
 
         this._history = new History.HistoryManager({
             gsettingsKey: HISTORY_KEY,
@@ -230,7 +238,7 @@ class RunDialog extends ModalDialog.ModalDialog {
             }
             return true;
         }
-        if (symbol === Clutter.KEY_Escape || symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
+        if (symbol === Clutter.KEY_Escape) {
             this.close();
             return true;
         }

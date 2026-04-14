@@ -5,7 +5,7 @@ gi.require_version('Gtk', '3.0')
 gi.require_version('CDesktopEnums', '3.0')
 from gi.repository import Gio, Gtk, CDesktopEnums
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 
@@ -45,6 +45,7 @@ class Module:
             button_options.append([":close", _("Gnome")])
             button_options.append(["close:", _("Gnome Left")])
             button_options.append(["close:minimize,maximize", _("Classic Mac")])
+            button_options.append(["menu:minimize,maximize,close", _("Traditional")])
 
             widget = GSettingsComboBox(_("Buttons layout"), "org.cinnamon.desktop.wm.preferences", "button-layout", button_options, size_group=size_group)
             settings.add_row(widget)

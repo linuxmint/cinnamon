@@ -68,7 +68,7 @@ StWidget *            st_entry_new              (const gchar *text);
 const gchar *         st_entry_get_text         (StEntry     *entry);
 void                  st_entry_set_text         (StEntry     *entry,
                                                  const gchar *text);
-ClutterActor*         st_entry_get_clutter_text (StEntry     *entry);
+ClutterText *         st_entry_get_clutter_text (StEntry     *entry);
 
 void                  st_entry_set_hint_text    (StEntry     *entry,
                                                  const gchar *text);
@@ -85,6 +85,12 @@ void st_entry_set_secondary_icon_from_file (StEntry     *entry,
 void            st_entry_set_hint_actor    (StEntry      *entry,
                                             ClutterActor *hint_actor);
 ClutterActor *  st_entry_get_hint_actor    (StEntry      *entry);
+
+void            st_entry_set_progress      (StEntry      *entry,
+                                            gdouble       fraction);
+gdouble         st_entry_get_progress      (StEntry      *entry);
+void            st_entry_start_busy        (StEntry      *entry);
+void            st_entry_end_busy          (StEntry      *entry);
 
 G_END_DECLS
 

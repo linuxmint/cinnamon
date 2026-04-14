@@ -2,6 +2,8 @@
 #ifndef __CINNAMON_GLOBAL_PRIVATE_H__
 #define __CINNAMON_GLOBAL_PRIVATE_H__
 
+#include "config.h"
+
 #include <errno.h>
 #include <math.h>
 #include <stdarg.h>
@@ -10,8 +12,15 @@
 
 #include "cinnamon-global.h"
 #include <gio/gio.h>
+
+#if USE_GIR20
+#include <girepository/girepository.h>
+#else
 #include <girepository.h>
+#endif
+
 #include <meta/meta-plugin.h>
+#include <xdo.h>
 
 
 #include "cinnamon-enum-types.h"
@@ -22,6 +31,16 @@
 #include "st.h"
 
 #include <cjs/gjs.h>
+
+typedef struct {
+    CinnamonGlobal                *global;
+    guint32                        timestamp;
+    MetaModalOptions               options;
+    gint                           attempt;
+    gboolean                       tried_xdo;
+    CinnamonModalCallback          callback;
+    gpointer                       user_data;
+} ModalRetryData;
 
 struct _CinnamonGlobal {
   GObject parent;
@@ -56,6 +75,10 @@ struct _CinnamonGlobal {
   gboolean has_modal;
 
   guint notif_service_id;
+
+  xdo_t *xdo;
+  guint modal_retry_source_id;
+  ModalRetryData *modal_retry_data;
 };
 
 void _cinnamon_global_init            (const char *first_property_name,

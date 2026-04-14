@@ -39,7 +39,7 @@ SETTINGS_DIR = Path.joinpath(Path.home(), ".config/cinnamon/spices/")
 """
 STATIC_KEYBINDINGS = \
 [
-  [_("General"), "general", None, "preferences-desktop-keyboard-shortcuts",
+  [_("General"), "general", None, "xsi-keyboard-shortcuts-symbolic",
     [
       [_("Pointer"), "pointer", "general", None, [],
         [
@@ -54,8 +54,8 @@ STATIC_KEYBINDINGS = \
       ]
     ],
     [
-      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down"],
-      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up"],
+      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-window-selection"],
+      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-workspace-selection"],
       [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop"],
       [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets"],
       [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows"],
@@ -67,7 +67,7 @@ STATIC_KEYBINDINGS = \
       [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog"]
     ]
   ],
-  [_("Keyboard"), "keyboard", None, "input-keyboard", [],
+  [_("Keyboard"), "keyboard", None, "xsi-input-keyboard-symbolic", [],
     [
       [_("Switch to next layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source"],
       [_("Switch to previous layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-backward"],
@@ -77,7 +77,7 @@ STATIC_KEYBINDINGS = \
       [_("Switch to fourth layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-3"]
     ]
   ],
-  [_("Windows"), "windows", None, "preferences-system-windows",
+  [_("Windows"), "windows", None, "xsi-focus-windows-symbolic",
     [
       [_("Positioning"), "win-position", "windows", None, [],
         [
@@ -107,8 +107,6 @@ STATIC_KEYBINDINGS = \
           [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new"],
           [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left"],
           [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right"],
-          [_("Move window to workspace above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-up"],
-          [_("Move window to workspace below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-down"],
           [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1"],
           [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2"],
           [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3"],
@@ -151,7 +149,7 @@ STATIC_KEYBINDINGS = \
       [_("Toggle horizontal maximization"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally"]
     ]
   ],
-  [_("Workspaces"), "workspaces", None, "video-display",
+  [_("Workspaces"), "workspaces", None, "xsi-video-display-symbolic",
     [
       [_("Direct Navigation"), "ws-navi", "workspaces", None, [],
         [
@@ -175,7 +173,7 @@ STATIC_KEYBINDINGS = \
       [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right"]
     ]
   ],
-  [_("System"), "system", None, "preferences-system",
+  [_("System"), "system", None, "xsi-emblem-system-symbolic",
     [
       [_("Hardware"), "sys-hw", "system", None, [],
         [
@@ -214,7 +212,7 @@ STATIC_KEYBINDINGS = \
       [_("Restart Cinnamon"), MEDIA_KEYS_SCHEMA, "restart-cinnamon"]
     ]
   ],
-  [_("Launchers"), "launchers", None, "applications-utilities", [],
+  [_("Launchers"), "launchers", None, "xsi-launch-symbolic", [],
     [
       [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal"],
       [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help"],
@@ -225,7 +223,7 @@ STATIC_KEYBINDINGS = \
       [_("Search"), MEDIA_KEYS_SCHEMA, "search"]
     ]
   ],
-  [_("Sound and Media"), "media", None, "applications-multimedia",
+  [_("Sound and Media"), "media", None, "xsi-multimedia-symbolic",
     [
       [_("Quiet Keys"), "media-quiet", "media", None, [],
         [
@@ -253,7 +251,7 @@ STATIC_KEYBINDINGS = \
       [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random"]
     ]
   ],
-  [_("Universal Access"), "accessibility", None, "preferences-desktop-accessibility", [],
+  [_("Universal Access"), "accessibility", None, "xsi-accessibility-symbolic", [],
     [
       [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in"],
       [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out"],
@@ -265,7 +263,7 @@ STATIC_KEYBINDINGS = \
       [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"]
     ]
   ],
-  [_("Spices"), "spices", None, "cinnamon", [], []]
+  [_("Spices"), "spices", None, "cinnamon-symbolic", [], []]
 ]
 
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
@@ -629,6 +627,14 @@ class KeybindingTable(GObject.Object):
             enabled_extensions.add(extension)
             enabled_spices.add((extension, 'extensions', None))
 
+        # Build set of enabled instance IDs per uuid, so we only process
+        # config files for instances that are actually running.
+        enabled_ids = {}
+        for uuid, _type, instance_id in enabled_spices:
+            enabled_ids.setdefault(uuid, set())
+            if instance_id is not None:
+                enabled_ids[uuid].add(instance_id)
+
         keyboard_spices = sorted(enabled_spices)
         spice_keybinds = {}
         spice_properties = {}
@@ -638,11 +644,10 @@ class KeybindingTable(GObject.Object):
                 config_path = Path.joinpath(settings_dir, uuid)
                 if Path.exists(config_path):
                     configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
-                    # If we encounted numbered and non-numbered, config files, filter out the uuid-named one 
-                    if not all(x.split(".json")[0].isdigit() for x in configs) and any(x.split(".json")[0].isdigit() for x in configs):
-                        for index, value in enumerate(configs):
-                            if not value.split(".json")[0].isdigit():
-                                configs.pop(index)
+                    # Filter out config files for instances that aren't running
+                    ids_for_uuid = enabled_ids.get(uuid, set())
+                    configs = [x for x in configs
+                               if not x.split(".json")[0].isdigit() or x.split(".json")[0] in ids_for_uuid]
                     for config in configs:
                         config_json = Path.joinpath(config_path, config)
                         _id = config.split(".json")[0]
@@ -687,7 +692,7 @@ class KeybindingTable(GObject.Object):
                     with open(system_metadata_path, encoding="utf-8") as metadata:
                         json_data = json.load(metadata)
                         category_label = _(json_data["name"])
-            if not _id:
+            if not _id or len(enabled_ids.get(uuid, set())) <= 1:
                 cat_label = category_label if category_label else uuid
                 new_categories.append([cat_label, uuid, "spices", None, spice_props])
                 instance_num = 1
@@ -717,7 +722,7 @@ class KeybindingTable(GObject.Object):
                     gettext.textdomain(uuid)
                     binding_label = gettext.gettext(list(binding_values.keys())[0])
                 binding_schema = spice_properties[spice]["path"]
-                binding_category = f"{uuid}_{instance_num - 1}" if _id else uuid
+                binding_category = f"{uuid}_{instance_num - 1}" if _id and len(enabled_ids.get(uuid, set())) > 1 else uuid
                 new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
                 self._spice_categories[binding_category] = category_label
 
@@ -744,7 +749,7 @@ class KeybindingTable(GObject.Object):
         self._custom_store = []
         self._custom_categories = {}
 
-        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "cinnamon-panel-launcher")
+        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "xsi-tag-symbolic")
         self._custom_store.append(cat)
 
         for entry in custom_list:

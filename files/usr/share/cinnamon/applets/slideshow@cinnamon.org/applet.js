@@ -38,11 +38,11 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
         this._current_background_menu = new PopupMenu.PopupMenuItem("");
         this._applet_context_menu.addMenuItem(this._current_background_menu);
         this._update_background_name();
-        
+
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.next_image_context_menu_item = new PopupMenu.PopupIconMenuItem(_("Next Background"),
-                "media-seek-forward",
+                "xsi-media-seek-forward",
                 St.IconType.SYMBOLIC);
         this.next_image_context_menu_item.connect('activate', Lang.bind(this, this.get_next_image));
         this._applet_context_menu.addMenuItem(this.next_image_context_menu_item);
@@ -50,13 +50,13 @@ class CinnamonSlideshowApplet extends Applet.IconApplet {
         this._applet_context_menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         this.open_settings_context_menu_item = new PopupMenu.PopupIconMenuItem(_("Background Settings"),
-                "preferences-desktop-wallpaper",
+                "xsi-wallpaper",
                 St.IconType.SYMBOLIC);
         this.open_settings_context_menu_item.connect('activate', Lang.bind(this, function() {
             Util.spawnCommandLine("cinnamon-settings backgrounds");
         }));
         this._applet_context_menu.addMenuItem(this.open_settings_context_menu_item);
-        
+
         this._applet_context_menu.connect('open-state-changed', () => this._update_background_name());
     }
 

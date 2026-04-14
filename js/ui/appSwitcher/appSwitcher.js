@@ -68,7 +68,7 @@ function getWindowsForBinding(binding) {
     let showCurrentMonitorOnly = global.settings.get_boolean("alttab-switcher-show-current-monitor");
 
     if (showCurrentMonitorOnly) {
-        windows = windows.filter(w => w.get_monitor() === global.screen.get_current_monitor())
+        windows = windows.filter(w => w.get_monitor() === global.display.get_current_monitor())
     }
 
     switch (binding.get_name()) {
@@ -132,10 +132,10 @@ AppSwitcher.prototype = {
     },
 
     _setupModal: function () {
-        this._haveModal = Main.pushModal(this.actor);
+        this._haveModal = Main.pushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL);
         if (!this._haveModal) {
             // Probably someone else has a pointer grab, try again with keyboard only
-            this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED);
+            this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED, Cinnamon.ActionMode.SYSTEM_MODAL);
         }
         if (!this._haveModal)
             this._failedGrabAction();

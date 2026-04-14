@@ -1,3 +1,242 @@
+cinnamon (6.7.0) unstable; urgency=medium
+
+  [ Michael Webster ]
+  * Add generate-test-packages capability to CI.
+
+  [ Clement Lefebvre ]
+  * cs_keyboard: Switch to XSI icons
+  * printer applet: Switch to XSI icons
+  * gwl: Switch to XSI icons
+  * network applet: Switch to XSI icons
+  * Switch to XSI icons
+
+  [ Michael Webster ]
+  * misc/util.js: Use xsi-symbolics for desktop-file actions.
+  * panel-launchers: Use icons for desktop actions if available.
+  * window-list applet: Update context menu action icons to match the gwl applet.
+  * placesManager.js: Go back to having isRemovable() call can_unmount(). (#13464)
+
+  [ fredcw ]
+  * menu applet: remove 'force show panel' toggle as ... (#13394)
+  * menu applet: fix sidebar separator showing inconsistently (#13438)
+
+  [ Michael Webster ]
+  * cinnamon-window-tracker.c (wayland): Connect to MetaWindow::shown (#13453)
+  * python: Stop using pytz, use datetime.timezone and zoneinfo instead.
+  * a11y: cinnamon-hover-click - add action-mode lock. (#13363)
+
+  [ fredcw ]
+  * menu@cinnamon.org: Avoid using absolute path as this doesn't work on NixOS (#13500)
+
+  [ carsten_eu ]
+  * cinnamon-settings: Fix util module import to prevent name collisions (#13492)
+
+  [ Aleksey Samoilov ]
+  * [Wayland] Adapt to cursor API changes (#13156)
+
+  [ Michael Webster ]
+  * src: Adapt to MetaPointerTracker changes in linuxmint/muffin#765.
+
+  [ Clement Lefebvre ]
+  * meson: Allow users settings to be excluded
+
+  [ Michael Webster ]
+  * global.screen: Remove remaining usage in js code, add deprecation warnings.
+
+  [ Aleksey Samoilov ]
+  * [Input] Update to MetaCursorTracker API change (#13218)
+
+  [ Michael Webster ]
+  * userWidget.js: Fix updating the image when the user avatar changes.
+  * Revert "userWidget.js: Fix updating the image when the user avatar changes."
+  * st-theme-context.c: Hook up texture cache's texture-file-changed signal and invalidate any theme nodes using the passed file.
+  * main.js: Fix enum in _stageEventHandler.
+
+  [ baronleonardo ]
+  * power_applet: rearrange battery label, so the percentage is on left (#13262)
+
+  [ JosephMcc ]
+  * theme: Add a couple of generic button styles (#13319)
+
+  [ Michael Webster ]
+  * cinnamon-desktop-editor.py: Add import path.
+  * cinnamon-settings: Make imports consistent, instead of a mix of absolute and relative throughout.
+  * messageTray.js: Fix cursor name.
+  * endSessionDialog.js: Don't close the dialog immediately when selecting 'suspend' or 'hibernate'.
+
+  [ JosephMcc ]
+  * ui: Add a new placeholder object (#13304)
+  * panel.js: Remove the panel corners implementation (#13487)
+  * st-button: Add an :icon-name property (#13491)
+  * hotcorner.js: Port to GObject and ripples.js (#13544)
+
+  [ Michael Webster ]
+  * keybindings.js: Allow auto-repeat only on certain media keybindings.
+
+  [ fredcw ]
+  * menu@cinnamon.org: hide sidebar config options when sidebar is hidden (#13323)
+
+  [ rlbxku1r ]
+  * menu: Add context menu actions for favorites/recents (#13220)
+
+  [ carsten_eu ]
+  * FIX: Disable "Disable all" button when no extensions installed (#13455)
+
+  [ Anaxímeno Brito ]
+  * Fix wrong attribute and method name usage (#13515)
+
+  [ JosephMcc ]
+  * checkBox.js: Use the new checkBox object (#13564)
+  * style: Add a slight blue tint to the theme (#13568)
+  * Separator cleanup (#13573)
+  * backgroundManager.js: Fix variable names and remove uses of Lang.bind() (#13574)
+  * Remove the edgeFlip feature (#13581)
+  * radioButton.js: Modernize and clean up unused object (#13567)
+
+  [ Michael Webster ]
+  * st-texture-cache.c: Fix st_texture_cache_load_image_from_file_async.
+
+  [ JosephMcc ]
+  * cinnamonEntry: Modernize and clean up (#13571)
+  * locatePointer: Fix and object name and cleanup (#13585)
+  * Port Lightbox and Flashspot to GObject (#13586)
+  * lookingGlass.js: Port the inspector to GObject (#13589)
+  * layout.js: Port all objects to classes (#13590)
+
+  [ Michael Webster ]
+  * github: Add pattern-check workflow.
+
+  [ Clement Lefebvre ]
+  * polkit: Show the reveal icon to reveal the password
+
+  [ Michael Webster ]
+  * keyboardManager.js: Ensure the drawing area fills its parent size so the keyboard layout subscript can be drawn.
+  * Add native screensaver (#13432)
+  * unlockDialog, authClient: remove unnecessary import.
+  * cinnamon-screen.c: Update warnings.
+  * main.js: Only allow the internal screensaver for wayland sessions.
+  * extensions: Simplify code used for loading xlets, improve startup (#13479)
+  * popupMenu.js: Fix copy/paste error from 731d2f70fa.
+  * cs_backgrounds.py: Fix imtools import.
+  * keybindings.js: Allow keybindings during POPUP action mode.
+  * keybindings: Clean up captured-event handler, use ActionModes for built-in keybindings.
+  * keybindings: Cleanup media-keys, allow better control over when they're valid by using ActionModes.
+  * KeybindingTable.py: Don't show Spice instances unless they're enabled on the desktop.
+  * extension.js: Fix loading of versioned xlets, xlet-settings with inactive config files.
+  * github: Add stale workflow.
+  * screenShield.js: Disable backup-locker in wayland sessions.
+  * screensaver: Reset internal state for new sessions, don't set the state in wayland sessions.
+  * backgrounds: Improve wayland session support. (#13614)
+  * screenShield.js: Fix invalid character.
+
+  [ Kaushik B ]
+  * Fix OSD level animation lag when using gesture volume control (#13338)
+
+  [ Michael Webster ]
+  * input sources: Allow a default xkb layout to be configured for (#13520)
+  * cinnamonEntry.js: Allow addContextMenu() to re-use an existing PopupMenuManager.
+  * Add support for GIRepository-2.0. (#13474)
+  * fileUtils.js: Use GLib.get_user_special_dir() for getUserDesktopDir.
+
+  [ carsten_eu ]
+  * dnd.js: Fix window freeze on rapid taskbar clicks (#13462) (#13465)
+
+  [ JosephMcc ]
+  * Remove more of the old indicator leftovers (#13584)
+
+  [ rlbxku1r ]
+  * menu: Fix logError call (#13583)
+
+  [ JosephMcc ]
+  * magnifier.js: Port to classes and clean up (#13591)
+  * magnifierDBus.js: Port to classes and small syntax cleanup (#13592)
+  * Monitor label cleanup (#13593)
+  * cinnamonDBus.js: Port to newer class style and remove use of Lang.bind() (#13580)
+
+  [ fredcw ]
+  * notifications@cinnamon.org: Do not recreate menu on orientation change... (#13247)
+
+  [ Oleksii Sedun ]
+  * Fix https://github.com/linuxmint/cinnamon/issues/13377 (#13603)
+
+  [ Michael Webster ]
+  * screensaver: Do more to acquire a modal grab attempt when locking. (#13618)
+  * cinnamon-tray-manager.c: Fix leak during redisplay.
+
+  [ JosephMcc ]
+  * screensheild.js: Listen to changes to allow floating setting (#13624)
+  * theme: Fix a warning when opening the sound applet (#13623)
+
+  [ Michael Webster ]
+  * cinnamon-screenshot.c: Filter out the desktop windows by window type, not title.
+  * keybindings: Improve consistency during modal states, fix layout switching.
+  * unlockDialog: Update layout indicator visibility when the screensaver is activated.
+  * screenShield.js: Ensure the screenShieldGroup is still the top stage actor during activation.
+  * screensaver: Limit access to the screenShieldGroup.
+
+  [ Rick Calixte ]
+  * cs_keyboard.py, main.js, and KeybindingTable.py: Separate the key bindings and keyboard menu options for switching workspace up/down and toggling window/workspace selection
+
+  [ Michael Webster ]
+  * keybindingTable.py: Fix key names for toggle workspace/windows, remove currently unused keys.
+
+  [ Balló György ]
+  * cs_windows.py: Add Traditional button layout option (#13326)
+
+  [ Michael Webster ]
+  * calendar applet: Fix handling for invalid clock formats.
+  * main.js: Don't drop key-release events in the captured-event handler if there's no matching keybinding action.
+  * util.js: Add spawnAsyncIO.
+
+  [ fredcw ]
+  * Add per app notification settings (#13598)
+
+  [ Fizmatik ]
+  * keyboardManager: don't append locale layout if already present (#13616)
+
+  [ Michael Webster ]
+  * screensaver: De-clutter main.js of screensaver setup and functions, make a controller class instead.
+  * screenShield/loginManager: call SetLockedHint when locking/unlocking.
+  * st-entry.c: Remove unused blink code.
+  * st-entry: Add progress/busy bar.
+  * authentication: Enable StEntry busy indicators in the screensaver and polkit dialogs.
+  * screensaver: Track the screensaver proxy in external mode.
+  * st-theme.c: Some cleanup, fix an issue with fallback assets not (#13646)
+  * loginManager.js: Use a normal signal connection for PrepareForSleep.
+  * keyboardManager.js: Don't re-activate a layout if it's already active.
+  * power applet/settings: Add support for ambient light sensor. (#13649)
+  * printers@cinnamon.org: Rework layout, use cupsd dbus notifications (#13674)
+
+  [ AntVil ]
+  * extend DESKTOP_ACTION_ICON_NAMES (#13641)
+
+  [ axjp ]
+  * Remove previous track actors from coverBox (#13648)
+
+  [ Timothy Feierabend ]
+  * ListSettingsWidget: allow item edit only if edit button is visible (#13671)
+
+  [ Matt Turnbull ]
+  * main.js: Don't import NetworkAgent unless nm_agent support is enabled. (#13651)
+
+  [ Michael Webster ]
+  * inhibit@cinnamon.org: Make mult-instance capable. (#13678)
+
+  [ JosephMcc ]
+  * Panel cleanup 2 (#13613)
+
+  [ Michael Webster ]
+  * panel: minor compatibility, RTL fixes. (#13682)
+  * panel: Fix a few more spots using panel.height directly.
+  * dnd.js: Fix incorrect method check.
+  * backup-locker.c: Kill xprop during unlock.
+  * js: Use GioUnix instead of Gio.Unix in a few places.
+  * loginManager: add sessionIsActive property updated when ActiveChanged fires from logind/ck.
+  * Implement mount/unmount/autorun user interaction in Cinnamon.
+  * main.js: Handle xkb next-group in _stageEventHandler.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 13 Apr 2026 08:40:12 +0100
+
 cinnamon (6.6.5) zena; urgency=medium
 
   [ Clement Lefebvre ]

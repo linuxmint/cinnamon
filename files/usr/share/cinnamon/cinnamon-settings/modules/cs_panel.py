@@ -6,7 +6,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Gdk
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 import config
 

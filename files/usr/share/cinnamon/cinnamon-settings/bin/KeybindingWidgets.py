@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 
 from gi.repository import Gtk, Gdk, GObject
-import util
+from bin import util
 
 print("KeybindingWidgets session type: %s" % util.get_session_type())
 

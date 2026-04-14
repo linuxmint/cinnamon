@@ -218,12 +218,13 @@ class XAppStatusIcon {
 
             // Assume symbolic icons would always be square/suitable for an StIcon.
             if (iconName.includes("/") && type != St.IconType.SYMBOLIC) {
+                const scaledIconSize = this.iconSize * global.ui_scale;
                 this.icon_loader_handle = St.TextureCache.get_default().load_image_from_file_async(
                     iconName,
                     /* If top/bottom panel, allow the image to expand horizontally,
                      * otherwise, restrict it to a square (but keep aspect ratio.) */
-                    this.actor.vertical ? this.iconSize : -1,
-                    this.iconSize,
+                    this.actor.vertical ? scaledIconSize : -1,
+                    scaledIconSize,
                     (...args)=>this._onImageLoaded(...args)
                 );
 

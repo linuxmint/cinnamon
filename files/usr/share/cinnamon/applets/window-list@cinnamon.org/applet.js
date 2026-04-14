@@ -816,11 +816,18 @@ class AppMenuButton {
     setIcon() {
         this.icon_size = this._applet.icon_size;
 
-        let icon = this.app ?
-            this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon',
+        let icon;
+        if (this.app) {
+            if (this.app.is_window_backed()) {
+                icon = this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow);
+            } else {
+                icon = this.app.create_icon_texture(this.icon_size);
+            }
+        } else {
+            icon = new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
+        }
 
         let old_child = this._iconBox.get_child();
         this._iconBox.set_child(icon);
@@ -956,7 +963,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applet preferences"));
         this.addMenuItem(subMenu);
 
-        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "xsi-dialog-question", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
         subMenu.menu.addMenuItem(item);
 
@@ -964,14 +971,14 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this._signals.connect(item, 'activate', () => this._launcher._applet.configureApplet());
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "xsi-edit-delete", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', (actor, event) => this._launcher._applet.confirmRemoveApplet(event));
         subMenu.menu.addMenuItem(item);
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Close all/others
-        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "application-exit", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "xsi-exit", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -980,7 +987,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }));
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "window-close", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "xsi-window-close", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -1002,12 +1009,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         if (mw.minimized) {
-            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "view-sort-descending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 Main.activateWindow(mw, global.get_current_time());
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "view-sort-ascending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.minimize();
             });
@@ -1015,12 +1022,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         if (mw.get_maximized()) {
-            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "view-restore", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "view-fullscreen", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
@@ -1028,7 +1035,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
         item.setSensitive(mw.can_maximize())
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close"), "xsi-window-close", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', function() {
             mw.delete(global.get_current_time());
         });
@@ -1240,7 +1247,14 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _onWindowAppChanged(tracker, metaWindow) {
-        this._refreshItemByMetaWindow(metaWindow);
+        let window = this._windows.find(win => (win.metaWindow == metaWindow));
+
+        if (window) {
+            window.app = window._getApp();
+            window.appId = window.app ? window.app.get_id() : null;
+            window.setIcon();
+            window.setDisplayTitle();
+        }
     }
 
     _onWindowSkipTaskbarChanged(display, metaWindow) {
@@ -1323,7 +1337,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
             window.setDisplayTitle();
         }
     }
-    
+
     _updateLabels() {
         for (let window of this._windows)
             window.updateLabelVisible();

@@ -3,9 +3,10 @@ const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
+const LoginManager = imports.misc.loginManager;
+const PowerUtils = imports.misc.powerUtils;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
-const UPowerGlib = imports.gi.UPowerGlib;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
@@ -14,151 +15,21 @@ const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
+const CSD_SCHEMA = "org.cinnamon.settings-daemon.plugins.power";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
 const {
-    DeviceKind: UPDeviceKind,
-    DeviceLevel: UPDeviceLevel,
-    DeviceState: UPDeviceState,
-    Device: UPDevice
-} = UPowerGlib
+    UPDeviceKind,
+    UPDeviceLevel,
+    UPDeviceState
+} = PowerUtils;
 
 const POWER_PROFILES = {
     "power-saver": _("Power Saver"),
     "balanced": _("Balanced"),
     "performance": _("Performance")
 };
-
-function deviceLevelToString(level) {
-    switch (level) {
-        case UPDeviceLevel.FULL:
-            return _("Battery full");
-        case UPDeviceLevel.HIGH:
-            return _("Battery almost full");
-        case UPDeviceLevel.NORMAL:
-            return _("Battery good");
-        case UPDeviceLevel.LOW:
-            return _("Low battery");
-        case UPDeviceLevel.CRITICAL:
-            return _("Critically low battery");
-        default:
-            return _("Unknown");
-    }
-}
-
-function deviceKindToString(kind) {
-    switch (kind) {
-        case UPDeviceKind.LINE_POWER:
-            return _("AC adapter");
-        case UPDeviceKind.BATTERY:
-            return _("Laptop battery");
-        case UPDeviceKind.UPS:
-            return _("UPS");
-        case UPDeviceKind.MONITOR:
-            return _("Monitor");
-        case UPDeviceKind.MOUSE:
-            return _("Mouse");
-        case UPDeviceKind.KEYBOARD:
-            return _("Keyboard");
-        case UPDeviceKind.PDA:
-            return _("PDA");
-        case UPDeviceKind.PHONE:
-            return _("Cell phone");
-        case UPDeviceKind.MEDIA_PLAYER:
-            return _("Media player");
-        case UPDeviceKind.TABLET:
-            return _("Tablet");
-        case UPDeviceKind.COMPUTER:
-            return _("Computer");
-        case UPDeviceKind.GAMING_INPUT:
-            return _("Gaming input");
-        case UPDeviceKind.PEN:
-            return _("Pen");
-        case UPDeviceKind.TOUCHPAD:
-            return _("Touchpad");
-        case UPDeviceKind.MODEM:
-            return _("Modem");
-        case UPDeviceKind.NETWORK:
-            return _("Network");
-        case UPDeviceKind.HEADSET:
-            return _("Headset");
-        case UPDeviceKind.SPEAKERS:
-            return _("Speakers");
-        case UPDeviceKind.HEADPHONES:
-            return _("Headphones");
-        case UPDeviceKind.VIDEO:
-            return _("Video");
-        case UPDeviceKind.OTHER_AUDIO:
-            return _("Audio device");
-        case UPDeviceKind.REMOTE_CONTROL:
-            return _("Remote control");
-        case UPDeviceKind.PRINTER:
-            return _("Printer");
-        case UPDeviceKind.SCANNER:
-            return _("Scanner");
-        case UPDeviceKind.CAMERA:
-            return _("Camera");
-        case UPDeviceKind.WEARABLE:
-            return _("Wearable");
-        case UPDeviceKind.TOY:
-            return _("Toy");
-        case UPDeviceKind.BLUETOOTH_GENERIC:
-            return _("Bluetooth device");
-        default: {
-            try {
-                return UPDevice.kind_to_string(kind).replaceAll("-", " ").capitalize();
-            } catch {
-                return _("Unknown");
-            }
-        }
-    }
-}
-
-function deviceKindToIcon(kind, icon) {
-    switch (kind) {
-        case UPDeviceKind.MONITOR:
-            return ("xsi-video-display");
-        case UPDeviceKind.MOUSE:
-            return ("xsi-input-mouse");
-        case UPDeviceKind.KEYBOARD:
-            return ("xsi-input-keyboard");
-        case UPDeviceKind.PHONE:
-        case UPDeviceKind.MEDIA_PLAYER:
-            return ("xsi-phone-apple-iphone");
-        case UPDeviceKind.TABLET:
-            return ("xsi-input-tablet");
-        case UPDeviceKind.COMPUTER:
-            return ("xsi-computer");
-        case UPDeviceKind.GAMING_INPUT:
-            return ("xsi-input-gaming");
-        case UPDeviceKind.TOUCHPAD:
-            return ("xsi-input-touchpad");
-        case UPDeviceKind.HEADSET:
-            return ("xsi-audio-headset");
-        case UPDeviceKind.SPEAKERS:
-            return ("xsi-audio-speakers");
-        case UPDeviceKind.HEADPHONES:
-            return ("xsi-audio-headphones");
-        case UPDeviceKind.PRINTER:
-            return ("xsi-printer");
-        case UPDeviceKind.SCANNER:
-            return ("xsi-scanner");
-        case UPDeviceKind.CAMERA:
-            return ("xsi-camera-photo");
-        default:
-            if (icon) {
-                return icon;
-            }
-            else {
-                return ("xsi-battery-level-100");
-            }
-    }
-}
-
-function reportsPreciseLevels(battery_level) {
-    return battery_level == UPDeviceLevel.NONE;
-}
 
 class DeviceItem extends PopupMenu.PopupBaseMenuItem {
     constructor(device, status, aliases) {
@@ -169,7 +40,7 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
         this._box = new St.BoxLayout({ style_class: 'popup-device-menu-item' });
         this._vbox = new St.BoxLayout({ style_class: 'popup-device-menu-item', vertical: true });
 
-        let description = deviceKindToString(device_kind);
+        let description = PowerUtils.deviceKindToString(device_kind);
         if (vendor != "" || model != "") {
             description = "%s %s".format(vendor, model);
         }
@@ -191,14 +62,14 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
         let statusLabel = null;
 
         if (battery_level == UPDeviceLevel.NONE) {
-            this.label = new St.Label({ text: "%s %d%%".format(description, Math.round(percentage)) });
+            this.label = new St.Label({ text: "%d%% %s".format(Math.round(percentage), description) });
             statusLabel = new St.Label({ text: "%s".format(status), style_class: 'popup-inactive-menu-item' });
         } else {
             this.label = new St.Label({ text: "%s".format(description) });
-            statusLabel = new St.Label({ text: "%s".format(deviceLevelToString(battery_level)), style_class: 'popup-inactive-menu-item' });
+            statusLabel = new St.Label({ text: "%s".format(PowerUtils.deviceLevelToString(battery_level)), style_class: 'popup-inactive-menu-item' });
         }
 
-        let device_icon = deviceKindToIcon(device_kind, icon);
+        let device_icon = PowerUtils.deviceKindToIcon(device_kind, icon);
         if (device_icon == icon) {
             this._icon = new St.Icon({ gicon: Gio.icon_new_for_string(icon), icon_type: St.IconType.SYMBOLIC, style_class: 'popup-menu-icon' });
         }
@@ -218,7 +89,7 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
 }
 
 class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
-    constructor(applet, label, icon, busName, minimum_value) {
+    constructor(applet, label, icon, busName, minimum_value, readyCallback) {
         super(0);
         this.actor.hide();
 
@@ -226,13 +97,15 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._seeking = false;
         this._minimum_value = minimum_value;
         this._step = .05;
+        this._readyCallback = readyCallback || null;
+        this.proxy = null;
 
-        this.connect("drag-begin", Lang.bind(this, function () {
+        this.connect("drag-begin", () => {
             this._seeking = true;
-        }));
-        this.connect("drag-end", Lang.bind(this, function () {
+        });
+        this.connect("drag-end", () => {
             this._seeking = false;
-        }));
+        });
 
         this.icon = new St.Icon({ icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16 });
         this.removeActor(this._slider);
@@ -243,41 +116,45 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function (proxy, error) {
-            this._proxy = proxy;
-            this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
-        }));
+        Interfaces.getDBusProxyAsync(busName, this._dbusAcquired.bind(this));
     }
 
-    _dbusAcquired(b, error) {
+    _dbusAcquired(proxy, error) {
         if (error)
             return;
 
+        this.proxy = proxy;
+
+        this.connect("value-changed", this._sliderChanged.bind(this));
+        this.proxy.connectSignal('Changed', this._getBrightness.bind(this));
+        this._applet.menu.connect("open-state-changed", this._getBrightnessForcedUpdate.bind(this));
+
+        if (this._readyCallback) {
+            this._readyCallback();
+        }
+
+        this.proxy.GetPercentageRemote((b, error) => {
+            if (error)
+                return;
+
+            this._updateBrightnessLabel(b);
+            this.setValue(b / 100);
+            this.actor.show();
+        });
+
         try {
-            this._proxy.GetStepRemote((step, error) => {
+            this.proxy.GetStepRemote((step, error) => {
                 if (error != null) {
                     if (error.code != CSD_BACKLIGHT_NOT_SUPPORTED_CODE) {
-                        global.logError(`Could not get backlight step for ${busName}: ${error.message}`);
-                        return;
-                    } else {
-                        this._step = .05;
+                        global.logError(`Could not get backlight step: ${error.message}`);
                     }
+                    return;
                 }
                 this._step = (step / 100);
             });
         } catch (e) {
-            this._step = .05;
+            // step stays at default
         }
-
-        this._updateBrightnessLabel(b);
-        this.setValue(b / 100);
-        this.connect("value-changed", Lang.bind(this, this._sliderChanged));
-
-        this.actor.show();
-
-        //get notified
-        this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
-        this._applet.menu.connect("open-state-changed", Lang.bind(this, this._getBrightnessForcedUpdate));
     }
 
     _sliderChanged(slider, value) {
@@ -320,16 +197,16 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
     }
 
     _getBrightnessForcedUpdate() {
-        this._proxy.GetPercentageRemote(Lang.bind(this, function (b) {
+        this.proxy.GetPercentageRemote((b) => {
             this._updateBrightnessLabel(b);
             this.setValue(b / 100);
-        }));
+        });
     }
 
     _setBrightness(value) {
-        this._proxy.SetPercentageRemote(value, Lang.bind(this, function (b) {
+        this.proxy.SetPercentageRemote(value, (b) => {
             this._updateBrightnessLabel(b);
-        }));
+        });
     }
 
     _updateBrightnessLabel(value) {
@@ -347,10 +224,10 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._proxy.StepDownRemote(function () { });
+            this.proxy.StepDownRemote(function () { });
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._proxy.StepUpRemote(function () { });
+            this.proxy.StepUpRemote(function () { });
         }
 
         this._slider.queue_repaint();
@@ -383,10 +260,25 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0);
+        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0, () => {
+            this._updateAmbientVisibility();
+            this.brightness.proxy.connect("g-properties-changed", () => this._updateAmbientVisibility());
+        });
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
         this.menu.addMenuItem(this.keyboard);
+
+        this._ambientItem = new PopupMenu.PopupSwitchMenuItem(_("Adjust automatically"), false);
+        this._ambientItem.actor.hide();
+        this.menu.addMenuItem(this._ambientItem);
+        this._csdSettings = new Gio.Settings({ schema_id: CSD_SCHEMA });
+        this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
+        this._ambientItem.connect("toggled", (item) => {
+            this._csdSettings.set_boolean("ambient-enabled", item.state);
+        });
+        this._csdSettings.connect("changed::ambient-enabled", () => {
+            this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
+        });
 
         try {
             // Hadess interface
@@ -467,7 +359,21 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }));
         }, null);
 
+        this._loginManager = LoginManager.getLoginManager();
+        this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
+            if (!aboutToSuspend)
+                this._devicesChanged();
+        });
+
         this.set_show_label_in_vertical_panels(false);
+    }
+
+    _updateAmbientVisibility() {
+        if (this.brightness.proxy && this.brightness.proxy.AmbientLightSupported) {
+            this._ambientItem.actor.show();
+        } else {
+            this._ambientItem.actor.hide();
+        }
     }
 
     _onPanelEditModeChanged() {
@@ -490,7 +396,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     _onButtonPressEvent(actor, event) {
         //toggle keyboard brightness on middle click
         if (event.get_button() === 2) {
-            this.keyboard._proxy.ToggleRemote(function () { });
+            this.keyboard.proxy.ToggleRemote(function () { });
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -503,9 +409,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         //adjust screen brightness on scroll
         let direction = event.get_scroll_direction();
         if (direction == Clutter.ScrollDirection.UP) {
-            this.brightness._proxy.StepUpRemote(function () { });
+            this.brightness.proxy.StepUpRemote(function () { });
         } else if (direction == Clutter.ScrollDirection.DOWN) {
-            this.brightness._proxy.StepDownRemote(function () { });
+            this.brightness.proxy.StepDownRemote(function () { });
         }
         this.brightness._getBrightnessForcedUpdate();
     }
@@ -692,12 +598,12 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         if (state == UPDeviceState.UNKNOWN)
                             continue;
 
-                        if (reportsPreciseLevels(battery_level)) {
+                        if (PowerUtils.reportsPreciseLevels(battery_level)) {
                             // Devices that give accurate % charge will return this for battery level.
                             pct_support_count++;
                         }
 
-                        let stats = "%s (%d%%)".format(deviceKindToString(device_kind), percentage);
+                        let stats = "%s (%d%%)".format(PowerUtils.deviceKindToString(device_kind), percentage);
                         devices_stats.push(stats);
                         _devices.push(devices[i]);
 
@@ -749,7 +655,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                                 let [, , , , , percentage, , battery_level, seconds] = this._devices[i];
 
                                 // Skip devices without accurate reporting
-                                if (!reportsPreciseLevels(battery_level)) {
+                                if (!PowerUtils.reportsPreciseLevels(battery_level)) {
                                     continue;
                                 }
 

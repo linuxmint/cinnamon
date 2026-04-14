@@ -29,10 +29,10 @@ var DragMotionResult = {
 };
 
 var DRAG_CURSOR_MAP = {
-    0: Cinnamon.Cursor.DND_UNSUPPORTED_TARGET,
-    1: Cinnamon.Cursor.DND_COPY,
-    2: Cinnamon.Cursor.DND_MOVE,
-    3: Cinnamon.Cursor.POINTING_HAND
+    0: Cinnamon.Cursor.NO_DROP,
+    1: Cinnamon.Cursor.COPY,
+    2: Cinnamon.Cursor.MOVE,
+    3: Cinnamon.Cursor.POINTER
 };
 
 var DragDropResult = {
@@ -139,6 +139,12 @@ var _Draggable = new Lang.Class({
         if (Tweener.getTweenCount(actor))
             return false;
 
+        // Clean up any existing grab before starting a new one (fixes #13462)
+        // This prevents pointer grabs from accumulating during rapid clicks
+        if (this._onEventId) {
+            this._ungrabActor(event);
+        }
+
         this._buttonDown = true;
         this._grabActor(event);
 
@@ -172,7 +178,7 @@ var _Draggable = new Lang.Class({
 
     _grabEvents: function(event) {
         if (!this._eventsGrabbed) {
-            this._eventsGrabbed = Main.pushModal(_getEventHandlerActor());
+            this._eventsGrabbed = Main.pushModal(_getEventHandlerActor(), undefined, undefined, Cinnamon.ActionMode.NORMAL);
             if (this._eventsGrabbed) {
                 this.drag_device = event.get_device()
                 this.drag_device.grab(_getEventHandlerActor());
@@ -200,7 +206,7 @@ var _Draggable = new Lang.Class({
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 // Check if escaped drag was from a desklet
-                if (this.target?._delegate.acceptDrop){
+                if (this.target?._delegate.cancelDrag){
                     this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
                 }
                 this._dragComplete();
@@ -269,7 +275,7 @@ var _Draggable = new Lang.Class({
         if (this._onEventId)
             this._ungrabActor(event);
         this._grabEvents(event);
-        global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
+        global.set_cursor(Cinnamon.Cursor.NO_DROP);
 
         this._dragX = this._dragStartX = stageX;
         this._dragY = this._dragStartY = stageY;
@@ -447,7 +453,7 @@ var _Draggable = new Lang.Class({
             target = target.get_parent();
         }
         if (result in DRAG_CURSOR_MAP) global.set_cursor(DRAG_CURSOR_MAP[result]);
-        else global.set_cursor(Cinnamon.Cursor.DND_IN_DRAG);
+        else global.set_cursor(Cinnamon.Cursor.NO_DROP);
         return false;
     },
 

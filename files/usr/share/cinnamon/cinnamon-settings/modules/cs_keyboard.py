@@ -12,8 +12,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gdk, Gio, Gtk
 
-from KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
-from SettingsWidgets import SidePage, Keybinding
+from bin.KeybindingWidgets import ButtonKeybinding, CellRendererKeybinding
+from bin.SettingsWidgets import SidePage, Keybinding
 from bin import util
 from bin import InputSources
 from bin import XkbSettings
@@ -24,6 +24,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 
 MASKS = [Gdk.ModifierType.CONTROL_MASK, Gdk.ModifierType.MOD1_MASK,
          Gdk.ModifierType.SHIFT_MASK, Gdk.ModifierType.SUPER_MASK]
+
 
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
@@ -213,6 +214,7 @@ class Module:
             self.cat_store = Gtk.TreeStore(str,     # Icon name or None
                                            str,     # The category name
                                            object)  # The category object
+            self.cat_store.set_sort_column_id(1, Gtk.SortType.ASCENDING)
 
             self.kb_root_store = Gtk.ListStore(str,     # Keybinding name
                                                object)  # The keybinding object
@@ -225,6 +227,7 @@ class Module:
             cell = Gtk.CellRendererText()
             cell.set_alignment(0, 0)
             pb_cell = Gtk.CellRendererPixbuf()
+            pb_cell.set_property("xpad", 3)
             cat_column = Gtk.TreeViewColumn(_("Categories"))
             cat_column.pack_start(pb_cell, False)
             cat_column.pack_start(cell, True)

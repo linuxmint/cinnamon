@@ -647,6 +647,36 @@ on_gtk_application_id_changed (MetaWindow  *window,
 }
 
 static void
+on_window_shown (MetaWindow *window,
+                 gpointer    user_data)
+{
+  CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
+  CinnamonApp *old_app;
+  CinnamonApp *new_app;
+
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_window_shown), self);
+
+  old_app = g_hash_table_lookup (self->window_to_app, window);
+
+  if (old_app == NULL || !cinnamon_app_is_window_backed (old_app))
+    return;
+
+  new_app = get_app_for_window (self, window);
+
+  if (new_app != NULL && new_app != old_app && !cinnamon_app_is_window_backed (new_app))
+    {
+      _cinnamon_app_remove_window (old_app, window);
+      g_hash_table_replace (self->window_to_app, window, new_app);
+      _cinnamon_app_add_window (new_app, window);
+      g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
+    }
+  else if (new_app != NULL && new_app != old_app)
+    {
+      g_object_unref (new_app);
+    }
+}
+
+static void
 track_window (CinnamonWindowTracker *self,
               MetaWindow      *window)
 {
@@ -668,6 +698,15 @@ track_window (CinnamonWindowTracker *self,
   _cinnamon_app_add_window (app, window);
 
   g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
+
+  // For wayland windows that are window-backed (no app found, also
+  // listen for 'shown' signal to retry the lookup in its callback.
+  // It's  reasonable to expect the window to be fully associated by then.
+  if (meta_window_get_client_type (window) == META_WINDOW_CLIENT_TYPE_WAYLAND &&
+      cinnamon_app_is_window_backed (app))
+    {
+      g_signal_connect (window, "shown", G_CALLBACK (on_window_shown), self);
+    }
 }
 
 static void
@@ -699,6 +738,7 @@ disassociate_window (CinnamonWindowTracker   *self,
       _cinnamon_app_remove_window (app, window);
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
       g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
+      g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_window_shown), self);
     }
 
   g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);

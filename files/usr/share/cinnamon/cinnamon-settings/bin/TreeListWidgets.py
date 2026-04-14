@@ -4,7 +4,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk
 from xapp.SettingsWidgets import *
-from SettingsWidgets import SoundFileChooser, Keybinding
+from bin.SettingsWidgets import SoundFileChooser, Keybinding
 
 VARIABLE_TYPE_MAP = {
     "string"        :   str,
@@ -241,7 +241,8 @@ class List(SettingsWidget):
             self.move_down_button.set_sensitive(True)
 
     def on_row_activated(self, *args):
-        self.edit_item()
+        if "edit" not in self.hidden_buttons:
+            self.edit_item()
 
     def add_item(self, *args):
         data = self.open_add_edit_dialog()

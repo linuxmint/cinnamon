@@ -274,8 +274,6 @@ files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js
 
 generate_additional_files.py
 files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/utils.py
-files/usr/share/cinnamon/applets/printers@cinnamon.org/lpstat-a.py
-files/usr/share/cinnamon/applets/printers@cinnamon.org/cancel-print-dialog.py
 files/usr/share/cinnamon/applets/settings-example@cinnamon.org/CustomWidget.py
 files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py
 files/usr/share/cinnamon/cinnamon-looking-glass/pageutils.py

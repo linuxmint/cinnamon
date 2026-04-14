@@ -14,14 +14,15 @@ const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
 const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
 
-const createStore = require('./state');
-const AppGroup = require('./appGroup');
-const Workspace = require('./workspace');
+const Me = imports.ui.extension.getCurrentExtension();
+const {createStore} = Me.imports.state;
+const {AppGroup} = Me.imports.appGroup;
+const {Workspace} = Me.imports.workspace;
 const {
-  RESERVE_KEYS,
-  TitleDisplay,
-  autoStartStrDir
-}  = require('./constants');
+    RESERVE_KEYS,
+    TitleDisplay,
+    autoStartStrDir
+} = Me.imports.constants;
 
 class PinnedFavs {
     constructor(params) {
@@ -293,6 +294,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.signals.connect(global.settings, 'changed::panel-edit-mode', (...args) => this.on_panel_edit_mode_changed(...args));
         this.signals.connect(Main.themeManager, 'theme-set', (...args) => this.refreshCurrentWorkspace(...args));
         this.signals.connect(Main.messageTray, 'notify-applet-update', this._onNotificationReceived.bind(this));
+        this.signals.connect(this.tracker, 'window-app-changed', (...args) => this._onWindowAppChanged(...args));
     }
 
     bindSettings() {
@@ -1019,8 +1021,18 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWorkspace.windowRemoved(currentWorkspace.metaWorkspace, metaWindow);
             return;
         }
-        
+
         currentWorkspace.windowAdded(currentWorkspace.metaWorkspace, metaWindow);
+    }
+
+    _onWindowAppChanged(tracker, metaWindow) {
+        if (!metaWindow) return;
+
+        this.workspaces.forEach(workspace => {
+            if (!workspace) return;
+            workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
+            workspace.windowAdded(workspace.metaWorkspace, metaWindow);
+        });
     }
 
     onUIScaleChange() {

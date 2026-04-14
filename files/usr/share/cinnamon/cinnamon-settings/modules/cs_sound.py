@@ -4,9 +4,9 @@ import gi
 gi.require_version('Cvc', '1.0')
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, Cvc, Gdk, GdkPixbuf, Gio, Pango
-from SettingsWidgets import SidePage, GSettingsSoundFileChooser
+from bin.SettingsWidgets import SidePage, GSettingsSoundFileChooser
 from xapp.GSettingsWidgets import *
-import util
+from bin import util
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
