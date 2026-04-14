@@ -817,21 +817,27 @@ function wiggle(actor, params) {
 /**
  * switchToGreeter:
  *
- * Switches to the display manager's login greeter, allowing another user
- * to log in without logging out the current user. Tries multiple display
- * manager methods in order of preference.
+ * Locks the screen and switches to the greeter, allowing another user
+ * to log in without logging out the current user. If the screen is
+ * already locked (e.g. called from the screensaver itself), switches
+ * immediately.
  */
 function switchToGreeter() {
-    GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+    let controller = Main.screensaverController;
+
+    if (controller.locked) {
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+        return;
+    }
+
+    controller.lockScreen(false, (wasLocked) => {
+        if (!wasLocked)
+            return;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+    });
 }
 
 function _doSwitchToGreeter() {
-    // Check if user switching is locked down
-    if (Main.lockdownSettings.get_boolean('disable-user-switching')) {
-        global.logWarning("User switching is locked down");
-        return GLib.SOURCE_REMOVE;
-    }
-
     if (_processIsRunning('gdm')) {
         // Old GDM
         try {

@@ -85,15 +85,7 @@ class CinnamonUserApplet extends Applet.TextApplet {
         if (!Main.lockdownSettings.get_boolean('disable-user-switching')) {
             item = new PopupMenu.PopupIconMenuItem(_("Switch User"), "xsi-switch-user", St.IconType.SYMBOLIC);
             item.connect('activate', Lang.bind(this, function() {
-                let lockedId = Main.screensaverController.connect("locked-changed", () => {
-                    Util.switchToGreeter();
-                    Main.screensaverController.disconnect(lockedId);
-                })
-
-                GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-                    Main.screensaverController.lockScreen(false);
-                    return GLib.SOURCE_REMOVE;
-                });
+                Util.switchToGreeter();
             }));
             this.menu.addMenuItem(item);
         }
