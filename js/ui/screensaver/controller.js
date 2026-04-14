@@ -87,28 +87,36 @@ var ScreensaverController = class {
         return this.#settings.get_boolean('allow-keyboard-shortcuts');
     }
 
-    lockScreen(askForAwayMessage) {
-        if (Main.lockdownSettings.get_boolean('disable-lock-screen'))
+    lockScreen(askForAwayMessage, callback = null) {
+        if (Main.lockdownSettings.get_boolean('disable-lock-screen')) {
+            if (callback)
+                callback(this.#locked);
             return;
+        }
 
         if (askForAwayMessage && this.#settings.get_boolean('ask-for-away-message')) {
             let dialog = new AwayMessageDialog.AwayMessageDialog((message) => {
-                this.#doLock(message);
+                this.#doLock(message, callback);
             });
             dialog.open();
             return;
         }
 
-        this.#doLock(null);
+        this.#doLock(null, callback);
     }
 
-    #doLock(awayMessage) {
+    #doLock(awayMessage, callback) {
         if (this.#screenShield) {
-            this.#screenShield.lock(false, awayMessage);
+            this.#screenShield.lock(false, awayMessage, callback);
             return;
         }
 
-        this.#screenSaverProxy.LockRemote(awayMessage || "");
+        this.#screenSaverProxy.LockRemote(awayMessage || "", (result, error) => {
+            if (error)
+                global.logError(`ScreensaverController: LockRemote failed: ${error.message}`);
+            if (callback)
+                callback(!error);
+        });
     }
 
     hideKeyboard() {

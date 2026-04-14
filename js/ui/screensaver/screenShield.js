@@ -358,9 +358,11 @@ var ScreenShield = GObject.registerClass({
         clipboard.set_text(St.ClipboardType.CLIPBOARD, '');
     }
 
-    lock(immediate = false, awayMessage = null) {
+    lock(immediate = false, awayMessage = null, callback = null) {
         if (this.isLocked() || this._activationPending) {
             _log('ScreenShield: Already locked or activation pending, ignoring lock request');
+            if (callback)
+                callback(this.isLocked());
             return;
         }
 
@@ -374,10 +376,14 @@ var ScreenShield = GObject.registerClass({
                     this._stopLockDelay();
                     this._setLocked();
                 }
+                if (callback)
+                    callback(success);
             });
         } else {
             this._stopLockDelay();
             this._setLocked();
+            if (callback)
+                callback(true);
         }
     }
 
