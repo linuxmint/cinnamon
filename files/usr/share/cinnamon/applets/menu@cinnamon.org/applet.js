@@ -2501,7 +2501,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         button.activate = () => {
             this.menu.close();
-            Main.lockScreen(true);
+            Main.screensaverController.lockScreen(true);
         };
 
         this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });
