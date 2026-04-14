@@ -3,6 +3,7 @@
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const ByteArray = imports.byteArray;
+const Config = imports.misc.config;
 
 var importNames = [
     'mainloop',
@@ -24,8 +25,9 @@ var cinnamonImportNames = [
     'misc',
     'perf'
 ];
-var giImportNames = imports.gi.GIRepository.Repository
-    .get_default()
+var giImportNames = (Config.USE_GIR20
+    ? imports.gi.GIRepository.Repository.dup_default()
+    : imports.gi.GIRepository.Repository.get_default())
     .get_loaded_namespaces();
 var LoadedModules = [];
 var FunctionConstructor = Symbol();

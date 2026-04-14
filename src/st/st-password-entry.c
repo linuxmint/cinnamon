@@ -141,10 +141,10 @@ clutter_text_password_char_cb (GObject    *object,
                                gpointer    user_data)
 {
   StPasswordEntry *entry = ST_PASSWORD_ENTRY (user_data);
-  ClutterActor *clutter_text;
+  ClutterText *clutter_text;
 
   clutter_text = st_entry_get_clutter_text (ST_ENTRY (entry));
-  if (clutter_text_get_password_char (CLUTTER_TEXT (clutter_text)) == 0)
+  if (clutter_text_get_password_char (clutter_text) == 0)
     st_password_entry_set_password_visible (entry, TRUE);
   else
     st_password_entry_set_password_visible (entry, FALSE);
@@ -154,7 +154,7 @@ static void
 st_password_entry_init (StPasswordEntry *entry)
 {
   StPasswordEntryPrivate *priv;
-  ClutterActor *clutter_text;
+  ClutterText *clutter_text;
 
   priv = entry->priv = st_password_entry_get_instance_private (entry);
 
@@ -167,7 +167,7 @@ st_password_entry_init (StPasswordEntry *entry)
   priv->show_peek_icon = TRUE;
 
   clutter_text = st_entry_get_clutter_text (ST_ENTRY (entry));
-  clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), BULLET);
+  clutter_text_set_password_char (clutter_text, BULLET);
 
   g_signal_connect (clutter_text, "notify::password-char",
                     G_CALLBACK (clutter_text_password_char_cb), entry);
@@ -243,7 +243,7 @@ st_password_entry_set_password_visible (StPasswordEntry *entry,
                                         gboolean         value)
 {
   StPasswordEntryPrivate *priv;
-  ClutterActor *clutter_text;
+  ClutterText *clutter_text;
 
   g_return_if_fail (ST_IS_PASSWORD_ENTRY (entry));
 
@@ -256,12 +256,12 @@ st_password_entry_set_password_visible (StPasswordEntry *entry,
   clutter_text = st_entry_get_clutter_text (ST_ENTRY (entry));
   if (priv->password_visible)
     {
-      clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), 0);
+      clutter_text_set_password_char (clutter_text, 0);
       st_icon_set_icon_name (ST_ICON (priv->peek_password_icon), "xsi-view-reveal-symbolic");
     }
   else
     {
-      clutter_text_set_password_char (CLUTTER_TEXT (clutter_text), BULLET);
+      clutter_text_set_password_char (clutter_text, BULLET);
       st_icon_set_icon_name (ST_ICON (priv->peek_password_icon), "xsi-view-conceal-symbolic");
     }
 

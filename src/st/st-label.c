@@ -388,12 +388,12 @@ st_label_set_text (StLabel     *label,
  * Returns: (transfer none): ethe #ClutterText used by #StLabel. The label
  * is owned by the #StLabel and should not be unref'ed by the application.
  */
-ClutterActor*
+ClutterText *
 st_label_get_clutter_text (StLabel *label)
 {
   g_return_val_if_fail (ST_IS_LABEL (label), NULL);
 
-  return label->priv->label;
+  return (ClutterText *) label->priv->label;
 }
 
 
