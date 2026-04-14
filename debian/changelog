@@ -1,3 +1,10 @@
+cinnamon (6.6.8) zena; urgency=medium
+
+  [ Michael Webster ]
+  * Add support for CJS 140 (Note that Cinnamon needs to be rebuilt if CJS is upgraded to 140)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 14 Apr 2026 15:18:59 +0100
+
 cinnamon (6.6.7) zena; urgency=medium
 
   [ fredcw ]
