@@ -36,8 +36,7 @@ class CinnamonScaleApplet extends Applet.IconApplet {
     }
 
     doAction() {
-        if (!Main.overview.animationInProgress)
-            Main.overview.toggle();
+        Main.overview.toggle();
     }
 }
 

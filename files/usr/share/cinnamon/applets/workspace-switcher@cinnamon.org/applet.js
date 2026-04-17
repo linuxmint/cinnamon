@@ -515,8 +515,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
 
         let expoMenuItem = new PopupMenu.PopupIconMenuItem(_("Manage workspaces (Expo)"), "xsi-view-grid-symbolic", St.IconType.SYMBOLIC);
         expoMenuItem.connect('activate', Lang.bind(this, function() {
-            if (!Main.expo.animationInProgress)
-                Main.expo.toggle();
+            Main.expo.toggle();
         }));
         this._applet_context_menu.addMenuItem(expoMenuItem);
 

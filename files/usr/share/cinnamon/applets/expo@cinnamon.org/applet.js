@@ -36,8 +36,7 @@ class CinnamonExpoApplet extends Applet.IconApplet {
     }
 
     doAction() {
-        if (!Main.expo.animationInProgress)
-            Main.expo.toggle();
+        Main.expo.toggle();
     }
 }
 

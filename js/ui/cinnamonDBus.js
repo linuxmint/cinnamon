@@ -429,13 +429,11 @@ var CinnamonDBus = class {
     }
 
     ShowExpo() {
-        if (!Main.expo.animationInProgress)
-            Main.expo.toggle();
+        Main.expo.toggle();
     }
 
     ShowOverview() {
-        if (!Main.overview.animationInProgress)
-            Main.overview.toggle();
+        Main.overview.toggle();
     }
 
     PushSubprocessResult(process_id, result, success) {

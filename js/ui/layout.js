@@ -307,9 +307,6 @@ var LayoutManager = GObject.registerClass({
     }
 
     _toggleExpo() {
-        if (Main.expo.animationInProgress)
-            return;
-
         if (Main.overview.visible) {
             this._activationTime = Date.now() / 1000;
             Main.overview.hide();

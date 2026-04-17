@@ -427,6 +427,21 @@ function init() {
         _easeActorProperty(this, 'value', target, params);
     };
 
+    // Cinnamon.get_event_state() is typed against the ClutterEvent union,
+    // which GJS delivers to signal callbacks. Vfunc overrides instead get
+    // a boxed subtype struct (ClutterButtonEvent, ClutterKeyEvent, etc.)
+    // that GJS refuses to marshal into the union — so wrap the call and
+    // fall back to masking event.modifier_state directly in that case.
+    const _origGetEventState = Cinnamon.get_event_state;
+    const _modMask = Clutter.ModifierType.MODIFIER_MASK
+        & ~Clutter.ModifierType.MOD2_MASK
+        & ~Clutter.ModifierType.LOCK_MASK;
+    Cinnamon.get_event_state = function (event) {
+        if (event instanceof Clutter.Event)
+            return _origGetEventState(event);
+        return event.modifier_state & _modMask;
+    };
+
     // Work around https://bugzilla.mozilla.org/show_bug.cgi?id=508783
     Date.prototype.toLocaleFormat = function(format) {
         return Cinnamon.util_format_date(format, this.getTime());

@@ -345,7 +345,7 @@ function start() {
 
     GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
     new CinnamonPortalHandler();
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
@@ -439,7 +439,7 @@ function start() {
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
-    // This overview object is just a stub for non-user sessions
+
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
@@ -487,10 +487,6 @@ function start() {
     locatePointer = new LocatePointer.LocatePointer();
 
     layoutManager.init();
-    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
-
-    overview.init();
-    expo.init();
 
     _addXletDirectoriesToSearchPath();
     _initUserSession();
