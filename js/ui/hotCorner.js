@@ -158,12 +158,10 @@ class HotCorner extends Clutter.Actor {
     runAction(timestamp) {
         switch (this.action) {
             case 'expo':
-                if (!Main.expo.animationInProgress)
-                    Main.expo.toggle();
+                Main.expo.toggle();
                 break;
             case 'scale':
-                if (!Main.overview.animationInProgress)
-                    Main.overview.toggle();
+                Main.overview.toggle();
                 break;
             case 'desktop':
                 global.workspace_manager.toggle_desktop(timestamp);
