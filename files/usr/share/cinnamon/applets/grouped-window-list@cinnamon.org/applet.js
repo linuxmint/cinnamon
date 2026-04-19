@@ -835,14 +835,14 @@ class GroupedWindowListApplet extends Applet.Applet {
 
             if(this.state.dragging.isForeign) {
                 if (this.state.dragging.dragPlaceholder)
-                    currentWorkspace.actor.set_child_at_index(this.state.dragging.dragPlaceholder.actor, pos);
+                    currentWorkspace.actor.set_child_at_index(this.state.dragging.dragPlaceholder, pos);
                 else {
                     const iconSize = this.getPanelIconSize() * global.ui_scale;
                     this.state.dragging.dragPlaceholder = new DND.GenericDragPlaceholderItem();
-                    this.state.dragging.dragPlaceholder.child.width = iconSize;
-                    this.state.dragging.dragPlaceholder.child.height = iconSize;
+                    this.state.dragging.dragPlaceholder.width = iconSize;
+                    this.state.dragging.dragPlaceholder.height = iconSize;
                     currentWorkspace.actor.insert_child_at_index(
-                        this.state.dragging.dragPlaceholder.actor,
+                        this.state.dragging.dragPlaceholder,
                         this.state.dragging.pos
                     );
                     this.state.dragging.dragPlaceholder.animateIn();
@@ -893,7 +893,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             if(animate)
                 this.state.dragging.dragPlaceholder.animateOutAndDestroy();
             else
-                this.state.dragging.dragPlaceholder.actor.destroy();
+                this.state.dragging.dragPlaceholder.destroy();
             this.state.dragging.dragPlaceholder = null;
         }
     }

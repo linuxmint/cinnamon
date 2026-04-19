@@ -1364,20 +1364,20 @@ var PanelZoneDNDHandler = class {
             // it, but if we are adding it, expand its size in
             // an animation
             if (this._dragPlaceholder) {
-                this._panelZone.set_child_at_index(this._dragPlaceholder.actor,
+                this._panelZone.set_child_at_index(this._dragPlaceholder,
                                                    this._dragPlaceholderPos);
             } else {
                 this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
 
                 if (vertical_panel) {
-                    this._dragPlaceholder.child.set_width (10 * global.ui_scale);
-                    this._dragPlaceholder.child.set_height (20 * global.ui_scale);
+                    this._dragPlaceholder.set_width (10 * global.ui_scale);
+                    this._dragPlaceholder.set_height (20 * global.ui_scale);
                 } else {
-                    this._dragPlaceholder.child.set_width (20 * global.ui_scale);
-                    this._dragPlaceholder.child.set_height (10 * global.ui_scale);
+                    this._dragPlaceholder.set_width (20 * global.ui_scale);
+                    this._dragPlaceholder.set_height (10 * global.ui_scale);
                 }
 
-                this._panelZone.insert_child_at_index(this._dragPlaceholder.actor,
+                this._panelZone.insert_child_at_index(this._dragPlaceholder,
                                                       this._dragPlaceholderPos);
 
                 this._dragPlaceholder.animateIn();
@@ -1422,7 +1422,7 @@ var PanelZoneDNDHandler = class {
             if (children[i]._delegate instanceof Applet.Applet) {
                 children[i]._applet._newOrder = curAppletPos;
                 curAppletPos++;
-            } else if (children[i] == this._dragPlaceholder.actor) {
+            } else if (children[i] == this._dragPlaceholder) {
                 insertAppletPos = curAppletPos;
                 curAppletPos++;
             }
