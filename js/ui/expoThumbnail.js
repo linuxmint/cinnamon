@@ -29,6 +29,7 @@ const ICON_OPACITY = Math.round(255 * 0.9);
 const ICON_SIZE = 128;
 const ICON_OFFSET = -5;
 
+const WORKSPACE_DRAG_ANIMATION_TIME = 200;
 const DRAGGING_WINDOW_OPACITY = Math.round(255 * 0.8);
 const WINDOW_DND_SIZE = 256;
 
@@ -320,6 +321,34 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         this.connect('destroy', this.onDestroy.bind(this));
 
         this._lastButtonPressTimeStamp = 0;
+
+        // Connected before makeDraggable so this handler fires first. If the
+        // click originated from a window clone, inhibit workspace drag so the
+        // window clone's own DnD handles it instead.
+        this.connect('button-press-event', (actor, event) => {
+            if (!this.windows)
+                return Clutter.EVENT_PROPAGATE;
+            let source = event.get_source();
+            this._draggable.inhibit = this.windows.some(
+                w => w === source || w.contains(source)
+            );
+            return Clutter.EVENT_PROPAGATE;
+        });
+
+        this._draggable = DND.makeDraggable(this);
+        this._draggable.connect('drag-begin', () => {
+            this.inWorkspaceDrag = true;
+        });
+        this._draggable.connect('drag-end', () => {
+            this.inWorkspaceDrag = false;
+            this.show();
+            this.frame.show();
+            this.title.show();
+            this.box._endWorkspaceDrag();
+            // Reset so the next motion-event after drop re-runs the hover logic
+            // (button + highlight).
+            this.hovering = false;
+        });
 
         this.title = new St.Entry({ style_class: 'expo-workspaces-name-entry',
                                      track_hover: true,
@@ -938,8 +967,36 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         return indexOne - 1;
     }
 
-    // Draggable target interface
+    getDragActor() {
+        let clone = new Clutter.Clone({ source: this });
+        clone.set_size(this.width * this.scale_x,
+                       this.height * this.scale_y);
+
+        this.hide();
+        this.frame.hide();
+        this.title.hide();
+        this.box._startWorkspaceDrag(this.box.thumbnails.indexOf(this));
+
+        return clone;
+    }
+
+    getDragActorSource() {
+        return this;
+    }
+
     handleDragOver(source, actor, x, y, time) {
+        if (source instanceof ExpoWorkspaceThumbnail) {
+            if (source === this)
+                return DND.DragMotionResult.CONTINUE;
+
+            let alloc = this.get_allocation_box();
+            let scale = this.get_scale()[0];
+            let boxX = alloc.x1 + x * scale;
+            let boxY = alloc.y1 + y * scale;
+            this.box._updateWorkspaceDragFromPosition(boxX, boxY);
+            return DND.DragMotionResult.MOVE_DROP;
+        }
+
         this.emit('drag-over');
         if (!this.overviewMode) {
             this.overviewModeOn();
@@ -1011,6 +1068,16 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
     }
 
     acceptDrop(source, actor, x, y, time) {
+        if (source instanceof ExpoWorkspaceThumbnail) {
+            let sourceIndex = this.box._wsSourceIndex;
+            let dropIndex = this.box._wsDropIndex;
+            this.box._endWorkspaceDrag();
+            if (sourceIndex >= 0 && dropIndex >= 0 && sourceIndex !== dropIndex) {
+                this.box._reorderWorkspace(sourceIndex, dropIndex);
+            }
+            return true;
+        }
+
         if (this.handleDragOverOrDrop(false, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
             if (this.handleDragOverOrDrop(true, source, actor, x, y, time) != DND.DragMotionResult.CONTINUE) {
                 this.restack(true);
@@ -1056,12 +1123,27 @@ var ExpoThumbnailsBox = GObject.registerClass({
         // for the border and padding of the background actor.
         this.background = new St.Bin({reactive:true});
         this.add_child(this.background);
-        this.background.handleDragOver = function(source, actor, x, y, time) {
+        this.background.handleDragOver = (source, actor, x, y, time) => {
+            if (source instanceof ExpoWorkspaceThumbnail) {
+                if (this._wsDropIndex < 0)
+                    return DND.DragMotionResult.CONTINUE;
+                this._updateWorkspaceDragFromPosition(x, y);
+                return DND.DragMotionResult.MOVE_DROP;
+            }
             return source.metaWindow && !source.metaWindow.is_on_all_workspaces() ?
                 DND.DragMotionResult.MOVE_DROP : DND.DragMotionResult.CONTINUE;
         };
         this.background.acceptDrop = (source, actor, x, y, time) => {
-            if (this.background.handleDragOver(source, actor, x, y, time) ===  DND.DragMotionResult.MOVE_DROP) {
+            if (source instanceof ExpoWorkspaceThumbnail) {
+                let sourceIndex = this._wsSourceIndex;
+                let dropIndex = this._wsDropIndex;
+                this._endWorkspaceDrag();
+                if (sourceIndex >= 0 && dropIndex >= 0 && sourceIndex !== dropIndex) {
+                    this._reorderWorkspace(sourceIndex, dropIndex);
+                }
+                return true;
+            }
+            if (this.background.handleDragOver(source, actor, x, y, time) === DND.DragMotionResult.MOVE_DROP) {
                 let draggable = source._draggable;
                 actor.get_parent().remove_actor(actor);
                 draggable._dragOrigParent.add_actor(actor);
@@ -1084,6 +1166,9 @@ var ExpoThumbnailsBox = GObject.registerClass({
         this.targetScale = 0;
         this.pendingScaleUpdate = false;
         this.stateUpdateQueued = false;
+        this._wsSourceIndex = -1;
+        this._wsDropIndex = -1;
+        this._slotCenters = [];
 
         this.stateCounts = {};
         for (let key in ThumbnailState)
@@ -1163,6 +1248,14 @@ var ExpoThumbnailsBox = GObject.registerClass({
                 this.addThumbnails(index, 1);
             },
             'workspace-removed', () => {
+                if (this._wsSourceIndex >= 0) {
+                    let source = this.thumbnails[this._wsSourceIndex];
+                    if (source && source._draggable && source._draggable._dragInProgress)
+                        source._draggable._cancelDrag(null);
+                    else
+                        this._endWorkspaceDrag();
+                }
+
                 this.button.hide();
 
                 let removedCount = 0;
@@ -1225,6 +1318,70 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
     removeSelectedWorkspace() {
         this.thumbnails[this.kbThumbnailIndex].removeWorkspace();
+    }
+
+    _startWorkspaceDrag(sourceIndex) {
+        this._wsSourceIndex = sourceIndex;
+        this._wsDropIndex = sourceIndex;
+        this.button.hide();
+        this.queue_relayout();
+    }
+
+    _updateWorkspaceDragFromPosition(boxX, boxY) {
+        if (!this._slotCenters || this._slotCenters.length === 0)
+            return;
+
+        let minDist = Infinity;
+        let dropIndex = this._wsDropIndex;
+        for (let i = 0; i < this._slotCenters.length; i++) {
+            let dx = boxX - this._slotCenters[i].x;
+            let dy = boxY - this._slotCenters[i].y;
+            let dist = dx * dx + dy * dy;
+            if (dist < minDist) {
+                minDist = dist;
+                dropIndex = i;
+            }
+        }
+
+        if (this._wsDropIndex !== dropIndex) {
+            this._wsDropIndex = dropIndex;
+            this.queue_relayout();
+        }
+    }
+
+    _endWorkspaceDrag() {
+        this._wsSourceIndex = -1;
+        this._wsDropIndex = -1;
+        this.queue_relayout();
+    }
+
+    _reorderWorkspace(oldIndex, newIndex) {
+        Main.reorderWorkspace(oldIndex, newIndex);
+
+        let thumbnail = this.thumbnails.splice(oldIndex, 1)[0];
+        this.thumbnails.splice(newIndex, 0, thumbnail);
+
+        if (this.kbThumbnailIndex === oldIndex) {
+            this.kbThumbnailIndex = newIndex;
+        } else if (oldIndex < this.kbThumbnailIndex && newIndex >= this.kbThumbnailIndex) {
+            this.kbThumbnailIndex--;
+        } else if (oldIndex > this.kbThumbnailIndex && newIndex <= this.kbThumbnailIndex) {
+            this.kbThumbnailIndex++;
+        }
+
+        for (let i = 0; i < this.thumbnails.length; i++) {
+            this.thumbnails[i].refreshTitle();
+        }
+
+        let activeWorkspace = global.workspace_manager.get_active_workspace();
+        for (let i = 0; i < this.thumbnails.length; i++) {
+            let isActive = this.thumbnails[i].metaWorkspace === activeWorkspace;
+            this.thumbnails[i].setActive(isActive);
+            if (isActive)
+                this.lastActiveWorkspace = this.thumbnails[i];
+        }
+
+        this.queue_relayout();
     }
 
     // returns true if symbol was understood, false otherwise
@@ -1654,16 +1811,44 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
         this.background.allocate(childBox, flags);
 
+        // During a workspace drag, build a virtual display order:
+        // remove the source thumbnail and leave a gap at the drop position.
+        let displayOrder = [];
+        let isDragging = this._wsSourceIndex >= 0 && this._wsDropIndex >= 0;
+        if (isDragging) {
+            for (let i = 0; i < this.thumbnails.length; i++) {
+                if (i !== this._wsSourceIndex)
+                    displayOrder.push(this.thumbnails[i]);
+            }
+            displayOrder.splice(this._wsDropIndex, 0, null);
+            this._slotCenters = [];
+        } else {
+            for (let i = 0; i < this.thumbnails.length; i++)
+                displayOrder.push(this.thumbnails[i]);
+        }
+
         let x;
         let y = spacing + Math.floor((availY - nRows * thumbnailHeight) / 2);
-        for (let i = 0; i < this.thumbnails.length; i++) {
+        for (let i = 0; i < displayOrder.length; i++) {
             let column = i % nColumns;
             let row = Math.floor(i / nColumns);
-            let cItemsInRow = Math.min(this.thumbnails.length - (row * nColumns), nColumns);
+            let cItemsInRow = Math.min(displayOrder.length - (row * nColumns), nColumns);
             x = column > 0 ? x : calcPaddingX(cItemsInRow);
-            let rowMultiplier = row + 1;
 
-            let thumbnail = this.thumbnails[i];
+            if (isDragging) {
+                this._slotCenters.push({
+                    x: x + thumbnailWidth / 2,
+                    y: y + thumbnailHeight / 2
+                });
+            }
+
+            let thumbnail = displayOrder[i];
+
+            if (thumbnail === null) {
+                x += thumbnailWidth + spacing;
+                y += (i + 1) % nColumns > 0 ? 0 : thumbnailHeight + extraHeight + thTitleMargin;
+                continue;
+            }
 
             // We might end up with thumbnailHeight being something like 99.33
             // pixels. To make this work and not end up with a gap at the bottom,
@@ -1671,11 +1856,19 @@ var ExpoThumbnailsBox = GObject.registerClass({
             // we compute an actual scale separately for each thumbnail.
             let x1 = Math.round(x + (thumbnailWidth * thumbnail.slide_position / 2));
             let x2 = Math.round(x + thumbnailWidth);
+            let y1 = y;
+            let y2 = y1 + thumbnailHeight;
 
-            let y1, y2;
+            let scale = this.thumbnail_scale * (1 - thumbnail.slide_position);
 
-            y1 = y;
-            y2 = y1 + thumbnailHeight;
+            let animate = isDragging && thumbnail.has_allocation();
+            if (animate) {
+                for (let actor of [thumbnail, thumbnail.frame, thumbnail.title]) {
+                    actor.save_easing_state();
+                    actor.set_easing_mode(Clutter.AnimationMode.EASE_OUT_QUAD);
+                    actor.set_easing_duration(WORKSPACE_DRAG_ANIMATION_TIME);
+                }
+            }
 
             // Allocating a scaled actor is funny - x1/y1 correspond to the origin
             // of the actor, but x2/y2 are increased by the *unscaled* size.
@@ -1683,8 +1876,6 @@ var ExpoThumbnailsBox = GObject.registerClass({
             childBox.x2 = x1 + portholeWidth;
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
-
-            let scale = this.thumbnail_scale * (1 - thumbnail.slide_position);
             thumbnail.set_scale(scale, scale);
             thumbnail.allocate(childBox, flags);
 
@@ -1703,6 +1894,12 @@ var ExpoThumbnailsBox = GObject.registerClass({
             childBox.y1 = y + thumbnailHeight + thTitleMargin;
             childBox.y2 = childBox.y1 + thumbnail.title.height;
             thumbnail.title.allocate(childBox, flags);
+
+            if (animate) {
+                for (let actor of [thumbnail, thumbnail.frame, thumbnail.title]) {
+                    actor.restore_easing_state();
+                }
+            }
 
             x += thumbnailWidth + spacing;
             y += (i + 1) % nColumns > 0 ? 0 : thumbnailHeight + extraHeight + thTitleMargin;

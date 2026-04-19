@@ -767,6 +767,36 @@ function hasDefaultWorkspaceName(index) {
     return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
 }
 
+function reorderWorkspace(oldIndex, newIndex) {
+    let n = global.workspace_manager.n_workspaces;
+    if (oldIndex === newIndex ||
+        oldIndex < 0 || oldIndex >= n ||
+        newIndex < 0 || newIndex >= n)
+        return;
+
+    let workspace = global.workspace_manager.get_workspace_by_index(oldIndex);
+    global.workspace_manager.reorder_workspace(workspace, newIndex);
+
+    // If every workspace has its default name, there's nothing to move -
+    // default names regenerate from the index automatically.
+    let hasCustomName = false;
+    for (let i = 0; i < global.workspace_manager.n_workspaces; i++) {
+        if (!hasDefaultWorkspaceName(i)) {
+            hasCustomName = true;
+            break;
+        }
+    }
+    if (!hasCustomName)
+        return;
+
+    _fillWorkspaceNames(Math.max(oldIndex, newIndex) + 1);
+    let name = workspace_names[oldIndex] || '';
+    workspace_names.splice(oldIndex, 1);
+    workspace_names.splice(newIndex, 0, name);
+    _trimWorkspaceNames();
+    wmSettings.set_strv("workspace-names", workspace_names);
+}
+
 function _addWorkspace() {
     global.workspace_manager.append_new_workspace(false, global.get_current_time());
     return true;
