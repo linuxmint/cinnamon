@@ -7,7 +7,7 @@ const CheckBox = imports.ui.checkBox;
 const Dialog = imports.ui.dialog;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 const Params = imports.misc.params;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 
@@ -262,7 +262,7 @@ var CinnamonUnmountNotifier = class extends MessageTray.Source {
 
 var CinnamonMountQuestionDialog = GObject.registerClass({
     Signals: { 'response': { param_types: [GObject.TYPE_INT] } },
-}, class CinnamonMountQuestionDialog extends ModalDialog.ModalDialog {
+}, class CinnamonMountQuestionDialog extends PopupDialog.PopupDialog {
     _init() {
         super._init({ styleClass: 'mount-question-dialog' });
 
@@ -301,7 +301,7 @@ var CinnamonMountPasswordDialog = GObject.registerClass({
             ],
         },
     },
-}, class CinnamonMountPasswordDialog extends ModalDialog.ModalDialog {
+}, class CinnamonMountPasswordDialog extends PopupDialog.PopupDialog {
     _init(message, flags) {
         let strings = message.split('\n');
         let title = strings.shift() || null;
@@ -509,7 +509,7 @@ var CinnamonMountPasswordDialog = GObject.registerClass({
 
 var CinnamonProcessesDialog = GObject.registerClass({
     Signals: { 'response': { param_types: [GObject.TYPE_INT] } },
-}, class CinnamonProcessesDialog extends ModalDialog.ModalDialog {
+}, class CinnamonProcessesDialog extends PopupDialog.PopupDialog {
     _init() {
         super._init({ styleClass: 'processes-dialog' });
 

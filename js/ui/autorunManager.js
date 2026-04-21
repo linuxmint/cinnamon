@@ -5,7 +5,7 @@ const { Clutter, Gio, GObject, Pango, St } = imports.gi;
 
 const CheckBox = imports.ui.checkBox;
 const Dialog = imports.ui.dialog;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 
 const hotplugSnifferIface =
 ' \
@@ -295,7 +295,7 @@ var AutorunDispatcher = class {
 };
 
 var AutorunDialog = GObject.registerClass(
-class AutorunDialog extends ModalDialog.ModalDialog {
+class AutorunDialog extends PopupDialog.PopupDialog {
     _init(mount, apps, contentType) {
         super._init({ styleClass: 'autorun-dialog' });
 
