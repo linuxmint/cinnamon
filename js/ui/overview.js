@@ -221,7 +221,8 @@ var Overview = GObject.registerClass({
         if (this._shown || this.animationInProgress)
             return;
         // Do this manually instead of using _syncInputMode, to handle failure
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW,
+                            () => this._dismissGrab()))
             return;
         this._modal = true;
         this._shown = true;
@@ -295,6 +296,15 @@ var Overview = GObject.registerClass({
         this._buttonPressId = 0;
     }
 
+    // onDismiss handler for Main.dismissInternalModals().
+    _dismissGrab() {
+        this.hide();
+        if (this._modal) {
+            Main.popModal(this._group);
+            this._modal = false;
+        }
+    }
+
     toggle() {
         if (this._shown)
             this.hide();
@@ -311,7 +321,8 @@ var Overview = GObject.registerClass({
 
         if (this._shown) {
             if (!this._modal) {
-                if (Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW))
+                if (Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW,
+                                   () => this._dismissGrab()))
                     this._modal = true;
                 else
                     this.hide();

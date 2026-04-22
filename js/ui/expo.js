@@ -261,7 +261,8 @@ var Expo = GObject.registerClass({
             return;
         this.beforeShow();
         // Do this manually instead of using _syncInputMode, to handle failure
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.EXPO))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.EXPO,
+                            () => this._dismissGrab()))
             return;
         this._modal = true;
         this._shown = true;
@@ -353,6 +354,15 @@ var Expo = GObject.registerClass({
         this._syncInputMode();
     }
 
+    // onDismiss handler for Main.dismissInternalModals().
+    _dismissGrab() {
+        this.hide();
+        if (this._modal) {
+            Main.popModal(this._group);
+            this._modal = false;
+        }
+    }
+
     toggle() {
         if (this._shown)
             this.hide();
@@ -369,7 +379,8 @@ var Expo = GObject.registerClass({
 
         if (this._shown) {
             if (!this._modal) {
-                if (Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.EXPO))
+                if (Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.EXPO,
+                                   () => this._dismissGrab()))
                     this._modal = true;
                 else
                     this.hide();

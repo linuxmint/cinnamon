@@ -423,6 +423,9 @@ var ScreenShield = GObject.registerClass({
         this._allowFloating = this._settings.get_boolean('floating-widgets');
 
         this._activationPending = true;
+
+        Main.dismissInternalModals();
+
         _log('ScreenShield: requesting screensaver modal grab');
         Main.pushScreensaverModal(this, global.get_current_time(), Cinnamon.ActionMode.LOCK_SCREEN,
             (success) => {

@@ -1388,7 +1388,7 @@ function _findModal(actor) {
     return -1;
 }
 
-function _completeModalSetup(actor, mode) {
+function _completeModalSetup(actor, mode, onDismiss) {
     _modifierOnlyAction = 0;
 
     if (modalCount == 0)
@@ -1409,7 +1409,8 @@ function _completeModalSetup(actor, mode) {
         actor: actor,
         focus: global.stage.get_key_focus(),
         destroyId: actorDestroyId,
-        actionMode: mode
+        actionMode: mode,
+        onDismiss: onDismiss || null
     };
     if (record.focus != null) {
         record.focusDestroyId = record.focus.connect('destroy', function() {
@@ -1431,6 +1432,8 @@ function _completeModalSetup(actor, mode) {
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
  * is already grabbed
  * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
+ * @onDismiss (function): (optional) callback invoked by dismissInternalModals()
+ * to cleanly release this grab.
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1450,7 +1453,7 @@ function _completeModalSetup(actor, mode) {
  *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
-function pushModal(actor, timestamp, options, mode) {
+function pushModal(actor, timestamp, options, mode, onDismiss) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
 
@@ -1464,7 +1467,7 @@ function pushModal(actor, timestamp, options, mode) {
         }
     }
 
-    _completeModalSetup(actor, mode);
+    _completeModalSetup(actor, mode, onDismiss);
     return true;
 }
 
@@ -1588,6 +1591,52 @@ function popModal(actor, timestamp) {
     layoutManager.updateChrome(true);
 
     Meta.enable_unredirect_for_display(global.display);
+}
+
+/**
+ * dismissInternalModals:
+ *
+ * Cleanly release every Cinnamon-internal modal grab currently on the stack.
+ * Used by the internal screensaver and called over dbus by cinnamon-screensaver
+ * -command for cinnamon-screensaver or custom-command mode.
+ */
+function dismissInternalModals() {
+    let guard = modalActorFocusStack.length * 2 + 4;
+
+    while (modalActorFocusStack.length > 0 && guard-- > 0) {
+        let record = modalActorFocusStack[modalActorFocusStack.length - 1];
+        let actor = record.actor;
+
+        if (typeof record.onDismiss === 'function') {
+            try {
+                record.onDismiss();
+            } catch (e) {
+                global.logError(`dismissInternalModals: onDismiss threw: ${e.message}`);
+            }
+        } else {
+            global.logWarning('dismissInternalModals: modal actor has no onDismiss; force-popping');
+        }
+
+        let idx = _findModal(actor);
+        if (idx !== -1) {
+            try {
+                popModal(actor);
+            } catch (e) {
+                global.logError(`dismissInternalModals: force-pop failed: ${e.message}`);
+                modalActorFocusStack.splice(idx, 1);
+                modalCount = Math.max(0, modalCount - 1);
+            }
+        }
+    }
+
+    if (modalActorFocusStack.length > 0 || modalCount > 0) {
+        global.logError('dismissInternalModals: stack non-empty after walk, forcing reset');
+        modalActorFocusStack.length = 0;
+        modalCount = 0;
+        global.end_modal(global.get_current_time());
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+        actionMode = Cinnamon.ActionMode.NORMAL;
+    }
 }
 
 /**

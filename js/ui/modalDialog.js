@@ -200,7 +200,7 @@ class ModalDialog extends BaseDialog.BaseDialog {
     pushModal(timestamp, mode) {
         if (this._hasModal)
             return true;
-        if (!Main.pushModal(this, timestamp, undefined, mode))
+        if (!Main.pushModal(this, timestamp, undefined, mode, () => this.close()))
             return false;
 
         this._hasModal = true;
