@@ -1070,6 +1070,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
         this._outputApplicationsMenu.actor.hide();
         this._selectOutputDeviceItem.actor.hide();
+        this._selectOutputDeviceItem.menu.open();
 
         this._inputSection = new PopupMenu.PopupMenuSection();
         this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
