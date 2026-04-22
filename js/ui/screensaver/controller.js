@@ -10,6 +10,7 @@ const Main = imports.ui.main;
 const ScreenShield = imports.ui.screensaver.screenShield;
 const ScreenSaver = imports.misc.screenSaver;
 const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
+const Util = imports.misc.util;
 
 var ScreensaverController = class {
     #screenShield = null;
@@ -28,11 +29,19 @@ var ScreensaverController = class {
             global.settings.set_boolean("session-locked-state", false);
         }
 
+        // A custom screensaver command preempts both internal and cinnamon-screensaver modes.
+        let customCommand = this.#settings.get_string('custom-screensaver-command').trim();
+        if (customCommand) {
+            global.log(`Screensaver: custom command.`);
+            return;
+        }
+
         this.#screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
 
         // The internal screensaver is the only option for wayland sessions. X11 sessions can use either
         // the internal one or cinnamon-screensaver (>= 6.7).
         if (Meta.is_wayland_compositor() || global.settings.get_boolean('internal-screensaver-enabled')) {
+            global.log('Screensaver: internal');
             let screenShieldGroup = new St.Widget({
                 name: 'screenShieldGroup',
                 visible: false,
@@ -57,6 +66,7 @@ var ScreensaverController = class {
                 this.emit('locked-changed', false);
             });
         } else {
+            global.log('Screensaver: cinnamon-screensaver');
             this.#screenSaverProxy.connectSignal('ActiveChanged', (proxy, senderName, [isActive]) => {
                 this.#locked = isActive;
                 this.emit('locked-changed', isActive);
@@ -91,6 +101,14 @@ var ScreensaverController = class {
         if (Main.lockdownSettings.get_boolean('disable-lock-screen')) {
             if (callback)
                 callback(this.#locked);
+            return;
+        }
+
+        let customCommand = this.#settings.get_string('custom-screensaver-command').trim();
+        if (customCommand) {
+            Util.spawn(['cinnamon-screensaver-command', '-l']);
+            if (callback)
+                callback(true);
             return;
         }
 

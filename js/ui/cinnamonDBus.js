@@ -124,6 +124,7 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="show_osd" /> \
             </method> \
             <method name="ReloadTheme"/> \
+            <method name="DismissInternalModals"/> \
             <signal name="RunStateChanged"/> \
             <signal name="XletsLoadedComplete"/> \
             <property name="AnimationsEnabled" type="b" access="read" /> \
@@ -494,6 +495,10 @@ var CinnamonDBus = class {
 
     ReloadTheme() {
         Main.themeManager._changeTheme()
+    }
+
+    DismissInternalModals() {
+        Main.dismissInternalModals();
     }
 
     EmitRunStateChanged() {

@@ -53,8 +53,6 @@ var ScreenSaverService = class ScreenSaverService {
             this._screenShield.connect('locked', this._onLocked.bind(this));
             this._screenShield.connect('unlocked', this._onUnlocked.bind(this));
         }
-
-        global.log('ScreenSaverService: providing org.cinnamon.ScreenSaver interface');
     }
 
     _onLocked() {

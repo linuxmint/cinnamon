@@ -84,6 +84,14 @@ class ScreensaverCommand:
 
         ss_settings = Gio.Settings.new("org.cinnamon.desktop.screensaver")
         custom_saver = ss_settings.get_string("custom-screensaver-command").strip()
+        internal_enabled = Gio.Settings.new("org.cinnamon").get_boolean("internal-screensaver-enabled")
+
+        # Cinnamon dismisses its own modals inside the internal shield path.
+        # Only call it here when the lock is being handled by a custom command
+        # or cinnamon-screensaver.
+        if self.action_id in (Action.LOCK, Action.ACTIVATE) and (custom_saver or not internal_enabled):
+            self._dismiss_cinnamon_modals()
+
         if custom_saver:
             self._handle_custom_saver(custom_saver)
             quit()
@@ -99,6 +107,22 @@ class ScreensaverCommand:
             None,
             self._on_proxy_ready
         )
+
+    def _dismiss_cinnamon_modals(self):
+        return
+        try:
+            bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
+            bus.call_sync("org.Cinnamon",
+                          "/org/Cinnamon",
+                          "org.Cinnamon",
+                          "DismissInternalModals",
+                          None,
+                          None,
+                          Gio.DBusCallFlags.NONE,
+                          2000,
+                          None)
+        except GLib.Error as e:
+            print("Error dismissing Cinnamon modals: %s" % e.message)
 
     def _handle_custom_saver(self, custom_saver):
         if self.action_id in (Action.LOCK, Action.ACTIVATE):
