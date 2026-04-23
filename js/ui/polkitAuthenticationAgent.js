@@ -259,6 +259,7 @@ var AuthenticationDialog = GObject.registerClass({
         this._passwordEntry.bind_property('reactive',
             this._passwordEntry.clutter_text, 'editable',
             GObject.BindingFlags.SYNC_CREATE);
+        this.setInitialKeyFocus(this._passwordEntry);
         passwordBox.add_child(this._passwordEntry);
 
         let warningBox = new St.BoxLayout({ vertical: true });
