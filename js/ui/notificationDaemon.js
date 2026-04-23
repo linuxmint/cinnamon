@@ -173,6 +173,9 @@ NotificationDaemon.prototype = {
                 case Urgency.CRITICAL:
                     stockIcon = 'xsi-dialog-error-symbolic';
                     break;
+                default:
+                    stockIcon = 'xsi-dialog-information-symbolic';
+                    break;
             }
             return new St.Icon({ icon_name: stockIcon,
                                  icon_type: St.IconType.SYMBOLIC,
@@ -265,7 +268,13 @@ NotificationDaemon.prototype = {
         let ndata = this._expireNotifications[0];
 
         if (ndata) {
-            ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
+            if (ndata.notification) {
+                ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
+            } else {
+                // notification object not yet created (async PID lookup still pending)
+                this._expireNotifications.shift();
+                this._restartExpire();
+            }
         }
 
         this._expireTimer = 0;

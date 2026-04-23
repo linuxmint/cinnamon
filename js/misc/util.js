@@ -369,12 +369,12 @@ const _IGNORED_PHRASES = [
 ];
 
 function fixupPCIDescription(desc) {
-    desc = desc.replace(/[_,]/, ' ');
+    desc = desc.replace(/[_,]/g, ' ');
 
     /* Remove any parenthesized info longer than 2 chars (which
        may be disambiguating numbers if there are multiple identical
        cards present) */
-    desc = desc.replace(/\([\s\S][^\(\)]{2,}\)/, '');
+    desc = desc.replace(/\([\s\S][^\(\)]{2,}\)/g, '');
 
     /* Attempt to shorten ID by ignoring certain phrases */
     for (let i = 0; i < _IGNORED_PHRASES.length; i++) {

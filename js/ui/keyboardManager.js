@@ -12,11 +12,11 @@ const PopupMenu = imports.ui.popupMenu;
 const Cairo = imports.cairo;
 const Util = imports.misc.util;
 
-DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
-KEY_INPUT_SOURCES = 'sources';
-KEY_KEYBOARD_OPTIONS = 'xkb-options';
-KEY_PER_WINDOW = 'per-window';
-KEY_SOURCE_LAYOUTS = 'source-layouts';
+var DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
+var KEY_INPUT_SOURCES = 'sources';
+var KEY_KEYBOARD_OPTIONS = 'xkb-options';
+var KEY_PER_WINDOW = 'per-window';
+var KEY_SOURCE_LAYOUTS = 'source-layouts';
 
 var INPUT_SOURCE_TYPE_XKB = 'xkb';
 var INPUT_SOURCE_TYPE_IBUS = 'ibus';
