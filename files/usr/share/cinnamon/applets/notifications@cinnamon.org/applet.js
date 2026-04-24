@@ -118,6 +118,14 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this.menu.passEvents = false;
         }));
 
+        let adjustment = this.scrollview.vscroll.adjustment;
+        adjustment.connect('changed', () => {
+            let needsScroll = adjustment.upper > adjustment.page_size;
+            for (let i = 0; i < this.notifications.length; i++) {
+                this.notifications[i].setMouseScrolling(!needsScroll);
+            }
+        });
+
         // Alternative tray icons.
         this._crit_icon = new St.Icon({icon_name: 'critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
         this._alt_crit_icon = new St.Icon({icon_name: 'alt-critical-notif', icon_type: St.IconType.SYMBOLIC, reactive: true, track_hover: true, style_class: 'system-status-icon' });
