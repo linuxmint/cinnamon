@@ -1,5 +1,6 @@
 {
  "uuid": "xrandr@cinnamon.org",
+ "max-instances": -1,
  "name": "Display",
  "description": "XRandR monitor control applet",
  "icon": "cs-display",
