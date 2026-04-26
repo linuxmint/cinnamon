@@ -1080,15 +1080,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     this._selectOutputDeviceItem.menu.open();
             }
         });
-        this._outputApplicationsMenu.actor.connect('notify::visible', () => {
-            if (this.alwaysExpandApplications && this._outputApplicationsMenu.actor.visible)
-                this._outputApplicationsMenu.menu.open();
-        });
-
-        this._selectOutputDeviceItem.actor.connect('notify::visible', () => {
-            if (this.alwaysExpandOutputDevice && this._selectOutputDeviceItem.actor.visible)
-                this._selectOutputDeviceItem.menu.open();
-        });
 
         this._inputSection = new PopupMenu.PopupMenuSection();
         this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
