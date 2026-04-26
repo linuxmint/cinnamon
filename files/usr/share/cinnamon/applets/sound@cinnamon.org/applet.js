@@ -1072,19 +1072,23 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
         this._outputApplicationsMenu.actor.hide();
         this._selectOutputDeviceItem.actor.hide();
-        this._outputApplicationsMenu.menu.connect('open-state-changed', (menu, open) => {
-            if (this.alwaysExpandApplications && !open && this._outputApplicationsMenu.actor.visible)
-                menu.open();
+        this._applet_context_menu.connect('open-state-changed', (menu, open) => {
+            if (open) {
+                if (this.alwaysExpandApplications && this._outputApplicationsMenu.actor.visible)
+                    this._outputApplicationsMenu.menu.open();
+                if (this.alwaysExpandOutputDevice && this._selectOutputDeviceItem.actor.visible)
+                    this._selectOutputDeviceItem.menu.open();
+            }
         });
-        if (this.alwaysExpandApplications)
-            this._outputApplicationsMenu.menu.open();
-        else
-            this._outputApplicationsMenu.menu.close();
+        this._outputApplicationsMenu.actor.connect('notify::visible', () => {
+            if (this.alwaysExpandApplications && this._outputApplicationsMenu.actor.visible)
+                this._outputApplicationsMenu.menu.open();
+        });
 
-        if (this.alwaysExpandOutputDevice)
-            this._selectOutputDeviceItem.menu.open();
-        else
-            this._selectOutputDeviceItem.menu.close();
+        this._selectOutputDeviceItem.actor.connect('notify::visible', () => {
+            if (this.alwaysExpandOutputDevice && this._selectOutputDeviceItem.actor.visible)
+                this._selectOutputDeviceItem.menu.open();
+        });
 
         this._inputSection = new PopupMenu.PopupMenuSection();
         this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
