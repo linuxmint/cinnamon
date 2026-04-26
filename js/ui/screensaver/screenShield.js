@@ -169,15 +169,32 @@ var ScreenShield = GObject.registerClass({
         this.add_child(this._keyboardBox);
         this._oskVisible = false;
 
+        this._bottomButtonLayout = new St.BoxLayout();
+        this._keyboardBox.add_child(this._bottomButtonLayout);
+
         this._oskButton = new St.Button({
-            style_class: 'osk-activate-button',
+            style_class: 'icon-button',
             important: true,
             can_focus: true,
             reactive: true
         });
         this._oskButton.set_child(new St.Icon({ icon_name: 'xsi-input-keyboard-symbolic' }));
         this._oskButton.connect('clicked', this._toggleScreensaverKeyboard.bind(this));
-        this._keyboardBox.add_child(this._oskButton);
+        this._bottomButtonLayout.add_child(this._oskButton);
+
+        this._screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
+        if (this._screensaverSettings.get_boolean('user-switch-enabled') &&
+            !Main.lockdownSettings.get_boolean('disable-user-switching')) {
+            this._switchUserButton = new St.Button({
+                style_class: 'icon-button',
+                important: true,
+                can_focus: true,
+                reactive: true,
+                icon_name: 'xsi-switch-user-symbolic',
+            });
+            this._bottomButtonLayout.add_child(this._switchUserButton);
+            this._switchUserButton.connect('clicked', this._onSwitchUser.bind(this));
+        }
 
         this._capturedEventId = 0;
         this._lastMotionX = -1;
@@ -603,6 +620,10 @@ var ScreenShield = GObject.registerClass({
         });
     }
 
+    _onSwitchUser() {
+        Util.switchToGreeter();
+    }
+
     isLocked() {
         return this._state === State.LOCKED || this._state === State.UNLOCKING;
     }
@@ -776,7 +797,7 @@ var ScreenShield = GObject.registerClass({
         if (this._oskVisible)
             return;
 
-        this._oskButton.hide();
+        this._bottomButtonLayout.hide();
         Main.virtualKeyboardManager.openForScreensaver(this._keyboardBox, this);
         this._oskVisible = true;
         this._positionKeyboardBox();
@@ -789,7 +810,7 @@ var ScreenShield = GObject.registerClass({
 
         Main.virtualKeyboardManager.closeForScreensaver();
         this._oskVisible = false;
-        this._oskButton.show();
+        this._bottomButtonLayout.show();
         this._positionKeyboardBox();
         this._positionUnlockDialog();
     }
@@ -814,8 +835,8 @@ var ScreenShield = GObject.registerClass({
                 keyboard.height = height;
             }
         } else {
-            let [, natWidth] = this._oskButton.get_preferred_width(-1);
-            let [, natHeight] = this._oskButton.get_preferred_height(natWidth);
+            let [, natWidth] = this._bottomButtonLayout.get_preferred_width(-1);
+            let [, natHeight] = this._bottomButtonLayout.get_preferred_height(natWidth);
             let padding = 24 * global.ui_scale;
 
             let x = monitor.x + (monitor.width - natWidth) / 2;

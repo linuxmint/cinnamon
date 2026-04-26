@@ -117,64 +117,6 @@ class UnlockDialog extends St.BoxLayout {
         this._sourceChangedId = this._inputSourceManager.connect(
             'current-source-changed', this._updateLayoutIndicator.bind(this));
 
-        this._buttonLayout = new St.Widget({
-            style_class: 'dialog-button-box',
-            important: true,
-            layout_manager: new Clutter.BoxLayout({
-                homogeneous: true,
-                spacing: 12 * global.ui_scale
-            })
-        });
-        this._dialogBox.add(this._buttonLayout, {
-            x_align: St.Align.MIDDLE,
-            y_align: St.Align.MIDDLE
-        });
-
-        this._cancelButton = new St.Button({
-            style_class: 'dialog-button',
-            important: true,
-            label: _("Cancel"),
-            reactive: true,
-            can_focus: true,
-            x_expand: true,
-            y_expand: true
-        });
-        this._cancelButton.connect('clicked', this._onCancel.bind(this));
-        this._buttonLayout.add_child(this._cancelButton);
-
-        this._screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
-        if (this._screensaverSettings.get_boolean('user-switch-enabled') &&
-            !Main.lockdownSettings.get_boolean('disable-user-switching')) {
-            this._switchUserButton = new St.Button({
-                style_class: 'dialog-button',
-                important: true,
-                label: _("Switch User"),
-                can_focus: true,
-                reactive: true,
-                x_expand: true,
-                y_expand: true
-            });
-            this._switchUserButton.connect('clicked', this._onSwitchUser.bind(this));
-            this._buttonLayout.add_child(this._switchUserButton);
-        }
-
-        this._unlockButton = new St.Button({
-            style_class: 'dialog-button',
-            important: true,
-            label: _("Unlock"),
-            can_focus: true,
-            reactive: false,
-            x_expand: true,
-            y_expand: true
-        });
-        this._unlockButton.add_style_pseudo_class('default');
-        this._unlockButton.connect('clicked', this._onUnlock.bind(this));
-        this._buttonLayout.add_child(this._unlockButton);
-
-        this._passwordEntry.clutter_text.connect('text-changed', text => {
-            this._unlockButton.reactive = text.get_text().length > 0;
-        });
-
         this._authClient = new AuthClient.AuthClient();
         this._authClient.connect('auth-success', this._onAuthSuccess.bind(this));
         this._authClient.connect('auth-failure', this._onAuthFailure.bind(this));
@@ -348,10 +290,6 @@ class UnlockDialog extends St.BoxLayout {
         this._screenShield.hideUnlockDialog();
     }
 
-    _onSwitchUser() {
-        Util.switchToGreeter();
-    }
-
     initializePam() {
         if (!this._authClient.initialized)
             return this._authClient.initialize();
@@ -362,11 +300,9 @@ class UnlockDialog extends St.BoxLayout {
     _setPasswordEntryVisible(visible) {
         if (visible) {
             this._passwordEntry.show();
-            this._unlockButton.show();
             this._capsLockWarning.show();
         } else {
             this._passwordEntry.hide();
-            this._unlockButton.hide();
             this._capsLockWarning.hide();
         }
     }
