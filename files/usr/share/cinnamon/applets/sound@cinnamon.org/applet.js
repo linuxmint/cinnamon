@@ -988,6 +988,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
         this.settings.bind("alwaysShowMuteInput", "alwaysShowMuteInput", this.on_settings_changed);
+        this.settings.bind("alwaysExpandApplications", "alwaysExpandApplications", this.on_settings_changed);
+        this.settings.bind("alwaysExpandOutputDevice", "alwaysExpandOutputDevice", this.on_settings_changed);                
 
         this.settings.bind("tooltipShowVolume", "tooltipShowVolume", this.on_settings_changed);
         this.settings.bind("tooltipShowPlayer", "tooltipShowPlayer", this.on_settings_changed);
@@ -1070,7 +1072,19 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._applet_context_menu.addMenuItem(this._selectOutputDeviceItem);
         this._outputApplicationsMenu.actor.hide();
         this._selectOutputDeviceItem.actor.hide();
-        this._selectOutputDeviceItem.menu.open();
+        this._outputApplicationsMenu.menu.connect('open-state-changed', (menu, open) => {
+            if (this.alwaysExpandApplications && !open && this._outputApplicationsMenu.actor.visible)
+                menu.open();
+        });
+        if (this.alwaysExpandApplications)
+            this._outputApplicationsMenu.menu.open();
+        else
+            this._outputApplicationsMenu.menu.close();
+
+        if (this.alwaysExpandOutputDevice)
+            this._selectOutputDeviceItem.menu.open();
+        else
+            this._selectOutputDeviceItem.menu.close();
 
         this._inputSection = new PopupMenu.PopupMenuSection();
         this._inputVolumeSection = new VolumeSlider(this, null, _("Microphone"), null);
