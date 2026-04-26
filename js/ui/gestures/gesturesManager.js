@@ -1,23 +1,21 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const { Gio, GObject, Cinnamon, Meta } = imports.gi;
-const Util = imports.misc.util;
+const { Gio, Meta } = imports.gi;
 const SignalManager = imports.misc.signalManager;
-const ScreenSaver = imports.misc.screenSaver;
+const Main = imports.ui.main;
 
 const actions = imports.ui.gestures.actions;
-const { 
+const {
     GestureType,
     GestureDirection,
-    DeviceType,
     GestureTypeString,
     GestureDirectionString,
-    GesturePhaseString,
     DeviceTypeString
-} = imports.ui.gestures.ToucheggTypes;
+} = imports.ui.gestures.gestureTypes;
+const { NativeGestureSource } = imports.ui.gestures.nativeGestureSource;
+const { ToucheggGestureSource } = imports.ui.gestures.toucheggGestureSource;
 
 const SCHEMA = "org.cinnamon.gestures";
-const TOUCHPAD_SCHEMA = "org.cinnamon.desktop.peripherals.touchpad"
 
 const NON_GESTURE_KEYS = [
     "enabled",
@@ -86,20 +84,24 @@ var GestureDefinition = class {
 
 var GesturesManager = class {
     constructor(wm) {
-        if (Meta.is_wayland_compositor()) {
-            global.log("Gestures disabled on Wayland");
-            return;
-        }
-
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
+        this.current_gesture = null;
+        this.live_actions = new Map();
+
+        if (Meta.is_wayland_compositor()) {
+            this.gestureSource = new NativeGestureSource();
+        } else {
+            this.gestureSource = new ToucheggGestureSource();
+        }
 
         this.migrate_settings();
 
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
-        this.screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this.client = null;
-        this.current_gesture = null;
+
+        this.gestureSource.connect('gesture-begin', this.gesture_begin.bind(this));
+        this.gestureSource.connect('gesture-update', this.gesture_update.bind(this));
+        this.gestureSource.connect('gesture-end', this.gesture_end.bind(this));
 
         this.settings_or_devices_changed()
     }
@@ -142,41 +144,14 @@ var GesturesManager = class {
         }
     }
 
-    setup_client() {
-        if (this.client == null) {
-            global.log('Set up Touchegg client');
-            actions.init_mixer();
-            actions.init_mpris_controller();
-
-            this.client = new Cinnamon.ToucheggClient();
-
-            this.signalManager.connect(this.client, "gesture-begin", this.gesture_begin, this);
-            this.signalManager.connect(this.client, "gesture-update", this.gesture_update, this);
-            this.signalManager.connect(this.client, "gesture-end", this.gesture_end, this);
-        }
-    }
-
-    shutdown_client() {
-        if (this.client == null) {
-            return;
-        }
-
-        global.log('Shutdown Touchegg client');
-        this.signalManager.disconnect("gesture-begin");
-        this.signalManager.disconnect("gesture-update");
-        this.signalManager.disconnect("gesture-end");
-        this.client = null;
-
-        actions.cleanup();
-    }
-
     settings_or_devices_changed(settings, key) {
         if (this.settings.get_boolean("enabled")) {
             this.setup_actions();
             return;
         }
 
-        this.shutdown_client();
+        this.gestureSource.shutdown();
+        actions.cleanup();
     }
 
     gesture_active() {
@@ -184,8 +159,12 @@ var GesturesManager = class {
     }
 
     setup_actions() {
-        // Make sure the client is setup
-        this.setup_client();
+        // Make sure gesture source is set up
+        if (!this.gestureSource.isActive()) {
+            actions.init_mixer();
+            actions.init_mpris_controller();
+            this.gestureSource.setup();
+        }
 
         this.live_actions = new Map();
 
@@ -250,13 +229,13 @@ var GesturesManager = class {
         return definition;
     }
 
-    gesture_begin(client, type, direction, percentage, fingers, device, elapsed_time) {
+    gesture_begin(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture != null) {
             global.logWarning("New gesture started before another was completed. Clearing the old one");
             this.current_gesture = null;
         }
 
-        if (this.screenSaverProxy.screenSaverActive) {
+        if (Main.screensaverController?.locked) {
             debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
             return;
         }
@@ -277,7 +256,7 @@ var GesturesManager = class {
         this.current_gesture.begin(direction, percentage, elapsed_time);
     }
 
-    gesture_update(client, type, direction, percentage, fingers, device, elapsed_time) {
+    gesture_update(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture == null) {
             debug_gesture("Gesture update but there's no current one.");
             return;
@@ -294,7 +273,7 @@ var GesturesManager = class {
         this.current_gesture.update(direction, percentage, elapsed_time);
     }
 
-    gesture_end(client, type, direction, percentage, fingers, device, elapsed_time) {
+    gesture_end(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture == null) {
             debug_gesture("Gesture end but there's no current one.");
             return;
