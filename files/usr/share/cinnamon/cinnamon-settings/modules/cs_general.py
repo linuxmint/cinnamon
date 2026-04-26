@@ -44,7 +44,7 @@ class Module:
                 switch = GSettingsSwitch(_("Restart Cinnamon when it uses too much memory"), "org.cinnamon.launcher", "memory-limit-enabled")
                 settings.add_row(switch)
 
-                spin = GSettingsSpinButton(_("Memory limit"), "org.cinnamon.launcher", "memory-limit", _("MB"), 1024, 36000, 1, 100)
+                spin = GSettingsSpinButton(_("Memory limit"), "org.cinnamon.launcher", "memory-limit", _("MB"), 256, 36000, 1, 100)
                 settings.add_reveal_row(spin, "org.cinnamon.launcher", "memory-limit-enabled")
 
                 spin = GSettingsSpinButton(_("Check frequency"), "org.cinnamon.launcher", "check-frequency", _("seconds"), 1, 86400, 1, 60)
