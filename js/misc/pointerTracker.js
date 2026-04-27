@@ -83,7 +83,7 @@ var PointerSwitcher = class {
         const monitor = Main.layoutManager.monitors[index];
 
         let real_x = (nx * monitor.width) + monitor.x;
-        let real_y = (nx * monitor.height) + monitor.y;
+        let real_y = (ny * monitor.height) + monitor.y;
 
         return [real_x, real_y];
     }
