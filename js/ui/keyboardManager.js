@@ -16,6 +16,7 @@ DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
 KEY_INPUT_SOURCES = 'sources';
 KEY_KEYBOARD_OPTIONS = 'xkb-options';
 KEY_PER_WINDOW = 'per-window';
+KEY_SOURCE_LAYOUTS = 'source-layouts';
 
 var INPUT_SOURCE_TYPE_XKB = 'xkb';
 var INPUT_SOURCE_TYPE_IBUS = 'ibus';
@@ -159,7 +160,9 @@ var KeyboardManager = class {
     }
 
     _buildGroupStrings(_group) {
-        let group = _group.concat(this._localeLayoutInfo);
+        let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout &&
+                                                g.variant === this._localeLayoutInfo.variant);
+        let group = alreadyIncluded ? _group : _group.concat(this._localeLayoutInfo);
         let layouts = group.map(g => g.layout).join(',');
         let variants = group.map(g => g.variant).join(',');
         return [layouts, variants];
@@ -176,7 +179,7 @@ var KeyboardManager = class {
 };
 
 var InputSource = class {
-    constructor(type, id, displayName, shortName, flagName, xkbLayout, variant, prefs, index) {
+    constructor(type, id, displayName, shortName, flagName, xkbLayout, variant, prefs, index, layoutOverride) {
         this.type = type;
         this.id = id;
         this.displayName = displayName;
@@ -187,6 +190,7 @@ var InputSource = class {
         this.xkbLayout = xkbLayout;
         this.variant = variant;
         this.preferences = prefs;
+        this._layoutOverride = layoutOverride;
 
         this.properties = null;
 
@@ -207,6 +211,10 @@ var InputSource = class {
     }
 
     _getXkbId() {
+        // Use layout override if set
+        if (this._layoutOverride)
+            return this._layoutOverride;
+
         let engineDesc = IBusManager.getIBusManager().getEngineDesc(this.id);
         if (!engineDesc)
             return this.id;
@@ -402,6 +410,7 @@ var InputSourceSettings = class {
         this._settings.connect('changed::%s'.format(KEY_INPUT_SOURCES), this._emitInputSourcesChanged.bind(this));
         this._settings.connect('changed::%s'.format(KEY_KEYBOARD_OPTIONS), this._emitKeyboardOptionsChanged.bind(this));
         this._settings.connect('changed::%s'.format(KEY_PER_WINDOW), this._emitPerWindowChanged.bind(this));
+        this._settings.connect('changed::%s'.format(KEY_SOURCE_LAYOUTS), this._emitInputSourcesChanged.bind(this));
 
         let sources = this._settings.get_value(KEY_INPUT_SOURCES);
         if (sources.n_children() == 0) {
@@ -453,6 +462,10 @@ var InputSourceSettings = class {
 
     get perWindow() {
         return this._settings.get_boolean(KEY_PER_WINDOW);
+    }
+
+    get sourceLayouts() {
+        return this._settings.get_value(KEY_SOURCE_LAYOUTS).deep_unpack();
     }
 };
 Signals.addSignalMethods(InputSourceSettings.prototype);
@@ -519,14 +532,30 @@ var InputSourceManager = class {
 
     _setupKeybindings() {
         let kb = this._kb_settings.get_strv("switch-input-source");
-        Main.keybindingManager.addHotKeyArray("switch-input-source", kb, () => this._modifiersSwitcher(false));
+        Main.keybindingManager.addHotKeyArray(
+            "switch-input-source", kb,
+            () => this._modifiersSwitcher(false),
+            undefined,
+            Cinnamon.ActionMode.ALL
+        );
+
         kb = this._kb_settings.get_strv("switch-input-source-backward");
-        Main.keybindingManager.addHotKeyArray("switch-input-source-backward", kb, () => this._modifiersSwitcher(true));
+        Main.keybindingManager.addHotKeyArray(
+            "switch-input-source-backward", kb,
+            () => this._modifiersSwitcher(true),
+            undefined,
+            Cinnamon.ActionMode.ALL
+        );
 
         for (let i = 0; i <= 3; i++) {
             const name = `switch-input-source-${i}`;
             kb = this._kb_settings.get_strv(name);
-            Main.keybindingManager.addHotKeyArray(name, kb, () => this.activateInputSourceIndex(i));
+            Main.keybindingManager.addHotKeyArray(
+                name, kb,
+                () => this.activateInputSourceIndex(i),
+                undefined,
+                Cinnamon.ActionMode.ALL
+            );
         }
     }
 
@@ -598,6 +627,9 @@ var InputSourceManager = class {
     }
 
     activateInputSource(is) {
+        if (is === this._currentSource)
+            return;
+
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
@@ -722,17 +754,34 @@ var InputSourceManager = class {
         }
 
         let inputSourcesDupeTracker = {};
+        let sourceLayouts = this._settings.sourceLayouts;
 
         for (let i = 0; i < infosList.length; i++) {
-            let is = new InputSource(infosList[i].type,
-                                     infosList[i].id,
-                                     infosList[i].displayName,
-                                     infosList[i].shortName,
-                                     infosList[i].flagName,
-                                     infosList[i].xkbLayout,
-                                     infosList[i].variant,
-                                     infosList[i].prefs,
-                                     i);
+            let info = infosList[i];
+            let layoutOverride = null;
+
+            // Only apply layout overrides for IBus engines that use "default" layout
+            if (info.type == INPUT_SOURCE_TYPE_IBUS && info.id in sourceLayouts) {
+                let engineDesc = this._ibusManager.getEngineDesc(info.id);
+                let engineLayout = engineDesc ? engineDesc.get_layout() : null;
+
+                if (!engineLayout || engineLayout == 'default') {
+                    layoutOverride = sourceLayouts[info.id];
+                } else {
+                    global.logWarning('Ignoring layout override for IBus engine "%s": engine requires layout "%s"'.format(info.id, engineLayout));
+                }
+            }
+
+            let is = new InputSource(info.type,
+                                     info.id,
+                                     info.displayName,
+                                     info.shortName,
+                                     info.flagName,
+                                     info.xkbLayout,
+                                     info.variant,
+                                     info.prefs,
+                                     i,
+                                     layoutOverride);
             is.connect('activate', this.activateInputSource.bind(this));
 
             let key = is.shortName;

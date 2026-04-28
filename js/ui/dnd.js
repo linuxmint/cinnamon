@@ -2,9 +2,9 @@
 
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const GObject = imports.gi.GObject;
 const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
-const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const Tweener = imports.ui.tweener;
@@ -12,7 +12,7 @@ const Main = imports.ui.main;
 
 const Params = imports.misc.params;
 
-var DND_ANIMATION_TIME = 0.2;
+var DND_ANIMATION_TIME = 200;
 // Time to scale down to maxDragActorSize
 var SCALE_ANIMATION_TIME = 250;
 // Time to animate to original position on cancel
@@ -76,10 +76,8 @@ function isDragging() {
     return currentDraggable != null;
 }
 
-var _Draggable = new Lang.Class({
-    Name: 'Draggable',
-
-    _init : function(actor, params, target) {
+var _Draggable = class Draggable {
+    constructor(actor, params, target) {
         params = Params.parse(params, { manualMode: false,
                                         restoreOnSuccess: false,
                                         overrideX: undefined,
@@ -104,15 +102,15 @@ var _Draggable = new Lang.Class({
 
         if (!params.manualMode)
             this.buttonPressEventId = this.actor.connect('button-press-event',
-                                                    Lang.bind(this, this._onButtonPress));
+                                                    this._onButtonPress.bind(this));
 
-        this.destroyEventId = this.actor.connect('destroy', Lang.bind(this, function() {
+        this.destroyEventId = this.actor.connect('destroy', () => {
             this._actorDestroyed = true;
 
             if (this._dragInProgress && this._dragCancellable)
                 this._cancelDrag(null);
             this.disconnectAll();
-        }));
+        });
         this._onEventId = null;
 
         this._restoreOnSuccess = params.restoreOnSuccess;
@@ -127,9 +125,9 @@ var _Draggable = new Lang.Class({
         this._dragCancellable = true;
 
         this._eventsGrabbed = false;
-    },
+    }
 
-    _onButtonPress : function (actor, event) {
+    _onButtonPress(actor, event) {
         if (this.inhibit)
             return false;
 
@@ -139,6 +137,15 @@ var _Draggable = new Lang.Class({
         if (Tweener.getTweenCount(actor))
             return false;
 
+        if (['opacity', 'scale-x', 'scale-y', 'x', 'y', 'width', 'height'].some(p => actor.get_transition(p)))
+            return false;
+
+        // Clean up any existing grab before starting a new one (fixes #13462)
+        // This prevents pointer grabs from accumulating during rapid clicks
+        if (this._onEventId) {
+            this._ungrabActor(event);
+        }
+
         this._buttonDown = true;
         this._grabActor(event);
 
@@ -147,16 +154,16 @@ var _Draggable = new Lang.Class({
         this._dragStartY = stageY;
 
         return false;
-    },
+    }
 
-    _grabActor: function(event) {
+    _grabActor(event) {
         this.drag_device = event.get_device();
         this.drag_device.grab(this.actor);
         this._onEventId = this.actor.connect('event',
-                                             Lang.bind(this, this._onEvent));
-    },
+                                             this._onEvent.bind(this));
+    }
 
-    _ungrabActor: function(event) {
+    _ungrabActor(event) {
         if (!this._onEventId)
             return;
 
@@ -168,9 +175,9 @@ var _Draggable = new Lang.Class({
 
         this.actor.disconnect(this._onEventId);
         this._onEventId = null;
-    },
+    }
 
-    _grabEvents: function(event) {
+    _grabEvents(event) {
         if (!this._eventsGrabbed) {
             this._eventsGrabbed = Main.pushModal(_getEventHandlerActor(), undefined, undefined, Cinnamon.ActionMode.NORMAL);
             if (this._eventsGrabbed) {
@@ -178,17 +185,17 @@ var _Draggable = new Lang.Class({
                 this.drag_device.grab(_getEventHandlerActor());
             }
         }
-    },
+    }
 
-    _ungrabEvents: function() {
+    _ungrabEvents() {
         if (this._eventsGrabbed) {
             this.drag_device.ungrab();
             Main.popModal(_getEventHandlerActor());
             this._eventsGrabbed = false;
         }
-    },
+    }
 
-    _onEvent: function(actor, event) {
+    _onEvent(actor, event) {
         // We intercept BUTTON_RELEASE event to know that the button was released in case we
         // didn't start the drag, to drop the draggable in case the drag was in progress, and
         // to complete the drag and ensure that whatever happens to be under the pointer does
@@ -200,7 +207,7 @@ var _Draggable = new Lang.Class({
             } else if (this._dragActor != null && !this._animationInProgress) {
                 // Drag must have been cancelled with Esc.
                 // Check if escaped drag was from a desklet
-                if (this.target?._delegate.acceptDrop){
+                if (this.target?._delegate.cancelDrag){
                     this.target._delegate.cancelDrag(this.actor._delegate, this._dragActor);
                 }
                 this._dragComplete();
@@ -229,7 +236,7 @@ var _Draggable = new Lang.Class({
         }
 
         return false;
-    },
+    }
 
     /**
      * fakeRelease:
@@ -239,10 +246,10 @@ var _Draggable = new Lang.Class({
      * actors for other purposes (for example if you're using
      * PopupMenu.ignoreRelease())
      */
-    fakeRelease: function() {
+    fakeRelease() {
         this._buttonDown = false;
         this._ungrabActor();
-    },
+    }
 
     /**
      * startDrag:
@@ -254,7 +261,7 @@ var _Draggable = new Lang.Class({
      * This function is useful to call if you've specified manualMode
      * for the draggable.
      */
-    startDrag: function (stageX, stageY, event) {
+    startDrag(stageX, stageY, event) {
         currentDraggable = this;
         this._dragInProgress = true;
 
@@ -368,9 +375,9 @@ var _Draggable = new Lang.Class({
                 });
             }
         }
-    },
+    }
 
-    _maybeStartDrag:  function(event) {
+    _maybeStartDrag(event) {
         let [stageX, stageY] = event.get_coords();
 
         // See if the user has moved the mouse enough to trigger a drag
@@ -382,9 +389,9 @@ var _Draggable = new Lang.Class({
         }
 
         return true;
-    },
+    }
 
-    _updateDragHover : function () {
+    _updateDragHover() {
         this._updateHoverId = 0;
         let target = null;
         let result = null;
@@ -449,17 +456,17 @@ var _Draggable = new Lang.Class({
         if (result in DRAG_CURSOR_MAP) global.set_cursor(DRAG_CURSOR_MAP[result]);
         else global.set_cursor(Cinnamon.Cursor.NO_DROP);
         return false;
-    },
+    }
 
-    _queueUpdateDragHover: function() {
+    _queueUpdateDragHover() {
         if (this._updateHoverId)
             return;
 
         this._updateHoverId = GLib.idle_add(GLib.PRIORITY_DEFAULT,
-                                            Lang.bind(this, this._updateDragHover));
-    },
+                                            this._updateDragHover.bind(this));
+    }
 
-    _updateDragPosition : function (event) {
+    _updateDragPosition(event) {
         let [stageX, stageY] = event.get_coords();
         this._dragX = stageX;
         this._dragY = stageY;
@@ -468,17 +475,17 @@ var _Draggable = new Lang.Class({
 
         this._queueUpdateDragHover();
         return true;
-    },
+    }
 
-    _setDragActorPosition: function() {
+    _setDragActorPosition() {
         this._dragActor.x = this._overrideX == undefined ?
             this._dragX + this._dragOffsetX : this._overrideX;
 
         this._dragActor.y = this._overrideY == undefined ?
             this._dragY + this._dragOffsetY : this._overrideY;
-    },
+    }
 
-    _dragActorDropped: function(event) {
+    _dragActorDropped(event) {
         let [dropX, dropY] = event.get_coords();
         let target = null;
 
@@ -547,9 +554,9 @@ var _Draggable = new Lang.Class({
         this._cancelDrag(event);
 
         return true;
-    },
+    }
 
-    _getRestoreLocation: function() {
+    _getRestoreLocation() {
         let x, y, scale;
 
         if (this._dragActorSource && this._dragActorSource.visible) {
@@ -579,9 +586,9 @@ var _Draggable = new Lang.Class({
         }
 
         return [x, y, scale];
-    },
+    }
 
-    _cancelDrag: function(event) {
+    _cancelDrag(event) {
         let eventTime;
         if (event !== null) {
             eventTime = event.get_time();
@@ -617,9 +624,9 @@ var _Draggable = new Lang.Class({
                 this._onAnimationComplete(this._dragActor, eventTime);
             }
         });
-    },
+    }
 
-    _restoreDragActor: function(eventTime) {
+    _restoreDragActor(eventTime) {
         this._dragInProgress = false;
         let [restoreX, restoreY, restoreScale] = this._getRestoreLocation();
 
@@ -638,9 +645,9 @@ var _Draggable = new Lang.Class({
                 this._onAnimationComplete(this._dragActor, eventTime);
             }
         });
-    },
+    }
 
-    _onAnimationComplete : function (dragActor, eventTime) {
+    _onAnimationComplete(dragActor, eventTime) {
         if (this._dragOrigParent) {
             global.reparentActor (dragActor, this._dragOrigParent);
             dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
@@ -654,9 +661,9 @@ var _Draggable = new Lang.Class({
         this._animationInProgress = false;
         if (!this._buttonDown)
             this._dragComplete();
-    },
+    }
 
-    _dragComplete: function() {
+    _dragComplete() {
         if (this._dragOrigParent)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
 
@@ -671,7 +678,7 @@ var _Draggable = new Lang.Class({
         this._dragActor = undefined;
         currentDraggable = null;
     }
-});
+};
 
 Signals.addSignalMethods(_Draggable.prototype);
 
@@ -700,172 +707,55 @@ function makeDraggable(actor, params, target) {
     return new _Draggable(actor, params, target);
 }
 
-function GenericDragItemContainer() {
-    this._init();
-}
-
-GenericDragItemContainer.prototype = {
-    _init: function() {
-        this.actor = new Cinnamon.GenericContainer({ style_class: 'drag-item-container' });
-        this.actor.connect('get-preferred-width',
-                           Lang.bind(this, this._getPreferredWidth));
-        this.actor.connect('get-preferred-height',
-                           Lang.bind(this, this._getPreferredHeight));
-        this.actor.connect('allocate',
-                           Lang.bind(this, this._allocate));
-        this.actor._delegate = this;
-
-        this.child = null;
-        this._childScale = 1;
-        this._childOpacity = 255;
-        this.animatingOut = false;
-    },
-
-    _allocate: function(actor, box, flags) {
-        if (this.child == null)
-            return;
-
-        let availWidth = box.x2 - box.x1;
-        let availHeight = box.y2 - box.y1;
-        let [minChildWidth, minChildHeight, natChildWidth, natChildHeight] =
-            this.child.get_preferred_size();
-        let [childScaleX, childScaleY] = this.child.get_scale();
-
-        let childWidth = Math.min(natChildWidth * childScaleX, availWidth);
-        let childHeight = Math.min(natChildHeight * childScaleY, availHeight);
-
-        let childBox = new Clutter.ActorBox();
-        childBox.x1 = (availWidth - childWidth) / 2;
-        childBox.y1 = (availHeight - childHeight) / 2;
-        childBox.x2 = childBox.x1 + childWidth;
-        childBox.y2 = childBox.y1 + childHeight;
-
-        this.child.allocate(childBox, flags);
-    },
-
-    _getPreferredHeight: function(actor, forWidth, alloc) {
-        alloc.min_size = 0;
-        alloc.natural_size = 0;
-
-        if (this.child == null)
-            return;
-
-        let [minHeight, natHeight] = this.child.get_preferred_height(forWidth);
-        alloc.min_size += minHeight * this.child.scale_y;
-        alloc.natural_size += natHeight * this.child.scale_y;
-    },
-
-    _getPreferredWidth: function(actor, forHeight, alloc) {
-        alloc.min_size = 0;
-        alloc.natural_size = 0;
-
-        if (this.child == null)
-            return;
-
-        let [minWidth, natWidth] = this.child.get_preferred_width(forHeight);
-        alloc.min_size = minWidth * this.child.scale_y;
-        alloc.natural_size = natWidth * this.child.scale_y;
-    },
-
-    setChild: function(actor) {
-        if (this.child == actor)
-            return;
-
-        this.actor.destroy_all_children();
-
-        this.child = actor;
-        this.actor.add_actor(this.child);
-    },
-
-    animateIn: function(onCompleteFunc) {
-        if (!this.child) {
-            if (typeof(onCompleteFunc) === 'function')
-                onCompleteFunc();
-            return;
-        }
-
-        this.childScale = 0;
-        this.childOpacity = 0;
-
-        let params = { childScale: 1.0,
-                       childOpacity: 255,
-                       time: DND_ANIMATION_TIME,
-                       transition: 'easeOutQuad' };
-
-        if (typeof(onCompleteFunc) === 'function')
-            params.onComplete = onCompleteFunc;
-
-        Tweener.addTween(this, params);
-    },
-
-    animateOutAndDestroy: function(onCompleteFunc) {
-        let _onComplete = () => {
-            if (typeof(onCompleteFunc) === 'function')
-                onCompleteFunc();
-            this.actor.destroy();
-        };
-
-        if (!this.child) {
-            _onComplete();
-            return;
-        }
-
-        this.animatingOut = true;
-        this.childScale = 1.0;
-        Tweener.addTween(this,
-                         { childScale: 0.0,
-                           childOpacity: 0,
-                           time: DND_ANIMATION_TIME,
-                           transition: 'easeOutQuad',
-                           onComplete: _onComplete });
-    },
-
-    set childScale(scale) {
-        if (this.child.is_finalized()) return;
-        this._childScale = scale;
-
-        if (this.child == null)
-            return;
-
-        this.child.pivot_point.x = 0.5;
-        this.child.pivot_point.y = 0.5;
-        this.child.scale_x = scale;
-        this.child.scale_y = scale;
-        this.actor.queue_relayout();
-    },
-
-    get childScale() {
-        return this._childScale;
-    },
-
-    set childOpacity(opacity) {
-        if (this.child.is_finalized()) return;
-        this._childOpacity = opacity;
-
-        if (this.child == null)
-            return;
-
-        this.child.set_opacity(opacity);
-        this.actor.queue_redraw();
-    },
-
-    get childOpacity() {
-        return this._childOpacity;
+var GenericDragPlaceholderItem = GObject.registerClass(
+class GenericDragPlaceholderItem extends St.Bin {
+    _init() {
+        super._init({ style_class: 'drag-placeholder' });
+        this._delegate = this;
     }
-};
 
-function GenericDragPlaceholderItem() {
-    this._init();
-}
-
-GenericDragPlaceholderItem.prototype = {
-    __proto__: GenericDragItemContainer.prototype,
-
-    _init: function() {
-        GenericDragItemContainer.prototype._init.call(this);
-        this.setChild(new St.Bin({ style_class: 'drag-placeholder' }));
+    get actor() {
+        return this;
     }
-};
+
+    get child() {
+        return this;
+    }
+
+    animateIn(onCompleteFunc) {
+        let targetWidth = this.width;
+        let targetHeight = this.height;
+
+        this.set_size(0, 0);
+        this.set_opacity(0);
+        this.ease({
+            width: targetWidth,
+            height: targetHeight,
+            opacity: 255,
+            duration: DND_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                if (typeof onCompleteFunc === 'function')
+                    onCompleteFunc();
+            }
+        });
+    }
+
+    animateOutAndDestroy(onCompleteFunc) {
+        this.ease({
+            width: 0,
+            height: 0,
+            opacity: 0,
+            duration: DND_ANIMATION_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                if (typeof onCompleteFunc === 'function')
+                    onCompleteFunc();
+                this.destroy();
+            }
+        });
+    }
+});
 
 var LauncherDraggable = class {
     constructor(launchersBox) {

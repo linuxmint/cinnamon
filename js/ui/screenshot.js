@@ -255,7 +255,8 @@ class SelectArea {
     }
 
     show() {
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
+                            () => this._ungrab()))
             return;
         this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
@@ -465,7 +466,8 @@ class PickColor {
     }
 
     show() {
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL))
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
+                            () => this._ungrab()))
             return;
         this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
 

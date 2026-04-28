@@ -631,7 +631,8 @@ class PixCache(object):
                     if size:
                         img.thumbnail((size, size), Image.LANCZOS)
 
-                    import imtools
+
+                    from bin import imtools
                     img = imtools.round_image(img, {}, False, None, 3, 255)
                     img = imtools.drop_shadow(img, 4, 4, background_color=(255, 255, 255, 0),
                                               shadow_color=0x444444, border=8, shadow_blur=3,

@@ -530,7 +530,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
   MetaWindow *window = meta_display_get_focus_window (display);
   ClutterActor *stage;
 
-  if (window == NULL || g_strcmp0 (meta_window_get_title (window), "Desktop") == 0)
+  if (window == NULL || meta_window_get_window_type (window) == META_WINDOW_DESKTOP)
   {
     cinnamon_screenshot_screenshot (screenshot, include_cursor, filename, callback);
     return;

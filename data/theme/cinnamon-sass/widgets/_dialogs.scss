@@ -41,8 +41,16 @@
   .dialog-list-box {
     spacing: 1em;
 
+    border-radius: $base_border_radius;
+
     .dialog-list-item {
       spacing: 1em;
+      border-radius: $base_border_radius;
+      padding: $base_padding $base_padding * 2;
+      transition-duration: 100ms;
+
+      &:hover { background-color: $light_bg_color; }
+      &:selected { background-color: $accent_bg_color; }
 
       .dialog-list-item-title { font-weight: bold; }
       .dialog-list-item-description {
@@ -192,5 +200,68 @@
 
       .audio-selection-device-icon { icon-size: 64px;}
     }
+  }
+}
+
+// Shared grouped-list style for autorun and processes dialogs
+%grouped-dialog-list {
+    .dialog-list-box {
+        background-color: lighten($bg_color, 5%);
+        spacing: 0;
+
+        .dialog-list-item {
+            border-radius: 0;
+
+            &:first-child {
+              border-radius: $base_border_radius $base_border_radius 0 0;
+            }
+
+            &:last-child {
+              border-radius: 0 0 $base_border_radius $base_border_radius;
+            }
+        }
+    }
+}
+
+.processes-dialog {
+  .dialog-content-box {
+    .dialog-list {
+        @extend %grouped-dialog-list;
+    }
+  }
+}
+
+.autorun-dialog {
+  min-width: 30em;
+
+  .dialog-content-box {
+    margin-top: $base_margin;
+    margin-bottom: $base_margin * 3;
+    spacing: $base_margin * 3;
+    max-width: 28em;
+
+    .dialog-list {
+        @extend %grouped-dialog-list;
+    }
+
+    .autorun-dialog-heading {
+      @extend %title_2;
+      text-align: center;
+    }
+  
+    .autorun-dialog-subheading {
+      @extend %title_4;
+      text-align: center;
+    }
+  
+    .autorun-dialog-description {
+    }
+  }
+}
+
+// Popup dialog (non-modal, draggable)
+.popup-dialog {
+  .dialog {
+    box-shadow: 0 -1px $accent_bg_color;
   }
 }

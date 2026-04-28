@@ -1,7 +1,5 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
-#include "config.h"
-
 #include <fcntl.h>
 
 #include "cinnamon-global-private.h"
@@ -9,7 +7,6 @@
 #include <meta/meta-x11-display.h>
 #include <meta/compositor-muffin.h>
 #include <meta/meta-cursor-tracker.h>
-#include <meta/meta-background-actor.h>
 #include <meta/meta-settings.h>
 #include <meta/meta-backend.h>
 #include <meta/util.h>
@@ -30,6 +27,14 @@
 #define PRINT_JS_STACK_FOR_C_WARNINGS 0
 
 static CinnamonGlobal *the_object = NULL;
+
+static gboolean _grab_debug = FALSE;
+
+#define debug_grab(fmt, ...) G_STMT_START { \
+  if (_grab_debug) \
+    g_message ("modal-retry: " fmt, ##__VA_ARGS__); \
+} G_STMT_END
+
 
 enum {
   PROP_0,
@@ -145,6 +150,8 @@ cinnamon_global_get_property(GObject         *object,
       g_value_set_object (value, meta_get_top_window_group_for_display (global->meta_display));
       break;
     case PROP_BACKGROUND_ACTOR:
+      g_warning_once ("global.background_actor is deprecated and X11-only. "
+                      "Use global.get_background_actors() instead.");
       g_value_set_object (value, meta_get_x11_background_actor_for_display (global->meta_display));
       break;
     case PROP_DESKLET_CONTAINER:
@@ -245,6 +252,7 @@ cinnamon_global_init (CinnamonGlobal *global)
   g_mkdir_with_parents (global->userdatadir, 0700);
 
   global->settings = g_settings_new ("org.cinnamon");
+  _grab_debug = g_settings_get_boolean (global->settings, "debug-screensaver");
 
   setup_log_handler (global);
 
@@ -269,6 +277,25 @@ static void
 cinnamon_global_finalize (GObject *object)
 {
   CinnamonGlobal *global = CINNAMON_GLOBAL (object);
+
+  if (global->modal_retry_source_id != 0)
+    {
+      g_source_remove (global->modal_retry_source_id);
+      global->modal_retry_source_id = 0;
+
+      if (global->modal_retry_data != NULL)
+        {
+          g_free (global->modal_retry_data);
+          global->modal_retry_data = NULL;
+        }
+    }
+
+  if (global->xdo != NULL)
+    {
+      xdo_free (global->xdo);
+      global->xdo = NULL;
+    }
+
   g_object_unref (global->js_context);
 
   g_object_unref (global->settings);
@@ -357,7 +384,7 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    g_param_spec_object ("stage",
                                                         "Stage",
                                                         "Stage holding the desktop scene graph",
-                                                        CLUTTER_TYPE_ACTOR,
+                                                        CLUTTER_TYPE_STAGE,
                                                         G_PARAM_READABLE));
   g_object_class_install_property (gobject_class,
                                    PROP_STAGE_INPUT_MODE,
@@ -392,9 +419,9 @@ cinnamon_global_class_init (CinnamonGlobalClass *klass)
                                    PROP_BACKGROUND_ACTOR,
                                    g_param_spec_object ("background-actor",
                                                         "Background Actor",
-                                                        "Actor drawing root window background",
+                                                        "Actor drawing root window background (X11 only, deprecated)",
                                                         CLUTTER_TYPE_ACTOR,
-                                                        G_PARAM_READABLE));
+                                                        G_PARAM_READABLE | G_PARAM_DEPRECATED));
   g_object_class_install_property (gobject_class,
                                    PROP_DESKLET_CONTAINER,
                                    g_param_spec_object ("desklet-container",
@@ -646,6 +673,9 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
     case CINNAMON_CURSOR_TEXT:
       ret_curs = META_CURSOR_TEXT;
       break;
+    case CINNAMON_CURSOR_GRABBING:
+      ret_curs = META_CURSOR_GRABBING;
+      break;
     default:
       g_return_if_reached ();
     }
@@ -760,6 +790,23 @@ cinnamon_global_get_window_actors (CinnamonGlobal *global)
   return meta_get_window_actors (global->meta_display);
 }
 
+/**
+ * cinnamon_global_get_background_actors:
+ *
+ * Gets the list of per-monitor background actors created by
+ * meta_create_background_for_monitor(). These are the live actors in the
+ * scene graph and can have effects applied to them directly.
+ *
+ * Return value: (element-type Clutter.Actor) (transfer none): the list of background actors
+ */
+GList *
+cinnamon_global_get_background_actors (CinnamonGlobal *global)
+{
+  g_return_val_if_fail (CINNAMON_IS_GLOBAL (global), NULL);
+
+  return meta_get_background_actors_for_display (global->meta_display);
+}
+
 static void
 global_stage_notify_width (GObject    *gobject,
                            GParamSpec *pspec,
@@ -839,6 +886,17 @@ ui_scaling_factor_changed (MetaSettings *settings,
 }
 
 
+static void
+entry_cursor_func (StEntry  *entry,
+                   gboolean  use_ibeam,
+                   gpointer  user_data)
+{
+  CinnamonGlobal *global = user_data;
+
+  meta_display_set_cursor (global->meta_display,
+                           use_ibeam ? META_CURSOR_TEXT : META_CURSOR_DEFAULT);
+}
+
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
                           MetaPlugin  *plugin)
@@ -863,6 +921,7 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   global->stage = CLUTTER_STAGE (meta_get_stage_for_display (global->meta_display));
   st_clipboard_set_selection (meta_display_get_selection (global->meta_display));
+  st_entry_set_cursor_func (entry_cursor_func, global);
 
   g_signal_connect (global->stage, "notify::width",
                     G_CALLBACK (global_stage_notify_width), global);
@@ -975,7 +1034,12 @@ static void
 sync_input_region (CinnamonGlobal *global)
 {
   MetaDisplay *display = global->meta_display;
-  MetaX11Display *x11_display = meta_display_get_x11_display (display);
+  MetaX11Display *x11_display;
+
+  if (meta_is_wayland_compositor ())
+    return;
+
+  x11_display = meta_display_get_x11_display (display);
 
   if (global->has_modal)
     meta_x11_display_set_stage_input_region (x11_display, None);
@@ -1013,16 +1077,178 @@ cinnamon_global_begin_modal (CinnamonGlobal       *global,
     return FALSE;
 
   global->has_modal = meta_plugin_begin_modal (global->plugin, options, timestamp);
-  if (!meta_is_wayland_compositor ())
-    sync_input_region (global);
+  sync_input_region (global);
   return global->has_modal;
+}
+
+#define MODAL_RETRY_INTERVAL_MS  1000
+#define MODAL_MAX_RETRIES        4
+
+static gboolean
+modal_try_grab (CinnamonGlobal   *global,
+                MetaModalOptions  options,
+                guint32           timestamp)
+{
+  if (!meta_display_get_compositor (global->meta_display) || global->has_modal)
+    return FALSE;
+
+  return meta_plugin_begin_modal (global->plugin, options, timestamp);
+}
+
+static void
+modal_maybe_cancel_ui_grab (CinnamonGlobal *global)
+{
+  if (global->xdo == NULL)
+    {
+      debug_grab ("xdo context not available, skipping");
+      return;
+    }
+
+  debug_grab ("sending Escape key sequences");
+  xdo_send_keysequence_window (global->xdo, CURRENTWINDOW, "Escape", 12000);
+  xdo_send_keysequence_window (global->xdo, CURRENTWINDOW, "Escape", 12000);
+}
+
+static void
+modal_retry_complete (ModalRetryData *data,
+                      gboolean        success)
+{
+  debug_grab ("complete, success=%s", success ? "true" : "false");
+  data->global->modal_retry_source_id = 0;
+  data->global->modal_retry_data = NULL;
+  data->callback (data->global, success, data->user_data);
+  g_free (data);
+}
+
+static gboolean
+modal_retry_timeout (gpointer user_data)
+{
+  ModalRetryData *data = user_data;
+  CinnamonGlobal *global = data->global;
+
+  data->attempt++;
+
+  debug_grab ("attempt %d/%d (xdo_tried=%s)",
+             data->attempt, MODAL_MAX_RETRIES,
+             data->tried_xdo ? "true" : "false");
+
+  if (modal_try_grab (global, data->options, data->timestamp))
+    {
+      global->has_modal = TRUE;
+      debug_grab ("grab succeeded on attempt %d", data->attempt);
+      sync_input_region (global);
+      modal_retry_complete (data, TRUE);
+      return G_SOURCE_REMOVE;
+    }
+
+  if (data->attempt >= MODAL_MAX_RETRIES)
+    {
+      if (!data->tried_xdo)
+        {
+          debug_grab ("exhausted %d attempts, trying xdo escape + nuke focus",
+                     MODAL_MAX_RETRIES);
+          data->tried_xdo = TRUE;
+          data->attempt = 0;
+
+          if (global->xdo == NULL)
+            {
+              global->xdo = xdo_new (NULL);
+              if (global->xdo == NULL)
+                g_warning ("could not create xdo context");
+              else
+                debug_grab ("xdo context created");
+            }
+
+          modal_maybe_cancel_ui_grab (global);
+          debug_grab ("unsetting input focus");
+          meta_display_unset_input_focus (global->meta_display, CurrentTime);
+
+          return G_SOURCE_CONTINUE;
+        }
+
+      debug_grab ("exhausted all retries, giving up");
+      modal_retry_complete (data, FALSE);
+      return G_SOURCE_REMOVE;
+    }
+
+  return G_SOURCE_CONTINUE;
+}
+
+/**
+ * cinnamon_global_begin_modal_with_retry:
+ * @global: a #CinnamonGlobal
+ * @timestamp: the X server timestamp of the event triggering the grab
+ * @options: #MetaModalOptions flags
+ * @callback: (scope async): function to call when the grab succeeds or fails
+ * @user_data: data to pass to @callback
+ *
+ * Like cinnamon_global_begin_modal(), but retries the grab asynchronously
+ * if the initial attempt fails. On X11, if retries fail, sends Escape key
+ * events via libxdo and clears X11 input focus to break any stuck grab
+ * (e.g. from a GTK popup menu), then retries again.
+ *
+ * Only one retry sequence can be active at a time.
+ */
+void
+cinnamon_global_begin_modal_with_retry (CinnamonGlobal    *global,
+                                        guint32            timestamp,
+                                        MetaModalOptions   options,
+                                        CinnamonModalCallback callback,
+                                        gpointer           user_data)
+{
+  ModalRetryData *data;
+
+  g_return_if_fail (CINNAMON_IS_GLOBAL (global));
+  g_return_if_fail (callback != NULL);
+
+  debug_grab ("begin_modal_with_retry called");
+
+  if (global->modal_retry_source_id != 0)
+    {
+      debug_grab ("retry already in progress");
+      callback (global, FALSE, user_data);
+      return;
+    }
+
+  debug_grab ("trying initial grab");
+  if (modal_try_grab (global, options, timestamp))
+    {
+      global->has_modal = TRUE;
+      debug_grab ("initial grab succeeded");
+      sync_input_region (global);
+      callback (global, TRUE, user_data);
+      return;
+    }
+
+  if (meta_is_wayland_compositor ())
+    {
+      debug_grab ("initial grab failed on Wayland, no retry available");
+      callback (global, FALSE, user_data);
+      return;
+    }
+
+  debug_grab ("initial grab failed on X11, starting retry sequence");
+
+  data = g_new0 (ModalRetryData, 1);
+  data->global = global;
+  data->timestamp = timestamp;
+  data->options = options;
+  data->callback = callback;
+  data->user_data = user_data;
+  global->modal_retry_data = data;
+  global->modal_retry_source_id = g_timeout_add (MODAL_RETRY_INTERVAL_MS,
+                                                  modal_retry_timeout,
+                                                  data);
 }
 
 /**
  * cinnamon_global_end_modal:
  * @global: a #CinnamonGlobal
  *
- * Undoes the effect of cinnamon_global_begin_modal().
+ * Undoes the effect of cinnamon_global_begin_modal(). If an async
+ * retry sequence from cinnamon_global_begin_modal_with_retry() is
+ * in progress, it is cancelled and the callback is invoked with
+ * %FALSE.
  */
 void
 cinnamon_global_end_modal (CinnamonGlobal *global,
@@ -1032,7 +1258,16 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
     return;
 
   if (!global->has_modal)
-    return;
+    {
+      if (global->modal_retry_data != NULL)
+        {
+          ModalRetryData *data = global->modal_retry_data;
+          debug_grab ("end_modal: cancelling in-progress retry");
+          g_source_remove (global->modal_retry_source_id);
+          modal_retry_complete (data, FALSE);
+        }
+      return;
+    }
 
   meta_plugin_end_modal (global->plugin, timestamp);
   global->has_modal = FALSE;
@@ -1047,8 +1282,7 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
     meta_display_focus_default_window (global->meta_display,
                                        get_current_time_maybe_roundtrip (global));
 
-  if (!meta_is_wayland_compositor ())
-    sync_input_region (global);
+  sync_input_region (global);
 }
 
 static int

@@ -29,7 +29,7 @@ const Placeholder = imports.ui.placeholder;
 
 const INITIAL_BUTTON_LOAD = 30;
 
-const USER_DESKTOP_PATH = FileUtils.getUserDesktopDir();
+const USER_DESKTOP_PATH = GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_DESKTOP);
 
 const PRIVACY_SCHEMA = "org.cinnamon.desktop.privacy";
 const REMEMBER_RECENT_KEY = "remember-recent-files";
@@ -843,7 +843,7 @@ class PathContextMenuItem extends ContextMenuItem {
     _openContainingFolderViaMimeApp() {
         let app = Gio.AppInfo.get_default_for_type("inode/directory", true);
         if (app === null) {
-            log.logError(`Could not open containing folder via MIME app: No associated file manager found`);
+            global.logError("Could not open containing folder via MIME app: No associated file manager found");
             return;
         }
         let file = Gio.file_new_for_uri(this._button.uri);
@@ -1123,7 +1123,7 @@ class FavoriteAppsBox {
         // the remove target has the same size as "normal" items, we don't
         // need to do the same adjustment there.
         if (this._dragPlaceholder) {
-            boxHeight -= this._dragPlaceholder.actor.height;
+            boxHeight -= this._dragPlaceholder.height;
             numChildren--;
         }
 
@@ -1144,7 +1144,7 @@ class FavoriteAppsBox {
                 if (this._dragPlaceholder) {
                     this._dragPlaceholder.animateOutAndDestroy();
                     this._animatingPlaceholdersCount++;
-                    this._dragPlaceholder.actor.connect('destroy', () => {
+                    this._dragPlaceholder.connect('destroy', () => {
                         this._animatingPlaceholdersCount--;
                     });
                 }
@@ -1158,16 +1158,16 @@ class FavoriteAppsBox {
             // an animation
             let fadeIn;
             if (this._dragPlaceholder) {
-                this._dragPlaceholder.actor.destroy();
+                this._dragPlaceholder.destroy();
                 fadeIn = false;
             } else {
                 fadeIn = true;
             }
 
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this._dragPlaceholder.child.set_width (source.actor.height);
-            this._dragPlaceholder.child.set_height (source.actor.height);
-            this.actor.insert_child_at_index(this._dragPlaceholder.actor,
+            this._dragPlaceholder.set_width (source.actor.height);
+            this._dragPlaceholder.set_height (source.actor.height);
+            this.actor.insert_child_at_index(this._dragPlaceholder,
                                              this._dragPlaceholderPos);
             if (fadeIn)
                 this._dragPlaceholder.animateIn();
@@ -1197,7 +1197,7 @@ class FavoriteAppsBox {
         let children = this.actor.get_children();
         for (let i = 0; i < this._dragPlaceholderPos; i++) {
             if (this._dragPlaceholder &&
-                children[i] == this._dragPlaceholder.actor)
+                children[i] == this._dragPlaceholder)
                 continue;
 
             if (!(children[i]._delegate instanceof FavoritesButton)) continue;
@@ -1615,7 +1615,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         let size;
 
         if (this.menuCustom) {
-            size = Math.min(this.menuIconSize, this.panel.height);
+            size = Math.min(this.menuIconSize, this._panelHeight);
         } else {
             size = this.getPanelIconSize(icon_type);
         }
@@ -1831,19 +1831,6 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     symbol = Clutter.KEY_KP_Right;
                     break;
             }
-        }
-
-        /* check for a keybinding and quit early, otherwise we get a double hit
-           of the keybinding callback */
-        let action = global.display.get_keybinding_action(keyCode, modifierState);
-
-        if (action == Meta.KeyBindingAction.CUSTOM) {
-            return Clutter.EVENT_STOP;
-        }
-
-        if (this.searchEntryText.has_preedit()) {
-            // There is an uncommitted text in the search box, let the input method to handle this.
-            return Clutter.EVENT_PROPAGATE;
         }
 
         let ctrlKey = modifierState & Clutter.ModifierType.CONTROL_MASK;
@@ -2514,7 +2501,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
 
         button.activate = () => {
             this.menu.close();
-            Main.lockScreen(true);
+            Main.screensaverController.lockScreen(true);
         };
 
         this.systemBox.add(button.actor, { y_align: St.Align.MIDDLE, y_fill: false });

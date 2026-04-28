@@ -91,6 +91,8 @@ const GObject = imports.gi.GObject;
 const XApp = imports.gi.XApp;
 const PointerTracker = imports.misc.pointerTracker;
 
+const AutomountManager = imports.ui.automountManager;
+const AutorunManager = imports.ui.autorunManager;
 const AudioDeviceSelection = imports.ui.audioDeviceSelection;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
@@ -112,14 +114,12 @@ const KeyringPrompt = imports.ui.keyringPrompt;
 const RunDialog = imports.ui.runDialog;
 const Layout = imports.ui.layout;
 const LookingGlass = imports.ui.lookingGlass;
-const NetworkAgent = imports.ui.networkAgent;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
+const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const Screenshot = imports.ui.screenshot;
-const ScreenShield = imports.ui.screensaver.screenShield;
-const AwayMessageDialog = imports.ui.screensaver.awayMessageDialog;
-const ScreenSaver = imports.misc.screenSaver;
+const ScreensaverController = imports.ui.screensaver.controller;
 const ThemeManager = imports.ui.themeManager;
 const Magnifier = imports.ui.magnifier;
 const LocatePointer = imports.ui.locatePointer;
@@ -137,7 +137,7 @@ const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
-const {KeyboardManager} = imports.ui.keyboardManager;
+const {KeyboardManager, getInputSourceManager} = imports.ui.keyboardManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -152,9 +152,7 @@ var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
 var osdWindowManager = null;
-let _screenShield = null;
-let _screenSaverProxy = null;
-let _screensaverSettings = null;
+var screensaverController = null;
 var lockdownSettings = null;
 var overview = null;
 var expo = null;
@@ -169,6 +167,9 @@ var windowAttentionHandler = null;
 var screenRecorder = null;
 var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
+var cinnamonMountOpDBusService = null;
+var automountManager = null;
+var autorunManager = null;
 var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
@@ -263,11 +264,12 @@ function _initUserSession() {
 
     systrayManager = new Systray.SystrayManager();
 
-    Meta.keybindings_set_custom_handler('panel-run-dialog', function() {
-        if (!lockdownSettings.get_boolean('disable-command-line')) {
-            getRunDialog().open();
-        }
-    });
+    keybindingManager.setBuiltinHandler('panel-run-dialog', Meta.KeyBindingAction.PANEL_RUN_DIALOG,
+        function() {
+            if (!lockdownSettings.get_boolean('disable-command-line')) {
+                getRunDialog().open();
+            }
+        }, Cinnamon.ActionMode.NORMAL);
 }
 
 function _loadOskLayouts() {
@@ -343,11 +345,12 @@ function start() {
 
     GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
     new CinnamonPortalHandler();
     cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
+
     setRunState(RunState.STARTUP);
 
     screenshotService = new Screenshot.ScreenshotService();
@@ -436,7 +439,7 @@ function start() {
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
-    // This overview object is just a stub for non-user sessions
+
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
@@ -453,7 +456,7 @@ function start() {
     // NM Agent
     if (Config.BUILT_NM_AGENT) {
         if (global.settings.get_boolean("enable-nm-agent")) {
-            networkAgent = new NetworkAgent.NetworkAgent();
+            networkAgent = new imports.ui.networkAgent.NetworkAgent();
             global.log('NetworkManager agent: enabled')
         } else {
             global.log('NetworkManager agent: disabled by settings')
@@ -484,10 +487,6 @@ function start() {
     locatePointer = new LocatePointer.LocatePointer();
 
     layoutManager.init();
-    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
-
-    overview.init();
-    expo.init();
 
     _addXletDirectoriesToSearchPath();
     _initUserSession();
@@ -538,23 +537,18 @@ function start() {
         }
     });
 
-    _screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
+    screensaverController = new ScreensaverController.ScreensaverController();
 
-    // The internal screensaver is the only option for wayland sessions. X11 sessions can use either
-    // the internal one or cinnamon-screensaver (>= 6.7).
-    if (Meta.is_wayland_compositor() || global.settings.get_boolean('internal-screensaver-enabled')) {
-        _screenShield = new ScreenShield.ScreenShield();
-        new ScreenSaver.ScreenSaverService(_screenShield);
-    }
+    // Protect from being replaced by extensions.
+    Object.defineProperty(imports.ui.main, 'screensaverController', {
+        value: imports.ui.main.screensaverController,
+        writable: false,
+        configurable: false
+    });
 
-    // Protect security-critical exported functions from being replaced by extensions.
-    for (let fnName of ['lockScreen', 'screenShieldHideKeyboard']) {
-        Object.defineProperty(imports.ui.main, fnName, {
-            value: imports.ui.main[fnName],
-            writable: false,
-            configurable: false
-        });
-    }
+    cinnamonMountOpDBusService = new CinnamonMountOperation.CinnamonMountOpHandler();
+    automountManager = new AutomountManager.AutomountManager();
+    autorunManager = new AutorunManager.AutorunManager();
 
     Promise.all([
         AppletManager.init(),
@@ -663,6 +657,32 @@ function getPanels() {
     return panelManager.getPanels();
 }
 
+/**
+ * createFullScreenBackground:
+ *
+ * Creates a full-stage background actor containing one background per monitor.
+ * On X11, each child is the root pixmap actor positioned at the monitor's
+ * location. On Wayland, each child is a clone of the layer-shell background
+ * surface for that monitor.
+ *
+ * Returns: a ClutterActor covering all monitors
+ */
+function createFullScreenBackground() {
+    let container = new imports.gi.Clutter.Actor();
+
+    for (let i = 0; i < layoutManager.monitors.length; i++) {
+        let monitor = layoutManager.monitors[i];
+        let bg = Meta.create_background_for_monitor(global.display, i);
+        if (bg) {
+            bg.set_position(monitor.x, monitor.y);
+            bg.set_size(monitor.width, monitor.height);
+            container.add_child(bg);
+        }
+    }
+
+    return container;
+}
+
 let _workspaces = [];
 let _checkWorkspacesId = 0;
 
@@ -745,6 +765,36 @@ function getWorkspaceName(index) {
  */
 function hasDefaultWorkspaceName(index) {
     return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
+}
+
+function reorderWorkspace(oldIndex, newIndex) {
+    let n = global.workspace_manager.n_workspaces;
+    if (oldIndex === newIndex ||
+        oldIndex < 0 || oldIndex >= n ||
+        newIndex < 0 || newIndex >= n)
+        return;
+
+    let workspace = global.workspace_manager.get_workspace_by_index(oldIndex);
+    global.workspace_manager.reorder_workspace(workspace, newIndex);
+
+    // If every workspace has its default name, there's nothing to move -
+    // default names regenerate from the index automatically.
+    let hasCustomName = false;
+    for (let i = 0; i < global.workspace_manager.n_workspaces; i++) {
+        if (!hasDefaultWorkspaceName(i)) {
+            hasCustomName = true;
+            break;
+        }
+    }
+    if (!hasCustomName)
+        return;
+
+    _fillWorkspaceNames(Math.max(oldIndex, newIndex) + 1);
+    let name = workspace_names[oldIndex] || '';
+    workspace_names.splice(oldIndex, 1);
+    workspace_names.splice(newIndex, 0, name);
+    _trimWorkspaceNames();
+    wmSettings.set_strv("workspace-names", workspace_names);
 }
 
 function _addWorkspace() {
@@ -1234,7 +1284,7 @@ function _shouldFilterKeybinding(entry) {
     if (allowed) {
         let lockModes = Cinnamon.ActionMode.LOCK_SCREEN | Cinnamon.ActionMode.UNLOCK_SCREEN;
         if ((actionMode & lockModes) !== 0 && (entry.allowedModes & lockModes) !== 0) {
-            if (_screenShield && !_screensaverSettings.get_boolean('allow-keyboard-shortcuts')) {
+            if (screensaverController?.locked && !screensaverController.allowKeyboardShortcuts) {
                 return true;
             }
         }
@@ -1243,77 +1293,88 @@ function _shouldFilterKeybinding(entry) {
     return !allowed;
 }
 
-// This function encapsulates hacks to make certain global keybindings
-// work even when we are in one of our modes where global keybindings
-// are disabled with a global grab. (When there is a global grab, then
-// all key events will be delivered to the stage, so ::captured-event
-// on the stage can be used for global keybindings.)
+/* This mimics some of the behavior in muffin's keybindings.c, to allow multi-key keybindings
+ * to work properly while pushModal is active and our input events are bypassing muffin's normal
+ * event handling.
+ *
+ * In normal input modes, single key (modifier) keybindings are activated on key-release, and multi-
+ * key bindings are activated on key-press.
+ *
+ * This needs to work in our pushModal state also, for things like layout-switching. We check the
+ * keyval of the event - if it's a modifier key it can potentially be a single-key binding or part
+ * of a multi-key binding, so we defer activating any single-key modifier bindings until key-release,
+ * to give the multi-key binding a chance to activate on key-press.
+ */
+let _modifierOnlyAction = 0;
+
+function _isModifierKeyval(symbol) {
+    return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
+           symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R ||
+           symbol === Clutter.KEY_Alt_L     || symbol === Clutter.KEY_Alt_R     ||
+           symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
+}
+
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return false;
-    // log("Stage event handler........." + event.type() + "..." + event.get_source() + "...flags: "+event.get_flags());
 
-    if (event.type() != Clutter.EventType.KEY_PRESS) {
-        if(!popup_rendering_actor || event.type() != Clutter.EventType.BUTTON_RELEASE)
+    let eventType = event.type();
+
+    if (eventType !== Clutter.EventType.KEY_PRESS &&
+        eventType !== Clutter.EventType.KEY_RELEASE) {
+        if (!popup_rendering_actor || eventType !== Clutter.EventType.BUTTON_RELEASE)
             return false;
         return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
     }
 
-    let symbol = event.get_key_symbol();
+    if (event.get_source() instanceof Clutter.Text &&
+        (event.get_flags() & Clutter.EventFlags.INPUT_METHOD)) {
+        return false;
+    }
+
     let keyCode = event.get_key_code();
     let modifierState = Cinnamon.get_event_state(event);
 
-    let action = global.display.get_keybinding_action(keyCode, modifierState);
-    if (!(event.get_source() instanceof Clutter.Text && (event.get_flags() & Clutter.EventFlags.INPUT_METHOD))) {
-        // This relies on the fact that Clutter.ModifierType is the same as Gdk.ModifierType
+    if (eventType === Clutter.EventType.KEY_PRESS) {
+        if (_isModifierKeyval(event.get_key_symbol())) {
+            let action = global.display.get_keybinding_action(keyCode, modifierState);
+            if (action > 0) {
+                let entry = keybindingManager.getBindingById(action);
+                if (!_shouldFilterKeybinding(entry)) {
+                    _modifierOnlyAction = action;
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        _modifierOnlyAction = 0;
+
+        // During modal, muffin's process_iso_next_group doesn't run, handle xkb 'grp'
+        // here.
+        if (event.get_key_symbol() === Clutter.KEY_ISO_Next_Group) {
+            getInputSourceManager()._modifiersSwitcher(false);
+            return true;
+        }
+
+        let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
-            // Check if this keybinding should be filtered based on ActionMode
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
                 keybindingManager.invoke_keybinding_action_by_id(action);
+                return true;
             }
         }
-    }
 
-    // Other bindings are only available when the overview is up and no modal dialog is present
-    if (((!overview.visible && !expo.visible) || modalCount > 1))
         return false;
-
-    // This isn't a Meta.KeyBindingAction yet
-    if (symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
-        if (expo.visible) {
-            expo.hide();
-            return true;
-        }
     }
 
-    if (action == Meta.KeyBindingAction.SWITCH_PANELS) {
-        //Used to call the ctrlalttabmanager in Gnome Shell
+    // Release event - activate the single-key modifier keybinding if one was stored.
+    if (_isModifierKeyval(event.get_key_symbol()) && _modifierOnlyAction > 0) {
+        let action = _modifierOnlyAction;
+        _modifierOnlyAction = 0;
+        keybindingManager.invoke_keybinding_action_by_id(action);
         return true;
-    }
-
-    switch (action) {
-        // left/right would effectively act as synonyms for up/down if we enabled them;
-        // but that could be considered confusing; we also disable them in the main view.
-        case Meta.KeyBindingAction.WORKSPACE_LEFT:
-            wm.actionMoveWorkspaceLeft();
-            return true;
-        case Meta.KeyBindingAction.WORKSPACE_RIGHT:
-            wm.actionMoveWorkspaceRight();
-            return true;
-        case Meta.KeyBindingAction.WORKSPACE_UP:
-            overview.hide();
-            expo.hide();
-            return true;
-        case Meta.KeyBindingAction.WORKSPACE_DOWN:
-            overview.hide();
-            expo.hide();
-            return true;
-        case Meta.KeyBindingAction.PANEL_RUN_DIALOG:
-            if (!lockdownSettings.get_boolean('disable-command-line')) {
-                getRunDialog().open();
-            }
-            return true;
     }
 
     return false;
@@ -1327,6 +1388,43 @@ function _findModal(actor) {
     return -1;
 }
 
+function _completeModalSetup(actor, mode, onDismiss) {
+    _modifierOnlyAction = 0;
+
+    if (modalCount == 0)
+        Meta.disable_unredirect_for_display(global.display);
+
+    global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
+
+    actionMode = mode;
+
+    modalCount += 1;
+    let actorDestroyId = actor.connect('destroy', function() {
+        let index = _findModal(actor);
+        if (index >= 0)
+            popModal(actor);
+    });
+
+    let record = {
+        actor: actor,
+        focus: global.stage.get_key_focus(),
+        destroyId: actorDestroyId,
+        actionMode: mode,
+        onDismiss: onDismiss || null
+    };
+    if (record.focus != null) {
+        record.focusDestroyId = record.focus.connect('destroy', function() {
+            record.focus = null;
+            record.focusDestroyId = null;
+        });
+    }
+    modalActorFocusStack.push(record);
+
+    global.stage.set_key_focus(actor);
+
+    layoutManager.updateChrome(true);
+}
+
 /**
  * pushModal:
  * @actor (Clutter.Actor): actor which will be given keyboard focus
@@ -1334,6 +1432,8 @@ function _findModal(actor) {
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
  * is already grabbed
  * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
+ * @onDismiss (function): (optional) callback invoked by dismissInternalModals()
+ * to cleanly release this grab.
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1353,7 +1453,7 @@ function _findModal(actor) {
  *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
-function pushModal(actor, timestamp, options, mode) {
+function pushModal(actor, timestamp, options, mode, onDismiss) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
 
@@ -1365,38 +1465,44 @@ function pushModal(actor, timestamp, options, mode) {
             log('pushModal: invocation of begin_modal failed');
             return false;
         }
-        Meta.disable_unredirect_for_display(global.display);
     }
 
-    global.set_stage_input_mode(Cinnamon.StageInputMode.FULLSCREEN);
-
-    actionMode = mode;
-
-    modalCount += 1;
-    let actorDestroyId = actor.connect('destroy', function() {
-        let index = _findModal(actor);
-        if (index >= 0)
-            popModal(actor);
-    });
-
-    let record = {
-        actor: actor,
-        focus: global.stage.get_key_focus(),
-        destroyId: actorDestroyId,
-        actionMode: mode
-    };
-    if (record.focus != null) {
-        record.focusDestroyId = record.focus.connect('destroy', function() {
-            record.focus = null;
-            record.focusDestroyId = null;
-        });
-    }
-    modalActorFocusStack.push(record);
-
-    global.stage.set_key_focus(actor);
-
-    layoutManager.updateChrome(true);
+    _completeModalSetup(actor, mode, onDismiss);
     return true;
+}
+
+/**
+ * pushScreensaverModal:
+ * @actor (Clutter.Actor): actor which will be given keyboard focus.
+ * @timestamp (number): optional X server timestamp.
+ * @mode (Cinnamon.ActionMode): the action mode for the modal grab.
+ * @callback (function): called with (success) when the grab completes.
+ *
+ * Like pushModal(), but uses begin_modal_with_retry() to asynchronously
+ * retry the grab on X11, using libxdo to break stuck grabs from popup
+ * menus. The callback is called with true on success, false on failure.
+ */
+function pushScreensaverModal(actor, timestamp, mode, callback) {
+    if (timestamp == undefined)
+        timestamp = global.get_current_time();
+
+    global.begin_modal_with_retry(timestamp, 0,
+        (obj, success) => {
+            if (!success) {
+                log('pushScreensaverModal: failed to acquire modal grab after retries (or cancelled)');
+                callback(false);
+                return;
+            }
+
+            try {
+                _completeModalSetup(actor, mode);
+                callback(true);
+            } catch (e) {
+                global.logError(`pushScreensaverModal: error during modal setup: ${e.message}`);
+                global.end_modal(global.get_current_time());
+                callback(false);
+            }
+        });
 }
 
 /**
@@ -1485,6 +1591,52 @@ function popModal(actor, timestamp) {
     layoutManager.updateChrome(true);
 
     Meta.enable_unredirect_for_display(global.display);
+}
+
+/**
+ * dismissInternalModals:
+ *
+ * Cleanly release every Cinnamon-internal modal grab currently on the stack.
+ * Used by the internal screensaver and called over dbus by cinnamon-screensaver
+ * -command for cinnamon-screensaver or custom-command mode.
+ */
+function dismissInternalModals() {
+    let guard = modalActorFocusStack.length * 2 + 4;
+
+    while (modalActorFocusStack.length > 0 && guard-- > 0) {
+        let record = modalActorFocusStack[modalActorFocusStack.length - 1];
+        let actor = record.actor;
+
+        if (typeof record.onDismiss === 'function') {
+            try {
+                record.onDismiss();
+            } catch (e) {
+                global.logError(`dismissInternalModals: onDismiss threw: ${e.message}`);
+            }
+        } else {
+            global.logWarning('dismissInternalModals: modal actor has no onDismiss; force-popping');
+        }
+
+        let idx = _findModal(actor);
+        if (idx !== -1) {
+            try {
+                popModal(actor);
+            } catch (e) {
+                global.logError(`dismissInternalModals: force-pop failed: ${e.message}`);
+                modalActorFocusStack.splice(idx, 1);
+                modalCount = Math.max(0, modalCount - 1);
+            }
+        }
+    }
+
+    if (modalActorFocusStack.length > 0 || modalCount > 0) {
+        global.logError('dismissInternalModals: stack non-empty after walk, forcing reset');
+        modalActorFocusStack.length = 0;
+        modalCount = 0;
+        global.end_modal(global.get_current_time());
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+        actionMode = Cinnamon.ActionMode.NORMAL;
+    }
 }
 
 /**
@@ -1771,35 +1923,7 @@ function closeEndSessionDialog() {
     endSessionDialog = null;
 }
 
-function lockScreen(askForAwayMessage) {
-    if (lockdownSettings.get_boolean('disable-lock-screen')) {
-        return;
-    }
-
-    if (askForAwayMessage && _screensaverSettings.get_boolean('ask-for-away-message')) {
-        let dialog = new AwayMessageDialog.AwayMessageDialog((message) => {
-            _doLock(message);
-        });
-        dialog.open();
-        return;
-    }
-
-    _doLock(null);
-}
-
-function _doLock(awayMessage) {
-    if (_screenShield) {
-        _screenShield.lock(false, awayMessage);
-        return;
-    }
-
-    if (_screenSaverProxy === null) {
-        _screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-    }
-
-    _screenSaverProxy.LockRemote(awayMessage || "");
-}
-
-function screenShieldHideKeyboard() {
-    _screenShield?._hideScreensaverKeyboard();
+function toggleKeyboard() {
+    if (!screensaverController?.toggleScreensaverKeyboard())
+        virtualKeyboardManager.manualToggle();
 }

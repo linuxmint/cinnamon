@@ -32,6 +32,7 @@ ClutterStage  *cinnamon_global_get_stage                 (CinnamonGlobal *global
 CinnamonScreen *cinnamon_global_get_screen                (CinnamonGlobal *global);
 MetaDisplay   *cinnamon_global_get_display               (CinnamonGlobal *global);
 GList         *cinnamon_global_get_window_actors         (CinnamonGlobal *global);
+GList         *cinnamon_global_get_background_actors     (CinnamonGlobal *global);
 GSettings     *cinnamon_global_get_settings              (CinnamonGlobal *global);
 guint32        cinnamon_global_get_current_time          (CinnamonGlobal *global);
 pid_t          cinnamon_global_get_pid                   (CinnamonGlobal *global);
@@ -42,6 +43,17 @@ void           cinnamon_global_dump_gjs_stack            (CinnamonGlobal *global
 gboolean cinnamon_global_begin_modal            (CinnamonGlobal         *global,
                                               guint32              timestamp,
                                               MetaModalOptions    options);
+
+typedef void (*CinnamonModalCallback) (CinnamonGlobal *global,
+                                       gboolean        success,
+                                       gpointer        user_data);
+
+void     cinnamon_global_begin_modal_with_retry (CinnamonGlobal        *global,
+                                                 guint32                timestamp,
+                                                 MetaModalOptions       options,
+                                                 CinnamonModalCallback  callback,
+                                                 gpointer               user_data);
+
 void     cinnamon_global_end_modal              (CinnamonGlobal         *global,
                                               guint32              timestamp);
 
@@ -73,7 +85,8 @@ typedef enum {
   CINNAMON_CURSOR_RESIZE_TOP_RIGHT,
   CINNAMON_CURSOR_RESIZE_TOP_LEFT,
   CINNAMON_CURSOR_CROSSHAIR,
-  CINNAMON_CURSOR_TEXT
+  CINNAMON_CURSOR_TEXT,
+  CINNAMON_CURSOR_GRABBING
 } CinnamonCursor;
 
 void    cinnamon_global_set_cursor              (CinnamonGlobal         *global,

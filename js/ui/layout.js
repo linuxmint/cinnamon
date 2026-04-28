@@ -304,26 +304,9 @@ var LayoutManager = GObject.registerClass({
         this._chrome.init();
 
         this.hotCornerManager = new HotCorner.HotCornerManager();
-
-        // Create container for screen shield (above all other UI)
-        this.screenShieldGroup = new St.Widget({
-            name: 'screenShieldGroup',
-            visible: false,
-            clip_to_allocation: true,
-            layout_manager: new Clutter.BinLayout()
-        });
-        this.screenShieldGroup.add_constraint(new Clutter.BindConstraint({
-            source: global.stage,
-            coordinate: Clutter.BindCoordinate.ALL
-        }));
-        global.stage.add_actor(this.screenShieldGroup);
-        this.screenShieldGroup.raise_top();
     }
 
     _toggleExpo() {
-        if (Main.expo.animationInProgress)
-            return;
-
         if (Main.overview.visible) {
             this._activationTime = Date.now() / 1000;
             Main.overview.hide();
@@ -440,21 +423,21 @@ var LayoutManager = GObject.registerClass({
             switch (panel.panelPosition) {
                 case Panel.PanelLoc.top:
                     if (top) {
-                        kb_height -= panel.actor.height;
-                        kb_y += panel.actor.height;
+                        kb_height -= panel.get_height();
+                        kb_y += panel.get_height();
                     }
                     break;
                 case Panel.PanelLoc.bottom:
                     if (!top) {
-                        kb_height -= panel.actor.height;
+                        kb_height -= panel.get_height();
                     }
                     break;
                 case Panel.PanelLoc.left:
-                    kb_x += panel.actor.width;
-                    kb_width -= panel.actor.width;
+                    kb_x += panel.get_width();
+                    kb_width -= panel.get_width();
                     break;
                 case Panel.PanelLoc.right:
-                    kb_width -= panel.actor.width;
+                    kb_width -= panel.get_width();
                     break;
             }
         }
@@ -636,6 +619,14 @@ var LayoutManager = GObject.registerClass({
     findMonitorIndexAt(x, y) {
         let [index, monitor] = this._chrome._findMonitorForRect(x, y, 1, 1)
         return index;
+    }
+
+    getWorkAreaForMonitor(monitorIndex) {
+        // Assume that all workspaces will have the same
+        // struts and pick the first one.
+        const workspaceManager = global.workspace_manager;
+        const ws = workspaceManager.get_workspace_by_index(0);
+        return ws.get_work_area_for_monitor(monitorIndex);
     }
 
     /**

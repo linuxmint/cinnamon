@@ -611,6 +611,15 @@
       <default>""</default>
       <summary>Stores the position of the hoverclick window so it can be restored there later - format is x::y</summary>
     </key>
+    <key name="remember-mount-password" type="b">
+      <default>false</default>
+      <summary>Whether to remember password for mounting encrypted or remote filesystems</summary>
+      <description>
+        When an encrypted device or remote filesystem is mounted, a password
+        dialog may include a "Remember Password" checkbox. This key stores the
+        default state of that checkbox.
+      </description>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"

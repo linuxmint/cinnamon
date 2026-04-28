@@ -139,13 +139,30 @@ function _onPopup(actor) {
     entry._menu.open();
 };
 
-function addContextMenu(entry, params) {
+/**
+ * addContextMenu:
+ * @entry (St.Entry): the entry to add a context menu to
+ * @params (object): optional parameters to pass to the _EntryMenu constructor.
+ *   Currently supports `isPassword` (boolean) to add a show/hide text toggle.
+ * @parentMenu (PopupMenu.PopupMenu): optional parent menu. When the entry is
+ *   inside an existing popup menu (e.g. an applet menu), pass the parent menu
+ *   here so the context menu is registered as a child menu. This prevents the
+ *   parent menu from closing when the context menu is interacted with. When
+ *   omitted, a standalone PopupMenuManager is created for the context menu,
+ *   which is appropriate for entries in dialogs or other non-menu contexts.
+ */
+function addContextMenu(entry, params, parentMenu) {
     if (entry._menu)
         return;
 
     entry._menu = new _EntryMenu(entry, params);
-    entry._menuManager = new PopupMenu.PopupMenuManager({ actor: entry });
-    entry._menuManager.addMenu(entry._menu);
+
+    if (parentMenu) {
+        parentMenu.addChildMenu(entry._menu);
+    } else {
+        entry._menuManager = new PopupMenu.PopupMenuManager({ actor: entry });
+        entry._menuManager.addMenu(entry._menu);
+    }
 
     // Add a click action to both the entry and its clutter_text; the former
     // so padding is included in the clickable area, the latter because the

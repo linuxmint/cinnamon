@@ -1532,13 +1532,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
         source.actor.hide();
         if (this._dragPlaceholder == undefined) {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this._dragPlaceholder.child.set_width (source.actor.width);
-            this._dragPlaceholder.child.set_height (source.actor.height);
+            this._dragPlaceholder.set_width (source.actor.width);
+            this._dragPlaceholder.set_height (source.actor.height);
 
-            this.manager_container.insert_child_at_index(this._dragPlaceholder.actor,
+            this.manager_container.insert_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         } else {
-            this.manager_container.set_child_at_index(this._dragPlaceholder.actor,
+            this.manager_container.set_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         }
 
@@ -1559,7 +1559,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     clearDragPlaceholder() {
         if (this._dragPlaceholder) {
-            this._dragPlaceholder.actor.destroy();
+            this._dragPlaceholder.destroy();
             this._dragPlaceholder = undefined;
             this._dragPlaceholderPos = undefined;
         }

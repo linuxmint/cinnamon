@@ -297,23 +297,39 @@ function installXletImporter(extension) {
     // extension.dir is the actual directory containing the JS files,
     // which might be a versioned subdirectory (e.g., .../uuid/6.0/)
     // or the uuid directory itself for non-versioned xlets.
-    let parentPath = extension.dir.get_parent().get_path();
     let dirName = extension.dir.get_basename();
+    let uuidDir = extension.dir.get_parent();
+    let parentPath, importPath;
+
+    // Versioned subdirectories (e.g., "6.2") start with a digit and
+    // can't be used as importer keys directly. Navigate through the
+    // uuid directory instead.
+    if (dirName.match(/^[0-9]/)) {
+        parentPath = uuidDir.get_parent().get_path();
+        importPath = [uuidDir.get_basename(), dirName];
+    } else {
+        parentPath = uuidDir.get_path();
+        importPath = [dirName];
+    }
 
     let oldSearchPath = imports.searchPath.slice();
     imports.searchPath = [parentPath];
 
     try {
-        extension.imports = imports[dirName];
+        let importer = imports;
+        for (let part of importPath) {
+            importer = importer[part];
+        }
+        extension.imports = importer;
     } catch (e) {
         imports.searchPath = oldSearchPath;
-        throw new Error(`Failed to create importer for ${extension.uuid} at ${parentPath}/${dirName}: ${e.message}`);
+        throw new Error(`Failed to create importer for ${extension.uuid} at ${parentPath}/${importPath.join('/')}: ${e.message}`);
     }
 
     imports.searchPath = oldSearchPath;
 
     if (!extension.imports) {
-        throw new Error(`Importer is null for ${extension.uuid} at ${parentPath}/${dirName}`);
+        throw new Error(`Importer is null for ${extension.uuid} at ${parentPath}/${importPath.join('/')}`);
     }
 }
 

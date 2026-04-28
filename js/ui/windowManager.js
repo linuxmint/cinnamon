@@ -357,19 +357,39 @@ var WindowManager = class WindowManager {
         this._cinnamonwm.connect('filter-keybinding', this._filterKeybinding.bind(this));
         global.window_manager.connect('switch-workspace', (c, f, t, d) => this._switchWorkspace(c, f, t, d));
 
-        Meta.keybindings_set_custom_handler('move-to-workspace-left', (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b));
-        Meta.keybindings_set_custom_handler('move-to-workspace-right', (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b));
+        let kbm = Main.keybindingManager;
+        let WORKSPACE_MODES = Cinnamon.ActionMode.NORMAL |
+                              Cinnamon.ActionMode.OVERVIEW |
+                              Cinnamon.ActionMode.EXPO;
 
-        Meta.keybindings_set_custom_handler('switch-to-workspace-left', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-to-workspace-right', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-to-workspace-up', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-to-workspace-down', (d, w, b) => this._showWorkspaceSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-windows', (d, w, b) => this._startAppSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-group', (d, w, b) => this._startAppSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-windows-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-group-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-panels', (d, w, b) => this._startAppSwitcher(d, w, b));
-        Meta.keybindings_set_custom_handler('switch-panels-backward', (d, w, b) => this._startAppSwitcher(d, w, b));
+        kbm.setBuiltinHandler('move-to-workspace-left', Meta.KeyBindingAction.MOVE_TO_WORKSPACE_LEFT,
+            (d, w, b) => this._moveWindowToWorkspaceLeft(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('move-to-workspace-right', Meta.KeyBindingAction.MOVE_TO_WORKSPACE_RIGHT,
+            (d, w, b) => this._moveWindowToWorkspaceRight(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('toggle-window-selection', Meta.KeyBindingAction.TOGGLE_WINDOW_SELECTION,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('toggle-workspace-selection', Meta.KeyBindingAction.TOGGLE_WORKSPACE_SELECTION,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('switch-to-workspace-left', Meta.KeyBindingAction.WORKSPACE_LEFT,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('switch-to-workspace-right', Meta.KeyBindingAction.WORKSPACE_RIGHT,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('switch-to-workspace-up', Meta.KeyBindingAction.WORKSPACE_UP,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('switch-to-workspace-down', Meta.KeyBindingAction.WORKSPACE_DOWN,
+            (d, w, b) => this._showWorkspaceSwitcher(d, w, b), WORKSPACE_MODES);
+        kbm.setBuiltinHandler('switch-windows', Meta.KeyBindingAction.SWITCH_WINDOWS,
+            (d, w, b) => this._startAppSwitcher(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('switch-group', Meta.KeyBindingAction.SWITCH_GROUP,
+            (d, w, b) => this._startAppSwitcher(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('switch-windows-backward', Meta.KeyBindingAction.SWITCH_WINDOWS_BACKWARD,
+            (d, w, b) => this._startAppSwitcher(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('switch-group-backward', Meta.KeyBindingAction.SWITCH_GROUP_BACKWARD,
+            (d, w, b) => this._startAppSwitcher(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('switch-panels', Meta.KeyBindingAction.SWITCH_PANELS,
+            (d, w, b) => this._startAppSwitcher(d, w, b), Cinnamon.ActionMode.NORMAL);
+        kbm.setBuiltinHandler('switch-panels-backward', Meta.KeyBindingAction.SWITCH_PANELS_BACKWARD,
+            (d, w, b) => this._startAppSwitcher(d, w, b), Cinnamon.ActionMode.NORMAL);
 
         global.display.connect('show-resize-popup', this._showResizePopup.bind(this));
         this._cinnamonwm.connect('create-close-dialog', this._createCloseDialog.bind(this));
@@ -445,12 +465,6 @@ var WindowManager = class WindowManager {
         return this._seenWindows.has(metaWindow);
     }
 
-    _filterKeybinding(shellwm, binding) {
-        // TODO: We can use ActionModes to manage what keybindings are
-        // available where. For now just disable this, things are handled
-        // in Main._stageEventHandler.
-        return false;
-    }
 
     onSettingsChanged(settings, key, data=null) {
         if (key === "desktop-effects-workspace") {
@@ -841,15 +855,9 @@ var WindowManager = class WindowManager {
     }
 
     _filterKeybinding(shellwm, binding) {
-        // Builtin keybindings (defined by Muffin) work in NORMAL mode by default
-        if (Main.actionMode == Cinnamon.ActionMode.NORMAL && binding.is_builtin())
-            return false;
-
-        // Look up the binding in our keybinding manager
         let bindingName = binding.get_name();
-        let [action_id, entry] = Main.keybindingManager._lookupEntry(bindingName);
+        let [, entry] = Main.keybindingManager._lookupEntry(bindingName);
 
-        // Use the common filtering logic from main.js
         return Main._shouldFilterKeybinding(entry);
     }
 
@@ -1388,12 +1396,23 @@ var WindowManager = class WindowManager {
 
     _showWorkspaceSwitcher(display, window, binding) {
         let bindingName = binding.get_name();
-        if (bindingName === 'switch-to-workspace-up') {
-            Main.expo.toggle();
+
+        if (bindingName === 'toggle-workspace-selection') {
+            if (Main.overview.visible || Main.expo.visible) {
+                Main.overview.hide();
+                Main.expo.hide();
+            } else {
+                Main.expo.toggle();
+            }
             return;
         }
-        if (bindingName === 'switch-to-workspace-down') {
-            Main.overview.toggle();
+        if (bindingName === 'toggle-window-selection') {
+            if (Main.overview.visible || Main.expo.visible) {
+                Main.overview.hide();
+                Main.expo.hide();
+            } else {
+                Main.overview.toggle();
+            }
             return;
         }
 
@@ -1404,6 +1423,10 @@ var WindowManager = class WindowManager {
             this.actionMoveWorkspaceLeft();
         } else if (bindingName === 'switch-to-workspace-right') {
             this.actionMoveWorkspaceRight();
+        } else if (bindingName === 'switch-to-workspace-up') {
+            this.actionMoveWorkspaceUp();
+        } else if (bindingName === 'switch-to-workspace-down') {
+            this.actionMoveWorkspaceDown();
         }
     }
 

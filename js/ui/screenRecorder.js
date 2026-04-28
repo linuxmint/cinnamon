@@ -11,7 +11,8 @@ var ScreenRecorder = class ScreenRecorder {
         this.recorder = null;
         this.recorderSettings = new Gio.Settings({ schema_id: 'org.cinnamon.recorder' });
 
-        Meta.keybindings_set_custom_handler('toggle-recording', () => this.toggle_recording());
+        Main.keybindingManager.setBuiltinHandler('toggle-recording', Meta.KeyBindingAction.TOGGLE_RECORDING,
+            () => this.toggle_recording(), Cinnamon.ActionMode.NORMAL);
     }
 
     get recording() {

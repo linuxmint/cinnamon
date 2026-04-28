@@ -19,6 +19,7 @@ cinnamon_headers = [
     'cinnamon-glsl-effect.h',
     'cinnamon-gtk-embed.h',
     'cinnamon-global.h',
+    'cinnamon-mount-operation.h',
     'cinnamon-perf-log.h',
     'cinnamon-screen.h',
     'cinnamon-screenshot.h',
@@ -53,6 +54,7 @@ cinnamon_sources = [
     'cinnamon-global.c',
     'cinnamon-keyring-prompt.c',
     'cinnamon-keyring-prompt.h',
+    'cinnamon-mount-operation.c',
     'cinnamon-perf-log.c',
     'cinnamon-polkit-authentication-agent.c',
     'cinnamon-polkit-authentication-agent.h',
@@ -110,6 +112,7 @@ libcinnamon_deps = [
     polkit,
     st_dep,
     xapp,
+    xdo,
     xml,
 ]
 

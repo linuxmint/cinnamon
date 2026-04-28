@@ -2,6 +2,7 @@
 
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GioUnix = imports.gi.GioUnix;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const NM = imports.gi.NM;
@@ -392,8 +393,8 @@ var VPNRequestHandler = class {
                                             null /* child_setup */);
 
             this._childPid = pid;
-            this._stdin = new Gio.UnixOutputStream({ fd: stdin, close_fd: true });
-            this._stdout = new Gio.UnixInputStream({ fd: stdout, close_fd: true });
+            this._stdin = new GioUnix.OutputStream({ fd: stdin, close_fd: true });
+            this._stdout = new GioUnix.InputStream({ fd: stdout, close_fd: true });
             GLib.close(stderr);
             this._dataStdout = new Gio.DataInputStream({ base_stream: this._stdout });
 

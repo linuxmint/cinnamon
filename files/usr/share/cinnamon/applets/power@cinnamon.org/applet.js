@@ -3,10 +3,10 @@ const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
 const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
+const LoginManager = imports.misc.loginManager;
 const PowerUtils = imports.misc.powerUtils;
 const St = imports.gi.St;
 const Tooltips = imports.ui.tooltips;
-const UPowerGlib = imports.gi.UPowerGlib;
 const PopupMenu = imports.ui.popupMenu;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
@@ -15,6 +15,7 @@ const BrightnessBusName = "org.cinnamon.SettingsDaemon.Power.Screen";
 const KeyboardBusName = "org.cinnamon.SettingsDaemon.Power.Keyboard";
 
 const CSD_BACKLIGHT_NOT_SUPPORTED_CODE = 1;
+const CSD_SCHEMA = "org.cinnamon.settings-daemon.plugins.power";
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
@@ -88,7 +89,7 @@ class DeviceItem extends PopupMenu.PopupBaseMenuItem {
 }
 
 class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
-    constructor(applet, label, icon, busName, minimum_value) {
+    constructor(applet, label, icon, busName, minimum_value, readyCallback) {
         super(0);
         this.actor.hide();
 
@@ -96,13 +97,15 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._seeking = false;
         this._minimum_value = minimum_value;
         this._step = .05;
+        this._readyCallback = readyCallback || null;
+        this.proxy = null;
 
-        this.connect("drag-begin", Lang.bind(this, function () {
+        this.connect("drag-begin", () => {
             this._seeking = true;
-        }));
-        this.connect("drag-end", Lang.bind(this, function () {
+        });
+        this.connect("drag-end", () => {
             this._seeking = false;
-        }));
+        });
 
         this.icon = new St.Icon({ icon_name: icon, icon_type: St.IconType.SYMBOLIC, icon_size: 16 });
         this.removeActor(this._slider);
@@ -113,41 +116,45 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(busName, Lang.bind(this, function (proxy, error) {
-            this._proxy = proxy;
-            this._proxy.GetPercentageRemote(Lang.bind(this, this._dbusAcquired));
-        }));
+        Interfaces.getDBusProxyAsync(busName, this._dbusAcquired.bind(this));
     }
 
-    _dbusAcquired(b, error) {
+    _dbusAcquired(proxy, error) {
         if (error)
             return;
 
+        this.proxy = proxy;
+
+        this.connect("value-changed", this._sliderChanged.bind(this));
+        this.proxy.connectSignal('Changed', this._getBrightness.bind(this));
+        this._applet.menu.connect("open-state-changed", this._getBrightnessForcedUpdate.bind(this));
+
+        if (this._readyCallback) {
+            this._readyCallback();
+        }
+
+        this.proxy.GetPercentageRemote((b, error) => {
+            if (error)
+                return;
+
+            this._updateBrightnessLabel(b);
+            this.setValue(b / 100);
+            this.actor.show();
+        });
+
         try {
-            this._proxy.GetStepRemote((step, error) => {
+            this.proxy.GetStepRemote((step, error) => {
                 if (error != null) {
                     if (error.code != CSD_BACKLIGHT_NOT_SUPPORTED_CODE) {
-                        global.logError(`Could not get backlight step for ${busName}: ${error.message}`);
-                        return;
-                    } else {
-                        this._step = .05;
+                        global.logError(`Could not get backlight step: ${error.message}`);
                     }
+                    return;
                 }
                 this._step = (step / 100);
             });
         } catch (e) {
-            this._step = .05;
+            // step stays at default
         }
-
-        this._updateBrightnessLabel(b);
-        this.setValue(b / 100);
-        this.connect("value-changed", Lang.bind(this, this._sliderChanged));
-
-        this.actor.show();
-
-        //get notified
-        this._proxy.connectSignal('Changed', Lang.bind(this, this._getBrightness));
-        this._applet.menu.connect("open-state-changed", Lang.bind(this, this._getBrightnessForcedUpdate));
     }
 
     _sliderChanged(slider, value) {
@@ -190,16 +197,16 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
     }
 
     _getBrightnessForcedUpdate() {
-        this._proxy.GetPercentageRemote(Lang.bind(this, function (b) {
+        this.proxy.GetPercentageRemote((b) => {
             this._updateBrightnessLabel(b);
             this.setValue(b / 100);
-        }));
+        });
     }
 
     _setBrightness(value) {
-        this._proxy.SetPercentageRemote(value, Lang.bind(this, function (b) {
+        this.proxy.SetPercentageRemote(value, (b) => {
             this._updateBrightnessLabel(b);
-        }));
+        });
     }
 
     _updateBrightnessLabel(value) {
@@ -217,10 +224,10 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._proxy.StepDownRemote(function () { });
+            this.proxy.StepDownRemote(function () { });
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._proxy.StepUpRemote(function () { });
+            this.proxy.StepUpRemote(function () { });
         }
 
         this._slider.queue_repaint();
@@ -253,10 +260,25 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0);
+        this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0, () => {
+            this._updateAmbientVisibility();
+            this.brightness.proxy.connect("g-properties-changed", () => this._updateAmbientVisibility());
+        });
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
         this.menu.addMenuItem(this.keyboard);
+
+        this._ambientItem = new PopupMenu.PopupSwitchMenuItem(_("Adjust automatically"), false);
+        this._ambientItem.actor.hide();
+        this.menu.addMenuItem(this._ambientItem);
+        this._csdSettings = new Gio.Settings({ schema_id: CSD_SCHEMA });
+        this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
+        this._ambientItem.connect("toggled", (item) => {
+            this._csdSettings.set_boolean("ambient-enabled", item.state);
+        });
+        this._csdSettings.connect("changed::ambient-enabled", () => {
+            this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
+        });
 
         try {
             // Hadess interface
@@ -337,7 +359,21 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }));
         }, null);
 
+        this._loginManager = LoginManager.getLoginManager();
+        this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
+            if (!aboutToSuspend)
+                this._devicesChanged();
+        });
+
         this.set_show_label_in_vertical_panels(false);
+    }
+
+    _updateAmbientVisibility() {
+        if (this.brightness.proxy && this.brightness.proxy.AmbientLightSupported) {
+            this._ambientItem.actor.show();
+        } else {
+            this._ambientItem.actor.hide();
+        }
     }
 
     _onPanelEditModeChanged() {
@@ -360,7 +396,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     _onButtonPressEvent(actor, event) {
         //toggle keyboard brightness on middle click
         if (event.get_button() === 2) {
-            this.keyboard._proxy.ToggleRemote(function () { });
+            this.keyboard.proxy.ToggleRemote(function () { });
         }
         return Applet.Applet.prototype._onButtonPressEvent.call(this, actor, event);
     }
@@ -373,9 +409,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         //adjust screen brightness on scroll
         let direction = event.get_scroll_direction();
         if (direction == Clutter.ScrollDirection.UP) {
-            this.brightness._proxy.StepUpRemote(function () { });
+            this.brightness.proxy.StepUpRemote(function () { });
         } else if (direction == Clutter.ScrollDirection.DOWN) {
-            this.brightness._proxy.StepDownRemote(function () { });
+            this.brightness.proxy.StepDownRemote(function () { });
         }
         this.brightness._getBrightnessForcedUpdate();
     }

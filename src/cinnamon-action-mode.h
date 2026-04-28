@@ -14,6 +14,7 @@
  *     dialog (e.g. authentication or session dialogs) is open
  * @CINNAMON_ACTION_MODE_LOOKING_GLASS: allow action in looking glass
  * @CINNAMON_ACTION_MODE_POPUP: allow action while a shell menu is open
+ * @CINNAMON_ACTION_MODE_EXPO: allow action while the expo is active
  * @CINNAMON_ACTION_MODE_ALL: always allow action
  *
  * Controls in which Cinnamon states an action (like keybindings and gestures)
@@ -23,9 +24,9 @@ typedef enum {
   CINNAMON_ACTION_MODE_NONE          = 0,
   CINNAMON_ACTION_MODE_NORMAL        = 1 << 0,
   CINNAMON_ACTION_MODE_OVERVIEW      = 1 << 1,
-  CINNAMON_ACTION_MODE_LOCK_SCREEN   = 1 << 2,
-  CINNAMON_ACTION_MODE_UNLOCK_SCREEN = 1 << 3,
-  CINNAMON_ACTION_MODE_LOGIN_SCREEN  = 1 << 4,
+  CINNAMON_ACTION_MODE_EXPO          = 1 << 2,
+  CINNAMON_ACTION_MODE_LOCK_SCREEN   = 1 << 3,
+  CINNAMON_ACTION_MODE_UNLOCK_SCREEN = 1 << 4,
   CINNAMON_ACTION_MODE_SYSTEM_MODAL  = 1 << 5,
   CINNAMON_ACTION_MODE_LOOKING_GLASS = 1 << 6,
   CINNAMON_ACTION_MODE_POPUP         = 1 << 7,
