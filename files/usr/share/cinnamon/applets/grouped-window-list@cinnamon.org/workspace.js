@@ -244,8 +244,7 @@ var Workspace = class Workspace {
             let lastFocusedInAppGroup = appGroup.groupState.lastFocused;
             if (lastFocusedInAppGroup && lastFocusedInAppGroup.has_focus()) {
                 lastFocusedAppInWorkspace = appGroup;
-                this.scrollToAppGroup(appGroup);
-                return;
+                break;
             } else if (this.workspaceState.lastFocusedApp === appGroup.groupState.appId) {
                 lastFocusedAppInWorkspace = appGroup;
             } else if ((!lastFocusedAppInWorkspace || lastFocusedAppInWorkspace.groupState.metaWindows.length === 0) &&
