@@ -121,27 +121,19 @@
     }
 
     &-button {
-      &-start,
-      &-end,
-      &-up,
-      &-down {
-        margin: 0;
-        padding: 0;
-        min-width: 15px;
-        min-height: 20px;
-      }
-
       &-icon {
         icon-size: $scalable_icon_size;
       }
 
-      :hover {
-        // TODO
-      }
+      &.vertical { }
 
-      :active {
-        // TODO
-      }
+      &-start { }
+
+      &-end { }
+
+      :hover { }
+
+      :active { }
     }
   }
 }

@@ -33,7 +33,7 @@ var ScrollBox = class ScrollBox {
 
         // Slider buttons
         this.startButton = new St.Bin({
-            style_class: 'grouped-window-list-scrollbox-button-start',
+            style_class: 'grouped-window-list-scrollbox-button grouped-window-list-scrollbox-button-start',
             visible: false,
             reactive: true,
             can_focus: true,
@@ -42,7 +42,7 @@ var ScrollBox = class ScrollBox {
             y_align: St.Align.MIDDLE
         });
         this.endButton = new St.Bin({
-            style_class: 'grouped-window-list-scrollbox-button-end',
+            style_class: 'grouped-window-list-scrollbox-button grouped-window-list-scrollbox-button-end',
             visible: false,
             reactive: true,
             can_focus: true,
@@ -201,9 +201,12 @@ var ScrollBox = class ScrollBox {
             this.startIcon.set_icon_name('xsi-pan-start-symbolic');
             this.endIcon.set_icon_name('xsi-pan-end-symbolic');
 
+            this.startButton.remove_style_class_name('vertical');
             this.startButton.set_x_expand(false);
             this.startButton.set_y_expand(true);
             this.startButton.set_y_align(Clutter.ActorAlign.FILL);
+
+            this.endButton.remove_style_class_name('vertical');
             this.endButton.set_x_expand(false);
             this.endButton.set_y_expand(true);
             this.endButton.set_y_align(Clutter.ActorAlign.FILL);
@@ -215,9 +218,12 @@ var ScrollBox = class ScrollBox {
             this.startIcon.set_icon_name('xsi-pan-up-symbolic');
             this.endIcon.set_icon_name('xsi-pan-down-symbolic');
 
+            this.startButton.add_style_class_name('vertical');
             this.startButton.set_x_expand(true);
             this.startButton.set_y_expand(false);
             this.startButton.set_x_align(Clutter.ActorAlign.FILL);
+
+            this.endButton.add_style_class_name('vertical');
             this.endButton.set_x_expand(true);
             this.endButton.set_y_expand(false);
             this.endButton.set_x_align(Clutter.ActorAlign.FILL);
