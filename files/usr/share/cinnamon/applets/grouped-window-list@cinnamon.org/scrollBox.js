@@ -36,6 +36,8 @@ var ScrollBox = class ScrollBox {
             style_class: 'grouped-window-list-scrollbox-button-start',
             visible: false,
             reactive: true,
+            can_focus: true,
+            track_hover: true,
             x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE
         });
@@ -43,6 +45,8 @@ var ScrollBox = class ScrollBox {
             style_class: 'grouped-window-list-scrollbox-button-end',
             visible: false,
             reactive: true,
+            can_focus: true,
+            track_hover: true,
             x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE
         });
@@ -79,10 +83,58 @@ var ScrollBox = class ScrollBox {
         this.scrollActiveTimeoutId = 0;
 
         // Slider button signals
-        this.signals.connect(this.startButton, 'enter-event', () => this._startSlide(-1));
-        this.signals.connect(this.startButton, 'leave-event', () => this._stopSlide());
-        this.signals.connect(this.endButton, 'enter-event', () => this._startSlide(1));
-        this.signals.connect(this.endButton, 'leave-event', () => this._stopSlide());
+        this.signals.connect(this.startButton, 'enter-event', () => {
+            if (!this.state.settings.enableClickToSlide)
+                this._startSlide(-1);
+        });
+        this.signals.connect(this.startButton, 'leave-event', () => {
+            this._stopSlide();
+            this.startButton.remove_style_pseudo_class('active');
+        });
+        this.signals.connect(this.endButton, 'enter-event', () => {
+            if (!this.state.settings.enableClickToSlide)
+                this._startSlide(1);
+        });
+        this.signals.connect(this.endButton, 'leave-event', () => {
+            this._stopSlide();
+            this.endButton.remove_style_pseudo_class('active');
+        });
+        this.signals.connect(this.startButton, 'button-press-event', (actor, event) => {
+            if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
+            if (this.state.settings.enableClickToSlide) {
+                this.startButton.add_style_pseudo_class('active');
+                this._startSlide(-1);
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this.signals.connect(this.startButton, 'button-release-event', (actor, event) => {
+            if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
+            this.startButton.remove_style_pseudo_class('active');
+            if (this.state.settings.enableClickToSlide) {
+                this._stopSlide();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this.signals.connect(this.endButton, 'button-press-event', (actor, event) => {
+            if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
+            if (this.state.settings.enableClickToSlide) {
+                this.endButton.add_style_pseudo_class('active');
+                this._startSlide(1);
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
+        this.signals.connect(this.endButton, 'button-release-event', (actor, event) => {
+            if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
+            this.endButton.remove_style_pseudo_class('active');
+            if (this.state.settings.enableClickToSlide) {
+                this._stopSlide();
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
 
         // Scroll view signals
         this.signals.connect(this.scrollView, 'scroll-event', (actor, event) => this._onScroll(actor, event));
@@ -214,7 +266,7 @@ var ScrollBox = class ScrollBox {
             const current = adjustment.value;
             const page_size = adjustment.page_size;
 
-            let fade_offset = this._getFadeOffset();
+            let fade_offset = this._getFadeOffset() / 2;
 
             if (c1 < current + fade_offset || c2 > current + page_size - fade_offset) {
                 const newValue = (c1 + c2) / 2 - page_size / 2;
@@ -295,7 +347,8 @@ var ScrollBox = class ScrollBox {
     }
 
     _onMotionEvent(actor, event) {
-        if (this.state.panelEditMode) return Clutter.EVENT_PROPAGATE;
+        if (this.state.panelEditMode || this.state.settings.enableClickToSlide)
+            return Clutter.EVENT_PROPAGATE;
 
         const [x, y] = event.get_coords();
         const [actorX, actorY] = actor.get_transformed_position();

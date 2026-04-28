@@ -315,7 +315,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'enable-window-count-badges', value: 'enableWindowCountBadges', cb: this.onEnableWindowCountBadgeChange},
             {key: 'enable-notification-badges', value: 'enableNotificationBadges', cb: this.onEnableNotificationsChange},
             {key: 'enable-app-button-dragging', value: 'enableDragging', cb: this.draggableSettingChanged},
-            {key: 'enable-slide-to-focused-app-button', value: 'enableSlideToFocusedAppButton', cb: null},
+            {key: 'enable-click-to-slide', value: 'enableClickToSlide', cb: null},
             {key: 'thumbnail-scroll-behavior', value: 'thumbnailScrollBehavior', cb: null},
             {key: 'show-thumbnails', value: 'showThumbs', cb: this.updateVerticalThumbnailState},
             {key: 'animate-thumbnails', value: 'animateThumbs', cb: null},
