@@ -121,19 +121,42 @@
     }
 
     &-button {
+      transition-duration: 100ms;
+
       &-icon {
         icon-size: $scalable_icon_size;
+        color: inherit;
       }
 
       &.vertical { }
 
-      &-start { }
+      &-start {
+        margin-right: 1px;
 
-      &-end { }
+        &.vertical {
+          margin-right: 0;
+          margin-bottom: 1px;
+        }
+      }
 
-      :hover { }
+      &-end {
+        margin-left: 1px;
 
-      :active { }
+        &.vertical {
+          margin-left: 0;
+          margin-top: 1px;
+        }
+      }
+
+      &:hover {
+        background-color: $lighter_bg_color;
+        color: $fg_color;
+      }
+
+      &:active {
+        background-color: $lightest_bg_color;
+        color: $fg_color;
+      }
     }
   }
 }
