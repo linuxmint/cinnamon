@@ -138,8 +138,6 @@ var ScrollBox = class ScrollBox {
 
         // Scroll view signals
         this.signals.connect(this.scrollView, 'scroll-event', (actor, event) => this._onScroll(actor, event));
-        this.signals.connect(this.scrollView, 'motion-event', (actor, event) => this._onMotionEvent(actor, event));
-        this.signals.connect(this.scrollView, 'leave-event', () => this._stopSlide());
 
         // Track content size changes
         this.signals.connect(this.container, 'allocation-changed', () => this.updateScrollButtonVisibility());
@@ -272,7 +270,7 @@ var ScrollBox = class ScrollBox {
             const current = adjustment.value;
             const page_size = adjustment.page_size;
 
-            let fade_offset = this._getFadeOffset() / 2;
+            let fade_offset = this._getFadeOffset();
 
             if (c1 < current + fade_offset || c2 > current + page_size - fade_offset) {
                 const newValue = (c1 + c2) / 2 - page_size / 2;
@@ -350,64 +348,6 @@ var ScrollBox = class ScrollBox {
             this.scrollActiveTimeoutId = 0;
             return GLib.SOURCE_REMOVE;
         });
-    }
-
-    _onMotionEvent(actor, event) {
-        if (this.state.panelEditMode || this.state.settings.enableClickToSlide)
-            return Clutter.EVENT_PROPAGATE;
-
-        const [x, y] = event.get_coords();
-        const [actorX, actorY] = actor.get_transformed_position();
-        const [actorWidth, actorHeight] = actor.get_transformed_size();
-
-        // Calculate relative position within the actor
-        const relX = x - actorX;
-        const relY = y - actorY;
-
-        let scrollDirection = 0;
-        const adjustment = this._getScrollAdjustment();
-
-        if (!adjustment) return Clutter.EVENT_PROPAGATE;
-
-        // Check if we can scroll (content is larger than view)
-        const canScroll = adjustment.upper > adjustment.page_size;
-
-        if (!canScroll) {
-            this._stopSlide();
-            return Clutter.EVENT_PROPAGATE;
-        }
-
-        const fadeOffset = this._getFadeOffset();
-
-        if (this.state.isHorizontal) {
-            // Check left edge
-            if (relX < fadeOffset && adjustment.value > adjustment.lower) {
-                scrollDirection = -1;
-            }
-            // Check right edge
-            else if (relX > actorWidth - fadeOffset &&
-                adjustment.value < adjustment.upper - adjustment.page_size) {
-                scrollDirection = 1;
-            }
-        } else {
-            // Check top edge
-            if (relY < fadeOffset && adjustment.value > adjustment.lower) {
-                scrollDirection = -1;
-            }
-            // Check bottom edge
-            else if (relY > actorHeight - fadeOffset &&
-                adjustment.value < adjustment.upper - adjustment.page_size) {
-                scrollDirection = 1;
-            }
-        }
-
-        if (scrollDirection !== 0) {
-            this._startSlide(scrollDirection);
-        } else {
-            this._stopSlide();
-        }
-
-        return Clutter.EVENT_PROPAGATE;
     }
 
     _getScrollAdjustment() {

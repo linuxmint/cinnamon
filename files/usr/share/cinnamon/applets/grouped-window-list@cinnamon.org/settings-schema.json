@@ -206,9 +206,9 @@
   },
   "enable-click-to-slide": {
     "type": "checkbox",
-    "default": true,
-    "description": "Enable slide on click",
-    "tooltip": "When the sliding view is visible, clicking the button at the edges will slide the app list. If disabled, hovering the mouse on the edge of the app list will slide the app list towards that side."
+    "default": false,
+    "description": "Enable click to slide when slide buttons are visible",
+    "tooltip": "When enabled, clicking the slide buttons at either end of the app list will scroll the list in that direction. When disabled, the list will scroll when the mouse pointer hovers over the slide buttons."
   },
   "thumbnail-scroll-behavior": {
     "type": "checkbox",
