@@ -862,7 +862,7 @@ XletSettingsBase.prototype = {
         switch (setting["type"]) {
             case "spinbutton":
             case "scale":
-                return (val < setting["max"] && val > setting["min"]);
+                return (val <= setting["max"] && val >= setting["min"]);
                 break;
             case "combobox":
             case "radiogroup":
