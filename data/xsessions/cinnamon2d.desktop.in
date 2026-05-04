@@ -4,7 +4,7 @@ Comment=This session logs you into Cinnamon (using software rendering)
 Exec=cinnamon-session-cinnamon2d
 TryExec=@bindir@/cinnamon2d
 Icon=
-Type=Application
+Type=XSession
 X-Ubuntu-Gettext-Domain=cinnamon
 X-GNOME-Provides=cinnamon2d
 
