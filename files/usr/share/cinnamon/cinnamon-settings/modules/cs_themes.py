@@ -985,6 +985,17 @@ class Module:
         try:
             self.settings.set_string("gtk-theme", theme)
             self.set_button_chooser_text(self.theme_chooser, theme)
+            theme_lower = theme.lower()
+
+            if "darker" in theme_lower:
+                new_pref = 0
+            elif "dark" in theme_lower:
+                new_pref = 1
+            else:
+                new_pref = 2
+
+            self.xsettings.set_enum("color-scheme", new_pref)
+
         except Exception as detail:
             print(detail)
         return True
