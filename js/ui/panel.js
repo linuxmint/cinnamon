@@ -1965,7 +1965,7 @@ var Panel = GObject.registerClass({
                         }
 
                         if (this.bottompanelHeight === 0) {
-                            y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
+                            let y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
                             if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
                                 || this.bottompanelHeight > 0 || this.margin_bottom > 0) {
                                 this._bottomPanelBarrier = new Meta.Barrier({
