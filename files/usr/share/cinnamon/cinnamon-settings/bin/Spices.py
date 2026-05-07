@@ -174,14 +174,15 @@ class Spice_Harvester(GObject.Object):
 
         if self.themes:
             self.install_folder = f'{home}/.themes/'
-            old_install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
-            self.spices_directories = (self.install_folder, old_install_folder)
+            old_install_folder = os.path.join(home, ".local/share/cinnamon/themes")
+            legacy_install_folder = os.path.join(GLib.get_user_data_dir(), 'themes')
+            self.spices_directories = (self.install_folder, old_install_folder, legacy_install_folder)
         elif self.actions:
             actions = 'nemo/actions/'
             self.install_folder = f'{home}/.local/share/{actions}'
             sys_dirs = [x + f'/{actions}' for x in GLib.get_system_data_dirs()]
             sys_dirs.append(self.install_folder)
-            self.spices_directories = (sys_dirs)
+            self.spices_directories = tuple(sys_dirs)
         else:
             self.install_folder = f'{home}/.local/share/cinnamon/{self.collection_type}s/'
             self.spices_directories = (f'/usr/share/cinnamon/{self.collection_type}s/', self.install_folder)
@@ -738,13 +739,12 @@ class Spice_Harvester(GObject.Object):
                                        os.path.join(locale_dir, f'{uuid}.mo')],
                                        check=True)
 
-        # Create install folder on demand
-        if not os.path.exists(self.install_folder):
-            subprocess.run(["/usr/bin/mkdir", "-p", self.install_folder], check=True)
+        os.makedirs(self.install_folder, mode=0o755, exist_ok=True)
 
         dest = os.path.join(self.install_folder, uuid)
-        if os.path.exists(dest):
-            shutil.rmtree(dest)
+
+        self._remove_spice_from_all_directories(uuid)
+
         if self.actions and os.path.exists(dest + '.nemo_action'):
             os.remove(dest + '.nemo_action')
         if not self.actions:
@@ -807,20 +807,29 @@ class Spice_Harvester(GObject.Object):
                     shutil.rmtree(os.path.join(settings_dir, uuid))
                 if os.path.exists(os.path.join(old_settings_dir, uuid)):
                     shutil.rmtree(os.path.join(old_settings_dir, uuid))
-            for folder in self.spices_directories:
-                shutil.rmtree(os.path.join(folder, uuid), ignore_errors=True)
+
+            self._remove_spice_from_all_directories(uuid)
+
             if self.actions:
                 disabled_list = self.settings.get_strv(self.enabled_key)
                 uuid_name = f"{uuid}.nemo_action"
                 if uuid_name in disabled_list:
                     disabled_list.remove(uuid_name)
                     self.settings.set_strv(self.enabled_key, disabled_list)
-                try:
-                    os.remove(os.path.join(folder, f'{uuid}.nemo_action'))
-                except FileNotFoundError:
-                    pass
         except Exception as error:
             self.errorMessage(_("A problem occurred while removing %s.") % job['uuid'], str(error))
+
+    def _remove_spice_from_all_directories(self, uuid):
+        for directory in self.spices_directories:
+            dest = os.path.join(directory, uuid)
+            if os.path.isdir(dest):
+                shutil.rmtree(dest, ignore_errors=True)
+            if self.actions:
+                action_file = os.path.join(directory, f"{uuid}.nemo_action")
+                try:
+                    os.remove(action_file)
+                except FileNotFoundError:
+                    pass
 
     def update_all(self):
         """ applies all available updates"""
