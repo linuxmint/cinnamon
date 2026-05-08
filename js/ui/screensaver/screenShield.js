@@ -588,6 +588,7 @@ var ScreenShield = GObject.registerClass({
                 this.hide();
                 this._screenShieldGroup.hide();
                 this._destroyAllWidgets();
+                this._destroyBackgrounds();
                 global.stage.show_cursor();
 
                 if (Main.deskletContainer)
