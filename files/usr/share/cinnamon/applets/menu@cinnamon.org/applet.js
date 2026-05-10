@@ -2866,6 +2866,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         for (let i = 0; i < this._recentButtons.length; i++) {
             this.applicationsBox.set_child_at_index(this._recentButtons[i].actor, pos++);
         }
+
+        for (let i = 0; i < this._placesButtons.length; i++) {
+            this.placesBox.set_child_at_index(this._placesButtons[i].actor, i);
+        }
     }
 
     _select_category (name = null) {
