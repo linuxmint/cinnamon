@@ -179,12 +179,6 @@ class MainWindow(Gio.Application):
                 sidePage = self.store_by_cat[cat].get_value(iterator, 2)
                 self.go_to_sidepage(sidePage, user_action=True)
 
-    def _on_sidepage_hide_stack(self):
-        self.stack_switcher.set_opacity(0)
-
-    def _on_sidepage_show_stack(self):
-        self.stack_switcher.set_opacity(1)
-
     def go_to_sidepage(self, sidePage: SettingsWidgets.SidePage, user_action=True):
         sidePage.build()
 
@@ -214,9 +208,6 @@ class MainWindow(Gio.Application):
                     self.stack_switcher.set_opacity(1)
                 else:
                     self.stack_switcher.set_opacity(0)
-                if hasattr(sidePage, "connect_proxy"):
-                    sidePage.connect_proxy("hide_stack", self._on_sidepage_hide_stack)
-                    sidePage.connect_proxy("show_stack", self._on_sidepage_show_stack)
             else:
                 self.stack_switcher.set_opacity(0)
         else:

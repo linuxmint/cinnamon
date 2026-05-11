@@ -14,8 +14,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib
 
+from concurrent.futures import ThreadPoolExecutor
+
 from xapp.SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
-from bin.Spices import ThreadedTaskManager
 
 home = os.path.expanduser('~')
 
@@ -129,7 +130,7 @@ def show_message(msg, window=None):
     dialog.destroy()
 
 
-background_work_queue = ThreadedTaskManager(5)
+background_work_queue = ThreadPoolExecutor(max_workers=5)
 
 
 class MyHTMLParser(HTMLParser):
@@ -386,7 +387,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
             self.config_button.set_sensitive(enabled)
 
     def scan_extension_for_danger(self, directory):
-        background_work_queue.push(self.scan_extension_thread, self.on_scan_complete, (directory,))
+        future = background_work_queue.submit(self.scan_extension_thread, directory)
+        future.add_done_callback(lambda f: GLib.idle_add(self.on_scan_complete, f.result()))
 
     def scan_extension_thread(self, directory):
         dangerous = False
