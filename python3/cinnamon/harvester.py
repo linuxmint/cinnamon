@@ -20,7 +20,6 @@ gi.require_version('Gio', '2.0')
 from gi.repository import Gio, GLib
 
 from . import logger
-from . import proxygsettings
 
 DEBUG = os.getenv("DEBUG") is not None
 
@@ -230,12 +229,6 @@ class Harvester:
             pass
         self._load_metadata()
 
-        self.proxy_info = {}
-        try:
-            self.proxy_info = proxygsettings.get_proxy_settings()
-        except Exception as e:
-            print(e)
-
     def anything_installed(self):
         for location in self.install_folders:
             path = Path(location)
@@ -364,7 +357,6 @@ class Harvester:
         try:
             r = requests.get(url,
                              timeout=TIMEOUT_DOWNLOAD_JSON,
-                             proxies=self.proxy_info,
                              params={"time": get_current_timestamp()})
             debug(f"Downloading from {r.request.url}")
             r.raise_for_status()
@@ -430,7 +422,6 @@ class Harvester:
         try:
             r = requests.get(paths.thumb_download_url,
                              timeout=TIMEOUT_DOWNLOAD_THUMB,
-                             proxies=self.proxy_info,
                              params={"time": get_current_timestamp()})
             r.raise_for_status()
         except (requests.RequestException, OSError) as e:
@@ -639,7 +630,6 @@ class Harvester:
         try:
             r = requests.get(url,
                              timeout=TIMEOUT_DOWNLOAD_ZIP,
-                             proxies=self.proxy_info,
                              params={"time": get_current_timestamp()},
                              stream=True)
             r.raise_for_status()

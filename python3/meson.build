@@ -16,7 +16,6 @@ install_data(
     'cinnamon/__init__.py',
     'cinnamon/harvester.py',
     'cinnamon/logger.py',
-    'cinnamon/proxygsettings.py',
     'cinnamon/updates.py'
   ],
   install_dir: join_paths(install_path, 'cinnamon'),

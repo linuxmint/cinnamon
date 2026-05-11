@@ -15,7 +15,6 @@ import time
 import traceback
 import typing
 import unicodedata
-import urllib.request as urllib
 from pathlib import Path
 
 import gi
@@ -30,8 +29,8 @@ PYTHON_CS_MODULE_GLOB = os.path.join(PYTHON_CS_MODULE_PATH, "cs_*.py")
 PYTHON_CS_MODULES = [Path(file).stem for file in glob.glob(PYTHON_CS_MODULE_GLOB)]
 sys.path.append(PYTHON_CS_MODULE_PATH)
 from bin import capi
-from bin import proxygsettings
 from bin import SettingsWidgets
+import xapp.os
 import config
 
 # i18n
@@ -817,12 +816,10 @@ SORT_TYPE can be specified by number or name as follows:
     setproctitle("cinnamon-settings")
     import signal
 
-    ps = proxygsettings.get_proxy_settings()
-    if ps:
-        proxy = urllib.ProxyHandler(ps)
-    else:
-        proxy = urllib.ProxyHandler()
-    urllib.install_opener(urllib.build_opener(proxy))
+    try:
+        xapp.os.add_network_proxy_to_env()
+    except Exception as e:
+        print("Network proxy support unavailable: %s", str(e))
 
     window = MainWindow(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
