@@ -22,7 +22,7 @@ const StartupAnimation = imports.ui.startupAnimation;
 var KEYBOARD_FADE_TIME = 150;
 
 function isPopupMetaWindow(actor) {
-    switch(actor.meta_window.get_window_type()) {
+    switch(actor.meta_window?.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
     case Meta.WindowType.POPUP_MENU:
     case Meta.WindowType.COMBO:
