@@ -334,11 +334,11 @@ grab_window_screenshot (ClutterActor *stage,
     {
       meta_window_get_buffer_rect (screenshot_data->window, &rect);
 
-      screenshot_data->screenshot_area.x = (gint) actor_x + rect.x;
-      screenshot_data->screenshot_area.y = (gint) actor_y + rect.y;
+      screenshot_data->screenshot_area.x = rect.x;
+      screenshot_data->screenshot_area.y = rect.y;
 
-      clip.x = rect.x;
-      clip.y = rect.y;
+      clip.x = rect.x - (gint) actor_x;
+      clip.y = rect.y - (gint) actor_y;
     }
 
   clip.width = screenshot_data->screenshot_area.width = rect.width;
