@@ -7,6 +7,8 @@
 #include <meta/meta-plugin.h>
 #include <meta/meta-shaped-texture.h>
 #include <meta/meta-cursor-tracker.h>
+#include <meta/meta-shadow-factory.h>
+#include <meta/meta-window-shape.h>
 
 #include "cinnamon-global.h"
 #include "cinnamon-screenshot.h"
@@ -360,61 +362,168 @@ grab_window_screenshot (ClutterActor *stage,
 
   gboolean has_frame = meta_window_get_frame (screenshot_data->window) != NULL;
 
-  if (!has_frame && screenshot_data->include_frame)
+  if (has_frame && screenshot_data->include_frame)
     {
-      // CSD with frame — use buffer_rect to capture the full shadow
-      meta_window_get_buffer_rect (screenshot_data->window, &rect);
-
-      screenshot_data->screenshot_area.x = rect.x;
-      screenshot_data->screenshot_area.y = rect.y;
-
-      clip.x = 0;
-      clip.y = 0;
-    }
-  else if (!has_frame && !screenshot_data->include_frame)
-    {
-      // CSD without frame — use frame_rect to exclude the shadow
+      // SSD with frame — capture the frame texture and add the compositor shadow beneath it
       meta_window_get_frame_rect (screenshot_data->window, &rect);
 
-      screenshot_data->screenshot_area.x = rect.x;
-      screenshot_data->screenshot_area.y = rect.y;
+      // Determine shadow class, mirroring the logic in meta-window-actor-x11.c
+      const char *shadow_class;
+      MetaWindowType window_type = meta_window_get_window_type (screenshot_data->window);
+      switch (window_type)
+        {
+        case META_WINDOW_DROPDOWN_MENU:
+        case META_WINDOW_COMBO:
+          shadow_class = "dropdown-menu";
+          break;
+        case META_WINDOW_POPUP_MENU:
+          shadow_class = "popup-menu";
+          break;
+        default:
+          shadow_class = meta_frame_type_to_string (meta_window_get_frame_type (screenshot_data->window));
+          break;
+        }
 
-      clip.x = rect.x - (gint) actor_x;
-      clip.y = rect.y - (gint) actor_y;
-    }
-  else if (has_frame && screenshot_data->include_frame)
-    {
-      // SSD with frame
-      meta_window_get_frame_rect (screenshot_data->window, &rect);
+      gboolean appears_focused = meta_window_appears_focused (screenshot_data->window);
+      MetaShadowFactory *factory = meta_shadow_factory_get_default ();
+      MetaShadowParams params;
+      meta_shadow_factory_get_params (factory, shadow_class, appears_focused, &params);
 
-      screenshot_data->screenshot_area.x = rect.x;
-      screenshot_data->screenshot_area.y = rect.y;
+      cairo_rectangle_int_t frame_shape_rect = { 0, 0, rect.width, rect.height };
+      cairo_region_t *shape_region = cairo_region_create_rectangle (&frame_shape_rect);
+      MetaWindowShape *shape = meta_window_shape_new (shape_region);
+      cairo_region_destroy (shape_region);
 
-      clip.x = rect.x - (gint) actor_x;
-      clip.y = rect.y - (gint) actor_y;
+      MetaShadow *shadow = meta_shadow_factory_get_shadow (factory, shape,
+                                                           rect.width, rect.height,
+                                                           shadow_class, appears_focused);
+      meta_window_shape_unref (shape);
+
+      cairo_rectangle_int_t shadow_bounds;
+      meta_shadow_get_bounds (shadow, params.x_offset, params.y_offset,
+                              rect.width, rect.height, &shadow_bounds);
+
+      int total_w = shadow_bounds.width;
+      int total_h = shadow_bounds.height;
+      int win_x_in_buf = params.x_offset - shadow_bounds.x;
+      int win_y_in_buf = params.y_offset - shadow_bounds.y;
+
+      // Capture the window frame texture
+      cairo_rectangle_int_t win_clip;
+      win_clip.x      = rect.x - (gint) actor_x;
+      win_clip.y      = rect.y - (gint) actor_y;
+      win_clip.width  = rect.width;
+      win_clip.height = rect.height;
+
+      stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
+      cairo_surface_t *win_image = meta_shaped_texture_get_image (stex, &win_clip);
+
+      // Create offscreen buffer to render shadow into
+      ClutterBackend *backend = clutter_get_default_backend ();
+      CoglContext *cogl_ctx = clutter_backend_get_cogl_context (backend);
+      CoglTexture2D *tex2d = cogl_texture_2d_new_with_size (cogl_ctx, total_w, total_h);
+      CoglOffscreen *offscreen = cogl_offscreen_new_with_texture (COGL_TEXTURE (tex2d));
+      CoglFramebuffer *shadow_fb = COGL_FRAMEBUFFER (offscreen);
+      cogl_object_unref (tex2d);
+
+      GError *fb_error = NULL;
+      if (win_image != NULL && cogl_framebuffer_allocate (shadow_fb, &fb_error))
+        {
+          CoglColor clear_color;
+          cogl_color_init_from_4ub (&clear_color, 0, 0, 0, 0);
+          cogl_framebuffer_clear (shadow_fb, COGL_BUFFER_BIT_COLOR, &clear_color);
+          cogl_framebuffer_orthographic (shadow_fb, 0, 0, total_w, total_h, 0, 1.0);
+
+          meta_shadow_paint (shadow, shadow_fb,
+                             win_x_in_buf, win_y_in_buf,
+                             rect.width, rect.height,
+                             params.opacity, NULL, FALSE);
+
+          cairo_surface_t *result = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, total_w, total_h);
+          cogl_framebuffer_read_pixels (shadow_fb, 0, 0, total_w, total_h,
+                                        CLUTTER_CAIRO_FORMAT_ARGB32,
+                                        cairo_image_surface_get_data (result));
+          cairo_surface_mark_dirty (result);
+
+          cairo_t *cr = cairo_create (result);
+          cairo_set_source_surface (cr, win_image, win_x_in_buf, win_y_in_buf);
+          cairo_paint (cr);
+          cairo_destroy (cr);
+          cairo_surface_destroy (win_image);
+
+          screenshot_data->image = result;
+          screenshot_data->screenshot_area.x      = rect.x + shadow_bounds.x;
+          screenshot_data->screenshot_area.y      = rect.y + shadow_bounds.y;
+          screenshot_data->screenshot_area.width  = total_w;
+          screenshot_data->screenshot_area.height = total_h;
+        }
+      else
+        {
+          if (fb_error)
+            {
+              g_warning ("cinnamon-screenshot: failed to allocate shadow framebuffer: %s",
+                         fb_error->message);
+              g_error_free (fb_error);
+            }
+          if (win_image)
+            cairo_surface_destroy (win_image);
+          screenshot_data->image = NULL;
+          screenshot_data->screenshot_area.x      = rect.x;
+          screenshot_data->screenshot_area.y      = rect.y;
+          screenshot_data->screenshot_area.width  = rect.width;
+          screenshot_data->screenshot_area.height = rect.height;
+        }
+
+      cogl_object_unref (shadow_fb);
+      meta_shadow_unref (shadow);
     }
   else
     {
-      // SSD without frame
-      MetaRectangle frame_rect;
-      meta_window_get_frame_rect (screenshot_data->window, &frame_rect);
-      meta_window_frame_rect_to_client_rect (screenshot_data->window, &frame_rect, &rect);
+      if (!has_frame && screenshot_data->include_frame)
+        {
+          // CSD with frame — use buffer_rect to capture the full shadow
+          meta_window_get_buffer_rect (screenshot_data->window, &rect);
 
-      screenshot_data->screenshot_area.x = rect.x;
-      screenshot_data->screenshot_area.y = rect.y;
+          screenshot_data->screenshot_area.x = rect.x;
+          screenshot_data->screenshot_area.y = rect.y;
 
-      clip.x = rect.x - (gint) actor_x;
-      clip.y = rect.y - (gint) actor_y;
+          clip.x = 0;
+          clip.y = 0;
+        }
+      else if (!has_frame && !screenshot_data->include_frame)
+        {
+          // CSD without frame — use frame_rect to exclude the shadow
+          meta_window_get_frame_rect (screenshot_data->window, &rect);
+
+          screenshot_data->screenshot_area.x = rect.x;
+          screenshot_data->screenshot_area.y = rect.y;
+
+          clip.x = rect.x - (gint) actor_x;
+          clip.y = rect.y - (gint) actor_y;
+        }
+      else
+        {
+          // SSD without frame
+          MetaRectangle frame_rect;
+          meta_window_get_frame_rect (screenshot_data->window, &frame_rect);
+          meta_window_frame_rect_to_client_rect (screenshot_data->window, &frame_rect, &rect);
+
+          screenshot_data->screenshot_area.x = rect.x;
+          screenshot_data->screenshot_area.y = rect.y;
+
+          clip.x = rect.x - (gint) actor_x;
+          clip.y = rect.y - (gint) actor_y;
+        }
+
+      clip.width = screenshot_data->screenshot_area.width = rect.width;
+      clip.height = screenshot_data->screenshot_area.height = rect.height;
+
+      stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
+      screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
+
+      if (screenshot_data->image && !has_frame && !screenshot_data->include_frame)
+        zero_corner_semitransparent_pixels (screenshot_data->image);
     }
-
-  clip.width = screenshot_data->screenshot_area.width = rect.width;
-  clip.height = screenshot_data->screenshot_area.height = rect.height;
-
-  stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
-  screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
-
-  if (screenshot_data->image && !has_frame && !screenshot_data->include_frame)
-    zero_corner_semitransparent_pixels (screenshot_data->image);
 
   if (screenshot_data->include_cursor)
     _draw_cursor_image (screenshot_data->image, screenshot_data->screenshot_area);
