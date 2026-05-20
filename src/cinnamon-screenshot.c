@@ -303,6 +303,44 @@ grab_area_screenshot (ClutterActor *stage,
 }
 
 static void
+zero_corner_semitransparent_pixels (cairo_surface_t *surface)
+{
+  int width    = cairo_image_surface_get_width (surface);
+  int height   = cairo_image_surface_get_height (surface);
+  int stride   = cairo_image_surface_get_stride (surface);
+  guchar *data = cairo_image_surface_get_data (surface);
+
+  int corner_size  = MIN (10, MIN (width, height));
+  guint8 threshold = 160;
+
+  cairo_surface_flush (surface);
+
+  for (int y = 0; y < corner_size; y++)
+    {
+      guint32 *top_row    = (guint32 *)(data + y * stride);
+      guint32 *bottom_row = (guint32 *)(data + (height - 1 - y) * stride);
+
+      for (int x = 0; x < corner_size; x++)
+        {
+          if (((top_row[x] >> 24) & 0xff) < threshold)
+            top_row[x] = 0;
+          if (((bottom_row[x] >> 24) & 0xff) < threshold)
+            bottom_row[x] = 0;
+        }
+
+      for (int x = width - corner_size; x < width; x++)
+        {
+          if (((top_row[x] >> 24) & 0xff) < threshold)
+            top_row[x] = 0;
+          if (((bottom_row[x] >> 24) & 0xff) < threshold)
+            bottom_row[x] = 0;
+        }
+    }
+
+  cairo_surface_mark_dirty (surface);
+}
+
+static void
 grab_window_screenshot (ClutterActor *stage,
                         ClutterPaintContext *paint_context,
                         _screenshot_data *screenshot_data)
@@ -374,6 +412,9 @@ grab_window_screenshot (ClutterActor *stage,
 
   stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
   screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
+
+  if (screenshot_data->image && !has_frame && !screenshot_data->include_frame)
+    zero_corner_semitransparent_pixels (screenshot_data->image);
 
   if (screenshot_data->include_cursor)
     _draw_cursor_image (screenshot_data->image, screenshot_data->screenshot_area);
