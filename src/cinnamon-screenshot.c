@@ -320,9 +320,33 @@ grab_window_screenshot (ClutterActor *stage,
   window_actor = CLUTTER_ACTOR (meta_window_get_compositor_private (screenshot_data->window));
   clutter_actor_get_position (window_actor, &actor_x, &actor_y);
 
-  if (screenshot_data->include_frame || !meta_window_get_frame (screenshot_data->window))
+  gboolean has_frame = meta_window_get_frame (screenshot_data->window) != NULL;
+
+  if (!has_frame && screenshot_data->include_frame)
     {
-      // SSD with frame OR CSD window
+      // CSD with frame — use buffer_rect to capture the full shadow
+      meta_window_get_buffer_rect (screenshot_data->window, &rect);
+
+      screenshot_data->screenshot_area.x = rect.x;
+      screenshot_data->screenshot_area.y = rect.y;
+
+      clip.x = 0;
+      clip.y = 0;
+    }
+  else if (!has_frame && !screenshot_data->include_frame)
+    {
+      // CSD without frame — use frame_rect to exclude the shadow
+      meta_window_get_frame_rect (screenshot_data->window, &rect);
+
+      screenshot_data->screenshot_area.x = rect.x;
+      screenshot_data->screenshot_area.y = rect.y;
+
+      clip.x = rect.x - (gint) actor_x;
+      clip.y = rect.y - (gint) actor_y;
+    }
+  else if (has_frame && screenshot_data->include_frame)
+    {
+      // SSD with frame
       meta_window_get_frame_rect (screenshot_data->window, &rect);
 
       screenshot_data->screenshot_area.x = rect.x;
