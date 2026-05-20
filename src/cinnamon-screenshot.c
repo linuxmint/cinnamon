@@ -322,6 +322,7 @@ grab_window_screenshot (ClutterActor *stage,
 
   if (screenshot_data->include_frame || !meta_window_get_frame (screenshot_data->window))
     {
+      // SSD with frame OR CSD window
       meta_window_get_frame_rect (screenshot_data->window, &rect);
 
       screenshot_data->screenshot_area.x = rect.x;
@@ -332,7 +333,10 @@ grab_window_screenshot (ClutterActor *stage,
     }
   else
     {
-      meta_window_get_buffer_rect (screenshot_data->window, &rect);
+      // SSD without frame
+      MetaRectangle frame_rect;
+      meta_window_get_frame_rect (screenshot_data->window, &frame_rect);
+      meta_window_frame_rect_to_client_rect (screenshot_data->window, &frame_rect, &rect);
 
       screenshot_data->screenshot_area.x = rect.x;
       screenshot_data->screenshot_area.y = rect.y;
