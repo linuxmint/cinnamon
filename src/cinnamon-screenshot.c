@@ -504,9 +504,7 @@ grab_window_screenshot (ClutterActor *stage,
       else
         {
           // SSD without frame
-          MetaRectangle frame_rect;
-          meta_window_get_frame_rect (screenshot_data->window, &frame_rect);
-          meta_window_frame_rect_to_client_rect (screenshot_data->window, &frame_rect, &rect);
+          meta_window_get_frame_rect (screenshot_data->window, &rect);
 
           screenshot_data->screenshot_area.x = rect.x;
           screenshot_data->screenshot_area.y = rect.y;
@@ -521,7 +519,7 @@ grab_window_screenshot (ClutterActor *stage,
       stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
       screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
 
-      if (screenshot_data->image && !has_frame && !screenshot_data->include_frame)
+      if (screenshot_data->image && !screenshot_data->include_frame)
         zero_corner_semitransparent_pixels (screenshot_data->image);
     }
 
