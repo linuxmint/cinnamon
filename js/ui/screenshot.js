@@ -21,28 +21,25 @@ const Gtk = imports.gi.Gtk;
 
 const ScreenshotIface =
     '<node> \
-        <interface name="org.gnome.Shell.Screenshot"> \
+        <interface name="org.cinnamon.Screenshot"> \
             <method name="ScreenshotArea"> \
                 <arg type="i" direction="in" name="x"/> \
                 <arg type="i" direction="in" name="y"/> \
                 <arg type="i" direction="in" name="width"/> \
                 <arg type="i" direction="in" name="height"/> \
-                <arg type="b" direction="in" name="flash"/> \
                 <arg type="s" direction="in" name="filename"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
             <method name="ScreenshotWindow"> \
-                <arg type="b" direction="in" name="include_frame"/> \
+                <arg type="b" direction="in" name="include_shadow"/> \
                 <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="b" direction="in" name="flash"/> \
                 <arg type="s" direction="in" name="filename"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
             <method name="Screenshot"> \
-                <arg type="b" direction="in" name="include_frame"/> \
-                <arg type="b" direction="in" name="flash"/> \
+                <arg type="b" direction="in" name="include_cursor"/> \
                 <arg type="s" direction="in" name="filename"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
@@ -77,17 +74,15 @@ const ScreenshotIface =
 var ScreenshotService = class ScreenshotService {
     constructor() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(ScreenshotIface, this);
-        this._dbusImpl.export(Gio.DBus.session, '/org/gnome/Shell/Screenshot');
+        this._dbusImpl.export(Gio.DBus.session, '/org/cinnamon/Screenshot');
 
-        Gio.DBus.session.own_name('org.gnome.Shell.Screenshot', Gio.BusNameOwnerFlags.REPLACE, null, null);
+        Gio.DBus.session.own_name('org.cinnamon.Screenshot', Gio.BusNameOwnerFlags.REPLACE, null, null);
     }
 
-    _onScreenshotComplete (obj, success, area, flash, filename, invocation=null) {
+    _onScreenshotComplete (obj, success, area, filename, invocation=null) {
         if (success) {
-            if (flash) {
-                let flashspot = new Flashspot.Flashspot(area);
-                flashspot.fire();
-            }
+            let flashspot = new Flashspot.Flashspot(area);
+            flashspot.fire();
         }
 
         let retval = GLib.Variant.new('(bs)', [success, filename]);
@@ -95,7 +90,7 @@ var ScreenshotService = class ScreenshotService {
     }
 
     ScreenshotAreaAsync(params, invocation) {
-        let [x, y, width, height, flash, filename, callback] = params;
+        let [x, y, width, height, filename, callback] = params;
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_area(
@@ -105,24 +100,24 @@ var ScreenshotService = class ScreenshotService {
             width * global.ui_scale,
             height * global.ui_scale,
             filename,
-            Lang.bind(this, this._onScreenshotComplete, flash, filename, invocation)
+            Lang.bind(this, this._onScreenshotComplete, filename, invocation)
         );
     }
 
     ScreenshotWindowAsync(params, invocation) {
-        let [include_frame, include_cursor, flash, filename, callback] = params;
+        let [include_shadow, include_cursor, filename, callback] = params;
 
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window(include_frame, include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash, filename, invocation));
+        screenshot.screenshot_window(include_shadow, include_cursor, filename,
+            Lang.bind(this, this._onScreenshotComplete, filename, invocation));
     }
 
     ScreenshotAsync(params, invocation) {
-        let [include_cursor, flash, filename] = params
+        let [include_cursor, filename] = params;
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot(include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash, filename, invocation));
+            Lang.bind(this, this._onScreenshotComplete, filename, invocation));
     }
 
     SelectAreaAsync(params, invocation) {

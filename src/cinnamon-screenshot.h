@@ -43,7 +43,7 @@ void    cinnamon_screenshot_screenshot_area      (CinnamonScreenshot *screenshot
                                                 CinnamonScreenshotCallback callback);
 
 void    cinnamon_screenshot_screenshot_window    (CinnamonScreenshot *screenshot,
-                                                gboolean include_frame,
+                                                gboolean include_shadow,
                                                 gboolean include_cursor,
                                                 const char *filename,
                                                 CinnamonScreenshotCallback callback);

@@ -36,7 +36,7 @@ typedef struct _screenshot_data {
   cairo_rectangle_int_t screenshot_area;
 
   gboolean include_cursor;
-  gboolean include_frame;
+  gboolean include_shadow;
 
   CinnamonScreenshotCallback callback;
 
@@ -362,7 +362,7 @@ grab_window_screenshot (ClutterActor *stage,
 
   gboolean has_frame = meta_window_get_frame (screenshot_data->window) != NULL;
 
-  if (has_frame && screenshot_data->include_frame)
+  if (has_frame && screenshot_data->include_shadow)
     {
       // SSD with frame — capture the frame texture and add the compositor shadow beneath it
       meta_window_get_frame_rect (screenshot_data->window, &rect);
@@ -479,7 +479,7 @@ grab_window_screenshot (ClutterActor *stage,
     }
   else
     {
-      if (!has_frame && screenshot_data->include_frame)
+      if (!has_frame && screenshot_data->include_shadow)
         {
           // CSD with frame — use buffer_rect to capture the full shadow
           meta_window_get_buffer_rect (screenshot_data->window, &rect);
@@ -490,7 +490,7 @@ grab_window_screenshot (ClutterActor *stage,
           clip.x = 0;
           clip.y = 0;
         }
-      else if (!has_frame && !screenshot_data->include_frame)
+      else if (!has_frame && !screenshot_data->include_shadow)
         {
           // CSD without frame — use frame_rect to exclude the shadow
           meta_window_get_frame_rect (screenshot_data->window, &rect);
@@ -519,7 +519,7 @@ grab_window_screenshot (ClutterActor *stage,
       stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
       screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
 
-      if (screenshot_data->image && !screenshot_data->include_frame)
+      if (screenshot_data->image && !screenshot_data->include_shadow)
         zero_corner_semitransparent_pixels (screenshot_data->image);
     }
 
@@ -685,7 +685,7 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
 /**
  * cinnamon_screenshot_screenshot_window:
  * @screenshot: the #CinnamonScreenshot
- * @include_frame: Whether to include the frame or not
+ * @include_shadow: Whether to include the shadow or not
  * @include_cursor: Whether to include the cursor or not
  * @filename: The filename for the screenshot
  * @callback: (scope async): function to call returning success or failure
@@ -697,7 +697,7 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
  */
 void
 cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
-                                    gboolean include_frame,
+                                    gboolean include_shadow,
                                     gboolean include_cursor,
                                     const char *filename,
                                     CinnamonScreenshotCallback callback)
@@ -719,7 +719,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
   data->filename = g_strdup (filename);
   data->callback = callback;
   data->include_cursor = include_cursor;
-  data->include_frame = include_frame;
+  data->include_shadow = include_shadow;
 
   display = cinnamon_global_get_display (screenshot->global);
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
