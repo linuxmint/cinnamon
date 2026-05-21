@@ -545,6 +545,7 @@
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
     <child name="launcher" schema="org.cinnamon.launcher" />
+    <child name="screenshot" schema="org.cinnamon.screenshot" />
 
     <key name="enable-vfade" type="b">
       <default>true</default>
@@ -1016,6 +1017,53 @@
       <default>300</default>
       <summary>Time between each checks (in seconds)</summary>
       <description></description>
+    </key>
+
+  </schema>
+
+  <enum id="org.cinnamon.screenshot.file-types">
+    <value nick="png"  value="0"/>
+    <value nick="jpg"  value="1"/>
+    <value nick="bmp"  value="2"/>
+    <value nick="tiff" value="3"/>
+  </enum>
+
+  <schema id="org.cinnamon.screenshot" path="/org/cinnamon/screenshot/">
+
+    <key name="delay" type="i">
+      <default>0</default>
+      <summary>Screenshot delay</summary>
+      <description>The number of seconds to wait before taking the screenshot.</description>
+    </key>
+
+    <key name="save-directory" type="s">
+      <default>''</default>
+      <summary>Default save folder</summary>
+      <description>URI of the folder where screenshots are saved by default. If empty, the user's Pictures folder is used.</description>
+    </key>
+
+    <key name="include-pointer" type="b">
+      <default>false</default>
+      <summary>Include pointer</summary>
+      <description>Include the mouse pointer in the screenshot.</description>
+    </key>
+
+    <key name="default-file-type" enum="org.cinnamon.screenshot.file-types">
+      <default>'png'</default>
+      <summary>Default file type</summary>
+      <description>The default file type extension for saved screenshots.</description>
+    </key>
+
+    <key name="include-shadow" type="b">
+      <default>true</default>
+      <summary>Include shadow</summary>
+      <description>Include the shadow when taking a window screenshot.</description>
+    </key>
+
+    <key name="launch-file-manager-after-save" type="b">
+      <default>false</default>
+      <summary>Launch file manager after saving</summary>
+      <description>When enabled, opens the file manager with the saved screenshot pre-selected after a successful save.</description>
     </key>
 
   </schema>
