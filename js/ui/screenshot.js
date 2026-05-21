@@ -27,6 +27,7 @@ const ScreenshotIface =
                 <arg type="i" direction="in" name="y"/> \
                 <arg type="i" direction="in" name="width"/> \
                 <arg type="i" direction="in" name="height"/> \
+                <arg type="b" direction="in" name="include_cursor"/> \
                 <arg type="s" direction="in" name="filename"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
@@ -63,7 +64,7 @@ const ScreenshotIface =
     </node>';
 
 /*
- * This interface is specifically for gnome-screenshot purposes.
+ * This interface is specifically for cinnamon-screenshot purposes.
  * The screenshot calls are not asynchronous to the caller but
  * it allows us to be sure the png has been written prior to
  * completing the invocation.
@@ -90,11 +91,11 @@ var ScreenshotService = class ScreenshotService {
     }
 
     ScreenshotAreaAsync(params, invocation) {
-        let [x, y, width, height, filename, callback] = params;
+        let [x, y, width, height, include_cursor, filename, callback] = params;
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_area(
-            false,
+            include_cursor,
             x * global.ui_scale,
             y * global.ui_scale,
             width * global.ui_scale,

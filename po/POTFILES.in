@@ -342,4 +342,7 @@ files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py
 files/usr/share/cinnamon/cinnamon-settings/config.py
 files/usr/share/cinnamon/cinnamon-settings/xlet-settings.py
 files/usr/share/cinnamon/cinnamon-slideshow/cinnamon-slideshow.py
+files/usr/share/cinnamon/cinnamon-screenshot/application.py
+files/usr/share/cinnamon/cinnamon-screenshot/main_window.py
+files/usr/share/cinnamon/cinnamon-screenshot/prefs.py
 files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py

@@ -4,7 +4,6 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
 const Extension = imports.ui.extension;
-const Flashspot = imports.ui.flashspot;
 const KeyboardManager = imports.ui.keyboardManager;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
@@ -13,7 +12,6 @@ const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
 const ModalDialog = imports.ui.modalDialog;
 const Util = imports.misc.util;
-const Cinnamon = imports.gi.Cinnamon;
 
 const CinnamonIface =
     '<node> \
@@ -23,31 +21,8 @@ const CinnamonIface =
                 <arg type="b" direction="out" name="success" /> \
                 <arg type="s" direction="out" name="result" /> \
             </method> \
-            <method name="ScreenshotArea"> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
-            <method name="ScreenshotWindow"> \
-                <arg type="b" direction="in" name="include_shadow"/> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
-            <method name="Screenshot"> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
             <method name="ShowOSD"> \
                 <arg type="a{sv}" direction="in" name="params"/> \
-            </method> \
-            <method name="FlashArea"> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
             </method> \
             <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
@@ -188,70 +163,6 @@ var CinnamonDBus = class {
         return [success, returnValue];
     }
 
-    _onScreenshotComplete(obj, result, area) {
-        let flashspot = new Flashspot.Flashspot(area);
-        flashspot.fire();
-    }
-
-    /**
-     * ScreenshotArea:
-     * @include_cursor: Whether to include the mouse cursor
-     * @x: The X coordinate of the area
-     * @y: The Y coordinate of the area
-     * @width: The width of the area
-     * @height: The height of the area
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the passed in area and saves it
-     * in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    ScreenshotArea(include_cursor, x, y, width, height, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area(include_cursor, x, y, width, height, filename,
-            (obj, result, area) => {
-                this._onScreenshotComplete(obj, result, area);
-            });
-    }
-
-    /**
-     * ScreenshotWindow:
-     * @include_shadow: Whether to include the shadow
-     * @include_cursor: Whether to include the mouse cursor
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the focused window (optionally omitting the shadow)
-     * and saves it in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    ScreenshotWindow(include_shadow, include_cursor, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window(include_shadow, include_cursor, filename,
-            (obj, result, area) => {
-                this._onScreenshotComplete(obj, result, area);
-            });
-    }
-
-    /**
-     * Screenshot:
-     * @include_cursor: Whether to include the mouse cursor
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the whole screen and saves it
-     * in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    Screenshot(include_cursor, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot(include_cursor, filename,
-            (obj, result, area) => {
-                this._onScreenshotComplete(obj, result, area);
-            });
-    }
-
     ShowOSD(params) {
         for (let param in params)
             params[param] = params[param].deep_unpack();
@@ -268,16 +179,6 @@ var CinnamonDBus = class {
             icon = Gio.Icon.new_for_string(params['icon']);
 
         Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], false);
-    }
-
-    FlashArea(x, y, width, height) {
-        let flashspot = new Flashspot.Flashspot({
-            x: x,
-            y: y,
-            width: width,
-            height: height
-        });
-        flashspot.fire();
     }
 
     get OverviewActive() {
