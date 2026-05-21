@@ -1,3 +1,63 @@
+cinnamon (6.7.1) unstable; urgency=medium
+
+  [ Leigh Scott ]
+  * Change lock screen method to use screensaverController (#13708)
+
+  [ Michael Webster ]
+  * user@cinnamon.org: Fix screensaver and switch-user activation.
+  * screenShield.js: Don't react twice to loginManager session signals.
+  * cinnamon-global.c: Don't let a normal popModal cancel an ongoing screensaver modal retry.
+  * screensaver/controller.js: Give lockScreen an optional callback.
+  * util.js: Lock the screen before switching to the greeter.
+  * signalTracker.js: Don't track "destroy" for non-ClutterActors.
+  * expo/overview: Refactor to Use newer/gobject class styles, easing.
+  * expo: Allow drag-and-drop reordering of workspaces.
+  * dnd.js: Convert GenericDragPlaceHolderItem to a real class, get rid of last use of addTween.
+  * dnd.js: Use es6 class for _Draggable.
+  * Add PopupDialog widget - draggable, re-focusable dialog.
+  * mounts/autorun/endSession: Convert to PopupDialog.
+  * js: Move mount/autorun dialog test widgets to their own folder.
+  * js/ui: Actually delete moved tests (followup to 914a28fa329).
+  * screensaver: Clear cinnamon modal before activating.
+  * screensaver: Move custom-screensaver check to the controller, so it can be activated by other sources.
+  * polkitAuthenticationAgent.js: Fix initial focus widget.
+  * sound@cinnamon.org: Move MprisManager setup after _showFixedElements.
+  * Fix some runtime and python bytecompile warnings.
+  * panel.js: Fix missing y_coord declaration.
+  * screenShield.js: Destroy the background actors when the screensaver is deactivated.
+  * Spices.py: delegate most work to the python 'harvester' module.
+  * ExtensionCore.py: load spice rows in batches to prevent lag when switching to the 'Download' tab.
+  * cinnamon-settings/spices: Use xapp for proxy setup instead of proxygsettings.py.
+  * layout.js: Ignore actors without a metawindow in isPopupMetaWindow().
+
+  [ Anaxímeno Brito ]
+  * gwl: Add overflow support through slide/scroll list (#13352)
+  * gwl: Add overflow support through slide/scroll list (#13352)
+  * spices: Fix theme update and improve spice update and delete process (#13600)
+
+  [ FedGuy699 ]
+  * Change session type from Application to XSession (#13677)
+
+  [ MaciejWdev ]
+  * pointerTracker: fix ny coordinate using nx in get_real_pointer_position (#13723)
+
+  [ claudiux ]
+  * Change spinbutton and scale validation to inclusive (#13750)
+
+  [ Arqam Qazi ]
+  * backgrounds: Add 'wallpaper' to keywords (#13755)
+
+  [ Clement Lefebvre ]
+  * screenshot: Fix crash for SSD windows and include_frame=False
+  * screenshot: Fix shot for SSD without frame
+  * screenshot: Include full shadow for CSD when frame is requested
+  * screenshot: CSD+frame, remove semi-transparent pixels in corners
+  * screenshot: SSD+frame, add muffin shadow
+  * screenshot: SSD, clean up corners when no shadows are requested
+  * screenshot: Switch to org.cinnamon.Screenshot DBUS interface
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 21 May 2026 10:41:09 +0100
+
 cinnamon (6.7.0) unstable; urgency=medium
 
   [ Michael Webster ]
