@@ -342,6 +342,29 @@ zero_corner_semitransparent_pixels (cairo_surface_t *surface)
   cairo_surface_mark_dirty (surface);
 }
 
+static gboolean
+window_should_get_compositor_shadow (MetaWindow *window)
+{
+  // Mirror muffin's should_have_shadow() (meta-window-actor-x11.c) so we
+  // don't paint a rectangular drop shadow around fullscreen, fully-
+  // maximized, or tiled windows.
+  MetaMaximizeFlags maximized = meta_window_get_maximized (window);
+
+  if (maximized == META_MAXIMIZE_BOTH)
+    return FALSE;
+  if (meta_window_is_fullscreen (window))
+    return FALSE;
+
+  MetaTileMode tile_mode = META_TILE_NONE;
+  g_object_get (window, "tile-mode", &tile_mode, NULL);
+  if ((maximized & META_MAXIMIZE_VERTICAL) &&
+      !(maximized & META_MAXIMIZE_HORIZONTAL) &&
+      tile_mode != META_TILE_NONE)
+    return FALSE;
+
+  return TRUE;
+}
+
 static void
 grab_window_screenshot (ClutterActor *stage,
                         ClutterPaintContext *paint_context,
@@ -362,7 +385,8 @@ grab_window_screenshot (ClutterActor *stage,
 
   gboolean has_frame = meta_window_get_frame (screenshot_data->window) != NULL;
 
-  if (has_frame && screenshot_data->include_shadow)
+  if (has_frame && screenshot_data->include_shadow &&
+      window_should_get_compositor_shadow (screenshot_data->window))
     {
       // SSD with frame — capture the frame texture and add the compositor shadow beneath it
       meta_window_get_frame_rect (screenshot_data->window, &rect);
@@ -503,7 +527,9 @@ grab_window_screenshot (ClutterActor *stage,
         }
       else
         {
-          // SSD without frame
+          // SSD with frame, no compositor shadow drawn — either because
+          // the caller didn't ask for one, or because the window is
+          // fullscreen/maximized/tiled and shouldn't have one anyway.
           meta_window_get_frame_rect (screenshot_data->window, &rect);
 
           screenshot_data->screenshot_area.x = rect.x;
