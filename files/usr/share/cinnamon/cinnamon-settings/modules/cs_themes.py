@@ -95,7 +95,7 @@ class Module:
     category = "appear"
 
     def __init__(self, content_box):
-        self.keywords = _("themes, style")
+        self.keywords = _("themes, style, appearance")
         self.icon = "cs-themes"
         self.window = None
         sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)

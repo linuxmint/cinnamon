@@ -15,7 +15,7 @@ class Module:
     comment = _("Manage window preferences")
 
     def __init__(self, content_box):
-        keywords = _("windows, titlebar, edge, switcher, window list, attention, focus, tile, tiling, snap, snapping")
+        keywords = _("windows, titlebar, edge, switcher, window list, attention, focus, tile, tiling, snap, snapping, alttab")
         sidePage = SidePage(_("Windows"), "cs-windows", keywords, content_box, module=self)
         self.sidePage = sidePage
 
