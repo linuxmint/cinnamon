@@ -13,7 +13,10 @@ import signal
 import gi
 gi.require_version('EDataServer', '1.2')
 gi.require_version('ECal', '2.0')
-gi.require_version('ICal', '3.0')
+try:
+    gi.require_version('ICal', '3.0')
+except ValueError:
+    gi.require_version('ICal', '4.0')
 gi.require_version('Cinnamon', '0.1')
 from gi.repository import GLib, Gio, GObject
 from gi.repository import EDataServer, ECal, ICal, ICalGLib
