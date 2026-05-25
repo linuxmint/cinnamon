@@ -2925,7 +2925,7 @@ var PopupMenuManager = class PopupMenuManager {
                                       x.sourceActor.contains(src)) === undefined);
     }
 
-    _onEventCapture(actor, event) {
+	_onEventCapture(actor, event) {
         if (!this.grabbed)
             return false;
 
@@ -2946,15 +2946,23 @@ var PopupMenuManager = class PopupMenuManager {
 
         let activeMenuContains = this._eventIsOnActiveMenu(event);
         let eventType = event.type();
+        let isPanelEvent = this._eventIsOnPanel(event);
 
         if (eventType == Clutter.EventType.BUTTON_RELEASE) {
             if (activeMenuContains) {
                 return false;
             } else {
-                this._closeMenu();
-                return true;
+                this._closeMenu(!isPanelEvent);
+                return !isPanelEvent;
             }
         } else if (eventType == Clutter.EventType.BUTTON_PRESS && !activeMenuContains) {
+            if (isPanelEvent) {
+                if (!this._windowFocusSignal) {
+                    this._windowFocusSignal = global.display.connect('notify::focus-window', () => this._closeMenu(false));
+                }
+                return false; 
+            }
+            
             this._closeMenu();
             return true;
         } else if (!this._shouldBlockEvent(event)) {
@@ -2964,14 +2972,25 @@ var PopupMenuManager = class PopupMenuManager {
         return true;
     }
 
-    _closeMenu() {
+    _closeMenu(animate = true) {
+        if (this._windowFocusSignal) {
+            global.display.disconnect(this._windowFocusSignal);
+            this._windowFocusSignal = null;
+        }
+        
         if (this._activeMenu != null)
-            this._activeMenu.close(true);
+            this._activeMenu.close(animate);
     }
 
     destroy() {
         this._signals.disconnectAllSignals();
         this.emit('destroy');
+    }
+    _eventIsOnPanel(event) {
+        let src = event.get_source();
+        if (!src || src.is_finalized()) return false;
+
+        return !!(this._owner && this._owner.panel && this._owner.panel.contains(src));
     }
 }
 Signals.addSignalMethods(PopupMenuManager.prototype);
