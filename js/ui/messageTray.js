@@ -464,7 +464,7 @@ var Notification = class Notification {
         if (this._scrollArea) {
             this._scrollArea.vscrollbar_policy = enabled ?  St.PolicyType.NEVER : St.PolicyType.AUTOMATIC;
             this._scrollArea.enable_mouse_scrolling = !enabled;
-            this._table.set_style(`max-height: ${enabled ? 'none' : '300px'};`);
+            this._table.set_style(`max-height: ${enabled ? 'none' : '40em'};`);
         }
         if (updateLayout) {
             this._updateLayout();
