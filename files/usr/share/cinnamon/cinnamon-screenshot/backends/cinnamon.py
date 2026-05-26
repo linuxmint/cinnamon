@@ -79,6 +79,12 @@ class CinnamonBackend(Backend, GObject.Object):
                    GLib.Variant('(bbs)', (include_shadow, include_pointer, path)),
                    lambda result: self._deliver_image(path, result, on_done))
 
+    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done):
+        path = self._tempfile()
+        self._call('ScreenshotWindowById',
+                   GLib.Variant('(tbbs)', (window_id, include_shadow, include_pointer, path)),
+                   lambda result: self._deliver_image(path, result, on_done))
+
     def screenshot_area(self, x, y, w, h, include_pointer, on_done):
         path = self._tempfile()
         self._call('ScreenshotArea',
@@ -92,3 +98,7 @@ class CinnamonBackend(Backend, GObject.Object):
     def select_area(self, on_done):
         self._call('SelectArea', None,
                    lambda result: on_done(tuple(result) if result else None))
+
+    def select_window(self, on_done):
+        self._call('SelectWindow', None,
+                   lambda result: on_done(result[0] if result else None))

@@ -99,7 +99,7 @@ class MainWindow:
                             Gio.SettingsBindFlags.DEFAULT)
         prefs.settings.bind(prefs.INCLUDE_SHADOW_KEY, self.shadow_switch, 'active',
                             Gio.SettingsBindFlags.DEFAULT)
-        if args.window:
+        if args.window or args.select_window:
             self.mode_window.set_active(True)
         elif args.area:
             self.mode_area.set_active(True)
@@ -194,7 +194,7 @@ class MainWindow:
 
     def _capture(self, initial=False):
         if self.mode_window.get_active():
-            mode = 'window'
+            mode = 'window' if initial and self.app.args.window else 'select_window'
         elif self.mode_area.get_active():
             mode = 'area'
         elif self.mode_monitor.get_active():

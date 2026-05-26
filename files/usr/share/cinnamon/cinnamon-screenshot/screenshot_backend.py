@@ -35,6 +35,9 @@ class Backend(GObject.Object):
     def screenshot_window(self, include_pointer, include_shadow, on_done):
         self._active().screenshot_window(include_pointer, include_shadow, on_done)
 
+    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done):
+        self._active().screenshot_window_by_id(window_id, include_pointer, include_shadow, on_done)
+
     def screenshot_area(self, x, y, w, h, include_pointer, on_done):
         self._active().screenshot_area(x, y, w, h, include_pointer, on_done)
 
@@ -43,3 +46,6 @@ class Backend(GObject.Object):
 
     def select_area(self, on_done):
         self._active().select_area(on_done)
+
+    def select_window(self, on_done):
+        self._active().select_window(on_done)

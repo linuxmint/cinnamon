@@ -48,6 +48,13 @@ void    cinnamon_screenshot_screenshot_window    (CinnamonScreenshot *screenshot
                                                 const char *filename,
                                                 CinnamonScreenshotCallback callback);
 
+void    cinnamon_screenshot_screenshot_window_by_id (CinnamonScreenshot *screenshot,
+                                                guint64 window_id,
+                                                gboolean include_shadow,
+                                                gboolean include_cursor,
+                                                const char *filename,
+                                                CinnamonScreenshotCallback callback);
+
 void    cinnamon_screenshot_screenshot           (CinnamonScreenshot *screenshot,
                                                 gboolean include_cursor,
                                                 const char *filename,

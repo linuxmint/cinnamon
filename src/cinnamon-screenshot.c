@@ -708,6 +708,34 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
   clutter_actor_queue_redraw (stage);
 }
 
+static void
+schedule_window_screenshot (CinnamonScreenshot *screenshot,
+                            MetaWindow *window,
+                            gboolean include_shadow,
+                            gboolean include_cursor,
+                            const char *filename,
+                            CinnamonScreenshotCallback callback)
+{
+  MetaDisplay *display;
+  ClutterActor *stage;
+  _screenshot_data *data = g_new0 (_screenshot_data, 1);
+
+  data->window = window;
+  data->screenshot = g_object_ref (screenshot);
+  data->filename = g_strdup (filename);
+  data->callback = callback;
+  data->include_cursor = include_cursor;
+  data->include_shadow = include_shadow;
+
+  display = cinnamon_global_get_display (screenshot->global);
+  stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
+
+  meta_disable_unredirect_for_display (display);
+  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_window_screenshot), (gpointer) data);
+
+  clutter_actor_queue_redraw (stage);
+}
+
 /**
  * cinnamon_screenshot_screenshot_window:
  * @screenshot: the #CinnamonScreenshot
@@ -730,7 +758,6 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot->global);
   MetaWindow *window = meta_display_get_focus_window (display);
-  ClutterActor *stage;
 
   if (window == NULL || meta_window_get_window_type (window) == META_WINDOW_DESKTOP)
   {
@@ -738,22 +765,54 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
     return;
   }
 
-  _screenshot_data *data = g_new0 (_screenshot_data, 1);
+  schedule_window_screenshot (screenshot, window, include_shadow, include_cursor, filename, callback);
+}
 
-  data->window = window;
-  data->screenshot = g_object_ref (screenshot);
-  data->filename = g_strdup (filename);
-  data->callback = callback;
-  data->include_cursor = include_cursor;
-  data->include_shadow = include_shadow;
+/**
+ * cinnamon_screenshot_screenshot_window_by_id:
+ * @screenshot: the #CinnamonScreenshot
+ * @window_id: the id returned by meta_window_get_id() for the target window
+ * @include_shadow: Whether to include the shadow or not
+ * @include_cursor: Whether to include the cursor or not
+ * @filename: The filename for the screenshot
+ * @callback: (scope async): function to call returning success or failure
+ * of the async grabbing
+ *
+ * Takes a screenshot of the window identified by @window_id. Invokes
+ * @callback with success=FALSE synchronously if no live window matches.
+ *
+ */
+void
+cinnamon_screenshot_screenshot_window_by_id (CinnamonScreenshot *screenshot,
+                                              guint64 window_id,
+                                              gboolean include_shadow,
+                                              gboolean include_cursor,
+                                              const char *filename,
+                                              CinnamonScreenshotCallback callback)
+{
+  MetaDisplay *display = cinnamon_global_get_display (screenshot->global);
+  GSList *windows, *l;
+  MetaWindow *target = NULL;
 
-  display = cinnamon_global_get_display (screenshot->global);
-  stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
+  windows = meta_display_list_windows (display, META_LIST_DEFAULT);
+  for (l = windows; l != NULL; l = l->next)
+    {
+      MetaWindow *w = (MetaWindow *) l->data;
+      if (meta_window_get_id (w) == window_id)
+        {
+          target = w;
+          break;
+        }
+    }
+  g_slist_free (windows);
 
-  meta_disable_unredirect_for_display (display);
-  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_window_screenshot), (gpointer) data);
+  if (target == NULL)
+    {
+      callback (screenshot, FALSE, NULL);
+      return;
+    }
 
-  clutter_actor_queue_redraw (stage);
+  schedule_window_screenshot (screenshot, target, include_shadow, include_cursor, filename, callback);
 }
 
 /**

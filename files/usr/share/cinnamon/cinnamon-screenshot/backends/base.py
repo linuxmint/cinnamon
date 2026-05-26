@@ -8,6 +8,9 @@ class Backend:
     def screenshot_window(self, include_pointer, include_shadow, on_done):
         on_done(None)
 
+    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done):
+        on_done(None)
+
     def screenshot_area(self, x, y, w, h, include_pointer, on_done):
         on_done(None)
 
@@ -15,4 +18,7 @@ class Backend:
         pass
 
     def select_area(self, on_done):
+        on_done(None)
+
+    def select_window(self, on_done):
         on_done(None)

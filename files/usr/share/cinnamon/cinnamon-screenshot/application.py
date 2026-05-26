@@ -33,6 +33,8 @@ class ScreenshotApplication(Gtk.Application):
             self._run_window()
 
     def _resolve_mode(self):
+        if self.args.select_window:
+            return 'select_window'
         if self.args.window:
             return 'window'
         if self.args.area:
@@ -44,11 +46,16 @@ class ScreenshotApplication(Gtk.Application):
     def capture(self, mode, include_pointer, include_shadow, delay, on_done, area_rect=None):
         # Monitor mode and area mode both end up calling screenshot_area,
         # which both grabs and flashes the captured rect on the server side.
-        # Area mode without a rect runs the selector first to get one.
+        # Area mode without a rect runs the selector first to get one;
+        # select_window mode runs the window picker first for an id.
+        window_id = None
+
         def do_capture():
             if area_rect is not None:
                 x, y, w, h = area_rect
                 self.backend.screenshot_area(x, y, w, h, include_pointer, on_done)
+            elif window_id is not None:
+                self.backend.screenshot_window_by_id(window_id, include_pointer, include_shadow, on_done)
             elif mode == 'window':
                 self.backend.screenshot_window(include_pointer, include_shadow, on_done)
             else:
@@ -70,6 +77,15 @@ class ScreenshotApplication(Gtk.Application):
                 area_rect = rect
                 schedule(do_capture)
             self.backend.select_area(after_select)
+        elif mode == 'select_window':
+            def after_pick(wid):
+                nonlocal window_id
+                if wid is None:
+                    on_done(None)
+                    return
+                window_id = wid
+                schedule(do_capture)
+            self.backend.select_window(after_pick)
         else:
             schedule(do_capture)
 
@@ -147,6 +163,8 @@ def _build_arg_parser():
                         help='Send the grab directly to the clipboard')
     parser.add_argument('-w', '--window', action='store_true',
                         help='Grab the active window instead of the entire screen')
+    parser.add_argument('--select-window', action='store_true', dest='select_window',
+                        help='Interactively pick a window to grab')
     parser.add_argument('-a', '--area', action='store_true',
                         help='Grab a selected area of the screen')
     parser.add_argument('-m', '--monitor', type=int, default=None, metavar='INDEX',
@@ -167,12 +185,11 @@ def main():
     parser = _build_arg_parser()
     args = parser.parse_args()
 
-    if args.window and args.area:
-        parser.error('cannot combine --window and --area')
-    if args.monitor is not None and (args.window or args.area):
-        parser.error('--monitor cannot be combined with --window or --area')
-    if args.include_shadow and not args.window:
-        parser.error('--include-shadow requires --window')
+    target_flags = [args.window, args.select_window, args.area, args.monitor is not None]
+    if sum(bool(f) for f in target_flags) > 1:
+        parser.error('--window, --select-window, --area, and --monitor are mutually exclusive')
+    if args.include_shadow and not (args.window or args.select_window):
+        parser.error('--include-shadow requires --window or --select-window')
     if args.interactive and (args.delay is not None or args.include_pointer or args.include_shadow):
         parser.error('--interactive cannot be combined with --delay, --include-pointer, or --include-shadow')
 
