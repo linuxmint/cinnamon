@@ -392,38 +392,28 @@ var Notification = class Notification {
     _setBodyArea(text, allowMarkup) {
         if (text) {
             if (!this._scrollArea) {
-                /* FIXME: vscroll should be enabled
-                 * -vfade covers too much for this size of scrollable
-                 * -scrollview min-height is broken inside tray with a scrollview
-                 *
-                 * TODO: when scrollable:
-                 *
-                 * applet connects to this signal to enable captured-event passthru so you can grab the scrollbar:
-                 * let vscroll = this._scrollArea.get_vscroll_bar();
-                 * vscroll.connect('scroll-start', () => { this.emit('scrolling-changed', true) });
-                 * vscroll.connect('scroll-stop', () => { this.emit('scrolling-changed', false) });
-                 *
-                 * `enable_mouse_scrolling` makes it difficult to scroll when there are many notifications
-                 * in the tray because most of the area is these smaller scrollviews which capture the event.
-                 * ideally, this should only be disabled when the notification is in the tray and there are
-                 * many notifications.
-                 */
                 this._scrollArea = new St.ScrollView({
                     name: 'notification-scrollview',
-                    vscrollbar_policy: St.PolicyType.NEVER,
                     hscrollbar_policy: St.PolicyType.NEVER,
-                    enable_mouse_scrolling: false/*,
-                                                       style_class: 'vfade'*/ });
+                });
+
+                this._scrollArea.set_clip_to_allocation(true);
+
+                this.setBodyExpand(false);
 
                 this._table.add(this._scrollArea, {
                     row: 1,
-                    col: 2
+                    col: 2,
+                    y_expand: false,
+                    y_fill: false,
+                    y_align: St.Align.START
                 });
 
                 let content = new St.BoxLayout({
                     name: 'notification-body',
                     vertical: true
                 });
+
                 this._scrollArea.add_actor(content);
 
                 // body label
@@ -463,6 +453,14 @@ var Notification = class Notification {
             adjustment.value = adjustment.upper;
     }
 
+    setBodyExpand(enabled) {
+        if (this._scrollArea) {
+            this._scrollArea.vscrollbar_policy = enabled ?  St.PolicyType.NEVER : St.PolicyType.AUTOMATIC;
+            this._scrollArea.enable_mouse_scrolling = !enabled;
+            this._table.set_style(`max-height: ${enabled ? 'none' : '300px'};`);
+        }
+    }
+
     _updateLayout() {
         if (this._imageBin || this._scrollArea || this._actionArea) {
             this._table.add_style_class_name('multi-line-notification');
@@ -470,6 +468,7 @@ var Notification = class Notification {
             this._table.remove_style_class_name('multi-line-notification');
         }
 
+        // XXX: check this
         if (this._imageBin) {
             this._table.add_style_class_name('notification-with-image');
         } else {
