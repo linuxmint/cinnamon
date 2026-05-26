@@ -1,18 +1,9 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
-const Config = imports.misc.config;
-const Extension = imports.ui.extension;
 const Flashspot = imports.ui.flashspot;
 const Main = imports.ui.main;
-const AppletManager = imports.ui.appletManager;
-const DeskletManager = imports.ui.deskletManager;
-const ExtensionSystem = imports.ui.extensionSystem;
-const SearchProviderManager = imports.ui.searchProviderManager;
-const ModalDialog = imports.ui.modalDialog;
-const Util = imports.misc.util;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -68,8 +59,6 @@ const ScreenshotIface =
  * The screenshot calls are not asynchronous to the caller but
  * it allows us to be sure the png has been written prior to
  * completing the invocation.
- * 
- * The callback argument is unused.
  */
 
 var ScreenshotService = class ScreenshotService {
@@ -91,7 +80,7 @@ var ScreenshotService = class ScreenshotService {
     }
 
     ScreenshotAreaAsync(params, invocation) {
-        let [x, y, width, height, include_cursor, filename, callback] = params;
+        let [x, y, width, height, include_cursor, filename] = params;
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_area(
@@ -101,16 +90,17 @@ var ScreenshotService = class ScreenshotService {
             width * global.ui_scale,
             height * global.ui_scale,
             filename,
-            Lang.bind(this, this._onScreenshotComplete, filename, invocation)
+            (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation)
         );
     }
 
     ScreenshotWindowAsync(params, invocation) {
-        let [include_shadow, include_cursor, filename, callback] = params;
+        let [include_shadow, include_cursor, filename] = params;
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_window(include_shadow, include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, filename, invocation));
+            (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation));
+    }
     }
 
     ScreenshotAsync(params, invocation) {
@@ -118,7 +108,7 @@ var ScreenshotService = class ScreenshotService {
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot(include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, filename, invocation));
+            (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation));
     }
 
     SelectAreaAsync(params, invocation) {
@@ -238,15 +228,7 @@ class SelectArea {
 
         this._setupMasks();
 
-        this._rubberband = new Clutter.Rectangle(
-            {
-                color: new Clutter.Color({ alpha: 0 }),
-                has_border: true,
-                border_width: 1,
-                border_color: this._border
-            }
-        );
-
+        this._rubberband = new St.Widget({ style: this._borderStyle });
         this._group.add_actor(this._rubberband);
     }
 
@@ -254,7 +236,7 @@ class SelectArea {
         if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
                             () => this._ungrab()))
             return;
-        this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this._group.connect('key-press-event', (o, e) => this._onKeyPressEvent(o, e));
 
         global.set_cursor(Cinnamon.Cursor.CROSSHAIR);
         Main.uiGroup.set_child_above_sibling(this._group, null);
@@ -262,13 +244,6 @@ class SelectArea {
     }
 
     _initRubberbandColors() {
-        function colorFromRGBA(rgba) {
-            return new Clutter.Color({ red: rgba.red * 255,
-                                       green: rgba.green * 255,
-                                       blue: rgba.blue * 255,
-                                       alpha: rgba.alpha * 255 });
-        }
-
         let path = new Gtk.WidgetPath();
         path.append_type(Gtk.IconView);
 
@@ -276,45 +251,36 @@ class SelectArea {
         context.set_path(path);
         context.add_class('rubberband');
 
-        this._background = colorFromRGBA(context.get_background_color(Gtk.StateFlags.NORMAL));
-        this._border = colorFromRGBA(context.get_border_color(Gtk.StateFlags.NORMAL));
+        let bg = context.get_background_color(Gtk.StateFlags.NORMAL);
+        this._background = new Clutter.Color({
+            red: bg.red * 255, green: bg.green * 255, blue: bg.blue * 255,
+            alpha: bg.alpha * 255,
+        });
+
+        let bd = context.get_border_color(Gtk.StateFlags.NORMAL);
+        this._borderStyle = `border: 1px solid rgba(${Math.round(bd.red * 255)},${Math.round(bd.green * 255)},${Math.round(bd.blue * 255)},${bd.alpha});`;
     }
 
     _setupMasks() {
-        this.top_mask = new Clutter.Rectangle(
-            {
-                x: 0,
-                y: 0,
-                width: global.stage.width,
-                height: global.stage.height,
-                color: this._background
-            }
-        );
+        this.top_mask = new Clutter.Actor({
+            x: 0, y: 0,
+            width: global.stage.width,
+            height: global.stage.height,
+            background_color: this._background,
+        });
         this._group.add_actor(this.top_mask);
 
-        this.bottom_mask = new Clutter.Rectangle(
-            {
-                x: 0,
-                y: global.stage.height,
-                width: global.stage.width,
-                height: 0,
-                color: this._background
-            }
-        );
+        this.bottom_mask = new Clutter.Actor({
+            x: 0, y: global.stage.height,
+            width: global.stage.width, height: 0,
+            background_color: this._background,
+        });
         this._group.add_actor(this.bottom_mask);
 
-        this.left_mask = new Clutter.Rectangle(
-            {
-                color: this._background
-            }
-        );
+        this.left_mask = new Clutter.Actor({ background_color: this._background });
         this._group.add_actor(this.left_mask);
 
-        this.right_mask = new Clutter.Rectangle(
-            {
-                color: this._background
-            }
-        );
+        this.right_mask = new Clutter.Actor({ background_color: this._background });
         this._group.add_actor(this.right_mask);
     }
 
@@ -465,7 +431,7 @@ class PickColor {
         if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
                             () => this._ungrab()))
             return;
-        this._group.connect('key-press-event', Lang.bind(this, this._onKeyPressEvent));
+        this._group.connect('key-press-event', (o, e) => this._onKeyPressEvent(o, e));
 
         global.set_cursor(Cinnamon.Cursor.CROSSHAIR);
         Main.uiGroup.set_child_above_sibling(this._group, null);
