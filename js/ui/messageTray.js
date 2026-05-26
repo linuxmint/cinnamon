@@ -399,7 +399,13 @@ var Notification = class Notification {
 
                 this._scrollArea.set_clip_to_allocation(true);
 
-                this.setBodyExpand(false);
+                let vscroll = this._scrollArea.get_vscroll_bar();
+                if (vscroll) {
+                    vscroll.connect('scroll-start', () => { this.emit('scrolling-changed', true) });
+                    vscroll.connect('scroll-stop', () => { this.emit('scrolling-changed', false) });
+                }
+
+                this.setBodyExpand(false, false);
 
                 this._table.add(this._scrollArea, {
                     row: 1,
@@ -453,11 +459,15 @@ var Notification = class Notification {
             adjustment.value = adjustment.upper;
     }
 
-    setBodyExpand(enabled) {
+    setBodyExpand(enabled, updateLayout = true) {
+        this._bodyExpandEnabled = enabled;
         if (this._scrollArea) {
             this._scrollArea.vscrollbar_policy = enabled ?  St.PolicyType.NEVER : St.PolicyType.AUTOMATIC;
             this._scrollArea.enable_mouse_scrolling = !enabled;
             this._table.set_style(`max-height: ${enabled ? 'none' : '300px'};`);
+        }
+        if (updateLayout) {
+            this._updateLayout();
         }
     }
 
@@ -468,8 +478,7 @@ var Notification = class Notification {
             this._table.remove_style_class_name('multi-line-notification');
         }
 
-        // XXX: check this
-        if (this._imageBin) {
+        if (this._imageBin && !this._bodyExpandEnabled) {
             this._table.add_style_class_name('notification-with-image');
         } else {
             this._table.remove_style_class_name('notification-with-image');
@@ -503,7 +512,8 @@ var Notification = class Notification {
             x_expand: false,
             y_expand: false,
             x_fill: false,
-            y_fill: false
+            y_fill: false,
+            y_align: St.Align.START
         });
         this._updateLayout();
     }
