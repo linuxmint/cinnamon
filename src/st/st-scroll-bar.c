@@ -659,6 +659,10 @@ handle_button_press_event_cb (ClutterActor       *actor,
   priv->x_origin += clutter_actor_get_x (priv->trough);
   priv->y_origin += clutter_actor_get_y (priv->trough);
 
+  /* Clean up any stale grab before creating a new one. */
+  if (priv->grab_device)
+      stop_scrolling (bar);
+
   g_assert (!priv->grab_device);
 
   clutter_input_device_grab (device, priv->handle);
