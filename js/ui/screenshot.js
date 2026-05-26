@@ -342,7 +342,7 @@ class SelectArea {
     }
 
     show() {
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.NONE,
                             () => this._ungrab()))
             return;
         this._group.connect('key-press-event', (o, e) => this._onKeyPressEvent(o, e));
@@ -480,7 +480,7 @@ class PickColor {
     }
 
     show() {
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.NONE,
                             () => this._ungrab()))
             return;
         this._group.connect('key-press-event', (o, e) => this._onKeyPressEvent(o, e));
@@ -618,7 +618,7 @@ class SelectWindow {
     }
 
     show() {
-        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL,
+        if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.NONE,
                             () => this._ungrab()))
             return;
         this._group.connect('key-press-event', this._onKeyPressEvent.bind(this));
