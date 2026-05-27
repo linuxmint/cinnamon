@@ -166,10 +166,6 @@ class MainWindow:
         prefs_item = Gtk.MenuItem(label=_('Preferences'))
         prefs_item.connect('activate', self._on_preferences)
         menu.append(prefs_item)
-        menu.append(Gtk.SeparatorMenuItem())
-        about_item = Gtk.MenuItem(label=_('About Cinnamon Screenshot'))
-        about_item.connect('activate', self._on_about)
-        menu.append(about_item)
         menu.show_all()
         self.builder.get_object('menu_button').set_popup(menu)
 
@@ -461,14 +457,3 @@ class MainWindow:
 
     def _on_preferences(self, _item):
         prefs.open_preferences(self.window)
-
-    def _on_about(self, _item):
-        about = Gtk.AboutDialog(transient_for=self.window, modal=True)
-        about.set_program_name('Cinnamon Screenshot')
-        about.set_comments(_('Screenshot tool'))
-        about.set_copyright('2026 Linux Mint')
-        about.set_license_type(Gtk.License.GPL_3_0)
-        about.set_website('https://github.com/linuxmint/cinnamon')
-        about.set_logo_icon_name('applets-screenshooter')
-        about.run()
-        about.destroy()
