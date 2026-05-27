@@ -711,7 +711,35 @@ WorkspaceMonitor.prototype = {
         let initialPositioning = flags & WindowPositionFlags.INITIAL;
         let animate = flags & WindowPositionFlags.ANIMATE;
 
-        let clones = this._windows;
+	let focusedWindow = global.display.get_focus_window();
+	let tracker = Cinnamon.WindowTracker.get_default();
+	let focusedApp = tracker.get_window_app(focusedWindow);
+	let focusedAppName = focusedApp.get_name();
+
+        let clones;
+        let callerActionName = Main.overview._optCallerActionName;
+        if (callerActionName === 'scaleapp') {
+            let clones2 = this._windows;
+            clones = [];
+            for (let i = 0; i < clones2.length; ++i) {
+                let clone = clones2[i];
+                let app = tracker.get_window_app(clone.metaWindow);
+                let appName = app.get_name();
+                if (appName === focusedAppName) { // this window belongs to the current active app
+                    clones.push(clone);
+                } else { // this window does not belong to the current active app
+                    // hide other windows otherwise they continue to show and may obscure the selection view.
+                    clone.actor.opacity = 0;
+                    clone.actor.scale_x = 0;
+                    clone.actor.scale_y = 0;
+                    // captions for these other windows also need to be hidden
+                    clone.overlay.caption.hide();
+                }
+            }
+        } else { // original 'scale' case
+            clones = this._windows;
+        }
+
         // Start the animations
         let slots = this._computeAllWindowSlots(clones.length);
 

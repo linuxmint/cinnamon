@@ -192,6 +192,7 @@ class HotCornerConfiguration(Gtk.Box):
         self.functionStore.append(['expo', _("Show all workspaces")]) #Expo
         self.functionStore.append(['scale', _("Show all windows")]) #Scale
         self.functionStore.append(['desktop', _("Show the desktop")])
+        self.functionStore.append(['scaleapp', _("Show application windows")]) # like Mac 'Application Windows'
         self.functionStore.append(['custom', _("Run a command")])
 
         enableBox = Gtk.Box(spacing=8)
@@ -238,9 +239,11 @@ class HotCornerConfiguration(Gtk.Box):
             self.functionCombo.set_active(1)
         elif function == "desktop":
             self.functionCombo.set_active(2)
+        elif function == "scaleapp":
+            self.functionCombo.set_active(3)
         else:
             showCommandEntry = True
-            self.functionCombo.set_active(3)
+            self.functionCombo.set_active(4)
             if self.commandEntry.get_text() != function:
                 self.commandEntry.set_text(function)
 

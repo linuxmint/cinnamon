@@ -61,6 +61,7 @@ Overview.prototype = {
         this._windowSwitchTimestamp = 0;
         this._lastActiveWorkspaceIndex = -1;
         this._lastHoveredWindow = null;
+        this._optCallerActionName = null;
     },
 
     // The members we construct that are implemented in JS might
@@ -358,7 +359,8 @@ Overview.prototype = {
         this._syncInputMode();
     },
 
-    toggle: function() {
+    toggle: function(optCallerActionName) {
+        Main.overview._optCallerActionName = optCallerActionName;
         if (this._shown)
             this.hide();
         else
