@@ -711,10 +711,10 @@ WorkspaceMonitor.prototype = {
         let initialPositioning = flags & WindowPositionFlags.INITIAL;
         let animate = flags & WindowPositionFlags.ANIMATE;
 
-	let focusedWindow = global.display.get_focus_window();
-	let tracker = Cinnamon.WindowTracker.get_default();
-	let focusedApp = tracker.get_window_app(focusedWindow);
-	let focusedAppName = focusedApp.get_name();
+        let focusedWindow = global.display.get_focus_window();
+        let tracker = Cinnamon.WindowTracker.get_default();
+        let focusedApp = tracker.get_window_app(focusedWindow);
+        let focusedAppName = focusedApp.get_name();
 
         let clones;
         let callerActionName = Main.overview._optCallerActionName;
