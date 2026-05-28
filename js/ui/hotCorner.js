@@ -246,10 +246,14 @@ class HotCorner {
                 break;
             case 'scale':
                 if (!Main.overview.animationInProgress)
-                    Main.overview.toggle();
+                    Main.overview.toggle(this.action);
                 break;
             case 'desktop':
                 global.workspace_manager.toggle_desktop(timestamp);
+                break;
+            case 'scaleapp':
+                if (!Main.overview.animationInProgress)
+                    Main.overview.toggle(this.action);
                 break;
             default:
                 Util.spawnCommandLine(this.action);
@@ -307,7 +311,7 @@ class HotCorner {
     shouldRunAction(timestamp, click) {
         /* Expo and scale disable hot corners except theirs */
         if ((Main.expo.visible && this.action != 'expo') ||
-            (Main.overview.visible && this.action != 'scale'))
+            (Main.overview.visible && ((this.action != 'scale') && (this.action != 'scaleapp'))))
             return false;
 
         if (Main.overview.animationInProgress)
