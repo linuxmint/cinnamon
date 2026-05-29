@@ -1,4 +1,4 @@
-project('Cinnamon', 'c', version : '6.7.1', meson_version : '>=0.56.0')
+project('Cinnamon', 'c', version : '6.7.1', meson_version : '>=0.64.0')
 
 gnome = import('gnome')
 i18n = import('i18n')
@@ -271,3 +271,10 @@ install_subdir(
 subdir('calendar-server')
 subdir('python3')
 subdir('install-scripts')
+
+# Post-installation actions. Skipped automatically when DESTDIR is set
+# (debian builds, etc.), since the package manager handles them.
+gnome.post_install(
+    glib_compile_schemas: true,
+    gtk_update_icon_cache: true,
+)
