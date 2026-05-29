@@ -1372,7 +1372,7 @@ function _stageEventHandler(actor, event) {
             // modifier mask.
             if (action <= 0 && _lastModifierKeyCode > 0) {
                 let currentMask = _modifierMaskForKeySymbol(event.get_key_symbol());
-                action = global.display.get_keybinding_action(_lastModifierKeyCode, modifierState | currentMask);
+                action = global.display.get_keybinding_action(_lastModifierKeyCode, currentMask);
                 if (action > 0) {
                     let entry = keybindingManager.getBindingById(action);
                     if (!_shouldFilterKeybinding(entry)) {
@@ -1437,6 +1437,7 @@ function _findModal(actor) {
 
 function _completeModalSetup(actor, mode, onDismiss) {
     _modifierOnlyAction = 0;
+    _lastModifierKeyCode = 0;
 
     if (modalCount == 0)
         Meta.disable_unredirect_for_display(global.display);
