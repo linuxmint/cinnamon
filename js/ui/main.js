@@ -1306,12 +1306,32 @@ function _shouldFilterKeybinding(entry) {
  * to give the multi-key binding a chance to activate on key-press.
  */
 let _modifierOnlyAction = 0;
+let _lastModifierKeyCode = 0;
 
 function _isModifierKeyval(symbol) {
     return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
            symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R ||
            symbol === Clutter.KEY_Alt_L     || symbol === Clutter.KEY_Alt_R     ||
            symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
+}
+
+function _modifierMaskForKeySymbol(symbol) {
+    switch (symbol) {
+        case Clutter.KEY_Control_L:
+        case Clutter.KEY_Control_R:
+            return Clutter.ModifierType.CONTROL_MASK;
+        case Clutter.KEY_Shift_L:
+        case Clutter.KEY_Shift_R:
+            return Clutter.ModifierType.SHIFT_MASK;
+        case Clutter.KEY_Alt_L:
+        case Clutter.KEY_Alt_R:
+            return Clutter.ModifierType.MOD1_MASK;
+        case Clutter.KEY_Super_L:
+        case Clutter.KEY_Super_R:
+            return Clutter.ModifierType.MOD4_MASK;
+        default:
+            return 0;
+    }
 }
 
 function _stageEventHandler(actor, event) {
@@ -1345,10 +1365,34 @@ function _stageEventHandler(actor, event) {
                     return true;
                 }
             }
+
+            // Try reverse order for multi-modifier keybindings (e.g., Shift+Ctrl
+            // when the binding is stored as Ctrl+Shift). If a previous modifier
+            // key was pressed without matching, try its keycode with this key's
+            // modifier mask.
+            if (action <= 0 && _lastModifierKeyCode > 0) {
+                let currentMask = _modifierMaskForKeySymbol(event.get_key_symbol());
+                action = global.display.get_keybinding_action(_lastModifierKeyCode, modifierState | currentMask);
+                if (action > 0) {
+                    let entry = keybindingManager.getBindingById(action);
+                    if (!_shouldFilterKeybinding(entry)) {
+                        _modifierOnlyAction = action;
+                        _lastModifierKeyCode = 0;
+                        return true;
+                    }
+                }
+            }
+
+            // Any modifier key press that doesn't match cancels a pending
+            // single-modifier action from a previous modifier press.
+            _modifierOnlyAction = 0;
+            _lastModifierKeyCode = keyCode;
             return false;
         }
 
+        // Non-modifier key press clears pending modifier-only action.
         _modifierOnlyAction = 0;
+        _lastModifierKeyCode = 0;
 
         // During modal, muffin's process_iso_next_group doesn't run, handle xkb 'grp'
         // here.
@@ -1370,11 +1414,14 @@ function _stageEventHandler(actor, event) {
     }
 
     // Release event - activate the single-key modifier keybinding if one was stored.
-    if (_isModifierKeyval(event.get_key_symbol()) && _modifierOnlyAction > 0) {
-        let action = _modifierOnlyAction;
-        _modifierOnlyAction = 0;
-        keybindingManager.invoke_keybinding_action_by_id(action);
-        return true;
+    if (_isModifierKeyval(event.get_key_symbol())) {
+        _lastModifierKeyCode = 0;
+        if (_modifierOnlyAction > 0) {
+            let action = _modifierOnlyAction;
+            _modifierOnlyAction = 0;
+            keybindingManager.invoke_keybinding_action_by_id(action);
+            return true;
+        }
     }
 
     return false;
