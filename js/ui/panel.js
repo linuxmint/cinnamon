@@ -942,6 +942,7 @@ var PanelManager = GObject.registerClass({
     }
 
     _onMonitorsChanged() {
+        this._fullPanelLoad();
         const oldCount = this.monitorCount;
         this.monitorCount = global.display.get_n_monitors();
 
