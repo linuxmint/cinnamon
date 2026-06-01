@@ -12,6 +12,8 @@ INCLUDE_SHADOW_KEY = 'include-shadow'
 SAVE_DIRECTORY_KEY = 'save-directory'
 DEFAULT_FILE_TYPE_KEY = 'default-file-type'
 LAUNCH_FILE_MANAGER_KEY = 'launch-file-manager-after-save'
+AUTOSAVE_TO_FILE_KEY = 'autosave-to-file'
+AUTOSAVE_TO_CLIPBOARD_KEY = 'autosave-to-clipboard'
 
 settings = Gio.Settings.new(SCHEMA_ID)
 if not settings.get_string(SAVE_DIRECTORY_KEY):
@@ -58,6 +60,12 @@ def set_default_file_type(value):
 
 def get_launch_file_manager():
     return settings.get_boolean(LAUNCH_FILE_MANAGER_KEY)
+
+def get_autosave_to_file():
+    return settings.get_boolean(AUTOSAVE_TO_FILE_KEY)
+
+def get_autosave_to_clipboard():
+    return settings.get_boolean(AUTOSAVE_TO_CLIPBOARD_KEY)
 
 _current_window = None
 
@@ -107,6 +115,16 @@ class PreferencesWindow:
         section.add_row(GSettingsSwitch(
             _('Launch file manager after saving'),
             SCHEMA_ID, LAUNCH_FILE_MANAGER_KEY,
+        ))
+
+        section_behavior = page.add_section(_('Behavior'))
+        section_behavior.add_row(GSettingsSwitch(
+            _('Autosave to file'),
+            SCHEMA_ID, AUTOSAVE_TO_FILE_KEY,
+        ))
+        section_behavior.add_row(GSettingsSwitch(
+            _('Autosave to clipboard'),
+            SCHEMA_ID, AUTOSAVE_TO_CLIPBOARD_KEY,
         ))
 
         self.window.show_all()

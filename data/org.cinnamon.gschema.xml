@@ -1066,6 +1066,18 @@
       <description>When enabled, opens the file manager with the saved screenshot pre-selected after a successful save.</description>
     </key>
 
+    <key name="autosave-to-file" type="b">
+      <default>false</default>
+      <summary>Autosave screenshot to file</summary>
+      <description>When enabled, saves the screenshot to file without showing the application's interactive window</description>
+    </key>
+
+    <key name="autosave-to-clipboard" type="b">
+      <default>false</default>
+      <summary>Autosave screenshot to file</summary>
+      <description>When enabled, saves the screenshot to the clipboard without showing the application's interactive window</description>
+    </key>
+
   </schema>
 
 </schemalist>

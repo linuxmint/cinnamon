@@ -29,6 +29,15 @@ class ScreenshotApplication(Gtk.Application):
             self._run_clipboard()
         elif args.file and not args.interactive:
             self._run_save_to_file(args.file)
+        elif (prefs.get_autosave_to_file() or prefs.get_autosave_to_clipboard()) and not args.interactive:
+            if prefs.get_autosave_to_file():
+                filename = util.build_filename(
+                    prefs.get_save_directory(),
+                    file_type=prefs.get_default_file_type(),
+                )
+                self._run_save_to_file(filename)
+            if prefs.get_autosave_to_clipboard():
+                self._run_clipboard()
         else:
             self._run_window()
 
