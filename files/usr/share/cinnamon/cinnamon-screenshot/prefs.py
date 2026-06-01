@@ -119,11 +119,11 @@ class PreferencesWindow:
 
         section_behavior = page.add_section(_('Behavior'))
         section_behavior.add_row(GSettingsSwitch(
-            _('Autosave to file'),
+            _('Autosave to default folder'),
             SCHEMA_ID, AUTOSAVE_TO_FILE_KEY,
         ))
         section_behavior.add_row(GSettingsSwitch(
-            _('Autosave to clipboard'),
+            _('Copy to clipboard when saving'),
             SCHEMA_ID, AUTOSAVE_TO_CLIPBOARD_KEY,
         ))
 

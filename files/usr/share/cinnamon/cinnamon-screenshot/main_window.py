@@ -441,6 +441,9 @@ class MainWindow:
 
         self._saved = True
 
+        if prefs.get_autosave_to_clipboard():
+            util.copy_pixbuf_to_clipboard(self._pixbuf)
+
         # When --file is set the destination wasn't user-chosen (portal use),
         # so the post-save file-manager reveal would be confusing.
         if prefs.get_launch_file_manager() and not self.app.args.file:

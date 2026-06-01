@@ -1074,8 +1074,8 @@
 
     <key name="autosave-to-clipboard" type="b">
       <default>false</default>
-      <summary>Autosave screenshot to file</summary>
-      <description>When enabled, saves the screenshot to the clipboard without showing the application's interactive window</description>
+      <summary>Copy saved screenshots to the clipboard</summary>
+      <description>When enabled, a copy of every screenshot that is saved to a file is also placed on the clipboard.</description>
     </key>
 
   </schema>

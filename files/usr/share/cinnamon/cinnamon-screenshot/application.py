@@ -29,15 +29,12 @@ class ScreenshotApplication(Gtk.Application):
             self._run_clipboard()
         elif args.file and not args.interactive:
             self._run_save_to_file(args.file)
-        elif (prefs.get_autosave_to_file() or prefs.get_autosave_to_clipboard()) and not args.interactive:
-            if prefs.get_autosave_to_file():
-                filename = util.build_filename(
-                    prefs.get_save_directory(),
-                    file_type=prefs.get_default_file_type(),
-                )
-                self._run_save_to_file(filename)
-            if prefs.get_autosave_to_clipboard():
-                self._run_clipboard()
+        elif prefs.get_autosave_to_file() and not args.interactive:
+            filename = util.build_filename(
+                prefs.get_save_directory(),
+                file_type=prefs.get_default_file_type(),
+            )
+            self._run_save_to_file(filename, copy_to_clipboard=prefs.get_autosave_to_clipboard())
         else:
             self._run_window()
 
@@ -131,7 +128,7 @@ class ScreenshotApplication(Gtk.Application):
         self.quit()
         return GLib.SOURCE_REMOVE
 
-    def _run_save_to_file(self, path):
+    def _run_save_to_file(self, path, copy_to_clipboard=False):
         self.hold()
         mode = self._resolve_mode()
         area_rect = None
@@ -147,6 +144,8 @@ class ScreenshotApplication(Gtk.Application):
             if pixbuf is not None:
                 try:
                     util.save_pixbuf(pixbuf, path)
+                    if copy_to_clipboard:
+                        util.copy_pixbuf_to_clipboard(pixbuf)
                 except Exception as exc:
                     print(f'cinnamon-screenshot: save failed: {exc}', file=sys.stderr)
                     self._exit_code = 1
