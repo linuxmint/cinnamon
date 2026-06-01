@@ -1937,6 +1937,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                     return Clutter.EVENT_STOP;
                 }
                 break;
+            case Clutter.KEY_A:
+            case Clutter.KEY_a:
+                if (ctrlKey) {
+                    let textLen = this.searchEntryText.get_text().length;
+                    this.searchEntryText.set_selection(0, textLen);
+                    return Clutter.EVENT_STOP;
+                }
+                break;
             case Clutter.KEY_Menu:
                 if (this._activeContainer === this.applicationsBox) {
                     this.toggleContextMenu(active._delegate);
