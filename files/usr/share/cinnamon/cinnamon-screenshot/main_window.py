@@ -29,7 +29,6 @@ class MainWindow:
         self.app = app
         self.builder = Gtk.Builder.new_from_file(os.path.join(PKGDATADIR, 'main-window.ui'))
         self.window = self.builder.get_object('window')
-        self.window.set_application(app)
 
         self.mode_screen = self.builder.get_object('mode_screen')
         self.mode_monitor = self.builder.get_object('mode_monitor')
@@ -83,6 +82,10 @@ class MainWindow:
             self.window.show_all()
         else:
             self._capture(initial=True)
+
+    def show_with_pixbuf(self, pixbuf):
+        self._set_preview(pixbuf)
+        self.window.show_all()
 
     # ------------------------------------------------------------------
     # init
@@ -389,6 +392,7 @@ class MainWindow:
         # saving so the caller can distinguish a save from a cancel.
         if self.app.args.file and not self._saved:
             self.app._exit_code = 1
+        self.app.quit()
 
     def _on_copy(self, _b):
         if self._pixbuf is None:

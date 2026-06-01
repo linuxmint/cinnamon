@@ -4,7 +4,7 @@ import sys
 
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, GLib, Gtk
+from gi.repository import GLib, Gtk
 
 import screenshot_backend
 import prefs
@@ -13,30 +13,36 @@ import util
 gettext.install('cinnamon', '/usr/share/locale')
 
 
-class ScreenshotApplication(Gtk.Application):
+class ScreenshotApplication:
     def __init__(self, args):
-        super().__init__(
-            application_id='org.cinnamon.Screenshot',
-            flags=Gio.ApplicationFlags.NON_UNIQUE,
-        )
         self.args = args
         self.backend = screenshot_backend.Backend()
         self._exit_code = 0
 
-    def do_activate(self):
+    def quit(self):
+        Gtk.main_quit()
+
+    def run(self):
+        self._activate()
+        Gtk.main()
+        return self._exit_code
+
+    def _activate(self):
         args = self.args
         if args.clipboard:
             self._run_clipboard()
         elif args.file and not args.interactive:
             self._run_save_to_file(args.file)
-        elif prefs.get_autosave_to_file() and not args.interactive:
+        elif args.interactive:
+            self._run_window()
+        elif prefs.get_autosave_to_file():
             filename = util.build_filename(
                 prefs.get_save_directory(),
                 file_type=prefs.get_default_file_type(),
             )
             self._run_save_to_file(filename, copy_to_clipboard=prefs.get_autosave_to_clipboard())
         else:
-            self._run_window()
+            self._run_capture_to_editor()
 
     def _resolve_mode(self):
         if self.args.select_window:
@@ -100,8 +106,27 @@ class ScreenshotApplication(Gtk.Application):
         win = MainWindow(self)
         win.run()
 
+    def _run_capture_to_editor(self):
+        # Non-interactive launch (e.g. the screenshot keybinding): grab first
+        # and only build the editor window once we have an image to show.
+        mode = self._resolve_mode()
+        area_rect = None
+        if mode == 'monitor':
+            area_rect = util.monitor_rect(self.args.monitor)
+            if area_rect is None:
+                mode = 'screen'
+        include_pointer = self.args.include_pointer
+        include_shadow = self.args.include_shadow
+        delay = self.args.delay if self.args.delay is not None else 0
+
+        def done(pixbuf):
+            from main_window import MainWindow
+            win = MainWindow(self)
+            win.show_with_pixbuf(pixbuf)
+
+        self.capture(mode, include_pointer, include_shadow, delay, done, area_rect=area_rect)
+
     def _run_clipboard(self):
-        self.hold()
         mode = self._resolve_mode()
         area_rect = None
         if mode == 'monitor':
@@ -118,18 +143,15 @@ class ScreenshotApplication(Gtk.Application):
                 GLib.idle_add(self._finish_clipboard)
             else:
                 self._exit_code = 1
-                self.release()
                 self.quit()
 
         self.capture(mode, include_pointer, include_shadow, delay, done, area_rect=area_rect)
 
     def _finish_clipboard(self):
-        self.release()
         self.quit()
         return GLib.SOURCE_REMOVE
 
     def _run_save_to_file(self, path, copy_to_clipboard=False):
-        self.hold()
         mode = self._resolve_mode()
         area_rect = None
         if mode == 'monitor':
@@ -146,19 +168,16 @@ class ScreenshotApplication(Gtk.Application):
                     util.save_pixbuf(pixbuf, path)
                     if copy_to_clipboard:
                         util.copy_pixbuf_to_clipboard(pixbuf)
+                        GLib.idle_add(self._finish_clipboard)
+                        return
                 except Exception as exc:
                     print(f'cinnamon-screenshot: save failed: {exc}', file=sys.stderr)
                     self._exit_code = 1
             else:
                 self._exit_code = 1
-            self.release()
             self.quit()
 
         self.capture(mode, include_pointer, include_shadow, delay, done, area_rect=area_rect)
-
-    @property
-    def exit_code(self):
-        return self._exit_code
 
 
 def _build_arg_parser():
@@ -202,5 +221,4 @@ def main():
         parser.error('--interactive cannot be combined with --delay, --include-pointer, or --include-shadow')
 
     app = ScreenshotApplication(args)
-    app.run([])
-    return app.exit_code
+    return app.run()
