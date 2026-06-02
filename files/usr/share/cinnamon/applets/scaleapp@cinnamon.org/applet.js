@@ -3,7 +3,7 @@ const Lang = imports.lang;
 const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 
-class CinnamonScaleApplet extends Applet.IconApplet {
+class CinnamonScaleAppApplet extends Applet.IconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
@@ -42,5 +42,5 @@ class CinnamonScaleApplet extends Applet.IconApplet {
 }
 
 function main(metadata, orientation, panel_height, instance_id) {
-    return new CinnamonScaleApplet(metadata, orientation, panel_height, instance_id);
+    return new CinnamonScaleAppApplet(metadata, orientation, panel_height, instance_id);
 }
