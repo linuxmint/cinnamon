@@ -2952,13 +2952,13 @@ var PopupMenuManager = class PopupMenuManager {
             if (activeMenuContains) {
                 return false;
             } else {
-                this._closeMenu(!isPanelEvent);
+                this._closeMenu();
                 return !isPanelEvent;
             }
         } else if (eventType == Clutter.EventType.BUTTON_PRESS && !activeMenuContains) {
             if (isPanelEvent) {
                 if (!this._windowFocusSignal) {
-                    this._windowFocusSignal = global.display.connect('notify::focus-window', () => this._closeMenu(false));
+                    this._windowFocusSignal = global.display.connect('notify::focus-window', () => this._closeMenu());
                 }
                 return false; 
             }
@@ -2972,14 +2972,14 @@ var PopupMenuManager = class PopupMenuManager {
         return true;
     }
 
-    _closeMenu(animate = true) {
+    _closeMenu() {
         if (this._windowFocusSignal) {
             global.display.disconnect(this._windowFocusSignal);
             this._windowFocusSignal = null;
         }
         
         if (this._activeMenu != null)
-            this._activeMenu.close(animate);
+            this._activeMenu.close();
     }
 
     destroy() {
