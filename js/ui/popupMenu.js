@@ -2946,7 +2946,11 @@ var PopupMenuManager = class PopupMenuManager {
 
         let activeMenuContains = this._eventIsOnActiveMenu(event);
         let eventType = event.type();
-        let isPanelEvent = this._eventIsOnPanel(event);
+        let src = event.get_source();
+        let isPanelEvent = false;
+        if (src && !src.is_finalized()) {
+            isPanelEvent = Main.panelManager.getPanels().some(panel => panel && panel.contains(src));
+        }
 
         if (eventType == Clutter.EventType.BUTTON_RELEASE) {
             if (activeMenuContains) {
@@ -2985,12 +2989,6 @@ var PopupMenuManager = class PopupMenuManager {
     destroy() {
         this._signals.disconnectAllSignals();
         this.emit('destroy');
-    }
-    _eventIsOnPanel(event) {
-        let src = event.get_source();
-        if (!src || src.is_finalized()) return false;
-
-        return !!(this._owner && this._owner.panel && this._owner.panel.contains(src));
     }
 }
 Signals.addSignalMethods(PopupMenuManager.prototype);
