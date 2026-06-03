@@ -93,7 +93,6 @@ const PointerTracker = imports.misc.pointerTracker;
 
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
-const AudioDeviceSelection = imports.ui.audioDeviceSelection;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const Config = imports.misc.config;
@@ -165,7 +164,6 @@ var messageTray = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
 var screenRecorder = null;
-var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
 var cinnamonMountOpDBusService = null;
 var automountManager = null;
@@ -348,7 +346,6 @@ function start() {
     lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
     new CinnamonPortalHandler();
-    cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
 
     setRunState(RunState.STARTUP);
