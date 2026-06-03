@@ -259,9 +259,7 @@
   }
 }
 
-// Popup dialog (non-modal, draggable)
+// Popup dialog (non-modal, draggable).
+// Modal dialogs use a lightbox to draw attention to themselves; popups don't,
 .popup-dialog {
-  .dialog {
-    box-shadow: 0 -1px $accent_bg_color;
-  }
 }
