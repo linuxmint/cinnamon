@@ -14,13 +14,13 @@ const Signals = imports.signals;
 const Dialog = imports.ui.dialog;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 
 const VPN_UI_GROUP = 'VPN Plugin UI';
 
 var NetworkSecretDialog = GObject.registerClass(
-class NetworkSecretDialog extends ModalDialog.ModalDialog {
+class NetworkSecretDialog extends PopupDialog.PopupDialog {
     _init(agent, requestId, connection, settingName, hints, flags, contentOverride) {
         super._init({ styleClass: 'prompt-dialog' });
 
@@ -140,14 +140,14 @@ class NetworkSecretDialog extends ModalDialog.ModalDialog {
 
         if (valid) {
             this._agent.respond(this._requestId, Cinnamon.NetworkAgentResponse.CONFIRMED);
-            this.close(global.get_current_time());
+            this.close();
         }
         // do nothing if not valid
     }
 
     cancel() {
         this._agent.respond(this._requestId, Cinnamon.NetworkAgentResponse.USER_CANCELED);
-        this.close(global.get_current_time());
+        this.close();
     }
 
     _validateWpaPsk(secret) {
@@ -419,8 +419,7 @@ var VPNRequestHandler = class {
             this._agent.respond(this._requestId, Cinnamon.NetworkAgentResponse.USER_CANCELED);
 
         if (this._newStylePlugin && this._cinnamonDialog) {
-            this._cinnamonDialog.close(global.get_current_time());
-            this._cinnamonDialog.destroy();
+            this._cinnamonDialog.close();
         } else {
             try {
                 this._stdin.write('QUIT\n\n', null);
@@ -579,7 +578,11 @@ var VPNRequestHandler = class {
         if (contentOverride && contentOverride.secrets.length) {
             // Only show the dialog if we actually have something to ask
             this._cinnamonDialog = new NetworkSecretDialog(this._agent, this._requestId, this._connection, 'vpn', [], this._flags, contentOverride);
-            this._cinnamonDialog.open(global.get_current_time());
+            if (!this._cinnamonDialog.open()) {
+                this._agent.respond(this._requestId, Cinnamon.NetworkAgentResponse.INTERNAL_ERROR);
+                this.destroy();
+                return;
+            }
         } else {
             this._agent.respond(this._requestId, Cinnamon.NetworkAgentResponse.CONFIRMED);
             this.destroy();
@@ -727,14 +730,15 @@ var NetworkAgent = class {
             delete this._dialogs[requestId];
         });
         this._dialogs[requestId] = dialog;
-        dialog.open(global.get_current_time());
+        if (!dialog.open())
+            this._native.respond(requestId, Cinnamon.NetworkAgentResponse.INTERNAL_ERROR);
     }
 
     _cancelRequest(agent, requestId) {
         if (this._dialogs[requestId]) {
-            this._dialogs[requestId].close(global.get_current_time());
-            this._dialogs[requestId].destroy();
+            let dialog = this._dialogs[requestId];
             delete this._dialogs[requestId];
+            dialog.close();
         } else if (this._vpnRequests[requestId]) {
             this._vpnRequests[requestId].cancel(false);
             delete this._vpnRequests[requestId];

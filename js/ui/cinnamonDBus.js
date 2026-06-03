@@ -10,7 +10,6 @@ const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
-const ModalDialog = imports.ui.modalDialog;
 const Util = imports.misc.util;
 
 const CinnamonIface =

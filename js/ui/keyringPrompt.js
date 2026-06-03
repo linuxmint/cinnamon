@@ -7,13 +7,13 @@ const GObject = imports.gi.GObject;
 const Gcr = imports.gi.Gcr;
 
 const Dialog = imports.ui.dialog;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 const CinnamonEntry = imports.ui.cinnamonEntry;
 const CheckBox = imports.ui.checkBox;
 const Util = imports.misc.util;
 
 var KeyringDialog = GObject.registerClass(
-class KeyringDialog extends ModalDialog.ModalDialog {
+class KeyringDialog extends PopupDialog.PopupDialog {
     _init() {
         super._init({ styleClass: 'prompt-dialog' });
 
@@ -127,32 +127,25 @@ class KeyringDialog extends ModalDialog.ModalDialog {
     }
 
     _ensureOpen() {
-        // NOTE: ModalDialog.open() is safe to call if the dialog is
-        // already open - it just returns true without side-effects
         if (this.open())
             return true;
 
-        // The above fail if e.g. unable to get input grab
-        //
-        // In an ideal world this wouldn't happen (because
-        // Cinnamon is in complete control of the session) but that's
-        // just not how things work right now.
-
-        log('keyringPrompt: Failed to show modal dialog.' +
-            ' Dismissing prompt request');
+        global.logError('keyringPrompt: Failed to show dialog. Dismissing prompt request');
         this.prompt.cancel();
         return false;
     }
 
     _onShowPassword() {
-        this._ensureOpen();
+        if (!this._ensureOpen())
+            return;
         this._updateSensitivity(true);
         this._passwordEntry.text = '';
         this._passwordEntry.grab_key_focus();
     }
 
     _onShowConfirm() {
-        this._ensureOpen();
+        if (!this._ensureOpen())
+            return;
         this._updateSensitivity(true);
         this._confirmEntry.text = '';
         this._continueButton.grab_key_focus();
