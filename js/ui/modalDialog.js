@@ -46,7 +46,7 @@ class ModalDialog extends BaseDialog.BaseDialog {
      */
     _init(params) {
         params = Params.parse(params, {
-            cinnamonReactive: Main.virtualKeyboardManager.enabled,
+            cinnamonReactive: false,
             styleClass: null,
             destroyOnClose: true,
         });
@@ -63,6 +63,7 @@ class ModalDialog extends BaseDialog.BaseDialog {
         this._hasModal = false;
         this._savedKeyFocus = null;
         this._cinnamonReactive = params.cinnamonReactive;
+        this._keyboardVisibleId = 0;
 
         Main.uiGroup.add_actor(this);
 
@@ -98,6 +99,23 @@ class ModalDialog extends BaseDialog.BaseDialog {
             this._eventBlocker = new Clutter.Actor({ reactive: true });
             this.backgroundStack.add_actor(this._eventBlocker);
         }
+
+        this.connect('destroy', () => this._disconnectKeyboardTracking());
+    }
+
+    _disconnectKeyboardTracking() {
+        if (this._keyboardVisibleId) {
+            Main.layoutManager.disconnect(this._keyboardVisibleId);
+            this._keyboardVisibleId = 0;
+        }
+    }
+
+    // Keep the on-screen keyboard above the lightbox shade so its keys remain
+    // visible and tappable while a modal dialog is open.
+    _raiseKeyboardAboveDialog() {
+        let keyboardBox = Main.layoutManager.keyboardBox;
+        if (keyboardBox && keyboardBox.visible)
+            Main.uiGroup.set_child_above_sibling(keyboardBox, this);
     }
 
     _fadeOpen() {
@@ -127,6 +145,15 @@ class ModalDialog extends BaseDialog.BaseDialog {
 
         this._fadeOpen();
 
+        if (this._lightbox && !this._keyboardVisibleId) {
+            this._keyboardVisibleId = Main.layoutManager.connect('keyboard-visible-changed',
+                (lm, visible) => {
+                    if (visible)
+                        this._raiseKeyboardAboveDialog();
+                });
+            this._raiseKeyboardAboveDialog();
+        }
+
         this._openedId = this.connect('opened', () => {
             this.disconnect(this._openedId);
             this._openedId = 0;
@@ -151,6 +178,8 @@ class ModalDialog extends BaseDialog.BaseDialog {
             this.disconnect(this._openedId);
             this._openedId = 0;
         }
+
+        this._disconnectKeyboardTracking();
 
         this.popModal(timestamp);
         this._savedKeyFocus = null;
