@@ -399,6 +399,12 @@ var Locale1Settings = class {
                                     let sources = GLib.Variant.new('a(ss)', sourcesList);
                                     settings.set_value(KEY_INPUT_SOURCES, sources);
                                 }
+
+                                if (settings.get_strv(KEY_KEYBOARD_OPTIONS).length == 0) {
+                                    let options = _options.split(',').filter(o => o.length > 0);
+                                    if (options.length > 0)
+                                        settings.set_strv(KEY_KEYBOARD_OPTIONS, options);
+                                }
                             });
     }
 };
