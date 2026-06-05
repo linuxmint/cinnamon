@@ -1,5 +1,6 @@
 {
  "uuid": "sound@cinnamon.org",
+ "max-instances": -1,
  "name": "Sound",
  "description": "A Cinnamon applet to control sound and music",
  "icon": "cs-sound"

@@ -1,5 +1,6 @@
 {
  "uuid": "photoframe@cinnamon.org",
+ "max-instances": -1,
  "name": "Digital photo frame",
  "description": "A digital photo frame desklet",
  "icon": "folder-pictures",

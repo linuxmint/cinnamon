@@ -60,8 +60,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
-            Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid, this.instance_id);
+            Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid, this.instance_id);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -354,7 +354,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
     on_applet_removed_from_panel() {
         this._signalManager.disconnectAllSignals();
-        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid, this.instance_id);
     }
 };
 

@@ -32,24 +32,30 @@ SystrayManager.prototype = {
      * registerTrayIconReplacement:
      * @role (string): The systray icon name as reported in the logs.
      * @uuid (string): The uuid of the applet, desklet, or extension.
+     * @instanceId (int): Optional instance id for multi-instance support.
      *
-     * Registers the uuid to replace a tray icon identified by the role
+     * Registers the uuid to replace a tray icon identified by the role.
      */
-    registerTrayIconReplacement: function(role, uuid) {
-        this._roles.push({role: role.toLowerCase(), uuid: uuid});
+    registerTrayIconReplacement: function(role, uuid, instanceId) {
+        this._roles.push({role: role.toLowerCase(), uuid: uuid, instanceId: instanceId});
         this.emit("changed");
     },
 
     /**
      * unregisterTrayIconReplacement:
      * @uuid (string): The uuid of the applet, desklet, or extension.
+     * @instanceId (int): Optional instance id. If provided, only entries
+     * matching both uuid and instanceId are removed. If omitted, all
+     * entries for the uuid are removed.
      *
-     * Unregisters the any roles claimed by uuid.
+     * Unregisters any roles claimed by uuid (and optionally instanceId).
      */
-    unregisterTrayIconReplacement: function(uuid) {
+    unregisterTrayIconReplacement: function(uuid, instanceId) {
         for (let i = this._roles.length - 1; i >= 0; i--) {
             if (this._roles[i].uuid == uuid) {
-                this._roles.splice(i, 1);
+                if (instanceId === undefined || this._roles[i].instanceId === instanceId) {
+                    this._roles.splice(i, 1);
+                }
             }
         }
         this.emit("changed");

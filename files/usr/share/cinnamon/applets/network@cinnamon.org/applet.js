@@ -1803,8 +1803,8 @@ CinnamonNetworkApplet.prototype = {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerTrayIconReplacement("network", metadata.uuid);
-            Main.systrayManager.registerTrayIconReplacement("nm-applet", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("network", metadata.uuid, this.instance_id);
+            Main.systrayManager.registerTrayIconReplacement("nm-applet", metadata.uuid, this.instance_id);
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -2669,7 +2669,7 @@ CinnamonNetworkApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function() {
-        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid, this.instance_id);
         Main.keybindingManager.removeXletHotKey(this, "network-open");
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);

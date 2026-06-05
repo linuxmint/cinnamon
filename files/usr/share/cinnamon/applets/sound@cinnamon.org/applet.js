@@ -1744,15 +1744,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     registerSystrayIcons() {
         for (let i = 0; i < players_with_seek_support.length; i++) {
-            Main.systrayManager.registerTrayIconReplacement(players_with_seek_support[i], this.metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement(players_with_seek_support[i], this.metadata.uuid, this.instance_id);
         }
         for (let i = 0; i < players_without_seek_support.length; i++) {
-            Main.systrayManager.registerTrayIconReplacement(players_without_seek_support[i], this.metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement(players_without_seek_support[i], this.metadata.uuid, this.instance_id);
         }
     }
 
     unregisterSystrayIcons() {
-        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid, this.instance_id);
     }
 }
 

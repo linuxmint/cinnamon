@@ -39,7 +39,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerTrayIconReplacement("a11y", metadata.uuid);
+            Main.systrayManager.registerTrayIconReplacement("a11y", metadata.uuid, this.instance_id);
 
             this.set_applet_icon_symbolic_name("xsi-accessibility");
             this.set_applet_tooltip(_("Accessibility"));
@@ -247,7 +247,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
-        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
+        Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid, this.instance_id);
     }
 }
 
