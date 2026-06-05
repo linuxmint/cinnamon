@@ -636,6 +636,10 @@ var InputSourceManager = class {
         if (is === this._currentSource)
             return;
 
+        // A switch between two xkb layouts doesn't change the ibus engine.
+        let xkbToXkb = this._currentSource?.type == INPUT_SOURCE_TYPE_XKB &&
+                       is.type == INPUT_SOURCE_TYPE_XKB;
+
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
@@ -643,7 +647,7 @@ var InputSourceManager = class {
         // E.g. Focusing on a password entry in a popup in Xorg Firefox
         // will emit 'set-content-type' signal.
         // https://gitlab.gnome.org/GNOME/gnome-shell/issues/391
-        if (!this._reloading)
+        if (!this._reloading && !xkbToXkb)
             holdKeyboard();
         this._keyboardManager.apply(is.xkbId);
 
@@ -659,10 +663,18 @@ var InputSourceManager = class {
         else
             engine = 'xkb:us::eng';
 
-        if (!this._reloading)
-            this._ibusManager.setEngine(engine, releaseKeyboard);
-        else
+        if (this._reloading) {
             this._ibusManager.setEngine(engine);
+        } else if (xkbToXkb) {
+            // muffin freezes the keyboard for grp: switches (via
+            // modifiers-accelerator-activated) and delegates the unfreeze to
+            // this handler, so release it even though we skipped holdKeyboard -
+            // synchronously, without waiting on the ibus round-trip.
+            this._ibusManager.setEngine(engine);
+            releaseKeyboard();
+        } else {
+            this._ibusManager.setEngine(engine, releaseKeyboard);
+        }
 
         if (is.type == INPUT_SOURCE_TYPE_IBUS && (is.id === this._currentSource?.id)) {
             this._ibusManager.refreshCurrentEngineProperties();
