@@ -7,6 +7,7 @@ const Signals = imports.signals;
 const ByteArray = imports.byteArray;
 
 const IBusManager = imports.misc.ibusManager;
+const LoginManager = imports.misc.loginManager;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Cairo = imports.cairo;
@@ -107,6 +108,10 @@ var KeyboardManager = class {
         if (!this._current)
             return;
 
+        // The live X keymap may have been changed out from under us (e.g. a
+        // keyboard re-enumerating across suspend/resume), so clear the cache
+        // to force _applyLayoutGroup to re-push it.
+        this._currentKeymap = null;
         this._applyLayoutGroup(this._current.group);
         this._applyLayoutGroupIndex(this._current.groupIndex);
     }
@@ -510,6 +515,14 @@ var InputSourceManager = class {
         this._ibusManager.connect('set-content-type', this._ibusSetContentType.bind(this));
 
         global.display.connect('modifiers-accelerator-activated', () => this._modifiersSwitcher(false));
+
+        // The keyboard device can re-initialize across suspend and drop our
+        // xkb group/options, so re-apply them on resume.
+        this._loginManager = LoginManager.getLoginManager();
+        this._loginManager.connect('prepare-for-sleep', (lm, aboutToSuspend) => {
+            if (!aboutToSuspend)
+                this._keyboardManager.reapply();
+        });
 
         this._sourcesPerWindow = false;
         this._focusWindowNotifyId = 0;
