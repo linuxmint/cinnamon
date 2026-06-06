@@ -143,6 +143,12 @@ class ModalDialog extends BaseDialog.BaseDialog {
         if (!this.pushModal(timestamp))
             return false;
 
+        this._openedId = this.connect('opened', () => {
+            this.disconnect(this._openedId);
+            this._openedId = 0;
+            this._grabInitialKeyFocus();
+        });
+
         this._fadeOpen();
 
         if (this._lightbox && !this._keyboardVisibleId) {
@@ -153,12 +159,6 @@ class ModalDialog extends BaseDialog.BaseDialog {
                 });
             this._raiseKeyboardAboveDialog();
         }
-
-        this._openedId = this.connect('opened', () => {
-            this.disconnect(this._openedId);
-            this._openedId = 0;
-            this._grabInitialKeyFocus();
-        });
 
         return true;
     }
