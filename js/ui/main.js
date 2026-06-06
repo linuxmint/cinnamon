@@ -1304,10 +1304,10 @@ function _shouldFilterKeybinding(entry) {
  */
 let _modifierOnlyAction = 0;
 
-// Tracks whether a non-modifier key has been pressed since the most recent
-// modifier-key press while in a modal state. Used to tell a bare modifier tap
-// apart from a modifier used as part of a shortcut.
-let _nonModifierPressedSinceModifier = false;
+// Tracks whether a keybinding shortcut has actually been invoked through this
+// handler since the most recent modifier-key press while in a modal state. Used
+// to tell a bare modifier tap apart from a modifier used as part of a shortcut.
+let _shortcutInvokedSinceModifier = false;
 
 function _isModifierKeyval(symbol) {
     return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
@@ -1340,7 +1340,7 @@ function _stageEventHandler(actor, event) {
 
     if (eventType === Clutter.EventType.KEY_PRESS) {
         if (_isModifierKeyval(event.get_key_symbol())) {
-            _nonModifierPressedSinceModifier = false;
+            _shortcutInvokedSinceModifier = false;
             let action = global.display.get_keybinding_action(keyCode, modifierState);
             if (action > 0) {
                 let entry = keybindingManager.getBindingById(action);
@@ -1353,7 +1353,6 @@ function _stageEventHandler(actor, event) {
         }
 
         _modifierOnlyAction = 0;
-        _nonModifierPressedSinceModifier = true;
 
         // During modal, muffin's process_iso_next_group doesn't run, handle xkb 'grp'
         // here.
@@ -1366,6 +1365,7 @@ function _stageEventHandler(actor, event) {
         if (action > 0) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
+                _shortcutInvokedSinceModifier = true;
                 keybindingManager.invoke_keybinding_action_by_id(action);
                 return Clutter.EVENT_STOP;
             }
@@ -1384,11 +1384,10 @@ function _stageEventHandler(actor, event) {
             return Clutter.EVENT_STOP;
         }
 
-        // If the modifier was used as part of a shortcut (a non-modifier key was
-        // pressed while it was held), consume its release so it isn't mistaken for
-        // a bare tap. A clean tap falls through to consumers like the run dialog's
-        // key-release-event handler.
-        if (_nonModifierPressedSinceModifier)
+        // If the modifier was used as part of a shortcut (a keybinding was invoked
+        // here while it was held), consume its release so it isn't mistaken for a
+        // bare tap.
+        if (_shortcutInvokedSinceModifier)
             return Clutter.EVENT_STOP;
     }
 
@@ -1405,7 +1404,7 @@ function _findModal(actor) {
 
 function _completeModalSetup(actor, mode, onDismiss) {
     _modifierOnlyAction = 0;
-    _nonModifierPressedSinceModifier = false;
+    _shortcutInvokedSinceModifier = false;
 
     if (modalCount == 0)
         Meta.disable_unredirect_for_display(global.display);
