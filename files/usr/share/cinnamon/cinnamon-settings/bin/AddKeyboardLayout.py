@@ -81,7 +81,7 @@ class AddKeyboardLayoutDialog():
         column.set_expand(True)
         column.set_sort_column_id(LAYOUT_DISPLAY_NAME_COLUMN)
         self.layouts_view.append_column(column)
-        cell = Gtk.CellRendererText(ellipsize=Pango.EllipsizeMode.MIDDLE)
+        cell = Gtk.CellRendererText()
         column.pack_start(cell, True)
         column.add_attribute(cell, "text", LAYOUT_DISPLAY_NAME_COLUMN)
 

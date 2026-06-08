@@ -22,6 +22,8 @@ class InputSourceSettingsPage(SettingsPage):
     def __init__(self):
         super().__init__()
 
+        self._reselect_index = None
+
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
         builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
@@ -132,7 +134,15 @@ class InputSourceSettingsPage(SettingsPage):
     def _update_selected_row(self, data=None):
         self.input_sources_list.handler_block(self.source_activate_handler)
 
-        self.input_sources_list.unselect_all()
+        row = None
+        if self._reselect_index is not None:
+            row = self.input_sources_list.get_row_at_index(self._reselect_index)
+            self._reselect_index = None
+
+        if row is not None:
+            self.input_sources_list.select_row(row)
+        else:
+            self.input_sources_list.unselect_all()
 
         self.input_sources_list.handler_unblock(self.source_activate_handler)
         self.update_widgets()
@@ -160,11 +170,13 @@ class InputSourceSettingsPage(SettingsPage):
     def on_move_layout_up_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
+            self._reselect_index = self.current_input_sources_model.get_item_index(source) - 1
             self.current_input_sources_model.move_layout_up(source)
 
     def on_move_layout_down_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
+            self._reselect_index = self.current_input_sources_model.get_item_index(source) + 1
             self.current_input_sources_model.move_layout_down(source)
 
     def on_test_layout_clicked(self, button, data=None):

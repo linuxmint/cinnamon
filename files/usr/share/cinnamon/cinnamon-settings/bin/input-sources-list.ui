@@ -7,7 +7,6 @@
     <property name="can-focus">False</property>
     <property name="border-width">4</property>
     <property name="title" translatable="yes">Choose a Layout</property>
-    <property name="default-width">350</property>
     <property name="default-height">400</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
@@ -88,6 +87,7 @@
             <property name="visible">True</property>
             <property name="can-focus">True</property>
             <property name="shadow-type">in</property>
+            <property name="propagate-natural-width">True</property>
             <child>
               <object class="GtkViewport">
                 <property name="visible">True</property>
