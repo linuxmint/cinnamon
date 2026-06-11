@@ -7,6 +7,7 @@ const Signals = imports.signals;
 const ByteArray = imports.byteArray;
 
 const IBusManager = imports.misc.ibusManager;
+const IMFramework = imports.misc.imFramework;
 const LoginManager = imports.misc.loginManager;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
@@ -165,6 +166,13 @@ var KeyboardManager = class {
     }
 
     _buildGroupStrings(_group) {
+        if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX) {
+            // Under fcitx, Cinnamon owns only the base layout; fcitx manages any
+            // alternate layouts itself. Send a single-group keymap.
+            let base = _group[0] || this._localeLayoutInfo;
+            return [base.layout, base.variant];
+        }
+
         let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout &&
                                                 g.variant === this._localeLayoutInfo.variant);
         let group = alreadyIncluded ? _group : _group.concat(this._localeLayoutInfo);
@@ -550,6 +558,9 @@ var InputSourceManager = class {
     }
 
     _setupKeybindings() {
+        if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX)
+            return;
+
         let kb = this._kb_settings.get_strv("switch-input-source");
         Main.keybindingManager.addHotKeyArray(
             "switch-input-source", kb,

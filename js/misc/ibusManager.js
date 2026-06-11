@@ -5,6 +5,7 @@ const { Gio, GLib, IBus, Meta } = imports.gi;
 const Signals = imports.signals;
 
 const IBusCandidatePopup = imports.ui.ibusCandidatePopup;
+const IMFramework = imports.misc.imFramework;
 
 // Ensure runtime version matches
 _checkIBusVersion(1, 5, 2);
@@ -47,6 +48,11 @@ var IBusManager = class {
         this._registerPropertiesId = 0;
         this._currentEngineName = null;
         this._preloadEnginesId = 0;
+        this._ibus = null;
+
+        if (IMFramework.getFramework() !== IMFramework.FRAMEWORK_IBUS) {
+            return;
+        }
 
         this._ibus = IBus.Bus.new_async();
         this._ibus.connect('connected', this._onConnected.bind(this));

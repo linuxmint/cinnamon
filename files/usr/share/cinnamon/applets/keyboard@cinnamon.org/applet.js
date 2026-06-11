@@ -8,6 +8,7 @@ const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
 const IBus = imports.gi.IBus;
 const IBusManager = imports.misc.ibusManager;
+const IMFramework = imports.misc.imFramework;
 const SignalManager = imports.misc.signalManager;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
@@ -57,11 +58,16 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this._selectedLayout = null;
         this._layoutItems = new Map();
 
+        // Under fcitx, layout/IME state and indication belong to fcitx's own tray
+        // icon. Stay hidden and don't suppress the external IM's tray icon.
+        this._imIsFcitx = IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX;
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
-            Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid);
+            if (!this._imIsFcitx) {
+                Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
+                Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid);
+            }
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -119,7 +125,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
     }
 
     _onPanelEditModeChanged() {
-        this.actor.visible = global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._inputSourcesManager.multipleSources;
+        this.actor.visible = !this._imIsFcitx &&
+            (global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._inputSourcesManager.multipleSources);
     }
 
     on_applet_added_to_panel() {
@@ -180,7 +187,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._layoutSection.addMenuItem(menuItem);
         }
 
-        if (!this._inputSourcesManager.multipleSources) {
+        if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
             this.menu.close();
             this.actor.hide();
         } else {
@@ -220,7 +227,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         this._panel_icon_box.set_child(actor);
 
-        if (!this._inputSourcesManager.multipleSources) {
+        if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
             this.actor.hide();
         }
 
