@@ -280,6 +280,36 @@ def ensureCustomListChanges(custom_list):
     else:
         custom_list.append(DUMMY_CUSTOM_ENTRY)
 
+def _load_xlet_metadata(uuid, _type):
+    local_path = Path.home() / ".local/share/cinnamon" / _type / uuid / "metadata.json"
+    system_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
+
+    for metadata_path, is_local in ((local_path, True), (system_path, False)):
+        if metadata_path.exists():
+            try:
+                with open(metadata_path, encoding="utf-8") as metadata_file:
+                    return json.load(metadata_file), is_local
+            except (OSError, json.JSONDecodeError):
+                pass
+
+    return None, False
+
+# Matches the _get_is_multi_instance_xlet implementations in js/ui/settings.js
+def _xlet_is_multi_instance(metadata, _type):
+    if metadata is None:
+        return False
+
+    try:
+        max_instances = int(metadata.get("max-instances", 1))
+    except (TypeError, ValueError):
+        return False
+
+    if _type == "applets":
+        return max_instances != 1
+    if _type == "desklets":
+        return max_instances > 1
+    return False
+
 class KeyBindingCategory:
     def __init__(self, label, int_name, parent, icon, dbus_info={}):
         self.label = label
@@ -633,8 +663,8 @@ class KeybindingTable(GObject.Object):
             enabled_extensions.add(extension)
             enabled_spices.add((extension, 'extensions', None))
 
-        # Build set of enabled instance IDs per uuid, so we only process
-        # config files for instances that are actually running.
+        # Enabled instance IDs per uuid, to decide whether a multi-instance
+        # xlet needs per-instance subcategories.
         enabled_ids = {}
         for uuid, _type, instance_id in enabled_spices:
             enabled_ids.setdefault(uuid, set())
@@ -646,33 +676,45 @@ class KeybindingTable(GObject.Object):
         spice_properties = {}
 
         for uuid, _type, instance_id in keyboard_spices:
-            for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
-                config_path = Path.joinpath(settings_dir, uuid)
-                if Path.exists(config_path):
-                    configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
-                    # Filter out config files for instances that aren't running
-                    ids_for_uuid = enabled_ids.get(uuid, set())
-                    configs = [x for x in configs
-                               if not x.split(".json")[0].isdigit() or x.split(".json")[0] in ids_for_uuid]
-                    for config in configs:
-                        config_json = Path.joinpath(config_path, config)
-                        _id = config.split(".json")[0]
-                        key_name = f"{uuid}_{_id}" if _id.isdigit() else uuid
-                        with open(config_json, encoding="utf-8") as config_file:
-                            _config = json.load(config_file)
+            metadata, metadata_is_local = _load_xlet_metadata(uuid, _type)
+            multi_instance = instance_id is not None and _xlet_is_multi_instance(metadata, _type)
 
-                            for key, val in _config.items():
-                                if isinstance(val, dict) and val.get("type") == "keybinding":
-                                    spice_properties.setdefault(key_name, {})
-                                    spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
-                                    spice_properties[key_name]["path"] = str(config_json)
-                                    spice_properties[key_name]["type"] = _type
-                                    spice_properties[key_name]["uuid"] = uuid
-                                    spice_properties[key_name]["instance_id"] = instance_id
-                                    spice_properties[key_name]["config_id"] = _id
-                                    spice_keybinds.setdefault(key_name, {})
-                                    spice_keybinds[key_name].setdefault(key, {})
-                                    spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
+            # Mirror js/ui/settings.js: multi-instance xlets store their config
+            # as <instance_id>.json, single-instance ones as <uuid>.json. Only
+            # look for the expected file, so stale configs are ignored.
+            if multi_instance:
+                config_name = f"{instance_id}.json"
+                key_name = f"{uuid}_{instance_id}"
+            else:
+                config_name = f"{uuid}.json"
+                key_name = uuid
+
+            for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
+                config_json = Path.joinpath(settings_dir, uuid, config_name)
+                if not Path.exists(config_json):
+                    continue
+
+                try:
+                    with open(config_json, encoding="utf-8") as config_file:
+                        _config = json.load(config_file)
+                except (OSError, json.JSONDecodeError) as e:
+                    print(f"KeybindingTable could not read {config_json}: {e}")
+                    continue
+
+                for key, val in _config.items():
+                    if isinstance(val, dict) and val.get("type") == "keybinding":
+                        spice_properties.setdefault(key_name, {})
+                        spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
+                        spice_properties[key_name]["path"] = str(config_json)
+                        spice_properties[key_name]["type"] = _type
+                        spice_properties[key_name]["uuid"] = uuid
+                        spice_properties[key_name]["instance_id"] = instance_id
+                        spice_properties[key_name]["config_id"] = config_name[:-len(".json")]
+                        spice_properties[key_name]["multi_instance"] = multi_instance
+                        spice_properties[key_name]["metadata"] = metadata
+                        spice_properties[key_name]["metadata_is_local"] = metadata_is_local
+                        spice_keybinds.setdefault(key_name, {})
+                        spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
 
         self._spice_categories = {}
         self._spice_store = []
@@ -681,30 +723,24 @@ class KeybindingTable(GObject.Object):
         new_keybindings = []
 
         for spice, bindings in spice_keybinds.items():
-            uuid, *_id = spice.split("_")
-
             spice_props = spice_properties[spice]
-            _type = spice_props["type"]
-            local_metadata_path = Path.home() / '.local/share/cinnamon' / _type / uuid / 'metadata.json'
-            if local_metadata_path.exists():
-                gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
-                gettext.textdomain(uuid)
-                with open(local_metadata_path, encoding="utf-8") as metadata:
-                    json_data = json.load(metadata)
-                    category_label = _(json_data["name"])
-            else:
-                system_metadata_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
-                if system_metadata_path.exists():
-                    with open(system_metadata_path, encoding="utf-8") as metadata:
-                        json_data = json.load(metadata)
-                        category_label = _(json_data["name"])
-            if not _id or len(enabled_ids.get(uuid, set())) <= 1:
-                cat_label = category_label if category_label else uuid
-                new_categories.append([cat_label, uuid, "spices", None, spice_props])
+            uuid = spice_props["uuid"]
+            multi_instance = spice_props["multi_instance"]
+
+            category_label = None
+            if spice_props["metadata"] is not None:
+                if spice_props["metadata_is_local"]:
+                    gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
+                    gettext.textdomain(uuid)
+                category_label = _(spice_props["metadata"]["name"])
+            if not category_label:
+                category_label = uuid
+
+            if not multi_instance or len(enabled_ids.get(uuid, set())) <= 1:
+                new_categories.append([category_label, uuid, "spices", None, spice_props])
                 instance_num = 1
             elif len(new_categories) == 0 or uuid != new_categories[-1][2]:
-                cat_label = category_label if category_label else uuid
-                new_categories.append([cat_label, uuid, "spices", None, {}])
+                new_categories.append([category_label, uuid, "spices", None, {}])
                 instance_num = 1
                 label = _("Instance") + f" {instance_num}"
                 new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
@@ -727,8 +763,8 @@ class KeybindingTable(GObject.Object):
                     gettext.bindtextdomain(uuid, f"{home}/.local/share/locale")
                     gettext.textdomain(uuid)
                     binding_label = gettext.gettext(list(binding_values.keys())[0])
-                binding_schema = spice_properties[spice]["path"]
-                binding_category = f"{uuid}_{instance_num - 1}" if _id and len(enabled_ids.get(uuid, set())) > 1 else uuid
+                binding_schema = spice_props["path"]
+                binding_category = f"{uuid}_{instance_num - 1}" if multi_instance and len(enabled_ids.get(uuid, set())) > 1 else uuid
                 new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
                 self._spice_categories[binding_category] = category_label
 
@@ -747,6 +783,7 @@ class KeybindingTable(GObject.Object):
 
                     self._add_to_collision_table(kb)
                     category.add(kb)
+                    break
 
     def _load_custom_store(self):
         settings = self._get_settings_for_schema(CUSTOM_KEYS_PARENT_SCHEMA)
