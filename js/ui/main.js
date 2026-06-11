@@ -131,6 +131,8 @@ const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
 const InputMethod = imports.misc.inputMethod;
+const FcitxInputMethod = imports.misc.fcitxInputMethod;
+const IMFramework = imports.misc.imFramework;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
@@ -524,7 +526,10 @@ function start() {
 
     _loadOskLayouts();
     keyboardManager = new KeyboardManager();
-    inputMethod = new InputMethod.InputMethod();
+    if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX)
+        inputMethod = new FcitxInputMethod.FcitxInputMethod();
+    else
+        inputMethod = new InputMethod.InputMethod();
     Clutter.get_default_backend().set_input_method(inputMethod);
     virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
     virtualKeyboardManager.connect("enabled-changed", () => {

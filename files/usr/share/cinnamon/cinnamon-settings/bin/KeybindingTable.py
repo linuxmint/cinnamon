@@ -12,6 +12,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, Gio, GObject, GLib
 
+from bin import util
+
 gettext.install("cinnamon", "/usr/share/locale")
 
 # Keybindings page - check if we need to store custom
@@ -591,6 +593,10 @@ class KeybindingTable(GObject.Object):
                 category.add(kb)
 
         for category in STATIC_KEYBINDINGS:
+            # The "Keyboard" category is just the layout-switch shortcuts; under
+            # fcitx, switching is owned by fcitx, so hide the whole category.
+            if category[1] == "keyboard" and util.using_fcitx():
+                continue
             _load_category(category)
 
     def _on_enabled_spices_changed(self, settings, key, data=None):

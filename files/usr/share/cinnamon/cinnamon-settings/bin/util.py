@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 import os
+import shutil
 
 import gi
 gi.require_version('GSound', '1.0')
@@ -47,3 +48,8 @@ def get_session_type():
         pass
 
     return None
+
+def using_fcitx():
+    # Mirror js/misc/imFramework.js
+    mod = (os.environ.get("GTK_IM_MODULE") or os.environ.get("XMODIFIERS") or "").lower()
+    return "fcitx" in mod and shutil.which("fcitx5") is not None
