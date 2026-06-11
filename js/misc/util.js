@@ -18,6 +18,7 @@ const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
+const Config = imports.misc.config;
 
 const WIGGLE_OFFSET = 6;
 const WIGGLE_DURATION = 65;
@@ -600,13 +601,33 @@ function toFastProperties(obj) {
 
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
+function _girObjectInfoNProperties(info) {
+    return Config.USE_GIR20 ? info.get_n_properties() : Gir.object_info_get_n_properties(info);
+}
+
+function _girObjectInfoProperty(info, i) {
+    return Config.USE_GIR20 ? info.get_property(i) : Gir.object_info_get_property(info, i);
+}
+
+function _girPropertyInfoFlags(propertyInfo) {
+    return Config.USE_GIR20 ? propertyInfo.get_flags() : Gir.property_info_get_flags(propertyInfo);
+}
+
+function _girObjectInfoParent(info) {
+    return Config.USE_GIR20 ? info.get_parent() : Gir.object_info_get_parent(info);
+}
+
+function _girRepositoryDefault() {
+    return Config.USE_GIR20 ? Gir.Repository.dup_default() : Gir.Repository.get_default();
+}
+
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
 function _getWritablePropertyNamesForObjectInfo(info) {
     let propertyNames = [];
-    let propertyCount = Gir.object_info_get_n_properties(info);
+    let propertyCount = _girObjectInfoNProperties(info);
     for(let i = 0; i < propertyCount; i++) {
-        let propertyInfo = Gir.object_info_get_property(info, i);
-        let flags = Gir.property_info_get_flags(propertyInfo);
+        let propertyInfo = _girObjectInfoProperty(info, i);
+        let flags = _girPropertyInfoFlags(propertyInfo);
         if ((flags & READWRITE) == READWRITE) {
             propertyNames.push(propertyInfo.get_name());
 
@@ -622,10 +643,10 @@ function _getWritablePropertyNamesForObjectInfo(info) {
  * Returns (object): JS representation of the passed GObject
  */
 function getGObjectPropertyValues(obj, r = 0) {
-    let repository = Gir.Repository.get_default();
+    let repository = _girRepositoryDefault();
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
     let propertyNames = [];
-    for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
+    for (let info = baseInfo; info !== null; info = _girObjectInfoParent(info)) {
         propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
     }
     if (r > 0 && propertyNames.length === 0) {
