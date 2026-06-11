@@ -48,6 +48,12 @@ class InputSourceSettingsPage(SettingsPage):
 
         self.engine_config_button = builder.get_object("engine_config_button")
         self.engine_config_button.connect("clicked", self.on_engine_config_clicked)
+
+        self.im_launch_button = builder.get_object("im_launch_button")
+        self.im_launch_button.connect("clicked", lambda widget: subprocess.Popen(["mintlocale-im"]))
+        if not GLib.find_program_in_path("mintlocale-im"):
+            self.im_launch_button.set_visible(False)
+
         # Configure is ibus-engine-specific; fcitx engines are configured in fcitx.
         if using_fcitx():
             self.engine_config_button.set_no_show_all(True)
