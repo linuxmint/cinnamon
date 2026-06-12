@@ -307,18 +307,13 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
                     let group = item.radioGroup;
                     for (let j = 0; j < group.length; ++j) {
-                        if (group[j] == item) {
-                            item.setOrnament(PopupMenu.OrnamentType.DOT, true);
-                            item.prop.set_state(IBus.PropState.CHECKED);
-                            ibusManager.activateProperty(item.prop.get_key(),
-                                                         IBus.PropState.CHECKED);
-                        } else {
-                            group[j].setOrnament(PopupMenu.OrnamentType.DOT, false);
-                            group[j].prop.set_state(IBus.PropState.UNCHECKED);
-                            ibusManager.activateProperty(group[j].prop.get_key(),
-                                                         IBus.PropState.UNCHECKED);
-                        }
+                        let checked = group[j] == item;
+                        group[j].setOrnament(PopupMenu.OrnamentType.DOT, checked);
+                        group[j].prop.set_state(checked ? IBus.PropState.CHECKED
+                                                        : IBus.PropState.UNCHECKED);
                     }
+                    ibusManager.activateProperty(item.prop.get_key(),
+                                                 IBus.PropState.CHECKED);
                 });
                 break;
 
