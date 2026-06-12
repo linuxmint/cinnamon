@@ -862,7 +862,15 @@ var InputSourceManager = class {
 
         this.emit('sources-changed');
 
-        this._inputSources[0].activate();
+        // Preserve the active layout across a rebuild rather than snapping back
+        // to the first one. The list was just rebuilt into new InputSource
+        // objects, so re-resolve the previously-current source by type+id (e.g.
+        // after a settings edit, an ibus (re)connect, or the password
+        // content-type toggle that drops IME sources). Falls back to index 0
+        // when there's no match (first load, or the current source was removed).
+        let newSource = this._getNewInputSource(this._currentSource);
+        if (newSource)
+            newSource.activate();
 
         // All ibus engines are preloaded here to reduce the launching time
         // when users switch the input sources.

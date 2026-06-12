@@ -29,6 +29,7 @@ const FCITX_IM_IFACE = 'org.fcitx.Fcitx.InputMethod1';
 const FCITX_IC_IFACE = 'org.fcitx.Fcitx.InputContext1';
 
 // fcitx CapabilityFlag bits (src/lib/fcitx-utils/capabilityflags.h)
+const CAP_PASSWORD = 1 << 3;
 const CAP_PREEDIT = 1 << 1;
 const CAP_FORMATTED_PREEDIT = 1 << 4;
 const CAP_SURROUNDING_TEXT = 1 << 6;
@@ -130,8 +131,11 @@ class FcitxInputMethod extends Clutter.InputMethod {
 
     _updateCapabilities() {
         let caps = CAP_PREEDIT | CAP_FORMATTED_PREEDIT | CAP_SURROUNDING_TEXT;
-        // SetCapability(t) — note: we never set ClientSideInputPanel, so fcitx
-        // keeps drawing its own candidate popup.
+        // Password fields: tell fcitx to suppress the IME (mirrors the ibus
+        // content-type rule), so e.g. mozc doesn't compose into a password entry.
+        if (this._purpose == Clutter.InputContentPurpose.PASSWORD)
+            caps |= CAP_PASSWORD;
+
         this._icCall('SetCapability', new GLib.Variant('(t)', [caps]));
     }
 
@@ -212,6 +216,13 @@ class FcitxInputMethod extends Clutter.InputMethod {
     }
 
     vfunc_focus_out() {
+        // Drop any password purpose while still focused so fcitx re-enables the
+        // IME once the field goes away (mirrors the ibus content-type reset).
+        if (this._purpose != 0) {
+            this._purpose = 0;
+            this._updateCapabilities();
+        }
+
         this._currentFocus = null;
         this._icCall('FocusOut', null);
 
@@ -253,13 +264,15 @@ class FcitxInputMethod extends Clutter.InputMethod {
     }
 
     vfunc_update_content_hints(hints) {
-        // fcitx expresses hints/purpose through capability flags differently from
-        // ibus; the base capabilities are sufficient for v1. Track for parity.
+        // Hints (completion, spellcheck, ...) map to fcitx capability flags but
+        // aren't acted on yet; track for parity. Purpose is handled separately
+        // (see _updateCapabilities) so password fields suppress the IME.
         this._hints = hints;
     }
 
     vfunc_update_content_purpose(purpose) {
         this._purpose = purpose;
+        this._updateCapabilities();
     }
 
     vfunc_filter_key_event(event) {

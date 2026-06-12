@@ -161,6 +161,16 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     vfunc_focus_out() {
+        // Clear any non-default content-type (e.g. a password purpose) while the
+        // context is still focused, so the daemon reports the change and the IME
+        // isn't left disabled after the field goes away without another taking
+        // focus (notably the unlock dialog / polkit prompt closing).
+        if (this._context && (this._purpose != 0 || this._hints != 0)) {
+            this._purpose = 0;
+            this._hints = 0;
+            this._context.set_content_type(this._purpose, this._hints);
+        }
+
         this._currentFocus = null;
         if (this._context)
             this._context.focus_out();
