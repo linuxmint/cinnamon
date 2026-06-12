@@ -179,8 +179,13 @@ class PopupDialog extends BaseDialog.BaseDialog {
     }
 
     _setupDragging() {
-        this.connect('button-press-event', (actor, event) => {
-            if (event.get_button() !== 1)
+        // Use captured-event instead of button-press so a click landing in an
+        // interactive child (like StEntry's ClutterText) doesn't get consumed
+        // before it can bubble back up to us, preventing focus from being
+        // restored.
+        this.connect('captured-event', (actor, event) => {
+            if (event.type() !== Clutter.EventType.BUTTON_PRESS ||
+                event.get_button() !== 1)
                 return Clutter.EVENT_PROPAGATE;
 
             Main.uiGroup.set_child_above_sibling(this, null);
