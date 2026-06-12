@@ -173,8 +173,7 @@ var KeyboardManager = class {
             return [base.layout, base.variant];
         }
 
-        let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout &&
-                                                g.variant === this._localeLayoutInfo.variant);
+        let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout);
         let group = alreadyIncluded ? _group : _group.concat(this._localeLayoutInfo);
         let layouts = group.map(g => g.layout).join(',');
         let variants = group.map(g => g.variant).join(',');
