@@ -205,6 +205,12 @@ var InputSource = class {
         this.preferences = prefs;
         this._layoutOverride = layoutOverride;
 
+        // ibus only: the engine's static icon and the key of the property that
+        // carries its dynamic state icon (e.g. mozc hiragana/katakana). Set after
+        // construction in _inputSourcesChanged.
+        this.engineIcon = null;
+        this.iconPropKey = null;
+
         this.properties = null;
 
         this.xkbId = this._getXkbId();
@@ -731,6 +737,8 @@ var InputSourceManager = class {
             let xkbLayout;
             let variant;
             let prefs = '';
+            let engineIcon = null;
+            let iconPropKey = null;
             let type = sources[i].type;
             let id = sources[i].id;
             let exists = false;
@@ -756,10 +764,12 @@ var InputSourceManager = class {
                     exists = true;
                     displayName = '%s (%s)'.format(language, longName);
                     shortName = this._makeEngineShortName(engineDesc);
-                    flagName = shortName;  // TODO
+                    flagName = shortName;
                     xkbLayout = engineDesc.get_layout();
                     variant = engineDesc.get_layout_variant();
                     prefs = engineDesc.get_setup() || '';
+                    engineIcon = engineDesc.get_icon();
+                    iconPropKey = engineDesc.get_icon_prop_key();
                 }
             }
 
@@ -768,7 +778,7 @@ var InputSourceManager = class {
                     shortName = shortName.toUpperCase();
                 }
 
-                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs });
+                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs, engineIcon, iconPropKey });
             }
         }
 
@@ -824,6 +834,8 @@ var InputSourceManager = class {
                                      info.prefs,
                                      i,
                                      layoutOverride);
+            is.engineIcon = info.engineIcon;
+            is.iconPropKey = info.iconPropKey;
             is.connect('activate', this.activateInputSource.bind(this));
 
             let key = is.shortName;
@@ -1043,13 +1055,69 @@ var InputSourceManager = class {
         return this._interface_settings.get_boolean("keyboard-layout-show-flags");
     }
 
-    createFlagIcon(source, actorClass, size) {
-        let actor = null;
-        let name = source.flagName;
+    _findProperty(props, key) {
+        if (!props)
+            return null;
 
+        let p;
+        for (let i = 0; (p = props.get(i)) != null; ++i) {
+            if (p.get_key() == key)
+                return p;
+            if (p.get_prop_type() == IBus.PropType.MENU) {
+                let sub = this._findProperty(p.get_sub_props(), key);
+                if (sub)
+                    return sub;
+            }
+        }
+        return null;
+    }
+
+    _getEngineIcon(source) {
+        if (source.type != INPUT_SOURCE_TYPE_IBUS)
+            return null;
+
+        // Prefer the engine's live state icon (the property named by its
+        // icon-prop-key, e.g. mozc's hiragana/katakana), which is only present
+        // once the active engine has registered its properties.
+        if (source.iconPropKey) {
+            let prop = this._findProperty(source.properties, source.iconPropKey);
+            if (prop) {
+                let icon = prop.get_icon();
+                if (icon && icon.length > 0)
+                    return icon;
+            }
+        }
+
+        // The generic keyboard icon isn't distinguishing; let it fall through.
+        if (source.engineIcon && source.engineIcon.length > 0 && source.engineIcon != 'ibus-keyboard')
+            return source.engineIcon;
+
+        return null;
+    }
+
+    // For ibus sources this is the engine icon (St.Icon); for xkb sources it's the
+    // layout's country flag. Returns null when neither is available.
+    createFlagIcon(source, actorClass, size) {
+        if (source.type == INPUT_SOURCE_TYPE_IBUS) {
+            let icon = this._getEngineIcon(source);
+            if (!icon)
+                return null;
+
+            let gicon = icon[0] == '/'
+                ? new Gio.FileIcon({ file: Gio.file_new_for_path(icon) })
+                : new Gio.ThemedIcon({ name: icon });
+
+            return new St.Icon({
+                style_class: actorClass,
+                gicon: gicon,
+                icon_size: size,
+            });
+        }
+
+        let name = source.flagName;
         const file = Gio.file_new_for_path(getFlagFileName(name));
         if (file.query_exists(null)) {
-            actor = new SubscriptableFlagIcon({
+            return new SubscriptableFlagIcon({
                 style_class: actorClass,
                 file: file,
                 subscript: source.dupeId > 0 ? String(source.dupeId) : null,
@@ -1057,7 +1125,7 @@ var InputSourceManager = class {
             });
         }
 
-        return actor;
+        return null;
     }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);

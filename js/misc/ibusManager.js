@@ -209,6 +209,8 @@ var IBusManager = class {
     }
 
     activateProperty(key, state) {
+        if (!this._panelService)
+            return;
         this._panelService.property_activate(key, state);
     }
 

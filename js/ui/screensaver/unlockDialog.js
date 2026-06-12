@@ -247,7 +247,7 @@ class UnlockDialog extends St.BoxLayout {
 
         let icon = null;
 
-        if (this._inputSourceManager.showFlags)
+        if (source.type === 'ibus' || this._inputSourceManager.showFlags)
             icon = this._inputSourceManager.createFlagIcon(source, null, 16);
 
         if (!icon)
