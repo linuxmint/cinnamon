@@ -491,6 +491,7 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
             }
             if (!this._ornament.child) {
                 let switchOrn = new CheckBox.CheckBox();
+                switchOrn.reactive = false;
                 switchOrn.set_checked(state);
                 this._ornament.child = switchOrn;
             } else {
@@ -505,6 +506,7 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
             }
             if (!this._ornament.child) {
                 let radioOrn = new RadioButton.RadioButton();
+                radioOrn.reactive = false;
                 radioOrn.set_checked(state);
                 this._ornament.child = radioOrn;
             } else {
@@ -1147,6 +1149,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             }
             if (!this._ornament.child) {
                 let switchOrn = new CheckBox.CheckBox();
+                switchOrn.reactive = false;
                 switchOrn.set_checked(state);
                 this._ornament.child = switchOrn;
             } else {
@@ -1155,12 +1158,13 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             this._icon = null;
             break;
         case OrnamentType.DOT:
-            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof RadioButton.RadioButton))) {
+            if ((this._ornament.child) && (!(this._ornam. ent.child._delegate instanceof RadioButton.RadioButton))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
                 let radioOrn = new RadioButton.RadioButton();
+                radioOrn.reactive = false;
                 radioOrn.set_checked(state);
                 this._ornament.child = radioOrn;
             } else {
