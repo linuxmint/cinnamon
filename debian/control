@@ -107,7 +107,6 @@ Depends:
  xdg-desktop-portal-gtk,
  xdg-desktop-portal-xapp,
  ${gir:Depends},
- ${icon-theme:Depends},
  ${misc:Depends},
  ${python3:Depends},
  ${shlibs:Depends},
