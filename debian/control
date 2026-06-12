@@ -33,7 +33,7 @@ Build-Depends:
  pysassc,
  python3:any,
 Standards-Version: 3.9.5
-Homepage: https://projects.linuxmint.com/cinnamon/
+Homepage: https://github.com/linuxmint/cinnamon
 
 Package: cinnamon
 Architecture: any
