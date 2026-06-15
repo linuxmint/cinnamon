@@ -425,6 +425,7 @@ var ScreenShield = GObject.registerClass({
         this._activationPending = true;
 
         Main.dismissInternalModals();
+        Main.magnifier.disableForScreensaver()
 
         _log('ScreenShield: requesting screensaver modal grab');
         Main.pushScreensaverModal(this, global.get_current_time(), Cinnamon.ActionMode.LOCK_SCREEN,
@@ -597,6 +598,7 @@ var ScreenShield = GObject.registerClass({
                 this._activationTime = 0;
                 this._setState(State.HIDDEN);
                 this._deactivating = false;
+                Main.magnifier.enableForScreensaver();
 
                 if (emitUnlocked)
                     this.emit('unlocked');

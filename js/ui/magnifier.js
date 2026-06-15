@@ -190,6 +190,16 @@ var Magnifier = class Magnifier {
             this.setActive(true);
     }
 
+    disableForScreensaver() {
+        this.setMagFactor(1.0, 1.0);
+        this.setActive(false);
+        magInputHandler.disableZoom();
+    }
+
+    enableForScreensaver() {
+        magInputHandler.refreshState();
+    }
+
     _initialize() {
         if (this._initialized)
             return;
@@ -1678,23 +1688,23 @@ var MagnifierInputHandler = class MagnifierInputHandler {
         this._zoomEnabled = false;
 
         this._a11ySettings = new Gio.Settings({ schema_id: APPLICATIONS_SCHEMA });
-        this._a11ySettings.connect("changed::" + SHOW_KEY, this._refreshState.bind(this));
+        this._a11ySettings.connect("changed::" + SHOW_KEY, this.refreshState.bind(this));
 
         this.keybindingSettings = new Gio.Settings({ schema_id: KEYBINDING_SCHEMA });
-        this.keybindingSettings.connect("changed", this._refreshState.bind(this));
+        this.keybindingSettings.connect("changed", this.refreshState.bind(this));
 
-        this._refreshState();
+        this.refreshState();
     }
 
     _enableZoom() {
         if (this._zoomInId > 0 || this._zoomOutId > 0)
-            this._disableZoom();
+            this.disableZoom();
         this._zoomInId = global.display.connect('zoom-scroll-in', this._zoomIn.bind(this));
         this._zoomOutId = global.display.connect('zoom-scroll-out', this._zoomOut.bind(this));
         this._zoomEnabled = true;
     }
 
-    _disableZoom() {
+    disableZoom() {
         if (this._zoomInId > 0)
             global.display.disconnect(this._zoomInId)
         if (this._zoomOutId > 0)
@@ -1711,29 +1721,45 @@ var MagnifierInputHandler = class MagnifierInputHandler {
     }
 
     _setupKeybindings() {
+        const MAGNIFIER_MODES = Cinnamon.ActionMode.NORMAL |
+                                Cinnamon.ActionMode.OVERVIEW |
+                                Cinnamon.ActionMode.EXPO |
+                                Cinnamon.ActionMode.SYSTEM_MODAL |
+                                Cinnamon.ActionMode.LOOKING_GLASS |
+                                Cinnamon.ActionMode.POPUP;
+
         let kb = this.keybindingSettings.get_strv(ZOOM_IN_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-in", kb, this._zoomIn.bind(this));
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-in",
+            kb,
+            this._zoomIn.bind(this),
+            Meta.KeyBindingFlags.NONE,
+            MAGNIFIER_MODES
+        );
+
         kb = this.keybindingSettings.get_strv(ZOOM_OUT_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-out", kb, this._zoomOut.bind(this));
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-out",
+            kb,
+            this._zoomOut.bind(this),
+            Meta.KeyBindingFlags.NONE,
+            MAGNIFIER_MODES
+        );
+
         kb = this.keybindingSettings.get_strv(ZOOM_RESET_KEY);
-        Main.keybindingManager.addHotKeyArray("magnifier-zoom-reset", kb, this._zoomOut.bind(this));
+        Main.keybindingManager.addHotKeyArray("magnifier-zoom-reset",
+            kb,
+            this._zoomReset.bind(this),
+            Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+            MAGNIFIER_MODES
+        );
     }
 
-    _refreshState() {
-        this.zoomActive = this.magnifier.isActive();
-        this.currentZoom = 1.0;
-
-        if (this.zoomActive) {
-            let zr = this.magnifier.getZoomRegions()[0];
-            this.currentZoom = zr.getMagFactor()[0];
-        }
-
+    refreshState() {
         let shouldEnable = this._a11ySettings.get_boolean(SHOW_KEY);
 
         if (shouldEnable && !this._zoomEnabled) {
             this._enableZoom();
         } else if (!shouldEnable && this._zoomEnabled) {
-            this._disableZoom();
+            this.disableZoom();
         }
 
         if (this._zoomEnabled) {
@@ -1741,48 +1767,54 @@ var MagnifierInputHandler = class MagnifierInputHandler {
         }
     }
 
-    _zoomIn(display, screen, event, kb, action) {
-        if (this.zoomActive) {
-            this.currentZoom = Math.min(this.currentZoom * (1.0 + INCR), MAX_ZOOM);
-        } else {
-            this.currentZoom *= Math.min(this.currentZoom * (1.0 + INCR), MAX_ZOOM);
-            this.magnifier.setActive(true)
-            this.zoomActive = true;
-        }
+    _getZoom() {
+        if (!this.magnifier.isActive())
+            return 1.0;
+
+        let zr = this.magnifier.getZoomRegions()[0];
+        return zr ? zr.getMagFactor()[0] : 1.0;
+    }
+
+    _zoomIn(display, window, kb, action) {
+        let zoom = Math.min(this._getZoom() * (1.0 + INCR), MAX_ZOOM);
+
+        if (!this.magnifier.isActive())
+            this.magnifier.setActive(true);
+
         try {
-            this.magnifier.setMagFactor(this.currentZoom, this.currentZoom)
+            this.magnifier.setMagFactor(zoom, zoom);
         } catch (e) {
-            this._refreshState();
+            this.refreshState();
         }
     }
 
-    _zoomOut(display, screen, event, kb, action) {
-        if (this.zoomActive) {
-            this.currentZoom *= (1.0 - INCR);
-            if (this.currentZoom <= 1.0) {
-                this.currentZoom = 1.0;
-                this.magnifier.setActive(false);
-                this.zoomActive = false;
-            }
-            try {
-                this.magnifier.setMagFactor(this.currentZoom, this.currentZoom)
-            } catch (e) {
-                this._refreshState();
-            }
-        }
-    }
+    _zoomOut(display, window, kb, action) {
+        if (!this.magnifier.isActive())
+            return;
 
-    _zoomReset(display, screen, event, kb, action) {
-        if (this.zoomActive) {
-            this.currentZoom = 1.0
+        let zoom = this._getZoom() * (1.0 - INCR);
+        if (zoom <= 1.0) {
+            zoom = 1.0;
             this.magnifier.setActive(false);
-            this.zoomActive = false;
+        }
 
-            try {
-                this.magnifier.setMagFactor(this.currentZoom, this.currentZoom)
-            } catch (e) {
-                this._refreshState();
-            }
+        try {
+            this.magnifier.setMagFactor(zoom, zoom);
+        } catch (e) {
+            this.refreshState();
+        }
+    }
+
+    _zoomReset(display, window, kb, action) {
+        if (!this.magnifier.isActive())
+            return;
+
+        this.magnifier.setActive(false);
+
+        try {
+            this.magnifier.setMagFactor(1.0, 1.0);
+        } catch (e) {
+            this.refreshState();
         }
     }
 };
