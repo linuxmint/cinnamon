@@ -35,6 +35,7 @@ class UnlockDialog extends St.BoxLayout {
         this._screenShield = screenShield;
         this._idleMonitor = Meta.IdleMonitor.get_core();
         this._idleWatchId = 0;
+        this._screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
 
         this._dialogBox = new St.BoxLayout({
             style_class: 'dialog prompt-dialog',
