@@ -19,15 +19,14 @@ const SignalManager = imports.misc.signalManager;
 const Slider = imports.ui.slider;
 
 const SCREENSAVER_SCHEMA = 'org.cinnamon.desktop.screensaver';
-const ALBUM_ART_SIZE_BASE = 300;
-const CONTROL_ICON_SIZE_BASE = 24;
+const ALBUM_ART_SIZE_BASE = 110;
+const CONTROL_ICON_SIZE_BASE = 16;
 
 var AlbumArtWidget = GObject.registerClass(
 class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
     _init() {
         super._init({
             style_class: 'albumart-widget',
-            vertical: true,
             x_expand: false,
             y_expand: false
         });
@@ -153,43 +152,25 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
     }
 
     _buildUI() {
-        this._infoContainer = new St.BoxLayout({
-            style_class: 'albumart-info-container',
-            vertical: true,
-            x_align: Clutter.ActorAlign.CENTER
-        });
-        this.add_child(this._infoContainer);
-
-        // Art container using FixedLayout to overlay track info on album art
-        this._artContainer = new St.Widget({
-            layout_manager: new Clutter.FixedLayout(),
-            width: this._artSize,
-            height: this._artSize
-        });
-        this._infoContainer.add_child(this._artContainer);
-
         this._artBin = new St.Bin({
             style_class: 'albumart-cover-bin',
             width: this._artSize,
             height: this._artSize
         });
-        this._artContainer.add_child(this._artBin);
+        this.add_child(this._artBin);
         this._showDefaultArt();
 
-        // Track info overlay - anchored to bottom of album art
         this._trackInfoBox = new St.BoxLayout({
-            style_class: 'albumart-track-info-overlay',
+            style_class: 'albumart-track-info-box',
             vertical: true,
-            width: this._artSize
+            x_expand: true,
+            y_expand: true,
+            y_align: Clutter.ActorAlign.CENTER,
         });
-
-        this._trackInfoBox.connect('notify::height', () => {
-            this._trackInfoBox.set_position(0, this._artSize - this._trackInfoBox.height);
-        });
-        this._artContainer.add_child(this._trackInfoBox);
+        this.add_child(this._trackInfoBox);
 
         this._titleLabel = new St.Label({
-            style_class: 'albumart-title-overlay',
+            style_class: 'albumart-title',
             x_align: Clutter.ActorAlign.CENTER
         });
         this._titleLabel.clutter_text.ellipsize = Pango.EllipsizeMode.END;
@@ -197,7 +178,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
         this._trackInfoBox.add_child(this._titleLabel);
 
         this._artistLabel = new St.Label({
-            style_class: 'albumart-artist-overlay',
+            style_class: 'albumart-artist',
             x_align: Clutter.ActorAlign.CENTER
         });
         this._artistLabel.clutter_text.ellipsize = Pango.EllipsizeMode.END;
@@ -205,7 +186,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
         this._trackInfoBox.add_child(this._artistLabel);
 
         this._albumLabel = new St.Label({
-            style_class: 'albumart-album-overlay',
+            style_class: 'albumart-album',
             x_align: Clutter.ActorAlign.CENTER
         });
         this._albumLabel.clutter_text.ellipsize = Pango.EllipsizeMode.END;
@@ -236,11 +217,12 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
             );
             this._controlsBox.add_child(this._nextButton);
 
-            this._infoContainer.add_child(this._controlsBox);
+            this._trackInfoBox.add_child(this._controlsBox);
 
             this._volumeBox = new St.BoxLayout({
                 style_class: 'albumart-volume-box',
-                x_align: Clutter.ActorAlign.CENTER
+                x_align: Clutter.ActorAlign.START,
+                x_expand: true,
             });
 
             this._volumeIcon = new St.Icon({
@@ -255,10 +237,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
             this._volumeSlider.connect('value-changed', this._onVolumeChanged.bind(this));
             this._volumeBox.add_child(this._volumeSlider.actor);
 
-            this._infoContainer.add_child(this._volumeBox);
-
-            this._controlsBox.hide();
-            this._volumeBox.hide();
+            this._trackInfoBox.add_child(this._volumeBox);
         }
 
         this.hide();
@@ -266,7 +245,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
 
     _createControlButton(iconName, callback) {
         let button = new St.Button({
-            style_class: 'albumart-control-button',
+            style_class: 'icon-button',
             can_focus: true,
             child: new St.Icon({
                 icon_name: iconName,
@@ -577,22 +556,6 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
 
     onScreensaverDeactivated() {
         this._cleanupTempFile();
-    }
-
-    onAwake() {
-        if (this._allowMediaControl && this._controlsBox) {
-            this._controlsBox.show();
-            this._volumeBox.show();
-            this._infoContainer.add_style_pseudo_class('awake');
-        }
-    }
-
-    onSleep() {
-        if (this._allowMediaControl && this._controlsBox) {
-            this._controlsBox.hide();
-            this._volumeBox.hide();
-            this._infoContainer.remove_style_pseudo_class('awake');
-        }
     }
 
     _cleanupTempFile() {
