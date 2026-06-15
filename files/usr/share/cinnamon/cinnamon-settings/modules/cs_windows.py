@@ -135,7 +135,7 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            placement_options = [["automatic", _("Automatic")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["center", _("Center")]]
+            placement_options = [["center", _("Center")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["automatic", _("Automatic")]]
             widget = GSettingsComboBox(_("Location of newly opened windows"), "org.cinnamon.muffin", "placement-mode", placement_options, size_group=size_group)
             settings.add_row(widget)
 
