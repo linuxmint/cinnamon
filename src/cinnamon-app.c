@@ -245,27 +245,30 @@ window_backed_app_get_icon (CinnamonApp *app,
 
   widget = NULL;
 
-  if (meta_window_get_client_type (window) == META_WINDOW_CLIENT_TYPE_X11)
-    {
-      cairo_surface_t *icon;
+  /* Both X11 (_NET_WM_ICON / WM_HINTS) and Wayland (xdg-toplevel-icon)
+   * windows can provide their own pixel-buffer icon via the "icon" property. */
+  {
+    cairo_surface_t *icon = NULL;
 
-      g_object_get (G_OBJECT (window), "icon", &icon, NULL);
+    g_object_get (G_OBJECT (window), "icon", &icon, NULL);
 
-      if (icon != NULL)
-        {
-          StWidget *texture_actor;
+    if (icon != NULL)
+      {
+        StWidget *texture_actor;
 
-          texture_actor =
-            st_texture_cache_bind_cairo_surface_property (st_texture_cache_get_default (),
-                                                          G_OBJECT (window),
-                                                          "icon",
-                                                          scaled_size);
+        texture_actor =
+          st_texture_cache_bind_cairo_surface_property (st_texture_cache_get_default (),
+                                                        G_OBJECT (window),
+                                                        "icon",
+                                                        scaled_size);
 
-          widget = g_object_new (ST_TYPE_BIN,
-                                 "child", texture_actor,
-                                 NULL);
-        }
-    }
+        widget = g_object_new (ST_TYPE_BIN,
+                               "child", texture_actor,
+                               NULL);
+
+        cairo_surface_destroy (icon);
+      }
+  }
 
   if (widget == NULL)
     {
@@ -330,37 +333,13 @@ cinnamon_app_create_icon_texture_for_window (CinnamonApp   *app,
                                              int            size,
                                              MetaWindow    *for_window)
 {
-  MetaWindow *window;
+  if (for_window != NULL)
+    {
+      const gchar *icon_name = meta_window_get_icon_name (for_window);
 
-  window = NULL;
-
-  if (app->running_state != NULL)
-  {
-    const gchar *icon_name;
-
-    if (for_window != NULL)
-      {
-        if (g_slist_find (app->running_state->windows, for_window) != NULL)
-          {
-            window = for_window;
-          }
-        else
-          {
-            g_warning ("cinnamon_app_create_icon_texture: MetaWindow %p provided that does not match App %p",
-                       for_window, app);
-          }
-      }
-
-    if (window != NULL)
-      {
-        icon_name = meta_window_get_icon_name (window);
-
-        if (icon_name != NULL)
-          {
-            return get_actor_for_icon_name (app, icon_name, size);
-          }
-      }
-  }
+      if (icon_name != NULL)
+        return get_actor_for_icon_name (app, icon_name, size);
+    }
 
   return cinnamon_app_create_icon_texture (app, size);
 }

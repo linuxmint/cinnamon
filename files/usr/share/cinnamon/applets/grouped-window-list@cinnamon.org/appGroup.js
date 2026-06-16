@@ -947,6 +947,7 @@ var AppGroup = class AppGroup {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
             this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon-name', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,
