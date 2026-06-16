@@ -406,6 +406,10 @@ var LayoutManager = GObject.registerClass({
             return;
         }
 
+        if (this.keyboardMonitor == null) {
+            return;
+        }
+
         let size = Main.virtualKeyboardManager.getKeyboardSize();
         let top = Main.virtualKeyboardManager.getKeyboardPosition() == "top";
         let panels = Main.panelManager.getPanelsInMonitor(this.keyboardIndex);
