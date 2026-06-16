@@ -89,45 +89,57 @@ write_screenshot_thread (GSimpleAsyncResult *result,
 }
 
 static void
-do_grab_screenshot (_screenshot_data    *screenshot_data,
-                    ClutterPaintContext *paint_context,
-                    int                  x,
-                    int                  y,
-                    int                  width,
-                    int                  height)
+do_grab_screenshot (_screenshot_data *screenshot_data,
+                    ClutterActor     *stage,
+                    int               x,
+                    int               y,
+                    int               width,
+                    int               height)
 {
-  CoglBitmap *bitmap;
-  ClutterBackend *backend;
-  CoglContext *context;
-  int stride;
-  guchar *data;
-
-  backend = clutter_get_default_backend ();
-  context = clutter_backend_get_cogl_context (backend);
+  cairo_rectangle_int_t rect = { .x = x, .y = y, .width = width, .height = height };
+  ClutterCapture *captures = NULL;
+  int n_captures = 0;
+  cairo_t *cr;
+  int i;
 
   screenshot_data->image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
                                                        width, height);
 
+  cr = cairo_create (screenshot_data->image);
 
-  data = cairo_image_surface_get_data (screenshot_data->image);
-  stride = cairo_image_surface_get_stride (screenshot_data->image);
-  
-  stride = cairo_format_stride_for_width (CAIRO_FORMAT_RGB24, width);
+  /* Opaque black background so any gap not covered by a monitor (irregular
+   * multi-monitor layouts) ends up black rather than transparent. */
+  cairo_set_source_rgb (cr, 0, 0, 0);
+  cairo_paint (cr);
 
-  bitmap = cogl_bitmap_new_for_data (context,
-                                     width,
-                                     height,
-                                     CLUTTER_CAIRO_FORMAT_ARGB32,
-                                     stride,
-                                     data);
+  /* Capture every stage view that intersects the requested rect and
+   * composite each one at its position. On the Wayland native backend
+   * each monitor is a separate view with its own framebuffer, so reading
+   * a single framebuffer (as we used to) only ever captured one monitor. */
+  if (clutter_stage_capture (CLUTTER_STAGE (stage), FALSE, &rect,
+                             &captures, &n_captures))
+    {
+      for (i = 0; i < n_captures; i++)
+        {
+          cairo_save (cr);
+          cairo_translate (cr,
+                           captures[i].rect.x - x,
+                           captures[i].rect.y - y);
+          cairo_rectangle (cr, 0, 0,
+                           captures[i].rect.width, captures[i].rect.height);
+          cairo_clip (cr);
+          cairo_set_source_surface (cr, captures[i].image, 0, 0);
+          cairo_paint (cr);
+          cairo_restore (cr);
 
-  cogl_framebuffer_read_pixels_into_bitmap (clutter_paint_context_get_framebuffer (paint_context),
-                                            x, y,
-                                            COGL_READ_PIXELS_COLOR_BUFFER,
-                                            bitmap);
+          cairo_surface_destroy (captures[i].image);
+        }
 
+      g_free (captures);
+    }
+
+  cairo_destroy (cr);
   cairo_surface_mark_dirty (screenshot_data->image);
-  cogl_object_unref (bitmap);
 }
 
 static void
@@ -209,56 +221,16 @@ _draw_cursor_image (cairo_surface_t       *surface,
 }
 
 static void
-grab_screenshot (ClutterActor        *stage,
-                 ClutterPaintContext *paint_context,
-                 _screenshot_data    *screenshot_data)
+grab_screenshot (ClutterActor     *stage,
+                 _screenshot_data *screenshot_data)
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
-  int width, height, n_monitors;
+  int width, height;
   GSimpleAsyncResult *result;
 
   meta_display_get_size (display, &width, &height);
 
-  do_grab_screenshot (screenshot_data, paint_context, 0, 0, width, height);
-
-  n_monitors = meta_display_get_n_monitors (display);
-  if (n_monitors > 1)
-    {
-      cairo_region_t *screen_region = cairo_region_create ();
-      cairo_region_t *stage_region;
-      MetaRectangle monitor_rect;
-      cairo_rectangle_int_t stage_rect;
-      int i;
-      cairo_t *cr;
-
-      for (i = n_monitors - 1; i >= 0; i--)
-        {
-          meta_display_get_monitor_geometry (display, i, &monitor_rect);
-          cairo_region_union_rectangle (screen_region, (const cairo_rectangle_int_t *) &monitor_rect);
-        }
-
-      stage_rect.x = 0;
-      stage_rect.y = 0;
-      stage_rect.width = width;
-      stage_rect.height = height;
-
-      stage_region = cairo_region_create_rectangle ((const cairo_rectangle_int_t *) &stage_rect);
-      cairo_region_xor (stage_region, screen_region);
-      cairo_region_destroy (screen_region);
-
-      cr = cairo_create (screenshot_data->image);
-
-      for (i = 0; i < cairo_region_num_rectangles (stage_region); i++)
-        {
-          cairo_rectangle_int_t rect;
-          cairo_region_get_rectangle (stage_region, i, &rect);
-          cairo_rectangle (cr, (double) rect.x, (double) rect.y, (double) rect.width, (double) rect.height);
-          cairo_fill (cr);
-        }
-
-      cairo_destroy (cr);
-      cairo_region_destroy (stage_region);
-    }
+  do_grab_screenshot (screenshot_data, stage, 0, 0, width, height);
 
   screenshot_data->screenshot_area.x = 0;
   screenshot_data->screenshot_area.y = 0;
@@ -278,15 +250,14 @@ grab_screenshot (ClutterActor        *stage,
 }
 
 static void
-grab_area_screenshot (ClutterActor *stage,
-                      ClutterPaintContext *paint_context,
+grab_area_screenshot (ClutterActor     *stage,
                       _screenshot_data *screenshot_data)
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
   GSimpleAsyncResult *result;
 
   do_grab_screenshot (screenshot_data,
-                      paint_context,
+                      stage,
                       screenshot_data->screenshot_area.x,
                       screenshot_data->screenshot_area.y,
                       screenshot_data->screenshot_area.width,
@@ -591,15 +562,14 @@ on_pixel_grabbed (GObject      *source,
 #endif
 
 static void
-grab_pixel (ClutterActor *stage,
-            ClutterPaintContext *paint_context,
+grab_pixel (ClutterActor     *stage,
             _screenshot_data *screenshot_data)
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot_data->screenshot->global);
   GSimpleAsyncResult *result;
 
   do_grab_screenshot (screenshot_data,
-                      paint_context,
+                      stage,
                       screenshot_data->screenshot_area.x,
                       screenshot_data->screenshot_area.y,
                       1,
@@ -657,7 +627,7 @@ cinnamon_screenshot_screenshot (CinnamonScreenshot *screenshot,
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
 
   meta_disable_unredirect_for_display (display);
-  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_screenshot), (gpointer)data);
+  g_signal_connect_after (stage, "after-paint", G_CALLBACK (grab_screenshot), (gpointer)data);
   clutter_actor_queue_redraw (stage);
 }
 
@@ -703,7 +673,7 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
 
   meta_disable_unredirect_for_display (display);
-  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_area_screenshot), (gpointer)data);
+  g_signal_connect_after (stage, "after-paint", G_CALLBACK (grab_area_screenshot), (gpointer)data);
 
   clutter_actor_queue_redraw (stage);
 }
@@ -845,7 +815,7 @@ cinnamon_screenshot_pick_color (CinnamonScreenshot *screenshot,
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
 
   meta_disable_unredirect_for_display (display);
-  g_signal_connect_after (stage, "paint", G_CALLBACK (grab_pixel), (gpointer)data);
+  g_signal_connect_after (stage, "after-paint", G_CALLBACK (grab_pixel), (gpointer)data);
 
   clutter_actor_queue_redraw (stage);
 }
