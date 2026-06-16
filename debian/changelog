@@ -1,3 +1,62 @@
+cinnamon (6.7.2) alfa; urgency=medium
+
+  [ Michael Webster ]
+  * Add cinnamon-screenshot.
+  * cinnamon-screenshot.c: Don't apply ssd shadow for tiled, maximized or fullscreen windows.
+  * screenshot.js: Some cleanup, remove unused, stop using Lang.bind, etc...
+  * screenshots: Allow window selection instead of always using the focused window.
+  * screenshot.js: Don't allow keybindings during screenshot interaction.
+  * cinnamon-calendar-server.py: Allow ICal 4.0.
+  * cinnamon-screenshot: Remove About dialog.
+  * build: Modernize post-install.
+  * calendar@cinnamon.org: Apply 'grow-only' behavior to the panel label.
+
+  [ Cobinja ]
+  * Add some options to cinnamon-screenshot (#13782)
+
+  [ Michael Webster ]
+  * screenshot: Allow autosave-to-clipboard to work regardless of interactive or autosave-to-file modes.
+  * screenshot: Don't use Gtk.Application, don't build the window before it's needed or if it's unnecessary.
+  * dialogs: Convert some more system dialogs to PopupDialog. (#13722)
+  * Remove audioDeviceSelection dialog.
+  * _dialogs.scss: Remove shadow edge from popup dialogs.
+  * modalDialog.js: Remove on-screen-keyboard/lightbox workaround.
+  * main.js: In _stageEventHandler, ignore modifier-only key-release events that occur as part of a keybinding invocation, but allow bare press/releases to propagate.
+  * _dialogs.scss: Remove device-selection-dialog (ref: a30f3f5).
+  * keyboardManager.js: Seed empty xkb-options when reading from the default configuration.
+  * keyboardManager.js: Don't wait on ibus' set_global_engine_async() to return when switching between xkb layouts.
+  * keyboardManager.js: Re-apply the keymap on resume, make sure reapply() really does so.
+  * main.js: _stageEventHandler - only track and eat a modifier release when a keybinding has actually been invoked off of it.
+
+  [ Cobinja ]
+  * Fix for autofocus when modal dialogs are opened (#13802)
+  * Translatable default file name for screenshots (#13800)
+
+  [ Michael Webster ]
+  * XkbSettings.py: Improve usability.
+  * keyboard settings: Small ui fixes.
+  * input methods: Add support for fcitx5.
+  * InputSources.py: Add link to mintsources-im.
+  * KeybindingTable.py: Don't pick up obsolete/unused configs.
+  * util.js: Adapt to GIR 2.0 (missed this bit in 3fc658559b).
+  * popupDialog.js: Fix incorrect focus when clicking directly into an StEntry on the dialog.
+  * keyboard: Disable ime handling in password fields.
+  * popupMenu.js: Disable radio actor reactivity when used in a menu item.
+  * keyboard/ibus: Try to show a flag/indicator/glyph provided by the framework, that matches the current input mode.
+  * keyboard applet: When selecting an ibus-generated menu item, unset the visual state only for de-selected items, instead of sending an 'unchecked' activation to ibus for all options in the list.
+  * keyboardManager.js: Don't append locale fallback layout if the configured list already includes it as a base.
+  * KeybindingWidgets.py: Disallow using caps-lock in keybindings.
+  * cs_windows.py: Re-order placement mode options - Centered first.
+  * magnifier: Disable while the screensaver is active.
+
+  [ JosephMcc ]
+  * screenShield: Redesign the UI widgets (#13736)
+
+  [ Michael Webster ]
+  * unlockDialog.js: Fix layout save/restore.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 16 Jun 2026 18:08:34 +0200
+
 cinnamon (6.7.1) unstable; urgency=medium
 
   [ Leigh Scott ]
