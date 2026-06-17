@@ -955,32 +955,34 @@ class CategoryButton extends SimpleMenuItem {
             categoryId: categoryId,
         });
 
-        let size = applet.categoryIconSize;
-        if (applet.symbolicCategoryIcons) {
-            symbolic = true;
-            if (typeof icon !== 'string')
-                if (icon?.get_names)
-                    icon = icon.get_names()[0];
+        if (applet.showCategoryIcons) {
+            let size = applet.categoryIconSize;
+            if (applet.symbolicCategoryIcons) {
+                symbolic = true;
+                if (typeof icon !== 'string')
+                    if (icon?.get_names)
+                        icon = icon.get_names()[0];
+                    else
+                        icon = "";
+                if (icon.startsWith("applications-") || icon === "folder-recent")
+                    icon = "xsi-" + icon;
+                else if (icon == "xapp-user-favorites")
+                    icon = "xsi-user-favorites-symbolic";
+                else if (icon == "preferences-system")
+                    icon = "xsi-applications-administration";
+                else if (icon == "preferences-desktop")
+                    icon = "xsi-applications-preferences";
+                else if (icon == "wine")
+                    icon = "xsi-applications-wine";
                 else
-                    icon = "";
-            if (icon.startsWith("applications-") || icon === "folder-recent")
-                icon = "xsi-" + icon;
-            else if (icon == "xapp-user-favorites")
-                icon = "xsi-user-favorites-symbolic";
-            else if (icon == "preferences-system")
-                icon = "xsi-applications-administration";
-            else if (icon == "preferences-desktop")
-                icon = "xsi-applications-preferences";
-            else if (icon == "wine")
-                icon = "xsi-applications-wine";
-            else
-                icon = "xsi-applications-other";
-        }
+                    icon = "xsi-applications-other";
+            }
 
-        if (typeof icon === 'string')
-            this.addIcon(size, icon, null, symbolic);
-        else if (icon)
-            this.addIcon(size, null, icon, symbolic);
+            if (typeof icon === 'string')
+                this.addIcon(size, icon, null, symbolic);
+            else if (icon)
+                this.addIcon(size, null, icon, symbolic);
+        }
 
         this.addLabel(this.name, 'appmenu-category-button-label');
 
@@ -1292,6 +1294,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.settings.bind("menu-icon-size", "menuIconSize", this._updateIconAndLabel);
         this.settings.bind("menu-label", "menuLabel", this._updateIconAndLabel);
         this.settings.bind("overlay-key", "overlayKey", this._updateKeybinding);
+        this.settings.bind("show-category-icons", "showCategoryIcons", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("symbolic-category-icons", "symbolicCategoryIcons", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("category-icon-size", "categoryIconSize", () => this.queueRefresh(REFRESH_ALL_MASK));
         this.settings.bind("category-hover", "categoryHover", this._updateCategoryHover);
