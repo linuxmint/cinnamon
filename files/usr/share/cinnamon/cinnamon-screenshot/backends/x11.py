@@ -33,8 +33,8 @@ class X11Backend(Backend):
     main loop's next idle iteration so the call shape matches the async
     DBus-backed implementation."""
 
-    def screenshot(self, include_pointer, on_done):
+    def screenshot(self, include_pointer, on_done, copy_to_clipboard=False):
         _deliver(on_done, _grab_root())
 
-    def screenshot_area(self, x, y, w, h, include_pointer, on_done):
+    def screenshot_area(self, x, y, w, h, include_pointer, on_done, copy_to_clipboard=False):
         _deliver(on_done, _grab_root(x, y, w, h))

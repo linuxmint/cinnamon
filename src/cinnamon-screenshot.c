@@ -12,6 +12,7 @@
 
 #include "cinnamon-global.h"
 #include "cinnamon-screenshot.h"
+#include "st.h"
 
 struct _CinnamonScreenshotClass
 {
@@ -33,10 +34,12 @@ typedef struct _screenshot_data {
   char *filename;
 
   cairo_surface_t *image;
+  GBytes *png_bytes;
   cairo_rectangle_int_t screenshot_area;
 
   gboolean include_cursor;
   gboolean include_shadow;
+  gboolean copy_to_clipboard;
 
   CinnamonScreenshotCallback callback;
 
@@ -58,18 +61,54 @@ cinnamon_screenshot_init (CinnamonScreenshot *screenshot)
   screenshot->global = cinnamon_global_get ();
 }
 
+static cairo_status_t
+append_png_chunk (void                *closure,
+                  const unsigned char *data,
+                  unsigned int         length)
+{
+  g_byte_array_append ((GByteArray *) closure, data, length);
+  return CAIRO_STATUS_SUCCESS;
+}
+
+static gboolean
+encode_png_bytes (_screenshot_data *screenshot_data)
+{
+  GByteArray *buffer = g_byte_array_new ();
+
+  if (cairo_surface_write_to_png_stream (screenshot_data->image,
+                                         append_png_chunk, buffer) == CAIRO_STATUS_SUCCESS)
+    {
+      screenshot_data->png_bytes = g_byte_array_free_to_bytes (buffer);
+      return TRUE;
+    }
+
+  g_byte_array_free (buffer, TRUE);
+  return FALSE;
+}
+
 static void
 on_screenshot_written (GObject *source,
                        GAsyncResult *result,
                        gpointer user_data)
 {
   _screenshot_data *screenshot_data = (_screenshot_data*) user_data;
+  gboolean success = g_simple_async_result_get_op_res_gboolean (G_SIMPLE_ASYNC_RESULT (result));
+
+  if (success && screenshot_data->png_bytes)
+    {
+      st_clipboard_set_content (st_clipboard_get_default (),
+                                ST_CLIPBOARD_TYPE_CLIPBOARD,
+                                "image/png",
+                                screenshot_data->png_bytes);
+    }
+
   if (screenshot_data->callback)
     screenshot_data->callback (screenshot_data->screenshot,
-                               g_simple_async_result_get_op_res_gboolean (G_SIMPLE_ASYNC_RESULT (result)),
+                               success,
                                &screenshot_data->screenshot_area);
 
   cairo_surface_destroy (screenshot_data->image);
+  g_clear_pointer (&screenshot_data->png_bytes, g_bytes_unref);
   g_object_unref (screenshot_data->screenshot);
   g_free (screenshot_data->filename);
   g_free (screenshot_data);
@@ -80,12 +119,20 @@ write_screenshot_thread (GSimpleAsyncResult *result,
                          GObject *object,
                          GCancellable *cancellable)
 {
-  cairo_status_t status;
   _screenshot_data *screenshot_data = g_async_result_get_user_data (G_ASYNC_RESULT (result));
+  gboolean ok;
   g_assert (screenshot_data != NULL);
 
-  status = cairo_surface_write_to_png (screenshot_data->image, screenshot_data->filename);
-  g_simple_async_result_set_op_res_gboolean (result, status == CAIRO_STATUS_SUCCESS);
+  ok = cairo_surface_write_to_png (screenshot_data->image,
+                                   screenshot_data->filename) == CAIRO_STATUS_SUCCESS;
+
+  /* Encode to PNG here (off the main loop); the actual clipboard hand-off
+   * happens back on the main thread in on_screenshot_written, since St
+   * touches the compositor's selection state. */
+  if (ok && screenshot_data->copy_to_clipboard)
+    ok = encode_png_bytes (screenshot_data);
+
+  g_simple_async_result_set_op_res_gboolean (result, ok);
 }
 
 static void
@@ -601,6 +648,7 @@ grab_pixel (ClutterActor     *stage,
  * @screenshot: the #CinnamonScreenshot
  * @include_cursor: Whether to include the cursor or not
  * @filename: The filename for the screenshot
+ * @copy_to_clipboard: Whether to also copy the grab to the clipboard
  * @callback: (scope async): function to call returning success or failure
  * of the async grabbing
  *
@@ -612,6 +660,7 @@ void
 cinnamon_screenshot_screenshot (CinnamonScreenshot *screenshot,
                              gboolean include_cursor,
                              const char *filename,
+                             gboolean copy_to_clipboard,
                              CinnamonScreenshotCallback callback)
 {
   MetaDisplay *display;
@@ -622,6 +671,7 @@ cinnamon_screenshot_screenshot (CinnamonScreenshot *screenshot,
   data->filename = g_strdup (filename);
   data->callback = callback;
   data->include_cursor = include_cursor;
+  data->copy_to_clipboard = copy_to_clipboard;
 
   display = cinnamon_global_get_display (screenshot->global);
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
@@ -639,6 +689,7 @@ cinnamon_screenshot_screenshot (CinnamonScreenshot *screenshot,
  * @width: The width of the area
  * @height: The height of the area
  * @filename: The filename for the screenshot
+ * @copy_to_clipboard: Whether to also copy the grab to the clipboard
  * @callback: (scope async): function to call returning success or failure
  * of the async grabbing
  *
@@ -654,6 +705,7 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
                                   int width,
                                   int height,
                                   const char *filename,
+                                  gboolean copy_to_clipboard,
                                   CinnamonScreenshotCallback callback)
 {
   MetaDisplay *display;
@@ -668,6 +720,7 @@ cinnamon_screenshot_screenshot_area (CinnamonScreenshot *screenshot,
   data->screenshot_area.height = height;
   data->callback = callback;
   data->include_cursor = include_cursor;
+  data->copy_to_clipboard = copy_to_clipboard;
 
   display = cinnamon_global_get_display (screenshot->global);
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
@@ -684,6 +737,7 @@ schedule_window_screenshot (CinnamonScreenshot *screenshot,
                             gboolean include_shadow,
                             gboolean include_cursor,
                             const char *filename,
+                            gboolean copy_to_clipboard,
                             CinnamonScreenshotCallback callback)
 {
   MetaDisplay *display;
@@ -696,6 +750,7 @@ schedule_window_screenshot (CinnamonScreenshot *screenshot,
   data->callback = callback;
   data->include_cursor = include_cursor;
   data->include_shadow = include_shadow;
+  data->copy_to_clipboard = copy_to_clipboard;
 
   display = cinnamon_global_get_display (screenshot->global);
   stage = CLUTTER_ACTOR (cinnamon_global_get_stage (screenshot->global));
@@ -712,6 +767,7 @@ schedule_window_screenshot (CinnamonScreenshot *screenshot,
  * @include_shadow: Whether to include the shadow or not
  * @include_cursor: Whether to include the cursor or not
  * @filename: The filename for the screenshot
+ * @copy_to_clipboard: Whether to also copy the grab to the clipboard
  * @callback: (scope async): function to call returning success or failure
  * of the async grabbing
  *
@@ -724,6 +780,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
                                     gboolean include_shadow,
                                     gboolean include_cursor,
                                     const char *filename,
+                                    gboolean copy_to_clipboard,
                                     CinnamonScreenshotCallback callback)
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot->global);
@@ -731,11 +788,11 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
 
   if (window == NULL || meta_window_get_window_type (window) == META_WINDOW_DESKTOP)
   {
-    cinnamon_screenshot_screenshot (screenshot, include_cursor, filename, callback);
+    cinnamon_screenshot_screenshot (screenshot, include_cursor, filename, copy_to_clipboard, callback);
     return;
   }
 
-  schedule_window_screenshot (screenshot, window, include_shadow, include_cursor, filename, callback);
+  schedule_window_screenshot (screenshot, window, include_shadow, include_cursor, filename, copy_to_clipboard, callback);
 }
 
 /**
@@ -745,6 +802,7 @@ cinnamon_screenshot_screenshot_window (CinnamonScreenshot *screenshot,
  * @include_shadow: Whether to include the shadow or not
  * @include_cursor: Whether to include the cursor or not
  * @filename: The filename for the screenshot
+ * @copy_to_clipboard: Whether to also copy the grab to the clipboard
  * @callback: (scope async): function to call returning success or failure
  * of the async grabbing
  *
@@ -758,6 +816,7 @@ cinnamon_screenshot_screenshot_window_by_id (CinnamonScreenshot *screenshot,
                                               gboolean include_shadow,
                                               gboolean include_cursor,
                                               const char *filename,
+                                              gboolean copy_to_clipboard,
                                               CinnamonScreenshotCallback callback)
 {
   MetaDisplay *display = cinnamon_global_get_display (screenshot->global);
@@ -782,7 +841,7 @@ cinnamon_screenshot_screenshot_window_by_id (CinnamonScreenshot *screenshot,
       return;
     }
 
-  schedule_window_screenshot (screenshot, target, include_shadow, include_cursor, filename, callback);
+  schedule_window_screenshot (screenshot, target, include_shadow, include_cursor, filename, copy_to_clipboard, callback);
 }
 
 /**

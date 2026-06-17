@@ -102,6 +102,7 @@ const ScreenshotIface =
                 <arg type="i" direction="in" name="height"/> \
                 <arg type="b" direction="in" name="include_cursor"/> \
                 <arg type="s" direction="in" name="filename"/> \
+                <arg type="b" direction="in" name="copy_to_clipboard"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
@@ -109,6 +110,7 @@ const ScreenshotIface =
                 <arg type="b" direction="in" name="include_shadow"/> \
                 <arg type="b" direction="in" name="include_cursor"/> \
                 <arg type="s" direction="in" name="filename"/> \
+                <arg type="b" direction="in" name="copy_to_clipboard"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
@@ -117,12 +119,14 @@ const ScreenshotIface =
                 <arg type="b" direction="in" name="include_shadow"/> \
                 <arg type="b" direction="in" name="include_cursor"/> \
                 <arg type="s" direction="in" name="filename"/> \
+                <arg type="b" direction="in" name="copy_to_clipboard"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
             <method name="Screenshot"> \
                 <arg type="b" direction="in" name="include_cursor"/> \
                 <arg type="s" direction="in" name="filename"/> \
+                <arg type="b" direction="in" name="copy_to_clipboard"/> \
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
@@ -173,7 +177,7 @@ var ScreenshotService = class ScreenshotService {
     }
 
     ScreenshotAreaAsync(params, invocation) {
-        let [x, y, width, height, include_cursor, filename] = params;
+        let [x, y, width, height, include_cursor, filename, copy_to_clipboard] = params;
 
         let screenshot = new Cinnamon.Screenshot();
         screenshot.screenshot_area(
@@ -183,31 +187,32 @@ var ScreenshotService = class ScreenshotService {
             width * global.ui_scale,
             height * global.ui_scale,
             filename,
+            copy_to_clipboard,
             (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation)
         );
     }
 
     ScreenshotWindowAsync(params, invocation) {
-        let [include_shadow, include_cursor, filename] = params;
+        let [include_shadow, include_cursor, filename, copy_to_clipboard] = params;
 
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window(include_shadow, include_cursor, filename,
+        screenshot.screenshot_window(include_shadow, include_cursor, filename, copy_to_clipboard,
             (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation));
     }
 
     ScreenshotWindowByIdAsync(params, invocation) {
-        let [window_id, include_shadow, include_cursor, filename] = params;
+        let [window_id, include_shadow, include_cursor, filename, copy_to_clipboard] = params;
 
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window_by_id(window_id, include_shadow, include_cursor, filename,
+        screenshot.screenshot_window_by_id(window_id, include_shadow, include_cursor, filename, copy_to_clipboard,
             (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation));
     }
 
     ScreenshotAsync(params, invocation) {
-        let [include_cursor, filename] = params;
+        let [include_cursor, filename, copy_to_clipboard] = params;
 
         let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot(include_cursor, filename,
+        screenshot.screenshot(include_cursor, filename, copy_to_clipboard,
             (obj, success, area) => this._onScreenshotComplete(obj, success, area, filename, invocation));
     }
 

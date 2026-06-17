@@ -55,23 +55,25 @@ class ScreenshotApplication:
             return 'monitor'
         return 'screen'
 
-    def capture(self, mode, include_pointer, include_shadow, delay, on_done, area_rect=None):
+    def capture(self, mode, include_pointer, include_shadow, delay, on_done, area_rect=None, copy_to_clipboard=False):
         # Monitor mode and area mode both end up calling screenshot_area,
         # which both grabs and flashes the captured rect on the server side.
         # Area mode without a rect runs the selector first to get one;
         # select_window mode runs the window picker first for an id.
+        # copy_to_clipboard asks the compositor to also place the grab on the
+        # clipboard. on_done still receives the pixbuf either way.
         window_id = None
 
         def do_capture():
             if area_rect is not None:
                 x, y, w, h = area_rect
-                self.backend.screenshot_area(x, y, w, h, include_pointer, on_done)
+                self.backend.screenshot_area(x, y, w, h, include_pointer, on_done, copy_to_clipboard=copy_to_clipboard)
             elif window_id is not None:
-                self.backend.screenshot_window_by_id(window_id, include_pointer, include_shadow, on_done)
+                self.backend.screenshot_window_by_id(window_id, include_pointer, include_shadow, on_done, copy_to_clipboard=copy_to_clipboard)
             elif mode == 'window':
-                self.backend.screenshot_window(include_pointer, include_shadow, on_done)
+                self.backend.screenshot_window(include_pointer, include_shadow, on_done, copy_to_clipboard=copy_to_clipboard)
             else:
-                self.backend.screenshot(include_pointer, on_done)
+                self.backend.screenshot(include_pointer, on_done, copy_to_clipboard=copy_to_clipboard)
             return GLib.SOURCE_REMOVE
 
         def schedule(fn):
@@ -138,14 +140,22 @@ class ScreenshotApplication:
         delay = self.args.delay if self.args.delay is not None else 0
 
         def done(pixbuf):
-            if pixbuf is not None:
-                util.copy_pixbuf_to_clipboard(pixbuf)
-                GLib.idle_add(self._finish_clipboard)
-            else:
+            if pixbuf is None:
                 self._exit_code = 1
                 self.quit()
+                return
+            if not self._clipboard_via_gtk_if_needed(pixbuf):
+                self.quit()
 
-        self.capture(mode, include_pointer, include_shadow, delay, done, area_rect=area_rect)
+        self.capture(mode, include_pointer, include_shadow, delay, done,
+                     area_rect=area_rect, copy_to_clipboard=True)
+
+    def _clipboard_via_gtk_if_needed(self, pixbuf):
+        if self.backend.is_available():
+            return False
+        util.copy_pixbuf_to_clipboard(pixbuf)
+        GLib.idle_add(self._finish_clipboard)
+        return True
 
     def _finish_clipboard(self):
         self.quit()
@@ -163,21 +173,24 @@ class ScreenshotApplication:
         delay = self.args.delay if self.args.delay is not None else 0
 
         def done(pixbuf):
-            if pixbuf is not None:
-                try:
-                    util.save_pixbuf(pixbuf, path)
-                    if copy_to_clipboard:
-                        util.copy_pixbuf_to_clipboard(pixbuf)
-                        GLib.idle_add(self._finish_clipboard)
-                        return
-                except Exception as exc:
-                    print(f'cinnamon-screenshot: save failed: {exc}', file=sys.stderr)
-                    self._exit_code = 1
-            else:
+            if pixbuf is None:
                 self._exit_code = 1
+                self.quit()
+                return
+            try:
+                util.save_pixbuf(pixbuf, path)
+            except Exception as exc:
+                print(f'cinnamon-screenshot: save failed: {exc}', file=sys.stderr)
+                self._exit_code = 1
+                self.quit()
+                return
+
+            if copy_to_clipboard and self._clipboard_via_gtk_if_needed(pixbuf):
+                return
             self.quit()
 
-        self.capture(mode, include_pointer, include_shadow, delay, done, area_rect=area_rect)
+        self.capture(mode, include_pointer, include_shadow, delay, done,
+                     area_rect=area_rect, copy_to_clipboard=copy_to_clipboard)
 
 
 def _build_arg_parser():

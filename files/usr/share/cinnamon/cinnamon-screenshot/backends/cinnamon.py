@@ -67,28 +67,28 @@ class CinnamonBackend(Backend, GObject.Object):
             return
         on_done(self._load_and_unlink(result[1] or path))
 
-    def screenshot(self, include_pointer, on_done):
+    def screenshot(self, include_pointer, on_done, copy_to_clipboard=False):
         path = self._tempfile()
         self._call('Screenshot',
-                   GLib.Variant('(bs)', (include_pointer, path)),
+                   GLib.Variant('(bsb)', (include_pointer, path, copy_to_clipboard)),
                    lambda result: self._deliver_image(path, result, on_done))
 
-    def screenshot_window(self, include_pointer, include_shadow, on_done):
+    def screenshot_window(self, include_pointer, include_shadow, on_done, copy_to_clipboard=False):
         path = self._tempfile()
         self._call('ScreenshotWindow',
-                   GLib.Variant('(bbs)', (include_shadow, include_pointer, path)),
+                   GLib.Variant('(bbsb)', (include_shadow, include_pointer, path, copy_to_clipboard)),
                    lambda result: self._deliver_image(path, result, on_done))
 
-    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done):
+    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done, copy_to_clipboard=False):
         path = self._tempfile()
         self._call('ScreenshotWindowById',
-                   GLib.Variant('(tbbs)', (window_id, include_shadow, include_pointer, path)),
+                   GLib.Variant('(tbbsb)', (window_id, include_shadow, include_pointer, path, copy_to_clipboard)),
                    lambda result: self._deliver_image(path, result, on_done))
 
-    def screenshot_area(self, x, y, w, h, include_pointer, on_done):
+    def screenshot_area(self, x, y, w, h, include_pointer, on_done, copy_to_clipboard=False):
         path = self._tempfile()
         self._call('ScreenshotArea',
-                   GLib.Variant('(iiiibs)', (x, y, w, h, include_pointer, path)),
+                   GLib.Variant('(iiiibsb)', (x, y, w, h, include_pointer, path, copy_to_clipboard)),
                    lambda result: self._deliver_image(path, result, on_done))
 
     def flash_area(self, x, y, w, h):

@@ -40,12 +40,14 @@ void    cinnamon_screenshot_screenshot_area      (CinnamonScreenshot *screenshot
                                                 int width,
                                                 int height,
                                                 const char *filename,
+                                                gboolean copy_to_clipboard,
                                                 CinnamonScreenshotCallback callback);
 
 void    cinnamon_screenshot_screenshot_window    (CinnamonScreenshot *screenshot,
                                                 gboolean include_shadow,
                                                 gboolean include_cursor,
                                                 const char *filename,
+                                                gboolean copy_to_clipboard,
                                                 CinnamonScreenshotCallback callback);
 
 void    cinnamon_screenshot_screenshot_window_by_id (CinnamonScreenshot *screenshot,
@@ -53,11 +55,13 @@ void    cinnamon_screenshot_screenshot_window_by_id (CinnamonScreenshot *screens
                                                 gboolean include_shadow,
                                                 gboolean include_cursor,
                                                 const char *filename,
+                                                gboolean copy_to_clipboard,
                                                 CinnamonScreenshotCallback callback);
 
 void    cinnamon_screenshot_screenshot           (CinnamonScreenshot *screenshot,
                                                 gboolean include_cursor,
                                                 const char *filename,
+                                                gboolean copy_to_clipboard,
                                                 CinnamonScreenshotCallback callback);
 
 void    cinnamon_screenshot_pick_color         (CinnamonScreenshot *screenshot,

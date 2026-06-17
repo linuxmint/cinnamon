@@ -29,17 +29,17 @@ class Backend(GObject.Object):
     def _active(self):
         return self._cinnamon if self._cinnamon.is_available() else self._x11
 
-    def screenshot(self, include_pointer, on_done):
-        self._active().screenshot(include_pointer, on_done)
+    def screenshot(self, include_pointer, on_done, copy_to_clipboard=False):
+        self._active().screenshot(include_pointer, on_done, copy_to_clipboard=copy_to_clipboard)
 
-    def screenshot_window(self, include_pointer, include_shadow, on_done):
-        self._active().screenshot_window(include_pointer, include_shadow, on_done)
+    def screenshot_window(self, include_pointer, include_shadow, on_done, copy_to_clipboard=False):
+        self._active().screenshot_window(include_pointer, include_shadow, on_done, copy_to_clipboard=copy_to_clipboard)
 
-    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done):
-        self._active().screenshot_window_by_id(window_id, include_pointer, include_shadow, on_done)
+    def screenshot_window_by_id(self, window_id, include_pointer, include_shadow, on_done, copy_to_clipboard=False):
+        self._active().screenshot_window_by_id(window_id, include_pointer, include_shadow, on_done, copy_to_clipboard=copy_to_clipboard)
 
-    def screenshot_area(self, x, y, w, h, include_pointer, on_done):
-        self._active().screenshot_area(x, y, w, h, include_pointer, on_done)
+    def screenshot_area(self, x, y, w, h, include_pointer, on_done, copy_to_clipboard=False):
+        self._active().screenshot_area(x, y, w, h, include_pointer, on_done, copy_to_clipboard=copy_to_clipboard)
 
     def flash_area(self, x, y, w, h):
         self._active().flash_area(x, y, w, h)
