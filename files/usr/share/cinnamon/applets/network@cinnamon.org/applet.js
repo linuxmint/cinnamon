@@ -2297,23 +2297,24 @@ CinnamonNetworkApplet.prototype = {
 
         this._updateIcon();
     },
-
     _connectionRemoved: function(client, connection) {
         let pos = this._connections.indexOf(connection);
         if (pos != -1)
             this._connections.splice(pos);
-
         let section = connection._section;
-
         if (section == NMConnectionCategory.VPN) {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
         } else if (section != NMConnectionCategory.INVALID) {
-            let devices = this._devices[section].devices;
-            for (let i = 0; i < devices.length; i++)
-                devices[i].removeConnection(connection);
+            // Fix: Check if devices exist before accessing length
+            if (this._devices[section] && this._devices[section].devices) {
+                let devices = this._devices[section].devices;
+                for (let i = 0; i < devices.length; i++)
+                    devices[i].removeConnection(connection);
+            }
         }
+
 
         connection._uuid = null;
         connection.disconnect(connection._updatedId);
