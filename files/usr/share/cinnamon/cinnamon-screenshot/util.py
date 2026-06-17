@@ -66,7 +66,7 @@ def build_filename(directory, file_type='png'):
     """Build a 'Screenshot <iso-timestamp>.<ext>' path inside directory.
     Caller is responsible for passing an existing directory."""
     timestamp = GLib.DateTime.new_now_local().format('%Y-%m-%d %H-%M-%S.%f')[:-3]
-    return os.path.join(directory, f'{_('Screenshot')} {timestamp}.{file_type}')
+    return os.path.join(directory, f'{_("Screenshot")} {timestamp}.{file_type}')
 
 def show_in_file_manager(uri):
     f = Gio.File.new_for_uri(uri)
