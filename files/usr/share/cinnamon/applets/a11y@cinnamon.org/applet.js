@@ -91,7 +91,7 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
             this.menu.addMenuItem(hoverClick);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
+            this.menu.addSettingsAction(_("Universal Access Settings"), 'accessibility');
 
             this.a11y_settings = new Gio.Settings({ schema_id: A11Y_KEYBOARD_SCHEMA });
 

@@ -59,18 +59,18 @@ MAX_PIX_WIDTH = 160
 MOUSE_BACK_BUTTON = 8
 
 CATEGORIES = [
-    #        Display name                         ID              Show it? Always False to start              Icon
-    {"label": _("Appearance"),            "id": "appear",      "show": False,                       "icon": "cs-cat-appearance"},
-    {"label": _("Preferences"),           "id": "prefs",       "show": False,                       "icon": "cs-cat-prefs"},
-    {"label": _("Hardware"),              "id": "hardware",    "show": False,                       "icon": "cs-cat-hardware"},
-    {"label": _("Administration"),        "id": "admin",       "show": False,                       "icon": "cs-cat-admin"}
+    #        Display name                         ID           Show it?False to start  Icon
+    {"label": _("Appearance"),            "id": "appear",      "show": False,          "icon": "cs-cat-appearance"},
+    {"label": _("Preferences"),           "id": "prefs",       "show": False,          "icon": "cs-cat-prefs"},
+    {"label": _("Hardware"),              "id": "hardware",    "show": False,          "icon": "cs-cat-hardware"},
+    {"label": _("Administration"),        "id": "admin",       "show": False,          "icon": "cs-cat-admin"}
 ]
 
 CONTROL_CENTER_MODULES = [
-    #         Label                              Module ID                Icon                         Category      Keywords for filter
-    [_("Network"),                          "network",            "cs-network",                 "hardware",      _("network, wireless, wifi, ethernet, broadband, internet")],
-    [_("Color"),                            "color",              "cs-color",                   "hardware",      _("color, profile, display, printer, output")],
-    [_("Graphics Tablet"),                  "wacom",              "cs-tablet",                  "hardware",      _("wacom, digitize, tablet, graphics, calibrate, stylus")]
+    #  Label               Module ID  Icon          Category    Keywords                                                      Desktop basename
+    [_("Network"),         "network", "cs-network", "hardware", _("network, wireless, wifi, ethernet, broadband, internet"), "cinnamon-network-panel"],
+    [_("Color"),           "color",   "cs-color",   "hardware", _("color, profile, display, printer, output"),               "cinnamon-color-panel"],
+    [_("Graphics Tablet"), "wacom",   "cs-tablet",  "hardware", _("wacom, digitize, tablet, graphics, calibrate, stylus"),   "cinnamon-wacom-panel"]
 ]
 
 STANDALONE_MODULES = [
@@ -411,9 +411,6 @@ class MainWindow(Gio.Application):
             elif args.sort in SORT_CHOICES.keys():
                 self.sort = int(SORT_CHOICES[args.sort])
 
-        # (4) set the WM class so GWL can consider it as a standalone app and give it its own group.
-        wm_class = f"cinnamon-settings {args.module}"
-        self.window.set_wmclass(wm_class, wm_class)
         self.button_back.hide()
 
         # (5) find and show it
@@ -820,6 +817,21 @@ SORT_TYPE can be specified by number or name as follows:
         xapp.os.add_network_proxy_to_env()
     except Exception as e:
         print("Network proxy support unavailable: %s", str(e))
+
+    # When launched directly into a module, give the window the identity of that
+    # module's own launcher rather than the generic System Settings. That identity
+    # comes from the prgname: GTK uses it as the X11 WM_CLASS and the Wayland
+    # xdg-toplevel app_id, and the window tracker canonicalizes it to
+    # "<prgname>.desktop" - so using the desktop basename here matches the
+    # per-module launcher on both x11 and wayland, making the window properly
+    # app-backed (its own group, name and icon from the .desktop).
+    if args.module is not None:
+        desktop_name = f"cinnamon-settings-{args.module}"
+        for item in CONTROL_CENTER_MODULES:
+            if item[1] == args.module:
+                desktop_name = item[5]
+                break
+        GLib.set_prgname(desktop_name)
 
     window = MainWindow(args)
     signal.signal(signal.SIGINT, signal.SIG_DFL)
