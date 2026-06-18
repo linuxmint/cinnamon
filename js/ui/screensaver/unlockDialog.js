@@ -275,10 +275,12 @@ class UnlockDialog extends St.BoxLayout {
             this._infoLabel.text = '';
 
             this._passwordEntry.reactive = false;
+            this._passwordEntry.clutter_text.editable = false;
             this._passwordEntry.hint_text = _("Checking...");
             this._passwordEntry.start_busy();
         } else {
             this._passwordEntry.reactive = true;
+            this._passwordEntry.clutter_text.editable = true;
             this._passwordEntry.end_busy();
         }
     }
