@@ -816,7 +816,7 @@ SORT_TYPE can be specified by number or name as follows:
     try:
         xapp.os.add_network_proxy_to_env()
     except Exception as e:
-        print("Network proxy support unavailable: %s", str(e))
+        print(f"Network proxy support unavailable: {e}")
 
     # When launched directly into a module, give the window the identity of that
     # module's own launcher rather than the generic System Settings. That identity
