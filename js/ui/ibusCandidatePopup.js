@@ -293,8 +293,8 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
     }
 
     _setDummyCursorGeometry(x, y, w, h) {
-        this._dummyCursor.set_position(Math.round(x), Math.round(y));
-        this._dummyCursor.set_size(Math.round(w), Math.round(h));
+        this._dummyCursor.set_position(x, y);
+        this._dummyCursor.set_size(w, h);
 
         if (this.visible)
             this.setPosition(this._dummyCursor, 0);

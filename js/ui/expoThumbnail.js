@@ -117,7 +117,7 @@ var ExpoWindowClone = GObject.registerClass({
             let clone = clones[i].actor;
             this.clone.add_actor(clone);
             let [width, height] = clone.get_size();
-            clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));
+            clone.set_position((pwidth - width) / 2, (pheight - height) / 2);
         }
     }
 

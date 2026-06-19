@@ -130,8 +130,8 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this.opacity = 0;
         this.show();
 
-        let x = monitor.x + Math.round((monitor.width - this.width) / 2);
-        let y = monitor.y + Math.round((monitor.height - this.height) / 2);
+        let x = monitor.x + (monitor.width - this.width) / 2;
+        let y = monitor.y + (monitor.height - this.height) / 2;
         this.set_position(x, y);
     }
 

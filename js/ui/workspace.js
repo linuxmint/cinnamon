@@ -395,20 +395,20 @@ var WindowOverlay = GObject.registerClass({
             button.remove_style_class_name('left');
             button.add_style_class_name('right');
         }
-        button.set_position(Math.round(buttonX), Math.round(buttonY));
+        button.set_position(buttonX, buttonY);
 
         let borderX = cloneX - this.borderWidth;
         let borderY = cloneY - this.borderWidth;
         let borderWidth = cloneWidth + 2 * this.borderWidth;
         let borderHeight = cloneHeight + 2 * this.borderWidth;
-        border.set_position(Math.round(borderX), Math.round(borderY));
-        border.set_size(Math.round(borderWidth), Math.round(borderHeight));
+        border.set_position(borderX, borderY);
+        border.set_size(borderWidth, borderHeight);
 
         let [minW, captionWidth] = caption.get_preferred_width(-1);
         captionWidth = Math.min(maxWidth, captionWidth);
         let captionX = cloneX + (cloneWidth - captionWidth) / 2;
         let captionY = cloneY + cloneHeight + caption._spacing;
-        caption.set_position(Math.round(captionX), Math.round(captionY));
+        caption.set_position(captionX, captionY);
         caption.width = captionWidth;
     }
 
@@ -664,8 +664,8 @@ class WorkspaceMonitor extends Clutter.Actor {
                             (height - topBorder - bottomBorder) / rect.height,
                              1.0);
         // This is magic
-        x = Math.floor(x + (width - scale * rect.width - rightBorder + leftBorder) / 2);
-        y = Math.floor(y + (height - scale * rect.height - bottomBorder + topBorder) / 2);
+        x = x + (width - scale * rect.width - rightBorder + leftBorder) / 2;
+        y = y + (height - scale * rect.height - bottomBorder + topBorder) / 2;
         return [x, y, scale];
     }
 
@@ -818,8 +818,8 @@ class WorkspaceMonitor extends Clutter.Actor {
         if (this._windows.length > 0) {
             placeholder.hide();
         } else {
-            let x = this._monitor.x + Math.floor((this._monitor.width - placeholder.width)/2);
-            let y = this._monitor.y + Math.floor((this._monitor.height - placeholder.height)/2);
+            let x = this._monitor.x + (this._monitor.width - placeholder.width) / 2;
+            let y = this._monitor.y + (this._monitor.height - placeholder.height) / 2;
             placeholder.set_position(x, y);
             placeholder.show();
         }
