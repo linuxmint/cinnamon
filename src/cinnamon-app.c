@@ -265,8 +265,6 @@ window_backed_app_get_icon (CinnamonApp *app,
         widget = g_object_new (ST_TYPE_BIN,
                                "child", texture_actor,
                                NULL);
-
-        cairo_surface_destroy (icon);
       }
   }
 
