@@ -391,8 +391,8 @@ var InfoOSD = class {
         this.actor.opacity = 0;
         this.actor.show();
 
-        let x = monitor.x + Math.round((monitor.width - this.actor.width)/2);
-        let y = monitor.y + Math.round((monitor.height - this.actor.height)/2);
+        let x = monitor.x + (monitor.width - this.actor.width) / 2;
+        let y = monitor.y + (monitor.height - this.actor.height) / 2;
 
         this.actor.set_position(x, y);
         this.actor.opacity = 255;

@@ -845,7 +845,7 @@ var ScreenShield = GObject.registerClass({
             let x = monitor.x + (monitor.width - natWidth) / 2;
             let y = monitor.y + monitor.height - natHeight - padding;
 
-            this._keyboardBox.set_position(Math.floor(x), Math.floor(y));
+            this._keyboardBox.set_position(x, y);
             this._keyboardBox.set_size(natWidth, natHeight);
         }
     }
@@ -901,7 +901,7 @@ var ScreenShield = GObject.registerClass({
         let x = sectorLeft + (sectorWidth - widgetWidth) / 2;
         let y = sectorTop + (sectorHeight - widgetHeight) / 2;
 
-        widget.set_position(Math.floor(x), Math.floor(y));
+        widget.set_position(x, y);
         widget._isBeingPositioned = false;
     }
 
@@ -1085,7 +1085,7 @@ var ScreenShield = GObject.registerClass({
         let x = monitor.x + monitor.width - natWidth - padding;
         let y = monitor.y + padding;
 
-        this._infoPanel.set_position(Math.floor(x), Math.floor(y));
+        this._infoPanel.set_position(x, y);
     }
 
     _positionWidgetByState(widget) {

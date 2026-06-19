@@ -1223,13 +1223,13 @@ var ZoomRegion = class ZoomRegion {
     _setViewPort(viewPort, fromROIUpdate) {
         // Sets the position of the zoom region on the screen
 
-        let width = Math.round(Math.min(viewPort.width, global.screen_width));
-        let height = Math.round(Math.min(viewPort.height, global.screen_height));
+        let width = Math.min(viewPort.width, global.screen_width);
+        let height = Math.min(viewPort.height, global.screen_height);
         let x = Math.max(viewPort.x, 0);
         let y = Math.max(viewPort.y, 0);
 
-        x = Math.round(Math.min(x, global.screen_width - width));
-        y = Math.round(Math.min(y, global.screen_height - height));
+        x = Math.min(x, global.screen_width - width);
+        y = Math.min(y, global.screen_height - height);
 
         this._viewPortX = x;
         this._viewPortY = y;

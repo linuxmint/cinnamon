@@ -2108,7 +2108,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 }
                 break;
         }
-        return [Math.round(xPos), Math.round(yPos)];
+        return [xPos, yPos];
     }
 
     _boxGetPreferredWidth (actor, forHeight, alloc) {
@@ -2513,7 +2513,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
         let activeItem = this._getMenuItems()[this._activeItemPos];
 
         let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
-        this.actor.set_position(Math.round(sourceX), Math.round(sourceY - activeItem.actor.y));
+        this.actor.set_position(sourceX, sourceY - activeItem.actor.y);
 
         this.actor.raise_top();
 
