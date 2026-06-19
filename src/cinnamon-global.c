@@ -673,6 +673,9 @@ cinnamon_global_set_cursor (CinnamonGlobal *global,
     case CINNAMON_CURSOR_TEXT:
       ret_curs = META_CURSOR_TEXT;
       break;
+    case CINNAMON_CURSOR_GRABBING:
+      ret_curs = META_CURSOR_GRABBING;
+      break;
     default:
       g_return_if_reached ();
     }
@@ -883,6 +886,17 @@ ui_scaling_factor_changed (MetaSettings *settings,
 }
 
 
+static void
+entry_cursor_func (StEntry  *entry,
+                   gboolean  use_ibeam,
+                   gpointer  user_data)
+{
+  CinnamonGlobal *global = user_data;
+
+  meta_display_set_cursor (global->meta_display,
+                           use_ibeam ? META_CURSOR_TEXT : META_CURSOR_DEFAULT);
+}
+
 void
 _cinnamon_global_set_plugin (CinnamonGlobal *global,
                           MetaPlugin  *plugin)
@@ -907,6 +921,7 @@ _cinnamon_global_set_plugin (CinnamonGlobal *global,
 
   global->stage = CLUTTER_STAGE (meta_get_stage_for_display (global->meta_display));
   st_clipboard_set_selection (meta_display_get_selection (global->meta_display));
+  st_entry_set_cursor_func (entry_cursor_func, global);
 
   g_signal_connect (global->stage, "notify::width",
                     G_CALLBACK (global_stage_notify_width), global);
@@ -1117,10 +1132,9 @@ modal_retry_timeout (gpointer user_data)
              data->attempt, MODAL_MAX_RETRIES,
              data->tried_xdo ? "true" : "false");
 
-  global->has_modal = modal_try_grab (global, data->options, data->timestamp);
-
-  if (global->has_modal)
+  if (modal_try_grab (global, data->options, data->timestamp))
     {
+      global->has_modal = TRUE;
       debug_grab ("grab succeeded on attempt %d", data->attempt);
       sync_input_region (global);
       modal_retry_complete (data, TRUE);
@@ -1197,10 +1211,9 @@ cinnamon_global_begin_modal_with_retry (CinnamonGlobal    *global,
     }
 
   debug_grab ("trying initial grab");
-  global->has_modal = modal_try_grab (global, options, timestamp);
-
-  if (global->has_modal)
+  if (modal_try_grab (global, options, timestamp))
     {
+      global->has_modal = TRUE;
       debug_grab ("initial grab succeeded");
       sync_input_region (global);
       callback (global, TRUE, user_data);
@@ -1244,17 +1257,17 @@ cinnamon_global_end_modal (CinnamonGlobal *global,
   if (!meta_display_get_compositor (global->meta_display))
     return;
 
-  if (global->modal_retry_data != NULL)
+  if (!global->has_modal)
     {
-      ModalRetryData *data = global->modal_retry_data;
-      debug_grab ("end_modal: cancelling in-progress retry");
-      g_source_remove (global->modal_retry_source_id);
-      modal_retry_complete (data, FALSE);
+      if (global->modal_retry_data != NULL)
+        {
+          ModalRetryData *data = global->modal_retry_data;
+          debug_grab ("end_modal: cancelling in-progress retry");
+          g_source_remove (global->modal_retry_source_id);
+          modal_retry_complete (data, FALSE);
+        }
       return;
     }
-
-  if (!global->has_modal)
-    return;
 
   meta_plugin_end_modal (global->plugin, timestamp);
   global->has_modal = FALSE;

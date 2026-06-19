@@ -22,7 +22,7 @@ const StartupAnimation = imports.ui.startupAnimation;
 var KEYBOARD_FADE_TIME = 150;
 
 function isPopupMetaWindow(actor) {
-    switch(actor.meta_window.get_window_type()) {
+    switch(actor.meta_window?.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
     case Meta.WindowType.POPUP_MENU:
     case Meta.WindowType.COMBO:
@@ -307,9 +307,6 @@ var LayoutManager = GObject.registerClass({
     }
 
     _toggleExpo() {
-        if (Main.expo.animationInProgress)
-            return;
-
         if (Main.overview.visible) {
             this._activationTime = Date.now() / 1000;
             Main.overview.hide();
@@ -409,6 +406,10 @@ var LayoutManager = GObject.registerClass({
             return;
         }
 
+        if (this.keyboardMonitor == null) {
+            return;
+        }
+
         let size = Main.virtualKeyboardManager.getKeyboardSize();
         let top = Main.virtualKeyboardManager.getKeyboardPosition() == "top";
         let panels = Main.panelManager.getPanelsInMonitor(this.keyboardIndex);
@@ -426,21 +427,21 @@ var LayoutManager = GObject.registerClass({
             switch (panel.panelPosition) {
                 case Panel.PanelLoc.top:
                     if (top) {
-                        kb_height -= panel.actor.height;
-                        kb_y += panel.actor.height;
+                        kb_height -= panel.get_height();
+                        kb_y += panel.get_height();
                     }
                     break;
                 case Panel.PanelLoc.bottom:
                     if (!top) {
-                        kb_height -= panel.actor.height;
+                        kb_height -= panel.get_height();
                     }
                     break;
                 case Panel.PanelLoc.left:
-                    kb_x += panel.actor.width;
-                    kb_width -= panel.actor.width;
+                    kb_x += panel.get_width();
+                    kb_width -= panel.get_width();
                     break;
                 case Panel.PanelLoc.right:
-                    kb_width -= panel.actor.width;
+                    kb_width -= panel.get_width();
                     break;
             }
         }

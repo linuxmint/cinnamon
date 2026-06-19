@@ -597,7 +597,7 @@ function createApplet(extension, appletDefinition, panel = null) {
         // FIXME: Panel height is now available before an applet is initialized,
         // so we don't need to pass it to the constructor anymore, but would
         // require a compatibility clean-up effort.
-        applet = extension.module.main(extension.meta, orientation, panel.height, applet_id);
+        applet = extension.module.main(extension.meta, orientation, panel.heightForZones, applet_id);
     } catch (e) {
         Extension.logError(`Failed to evaluate 'main' function on applet: ${uuid}/${applet_id}`, uuid, e);
         return null;

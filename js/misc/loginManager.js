@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Gio = imports.gi.Gio;
+const GioUnix = imports.gi.GioUnix;
 const GLib = imports.gi.GLib;
 const Signals = imports.signals;
 
@@ -78,7 +79,7 @@ var LoginManagerSystemd = class {
     constructor() {
         this._managerProxy = null;
         this._sessionProxy = null;
-        this.isLocked = false;
+        this.sessionIsActive = true;
 
         this._initSession();
     }
@@ -162,14 +163,13 @@ var LoginManagerSystemd = class {
             this._sessionProxy.connect('g-properties-changed', (proxy, changed, invalidated) => {
                 if ('Active' in changed.deep_unpack()) {
                     let active = this._sessionProxy.Active;
+                    this.sessionIsActive = active;
                     _log(`LoginManager: Session Active property changed: ${active}`);
-                    if (active) {
-                        _log('LoginManager: Session became active, emitting active');
-                        this.emit('active');
-                    }
+                    this.emit('active-changed', active);
                 }
             });
 
+            this.sessionIsActive = this._sessionProxy.Active;
             this.emit('session-ready');
         } catch (e) {
             global.logError('LoginManager: Failed to connect to logind session: ' + e.message);
@@ -205,7 +205,7 @@ var LoginManagerSystemd = class {
                     let [outVariant_, fdList] = proxy.call_with_unix_fd_list_finish(result);
                     let fd = fdList.steal_fds()[0];
                     _log(`LoginManager: Sleep inhibitor acquired (fd=${fd})`);
-                    callback(new Gio.UnixInputStream({ fd }));
+                    callback(new GioUnix.InputStream({ fd }));
                 } catch (e) {
                     global.logError('LoginManager: Error getting inhibitor: ' + e.message);
                     callback(null);
@@ -229,6 +229,7 @@ var LoginManagerConsoleKit = class {
     constructor() {
         this._managerProxy = null;
         this._sessionProxy = null;
+        this.sessionIsActive = true;
 
         this._initSession();
     }
@@ -282,11 +283,9 @@ var LoginManagerConsoleKit = class {
             });
 
             this._sessionProxy.connectSignal('ActiveChanged', (proxy, sender, [active]) => {
+                this.sessionIsActive = active;
                 _log(`LoginManager: ConsoleKit ActiveChanged: ${active}`);
-                if (active) {
-                    _log('LoginManager: Session became active, emitting active');
-                    this.emit('active');
-                }
+                this.emit('active-changed', active);
             });
 
             this.emit('session-ready');

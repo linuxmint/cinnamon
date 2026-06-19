@@ -1,5 +1,5 @@
 [Desktop Entry]
-Name=Cinnamon on Wayland (Experimental)
+Name=Cinnamon (Wayland)
 Comment=This session logs you into Cinnamon
 Exec=cinnamon-session-cinnamon --wayland
 TryExec=@bindir@/cinnamon

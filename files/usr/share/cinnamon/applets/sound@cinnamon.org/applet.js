@@ -1004,20 +1004,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._playerItems = [];
         this._activePlayer = null;
 
-        // Use shared MPRIS module for player discovery
-        this._mprisManager = MprisPlayerModule.getMprisPlayerManager();
-        this._playerAddedId = this._mprisManager.connect('player-added', (manager, mprisPlayer) => {
-            this._addPlayer(mprisPlayer);
-        });
-        this._playerRemovedId = this._mprisManager.connect('player-removed', (manager, busName, owner) => {
-            this._removePlayer(busName, owner);
-        });
-
-        // Add any players that already exist
-        for (let mprisPlayer of this._mprisManager.getPlayers()) {
-            this._addPlayer(mprisPlayer);
-        }
-
         this._control = new Cvc.MixerControl({ name: 'Cinnamon Volume Control' });
         this._control.connect('state-changed', (...args) => this._onControlStateChanged(...args));
 
@@ -1092,6 +1078,20 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._volumeControlShown = false;
 
         this._showFixedElements();
+
+        // Use shared MPRIS module for player discovery.
+        this._mprisManager = MprisPlayerModule.getMprisPlayerManager();
+        this._playerAddedId = this._mprisManager.connect('player-added', (manager, mprisPlayer) => {
+            this._addPlayer(mprisPlayer);
+        });
+        this._playerRemovedId = this._mprisManager.connect('player-removed', (manager, busName, owner) => {
+            this._removePlayer(busName, owner);
+        });
+
+        for (let mprisPlayer of this._mprisManager.getPlayers()) {
+            this._addPlayer(mprisPlayer);
+        }
+
         this.set_show_label_in_vertical_panels(false);
         this.set_applet_label(this._applet_label.get_text());
 

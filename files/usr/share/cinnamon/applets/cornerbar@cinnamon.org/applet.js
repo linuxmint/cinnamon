@@ -278,13 +278,11 @@ class CinnamonBarApplet extends Applet.Applet {
     }
 
     expo() {
-        if (!Main.expo.animationInProgress)
-            Main.expo.toggle();
+        Main.expo.toggle();
     }
 
     scale() {
-        if (!Main.overview.animationInProgress)
-            Main.overview.toggle();
+        Main.overview.toggle();
     }
 
 }

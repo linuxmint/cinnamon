@@ -333,7 +333,11 @@ class MelangeApp(Gtk.Application):
         self.startup_mode = None
 
     def do_dbus_register(self, connection, path):
-        self.reg_id = connection.register_object(
+        try:
+            register = connection.register_object_with_closures2
+        except AttributeError:
+            register = connection.register_object
+        self.reg_id = register(
             path,
             interface_node_info.interfaces[0],
             self._method_cb,

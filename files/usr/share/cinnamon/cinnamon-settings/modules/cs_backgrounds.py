@@ -166,7 +166,7 @@ class Module:
     comment = _("Change your desktop's background")
 
     def __init__(self, content_box):
-        keywords = _("background, picture, slideshow")
+        keywords = _("background, picture, slideshow, wallpaper")
         self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, module=self)
 
     def on_module_selected(self):

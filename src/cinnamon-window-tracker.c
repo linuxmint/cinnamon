@@ -907,9 +907,17 @@ CinnamonApp *
 cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self,
                                        int                 pid)
 {
-  GSList *running = cinnamon_app_system_get_running (cinnamon_app_system_get_default());
+  GSList *running;
   GSList *iter;
   CinnamonApp *result = NULL;
+
+  /* An unknown pid (e.g. -1, common for not-yet-resolved Wayland windows) must
+   * never match: app pid lists can contain -1 too, so it would spuriously match
+   * an unrelated running app. */
+  if (pid < 1)
+    return NULL;
+
+  running = cinnamon_app_system_get_running (cinnamon_app_system_get_default());
 
   for (iter = running; iter; iter = iter->next)
     {

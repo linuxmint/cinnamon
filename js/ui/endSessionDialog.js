@@ -7,7 +7,7 @@ const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 
 const Dialog = imports.ui.dialog;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 
 const SessionDialogInterface =
     "<node> \
@@ -50,7 +50,7 @@ const ResponseCode = {
 }
 
 var EndSessionDialog = GObject.registerClass(
-class EndSessionDialog extends ModalDialog.ModalDialog {
+class EndSessionDialog extends PopupDialog.PopupDialog {
     _init(mode) {
         super._init({
             styleClass: 'end-session-dialog',

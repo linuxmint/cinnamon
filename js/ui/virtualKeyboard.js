@@ -1639,7 +1639,7 @@ var KeyboardController = class {
     getCurrentGroupLabelIcon() {
         let actor = null;
 
-        if (this._inputSourceManager.showFlags) {
+        if (this._currentSource.type === 'ibus' || this._inputSourceManager.showFlags) {
             actor = this._inputSourceManager.createFlagIcon(this._currentSource, null, 16);
         }
 

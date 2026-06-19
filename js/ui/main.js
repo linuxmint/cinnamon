@@ -91,7 +91,8 @@ const GObject = imports.gi.GObject;
 const XApp = imports.gi.XApp;
 const PointerTracker = imports.misc.pointerTracker;
 
-const AudioDeviceSelection = imports.ui.audioDeviceSelection;
+const AutomountManager = imports.ui.automountManager;
+const AutorunManager = imports.ui.autorunManager;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const Config = imports.misc.config;
@@ -115,6 +116,7 @@ const LookingGlass = imports.ui.lookingGlass;
 const NotificationDaemon = imports.ui.notificationDaemon;
 const WindowAttentionHandler = imports.ui.windowAttentionHandler;
 const CinnamonDBus = imports.ui.cinnamonDBus;
+const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const Screenshot = imports.ui.screenshot;
 const ScreensaverController = imports.ui.screensaver.controller;
 const ThemeManager = imports.ui.themeManager;
@@ -129,12 +131,14 @@ const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
 const InputMethod = imports.misc.inputMethod;
+const FcitxInputMethod = imports.misc.fcitxInputMethod;
+const IMFramework = imports.misc.imFramework;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
-const {KeyboardManager} = imports.ui.keyboardManager;
+const {KeyboardManager, getInputSourceManager} = imports.ui.keyboardManager;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -162,8 +166,10 @@ var messageTray = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
 var screenRecorder = null;
-var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
+var cinnamonMountOpDBusService = null;
+var automountManager = null;
+var autorunManager = null;
 var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
@@ -339,11 +345,11 @@ function start() {
 
     GioUnix.DesktopAppInfo.set_desktop_env('X-Cinnamon');
 
-    // Clutter.get_default_backend().set_input_method(new InputMethod.InputMethod());
+    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
     new CinnamonPortalHandler();
-    cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
+
     setRunState(RunState.STARTUP);
 
     screenshotService = new Screenshot.ScreenshotService();
@@ -432,7 +438,7 @@ function start() {
 
     xdndHandler = new XdndHandler.XdndHandler();
     osdWindowManager = new OsdWindow.OsdWindowManager();
-    // This overview object is just a stub for non-user sessions
+
     overview = new Overview.Overview();
     expo = new Expo.Expo();
 
@@ -480,10 +486,6 @@ function start() {
     locatePointer = new LocatePointer.LocatePointer();
 
     layoutManager.init();
-    lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
-
-    overview.init();
-    expo.init();
 
     _addXletDirectoriesToSearchPath();
     _initUserSession();
@@ -524,7 +526,10 @@ function start() {
 
     _loadOskLayouts();
     keyboardManager = new KeyboardManager();
-    inputMethod = new InputMethod.InputMethod();
+    if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX)
+        inputMethod = new FcitxInputMethod.FcitxInputMethod();
+    else
+        inputMethod = new InputMethod.InputMethod();
     Clutter.get_default_backend().set_input_method(inputMethod);
     virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
     virtualKeyboardManager.connect("enabled-changed", () => {
@@ -542,6 +547,10 @@ function start() {
         writable: false,
         configurable: false
     });
+
+    cinnamonMountOpDBusService = new CinnamonMountOperation.CinnamonMountOpHandler();
+    automountManager = new AutomountManager.AutomountManager();
+    autorunManager = new AutorunManager.AutorunManager();
 
     Promise.all([
         AppletManager.init(),
@@ -758,6 +767,36 @@ function getWorkspaceName(index) {
  */
 function hasDefaultWorkspaceName(index) {
     return getWorkspaceName(index) == _makeDefaultWorkspaceName(index);
+}
+
+function reorderWorkspace(oldIndex, newIndex) {
+    let n = global.workspace_manager.n_workspaces;
+    if (oldIndex === newIndex ||
+        oldIndex < 0 || oldIndex >= n ||
+        newIndex < 0 || newIndex >= n)
+        return;
+
+    let workspace = global.workspace_manager.get_workspace_by_index(oldIndex);
+    global.workspace_manager.reorder_workspace(workspace, newIndex);
+
+    // If every workspace has its default name, there's nothing to move -
+    // default names regenerate from the index automatically.
+    let hasCustomName = false;
+    for (let i = 0; i < global.workspace_manager.n_workspaces; i++) {
+        if (!hasDefaultWorkspaceName(i)) {
+            hasCustomName = true;
+            break;
+        }
+    }
+    if (!hasCustomName)
+        return;
+
+    _fillWorkspaceNames(Math.max(oldIndex, newIndex) + 1);
+    let name = workspace_names[oldIndex] || '';
+    workspace_names.splice(oldIndex, 1);
+    workspace_names.splice(newIndex, 0, name);
+    _trimWorkspaceNames();
+    wmSettings.set_strv("workspace-names", workspace_names);
 }
 
 function _addWorkspace() {
@@ -1270,6 +1309,11 @@ function _shouldFilterKeybinding(entry) {
  */
 let _modifierOnlyAction = 0;
 
+// Tracks whether a keybinding shortcut has actually been invoked through this
+// handler since the most recent modifier-key press while in a modal state. Used
+// to tell a bare modifier tap apart from a modifier used as part of a shortcut.
+let _shortcutInvokedSinceModifier = false;
+
 function _isModifierKeyval(symbol) {
     return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
            symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R ||
@@ -1279,20 +1323,21 @@ function _isModifierKeyval(symbol) {
 
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
-        return false;
+        return Clutter.EVENT_PROPAGATE;
 
     let eventType = event.type();
 
     if (eventType !== Clutter.EventType.KEY_PRESS &&
         eventType !== Clutter.EventType.KEY_RELEASE) {
         if (!popup_rendering_actor || eventType !== Clutter.EventType.BUTTON_RELEASE)
-            return false;
-        return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
+            return Clutter.EVENT_PROPAGATE;
+        return (event.get_source() && popup_rendering_actor.contains(event.get_source()))
+            ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE;
     }
 
     if (event.get_source() instanceof Clutter.Text &&
         (event.get_flags() & Clutter.EventFlags.INPUT_METHOD)) {
-        return false;
+        return Clutter.EVENT_PROPAGATE;
     }
 
     let keyCode = event.get_key_code();
@@ -1300,40 +1345,58 @@ function _stageEventHandler(actor, event) {
 
     if (eventType === Clutter.EventType.KEY_PRESS) {
         if (_isModifierKeyval(event.get_key_symbol())) {
+            _shortcutInvokedSinceModifier = false;
             let action = global.display.get_keybinding_action(keyCode, modifierState);
             if (action > 0) {
                 let entry = keybindingManager.getBindingById(action);
                 if (!_shouldFilterKeybinding(entry)) {
                     _modifierOnlyAction = action;
-                    return true;
+                    return Clutter.EVENT_STOP;
                 }
             }
-            return false;
+            return Clutter.EVENT_PROPAGATE;
         }
 
         _modifierOnlyAction = 0;
+
+        // During modal, muffin's process_iso_next_group doesn't run, handle xkb 'grp'
+        // here.
+        if (event.get_key_symbol() === Clutter.KEY_ISO_Next_Group) {
+            getInputSourceManager()._modifiersSwitcher(false);
+            return Clutter.EVENT_STOP;
+        }
 
         let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
+                _shortcutInvokedSinceModifier = true;
                 keybindingManager.invoke_keybinding_action_by_id(action);
-                return true;
+                return Clutter.EVENT_STOP;
             }
         }
 
-        return false;
+        return Clutter.EVENT_PROPAGATE;
     }
 
-    // Release event - activate the single-key modifier keybinding if one was stored.
-    if (_isModifierKeyval(event.get_key_symbol()) && _modifierOnlyAction > 0) {
-        let action = _modifierOnlyAction;
-        _modifierOnlyAction = 0;
-        keybindingManager.invoke_keybinding_action_by_id(action);
-        return true;
+    // Release event
+    if (_isModifierKeyval(event.get_key_symbol())) {
+        // Activate the single-key modifier keybinding if one was stored.
+        if (_modifierOnlyAction > 0) {
+            let action = _modifierOnlyAction;
+            _modifierOnlyAction = 0;
+            keybindingManager.invoke_keybinding_action_by_id(action);
+            return Clutter.EVENT_STOP;
+        }
+
+        // If the modifier was used as part of a shortcut (a keybinding was invoked
+        // here while it was held), consume its release so it isn't mistaken for a
+        // bare tap.
+        if (_shortcutInvokedSinceModifier)
+            return Clutter.EVENT_STOP;
     }
 
-    return false;
+    return Clutter.EVENT_PROPAGATE;
 }
 
 function _findModal(actor) {
@@ -1344,8 +1407,9 @@ function _findModal(actor) {
     return -1;
 }
 
-function _completeModalSetup(actor, mode) {
+function _completeModalSetup(actor, mode, onDismiss) {
     _modifierOnlyAction = 0;
+    _shortcutInvokedSinceModifier = false;
 
     if (modalCount == 0)
         Meta.disable_unredirect_for_display(global.display);
@@ -1365,7 +1429,8 @@ function _completeModalSetup(actor, mode) {
         actor: actor,
         focus: global.stage.get_key_focus(),
         destroyId: actorDestroyId,
-        actionMode: mode
+        actionMode: mode,
+        onDismiss: onDismiss || null
     };
     if (record.focus != null) {
         record.focusDestroyId = record.focus.connect('destroy', function() {
@@ -1387,6 +1452,8 @@ function _completeModalSetup(actor, mode) {
  * @options (Meta.ModalOptions): (optional) flags to indicate that the pointer
  * is already grabbed
  * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
+ * @onDismiss (function): (optional) callback invoked by dismissInternalModals()
+ * to cleanly release this grab.
  *
  * Ensure we are in a mode where all keyboard and mouse input goes to
  * the stage, and focus @actor. Multiple calls to this function act in
@@ -1406,7 +1473,7 @@ function _completeModalSetup(actor, mode) {
  *
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
-function pushModal(actor, timestamp, options, mode) {
+function pushModal(actor, timestamp, options, mode, onDismiss) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
 
@@ -1420,7 +1487,7 @@ function pushModal(actor, timestamp, options, mode) {
         }
     }
 
-    _completeModalSetup(actor, mode);
+    _completeModalSetup(actor, mode, onDismiss);
     return true;
 }
 
@@ -1544,6 +1611,52 @@ function popModal(actor, timestamp) {
     layoutManager.updateChrome(true);
 
     Meta.enable_unredirect_for_display(global.display);
+}
+
+/**
+ * dismissInternalModals:
+ *
+ * Cleanly release every Cinnamon-internal modal grab currently on the stack.
+ * Used by the internal screensaver and called over dbus by cinnamon-screensaver
+ * -command for cinnamon-screensaver or custom-command mode.
+ */
+function dismissInternalModals() {
+    let guard = modalActorFocusStack.length * 2 + 4;
+
+    while (modalActorFocusStack.length > 0 && guard-- > 0) {
+        let record = modalActorFocusStack[modalActorFocusStack.length - 1];
+        let actor = record.actor;
+
+        if (typeof record.onDismiss === 'function') {
+            try {
+                record.onDismiss();
+            } catch (e) {
+                global.logError(`dismissInternalModals: onDismiss threw: ${e.message}`);
+            }
+        } else {
+            global.logWarning('dismissInternalModals: modal actor has no onDismiss; force-popping');
+        }
+
+        let idx = _findModal(actor);
+        if (idx !== -1) {
+            try {
+                popModal(actor);
+            } catch (e) {
+                global.logError(`dismissInternalModals: force-pop failed: ${e.message}`);
+                modalActorFocusStack.splice(idx, 1);
+                modalCount = Math.max(0, modalCount - 1);
+            }
+        }
+    }
+
+    if (modalActorFocusStack.length > 0 || modalCount > 0) {
+        global.logError('dismissInternalModals: stack non-empty after walk, forcing reset');
+        modalActorFocusStack.length = 0;
+        modalCount = 0;
+        global.end_modal(global.get_current_time());
+        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+        actionMode = Cinnamon.ActionMode.NORMAL;
+    }
 }
 
 /**

@@ -184,12 +184,6 @@ Files: files/usr/share/cinnamon/cinnamon-settings/bin/capi.py
 Copyright: 2007-2010, www.stani.be
 License: GPL-3+
 
-Files: files/usr/share/cinnamon/cinnamon-settings/bin/proxygsettings.py
-       python3/cinnamon/proxygsettings.py
-Copyright: 2011-2012, Canonical Ltd
-           2014, Erik Devriendt
-License: GPL-3_SSLException
-
 Files: src/run-js-test.c
 Copyright: 2010, Red Hat, Inc
            2008, litl, LLC

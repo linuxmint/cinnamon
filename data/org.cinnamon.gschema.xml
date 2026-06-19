@@ -545,6 +545,7 @@
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
     <child name="launcher" schema="org.cinnamon.launcher" />
+    <child name="screenshot" schema="org.cinnamon.screenshot" />
 
     <key name="enable-vfade" type="b">
       <default>true</default>
@@ -610,6 +611,15 @@
     <key name="hoverclick-position" type="s">
       <default>""</default>
       <summary>Stores the position of the hoverclick window so it can be restored there later - format is x::y</summary>
+    </key>
+    <key name="remember-mount-password" type="b">
+      <default>false</default>
+      <summary>Whether to remember password for mounting encrypted or remote filesystems</summary>
+      <description>
+        When an encrypted device or remote filesystem is mounted, a password
+        dialog may include a "Remember Password" checkbox. This key stores the
+        default state of that checkbox.
+      </description>
     </key>
   </schema>
 
@@ -1007,6 +1017,65 @@
       <default>300</default>
       <summary>Time between each checks (in seconds)</summary>
       <description></description>
+    </key>
+
+  </schema>
+
+  <enum id="org.cinnamon.screenshot.file-types">
+    <value nick="png"  value="0"/>
+    <value nick="jpg"  value="1"/>
+    <value nick="bmp"  value="2"/>
+    <value nick="tiff" value="3"/>
+  </enum>
+
+  <schema id="org.cinnamon.screenshot" path="/org/cinnamon/screenshot/">
+
+    <key name="delay" type="i">
+      <default>0</default>
+      <summary>Screenshot delay</summary>
+      <description>The number of seconds to wait before taking the screenshot.</description>
+    </key>
+
+    <key name="save-directory" type="s">
+      <default>''</default>
+      <summary>Default save folder</summary>
+      <description>URI of the folder where screenshots are saved by default. If empty, the user's Pictures folder is used.</description>
+    </key>
+
+    <key name="include-pointer" type="b">
+      <default>false</default>
+      <summary>Include pointer</summary>
+      <description>Include the mouse pointer in the screenshot.</description>
+    </key>
+
+    <key name="default-file-type" enum="org.cinnamon.screenshot.file-types">
+      <default>'png'</default>
+      <summary>Default file type</summary>
+      <description>The default file type extension for saved screenshots.</description>
+    </key>
+
+    <key name="include-shadow" type="b">
+      <default>true</default>
+      <summary>Include shadow</summary>
+      <description>Include the shadow when taking a window screenshot.</description>
+    </key>
+
+    <key name="launch-file-manager-after-save" type="b">
+      <default>false</default>
+      <summary>Launch file manager after saving</summary>
+      <description>When enabled, opens the file manager with the saved screenshot pre-selected after a successful save.</description>
+    </key>
+
+    <key name="autosave-to-file" type="b">
+      <default>false</default>
+      <summary>Autosave screenshot to file</summary>
+      <description>When enabled, saves the screenshot to file without showing the application's interactive window</description>
+    </key>
+
+    <key name="autosave-to-clipboard" type="b">
+      <default>false</default>
+      <summary>Copy saved screenshots to the clipboard</summary>
+      <description>When enabled, a copy of every screenshot that is saved to a file is also placed on the clipboard.</description>
     </key>
 
   </schema>

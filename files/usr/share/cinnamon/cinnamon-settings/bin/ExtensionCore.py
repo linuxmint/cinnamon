@@ -14,8 +14,9 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib
 
+from concurrent.futures import ThreadPoolExecutor
+
 from xapp.SettingsWidgets import SettingsPage, SettingsWidget, SettingsLabel
-from bin.Spices import ThreadedTaskManager
 
 home = os.path.expanduser('~')
 
@@ -129,7 +130,7 @@ def show_message(msg, window=None):
     dialog.destroy()
 
 
-background_work_queue = ThreadedTaskManager(5)
+background_work_queue = ThreadPoolExecutor(max_workers=5)
 
 
 class MyHTMLParser(HTMLParser):
@@ -386,7 +387,8 @@ class ManageSpicesRow(Gtk.ListBoxRow):
             self.config_button.set_sensitive(enabled)
 
     def scan_extension_for_danger(self, directory):
-        background_work_queue.push(self.scan_extension_thread, self.on_scan_complete, (directory,))
+        future = background_work_queue.submit(self.scan_extension_thread, directory)
+        future.add_done_callback(lambda f: GLib.idle_add(self.on_scan_complete, f.result()))
 
     def scan_extension_thread(self, directory):
         dangerous = False
@@ -833,6 +835,10 @@ class DownloadSpicesPage(SettingsPage):
         self.has_filter = False
         self.extension_rows = []
         self._signals = []
+        self._build_token = 0
+        # Size groups persist across rebuilds so kept rows stay aligned with
+        # newly-built ones.
+        self._size_groups = [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for i in range(4)]
 
         self.initial_refresh_done = False
 
@@ -1027,18 +1033,62 @@ class DownloadSpicesPage(SettingsPage):
         if spices_data is None:
             return
 
-        if len(self.extension_rows) > 0:
-            for row in self.extension_rows:
-                row.destroy()
-            self.extension_rows = []
+        # Diff against existing rows: keep rows whose cache entry and install
+        # state are unchanged; destroy + recreate ones that changed; create
+        # rows for new uuids; destroy rows whose uuids no longer exist.
+        existing_uuids = set()
+        kept_rows = []
+        to_destroy = []
+        for row in self.extension_rows:
+            existing_uuids.add(row.uuid)
+            data = spices_data.get(row.uuid)
+            if (data is not None
+                    and row.timestamp == data.get('last_edited')
+                    and row.installed == self.spices.get_is_installed(row.uuid)
+                    and row.has_update == self.spices.get_has_update(row.uuid)):
+                kept_rows.append(row)
+            else:
+                to_destroy.append(row)
 
-        size_groups = [Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL) for i in range(4)]
+        for row in to_destroy:
+            row.destroy()
+        self.extension_rows = kept_rows
 
-        for uuid, data in spices_data.items():
-            row = DownloadSpicesRow(uuid, data, self.spices, size_groups)
+        to_destroy_uuids = {row.uuid for row in to_destroy}
+        pending = [(uuid, data) for uuid, data in spices_data.items()
+                   if uuid not in existing_uuids or uuid in to_destroy_uuids]
+
+        if not pending:
+            self._finalize_build()
+            return
+
+        if len(pending) >= 20:
+            pb = self.progress_bar.get_child()
+            pb.set_text('')
+            self.progress_bar.set_reveal_child(True)
+        self._build_token += 1
+        GLib.idle_add(self._build_list_batch, self._build_token, pending)
+
+    def _build_list_batch(self, token, pending):
+        if token != self._build_token:
+            return False
+
+        batch_size = 10
+        for uuid, data in pending[:batch_size]:
+            row = DownloadSpicesRow(uuid, data, self.spices, self._size_groups)
             self.extension_rows.append(row)
             self.list_box.add(row)
+            row.show_all()
+        del pending[:batch_size]
 
+        if pending:
+            self.progress_bar.get_child().pulse()
+            return True
+
+        self._finalize_build()
+        return False
+
+    def _finalize_build(self):
         updates_available = self.spices.get_n_updates()
         self.update_all_button.set_sensitive(updates_available)
         if updates_available > 0:
@@ -1047,7 +1097,7 @@ class DownloadSpicesPage(SettingsPage):
             msg_text = _("No updates available")
         self.update_all_button.set_tooltip_text(msg_text)
         self.refresh_button.set_sensitive(True)
-        self.list_box.show_all()
+        self.progress_bar.set_reveal_child(False)
 
     def get_more_info(self, *args):
         extension_row = self.list_box.get_selected_row()

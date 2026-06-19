@@ -107,6 +107,58 @@
   &-notifications-badge-label {
     font-size: 12px;
   }
+
+  &-scrollbox {
+    &-scrollview {
+      &.vfade {
+        -st-vfade-offset: 68px;
+        -st-hfade-offset: 0;
+      }
+      &.hfade {
+        -st-hfade-offset: 68px;
+        -st-vfade-offset: 0;
+      }
+    }
+
+    &-button {
+      transition-duration: 100ms;
+
+      &-icon {
+        icon-size: $scalable_icon_size;
+        color: inherit;
+      }
+
+      &.vertical { }
+
+      &-start {
+        margin-right: 1px;
+
+        &.vertical {
+          margin-right: 0;
+          margin-bottom: 1px;
+        }
+      }
+
+      &-end {
+        margin-left: 1px;
+
+        &.vertical {
+          margin-left: 0;
+          margin-top: 1px;
+        }
+      }
+
+      &:hover {
+        background-color: $lighter_bg_color;
+        color: $fg_color;
+      }
+
+      &:active {
+        background-color: $lightest_bg_color;
+        color: $fg_color;
+      }
+    }
+  }
 }
 
 // classic window list

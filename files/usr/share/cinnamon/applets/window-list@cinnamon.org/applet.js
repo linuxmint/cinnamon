@@ -398,6 +398,7 @@ class AppMenuButton {
         this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::tile-mode", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
+        this._signals.connect(this.metaWindow, "notify::icon-name", this.setIcon, this);
         this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
         this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
     }
@@ -816,18 +817,14 @@ class AppMenuButton {
     setIcon() {
         this.icon_size = this._applet.icon_size;
 
-        let icon;
-        if (this.app) {
-            if (this.app.is_window_backed()) {
-                icon = this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow);
-            } else {
-                icon = this.app.create_icon_texture(this.icon_size);
-            }
-        } else {
-            icon = new St.Icon({ icon_name: 'application-default-icon',
+        // create_icon_texture_for_window uses the window's own (XApp) icon-name when
+        // it has one, and otherwise falls back to the app icon - so it covers both
+        // window-backed and app-backed windows without special-casing.
+        let icon = this.app ?
+            this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
+            new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
-        }
 
         let old_child = this._iconBox.get_child();
         this._iconBox.set_child(icon);
@@ -1532,13 +1529,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
         source.actor.hide();
         if (this._dragPlaceholder == undefined) {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this._dragPlaceholder.child.set_width (source.actor.width);
-            this._dragPlaceholder.child.set_height (source.actor.height);
+            this._dragPlaceholder.set_width (source.actor.width);
+            this._dragPlaceholder.set_height (source.actor.height);
 
-            this.manager_container.insert_child_at_index(this._dragPlaceholder.actor,
+            this.manager_container.insert_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         } else {
-            this.manager_container.set_child_at_index(this._dragPlaceholder.actor,
+            this.manager_container.set_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         }
 
@@ -1559,7 +1556,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     clearDragPlaceholder() {
         if (this._dragPlaceholder) {
-            this._dragPlaceholder.actor.destroy();
+            this._dragPlaceholder.destroy();
             this._dragPlaceholder = undefined;
             this._dragPlaceholderPos = undefined;
         }

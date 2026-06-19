@@ -491,6 +491,7 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
             }
             if (!this._ornament.child) {
                 let switchOrn = new CheckBox.CheckBox();
+                switchOrn.reactive = false;
                 switchOrn.set_checked(state);
                 this._ornament.child = switchOrn;
             } else {
@@ -505,6 +506,7 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
             }
             if (!this._ornament.child) {
                 let radioOrn = new RadioButton.RadioButton();
+                radioOrn.reactive = false;
                 radioOrn.set_checked(state);
                 this._ornament.child = radioOrn;
             } else {
@@ -1147,6 +1149,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             }
             if (!this._ornament.child) {
                 let switchOrn = new CheckBox.CheckBox();
+                switchOrn.reactive = false;
                 switchOrn.set_checked(state);
                 this._ornament.child = switchOrn;
             } else {
@@ -1155,12 +1158,13 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             this._icon = null;
             break;
         case OrnamentType.DOT:
-            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof RadioButton.RadioButton))) {
+            if ((this._ornament.child) && (!(this._ornam. ent.child._delegate instanceof RadioButton.RadioButton))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
                 let radioOrn = new RadioButton.RadioButton();
+                radioOrn.reactive = false;
                 radioOrn.set_checked(state);
                 this._ornament.child = radioOrn;
             } else {
@@ -2013,10 +2017,10 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
         for (let panel of panels) {
             if (panel.panelPosition == PanelLoc.top || panel.panelPosition == PanelLoc.bottom) {
-                maxHeight -= panel.actor.height;
+                maxHeight -= panel.get_height();
             }
             else {
-                maxWidth -= panel.actor.width;
+                maxWidth -= panel.get_width();
             }
         }
 
@@ -2047,16 +2051,16 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             if (!panel.getIsVisible()) continue;
             switch (panel.panelPosition) {
                 case PanelLoc.top:
-                    y1 += panel.actor.height;
+                    y1 += panel.get_height();
                     break;
                 case PanelLoc.bottom:
-                    y2 -= panel.actor.height;
+                    y2 -= panel.get_height();
                     break;
                 case PanelLoc.left:
-                    x1 += panel.actor.width;
+                    x1 += panel.get_width();
                     break;
                 case PanelLoc.right:
-                    x2 -= panel.actor.width;
+                    x2 -= panel.get_width();
                     break;
             }
         }
@@ -2767,7 +2771,8 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     _grab() {
-        if (!Main.pushModal(this._owner.actor, undefined, undefined, Cinnamon.ActionMode.POPUP)) {
+        if (!Main.pushModal(this._owner.actor, undefined, undefined, Cinnamon.ActionMode.POPUP,
+                            () => this._closeMenu())) {
             return;
         }
         this._signals.connect(global.stage, 'captured-event', this._onEventCapture, this);

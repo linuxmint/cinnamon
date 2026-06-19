@@ -716,7 +716,8 @@ window_monitor_thread (GTask        *task,
             }
             else
             {
-                g_debug ("xprop cancelled");
+                g_debug ("xprop cancelled, killing subprocess");
+                g_subprocess_send_signal (xprop_proc, SIGTERM);
             }
         }
         else
@@ -724,6 +725,8 @@ window_monitor_thread (GTask        *task,
             gint exit_status = g_subprocess_get_exit_status (xprop_proc);
             g_debug ("xprop exited (status=%d)", exit_status);
         }
+
+        g_object_unref (xprop_proc);
     }
     g_clear_error (&error);
     g_task_return_boolean (task, TRUE);

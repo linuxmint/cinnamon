@@ -285,7 +285,8 @@ var Inspector = GObject.registerClass({
             reactive: true,
         });
         this._eventHandler = eventHandler;
-        Main.pushModal(this._eventHandler, undefined, undefined, Cinnamon.ActionMode.LOOKING_GLASS);
+        Main.pushModal(this._eventHandler, undefined, undefined, Cinnamon.ActionMode.LOOKING_GLASS,
+                       () => this._close());
         this.add_child(eventHandler);
         this._displayText = new St.Label({ style: 'text-align: center;' });
         eventHandler.add(this._displayText, { expand: true });

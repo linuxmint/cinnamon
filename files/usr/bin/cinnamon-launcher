@@ -73,6 +73,7 @@ class Launcher:
 
         self.polkit_agent_proc = None
         self.nm_applet_proc = None
+        self.automount_proc = None
         self.can_restart = False
         self.dialog = None
 
@@ -161,6 +162,10 @@ class Launcher:
             print(f"Launching for fallback session: nm-applet")
             self.nm_applet_proc = subprocess.Popen(["nm-applet"])
 
+        if shutil.which("csd-automount"):
+            print(f"Launching for fallback session: csd-automount")
+            self.automount_proc = subprocess.Popen(["csd-automount"])
+
     def kill_fallback_helpers(self):
         if self.polkit_agent_proc is not None:
             print("Killing fallback polkit agent")
@@ -179,6 +184,15 @@ class Launcher:
             except subprocess.TimeoutExpired:
                 self.nm_applet_proc.kill()
             self.nm_applet_proc = None
+
+        if self.automount_proc is not None:
+            print("Killing fallback csd-automount")
+            self.automount_proc.terminate()
+            try:
+                self.automount_proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                self.automount_proc.kill()
+            self.automount_proc = None
 
     @async_function
     def monitor_memory(self):

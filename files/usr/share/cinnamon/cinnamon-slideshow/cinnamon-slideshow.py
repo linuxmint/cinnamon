@@ -6,7 +6,9 @@ import os, locale
 from xml.etree import ElementTree
 from setproctitle import setproctitle
 
-from gi.repository import Gio, GLib
+import gi
+gi.require_version('GLibUnix', '2.0')
+from gi.repository import Gio, GLib, GLibUnix
 
 SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
 SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
@@ -53,7 +55,11 @@ class CinnamonSlideshowApplication(Gio.Application):
 
         self.connection = None
         self.registration_id = 0
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end)
+
+        try:
+            GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end)
+        except AttributeError:
+            GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end, None)
 
     def do_startup(self):
         Gio.Application.do_startup(self)
@@ -63,7 +69,11 @@ class CinnamonSlideshowApplication(Gio.Application):
         try:
             self.connection = connection
             iface_info = Gio.DBusNodeInfo.new_for_xml(DBUS_INTERFACE_XML)
-            self.registration_id = connection.register_object(
+            try:
+                register = connection.register_object_with_closures2
+            except AttributeError:
+                register = connection.register_object
+            self.registration_id = register(
                 SLIDESHOW_DBUS_PATH,
                 iface_info.interfaces[0],
                 self.handle_method_call,

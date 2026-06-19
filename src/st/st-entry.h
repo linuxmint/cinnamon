@@ -92,6 +92,10 @@ gdouble         st_entry_get_progress      (StEntry      *entry);
 void            st_entry_start_busy        (StEntry      *entry);
 void            st_entry_end_busy          (StEntry      *entry);
 
+typedef void (*StEntryCursorFunc) (StEntry *entry, gboolean use_ibeam, gpointer data);
+void            st_entry_set_cursor_func   (StEntryCursorFunc func,
+                                            gpointer          user_data);
+
 G_END_DECLS
 
 #endif /* __ST_ENTRY_H__ */
