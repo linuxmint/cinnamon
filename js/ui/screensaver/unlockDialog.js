@@ -221,7 +221,7 @@ class UnlockDialog extends St.BoxLayout {
     _onAuthPrompt(authClient, prompt) {
         let hintText;
         if (prompt.toLowerCase().includes('password:')) {
-            hintText = _("Please enter your password...");
+            hintText = _("Enter your password...");
         } else {
             hintText = prompt.replace(/:$/, '');
         }

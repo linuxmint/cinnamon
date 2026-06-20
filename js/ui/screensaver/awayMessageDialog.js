@@ -23,7 +23,7 @@ class AwayMessageDialog extends ModalDialog.ModalDialog {
 
         let content = new Dialog.MessageDialogContent({
             title: _("Lock Screen"),
-            description: _("Please type an away message for the lock screen")
+            description: _("Type an away message for the lock screen")
         });
         this.contentLayout.add_child(content);
 
