@@ -724,12 +724,10 @@ SwitcherList.prototype = {
 
         for (let i = 0; i < children.length; i++) {
             if (this._items.indexOf(children[i]) != -1) {
-                let [childMin, childNat] = children[i].get_preferred_height(childWidth);
-                let vSpacing = (childHeight - childNat) / 2;
                 childBox.x1 = x;
-                childBox.y1 = vSpacing;
+                childBox.y1 = 0;
                 childBox.x2 = x + childWidth;
-                childBox.y2 = childBox.y1 + childNat;
+                childBox.y2 = childHeight;
                 children[i].allocate(childBox, flags);
 
                 x += this._list.spacing + childWidth;
@@ -796,8 +794,12 @@ AppList.prototype = {
         let themeNode = this._items[j].get_theme_node();
         let iconPadding = themeNode.get_horizontal_padding();
         let iconBorder = themeNode.get_border_width(St.Side.LEFT) + themeNode.get_border_width(St.Side.RIGHT);
-        let [iconMinHeight, iconNaturalHeight] = this.icons[j].label.get_preferred_height(-1);
-        let iconSpacing = iconNaturalHeight + iconPadding + iconBorder;
+        let minLabelHeight = Infinity;
+        for (let k = 0; k < this.icons.length; k++) {
+            let [, h] = this.icons[k].label.get_preferred_height(-1);
+            if (h < minLabelHeight) minLabelHeight = h;
+        }
+        let iconSpacing = minLabelHeight + iconPadding + iconBorder;
         let totalSpacing = this._list.spacing * (this._items.length - 1);
 
         // We just assume the whole screen here due to weirdness happening with the passed width
@@ -821,6 +823,12 @@ AppList.prototype = {
             if (this.icons[i].icon != null)
                 break;
             this.icons[i].set_size(this._iconSize);
+        }
+
+        height = 0;
+        for (let i = 0; i < this._items.length; i++) {
+            let [, itemNat] = this._items[i].get_preferred_height(-1);
+            height = Math.max(height, itemNat);
         }
 
         alloc.min_size = height;
