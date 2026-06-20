@@ -1,3 +1,23 @@
+cinnamon (6.7.3) zena; urgency=medium
+
+  [ Michael Webster ]
+  * layout.js: Don't try to update the keyboardBox if the monitor list is temporarily empty.
+  * cinnamon-screenshot.c: Capture all monitors in Wayland sessions.
+  * screenshots: Fix to-clipboard in Wayland sessions.
+  * cinnamon-screenshot/util.py: Don't nest the same quote type in an f-string.
+  * cinnamon-app: Improve icon lookup for Wayland sessions.
+  * cinnamon-settings.py: Use GLib.set_prgname() instead of set_wmclass() for direct module launches.
+  * cinnamon-settings.py: Fix warning formatting.
+  * cinnamon-app.c: Fix double-free against muffin-owned icon.
+
+  [ Clement Lefebvre ]
+  * wayland: Remove "experimental" from session name
+  * screensaver: Prevent user from typing while password is checked
+  * Don't round widget coordinates/sizes (#13821)
+  * classicSwitcher: Fix layout broken by Unicode chars with inflated font metrics
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 20 Jun 2026 15:35:34 +0200
+
 cinnamon (6.7.2) alfa; urgency=medium
 
   [ Michael Webster ]
