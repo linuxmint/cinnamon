@@ -83,7 +83,7 @@ STANDALONE_MODULES = [
     [_("Input Method"),               "mintlocale-im",                        "cs-input-method",           "prefs",      _("language, install, foreign, input, method, chinese, korean, japanese, typing")],
     [_("Account Details"),            "mintsysadm-settings-user",             "preferences-desktop-user",  "prefs",      _("user, account, password")],
     [_("System Information"),         "mintreport",                           "mintreport",                "hardware",   _("info, usb, pci, gpu, bios, report, crash, system")],
-    [_("System Administration"),      "pkexec mintsysadm",                    "mintsysadm",                "admin",      _("adminitration, grub, boot, system")],
+    [_("System Administration"),      "pkexec mintsysadm",                    "mintsysadm",                "admin",      _("administration, grub, boot, system")],
     [_("Login Window"),               "pkexec lightdm-settings",              "cs-login",                  "admin",      _("login, lightdm, mdm, gdm, manager, user, password, startup, switch")],
     [_("Login Window"),               "lightdm-gtk-greeter-settings-pkexec",  "cs-login",                  "admin",      _("login, lightdm, manager, settings, editor")],
     [_("Login Window"),               "gdm-settings",                         "gdm-settings",              "admin",      _("login, gdm, manager, user, startup, switch")],
