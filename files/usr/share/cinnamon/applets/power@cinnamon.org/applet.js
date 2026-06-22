@@ -448,6 +448,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         else if (state == UPDeviceState.FULLY_CHARGED) {
             status = _("Fully charged");
         }
+        else if (state == UPDeviceState.PENDING_CHARGE) {
+            status = _("Pending charge");
+        }
         else if (state == UPDeviceState.DISCHARGING) {
             if (time == 0) {
                 status = _("Using battery power");
