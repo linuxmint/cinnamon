@@ -82,6 +82,7 @@ var SessionManagerIface = '\
        <signal name="InhibitorRemoved"> \
            <arg type="o" name="id" direction="out"/> \
        </signal> \
+       <signal name="SessionOver"/> \
        <property name="InhibitedActions" type="u" access="read"/> \
        <property name="SessionId" type="s" access="read"/> \
     </interface> \

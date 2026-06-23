@@ -139,6 +139,7 @@ const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
 const {KeyboardManager, getInputSourceManager} = imports.ui.keyboardManager;
+const GnomeSession = imports.misc.gnomeSession;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -212,6 +213,7 @@ var popup_rendering_actor = null;
 var xlet_startup_error = false;
 
 var endSessionDialog = null;
+var sessionManagerProxy = null;
 
 var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
@@ -282,6 +284,11 @@ function do_shutdown_sequence() {
     panelManager.panels.forEach(function (panel) {
         panel.actor.hide();
     });
+}
+
+function onSessionOver() {
+    global.log("Session is ending");
+    soundManager.disable();
 }
 
 function _reparentActor(actor, newParent) {
@@ -598,6 +605,16 @@ function start() {
         }
 
         global.connect('shutdown', do_shutdown_sequence);
+
+        GnomeSession.SessionManager(function(proxy, error) {
+            if (error) {
+                global.logWarning("Main: failed to connect to the session manager: " + error);
+                return;
+            }
+
+            sessionManagerProxy = proxy;
+            sessionManagerProxy.connectSignal('SessionOver', onSessionOver);
+        });
 
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
     }).catch(error => {
