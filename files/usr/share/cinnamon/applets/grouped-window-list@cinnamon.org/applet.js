@@ -639,6 +639,56 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({lastTitleDisplay: titleDisplay});
     }
 
+    _matchFavoriteToWindow(fav, wmClass, wmInstance, gtkAppId) {
+        if (!fav || !fav.app) {
+            return false;
+        }
+
+        let favId = fav.id.toLowerCase();
+        // Get base name without path and .desktop
+        let baseName = favId.substring(favId.lastIndexOf('/') + 1).replace('.desktop', '');
+
+        // 1. Direct match on desktop ID base name (case-insensitive)
+        if (baseName === wmClass || baseName === wmInstance || (gtkAppId && baseName === gtkAppId)) {
+            return true;
+        }
+
+        // 2. Match on StartupWMClass from the app info
+        let appInfo = fav.app.get_app_info();
+        if (appInfo) {
+            let startupClass = appInfo.get_startup_wm_class ? appInfo.get_startup_wm_class() : null;
+            if (!startupClass) {
+                try {
+                    startupClass = appInfo.get_string("StartupWMClass");
+                } catch (e) {}
+            }
+            if (startupClass) {
+                startupClass = startupClass.toLowerCase();
+                if (startupClass === wmClass || startupClass === wmInstance) {
+                    return true;
+                }
+            }
+
+            // 3. Match executable/command name
+            let exec = appInfo.get_executable ? appInfo.get_executable() : null;
+            if (!exec) {
+                try {
+                    let cmd = appInfo.get_commandline ? appInfo.get_commandline() : "";
+                    if (cmd) {
+                        exec = cmd.split(' ')[0];
+                    }
+                } catch (e) {}
+            }
+            if (exec) {
+                let execBase = exec.substring(exec.lastIndexOf('/') + 1).toLowerCase();
+                if (execBase === wmClass || execBase === wmInstance) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     _matchWindowToPinnedApp(metaWindow) {
         if (!this.pinnedFavorites || !this.pinnedFavorites._favorites) {
             return null;
@@ -654,49 +704,8 @@ class GroupedWindowListApplet extends Applet.Applet {
 
         // Iterate through pinned favorites
         for (let fav of this.pinnedFavorites._favorites) {
-            if (!fav || !fav.app) continue;
-
-            let favId = fav.id.toLowerCase();
-            // Get base name without path and .desktop
-            let baseName = favId.substring(favId.lastIndexOf('/') + 1).replace('.desktop', '');
-
-            // 1. Direct match on desktop ID base name (case-insensitive)
-            if (baseName === wmClass || baseName === wmInstance || (gtkAppId && baseName === gtkAppId)) {
+            if (this._matchFavoriteToWindow(fav, wmClass, wmInstance, gtkAppId)) {
                 return fav.app;
-            }
-
-            // 2. Match on StartupWMClass from the app info
-            let appInfo = fav.app.get_app_info();
-            if (appInfo) {
-                let startupClass = appInfo.get_startup_wm_class ? appInfo.get_startup_wm_class() : null;
-                if (!startupClass) {
-                    try {
-                        startupClass = appInfo.get_string("StartupWMClass");
-                    } catch (e) {}
-                }
-                if (startupClass) {
-                    startupClass = startupClass.toLowerCase();
-                    if (startupClass === wmClass || startupClass === wmInstance) {
-                        return fav.app;
-                    }
-                }
-
-                // 3. Match executable/command name
-                let exec = appInfo.get_executable ? appInfo.get_executable() : null;
-                if (!exec) {
-                    try {
-                        let cmd = appInfo.get_commandline ? appInfo.get_commandline() : "";
-                        if (cmd) {
-                            exec = cmd.split(' ')[0];
-                        }
-                    } catch (e) {}
-                }
-                if (exec) {
-                    let execBase = exec.substring(exec.lastIndexOf('/') + 1).toLowerCase();
-                    if (execBase === wmClass || execBase === wmInstance) {
-                        return fav.app;
-                    }
-                }
             }
         }
         return null;
