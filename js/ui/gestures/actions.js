@@ -2,13 +2,13 @@
 
 const { GLib, Gio, Cinnamon, Meta, Cvc } = imports.gi;
 const Main = imports.ui.main;
-const { GestureType } = imports.ui.gestures.ToucheggTypes;
-const { MprisController } = imports.ui.gestures.mprisController;
+const { GestureType } = imports.ui.gestures.gestureTypes;
+const { getMprisPlayerManager } = imports.misc.mprisPlayer;
 const Magnifier = imports.ui.magnifier;
 
 const touchpad_settings = new  Gio.Settings({ schema_id: "org.cinnamon.desktop.peripherals.touchpad" });
 
-const CONTINUOUS_ACTION_POLL_INTERVAL = 50 * 1000;
+const CONTINUOUS_ACTION_POLL_INTERVAL = 50; // milliseconds
 
 var make_action = (settings, definition, device) => {
     var threshold = 100;
@@ -65,10 +65,7 @@ var cleanup = () => {
         mixer = null;
     }
 
-    if (mpris_controller != null) {
-        mpris_controller.shutdown();
-        mpris_controller = null;
-    }
+    mpris_manager = null;
 }
 
 var BaseAction = class {
@@ -142,7 +139,7 @@ var WindowOpAction = class extends BaseAction {
         const window = global.display.get_focus_window();
 
         if (window == null) {
-            global.logWarning("WorkspaceSwitchAction: no focus window");
+            global.logWarning("WindowOpAction: no focus window");
             return
         }
 
@@ -438,13 +435,13 @@ var VolumeAction = class extends BaseAction {
     }
 }
 
-var mpris_controller = null;
+var mpris_manager = null;
 var init_mpris_controller = () => {
-    if (mpris_controller != null) {
+    if (mpris_manager != null) {
         return;
     }
 
-    mpris_controller = new MprisController();
+    mpris_manager = getMprisPlayerManager();
 }
 
 var MediaAction = class extends BaseAction {
@@ -453,27 +450,25 @@ var MediaAction = class extends BaseAction {
     }
 
     do_action(direction, percentage, time) {
-        const player = mpris_controller.get_player();
+        const player = mpris_manager.getBestPlayer();
 
         if (player == null) {
             return;
         }
 
         if (this.definition.action === "MEDIA_PLAY_PAUSE") {
-            player.toggle_play()
+            player.playPause();
         }
         else
         if (this.definition.action === "MEDIA_NEXT") {
-            player.next_track();
+            player.next();
         }
         else
         if (this.definition.action === "MEDIA_PREVIOUS") {
-            player.previous_track();
+            player.previous();
         }
     }
 }
-
-const ZOOM_SAMPLE_RATE = 20 * 1000 // 20 ms; g_get_monotonic_time() returns microseconds
 
 var ZoomAction = class extends BaseAction {
     constructor(definition, device, threshold) {
@@ -484,7 +479,7 @@ var ZoomAction = class extends BaseAction {
 
         if (definition.custom_value !== "") {
             try {
-                let adjust = parseInt(definition.custom_value) * 1000;
+                let adjust = parseInt(definition.custom_value);
                 this.poll_interval = this.poll_interval + adjust;
             } catch (e) {}
         }
