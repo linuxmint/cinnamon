@@ -56,10 +56,29 @@ class CinnamonSlideshowApplication(Gio.Application):
         self.connection = None
         self.registration_id = 0
 
-        try:
-            GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end)
-        except AttributeError:
-            GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end, None)
+        self.cinnamon_seen = False
+        self.cinnamon_watch_id = Gio.bus_watch_name(
+            Gio.BusType.SESSION,
+            "org.Cinnamon",
+            Gio.BusNameWatcherFlags.NONE,
+            self.on_cinnamon_appeared,
+            self.on_cinnamon_vanished
+        )
+
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, sig, self.end)
+            except AttributeError:
+                GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, sig, self.end, None)
+
+    def on_cinnamon_appeared(self, connection, name, name_owner):
+        self.cinnamon_seen = True
+
+    def on_cinnamon_vanished(self, connection, name):
+        # Cinnamon owns org.Cinnamon; if it goes away (logout, crash, replace)
+        # this orphaned service should exit too, since nothing else will stop it.
+        if self.cinnamon_seen:
+            self.end()
 
     def do_startup(self):
         Gio.Application.do_startup(self)
@@ -127,6 +146,10 @@ class CinnamonSlideshowApplication(Gio.Application):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
+
+        if self.cinnamon_watch_id > 0:
+            Gio.bus_unwatch_name(self.cinnamon_watch_id)
+            self.cinnamon_watch_id = 0
 
         self.disconnect_folder_monitor()
         self.quit()
