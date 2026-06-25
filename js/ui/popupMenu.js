@@ -2929,7 +2929,7 @@ var PopupMenuManager = class PopupMenuManager {
                                       x.sourceActor.contains(src)) === undefined);
     }
 
-    _onEventCapture(actor, event) {
+	_onEventCapture(actor, event) {
         if (!this.grabbed)
             return false;
 
@@ -2950,15 +2950,27 @@ var PopupMenuManager = class PopupMenuManager {
 
         let activeMenuContains = this._eventIsOnActiveMenu(event);
         let eventType = event.type();
+        let src = event.get_source();
+        let isPanelEvent = false;
+        if (src && !src.is_finalized()) {
+            isPanelEvent = Main.panelManager.getPanels().some(panel => panel && panel.contains(src));
+        }
 
         if (eventType == Clutter.EventType.BUTTON_RELEASE) {
             if (activeMenuContains) {
                 return false;
             } else {
                 this._closeMenu();
-                return true;
+                return !isPanelEvent;
             }
         } else if (eventType == Clutter.EventType.BUTTON_PRESS && !activeMenuContains) {
+            if (isPanelEvent) {
+                if (!this._windowFocusSignal) {
+                    this._windowFocusSignal = global.display.connect('notify::focus-window', () => this._closeMenu());
+                }
+                return false; 
+            }
+            
             this._closeMenu();
             return true;
         } else if (!this._shouldBlockEvent(event)) {
@@ -2969,8 +2981,13 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     _closeMenu() {
+        if (this._windowFocusSignal) {
+            global.display.disconnect(this._windowFocusSignal);
+            this._windowFocusSignal = null;
+        }
+        
         if (this._activeMenu != null)
-            this._activeMenu.close(true);
+            this._activeMenu.close();
     }
 
     destroy() {
