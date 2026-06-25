@@ -14,6 +14,7 @@ DEFAULT_FILE_TYPE_KEY = 'default-file-type'
 LAUNCH_FILE_MANAGER_KEY = 'launch-file-manager-after-save'
 AUTOSAVE_TO_FILE_KEY = 'autosave-to-file'
 AUTOSAVE_TO_CLIPBOARD_KEY = 'autosave-to-clipboard'
+USE_FLASH_KEY = 'use-flash'
 
 settings = Gio.Settings.new(SCHEMA_ID)
 if not settings.get_string(SAVE_DIRECTORY_KEY):
@@ -125,6 +126,10 @@ class PreferencesWindow:
         section_behavior.add_row(GSettingsSwitch(
             _('Copy to clipboard when saving'),
             SCHEMA_ID, AUTOSAVE_TO_CLIPBOARD_KEY,
+        ))
+        section_behavior.add_row(GSettingsSwitch(
+            _('Use a flash'),
+            SCHEMA_ID, USE_FLASH_KEY,
         ))
 
         self.window.show_all()

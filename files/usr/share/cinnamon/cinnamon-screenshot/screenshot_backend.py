@@ -41,9 +41,6 @@ class Backend(GObject.Object):
     def screenshot_area(self, x, y, w, h, include_pointer, on_done, copy_to_clipboard=False):
         self._active().screenshot_area(x, y, w, h, include_pointer, on_done, copy_to_clipboard=copy_to_clipboard)
 
-    def flash_area(self, x, y, w, h):
-        self._active().flash_area(x, y, w, h)
-
     def select_area(self, on_done):
         self._active().select_area(on_done)
 

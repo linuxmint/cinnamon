@@ -14,9 +14,6 @@ class Backend:
     def screenshot_area(self, x, y, w, h, include_pointer, on_done, copy_to_clipboard=False):
         on_done(None)
 
-    def flash_area(self, x, y, w, h):
-        pass
-
     def select_area(self, on_done):
         on_done(None)
 

@@ -1046,6 +1046,12 @@
       <description>When enabled, a copy of every screenshot that is saved to a file is also placed on the clipboard.</description>
     </key>
 
+    <key name="use-flash" type="b">
+      <default>true</default>
+      <summary>Use a flash</summary>
+      <description>When enabled, a brief flash is shown over the captured area after taking a screenshot.</description>
+    </key>
+
   </schema>
 
 </schemalist>

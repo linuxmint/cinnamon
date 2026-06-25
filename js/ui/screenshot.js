@@ -130,12 +130,6 @@ const ScreenshotIface =
                 <arg type="b" direction="out" name="success"/> \
                 <arg type="s" direction="out" name="filename_used"/> \
             </method> \
-            <method name="FlashArea"> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
-            </method> \
             <method name="SelectArea"> \
               <arg type="i" direction="out" name="x"/> \
               <arg type="i" direction="out" name="y"/> \
@@ -164,10 +158,12 @@ var ScreenshotService = class ScreenshotService {
         this._dbusImpl.export(Gio.DBus.session, '/org/cinnamon/Screenshot');
 
         Gio.DBus.session.own_name('org.cinnamon.Screenshot', Gio.BusNameOwnerFlags.REPLACE, null, null);
+
+        this._settings = new Gio.Settings({ schema_id: 'org.cinnamon.screenshot' });
     }
 
     _onScreenshotComplete (obj, success, area, filename, invocation=null) {
-        if (success) {
+        if (success && this._settings.get_boolean('use-flash')) {
             let flashspot = new Flashspot.Flashspot(area);
             flashspot.fire();
         }
@@ -291,18 +287,6 @@ var ScreenshotService = class ScreenshotService {
         }
     }
 
-    FlashAreaAsync(params, invocation) {
-        let [x, y, width, height] = params;
-
-        let flashspot = new Flashspot.Flashspot({
-            x: x * global.ui_scale,
-            y: y * global.ui_scale,
-            width: width * global.ui_scale,
-            height: height * global.ui_scale
-        });
-        flashspot.fire();
-        invocation.return_value(null);
-    }
 }
 
 class SelectArea {

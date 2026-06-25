@@ -91,10 +91,6 @@ class CinnamonBackend(Backend, GObject.Object):
                    GLib.Variant('(iiiibsb)', (x, y, w, h, include_pointer, path, copy_to_clipboard)),
                    lambda result: self._deliver_image(path, result, on_done))
 
-    def flash_area(self, x, y, w, h):
-        self._proxy.call('FlashArea', GLib.Variant('(iiii)', (x, y, w, h)),
-                         Gio.DBusCallFlags.NONE, -1, None, None)
-
     def select_area(self, on_done):
         self._call('SelectArea', None,
                    lambda result: on_done(tuple(result) if result else None))
