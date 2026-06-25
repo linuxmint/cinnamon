@@ -235,66 +235,12 @@ function setHeightForPanel(panel) {
     return height;
 }
 
-function convertSettingsXMonToLMon(strv) {
-    let out = [];
-
-    for (let i = 0; i < strv.length; i++) {
-        let elements = strv[i].split(":");
-
-        if (elements.length !== 3)
-            continue;
-
-        let [id, xmon, pos] = elements;
-
-        if (xmon > global.display.get_n_monitors() - 1) {
-            // log("Skipping panel enabled info for monitor we don't have: " + strv[i]);
-            out.push(strv[i]);
-            continue;
-        }
-
-        let l_mon = xmon;
-        if (!Meta.is_wayland_compositor())
-            l_mon = global.display.xinerama_index_to_logical_index(xmon);
-
-        out.push(`${id}:${l_mon}:${pos}`);
-
-        // log(`xmon: ${id}:${xmon}:${pos}  to lmon: ${id}:${l_mon}:${pos}`);
-    }
-
-    return out;
-}
-
-function convertSettingsLMonToXMon(strv) {
-    let out = [];
-
-    for (let i = 0; i < strv.length; i++) {
-        let elements = strv[i].split(":");
-
-        if (elements.length !== 3)
-            continue;
-
-        let [id, lmon, pos] = elements;
-
-        let x_mon = lmon;
-        if (!Meta.is_wayland_compositor())
-            x_mon = global.display.logical_index_to_xinerama_index(lmon);
-
-        out.push(`${id}:${x_mon}:${pos}`);
-
-        // log(`l_mon: ${id}:${l_mon}:${pos}  to xmon: ${id}:${x_mon}:${pos}`);
-    }
-
-    return out;
-}
-
 function getPanelsEnabledList() {
-    let panelProperties = global.settings.get_strv("panels-enabled");
-    return convertSettingsXMonToLMon(panelProperties);
+    return global.settings.get_strv("panels-enabled");
 }
 
 function setPanelsEnabledList(list) {
-    let converted = convertSettingsLMonToXMon(list)
-    let panelProperties = global.settings.set_strv("panels-enabled", converted);
+    global.settings.set_strv("panels-enabled", list);
 }
 
 function updatePanelsMeta(meta, panel_props) {
