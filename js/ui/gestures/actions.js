@@ -365,7 +365,7 @@ var VolumeAction = class extends BaseAction {
             return;
         }
 
-        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct, false);
+        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct, false), null, int_pct);
         this.last_time = time;
     }
 
@@ -380,7 +380,7 @@ var VolumeAction = class extends BaseAction {
         sink.change_is_muted(!is_muted);
 
         const percent = !is_muted ? 0 : (sink.volume / this.pct_step).clamp(0, 100);
-        Main.osdWindowManager.show(-1, this._get_volume_icon(percent), null, percent, false);
+        Main.osdWindowManager.show(-1, this._get_volume_icon(percent), null, percent);
     }
 
     _get_volume_icon(volume_pct) {
@@ -434,7 +434,7 @@ var VolumeAction = class extends BaseAction {
             int_pct = 100 - int_pct;
         }
 
-        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct), null, int_pct, false);
+        Main.osdWindowManager.show(-1, this._get_volume_icon(int_pct), null, int_pct);
     }
 }
 

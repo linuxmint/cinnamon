@@ -177,7 +177,7 @@ var CinnamonDBus = class {
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], false);
+        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level']);
     }
 
     get OverviewActive() {
