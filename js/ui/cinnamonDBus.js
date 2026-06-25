@@ -348,8 +348,7 @@ var CinnamonDBus = class {
             for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
                 let current = Main.layoutManager.monitors[i];
 
-                let xinerama_index = global.display.logical_index_to_xinerama_index(current.index);
-                monitors.push(xinerama_index);
+                monitors.push(current.index);
             }
         } catch (e) {
             log(e.message);
@@ -371,8 +370,7 @@ var CinnamonDBus = class {
             throw new Error("GetMonitorWorkRect: invalid monitor index: " + index + ".  Must be 0 to " + (n_mons - 1));
         }
 
-        let logical_index = global.display.xinerama_index_to_logical_index(index);
-        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(logical_index);
+        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(index);
 
         return [rect.x, rect.y, rect.width, rect.height];
     }
