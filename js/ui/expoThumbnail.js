@@ -737,7 +737,9 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
                 // stacking order may have been disturbed
                 this.restack();
             }
-            this.overviewModeOn();
+            if (clone.visible) {
+                this.overviewModeOn();
+            }
         });
         this.contents.add_actor(clone);
 
@@ -1040,11 +1042,6 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
 
     handleDragOverOrDrop(dropping, source, actor, x, y, time) {
         this.hovering = false; // normal hover logic is off during dnd
-        if (dropping) {
-            let draggable = source._draggable;
-            actor.opacity = draggable._dragOrigOpacity;
-            global.reparentActor(actor, draggable._dragOrigParent);
-        }
 
         if (source == Main.xdndHandler) {
             return DND.DragMotionResult.CONTINUE;
@@ -1095,6 +1092,16 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
                 if (dropping) {
                     metaWindow.move_to_monitor(targetMonitor);
                 }
+            }
+        }
+
+        if (dropping && canDrop) {
+            let draggable = source._draggable;
+            actor.opacity = draggable._dragOrigOpacity;
+            global.reparentActor(actor, draggable._dragOrigParent);
+
+            if (movingWorkspaces) {
+                actor.hide();
             }
         }
 
