@@ -47,9 +47,45 @@ class Module:
             self.sidePage.stack.add_titled(page, "settings", _("Settings"))
             settings = page.add_section(_("Settings"))
 
-            switch = GSettingsSwitch(_("Disable automatic screen rotation"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "orientation-lock")
-            switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
-            settings.add_row(switch)
+            # Automatic screen rotation: one 3-way control over the
+            # orientation-lock + disable-rotation-in-laptop-mode keys.
+            self._rotation_settings = Gio.Settings(schema_id="org.cinnamon.settings-daemon.peripherals.touchscreen")
+            rotation_combo = ComboBox(_("Automatic screen rotation"),
+                                      options=[[0, _("Disabled")],
+                                               [1, _("Enabled")],
+                                               [2, _("Tablet mode only")]],
+                                      valtype=int,
+                                      tooltip=_("Tablet mode only: follow the accelerometer when folded into tablet mode, but hold landscape while used as a laptop. Has no effect on devices without a tablet-mode switch."))
+            settings.add_row(rotation_combo)
+            self._rotation_combo = rotation_combo.content_widget
+            self._rotation_updating = False
+
+            def _rotation_read_mode():
+                if self._rotation_settings.get_boolean("orientation-lock"):
+                    return 0
+                if self._rotation_settings.get_boolean("disable-rotation-in-laptop-mode"):
+                    return 2
+                return 1
+
+            def _rotation_refresh(*args):
+                self._rotation_updating = True
+                self._rotation_combo.set_active(_rotation_read_mode())
+                self._rotation_updating = False
+
+            def _rotation_combo_changed(widget):
+                if self._rotation_updating:
+                    return
+                mode = widget.get_active()
+                if mode == 0:
+                    self._rotation_settings.set_boolean("orientation-lock", True)
+                else:
+                    self._rotation_settings.set_boolean("orientation-lock", False)
+                    self._rotation_settings.set_boolean("disable-rotation-in-laptop-mode", mode == 2)
+
+            _rotation_refresh()
+            self._rotation_combo.connect("changed", _rotation_combo_changed)
+            self._rotation_settings.connect("changed::orientation-lock", _rotation_refresh)
+            self._rotation_settings.connect("changed::disable-rotation-in-laptop-mode", _rotation_refresh)
 
             switch = Switch(_("Enable fractional scaling controls (experimental)"))
             switch.set_tooltip_text(_("Select this option to display additional layout controls for per-monitor scaling."))
