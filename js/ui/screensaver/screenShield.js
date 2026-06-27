@@ -22,7 +22,7 @@ const POWER_SCHEMA = 'org.cinnamon.settings-daemon.plugins.power';
 const FADE_TIME = 200;
 const MOTION_THRESHOLD = 100;
 
-const FLOAT_TIMER_INTERVAL = 5;
+const FLOAT_TIMER_INTERVAL = 30;
 const DEBUG_FLOAT = false;  // Set to true for 5-second intervals during development
 
 const MAX_SCREENSAVER_WIDGETS = 3;
