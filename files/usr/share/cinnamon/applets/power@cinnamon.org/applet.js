@@ -133,6 +133,18 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
             this._readyCallback();
         }
 
+        // The proxy can resolve before csd-power has claimed its bus name during
+        // session startup, in which case these calls fail with ServiceUnknown and
+        // the slider would stay hidden forever. Re-query whenever the service
+        // appears so we recover once csd-power is up.
+        this.proxy.connect("notify::g-name-owner", this._serviceAppeared.bind(this));
+        this._serviceAppeared();
+    }
+
+    _serviceAppeared() {
+        if (this.proxy.g_name_owner == null)
+            return;
+
         this.proxy.GetPercentageRemote((b, error) => {
             if (error)
                 return;
