@@ -595,7 +595,8 @@ pixbuf_to_st_content_image (GdkPixbuf *pixbuf,
 }
 
 static cairo_surface_t *
-pixbuf_to_cairo_surface (GdkPixbuf *pixbuf)
+pixbuf_to_cairo_surface (GdkPixbuf *pixbuf,
+                         float      resource_scale)
 {
   cairo_surface_t *dummy_surface;
   cairo_pattern_t *pattern;
@@ -609,6 +610,7 @@ pixbuf_to_cairo_surface (GdkPixbuf *pixbuf)
   pattern = cairo_get_source (cr);
   cairo_pattern_get_surface (pattern, &surface);
   cairo_surface_reference (surface);
+  cairo_surface_set_device_scale (surface, resource_scale, resource_scale);
   cairo_destroy (cr);
   cairo_surface_destroy (dummy_surface);
 
@@ -2034,7 +2036,7 @@ st_texture_cache_load_file_sync_to_cairo_surface (StTextureCache        *cache,
       if (!pixbuf)
         goto out;
 
-      surface = pixbuf_to_cairo_surface (pixbuf);
+      surface = pixbuf_to_cairo_surface (pixbuf, resource_scale);
       g_object_unref (pixbuf);
 
       if (policy == ST_TEXTURE_CACHE_POLICY_FOREVER)
