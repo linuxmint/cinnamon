@@ -1835,11 +1835,13 @@ symbolic_name_for_icon (const char *name)
  * Return Value: (transfer none): A new #ClutterTexture for the icon
  */
 ClutterActor *
-st_texture_cache_load_icon_name (StTextureCache    *cache,
-                                 StThemeNode       *theme_node,
-                                 const char        *name,
-                                 StIconType         icon_type,
-                                 gint               size)
+st_texture_cache_load_icon_name_with_scale (StTextureCache    *cache,
+                                            StThemeNode       *theme_node,
+                                            const char        *name,
+                                            StIconType         icon_type,
+                                            gint               size,
+                                            gint               paint_scale,
+                                            gfloat             resource_scale)
 {
   ClutterActor *texture;
   GIcon *themed;
@@ -1851,24 +1853,28 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
     {
     case ST_ICON_APPLICATION:
       themed = g_themed_icon_new (name);
-      texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+      texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                        paint_scale, resource_scale);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("application-x-executable");
-          texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+          texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                            paint_scale, resource_scale);
           g_object_unref (themed);
         }
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_DOCUMENT:
       themed = g_themed_icon_new (name);
-      texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+      texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                        paint_scale, resource_scale);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("x-office-document");
-          texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+          texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                            paint_scale, resource_scale);
           g_object_unref (themed);
         }
 
@@ -1878,19 +1884,22 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
       symbolic_name = symbolic_name_for_icon (name);
       themed = g_themed_icon_new (symbolic_name);
       g_free (symbolic_name);
-      texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+      texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                        paint_scale, resource_scale);
       g_object_unref (themed);
 
       return CLUTTER_ACTOR (texture);
       break;
     case ST_ICON_FULLCOLOR:
       themed = g_themed_icon_new (name);
-      texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+      texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                        paint_scale, resource_scale);
       g_object_unref (themed);
       if (texture == NULL)
         {
           themed = g_themed_icon_new ("image-missing");
-          texture = st_texture_cache_load_gicon (cache, theme_node, themed, size);
+          texture = st_texture_cache_load_gicon_with_scale (cache, theme_node, themed, size,
+                                                            paint_scale, resource_scale);
           g_object_unref (themed);
         }
 
@@ -1899,6 +1908,19 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
     default:
       g_assert_not_reached ();
     }
+}
+
+ClutterActor *
+st_texture_cache_load_icon_name (StTextureCache    *cache,
+                                 StThemeNode       *theme_node,
+                                 const char        *name,
+                                 StIconType         icon_type,
+                                 gint               size)
+{
+  return st_texture_cache_load_icon_name_with_scale (cache, theme_node, name,
+                                                    icon_type, size,
+                                                    st_theme_context_get_scale_for_stage (),
+                                                    1.0);
 }
 
 /**
