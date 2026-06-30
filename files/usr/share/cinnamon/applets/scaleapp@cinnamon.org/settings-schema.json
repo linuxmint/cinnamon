@@ -1,0 +1,8 @@
+{
+ "activate-on-hover": {
+    "type": "switch",
+    "default" : false,
+    "description" : "Activate scale on hover"
+ }
+}
+
