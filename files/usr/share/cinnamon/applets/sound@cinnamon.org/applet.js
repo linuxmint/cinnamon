@@ -37,7 +37,8 @@ const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 const ICON_SIZE = 28;
 
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
-const OVERAMPLIFICATION_KEY = "allow-amplified-volume";
+const OVERAMPLIFICATION_OUT_KEY = "allow-amplified-out-volume";
+const OVERAMPLIFICATION_IN_KEY = "allow-amplified-in-volume";
 
 class ControlButton {
     constructor(icon, tooltip, callback, small = false) {
@@ -1098,16 +1099,19 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         let appsys = Cinnamon.AppSystem.get_default();
         appsys.connect("installed-changed", () => this._updateLaunchPlayer());
 
-        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_KEY, () => this._on_overamplification_change());
-        this._on_overamplification_change();
+        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_OUT_KEY, () => this._on_overamplification_out_change());
+        this._on_overamplification_out_change();
+
+        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_IN_KEY, () => this._on_overamplification_in_change());
+        this._on_overamplification_in_change();
     }
 
     _setKeybinding() {
         Main.keybindingManager.addXletHotKey(this, "sound-open", this.keyOpen, Lang.bind(this, this._openMenu));
     }
 
-    _on_overamplification_change () {
-        if (this._sound_settings.get_boolean(OVERAMPLIFICATION_KEY)) {
+    _on_overamplification_out_change () {
+        if (this._sound_settings.get_boolean(OVERAMPLIFICATION_OUT_KEY)) {
             this._volumeMax = 1.5 * this._volumeNorm;
             this._outputVolumeSection.set_mark(1/1.5);
         }
@@ -1116,6 +1120,18 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._outputVolumeSection.set_mark(0);
         }
         this._outputVolumeSection._update();
+    }
+
+    _on_overamplification_in_change () {
+        if (this._sound_settings.get_boolean(OVERAMPLIFICATION_IN_KEY)) {
+            this._volumeMax = 1.5 * this._volumeNorm;
+            this._inputVolumeSection.set_mark(1/1.5);
+        }
+        else {
+            this._volumeMax = this._volumeNorm;
+            this._inputVolumeSection.set_mark(0);
+        }
+        this._inputVolumeSection._update();
     }
 
     on_settings_changed () {
