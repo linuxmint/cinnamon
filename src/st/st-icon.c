@@ -57,6 +57,7 @@ struct _StIconPrivate
   gint          theme_icon_size; /* icon size from theme node */
   gint          icon_size;       /* icon size we are using */
   gint          icon_scale;
+  gfloat        resource_scale;
 
   CoglPipeline  *shadow_pipeline;
 
@@ -72,6 +73,7 @@ static void st_icon_update               (StIcon *icon);
 static gboolean st_icon_update_icon_size (StIcon *icon);
 static void st_icon_update_shadow_pipeline (StIcon *icon);
 static void st_icon_clear_shadow_pipeline (StIcon *icon);
+static gfloat st_icon_get_resource_scale (StIcon *icon);
 
 #define DEFAULT_ICON_SIZE 48
 #define DEFAULT_ICON_TYPE ST_ICON_SYMBOLIC
@@ -244,6 +246,33 @@ st_icon_style_changed (StWidget *widget)
   st_icon_update (self);
 }
 
+static gfloat
+st_icon_get_resource_scale (StIcon *icon)
+{
+  gfloat resource_scale = 1.0;
+
+  clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon), &resource_scale);
+
+  return resource_scale;
+}
+
+static void
+st_icon_resource_scale_changed (GObject    *gobject,
+                                GParamSpec *pspec,
+                                gpointer    user_data)
+{
+  StIcon *icon = ST_ICON (gobject);
+  StIconPrivate *priv = icon->priv;
+  gfloat resource_scale;
+
+  resource_scale = st_icon_get_resource_scale (icon);
+  if (priv->resource_scale == resource_scale)
+    return;
+
+  priv->resource_scale = resource_scale;
+  st_icon_update (icon);
+}
+
 static void
 st_icon_class_init (StIconClass *klass)
 {
@@ -309,8 +338,12 @@ st_icon_init (StIcon *self)
   self->priv->shadow_pipeline = NULL;
 
   self->priv->icon_scale = 1;
+  self->priv->resource_scale = 1.0;
 
   self->priv->file_uri = NULL;
+
+  g_signal_connect (self, "notify::resource-scale",
+                    G_CALLBACK (st_icon_resource_scale_changed), NULL);
 }
 
 static void
@@ -436,24 +469,31 @@ st_icon_update (StIcon *icon)
     return;
 
   priv->icon_scale = st_theme_context_get_scale_for_stage ();
+  priv->resource_scale = st_icon_get_resource_scale (icon);
 
   cache = st_texture_cache_get_default ();
   if (priv->gicon)
     {
-      priv->pending_texture = st_texture_cache_load_gicon (cache,
-                                                           (priv->icon_type != ST_ICON_APPLICATION &&
-                                                            priv->icon_type != ST_ICON_DOCUMENT) ?
-                                                           theme_node : NULL,
-                                                           priv->gicon,
-                                                           priv->icon_size);
+      priv->pending_texture =
+        st_texture_cache_load_gicon_with_scale (cache,
+                                                (priv->icon_type != ST_ICON_APPLICATION &&
+                                                 priv->icon_type != ST_ICON_DOCUMENT) ?
+                                                theme_node : NULL,
+                                                priv->gicon,
+                                                priv->icon_size,
+                                                priv->icon_scale,
+                                                priv->resource_scale);
     }
  else if (priv->icon_name)
     {
-      priv->pending_texture = st_texture_cache_load_icon_name (cache,
-                                                               theme_node,
-                                                               priv->icon_name,
-                                                               priv->icon_type,
-                                                               priv->icon_size);
+      priv->pending_texture =
+        st_texture_cache_load_icon_name_with_scale (cache,
+                                                    theme_node,
+                                                    priv->icon_name,
+                                                    priv->icon_type,
+                                                    priv->icon_size,
+                                                    priv->icon_scale,
+                                                    priv->resource_scale);
     }
 
   if (priv->pending_texture)
