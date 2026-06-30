@@ -1960,6 +1960,16 @@ _st_theme_node_ensure_background (StThemeNode *node)
           else
             node->background_position_set = TRUE;
         }
+      else if (strcmp (property_name, "-blur") == 0)
+        {
+          CRTerm *term = decl->value;
+          if (term != NULL &&
+              term->type == TERM_NUMBER &&
+              term->content.num->type == NUM_GENERIC)
+            node->background_blur = (int) term->content.num->val;
+          else
+            get_length_from_term_int (node, decl->value, FALSE, &node->background_blur);
+        }
       else if (strcmp (property_name, "-repeat") == 0)
         {
           if (decl->value->type == TERM_IDENT)
