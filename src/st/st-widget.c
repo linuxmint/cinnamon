@@ -407,10 +407,14 @@ st_widget_paint_background (StWidget *widget, ClutterPaintContext *paint_context
         }
 
       CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
+      gfloat resource_scale = 1.0;
+
+      clutter_actor_get_resource_scale (CLUTTER_ACTOR (widget), &resource_scale);
       st_theme_node_paint (theme_node,
                            fb,
                            &allocation,
                            opacity,
+                           resource_scale,
                            widget->priv->background_blur_effect,
                            widget->priv->background_bumpmap_effect);
     }
