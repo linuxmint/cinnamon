@@ -365,9 +365,15 @@ var Workspace = class Workspace {
         if (refApp === -1) {
             initApp(-1);
         } else if (metaWindow) {
-            if (this.state.settings.groupApps) {
-                this.appGroups[refApp].windowAdded(metaWindow);
-            } else if (transientFavorite && this.appGroups[refApp].groupState.metaWindows.length === 0) {
+            if ((this.state.settings.groupApps || transientFavorite) && this.appGroups[refApp].groupState.metaWindows.length === 0) {
+                if (this.state.settings.groupApps && this.appGroups[refApp].groupState.isFavoriteApp) {
+                    isFavoriteApp = true;
+                }
+                this.appGroups[refApp].destroy();
+                this.appGroups.splice(refApp, 1);
+
+                initApp(refApp);
+            } else if (this.state.settings.groupApps) {
                 this.appGroups[refApp].windowAdded(metaWindow);
             } else if (refWindow === -1) {
                 initApp(refApp+1);
