@@ -642,6 +642,39 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         this.doRemoveWindow(metaWin);
     }
 
+    syncWindow(metaWin) {
+        if (this.state > ThumbnailState.NORMAL) {
+            return;
+        }
+
+        let win = metaWin.get_compositor_private();
+        let index = this.lookupIndex(metaWin);
+        let shouldHaveWindow = win && this.isMyWindow(win) && this.isExpoWindow(win);
+
+        if (shouldHaveWindow) {
+            if (index === -1) {
+                this.doAddWindow(metaWin);
+            } else {
+                this.windows[index].origX = win.x;
+                this.windows[index].origY = win.y;
+            }
+            this.restack(true);
+            return;
+        }
+
+        if (index === -1) {
+            return;
+        }
+
+        let clone = this.windows[index];
+        this.windows.splice(index, 1);
+        clone.destroy();
+
+        if (this.overviewMode) {
+            this.overviewModeOn();
+        }
+    }
+
     onDestroy(actor) {
         actor.remove_all_transitions();
         if (this._collapseId) {
@@ -699,11 +732,14 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         });
         clone.connect('drag-end', (clone) => {
             this.box.emit('drag-end');
+            this.box.queueWindowSync(clone.metaWindow);
             if (clone.dragCancelled) {
                 // stacking order may have been disturbed
                 this.restack();
             }
-            this.overviewModeOn();
+            if (clone.visible) {
+                this.overviewModeOn();
+            }
         });
         this.contents.add_actor(clone);
 
@@ -1006,11 +1042,6 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
 
     handleDragOverOrDrop(dropping, source, actor, x, y, time) {
         this.hovering = false; // normal hover logic is off during dnd
-        if (dropping) {
-            let draggable = source._draggable;
-            actor.opacity = draggable._dragOrigOpacity;
-            global.reparentActor(actor, draggable._dragOrigParent);
-        }
 
         if (source == Main.xdndHandler) {
             return DND.DragMotionResult.CONTINUE;
@@ -1061,6 +1092,16 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
                 if (dropping) {
                     metaWindow.move_to_monitor(targetMonitor);
                 }
+            }
+        }
+
+        if (dropping && canDrop) {
+            let draggable = source._draggable;
+            actor.opacity = draggable._dragOrigOpacity;
+            global.reparentActor(actor, draggable._dragOrigParent);
+
+            if (movingWorkspaces) {
+                actor.hide();
             }
         }
 
@@ -1187,6 +1228,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
         this._initialAllocTimeoutId = 0;
         this._updateStatesLaterId = 0;
+        this._windowSyncIdleIds = new Set();
 
         let allocId = this.connect('notify::allocation', () => {
             this.disconnect(allocId);
@@ -1209,6 +1251,8 @@ var ExpoThumbnailsBox = GObject.registerClass({
                 Meta.later_remove(this._updateStatesLaterId);
                 this._updateStatesLaterId = 0;
             }
+            this._windowSyncIdleIds.forEach(id => GLib.source_remove(id));
+            this._windowSyncIdleIds.clear();
         });
 
         this.toggleGlobalOverviewMode = function() {
@@ -1318,6 +1362,15 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
     removeSelectedWorkspace() {
         this.thumbnails[this.kbThumbnailIndex].removeWorkspace();
+    }
+
+    queueWindowSync(metaWin) {
+        let id = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this._windowSyncIdleIds.delete(id);
+            this.thumbnails.forEach(thumbnail => thumbnail.syncWindow(metaWin));
+            return GLib.SOURCE_REMOVE;
+        });
+        this._windowSyncIdleIds.add(id);
     }
 
     _startWorkspaceDrag(sourceIndex) {
