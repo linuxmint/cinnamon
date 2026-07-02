@@ -1,9 +1,7 @@
 data/wayland_sessions/cinnamon-wayland.desktop.in
 data/xsessions/cinnamon.desktop.in
-data/xsessions/cinnamon2d.desktop.in
 data/cinnamon-wayland.desktop.in.in
 data/cinnamon.desktop.in.in
-data/cinnamon2d.desktop.in.in
 
 # data/search_providers/google.xml
 # data/search_providers/wikipedia.xml

@@ -248,7 +248,7 @@ install_subdir(
     exclude_files : excluded_files
 )
 
-session_files = ['cinnamon.session', 'cinnamon2d.session']
+session_files = ['cinnamon.session']
 if get_option('wayland')
     session_files += ['cinnamon-wayland.session']
 endif
