@@ -1,4 +1,4 @@
-project('Cinnamon', 'c', version : '6.7.3', meson_version : '>=0.64.0')
+project('Cinnamon', 'c', version : '6.7.4', meson_version : '>=0.64.0')
 
 gnome = import('gnome')
 i18n = import('i18n')

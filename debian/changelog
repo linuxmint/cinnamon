@@ -1,3 +1,28 @@
+cinnamon (6.7.4) alfa; urgency=medium
+
+  [ Clement Lefebvre ]
+  * screensaver: Don't prefix msgids with unnecessary "Please" words
+
+  [ Michael Webster ]
+  * soundManager.js: Disable during logout.
+  * a11y@cinnamon.org: Use a working keymap in Wayland sessions.
+  * org.cinnamon.gschema.xml: Remove unused org.cinnamon.background schema.
+  * cinnamon-slideshow.py: Exit when Cinnamon does.
+  * screenshot: Allow disabling the flash.
+  * screenShield.js: Restore original float time.
+  * power applet: Retry the power daemon when it becomes active.
+  * panel: Drop xinerama conversions for panel monitor indices.
+  * osdWindow: cleanup unused code.
+  * ChooserButtonWidgets.py: Remove custom popup positioning workaround.
+
+  [ Clement Lefebvre ]
+  * wayland: Fix HiDPI icon resource scaling
+  * wayland: Fix HiDPI image resource scaling in St/CSS
+  * session: Remove cinnamon2d
+  * sound applet: Don't modify panel icon while playing
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 02 Jul 2026 14:16:46 +0200
+
 cinnamon (6.7.3) zena; urgency=medium
 
   [ Michael Webster ]
