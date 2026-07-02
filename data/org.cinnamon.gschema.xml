@@ -456,9 +456,9 @@
 
     <key name="prevent-focus-stealing" type="b">
       <default>false</default>
-      <summary>[unused] Prevents windows that request user attention from stealing focus</summary>
+      <summary>deprecated - moved to org.cinnamon.desktop.wm.preferences</summary>
       <description>
-        This setting is no longer used.
+        This setting is no longer used. Use org.cinnamon.desktop.wm.preferences prevent-focus-stealing instead.
       </description>
     </key>
 

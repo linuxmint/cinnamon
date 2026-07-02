@@ -6,6 +6,7 @@ gi.require_version('CDesktopEnums', '3.0')
 from gi.repository import Gio, Gtk, CDesktopEnums
 
 from bin.SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
 
@@ -97,6 +98,10 @@ class Module:
 
             widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon.muffin", "bring-windows-to-current-workspace")
             settings.add_row(widget)
+
+            if util.get_session_type() == "wayland":
+                widget = GSettingsSwitch(_("Prevent applications from stealing focus"), "org.cinnamon.desktop.wm.preferences", "prevent-focus-stealing")
+                settings.add_row(widget)
 
             # It's weird to show a combo for two items. For now this is simpler to explain as a switch...
             widget = Switch(_("Give focus to new windows launched from a terminal"))
