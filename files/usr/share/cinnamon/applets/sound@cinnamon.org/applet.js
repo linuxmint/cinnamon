@@ -1331,10 +1331,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 if (path) {
                     this.setIcon(path, "player-path");
                 } else {
-                    this.setIcon('xsi-media-optical-cd-audio', 'player-name');
+                    this.setIcon(this._outputIcon);
                 }
             } else {
-                this.setIcon('xsi-audio-x-generic', 'player-name');
+                this.setIcon(this._outputIcon);
             }
         } else {
             // Nothing is playing - clear player icon and show volume icon
