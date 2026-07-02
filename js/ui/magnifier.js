@@ -48,6 +48,7 @@ const MAGNIFIER_SCHEMA          = 'org.cinnamon.desktop.a11y.magnifier';
 const SCREEN_POSITION_KEY       = 'screen-position';
 const MAG_FACTOR_KEY            = 'mag-factor';
 const LENS_MODE_KEY             = 'lens-mode';
+const SMOOTHING_KEY             = 'smoothing';
 const LENS_SHAPE_KEY            = 'lens-shape';
 const CLAMP_MODE_KEY            = 'scroll-at-edges';
 const MOUSE_TRACKING_KEY        = 'mouse-tracking';
@@ -212,6 +213,11 @@ var Magnifier = class Magnifier {
         this._mouseSprite.content = new MouseSpriteContent();
         this._cursorTracker = cursorTracker;
 
+        // Set the monitor scale so the cursor texture is decoded at the
+        // correct size on HiDPI / fractional-scale displays.
+        this._mouseSprite.content.monitorScale =
+            St.ThemeContext.get_for_stage(global.stage).scale_factor;
+
         this._updateMouseSprite();
 
         this._cursorRoot = new Clutter.Actor();
@@ -220,6 +226,11 @@ var Magnifier = class Magnifier {
         [this.xMouse, this.yMouse, ] = global.get_pointer();
 
         cursorTracker.connect('cursor-changed', this._updateMouseSprite.bind(this));
+
+        // A resolution or scale change invalidates the screen geometry the
+        // zoom regions cached at activation, so refresh them when it happens.
+        this._monitorsChangedId = Main.layoutManager.connect('monitors-changed',
+            this._monitorsChanged.bind(this));
 
         // Create the first ZoomRegion and initialize it according to the
         // magnification settings.
@@ -648,6 +659,7 @@ var Magnifier = class Magnifier {
 
             zoomRegion.setLensMode(this._settings.get_boolean(LENS_MODE_KEY));
             zoomRegion.setClampScrollingAtEdges(!this._settings.get_boolean(CLAMP_MODE_KEY));
+            zoomRegion.setSmoothing(this._settings.get_boolean(SMOOTHING_KEY));
 
             this._updateZoomRegion(zoomRegion)
 
@@ -672,6 +684,8 @@ var Magnifier = class Magnifier {
                                this._updateClampMode.bind(this));
         this._settings.connect('changed::' + MOUSE_TRACKING_KEY,
                                this._updateMouseTrackingMode.bind(this));
+        this._settings.connect('changed::' + SMOOTHING_KEY,
+                               this._updateSmoothing.bind(this));
 
         this._settings.connect('changed::' + SHOW_CROSS_HAIRS_KEY, () => {
             this.setCrosshairsVisible(this._settings.get_boolean(SHOW_CROSS_HAIRS_KEY));
@@ -698,6 +712,16 @@ var Magnifier = class Magnifier {
         });
 
         return ret > 1.0;
+    }
+
+    _monitorsChanged() {
+        if (!this._initialized)
+            return;
+
+        this._mouseSprite.content.monitorScale =
+            St.ThemeContext.get_for_stage(global.stage).scale_factor;
+
+        this._zoomRegions.forEach(zoomRegion => zoomRegion.refreshGeometry());
     }
 
     _updateScreenPosition() {
@@ -736,6 +760,13 @@ var Magnifier = class Magnifier {
         }
     }
 
+    _updateSmoothing() {
+        // Applies only to the first zoom region.
+        if (this._zoomRegions.length) {
+            this._zoomRegions[0].setSmoothing(this._settings.get_boolean(SMOOTHING_KEY));
+        }
+    }
+
     _updateClampMode() {
         // Applies only to the first zoom region.
         if (this._zoomRegions.length) {
@@ -763,6 +794,7 @@ var ZoomRegion = class ZoomRegion {
         this._mouseTrackingMode = MouseTrackingMode.NONE;
         this._clampScrollingAtEdges = false;
         this._lensMode = false;
+        this._smoothing = true;
         this._screenPosition = ScreenPosition.FULL_SCREEN;
         this._lensShape = LensShape.NONE;
         this._magView = null;
@@ -821,7 +853,7 @@ var ZoomRegion = class ZoomRegion {
     setMagFactor(xMagFactor, yMagFactor) {
         this._changeROI({ xMagFactor: xMagFactor,
                           yMagFactor: yMagFactor,
-                          redoCursorTracking: this._followingCursor });
+                          redoCursorTracking: this._mouseTrackingMode != MouseTrackingMode.NONE });
     }
 
     /**
@@ -920,6 +952,28 @@ var ZoomRegion = class ZoomRegion {
      */
     isLensMode() {
         return this._lensMode;
+    }
+
+    /**
+     * setSmoothing:
+     * Toggle linear (smooth) vs nearest-neighbor (true pixel) filtering of the
+     * magnified content.
+     * @smoothing:  Boolean; true = smooth interpolation, false = nearest pixel.
+     */
+    setSmoothing(smoothing) {
+        this._smoothing = smoothing;
+        let filter = smoothing ? Clutter.ScalingFilter.LINEAR
+                               : Clutter.ScalingFilter.NEAREST;
+        let redirect = smoothing ? Clutter.OffscreenRedirect.AUTOMATIC_FOR_OPACITY
+                                 : Clutter.OffscreenRedirect.ALWAYS;
+        if (this._magClip) {
+            this._magClip.set_offscreen_redirect(redirect);
+            this._magClip.set_content_scaling_filters(filter, filter);
+        }
+        if (this._magnifier._mouseSprite)
+            this._magnifier._mouseSprite.set_offscreen_redirect(redirect);
+        if (this._mouseActor)
+            this._mouseActor.set_content_scaling_filters(filter, filter);
     }
 
     /**
@@ -1077,6 +1131,26 @@ var ZoomRegion = class ZoomRegion {
     }
 
     /**
+     * refreshGeometry:
+     * Re-sync the zoom region with the current screen dimensions after a
+     * resolution or scale change. Re-applying the screen position recomputes
+     * the viewport from the new global.screen_width/height; if the region is
+     * active, the actors (magnified view, uiGroup clone, background) are
+     * rebuilt at the new size by cycling activation, which preserves the
+     * current magnification factor.
+     */
+    refreshGeometry() {
+        let wasActive = this.isActive();
+        if (wasActive)
+            this.setActive(false);
+
+        this.setScreenPosition(this._screenPosition);
+
+        if (wasActive)
+            this.setActive(true);
+    }
+
+    /**
      * setLensShape:
      * Sets the shape of the zoom lens
      * @shape:      LensShape.SQUARE, LensShape.HORIZONTAL, LensShape.VERTICAL.
@@ -1187,10 +1261,16 @@ var ZoomRegion = class ZoomRegion {
         });
         mainGroup.add_child(background);
 
-        // Clone the group that contains all of UI on the screen.  This is the
-        // chrome, the windows, etc.
+        // Clone the group that contains all of UI on the screen (the chrome,
+        // the windows, etc.). The clone is wrapped in a screen-sized,
+        // clip-to-allocation actor (_magClip) which carries the magnification
+        // transform and, in nearest-pixel mode, the offscreen redirect.
+        this._magClip = new Clutter.Actor({ clip_to_allocation: true,
+                                            width: global.screen_width,
+                                            height: global.screen_height });
+        mainGroup.add_child(this._magClip);
         this._uiGroupClone = new Clutter.Clone({ source: Main.uiGroup });
-        mainGroup.add_child(this._uiGroupClone);
+        this._magClip.add_child(this._uiGroupClone);
         Main.uiGroup.set_size(global.screen_width, global.screen_height);
 
         // Add either the given mouseSourceActor to the ZoomRegion, or a clone of
@@ -1200,6 +1280,9 @@ var ZoomRegion = class ZoomRegion {
         else
             this._mouseActor = this._mouseSourceActor;
         mainGroup.add_child(this._mouseActor);
+
+        // Apply the configured scaling filter (smooth vs nearest-pixel).
+        this.setSmoothing(this._smoothing);
 
         if (this._crossHairs)
             this._crossHairsActor = this._crossHairs.addToZoomRegion(this, this._mouseActor);
@@ -1213,8 +1296,12 @@ var ZoomRegion = class ZoomRegion {
         if (this._crossHairs)
             this._crossHairs.removeFromParent(this._crossHairsActor);
 
+        if (this._magnifier._mouseSprite)
+            this._magnifier._mouseSprite.set_offscreen_redirect(Clutter.OffscreenRedirect.AUTOMATIC_FOR_OPACITY);
+
         this._magView.destroy();
         this._magView = null;
+        this._magClip = null;
         this._uiGroupClone = null;
         this._mouseActor = null;
         this._crossHairsActor = null;
@@ -1270,7 +1357,7 @@ var ZoomRegion = class ZoomRegion {
             [params.xCenter, params.yCenter] = this._centerFromMousePosition();
         }
 
-        if (this._clampScrollingAtEdges) {
+        if (this._clampScrollingAtEdges || this._isFullScreen()) {
             let roiWidth = this._viewPortWidth / this._xMagFactor;
             let roiHeight = this._viewPortHeight / this._yMagFactor;
 
@@ -1411,11 +1498,11 @@ var ZoomRegion = class ZoomRegion {
         if (!this.isActive())
             return;
 
-        this._uiGroupClone.set_scale(this._xMagFactor, this._yMagFactor);
+        this._magClip.set_scale(this._xMagFactor, this._yMagFactor);
         this._mouseActor.set_scale(this._xMagFactor, this._yMagFactor);
 
         let [x, y] = this._screenToViewPort(0, 0);
-        this._uiGroupClone.set_position(x, y);
+        this._magClip.set_position(x, y);
 
         this._updateMousePosition();
     }
