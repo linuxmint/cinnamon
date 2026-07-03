@@ -251,7 +251,9 @@ st_icon_get_resource_scale (StIcon *icon)
 {
   gfloat resource_scale = 1.0;
 
-  clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon), &resource_scale);
+  if (!clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon), &resource_scale) ||
+      resource_scale <= 0.0)
+    resource_scale = 1.0;
 
   return resource_scale;
 }

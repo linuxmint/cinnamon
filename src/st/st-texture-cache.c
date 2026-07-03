@@ -1032,6 +1032,9 @@ st_texture_cache_load_gicon_with_scale (StTextureCache    *cache,
   else
     lookup_flags |= GTK_ICON_LOOKUP_DIR_LTR;
 
+  if (resource_scale <= 0.0)
+    resource_scale = 1.0;
+
   scale = ceilf (paint_scale * resource_scale);
   info = gtk_icon_theme_lookup_by_gicon_for_scale (theme, icon,
                                                    size, scale,
