@@ -1029,6 +1029,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._output = null;
         this._outputMutedId = 0;
         this._outputIcon = "xsi-audio-volume-muted";
+        this._playerIcon = [null, false];
 
         this._input = null;
         this._inputMutedId = 0;
@@ -1325,19 +1326,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._icon_path = null;
         }
 
-        if (player && (player === true || player._playerStatus == 'Playing')) {
-            // Something is playing
-            if (this.showalbum) {
-                if (path) {
-                    this.setIcon(path, "player-path");
-                } else {
-                    this.setIcon(this._outputIcon);
-                }
-            } else {
-                this.setIcon(this._outputIcon);
-            }
+        if (player && (player === true || player._playerStatus == 'Playing') && this.showalbum && path) {
+            // Playing with album art enabled and available - show the art
+            this.setIcon(path, "player-path");
         } else {
-            // Nothing is playing - clear player icon and show volume icon
             this._playerIcon = [null, false];
             this.setIcon(this._outputIcon);
         }
