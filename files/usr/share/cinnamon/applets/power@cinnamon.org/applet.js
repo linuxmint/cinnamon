@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
 const LoginManager = imports.misc.loginManager;
@@ -99,6 +100,7 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._step = .05;
         this._readyCallback = readyCallback || null;
         this.proxy = null;
+        this._setupTimeoutId = 0;
 
         this.connect("drag-begin", () => {
             this._seeking = true;
@@ -116,7 +118,18 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(busName, this._dbusAcquired.bind(this));
+        this.actor.connect("destroy", () => {
+            if (this._setupTimeoutId > 0) {
+                GLib.source_remove(this._setupTimeoutId);
+                this._setupTimeoutId = 0;
+            }
+        });
+
+        this._setupTimeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 3, () => {
+            this._setupTimeoutId = 0;
+            Interfaces.getDBusProxyAsync(busName, this._dbusAcquired.bind(this));
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _dbusAcquired(proxy, error) {
