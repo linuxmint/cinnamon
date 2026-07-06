@@ -508,7 +508,11 @@ var AuthenticationDialog = GObject.registerClass({
         };
 
         if (delay) {
-            this._sessionRequestTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, resetDialog);
+            this._sessionRequestTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, delay, () => {
+                this._sessionRequestTimeoutId = 0;
+                resetDialog();
+                return GLib.SOURCE_REMOVE;
+            });
             GLib.Source.set_name_by_id(this._sessionRequestTimeoutId, '[cinnamon] this._sessionRequestTimeoutId');
         } else {
             resetDialog();
