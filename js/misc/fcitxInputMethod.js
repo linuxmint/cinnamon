@@ -54,11 +54,9 @@ class FcitxInputMethod extends Clutter.InputMethod {
         this.connect('notify::can-show-preedit', this._updateCapabilities.bind(this));
 
         this._inputSourceManager = KeyboardManager.getInputSourceManager();
-        this._inputSourceManager.reload();
         this._sourceChangedId = this._inputSourceManager.connect('current-source-changed',
                                                                  this._onSourceChanged.bind(this));
         this._currentSource = this._inputSourceManager.currentSource;
-        this._currentSource.activate(true);
 
         this._watchId = Gio.bus_watch_name(Gio.BusType.SESSION, FCITX_SERVICE,
                                            Gio.BusNameWatcherFlags.NONE,

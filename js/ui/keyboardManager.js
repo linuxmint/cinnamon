@@ -545,6 +545,20 @@ var InputSourceManager = class {
         this._sourcesPerWindowChanged();
         this._disableIBus = false;
         this._reloading = false;
+        this._initialized = false;
+    }
+
+    // One-time startup population of the input sources and application of the
+    // base keymap. reload() itself activates the resolved source (and thus
+    // applies its layout), so no explicit activate() is needed here. Called by
+    // main.js for every session, so paths that don't build a JS input method
+    // (e.g. Wayland fcitx, which adopts muffin's native backend) still get set
+    // up.
+    ensureInitialized() {
+        if (this._initialized)
+            return;
+        this._initialized = true;
+        this.reload();
     }
 
     reload() {

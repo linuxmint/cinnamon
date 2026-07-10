@@ -23,11 +23,9 @@ class InputMethod extends Clutter.InputMethod {
         this.connect('notify::can-show-preedit', this._updateCapabilities.bind(this));
 
         this._inputSourceManager = KeyboardManager.getInputSourceManager();
-        this._inputSourceManager.reload();
         this._sourceChangedId = this._inputSourceManager.connect('current-source-changed',
                                                                  this._onSourceChanged.bind(this));
         this._currentSource = this._inputSourceManager.currentSource;
-        this._currentSource.activate(true);
         if (this._ibus.is_connected())
             this._onConnected();
     }

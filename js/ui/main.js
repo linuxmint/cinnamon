@@ -538,6 +538,7 @@ function start() {
     else
         inputMethod = new InputMethod.InputMethod();
     Clutter.get_default_backend().set_input_method(inputMethod);
+    getInputSourceManager().ensureInitialized();
     virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
     virtualKeyboardManager.connect("enabled-changed", () => {
         if (runDialog !== null) {
