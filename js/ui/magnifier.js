@@ -796,8 +796,10 @@ var ZoomRegion = class ZoomRegion {
             this._updateCloneGeometry();
             this._updateMousePosition();
             global.top_window_group.raise_top();
+            global.overlay_group.raise_top();
         } else if (!activate && this.isActive()) {
             global.reparentActor(global.top_window_group, global.stage);
+            global.reparentActor(global.overlay_group, global.stage);
             this._destroyActors();
         }
     }
@@ -1162,7 +1164,12 @@ var ZoomRegion = class ZoomRegion {
     //// Private methods ////
 
     _createActors() {
+        // The zoom region clones uiGroup, so stage-level siblings (see
+        // main.js) must ride inside it while magnified or they vanish from
+        // the zoomed view - overlay_group holds the DND icons and the fcitx
+        // candidate popup.
         global.reparentActor(global.top_window_group, Main.uiGroup);
+        global.reparentActor(global.overlay_group, Main.uiGroup);
         // The root actor for the zoom region
         this._magView = new St.Bin({
             style_class: 'magnifier-zoom-region',
