@@ -345,12 +345,12 @@ var LayoutManager = GObject.registerClass({
     }
 
     get focusIndex() {
-        let i = 0;
-        if (global.stage.key_focus != null)
-            i = this.findMonitorIndexForActor(global.stage.key_focus);
-        else if (global.display.focus_window != null)
-            i = global.display.focus_window.get_monitor();
-        return i;
+        let keyFocus = global.stage.key_focus;
+        if (keyFocus != null && keyFocus != global.stage)
+            return this.findMonitorIndexForActor(keyFocus);
+        if (global.display.focus_window != null)
+            return global.display.focus_window.get_monitor();
+        return 0;
     }
 
     get focusMonitor() {
