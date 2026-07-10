@@ -3,13 +3,24 @@
 
 // Which input-method framework is active for this session.
 //
-// On X11 the choice is made by the user via mintlocale-im / im-config, which
-// exports GTK_IM_MODULE / XMODIFIERS at session start. We trust those: they are
-// the live truth for this session and need no subprocess to query.
+// The detection is deliberately asymmetric between X11 and Wayland, because the
+// input method lives in a different place in each:
 //
-// On Wayland, muffin routes app text-input (text-input-v3) through the in-process
-// ClutterInputMethod, which only has an ibus backend; there is no path for an
-// external fcitx to connect. So Wayland is always treated as ibus for now.
+//   X11:     input methods are the toolkit's / X server's domain - muffin is not
+//            involved. The user's choice is applied by mintlocale-im / im-config
+//            at session start as GTK_IM_MODULE / XMODIFIERS, and we trust that
+//            env: it is the live truth of what actually took effect this session
+//            (not merely what was selected), and needs no subprocess to query.
+//
+//   Wayland: the env is NOT a signal - apps reach the input method through the
+//            compositor (muffin funnels their text-input-v3 into an external
+//            fcitx via input-method-v2, with virtual-keyboard-v1 for key
+//            re-injection), so we deliberately never export GTK_IM_MODULE=fcitx,
+//            and cinnamon-session actively clears the client-side IM env. muffin
+//            is the authority here: it reads the im-config selection
+//            (~/.xinputrc: run_im fcitx5) to decide whether to run that bridge,
+//            so we simply ask it - Meta.im_mode_is_fcitx() - rather than re-parse
+//            the file and risk disagreeing with the compositor.
 //
 // Only an explicit fcitx selection changes behaviour; everything else stays on
 // the historical ibus path, so non-fcitx sessions are unaffected.
@@ -26,17 +37,18 @@ function getFramework() {
     if (_framework != null)
         return _framework;
 
+    let isFcitx;
     if (Meta.is_wayland_compositor()) {
-        _framework = FRAMEWORK_IBUS;
-        return _framework;
+        // Ask the compositor - it already made this call (and checked that
+        // fcitx5 is installed) when deciding whether to bridge fcitx.
+        isFcitx = Meta.im_mode_is_fcitx();
+    } else {
+        // On X11 trust the env im-config exported. Require fcitx5 to actually be
+        // installed too (im-config does not check, and this pins us to fcitx5).
+        let hasFcitx5 = GLib.find_program_in_path('fcitx5') != null;
+        let mod = (GLib.getenv('GTK_IM_MODULE') || GLib.getenv('XMODIFIERS') || '').toLowerCase();
+        isFcitx = hasFcitx5 && mod.includes('fcitx');
     }
-
-    // im-config sets GTK_IM_MODULE=fcitx from ~/.xinputrc without checking that
-    // fcitx is installed, so a stale config after uninstalling fcitx would still
-    // claim fcitx. Require the fcitx5 binary to actually be present (this also
-    // pins us to fcitx5, never fcitx4).
-    let mod = (GLib.getenv('GTK_IM_MODULE') || GLib.getenv('XMODIFIERS') || '').toLowerCase();
-    let isFcitx = mod.includes('fcitx') && GLib.find_program_in_path('fcitx5') != null;
     _framework = isFcitx ? FRAMEWORK_FCITX : FRAMEWORK_IBUS;
 
     return _framework;

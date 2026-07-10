@@ -533,12 +533,21 @@ function start() {
 
     _loadOskLayouts();
     keyboardManager = new KeyboardManager();
-    if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX)
-        inputMethod = new FcitxInputMethod.FcitxInputMethod();
-    else
-        inputMethod = new InputMethod.InputMethod();
-    Clutter.get_default_backend().set_input_method(inputMethod);
     getInputSourceManager().ensureInitialized();
+    let framework = IMFramework.getFramework();
+    if (framework === IMFramework.FRAMEWORK_FCITX && Meta.is_wayland_compositor()) {
+        // On Wayland muffin installs a native input-method-v2 backend that
+        // bridges to an external fcitx; adopt it as Main.inputMethod instead of
+        // the X11 D-Bus backend. It is already set on the Clutter backend.
+        inputMethod = Clutter.get_default_backend().get_input_method();
+    }
+    if (inputMethod == null) {
+        if (framework === IMFramework.FRAMEWORK_FCITX && !Meta.is_wayland_compositor())
+            inputMethod = new FcitxInputMethod.FcitxInputMethod();
+        else
+            inputMethod = new InputMethod.InputMethod();
+        Clutter.get_default_backend().set_input_method(inputMethod);
+    }
     virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
     virtualKeyboardManager.connect("enabled-changed", () => {
         if (runDialog !== null) {

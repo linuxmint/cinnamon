@@ -1061,6 +1061,8 @@ var InputSourceManager = class {
     }
 
     get multipleSources() {
+        if (this.numInputSources == 0)
+            return false;
         return this.numInputSources > 1 || this.inputSources[0].type == INPUT_SOURCE_TYPE_IBUS;
     }
 
