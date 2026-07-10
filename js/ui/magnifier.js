@@ -796,8 +796,10 @@ var ZoomRegion = class ZoomRegion {
             this._updateCloneGeometry();
             this._updateMousePosition();
             global.top_window_group.raise_top();
+            global.overlay_group.raise_top();
         } else if (!activate && this.isActive()) {
             global.reparentActor(global.top_window_group, global.stage);
+            global.reparentActor(global.overlay_group, global.stage);
             this._destroyActors();
         }
     }
@@ -1163,6 +1165,7 @@ var ZoomRegion = class ZoomRegion {
 
     _createActors() {
         global.reparentActor(global.top_window_group, Main.uiGroup);
+        global.reparentActor(global.overlay_group, Main.uiGroup);
         // The root actor for the zoom region
         this._magView = new St.Bin({
             style_class: 'magnifier-zoom-region',

@@ -404,7 +404,6 @@ function start() {
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
     global.reparentActor(global.window_group, uiGroup);
-    global.reparentActor(global.overlay_group, uiGroup);
 
     let stage_bg = new Clutter.Actor();
     let constraint = new Clutter.BindConstraint({ source: global.stage, coordinate: Clutter.BindCoordinate.ALL, offset: 0 })
@@ -416,6 +415,12 @@ function start() {
     stage_bg.add_actor(uiGroup);
 
     global.reparentActor(global.top_window_group, global.stage);
+
+    // Keep the feedback/overlay group topmost, above the ui group and the top
+    // window group. It holds DND icons, overlay-layer-shell surfaces, and the
+    // fcitx input-method candidate popup, all of which must render above
+    // Cinnamon's own chrome.
+    global.reparentActor(global.overlay_group, global.stage);
 
     global.menuStack = [];
 
