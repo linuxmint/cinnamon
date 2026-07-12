@@ -12,6 +12,7 @@ const NotificationDestroyedReason = imports.ui.messageTray.NotificationDestroyed
 const Settings = imports.ui.settings;
 const Gettext = imports.gettext.domain("cinnamon-applets");
 const Util = imports.misc.util;
+const SignalManager = imports.misc.signalManager;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
 
@@ -34,17 +35,22 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // Layout
         this._orientation = orientation;
         this.menuManager = new PopupMenu.PopupMenuManager(this);
+        this.menu = new Applet.AppletPopupMenu(this, orientation);
+        this.menuManager.addMenu(this.menu);
 
         // Lists
         this.notifications = [];    // The list of notifications, in order from oldest to newest.
 
         // Events
-        Main.messageTray.connect('notify-applet-update', Lang.bind(this, this._notification_added));
-        this.panelEditModeHandler = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._on_panel_edit_mode_changed));
+        this.signals = new SignalManager.SignalManager(null);
+        this.signals.connect(Main.messageTray, 'notify-applet-update', this._notification_added.bind(this));
+        this.signals.connect(global.settings, 'changed::' + PANEL_EDIT_MODE_KEY, this._on_panel_edit_mode_changed.bind(this));
 
         // States
         this._blinking = false;
         this._blink_toggle = false;
+
+        this._display();
     }
 
     _setKeybinding() {
@@ -55,12 +61,16 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     on_applet_removed_from_panel () {
         Main.keybindingManager.removeXletHotKey(this, "notification-open");
         Main.keybindingManager.removeXletHotKey(this, "notification-clear");
-        global.settings.disconnect(this.panelEditModeHandler);
-        
+
         MessageTray.extensionsHandlingNotifications--;
         if (MessageTray.extensionsHandlingNotifications === 0) {
             this._clear_all();
         }
+
+        this.signals.disconnectAllSignals();
+        this.settings.finalize();
+        this._crit_icon.destroy();
+        this._alt_crit_icon.destroy();
     }
 
     _openMenu() {
@@ -76,7 +86,6 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // Setup the notification container.
         this._maincontainer = new St.BoxLayout({name: 'traycontainer', vertical: true});
         this._notificationbin = new St.BoxLayout({vertical:true});
-        this.button_label_box = new St.BoxLayout();
 
         // Setup the tray icon.
         this.menu_label = new PopupMenu.PopupMenuItem(stringify(this.notifications.length));
@@ -90,18 +99,11 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.clear_action.connect('activate', Lang.bind(this, this._clear_all));
         this.clear_action.actor.hide();
 
-        if (this._orientation == St.Side.BOTTOM) {
-            this.menu.addMenuItem(this.menu_label);
-            this.menu.addActor(this._maincontainer);
-            this.menu.addMenuItem(this.clear_separator);
-            this.menu.addMenuItem(this.clear_action);
-        } else {
-            this.menu.addMenuItem(this.clear_action);
-            this.menu.addMenuItem(this.clear_separator);
-            this.menu.addMenuItem(this.menu_label);
-            this.menu.addActor(this._maincontainer);
-        }
-
+        this.menu.addMenuItem(this.clear_action);
+        this.menu.addMenuItem(this.clear_separator);
+        this.menu.addMenuItem(this.menu_label);
+        this.menu.addActor(this._maincontainer);
+       
         this.scrollview = new St.ScrollView({ x_fill: true, y_fill: true, y_align: St.Align.START, style_class: "vfade"});
         this._maincontainer.add(this.scrollview);
         this.scrollview.add_actor(this._notificationbin);
@@ -122,7 +124,26 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         this._on_panel_edit_mode_changed();
 
-        this.menu.addSettingsAction(_("Notification Settings"), 'notifications');
+        this.settingsMenuItem = this.menu.addSettingsAction(_("Notification Settings"), 'notifications');
+    }
+
+    _arrangeDisplay() {
+        // Remove menu actors so we can put them back in a different order according to orientation.
+        this.menu.box.remove_all_children();
+        
+        if (this._orientation == St.Side.BOTTOM) {
+            this.menu.addActor(this.menu_label.actor);
+            this.menu.addActor(this._maincontainer);
+            this.menu.addActor(this.clear_separator.actor);
+            this.menu.addActor(this.clear_action.actor);
+        } else {
+            this.menu.addActor(this.clear_action.actor);
+            this.menu.addActor(this.clear_separator.actor);
+            this.menu.addActor(this.menu_label.actor);
+            this.menu.addActor(this._maincontainer);
+        }
+
+        this.menu.addActor(this.settingsMenuItem.actor);
     }
 
     _notification_added (mtray, notification) { // Notification event handler.
@@ -278,12 +299,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     on_orientation_changed (orientation) {
         this._orientation = orientation;
 
-        if (this.menu) {
-            this.menu.destroy();
-        }
-        this.menu = new Applet.AppletPopupMenu(this, orientation);
-        this.menuManager.addMenu(this.menu);
-        this._display();
+        this._arrangeDisplay();
     }
 
     on_applet_clicked(event) {

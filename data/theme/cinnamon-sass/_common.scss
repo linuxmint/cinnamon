@@ -62,6 +62,8 @@ stage {
     icon-size: 16px;
     color: $fg_color;
   }
+
+  -st-progress-color: $accent_bg_color;
 }
 
 // buttons in dialogs

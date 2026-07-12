@@ -18,6 +18,7 @@ const Clutter = imports.gi.Clutter;
 const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
+const Config = imports.misc.config;
 
 const WIGGLE_OFFSET = 6;
 const WIGGLE_DURATION = 65;
@@ -215,6 +216,52 @@ function spawnCommandLineAsync(command_line, callback, errback) {
     });
 }
 
+function _runSubprocessAsyncIO(subprocess, callback, input, stripBash) {
+    subprocess.init(null);
+    let cancellable = new Gio.Cancellable();
+
+    subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
+        let success, stdout, stderr, exitCode;
+        // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
+        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
+        if (typeof callback === 'function' && !cancellable.is_cancelled()) {
+            if (stripBash && stderr && stderr.indexOf('bash: ') > -1) {
+                stderr = stderr.replace(/bash: /, '');
+            }
+            exitCode = success ? subprocess.get_exit_status() : -1;
+            callback(stdout, stderr, exitCode);
+        }
+        subprocess.cancellable = null;
+    });
+    subprocess.cancellable = cancellable;
+
+    return subprocess;
+}
+
+/**
+ * spawnAsyncIO:
+ * @argv: an argument array
+ * @callback (function): called on success or failure
+ * @opts (object): options: flags, input
+ *
+ * Runs @argv in the background. Callback has three arguments -
+ * stdout, stderr, and exitCode.
+ *
+ * Returns (object): a Gio.Subprocess instance
+ */
+function spawnAsyncIO(argv, callback, opts = {}) {
+    let {flags, input} = opts;
+    if (!input) input = null;
+
+    let subprocess = new Gio.Subprocess({
+        argv: argv,
+        flags: flags ? flags
+            : Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
+    });
+
+    return _runSubprocessAsyncIO(subprocess, callback, input, false);
+}
+
 /**
  * spawnCommandLineAsyncIO:
  * @command: a command
@@ -223,6 +270,9 @@ function spawnCommandLineAsync(command_line, callback, errback) {
  *
  * Runs @command in the background. Callback has three arguments -
  * stdout, stderr, and exitCode.
+ *
+ * If you have an argument array instead of a command string, use
+ * spawnAsyncIO() instead.
  *
  * Returns (object): a Gio.Subprocess instance
  */
@@ -235,25 +285,8 @@ function spawnCommandLineAsyncIO(command, callback, opts = {}) {
         flags: flags ? flags
             : Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDIN_PIPE | Gio.SubprocessFlags.STDERR_PIPE,
     });
-    subprocess.init(null);
-    let cancellable = new Gio.Cancellable();
 
-    subprocess.communicate_utf8_async(input, cancellable, (obj, res) => {
-        let success, stdout, stderr, exitCode;
-        // This will throw on cancel with "Gio.IOErrorEnum: Operation was cancelled"
-        tryFn(() => [success, stdout, stderr] = obj.communicate_utf8_finish(res));
-        if (typeof callback === 'function' && !cancellable.is_cancelled()) {
-            if (stderr && stderr.indexOf('bash: ') > -1) {
-                stderr = stderr.replace(/bash: /, '');
-            }
-            exitCode = success ? subprocess.get_exit_status() : -1;
-            callback(stdout, stderr, exitCode);
-        }
-        subprocess.cancellable = null;
-    });
-    subprocess.cancellable = cancellable;
-
-    return subprocess;
+    return _runSubprocessAsyncIO(subprocess, callback, input, !argv);
 }
 
 function _handleSpawnError(command, err) {
@@ -568,13 +601,33 @@ function toFastProperties(obj) {
 
 const READWRITE = GObject.ParamFlags.READABLE | GObject.ParamFlags.WRITABLE;
 
+function _girObjectInfoNProperties(info) {
+    return Config.USE_GIR20 ? info.get_n_properties() : Gir.object_info_get_n_properties(info);
+}
+
+function _girObjectInfoProperty(info, i) {
+    return Config.USE_GIR20 ? info.get_property(i) : Gir.object_info_get_property(info, i);
+}
+
+function _girPropertyInfoFlags(propertyInfo) {
+    return Config.USE_GIR20 ? propertyInfo.get_flags() : Gir.property_info_get_flags(propertyInfo);
+}
+
+function _girObjectInfoParent(info) {
+    return Config.USE_GIR20 ? info.get_parent() : Gir.object_info_get_parent(info);
+}
+
+function _girRepositoryDefault() {
+    return Config.USE_GIR20 ? Gir.Repository.dup_default() : Gir.Repository.get_default();
+}
+
 // Based on https://gist.github.com/ptomato/c4245c77d375022a43c5
 function _getWritablePropertyNamesForObjectInfo(info) {
     let propertyNames = [];
-    let propertyCount = Gir.object_info_get_n_properties(info);
+    let propertyCount = _girObjectInfoNProperties(info);
     for(let i = 0; i < propertyCount; i++) {
-        let propertyInfo = Gir.object_info_get_property(info, i);
-        let flags = Gir.property_info_get_flags(propertyInfo);
+        let propertyInfo = _girObjectInfoProperty(info, i);
+        let flags = _girPropertyInfoFlags(propertyInfo);
         if ((flags & READWRITE) == READWRITE) {
             propertyNames.push(propertyInfo.get_name());
 
@@ -590,10 +643,10 @@ function _getWritablePropertyNamesForObjectInfo(info) {
  * Returns (object): JS representation of the passed GObject
  */
 function getGObjectPropertyValues(obj, r = 0) {
-    let repository = Gir.Repository.get_default();
+    let repository = _girRepositoryDefault();
     let baseInfo = repository.find_by_gtype(obj.constructor.$gtype);
     let propertyNames = [];
-    for (let info = baseInfo; info !== null; info = Gir.object_info_get_parent(info)) {
+    for (let info = baseInfo; info !== null; info = _girObjectInfoParent(info)) {
         propertyNames = [...propertyNames, ..._getWritablePropertyNamesForObjectInfo(info)];
     }
     if (r > 0 && propertyNames.length === 0) {
@@ -645,6 +698,7 @@ function version_exceeds(version, min_version) {
 
 // Maps .desktop action name to an icon
 const DESKTOP_ACTION_ICON_NAMES = {
+    accounts: 'xsi-user-info-symbolic',
     area_shot: 'screenshot-area',
     base: 'x-office-database',
     big_picture: 'xsi-view-fullscreen-symbolic',
@@ -652,10 +706,13 @@ const DESKTOP_ACTION_ICON_NAMES = {
     community: 'xsi-users-symbolic',
     compose: 'xsi-text-editor-symbolic',
     contacts: 'xsi-x-office-address-book-symbolic',
+    disk: 'xsi-drive-harddisk-system-symbolic',
     document: 'xsi-document-new-symbolic',
     draw: 'xsi-x-office-drawing-symbolic',
+    favorite: 'xsi-starred-symbolic',
     friends: 'xsi-user-available-symbolic',
     fullscreen: 'xsi-view-fullscreen-symbolic',
+    incognito: 'view-private',
     impress: 'xsi-x-office-presentation-symbolic',
     library: 'xsi-dictionary-symbolic',
     math: 'x-office-math',
@@ -670,6 +727,14 @@ const DESKTOP_ACTION_ICON_NAMES = {
     open_computer: 'xsi-computer-symbolic',
     open_home: 'xsi-user-home-symbolic',
     open_trash: 'xsi-user-trash-symbolic',
+    open_downloads: 'xsi-folder-download-symbolic',
+    open_folder: 'xsi-folder-symbolic',
+    open_filesystem: 'xsi-drive-harddisk-system-symbolic',
+    open_music: 'xsi-folder-music-symbolic',
+    open_documents: 'xsi-folder-documents-symbolic',
+    open_pictures: 'xsi-folder-pictures-symbolic',
+    open_videos: 'xsi-folder-videos-symbolic',
+    open_recent: 'xsi-folder-recent-symbolic',
     play: 'xsi-media-playback-start-symbolic',
     play_pause: 'xsi-media-playback-start-symbolic',
     preferences: 'xsi-preferences-symbolic',
@@ -768,4 +833,102 @@ function wiggle(actor, params) {
             });
         }
     });
+}
+
+/**
+ * switchToGreeter:
+ *
+ * Locks the screen and switches to the greeter, allowing another user
+ * to log in without logging out the current user. If the screen is
+ * already locked (e.g. called from the screensaver itself), switches
+ * immediately.
+ */
+function switchToGreeter() {
+    let controller = Main.screensaverController;
+
+    if (controller.locked) {
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+        return;
+    }
+
+    controller.lockScreen(false, (wasLocked) => {
+        if (!wasLocked)
+            return;
+        GLib.idle_add(GLib.PRIORITY_DEFAULT, _doSwitchToGreeter);
+    });
+}
+
+function _doSwitchToGreeter() {
+    if (_processIsRunning('gdm')) {
+        // Old GDM
+        try {
+            spawn(['gdmflexiserver', '--startnew', 'Standard']);
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling gdmflexiserver: ' + e.message);
+        }
+    }
+
+    if (_processIsRunning('gdm3')) {
+        // Newer GDM
+        try {
+            spawn(['gdmflexiserver']);
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling gdmflexiserver: ' + e.message);
+        }
+    }
+
+    // Try freedesktop.org standard DBus method (works with most modern display managers)
+    let seat_path = GLib.getenv('XDG_SEAT_PATH');
+    if (seat_path) {
+        try {
+            let bus = Gio.bus_get_sync(Gio.BusType.SYSTEM, null);
+            bus.call_sync(
+                'org.freedesktop.DisplayManager',
+                seat_path,
+                'org.freedesktop.DisplayManager.Seat',
+                'SwitchToGreeter',
+                null,
+                null,
+                Gio.DBusCallFlags.NONE,
+                -1,
+                null
+            );
+            return GLib.SOURCE_REMOVE;
+        } catch (e) {
+            global.logError('Error calling SwitchToGreeter: ' + e.message);
+        }
+    }
+
+    global.logWarning('switchToGreeter: No supported display manager method available');
+    return GLib.SOURCE_REMOVE;
+}
+
+function _processIsRunning(name) {
+    try {
+        let [success, stdout] = GLib.spawn_command_line_sync('pidof ' + name);
+        return success && stdout.length > 0;
+    } catch (e) {
+        return false;
+    }
+}
+
+/**
+ * getTtyVals:
+ *
+ * Determines the VT number of the current graphical session and a free
+ * text console VT. Used by the backup locker to tell the user which
+ * Ctrl+Alt+F key to use for recovery.
+ *
+ * Returns: (array): [termTty, sessionTty] as integers
+ */
+function getTtyVals() {
+    let sessionTty = parseInt(GLib.getenv('XDG_VTNR'));
+    if (isNaN(sessionTty))
+        sessionTty = 7;
+
+    let termTty = sessionTty !== 2 ? 2 : 1;
+
+    return [termTty, sessionTty];
 }

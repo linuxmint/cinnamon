@@ -121,20 +121,12 @@ class Module:
         widget.pack_start(button, True, True, 0)
         settings.add_reveal_row(widget, schema, "use-custom-format")
 
-        widget = GSettingsFontButton(_("Time Font"), "org.cinnamon.desktop.screensaver", "font-time", size_group=size_group)
-        settings.add_row(widget)
-
-        widget = GSettingsFontButton(_("Date Font"), "org.cinnamon.desktop.screensaver", "font-date", size_group=size_group)
-        settings.add_row(widget)
-
         settings = page.add_section(_("Away message"))
 
         widget = GSettingsEntry(_("Show this message when the screen is locked"), schema, "default-message")
         widget.set_child_packing(widget.content_widget, True, True, 0, Gtk.PackType.START)
         widget.set_tooltip_text(_("This is the default message displayed on your lock screen"))
         settings.add_row(widget)
-
-        settings.add_row(GSettingsFontButton(_("Font"), "org.cinnamon.desktop.screensaver", "font-message"))
 
         widget = GSettingsSwitch(_("Ask for a custom message when locking the screen from the menu"), schema, "ask-for-away-message")
         widget.set_tooltip_text(_("This option allows you to type a message each time you lock the screen from the menu"))

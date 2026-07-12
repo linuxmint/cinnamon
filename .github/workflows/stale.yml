@@ -1,0 +1,46 @@
+name: Stale Issues
+
+on:
+  schedule:
+    # Run weekly on Sunday at 2:00 AM UTC
+    - cron: '0 2 * * 0'
+  workflow_dispatch:
+    inputs:
+      days-before-stale:
+        description: 'Days of inactivity before marking stale (4y, 3y, 2y, 1y, 180d, 90d)'
+        required: false
+        default: '730'
+        type: choice
+        options:
+          - '1460'
+          - '1095'
+          - '730'
+          - '365'
+          - '180'
+          - '90'
+      days-before-close:
+        description: 'Days after stale label before closing'
+        required: false
+        default: '30'
+        type: choice
+        options:
+          - '30'
+          - '14'
+          - '7'
+      dry-run:
+        description: 'Dry run - log actions without making changes'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  actions: write
+  issues: write
+
+jobs:
+  stale:
+    uses: linuxmint/github-actions/.github/workflows/stale-issues.yml@master
+    with:
+      days-before-stale: ${{ fromJSON(inputs.days-before-stale || '730') }}
+      days-before-close: ${{ fromJSON(inputs.days-before-close || '30') }}
+      dry-run: ${{ inputs.dry-run || false }}

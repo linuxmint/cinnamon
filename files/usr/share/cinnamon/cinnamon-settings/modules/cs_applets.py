@@ -62,7 +62,7 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.panels = []
         self.current_panel_index = 0
-        print("in applets", config.PARSED_ARGS)
+
         if config.PARSED_ARGS.panel is not None and config.PARSED_ARGS.panel.isdecimal():
             self.panel_id = int(config.PARSED_ARGS.panel)
         else:

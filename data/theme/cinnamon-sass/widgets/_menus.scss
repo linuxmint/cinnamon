@@ -52,6 +52,10 @@ $menuitem_border_radius: $base_border_radius * 1;
   icon-size: $scalable_icon_size;
 }
 
+.popup-inhibitor-menu-item .popup-menu-icon {
+  icon-size: to_em(24px);
+}
+
 // popup submenus
 .popup-sub-menu {
   border-radius: $base_border_radius + 1;
@@ -135,6 +139,11 @@ $menuitem_border_radius: $base_border_radius * 1;
     font-weight: normal;
     color: $fg_color;
   }
+}
+
+// printer applet menu item table
+.popup-printer-menu-item {
+  spacing-columns: 8px;
 }
 
 // Used in window quick list and power applet

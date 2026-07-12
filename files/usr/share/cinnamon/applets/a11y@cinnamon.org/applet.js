@@ -3,7 +3,9 @@ const Gio = imports.gi.Gio;
 const Lang = imports.lang;
 const Applet = imports.ui.applet;
 const Main = imports.ui.main;
+const Clutter = imports.gi.Clutter;
 const Gdk = imports.gi.Gdk;
+const Meta = imports.gi.Meta;
 const GLib = imports.gi.GLib;
 
 const A11Y_KEYBOARD_SCHEMA = 'org.cinnamon.desktop.a11y.keyboard';
@@ -28,8 +30,6 @@ const WM_PREFERENCES_SCHEMA  = 'org.cinnamon.desktop.wm.preferences';
 const KEY_WM_THEME        = 'theme';
 
 const HIGH_CONTRAST_THEME = 'HighContrast';
-
-const Keymap = Gdk.Keymap.get_default();
 
 class CinnamonA11YApplet extends Applet.TextIconApplet {
     constructor(metadata, orientation, panel_height, instance_id) {
@@ -91,11 +91,21 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
             this.menu.addMenuItem(hoverClick);
 
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.menu.addSettingsAction(_("Universal Access Settings"), 'universal-access');
+            this.menu.addSettingsAction(_("Universal Access Settings"), 'accessibility');
 
             this.a11y_settings = new Gio.Settings({ schema_id: A11Y_KEYBOARD_SCHEMA });
 
-            this._keyboardStateChangedId = Keymap.connect('state-changed', Lang.bind(this, this._handleStateChange));
+            if (Meta.is_wayland_compositor()) {
+                // On Wayland the GdkKeymap has no display. Sticky-keys latch/lock
+                // changes are delivered via the Clutter seat instead.
+                this._seat = Clutter.get_default_backend().get_default_seat();
+                this._stickyKeysModsId = this._seat.connect('kbd-a11y-mods-state-changed',
+                    Lang.bind(this, this._handleA11yModsChange));
+            } else {
+                this._keymap = Gdk.Keymap.get_default();
+                this._keyboardStateChangedId = this._keymap.connect('state-changed',
+                    Lang.bind(this, this._handleStateChange));
+            }
             this.set_show_label_in_vertical_panels(false);
             this.hide_applet_label(true);
 
@@ -105,40 +115,47 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
         }
     }
 
-    _handleStateChange(actor, event) {
-        if (this.a11y_settings.get_boolean(KEY_STICKY_KEYS_ENABLED)) {
-            let state = Keymap.get_modifier_state();
-            let modifiers = [];
-            if (state & Gdk.ModifierType.LOCK_MASK)
-                modifiers.push('Lock');
-            if (state & Gdk.ModifierType.CONTROL_MASK)
-                modifiers.push('Ctrl');
-            if (state & Gdk.ModifierType.MOD4_MASK)
-                modifiers.push('Super');
-            if (state & Gdk.ModifierType.SUPER_MASK)
-                modifiers.push('Super');
-            if (state & Gdk.ModifierType.META_MASK)
-                modifiers.push('Meta');
-            if (state & Gdk.ModifierType.ALT_MASK)
-                modifiers.push('Alt');
-            if (state & Gdk.ModifierType.MOD5_MASK)
-                modifiers.push('Alt Gr');
-            if (state & Gdk.ModifierType.SHIFT_MASK)
-                modifiers.push('Shift');
-            if (state & Gdk.ModifierType.MOD1_MASK)
-                modifiers.push('Alt');
-            if (state & Gdk.ModifierType.MOD2_MASK)
-                modifiers.push('Mod2');
-            if (state & Gdk.ModifierType.MOD3_MASK)
-                modifiers.push('Mod3');
-            let keystring = modifiers.join('+');
-
-            this.set_applet_label(keystring);
-            this.set_applet_tooltip(keystring);
-            this._applet_tooltip.show();
-        } else {
+    _handleStateChange(keymap) {
+        if (this.a11y_settings.get_boolean(KEY_STICKY_KEYS_ENABLED))
+            this._updateModifierLabel(keymap.get_modifier_state());
+        else
             this.reset_tooltip();
-        }
+    }
+
+    _handleA11yModsChange(seat, latched, locked) {
+        if (this.a11y_settings.get_boolean(KEY_STICKY_KEYS_ENABLED))
+            this._updateModifierLabel(latched | locked);
+        else
+            this.reset_tooltip();
+    }
+
+    _updateModifierLabel(state) {
+        let modifiers = [];
+        if (state & Clutter.ModifierType.LOCK_MASK)
+            modifiers.push('Lock');
+        if (state & Clutter.ModifierType.CONTROL_MASK)
+            modifiers.push('Ctrl');
+        if (state & Clutter.ModifierType.MOD4_MASK)
+            modifiers.push('Super');
+        if (state & Clutter.ModifierType.SUPER_MASK)
+            modifiers.push('Super');
+        if (state & Clutter.ModifierType.META_MASK)
+            modifiers.push('Meta');
+        if (state & Clutter.ModifierType.MOD5_MASK)
+            modifiers.push('Alt Gr');
+        if (state & Clutter.ModifierType.SHIFT_MASK)
+            modifiers.push('Shift');
+        if (state & Clutter.ModifierType.MOD1_MASK)
+            modifiers.push('Alt');
+        if (state & Clutter.ModifierType.MOD2_MASK)
+            modifiers.push('Mod2');
+        if (state & Clutter.ModifierType.MOD3_MASK)
+            modifiers.push('Mod3');
+        let keystring = modifiers.join('+');
+
+        this.set_applet_label(keystring);
+        this.set_applet_tooltip(keystring);
+        this._applet_tooltip.show();
     }
 
     on_applet_clicked(event) {
@@ -247,6 +264,14 @@ class CinnamonA11YApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
+        if (this._keyboardStateChangedId) {
+            this._keymap.disconnect(this._keyboardStateChangedId);
+            this._keyboardStateChangedId = 0;
+        }
+        if (this._stickyKeysModsId) {
+            this._seat.disconnect(this._stickyKeysModsId);
+            this._stickyKeysModsId = 0;
+        }
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
     }
 }

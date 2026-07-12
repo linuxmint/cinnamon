@@ -34,20 +34,14 @@ var BackgroundManager = class {
     }
 
     showBackground() {
-        if (Meta.is_wayland_compositor()) {
-            global.bottom_window_group.show();
-        }
-        else {
-            global.background_actor.show();
+        for (let actor of global.get_background_actors()) {
+            actor.show();
         }
     }
 
     hideBackground() {
-        if (Meta.is_wayland_compositor()) {
-            global.bottom_window_group.hide();
-        }
-        else {
-            global.background_actor.hide();
+        for (let actor of global.get_background_actors()) {
+            actor.hide();
         }
     }
 

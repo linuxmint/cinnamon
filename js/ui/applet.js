@@ -656,7 +656,7 @@ var Applet = class Applet {
     }
 
     get _panelHeight() {
-        return this.panel.height;
+        return this.panel.heightForZones;
     }
 
     get _scaleMode() {

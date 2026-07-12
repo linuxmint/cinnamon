@@ -1,0 +1,3 @@
+#!/bin/sh
+
+exec /usr/share/cinnamon/cinnamon-screensaver-command/cinnamon-screensaver-command.py "$@"

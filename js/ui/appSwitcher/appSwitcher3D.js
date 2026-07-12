@@ -21,7 +21,7 @@ const PREVIEW_SCALE = 0.5;
 const TITLE_POSITION = 7/8; // percent position
 var ANIMATION_TIME = 250; // ms
 const SWITCH_TIME_DELAY = 100; // milliseconds
-const DIM_FACTOR = 0.4; // percent
+const DIM_OPACITY = 102;
 
 function AppSwitcher3D() {
     this._init.apply(this, arguments);
@@ -37,11 +37,7 @@ AppSwitcher3D.prototype = {
         this._icon = null;
         this._lastTime = 0;
 
-        if (!Meta.is_wayland_compositor()) {
-            this._background = Meta.X11BackgroundActor.new_for_display(global.display);
-        } else {
-            this._background = new Clutter.Actor();
-        }
+        this._background = Main.createFullScreenBackground();
 
         this._background.hide();
         global.overlay_group.add_actor(this._background);
@@ -75,7 +71,7 @@ AppSwitcher3D.prototype = {
         Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(false); });
 
         this._background.ease({
-            dim_factor: DIM_FACTOR,
+            opacity: DIM_OPACITY,
             duration: ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD
         });
@@ -140,7 +136,7 @@ AppSwitcher3D.prototype = {
         // background
         this._background.remove_all_transitions();
         this._background.ease({
-            dim_factor: 1.0,
+            opacity: 255,
             duration: ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => this._destroyActors()

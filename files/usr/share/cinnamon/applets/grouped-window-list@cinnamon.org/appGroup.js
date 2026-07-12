@@ -12,8 +12,9 @@ const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
 
-const createStore = require('./state');
-const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
+const Me = imports.ui.extension.getCurrentExtension();
+const {createStore} = Me.imports.state;
+const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = Me.imports.menus;
 const {
     FLASH_INTERVAL,
     FLASH_MAX_COUNT,
@@ -21,7 +22,7 @@ const {
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
     TitleDisplay
-} = require('./constants');
+} = Me.imports.constants;
 
 const _reLetterRtl = new RegExp("\\p{Script=Hebrew}|\\p{Script=Arabic}", "u");
 const _reLetter = new RegExp("\\p{L}", "u");
@@ -60,7 +61,7 @@ const getFocusState = function(metaWindow) {
     return false;
 };
 
-class AppGroup {
+var AppGroup = class AppGroup {
     constructor(params) {
         this.state = params.state;
         this.workspaceState = params.workspaceState;
@@ -374,10 +375,6 @@ class AppGroup {
     getPreferredWidth(actor, forHeight, alloc) {
         const [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         const [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
-        // The label text starts in the center of the icon, so we should allocate the space
-        // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = 1 * global.ui_scale;
-
         const {appId} = this.groupState;
 
         const allocateForLabel = this.labelVisiblePref ||
@@ -392,16 +389,18 @@ class AppGroup {
             } else {
                 alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
             }
+            alloc.min_size = alloc.natural_size;
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
+            alloc.min_size = 1 * global.ui_scale;
         }
     }
 
     getPreferredHeight(actor, forWidth, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
-        alloc.min_size = Math.min(iconMinSize, labelMinSize);
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
+        alloc.min_size = alloc.natural_size;
     }
 
     allocate(actor, box) {
@@ -554,7 +553,7 @@ class AppGroup {
     }
 
     onEnter() {
-        if (this.state.panelEditMode) return false;
+        if (this.state.panelEditMode || this.state.scrollActive) return false;
 
         this.actor.add_style_pseudo_class('hover');
 
@@ -641,7 +640,7 @@ class AppGroup {
         const {appId, metaWindows, lastFocused} = this.groupState;
 
         if (hasFocus === undefined) {
-            hasFocus = this.workspaceState.lastFocusedApp === appId;
+            hasFocus = this.workspaceState.lastFocusedApp === appId && getFocusState(lastFocused);
         }
 
         // If any of the windows associated with our app have focus,
@@ -948,6 +947,7 @@ class AppGroup {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
             this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon-name', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,
@@ -1224,5 +1224,3 @@ class AppGroup {
         }
     }
 }
-
-module.exports = AppGroup;

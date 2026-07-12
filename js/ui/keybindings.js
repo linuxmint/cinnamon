@@ -5,6 +5,7 @@ const GLib = imports.gi.GLib;
 const Lang = imports.lang;
 const Util = imports.misc.util;
 const Meta = imports.gi.Meta;
+const Cinnamon = imports.gi.Cinnamon;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 
@@ -17,27 +18,83 @@ const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
-const REPEATABLE_MEDIA_KEYS = [
-    MK.VOLUME_UP,
-    MK.VOLUME_UP_QUIET,
-    MK.VOLUME_DOWN,
-    MK.VOLUME_DOWN_QUIET,
-    MK.SCREEN_BRIGHTNESS_UP,
-    MK.SCREEN_BRIGHTNESS_DOWN,
-    MK.KEYBOARD_BRIGHTNESS_UP,
-    MK.KEYBOARD_BRIGHTNESS_DOWN,
-    MK.REWIND,
-    MK.FORWARD,
+const MEDIA_KEYS = [
+    // Volume/audio
+    { key: MK.MUTE,                       mode: Cinnamon.ActionMode.ALL },
+    { key: MK.MUTE_QUIET,                 mode: Cinnamon.ActionMode.ALL },
+    { key: MK.VOLUME_UP,                  mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.VOLUME_UP_QUIET,            mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.VOLUME_DOWN,                mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.VOLUME_DOWN_QUIET,          mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.MIC_MUTE,                   mode: Cinnamon.ActionMode.ALL },
+
+    // Disc/media
+    { key: MK.EJECT,                      mode: Cinnamon.ActionMode.ALL },
+    { key: MK.MEDIA,                      mode: Cinnamon.ActionMode.ALL },
+
+    // Playback
+    { key: MK.PLAY,                       mode: Cinnamon.ActionMode.ALL },
+    { key: MK.PAUSE,                      mode: Cinnamon.ActionMode.ALL },
+    { key: MK.STOP,                       mode: Cinnamon.ActionMode.ALL },
+    { key: MK.PREVIOUS,                   mode: Cinnamon.ActionMode.ALL },
+    { key: MK.NEXT,                       mode: Cinnamon.ActionMode.ALL },
+    { key: MK.REWIND,                     mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.FORWARD,                    mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.REPEAT,                     mode: Cinnamon.ActionMode.ALL },
+    { key: MK.RANDOM,                     mode: Cinnamon.ActionMode.ALL },
+
+    // Screenshots
+    { key: MK.SCREENSHOT,                 mode: Cinnamon.ActionMode.ALL },
+    { key: MK.SCREENSHOT_CLIP,            mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.WINDOW_SCREENSHOT,          mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.WINDOW_SCREENSHOT_CLIP,     mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.AREA_SCREENSHOT,            mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.AREA_SCREENSHOT_CLIP,       mode: Cinnamon.ActionMode.NORMAL },
+
+    // Touchpad
+    { key: MK.TOUCHPAD,                   mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.TOUCHPAD_ON,                mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.TOUCHPAD_OFF,               mode: Cinnamon.ActionMode.NORMAL },
+
+    // Session
+    { key: MK.LOGOUT,                     mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.SHUTDOWN,                   mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.SUSPEND,                    mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.HIBERNATE,                  mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.SCREENSAVER,                mode: Cinnamon.ActionMode.NORMAL },
+
+    // App launchers
+    { key: MK.HOME,                       mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.CALCULATOR,                 mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.SEARCH,                     mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.EMAIL,                      mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.HELP,                       mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.TERMINAL,                   mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.WWW,                        mode: Cinnamon.ActionMode.NORMAL },
+
+    // Display
+    { key: MK.ROTATE_VIDEO_LOCK,          mode: Cinnamon.ActionMode.ALL },
+
+    // Accessibility
+    { key: MK.SCREENREADER,               mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.ON_SCREEN_KEYBOARD,         mode: Cinnamon.ActionMode.NORMAL |
+                                                Cinnamon.ActionMode.POPUP |
+                                                Cinnamon.ActionMode.UNLOCK_SCREEN |
+                                                Cinnamon.ActionMode.SYSTEM_MODAL },
+    { key: MK.INCREASE_TEXT,              mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.DECREASE_TEXT,              mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.TOGGLE_CONTRAST,            mode: Cinnamon.ActionMode.NORMAL },
+
+    // Brightness
+    { key: MK.SCREEN_BRIGHTNESS_UP,       mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.SCREEN_BRIGHTNESS_DOWN,     mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.KEYBOARD_BRIGHTNESS_UP,     mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.KEYBOARD_BRIGHTNESS_DOWN,   mode: Cinnamon.ActionMode.ALL, repeatable: true },
+    { key: MK.KEYBOARD_BRIGHTNESS_TOGGLE, mode: Cinnamon.ActionMode.ALL },
+
+    // Battery
+    { key: MK.BATTERY,                    mode: Cinnamon.ActionMode.NORMAL },
 ];
-
-const OBSOLETE_MEDIA_KEYS = [
-    MK.VIDEO_OUT,
-    MK.ROTATE_VIDEO
-]
-
-function is_obsolete_mk(key_enum) {
-    return OBSOLETE_MEDIA_KEYS.includes(key_enum);
-};
 
 const iface = "\
     <node> \
@@ -75,6 +132,7 @@ KeybindingManager.prototype = {
 
         this.media_key_settings = new Gio.Settings({ schema_id: MEDIA_KEYS_SCHEMA });
         this.media_key_settings.connect("changed", Lang.bind(this, this.setup_media_keys));
+
         this.setup_media_keys();
     },
 
@@ -83,10 +141,10 @@ KeybindingManager.prototype = {
         this.setup_custom_keybindings();
     },
 
-    addHotKey: function(name, bindings_string, callback, flags) {
+    addHotKey: function(name, bindings_string, callback, flags, allowedModes) {
         if (!bindings_string)
             return false;
-        return this.addHotKeyArray(name, bindings_string.split("::"), callback, flags);
+        return this.addHotKeyArray(name, bindings_string.split("::"), callback, flags, allowedModes);
     },
 
     _makeXletKey: function(xlet, name, binding) {
@@ -121,7 +179,7 @@ KeybindingManager.prototype = {
      *  }
      */
 
-    addXletHotKey: function(xlet, name, bindings_string, callback, flags) {
+    addXletHotKey: function(xlet, name, bindings_string, callback, flags, allowedModes) {
         this._removeMatchingXletBindings(xlet, name);
 
         if (!bindings_string)
@@ -144,7 +202,7 @@ KeybindingManager.prototype = {
 
             xlet_set.set(instanceId, callback);
 
-            this._queueCommitXletHotKey(xlet_key, binding, xlet_set, flags);
+            this._queueCommitXletHotKey(xlet_key, binding, xlet_set, flags, allowedModes);
         }
     },
 
@@ -238,7 +296,7 @@ KeybindingManager.prototype = {
         this._removeMatchingXletBindings(xlet, name);
     },
 
-    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set, flags) {
+    _queueCommitXletHotKey: function(xlet_key, binding, xlet_set, flags, allowedModes) {
         let id = xlet_set.get("commitTimeoutId") ?? 0;
 
         if (id > 0) {
@@ -246,7 +304,7 @@ KeybindingManager.prototype = {
         }
 
         id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
-            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key), flags);
+            this.addHotKeyArray(xlet_key, [binding], this._xletCallback.bind(this, xlet_key), flags, allowedModes);
             xlet_set.set("commitTimeoutId", 0);
             return GLib.SOURCE_REMOVE;
         });
@@ -266,7 +324,14 @@ KeybindingManager.prototype = {
         return [Meta.KeyBindingAction.NONE, undefined];
     },
 
-    addHotKeyArray: function(name, bindings, callback, flags=Meta.KeyBindingFlags.IGNORE_AUTOREPEAT) {
+    getBindingById: function(action_id) {
+        return this.bindings.get(action_id);
+    },
+
+    addHotKeyArray: function(name, bindings, callback,
+                             flags=Meta.KeyBindingFlags.IGNORE_AUTOREPEAT,
+                             allowedModes=Cinnamon.ActionMode.NORMAL |
+                                          Cinnamon.ActionMode.POPUP) {
         let [existing_action_id, entry] = this._lookupEntry(name);
 
         if (entry !== undefined) {
@@ -292,16 +357,17 @@ KeybindingManager.prototype = {
         }
 
         action_id = global.display.add_custom_keybinding_full(name, bindings, flags, callback);
-        // log(`set keybinding: ${name}, bindings: ${bindings}, flags: ${flags} - action id: ${action_id}`);
+        // log(`set keybinding: ${name}, bindings: ${bindings}, flags: ${flags}, allowedModes: ${allowedModes} - action id: ${action_id}`);
 
         if (action_id === Meta.KeyBindingAction.NONE) {
             global.logError("Warning, unable to bind hotkey with name '" + name + "'.  The selected keybinding could already be in use.");
             return false;
         }
         this.bindings.set(action_id, {
-            "name"    : name,
-            "bindings": bindings,
-            "callback": callback
+            "name"        : name,
+            "bindings"    : bindings,
+            "callback"    : callback,
+            "allowedModes": allowedModes
         });
 
         return true;
@@ -348,56 +414,70 @@ KeybindingManager.prototype = {
     },
 
     setup_media_keys: function() {
-        for (let i = 0; i < MK.SEPARATOR; i++) {
-            if (is_obsolete_mk(i)) {
-                continue;
-            }
-
-            let flags = REPEATABLE_MEDIA_KEYS.includes(i)
+        for (const mk of MEDIA_KEYS) {
+            let flags = mk.repeatable
                 ? Meta.KeyBindingFlags.NONE
                 : Meta.KeyBindingFlags.IGNORE_AUTOREPEAT;
 
-            let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
-            this.addHotKeyArray("media-keys-" + i.toString(),
-                           bindings,
-                           Lang.bind(this, this.on_global_media_key_pressed, i),
-                           flags);
-        }
+            let bindings = this.media_key_settings.get_strv(
+                CinnamonDesktop.desktop_get_media_key_string(mk.key)
+            );
 
-        for (let i = MK.SEPARATOR + 1; i < MK.LAST; i++) {
-            if (is_obsolete_mk(i)) {
-                continue;
-            }
-
-            let flags = REPEATABLE_MEDIA_KEYS.includes(i)
-                ? Meta.KeyBindingFlags.NONE
-                : Meta.KeyBindingFlags.IGNORE_AUTOREPEAT;
-
-            let bindings = this.media_key_settings.get_strv(CinnamonDesktop.desktop_get_media_key_string(i));
-            this.addHotKeyArray("media-keys-" + i.toString(),
-                           bindings,
-                           Lang.bind(this, this.on_media_key_pressed, i),
-                           flags);
+            this.addHotKeyArray(
+                "media-keys-" + mk.key.toString(),
+                bindings,
+                Lang.bind(this, this.on_media_key_pressed, mk.key),
+                flags,
+                mk.mode
+            );
         }
         return true;
     },
 
-    on_global_media_key_pressed: function(display, window, kb, action) {
-        // log(`global media key ${display}, ${window}, ${kb}, ${action}`);
+    on_media_key_pressed: function(display, window, kb, action) {
+        let [, entry] = this._lookupEntry("media-keys-" + action.toString());
+        if (Main._shouldFilterKeybinding(entry))
+            return;
+
+        // The screensaver key always goes through the controller - it resolves
+        // custom-screensaver-command, internal shield, and external daemon modes.
+        if (action === MK.SCREENSAVER) {
+            GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                Main.screensaverController.lockScreen(false);
+                return GLib.SOURCE_REMOVE;
+            });
+            return;
+        }
+
         this._proxy.HandleKeybindingRemote(action);
     },
 
-    on_media_key_pressed: function(display, window, kb, action) {
-        // log(`media key ${display}, ${window}, ${kb}, ${action}`);
-        if (Main.modalCount == 0 && !Main.overview.visible && !Main.expo.visible)
-            this._proxy.HandleKeybindingRemote(action);
+    _onBuiltinKeyPressed: function(display, window, binding, actionId) {
+        let entry = this.bindings.get(actionId);
+
+        if (entry === undefined || Main._shouldFilterKeybinding(entry))
+            return;
+
+        entry.callback(display, window, binding);
+    },
+
+    setBuiltinHandler: function(name, actionId, callback, allowedModes=Cinnamon.ActionMode.NORMAL) {
+        Meta.keybindings_set_custom_handler(name,
+            (display, window, binding) => this._onBuiltinKeyPressed(display, window, binding, actionId)
+        );
+
+        this.bindings.set(actionId, {
+            name: name,
+            bindings: [],
+            callback: callback,
+            allowedModes: allowedModes
+        });
     },
 
     invoke_keybinding_action_by_id: function(id) {
-        const binding = this.bindings.get(id);
-        if (binding !== undefined) {
-            // log(`invoke_keybinding_action_by_id: ${binding.name}, bindings: ${binding.bindings} - action id: ${id}`);
-            binding.callback(null, null, null);
+        const entry = this.bindings.get(id);
+        if (entry !== undefined) {
+            entry.callback(null, null, { get_name: () => entry.name });
         }
     }
 };

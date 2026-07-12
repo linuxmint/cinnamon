@@ -5,7 +5,7 @@ from bin import util
 
 print("KeybindingWidgets session type: %s" % util.get_session_type())
 
-FORBIDDEN_KEYVALS = [
+FORBIDDEN_UNMODDED_KEYVALS = [
     Gdk.KEY_Home,
     Gdk.KEY_Left,
     Gdk.KEY_Up,
@@ -45,6 +45,15 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_KP_Divide,
     Gdk.KEY_KP_Enter,
     Gdk.KEY_Num_Lock
+]
+
+# Keys that can never be used in a shortcut at all (regardless of modifiers),
+# paired with the reason shown to the user. (keyval, explanation)
+FORBIDDEN_KEYVALS = [
+    (Gdk.KEY_Caps_Lock,
+     _("Caps Lock cannot be used in a keyboard shortcut - pressing it always "
+       "toggles the Caps Lock state. You can configure this key to switch "
+       "keyboard layouts in the XKB Options tab.")),
 ]
 
 class ButtonKeybinding(Gtk.TreeView):
@@ -321,6 +330,27 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
         accel_mods &= Gtk.accelerator_get_default_mod_mask()
 
+        # Some keys can never serve as a shortcut no matter the modifiers (e.g.
+        # Caps Lock always toggles its own lock state). Reject them outright and
+        # tell the user why.
+        forbidden_msg = next((msg for kv, msg in FORBIDDEN_KEYVALS if kv == keyval), None)
+        if forbidden_msg is not None:
+            dialog = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                       Gtk.MessageType.WARNING,
+                                       Gtk.ButtonsType.CLOSE,
+                                       None)
+            dialog.set_markup(forbidden_msg)
+            dialog.show_all()
+            dialog.run()
+            dialog.destroy()
+
+            self.update_label()
+            self.teaching = False
+            self.path = None
+            self.press_event = None
+            return True
+
         if accel_mods == 0:
             if accel_key == Gdk.KEY_Escape:
                 self.update_label()
@@ -353,7 +383,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 or  (keyval >= Gdk.KEY_Thai_kokai           and keyval <= Gdk.KEY_Thai_lekkao)
                 or  (keyval >= Gdk.KEY_Hangul               and keyval <= Gdk.KEY_Hangul_Special)
                 or  (keyval >= Gdk.KEY_Hangul_Kiyeog        and keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
-                    or  keyval in FORBIDDEN_KEYVALS):
+                    or  keyval in FORBIDDEN_UNMODDED_KEYVALS):
                 dialog = Gtk.MessageDialog(None,
                                            Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                            Gtk.MessageType.WARNING,

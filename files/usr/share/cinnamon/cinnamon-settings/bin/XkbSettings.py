@@ -3,8 +3,6 @@
 from gi.repository import Gio, Gtk, CinnamonDesktop, Pango, GLib
 
 from xapp.SettingsWidgets import SettingsSection
-from bin import util
-import subprocess
 
 class XkbSettingsEditor(SettingsSection):
     # Groups that are hidden from UI (broken or not supported in Cinnamon)
@@ -44,202 +42,45 @@ class XkbSettingsEditor(SettingsSection):
         }
     }
 
+    LEFT_PANE_WIDTH = 250
+    LEFT_PANE_MIN_WIDTH = 150
+
     def __init__(self, **kwargs):
         super().__init__()
-        self.input_source_settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+        self.settings = Gio.Settings(schema_id="org.cinnamon.desktop.input-sources")
+        self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
 
-        self.option_groups = {}
-        self.selected_group_id = None
-        self.is_wayland = util.get_session_type() == "wayland"
+        self._building = False
+        self._internal_write = False
+        self._current_group = None
+        self._rows_by_group_id = {}
 
-        self.load_options_for_validation()
+        self.groups = self._build_groups()
 
-        self.main_stack = Gtk.Stack()
-        self.main_stack.set_transition_type(Gtk.StackTransitionType.SLIDE_LEFT_RIGHT)
-        self.main_stack.set_transition_duration(200)
+        self._build_ui()
+        self._populate_group_list()
 
-        self._create_view_mode()
-        self._create_add_mode()
+        self.settings.connect("changed::xkb-options", self._on_external_change)
 
-        self.main_stack.add_named(self.view_box, "view")
-        self.main_stack.add_named(self.add_box, "add")
-        self.main_stack.set_visible_child_name("view")
-        self.pack_start(self.main_stack, True, True, 0)
-
-        self.reload()
+        first = self.groups_listbox.get_row_at_index(0)
+        if first is not None:
+            self.groups_listbox.select_row(first)
 
     def _is_group_allowed(self, group_id):
-        if group_id in self.FORBIDDEN_GROUPS:
-            return False
+        return group_id not in self.FORBIDDEN_GROUPS
 
-        # Check if group is allowed in current session type
-        if group_id in self.ALLOWED_OPTIONS:
-            group_config = self.ALLOWED_OPTIONS[group_id]
-            wayland_allowed = group_config.get('wayland_allowed', True)
-            if self.is_wayland and not wayland_allowed:
-                return False
-
-        return True
-
-    def _get_canonical_group_name(self, group_id):
-        """Convert option prefix to canonical group name for xkbinfo queries.
-        E.g., 'compose' -> 'Compose key'
+    def _build_groups(self):
+        """Build an ordered list of group descriptors:
+        { id, description, multi, all_ids, displayed:[(option_id, description)] }
+        'id' is the XkbInfo group id and is used for every XkbInfo lookup.
+        'all_ids' is the full set of the group's option ids (including ones not
+        offered in the UI) and is used to map a stored option back to its group.
+        Mapping is by exact option-id membership, not by prefix: a prefix can
+        span two groups (e.g. 'keypad:legacy' is in the keypad group while
+        'keypad:pointerkeys' is in compat), but the option ids never overlap.
         """
-        return self.prefix_to_group.get(group_id, group_id)
-
-    def _sort_groups_func(self, row1, row2):
-        """Sort groups by description."""
-        desc1 = row1.group_description
-        desc2 = row2.group_description
-        if desc1 < desc2:
-            return -1
-        elif desc1 > desc2:
-            return 1
-        return 0
-
-    def _sort_options_func(self, row1, row2):
-        """Sort options by description."""
-        desc1 = row1.option_description
-        desc2 = row2.option_description
-        if desc1 < desc2:
-            return -1
-        elif desc1 > desc2:
-            return 1
-        return 0
-
-    def load_options_for_validation(self):
-        self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
-        groups = self.xkb_info.get_all_option_groups()
-
-        # Build mapping from option prefix to canonical group name
-        self.prefix_to_group = {}
-
-        for group in groups:
-            self.option_groups[group] = []
-            for opt in self.xkb_info.get_options_for_group(group):
-                self.option_groups[group].append(opt)
-                # Extract prefix from option (e.g., "compose:ralt" -> "compose")
-                if ':' in opt:
-                    prefix = opt.split(':')[0]
-                    self.prefix_to_group[prefix] = group
-
-        # alias for backward compatibility
-        self.option_groups["compose"] = self.option_groups["Compose key"]
-
-    def _create_view_mode(self):
-        self.view_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-
-        # TreeStore: [group_id, option_id, display_text]
-        self.tree_store = Gtk.TreeStore(str, str, str)
-
-        # Wrap with sorted model
-        self.sorted_model = Gtk.TreeModelSort(model=self.tree_store)
-        self.sorted_model.set_sort_column_id(2, Gtk.SortType.ASCENDING)
-
-        self.tree_view = Gtk.TreeView(model=self.sorted_model)
-        self.tree_view.set_headers_visible(False)
-
-        text_renderer = Gtk.CellRendererText()
-        column = Gtk.TreeViewColumn("Option", text_renderer, text=2)
-        self.tree_view.append_column(column)
-
-        self.selection = self.tree_view.get_selection()
-        self.selection.connect("changed", self._on_selection_changed)
-
-        scrolled = Gtk.ScrolledWindow()
-        scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        scrolled.set_shadow_type(Gtk.ShadowType.IN)
-        scrolled.add(self.tree_view)
-
-        self._create_view_toolbar()
-
-        # Build view mode layout
-        list_container = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
-        list_container.get_style_context().add_class("linked")
-        list_container.pack_start(scrolled, True, True, 0)
-        list_container.pack_start(self.view_toolbar, False, False, 0)
-
-        self.view_box.pack_start(list_container, True, True, 0)
-
-    def _create_view_toolbar(self):
-        self.view_toolbar = Gtk.Toolbar()
-        self.view_toolbar.get_style_context().add_class("inline-toolbar")
-
-        tool_item = Gtk.ToolItem()
-        tool_item.set_expand(True)
-
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=0)
-        button_box.get_style_context().add_class("linked")
-
-        self.btn_add = Gtk.Button()
-        self.btn_add.set_image(Gtk.Image.new_from_icon_name("xsi-list-add-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_add.set_tooltip_text(_("Add"))
-        self.btn_add.connect("clicked", self._on_add_clicked)
-
-        self.btn_remove = Gtk.Button()
-        self.btn_remove.set_image(Gtk.Image.new_from_icon_name("xsi-list-remove-symbolic", Gtk.IconSize.BUTTON))
-        self.btn_remove.set_tooltip_text(_("Remove"))
-        self.btn_remove.set_sensitive(False)
-        self.btn_remove.connect("clicked", self._on_remove_clicked)
-
-        button_box.pack_start(self.btn_add, False, False, 0)
-        button_box.pack_start(self.btn_remove, False, False, 0)
-
-        tool_item.add(button_box)
-        self.view_toolbar.insert(tool_item, -1)
-
-    def _create_add_mode(self):
-        self.add_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
-
-        self.group_desc_label = Gtk.Label()
-        self.group_desc_label.set_text(_("Select an option"))
-        self.group_desc_label.set_halign(Gtk.Align.START)
-
-        attr_list = Pango.AttrList()
-        attr_list.insert(Pango.attr_weight_new(Pango.Weight.BOLD))
-        self.group_desc_label.set_attributes(attr_list)
-        self.add_box.pack_start(self.group_desc_label, False, False, 0)
-
-        self.add_stack = Gtk.Stack()
-        self.add_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
-        self.add_stack.set_transition_duration(200)
-
-        self._create_groups_page()
-        self._create_options_page()
-
-        self.add_stack.add_named(self.groups_scrolled, "groups")
-        self.add_stack.add_named(self.options_box, "options")
-        self.add_stack.set_visible_child_name("groups")
-
-        self.add_box.pack_start(self.add_stack, True, True, 0)
-
-        button_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-
-        button_box.set_halign(Gtk.Align.FILL)
-        self.btn_back = Gtk.Button(label=_("Back"))
-        self.btn_back.connect("clicked", self._on_back_clicked)
-        self.btn_back.set_no_show_all(True)
-        button_box.pack_start(self.btn_back, False, False, 0)
-
-        btn_cancel = Gtk.Button(label=_("Cancel"))
-        btn_cancel.connect("clicked", self._on_cancel_clicked)
-        button_box.pack_end(btn_cancel, False, False, 0)
-
-        self.add_box.pack_start(button_box, False, False, 0)
-
-    def _create_groups_page(self):
-        self.groups_scrolled = Gtk.ScrolledWindow()
-        self.groups_scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        self.groups_scrolled.set_shadow_type(Gtk.ShadowType.IN)
-
-        self.groups_listbox = Gtk.ListBox()
-        self.groups_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-        self.groups_listbox.set_sort_func(self._sort_groups_func)
-        self.groups_listbox.connect("row-activated", self._on_group_activated)
-        self.groups_scrolled.add(self.groups_listbox)
-
-        groups = self.xkb_info.get_all_option_groups()
-        for group_id in groups:
+        groups = []
+        for group_id in self.xkb_info.get_all_option_groups():
             if not self._is_group_allowed(group_id):
                 continue
 
@@ -247,260 +88,264 @@ class XkbSettingsEditor(SettingsSection):
             if not description:
                 continue
 
-            label = Gtk.Label(label=description, xalign=0)
-            label.set_margin_start(2)
+            # Tag groups whose options only work under X11 (e.g. muffin has no
+            # 'grp' switching support on Wayland), driven by 'wayland_allowed'.
+            group_config = self.ALLOWED_OPTIONS.get(group_id)
+            if group_config is not None and not group_config.get('wayland_allowed', True):
+                description = _("%s (X11 only)") % description
+
+            all_options = self.xkb_info.get_options_for_group(group_id) or []
+            if not all_options:
+                continue
+
+            # Options actually offered in the UI (curated where a whitelist exists).
+            if group_id in self.ALLOWED_OPTIONS:
+                allowed = set(self.ALLOWED_OPTIONS[group_id]['options'])
+                displayed_ids = [o for o in all_options
+                                 if ':' in o and o.split(':', 1)[1] in allowed]
+            else:
+                displayed_ids = list(all_options)
+
+            multi = self.xkb_info.get_option_group_allows_multiple_selection(group_id)
+            # Muffin only supports a single layout-switch toggle.
+            if group_id == "grp":
+                multi = False
+
+            groups.append({
+                "id": group_id,
+                "description": description,
+                "multi": multi,
+                "all_ids": set(all_options),
+                "displayed": sorted(
+                    [(o, self.xkb_info.description_for_option(group_id, o) or o)
+                     for o in displayed_ids],
+                    key=lambda item: item[1].lower()),
+            })
+
+        groups.sort(key=lambda g: g["description"].lower())
+        return groups
+
+    def _stored_options(self):
+        return self.settings.get_strv("xkb-options")
+
+    def _stored_for_group(self, group):
+        return [o for o in self._stored_options() if o in group["all_ids"]]
+
+    def _option_description(self, group, option_id):
+        return self.xkb_info.description_for_option(group["id"], option_id) or option_id
+
+    def _sort_group_rows(self, row1, row2):
+        # Groups with an active option sort ahead of unset ones, alphabetical by
+        # description within each tier.
+        active1 = bool(self._stored_for_group(row1.group))
+        active2 = bool(self._stored_for_group(row2.group))
+        if active1 != active2:
+            return -1 if active1 else 1
+
+        d1 = row1.group["description"].lower()
+        d2 = row2.group["description"].lower()
+        return (d1 > d2) - (d1 < d2)
+
+    def _update_header(self, row, before):
+        # A separator marks the boundary between the active groups and the
+        # unset ones.
+        if before is not None and \
+           self._stored_for_group(before.group) and not self._stored_for_group(row.group):
+            separator = Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL)
+            separator.set_margin_top(4)
+            separator.set_margin_bottom(4)
+            row.set_header(separator)
+        else:
+            row.set_header(None)
+
+    def _resort(self):
+        self.groups_listbox.invalidate_sort()
+        self.groups_listbox.invalidate_headers()
+
+    # ------------------------------------------------------------------- view
+
+    def _build_ui(self):
+        paned = Gtk.Paned(orientation=Gtk.Orientation.HORIZONTAL, wide_handle=True)
+        paned.set_position(self.LEFT_PANE_WIDTH)
+
+        self.groups_listbox = Gtk.ListBox()
+        self.groups_listbox.set_selection_mode(Gtk.SelectionMode.BROWSE)
+        self.groups_listbox.set_sort_func(self._sort_group_rows)
+        self.groups_listbox.set_header_func(self._update_header)
+        self.groups_listbox.connect("row-selected", self._on_group_selected)
+
+        left_scrolled = Gtk.ScrolledWindow()
+        left_scrolled.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        left_scrolled.set_shadow_type(Gtk.ShadowType.IN)
+        left_scrolled.set_size_request(self.LEFT_PANE_MIN_WIDTH, -1)
+        left_scrolled.add(self.groups_listbox)
+
+        self.detail_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2)
+        self.detail_box.props.margin = 4
+
+        right_scrolled = Gtk.ScrolledWindow()
+        right_scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        right_scrolled.set_shadow_type(Gtk.ShadowType.IN)
+        right_scrolled.set_min_content_height(300)
+        right_scrolled.set_min_content_width(200)
+        right_scrolled.add(self.detail_box)
+
+        paned.pack1(left_scrolled, False, False)
+        paned.pack2(right_scrolled, True, True)
+
+        self.pack_start(paned, True, True, 0)
+
+    def _populate_group_list(self):
+        bold = Pango.AttrList()
+        bold.insert(Pango.attr_weight_new(Pango.Weight.BOLD))
+
+        for group in self.groups:
+            title = Gtk.Label(label=group["description"], xalign=0)
+            title.set_attributes(bold)
+            title.set_ellipsize(Pango.EllipsizeMode.END)
+
+            subtitle = Gtk.Label(xalign=0)
+            subtitle.get_style_context().add_class("dim-label")
+            subtitle.set_ellipsize(Pango.EllipsizeMode.END)
+            subtitle.set_no_show_all(True)
+
+            vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=2, margin_left=2)
+            vbox.pack_start(title, False, False, 0)
+            vbox.pack_start(subtitle, False, False, 0)
 
             row = Gtk.ListBoxRow()
-            row.group_id = group_id
-            row.group_description = description
-            row.add(label)
+            row.group = group
+            row.subtitle = subtitle
+            row.add(vbox)
+
             self.groups_listbox.add(row)
+            self._rows_by_group_id[group["id"]] = row
+            self._update_subtitle(group)
 
         self.groups_listbox.show_all()
 
-    def _create_options_page(self):
-        self.options_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+    def _build_detail(self, group):
+        self._building = True
 
-        self.options_scrolled = Gtk.ScrolledWindow()
-        self.options_scrolled.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-        self.options_scrolled.set_shadow_type(Gtk.ShadowType.IN)
+        for child in self.detail_box.get_children():
+            self.detail_box.remove(child)
 
-        self.options_listbox = Gtk.ListBox()
-        self.options_listbox.set_selection_mode(Gtk.SelectionMode.NONE)
-        self.options_listbox.set_sort_func(self._sort_options_func)
-        self.options_listbox.connect("row-activated", self._on_option_activated)
-        self.options_scrolled.add(self.options_listbox)
+        active = self._stored_for_group(group)
 
-        self.options_box.pack_start(self.options_scrolled, True, True, 0)
+        if group["multi"]:
+            self._build_multi(group, active)
+        else:
+            self._build_single(group, active)
 
-    def reload(self):
-        self.tree_store.clear()
+        self.detail_box.show_all()
+        self._building = False
 
-        options = self.input_source_settings.get_strv("xkb-options")
+    def _build_multi(self, group, active):
+        shown = set()
+        for option_id, description in group["displayed"]:
+            check = Gtk.CheckButton(label=description)
+            check.set_active(option_id in active)
+            check.connect("toggled", self._on_check_toggled, group, option_id)
+            self.detail_box.pack_start(check, False, False, 0)
+            shown.add(option_id)
 
-        grouped_options = {}
-        for option in options:
-            if ':' not in option:
+        # Preserve any active option we don't normally display.
+        for option_id in active:
+            if option_id in shown:
                 continue
+            check = Gtk.CheckButton(label=self._option_description(group, option_id))
+            check.set_active(True)
+            check.connect("toggled", self._on_check_toggled, group, option_id)
+            self.detail_box.pack_start(check, False, False, 0)
 
-            group_id = option.split(':')[0]
-            if not self._is_group_allowed(group_id):
-                continue
+    def _build_single(self, group, active):
+        active_id = active[0] if active else None
 
-            if group_id not in grouped_options:
-                grouped_options[group_id] = []
-            grouped_options[group_id].append(option)
+        none_radio = Gtk.RadioButton(label=_("None"))
+        none_radio.set_active(active_id is None)
+        none_radio.connect("toggled", self._on_radio_toggled, group, None)
+        self.detail_box.pack_start(none_radio, False, False, 0)
 
-        # Populate tree (sorting handled by TreeModelSort)
-        for group_id in grouped_options.keys():
-            canonical_group = self._get_canonical_group_name(group_id)
-            group_desc = self.xkb_info.description_for_group(canonical_group)
-            if not group_desc:
-                group_desc = group_id
+        shown = set()
+        for option_id, description in group["displayed"]:
+            radio = Gtk.RadioButton.new_with_label_from_widget(none_radio, description)
+            radio.set_active(option_id == active_id)
+            radio.connect("toggled", self._on_radio_toggled, group, option_id)
+            self.detail_box.pack_start(radio, False, False, 0)
+            shown.add(option_id)
 
-            group_iter = self.tree_store.append(None, [group_id, None, group_desc])
+        # Preserve an active option we don't normally display.
+        if active_id is not None and active_id not in shown:
+            radio = Gtk.RadioButton.new_with_label_from_widget(
+                none_radio, self._option_description(group, active_id))
+            radio.set_active(True)
+            radio.connect("toggled", self._on_radio_toggled, group, active_id)
+            self.detail_box.pack_start(radio, False, False, 0)
 
-            for option in grouped_options[group_id]:
-                option_desc = self.xkb_info.description_for_option(canonical_group, option)
-                if not option_desc:
-                    option_desc = option
-                self.tree_store.append(group_iter, [group_id, option, option_desc])
+    # --------------------------------------------------------------- handlers
 
-        self.tree_view.expand_all()
+    def _on_group_selected(self, listbox, row):
+        if row is None:
+            return
+        self._current_group = row.group
+        self._build_detail(row.group)
 
-    def _sync_to_gsettings(self):
-        current_options = self.input_source_settings.get_strv("xkb-options")
-        current_grp_options = [opt for opt in current_options if opt.startswith('grp:')]
+    def _on_radio_toggled(self, button, group, option_id):
+        if self._building or not button.get_active():
+            return
+        self._write_group(group, [] if option_id is None else [option_id])
 
-        visible_options = []
-        iter = self.tree_store.get_iter_first()
-        while iter:
-            # Check if this is a group node (option_id is None)
-            option_id = self.tree_store.get_value(iter, 1)
-            if option_id is None:
-                # It's a group node, get children
-                child_iter = self.tree_store.iter_children(iter)
-                while child_iter:
-                    child_option = self.tree_store.get_value(child_iter, 1)
-                    if child_option:
-                        visible_options.append(child_option)
-                    child_iter = self.tree_store.iter_next(child_iter)
-            iter = self.tree_store.iter_next(iter)
+    def _on_check_toggled(self, button, group, option_id):
+        if self._building:
+            return
+        active = set(self._stored_for_group(group))
+        if button.get_active():
+            active.add(option_id)
+        else:
+            active.discard(option_id)
+        self._write_group(group, list(active))
 
-        # Check if grp options changed
-        new_grp_options = [opt for opt in visible_options if opt.startswith('grp:')]
-        grp_changed = set(current_grp_options) != set(new_grp_options)
+    def _on_external_change(self, settings, key):
+        if self._internal_write:
+            return
+        for group in self.groups:
+            self._update_subtitle(group)
+        self._resort()
+        if self._current_group is not None:
+            self._build_detail(self._current_group)
 
-        self.input_source_settings.set_strv("xkb-options", visible_options)
+    # ------------------------------------------------------------ write/state
 
-        # Restart Cinnamon if grp options changed (required at the moment for muffin
-        # to properly register it).
-        if grp_changed and not self.is_wayland:
-            GLib.timeout_add(400, self._restart_cinnamon)
+    def _write_group(self, group, new_group_options):
+        current = self._stored_options()
 
-    def _restart_cinnamon(self):
-        try:
-            subprocess.Popen(['cinnamon-dbus-command', 'RestartCinnamon', '1'],
-                             stdout=subprocess.DEVNULL)
-        except Exception as e:
-            print(f"Failed to restart Cinnamon: {e}")
+        # Keep everything that doesn't belong to this group untouched .
+        others = [o for o in current if o not in group["all_ids"]]
+        new_list = others + new_group_options
+
+        self._internal_write = True
+        self.settings.set_strv("xkb-options", new_list)
+        GLib.idle_add(self._clear_internal_write)
+
+        self._update_subtitle(group)
+        self._resort()
+
+    def _clear_internal_write(self):
+        self._internal_write = False
         return GLib.SOURCE_REMOVE
 
-    def _on_selection_changed(self, selection):
-        model, iter = selection.get_selected()
-        self.btn_remove.set_sensitive(iter is not None)
-
-    def _update_groups_sensitivity(self):
-        # Build a set of groups that already have options
-        groups_with_options = set()
-        iter = self.tree_store.get_iter_first()
-        while iter:
-            group_id = self.tree_store.get_value(iter, 0)
-            if group_id:
-                groups_with_options.add(group_id)
-            iter = self.tree_store.iter_next(iter)
-
-        for row in self.groups_listbox.get_children():
-            group_id = row.group_id
-            if group_id in groups_with_options:
-                # Group has options, check if it allows multiple
-                allows_multiple = self.xkb_info.get_option_group_allows_multiple_selection(group_id)
-                # Muffin doesn't support multiple grp options at the moment.
-                if group_id == "grp":
-                    allows_multiple = False
-                row.set_sensitive(allows_multiple)
-            else:
-                row.set_sensitive(True)
-
-    def _on_add_clicked(self, button):
-        self._update_groups_sensitivity()
-
-        self.add_stack.set_visible_child_name("groups")
-        self.btn_back.hide()
-        self.group_desc_label.set_text(_("Select an option"))
-        self.main_stack.set_visible_child_name("add")
-
-    def _on_remove_clicked(self, button):
-        model, iter = self.selection.get_selected()
-        if not iter:
+    def _update_subtitle(self, group):
+        row = self._rows_by_group_id.get(group["id"])
+        if row is None:
             return
 
-        option_id = model.get_value(iter, 1)
-
-        # Convert sorted model iter to tree store iter
-        store_iter = self.sorted_model.convert_iter_to_child_iter(iter)
-
-        if option_id is None:
-            # It's a group node - remove it and all children
-            self.tree_store.remove(store_iter)
+        active = self._stored_for_group(group)
+        if active:
+            descriptions = [self._option_description(group, o) for o in active]
+            # Multi-select groups can have several active options; list each on
+            # its own line. Single-choice groups only ever have one.
+            separator = "\n" if group["multi"] else ", "
+            row.subtitle.set_text(separator.join(descriptions))
+            row.subtitle.show()
         else:
-            # It's an option node - remove it and check if parent should be removed
-            parent_iter = model.iter_parent(iter)
-
-            if parent_iter:
-                store_parent_iter = self.sorted_model.convert_iter_to_child_iter(parent_iter)
-            else:
-                store_parent_iter = None
-
-            self.tree_store.remove(store_iter)
-
-            if store_parent_iter and not self.tree_store.iter_has_child(store_parent_iter):
-                self.tree_store.remove(store_parent_iter)
-
-        self._sync_to_gsettings()
-
-    def _on_cancel_clicked(self, button):
-        self.main_stack.set_visible_child_name("view")
-
-    def _on_group_activated(self, listbox, row):
-        self.selected_group_id = row.group_id
-
-        canonical_group = self._get_canonical_group_name(self.selected_group_id)
-        group_desc = self.xkb_info.description_for_group(canonical_group)
-        if group_desc:
-            self.group_desc_label.set_text(group_desc)
-        else:
-            self.group_desc_label.set_text(self.selected_group_id)
-
-        for child in self.options_listbox.get_children():
-            self.options_listbox.remove(child)
-
-        options = self.xkb_info.get_options_for_group(canonical_group)
-
-        if self.selected_group_id in self.ALLOWED_OPTIONS:
-            group_config = self.ALLOWED_OPTIONS[self.selected_group_id]
-            allowed_list = group_config['options']
-            # Build full option IDs with group prefix for comparison
-            allowed_full = [f"{self.selected_group_id}:{opt}" for opt in allowed_list]
-            options = [opt for opt in options if opt in allowed_full]
-
-        # Build set of already-used options
-        current_options = self.input_source_settings.get_strv("xkb-options")
-        used_options = set(current_options)
-
-        for option_id in options:
-            option_desc = self.xkb_info.description_for_option(canonical_group, option_id)
-            if not option_desc:
-                option_desc = option_id
-
-            label = Gtk.Label(label=option_desc, xalign=0)
-            label.set_margin_start(2)
-
-            row = Gtk.ListBoxRow()
-            row.option_id = option_id
-            row.option_description = option_desc
-            row.add(label)
-
-            # Make row insensitive if option is already used
-            if option_id in used_options:
-                row.set_sensitive(False)
-
-            self.options_listbox.add(row)
-
-        self.options_listbox.show_all()
-
-        self.btn_back.show()
-        self.add_stack.set_visible_child_name("options")
-
-    def _on_back_clicked(self, button):
-        self._update_groups_sensitivity()
-        self.btn_back.hide()
-        self.group_desc_label.set_text(_("Select an option"))
-        self.add_stack.set_visible_child_name("groups")
-
-    def _on_option_activated(self, listbox, row):
-        option_id = row.option_id
-        group_id = self.selected_group_id
-
-        canonical_group = self._get_canonical_group_name(group_id)
-
-        option_desc = self.xkb_info.description_for_option(canonical_group, option_id)
-        if not option_desc:
-            option_desc = option_id
-
-        # Check if group already exists
-        group_iter = None
-        iter = self.tree_store.get_iter_first()
-        while iter:
-            if self.tree_store.get_value(iter, 0) == group_id:
-                group_iter = iter
-                break
-            iter = self.tree_store.iter_next(iter)
-
-        if group_iter:
-            self.tree_store.append(group_iter, [group_id, option_id, option_desc])
-            store_path = self.tree_store.get_path(group_iter)
-        else:
-            group_desc = self.xkb_info.description_for_group(canonical_group)
-            if not group_desc:
-                group_desc = group_id
-            group_iter = self.tree_store.append(None, [group_id, None, group_desc])
-            self.tree_store.append(group_iter, [group_id, option_id, option_desc])
-            store_path = self.tree_store.get_path(group_iter)
-
-        sorted_path = self.sorted_model.convert_child_path_to_path(store_path)
-        if sorted_path:
-            self.tree_view.expand_row(sorted_path, False)
-
-        self._sync_to_gsettings()
-        self.main_stack.set_visible_child_name("view")
+            row.subtitle.hide()

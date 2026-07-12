@@ -25,6 +25,7 @@ gettext.install("cinnamon", "/usr/share/locale")
 MASKS = [Gdk.ModifierType.CONTROL_MASK, Gdk.ModifierType.MOD1_MASK,
          Gdk.ModifierType.SHIFT_MASK, Gdk.ModifierType.SUPER_MASK]
 
+
 class Module:
     comment = _("Manage keyboard settings and shortcuts")
     name = "keyboard"

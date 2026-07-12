@@ -1,20 +1,16 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const Lang = imports.lang;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
 const Extension = imports.ui.extension;
-const Flashspot = imports.ui.flashspot;
 const KeyboardManager = imports.ui.keyboardManager;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
-const ModalDialog = imports.ui.modalDialog;
 const Util = imports.misc.util;
-const Cinnamon = imports.gi.Cinnamon;
 
 const CinnamonIface =
     '<node> \
@@ -24,34 +20,8 @@ const CinnamonIface =
                 <arg type="b" direction="out" name="success" /> \
                 <arg type="s" direction="out" name="result" /> \
             </method> \
-            <method name="ScreenshotArea"> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
-                <arg type="b" direction="in" name="flash"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
-            <method name="ScreenshotWindow"> \
-                <arg type="b" direction="in" name="include_frame"/> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="b" direction="in" name="flash"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
-            <method name="Screenshot"> \
-                <arg type="b" direction="in" name="include_frame"/> \
-                <arg type="b" direction="in" name="flash"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
             <method name="ShowOSD"> \
                 <arg type="a{sv}" direction="in" name="params"/> \
-            </method> \
-            <method name="FlashArea"> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
             </method> \
             <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
@@ -125,6 +95,7 @@ const CinnamonIface =
                 <arg type="b" direction="in" name="show_osd" /> \
             </method> \
             <method name="ReloadTheme"/> \
+            <method name="DismissInternalModals"/> \
             <signal name="RunStateChanged"/> \
             <signal name="XletsLoadedComplete"/> \
             <property name="AnimationsEnabled" type="b" access="read" /> \
@@ -149,12 +120,8 @@ const CinnamonIface =
         </interface> \
     </node>';
 
-function CinnamonDBus() {
-    this._init();
-}
-
-CinnamonDBus.prototype = {
-    _init: function() {
+var CinnamonDBus = class {
+    constructor() {
         this._dbusImpl = Gio.DBusExportedObject.wrapJSObject(CinnamonIface, this);
         this._dbusImpl.export(Gio.DBus.session, '/org/Cinnamon');
 
@@ -163,7 +130,7 @@ CinnamonDBus.prototype = {
          * out chrome updates that don't actually change the workarea before emitting this
          * signal, which is desirable. */
         global.display.connect("workareas-changed", ()=> this.EmitMonitorsChanged());
-    },
+    }
 
     /**
      * Eval:
@@ -179,7 +146,7 @@ CinnamonDBus.prototype = {
      * [false, JSON.stringify(exception)];
      *
      */
-    Eval: function(code) {
+    Eval(code) {
         let returnValue;
         let success;
         try {
@@ -193,72 +160,9 @@ CinnamonDBus.prototype = {
             success = false;
         }
         return [success, returnValue];
-    },
+    }
 
-    _onScreenshotComplete: function(obj, result, area, flash) {
-        if (flash) {
-            let flashspot = new Flashspot.Flashspot(area);
-            flashspot.fire();
-        }
-    },
-
-    /**
-     * ScreenshotArea:
-     * @include_cursor: Whether to include the mouse cursor
-     * @x: The X coordinate of the area
-     * @y: The Y coordinate of the area
-     * @width: The width of the area
-     * @height: The height of the area
-     * @flash: Whether to flash the edges of area
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the passed in area and saves it
-     * in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    ScreenshotArea: function(include_cursor, x, y, width, height, flash, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area(include_cursor, x, y, width, height, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash));
-    },
-
-    /**
-     * ScreenshotWindow:
-     * @include_frame: Whether to include the frame or not
-     * @include_cursor: Whether to include the mouse cursor
-     * @flash: Whether to flash the edges of the window
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the focused window (optionally omitting the frame)
-     * and saves it in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    ScreenshotWindow: function(include_frame, include_cursor, flash, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window(include_frame, include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash));
-    },
-
-    /**
-     * Screenshot:
-     * @include_cursor: Whether to include the mouse cursor
-     * @flash: Whether to flash the edges of the screen
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the whole screen and saves it
-     * in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    Screenshot: function(include_cursor, flash, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot(include_cursor, filename,
-            Lang.bind(this, this._onScreenshotComplete, flash));
-    },
-
-    ShowOSD: function(params) {
+    ShowOSD(params) {
         for (let param in params)
             params[param] = params[param].deep_unpack();
 
@@ -273,42 +177,32 @@ CinnamonDBus.prototype = {
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], false);
-    },
-
-    FlashArea: function(x, y, width, height) {
-        let flashspot = new Flashspot.Flashspot({
-            x: x,
-            y: y,
-            width: width,
-            height: height
-        });
-        flashspot.fire();
-    },
+        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level']);
+    }
 
     get OverviewActive() {
         return Main.overview.visible;
-    },
+    }
 
     set OverviewActive(visible) {
         if (visible)
             Main.overview.show();
         else
             Main.overview.hide();
-    },
+    }
 
     get ExpoActive() {
         return Main.expo.visible;
-    },
+    }
 
     set ExpoActive(visible) {
         if (visible)
             Main.expo.show();
         else
             Main.expo.hide();
-    },
+    }
 
-    _getXletObject: function(uuid, instance_id) {
+    _getXletObject(uuid, instance_id) {
         var obj = null;
 
         obj = AppletManager.get_object_for_uuid(uuid, instance_id);
@@ -322,13 +216,13 @@ CinnamonDBus.prototype = {
         }
 
         return obj;
-    },
+    }
 
-    EmitXletAddedComplete: function(success, uuid, name) {
+    EmitXletAddedComplete(success, uuid, name) {
         this._dbusImpl.emit_signal('XletAddedComplete', GLib.Variant.new('(bs)', [success, uuid]));
-    },
+    }
 
-    GetRunningXletUUIDs: function(type) {
+    GetRunningXletUUIDs(type) {
         let list = null;
         let res = [];
 
@@ -347,37 +241,37 @@ CinnamonDBus.prototype = {
         }
 
         return res;
-    },
+    }
 
-    ReloadXlet: function(uuid, type) {
+    ReloadXlet(uuid, type) {
         Extension.reloadExtension(uuid, Extension.Type[type]);
-    },
+    }
 
-    highlightXlet: function(uuid, instance_id, highlight) {
+    highlightXlet(uuid, instance_id, highlight) {
         let obj = this._getXletObject(uuid, instance_id);
         if (obj && obj.highlight) obj.highlight(highlight);
-    },
+    }
 
-    highlightPanel: function(id, highlight) {
+    highlightPanel(id, highlight) {
         if (Main.panelManager.panels[id])
             Main.panelManager.panels[id].highlight(highlight);
-    },
+    }
 
-    addPanelQuery: function() {
+    addPanelQuery() {
         Main.panelManager.addPanelQuery();
-    },
+    }
 
-    destroyDummyPanels: function() {
+    destroyDummyPanels() {
         Main.panelManager._destroyDummyPanels();
-    },
+    }
 
-    activateCallback: function(callback, uuid, instance_id) {
+    activateCallback(callback, uuid, instance_id) {
         let obj = this._getXletObject(uuid, instance_id);
-        let cb = Lang.bind(obj, obj[callback]);
+        let cb = obj[callback].bind(obj);
         cb();
-    },
+    }
 
-    updateSetting: function(uuid, instance_id, key, payload) {
+    updateSetting(uuid, instance_id, key, payload) {
         if (!Main.settingsManager.uuids[uuid]) {
             global.logWarning(
                 `[CinnamonDBus] [${uuid}] Unable to find UUID from SettingsManager - ` +
@@ -386,78 +280,75 @@ CinnamonDBus.prototype = {
             return;
         }
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
-    },
+    }
 
-    induceSegfault: function() {
+    induceSegfault() {
         global.segfault();
-    },
+    }
 
-    leakMemory: function(mb) {
+    leakMemory(mb) {
         global.alloc_leak(mb);
-    },
+    }
 
-    switchWorkspaceLeft: function() {
+    switchWorkspaceLeft() {
         Main.wm.actionMoveWorkspaceLeft();
-    },
+    }
 
-    switchWorkspaceRight: function() {
+    switchWorkspaceRight() {
         Main.wm.actionMoveWorkspaceRight();
-    },
+    }
 
-    switchWorkspaceUp: function() {
+    switchWorkspaceUp() {
         Main.overview.toggle();
-    },
+    }
 
-    switchWorkspaceDown: function() {
+    switchWorkspaceDown() {
         Main.expo.toggle();
-    },
+    }
 
-    JumpToNewWorkspace: function() {
+    JumpToNewWorkspace() {
         Main._addWorkspace();
         let num = global.workspace_manager.get_n_workspaces();
         if (global.workspace_manager.get_workspace_by_index(num - 1) != null) {
             global.workspace_manager.get_workspace_by_index(num - 1).activate(global.get_current_time());
         }
-    },
+    }
 
-    RemoveCurrentWorkspace: function() {
+    RemoveCurrentWorkspace() {
         let index = global.workspace_manager.get_active_workspace_index();
         if (global.workspace_manager.get_workspace_by_index(index) != null) {
             Main._removeWorkspace(global.workspace_manager.get_workspace_by_index(index));
         }
-    },
+    }
 
-    ShowExpo: function() {
-        if (!Main.expo.animationInProgress)
-            Main.expo.toggle();
-    },
+    ShowExpo() {
+        Main.expo.toggle();
+    }
 
-    ShowOverview: function() {
-        if (!Main.overview.animationInProgress)
-            Main.overview.toggle();
-    },
+    ShowOverview() {
+        Main.overview.toggle();
+    }
 
-    PushSubprocessResult: function(process_id, result, success) {
+    PushSubprocessResult(process_id, result, success) {
         if (Util.subprocess_callbacks[process_id]) {
             if (success)
                 Util.subprocess_callbacks[process_id](result);
             delete Util.subprocess_callbacks[process_id];
         }
-    },
+    }
 
-    ToggleKeyboard: function() {
-        Main.virtualKeyboardManager.manualToggle();
-    },
+    ToggleKeyboard() {
+        Main.toggleKeyboard();
+    }
 
-    GetMonitors: function() {
+    GetMonitors() {
         let monitors = [];
 
         try {
             for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
                 let current = Main.layoutManager.monitors[i];
 
-                let xinerama_index = global.display.logical_index_to_xinerama_index(current.index);
-                monitors.push(xinerama_index);
+                monitors.push(current.index);
             }
         } catch (e) {
             log(e.message);
@@ -470,76 +361,79 @@ CinnamonDBus.prototype = {
         }
 
         return monitors;
-    },
+    }
 
-    GetMonitorWorkRect: function(index) {
+    GetMonitorWorkRect(index) {
         let n_mons = global.display.get_n_monitors();
 
         if ((index < 0) || index > (n_mons - 1)) {
             throw new Error("GetMonitorWorkRect: invalid monitor index: " + index + ".  Must be 0 to " + (n_mons - 1));
         }
 
-        let logical_index = global.display.xinerama_index_to_logical_index(index);
-        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(logical_index);
+        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(index);
 
         return [rect.x, rect.y, rect.width, rect.height];
-    },
+    }
 
-    GetRunState: function() {
+    GetRunState() {
         return Main.runState;
-    },
+    }
 
-    RestartCinnamon: function(showOsd) {
+    RestartCinnamon(showOsd) {
         Main.restartCinnamon(showOsd);
-    },
+    }
 
-    ReloadTheme: function() {
+    ReloadTheme() {
         Main.themeManager._changeTheme()
-    },
+    }
 
-    EmitRunStateChanged: function() {
+    DismissInternalModals() {
+        Main.dismissInternalModals();
+    }
+
+    EmitRunStateChanged() {
         this._dbusImpl.emit_signal('RunStateChanged', null);
-    },
+    }
 
-    EmitMonitorsChanged: function() {
+    EmitMonitorsChanged() {
         this._dbusImpl.emit_signal('MonitorsChanged', null);
-    },
+    }
 
-    EmitXletsLoadedComplete: function() {
+    EmitXletsLoadedComplete() {
         this._dbusImpl.emit_signal('XletsLoadedComplete', null);
-    },
+    }
 
     get AnimationsEnabled() {
         return Main.animations_enabled;
-    },
+    }
 
     notifyAnimationsEnabled() {
         let variant = new GLib.Variant('b', Main.animations_enabled);
         this._dbusImpl.emit_property_changed('AnimationsEnabled', variant);
-    },
+    }
 
     ShowMonitorLabelsAsync(monitor_info, invocation) {
         if (Main.monitorLabeler != null) {
             Main.monitorLabeler.show(monitor_info[0], invocation.get_sender());
         }
-    },
+    }
 
     HideMonitorLabelsAsync(tuple, invocation) {
         if (Main.monitorLabeler != null) {
             Main.monitorLabeler.hide(invocation.get_sender());
         }
-    },
+    }
 
     ShowEndSessionDialog(mode) {
         GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
             Main.showEndSessionDialog(mode);
             return GLib.SOURCE_REMOVE;
         });
-    },
+    }
 
     CloseEndSessionDialog() {
         Main.closeEndSessionDialog();
-    },
+    }
 
     GetInputSources() {
         const is_mgr = KeyboardManager.getInputSourceManager();
@@ -565,20 +459,22 @@ CinnamonDBus.prototype = {
             ]);
         }
         return ret;
-    },
+    }
 
     ActivateInputSourceIndex(index) {
         const is_mgr = KeyboardManager.getInputSourceManager();
         is_mgr.activateInputSourceIndex(index);
-    },
+    }
 
-    EmitCurrentInputSourceChanged: function(id) {
+    EmitCurrentInputSourceChanged(id) {
         this._dbusImpl.emit_signal('CurrentInputSourceChanged', GLib.Variant.new('(s)', [id]));
-    },
+    }
 
-    EmitInputSourcesChanged: function() {
+    EmitInputSourcesChanged() {
         this._dbusImpl.emit_signal('InputSourcesChanged', null);
-    },
+    }
 
-    CinnamonVersion: Config.PACKAGE_VERSION
+    get CinnamonVersion() {
+        return Config.PACKAGE_VERSION;
+    }
 };

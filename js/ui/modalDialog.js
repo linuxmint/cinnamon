@@ -4,39 +4,25 @@ const Clutter = imports.gi.Clutter;
 const St = imports.gi.St;
 const Atk = imports.gi.Atk;
 const Cinnamon = imports.gi.Cinnamon;
-const Signals = imports.signals;
 const GObject = imports.gi.GObject;
-const Gio = imports.gi.Gio;
-const GLib = imports.gi.GLib;
-const Pango = imports.gi.Pango;
 const Meta = imports.gi.Meta;
 const Gdk = imports.gi.Gdk;
 
 const Params = imports.misc.params;
-const Util = imports.misc.util;
 
+const BaseDialog = imports.ui.baseDialog;
 const Dialog = imports.ui.dialog;
 const Layout = imports.ui.layout;
 const Lightbox = imports.ui.lightbox;
 const Main = imports.ui.main;
 
-const Gettext = imports.gettext;
-
-const FADE_OUT_DIALOG_TIME = 1000;
-
-var State = {
-    OPENED: 0,
-    CLOSED: 1,
-    OPENING: 2,
-    CLOSING: 3,
-    FADED_OUT: 4
-};
+var State = BaseDialog.State;
 
 /**
  * #ModalDialog:
  * @short_description: A generic object that displays a modal dialog
  * @state (ModalDialog.State): The state of the modal dialog, which may be
- * `ModalDialog.State.OPENED`, `CLOSED`, `OPENING`, `CLOSING` or `FADED_OUT`.
+ * `ModalDialog.State.OPENED`, `CLOSED`, `OPENING` or `CLOSING`.
  * @contentLayout (St.BoxLayout): The box containing the contents of the modal
  * dialog (excluding the buttons)
  *
@@ -46,18 +32,11 @@ var State = {
  *
  * For simple usage such as displaying a message, or asking for confirmation,
  * the #ConfirmDialog and #NotifyDialog classes may be used instead.
+ *
+ * Inherits: BaseDialog.BaseDialog
  */
-var ModalDialog = GObject.registerClass({
-    Properties: {
-        'state': GObject.ParamSpec.int(
-            'state', 'Dialog state', 'state',
-            GObject.ParamFlags.READABLE,
-            Math.min(...Object.values(State)),
-            Math.max(...Object.values(State)),
-            State.CLOSED)
-    },
-    Signals: { 'opened': {}, 'closed': {} }
-}, class ModalDialog extends St.Widget {
+var ModalDialog = GObject.registerClass(
+class ModalDialog extends BaseDialog.BaseDialog {
     /**
      * _init:
      * @params (JSON): parameters for the modal dialog. Options include
@@ -66,22 +45,25 @@ var ModalDialog = GObject.registerClass({
      * modal dialog should use.
      */
     _init(params) {
+        params = Params.parse(params, {
+            cinnamonReactive: false,
+            styleClass: null,
+            destroyOnClose: true,
+        });
+
         super._init({
             visible: false,
             x: 0,
             y: 0,
             accessible_role: Atk.Role.DIALOG,
-        });
-        params = Params.parse(params, {
-            cinnamonReactive: Main.virtualKeyboardManager.enabled,
-            styleClass: null,
-            destroyOnClose: true,
+        }, {
+            destroyOnClose: params.destroyOnClose,
         });
 
-        this._state = State.CLOSED;
         this._hasModal = false;
+        this._savedKeyFocus = null;
         this._cinnamonReactive = params.cinnamonReactive;
-        this._destroyOnClose = params.destroyOnClose;
+        this._keyboardVisibleId = 0;
 
         Main.uiGroup.add_actor(this);
 
@@ -101,14 +83,10 @@ var ModalDialog = GObject.registerClass({
         this._backgroundBin.add_constraint(this._monitorConstraint);
         this.add_actor(this._backgroundBin);
 
-        this.dialogLayout = new Dialog.Dialog(this.backgroundStack, params.styleClass);
-        this.contentLayout = this.dialogLayout.contentLayout;
-        this.buttonLayout = this.dialogLayout.buttonLayout;
+        this._initDialogLayout(new Dialog.Dialog(this.backgroundStack, params.styleClass));
 
-        this.openAndCloseTime = 100;
         let enableRadialEffect = true;
         if (!global.settings.get_boolean("desktop-effects-workspace")) {
-            this.openAndCloseTime = 0;
             enableRadialEffect = false;
         }
 
@@ -122,105 +100,33 @@ var ModalDialog = GObject.registerClass({
             this.backgroundStack.add_actor(this._eventBlocker);
         }
 
-        global.focus_manager.add_group(this.dialogLayout);
-        this._initialKeyFocus = null;
-        this._initialKeyFocusDestroyId = 0;
-        this._savedKeyFocus = null;
+        this.connect('destroy', () => this._disconnectKeyboardTracking());
     }
 
-    get state() {
-        return this._state;
-    }
-
-    _setState(state) {
-        if (this._state == state)
-            return;
-
-        this._state = state;
-        this.notify('state');
-    }
-
-    clearButtons() {
-        this.dialogLayout.clearButtons();
-    }
-
-    /**
-     * setButtons:
-     * @buttons (array): the buttons to display in the modal dialog
-     *
-     * This sets the buttons in the modal dialog. The buttons is an array of
-     * JSON objects, each of which corresponds to one button.
-     *
-     * Each JSON object *must* contain @label and @action, which are the text
-     * displayed on the button and the callback function to use when the button
-     * is clicked respectively.
-     *
-     * Optional arguments include @focused, which determines whether the button
-     * is initially focused, and @key, which is a keybinding associated with
-     * the button press such that pressing the keybinding will have the same
-     * effect as clicking the button. Other arguments include @default
-     * and @destructive_action which add additional styling.
-     *
-     * An example usage is
-     * ```
-     * dialog.setButtons([
-     *     {
-     *         label: _("Cancel"),
-     *         action: this.callback.bind(this),
-     *         key: Clutter.KEY_Escape
-     *     },
-     *     {
-     *         label: _("OK"),
-     *         action: this.destroy.bind(this),
-     *         key: Clutter.KEY_Return,
-     *         default: true
-     *     }
-     * ]);
-     * ```
-     */
-    setButtons(buttons) {
-        this.clearButtons();
-
-        for (let buttonInfo of buttons) {
-            this.addButton(buttonInfo);
+    _disconnectKeyboardTracking() {
+        if (this._keyboardVisibleId) {
+            Main.layoutManager.disconnect(this._keyboardVisibleId);
+            this._keyboardVisibleId = 0;
         }
     }
 
-    addButton(buttonInfo) {
-        return this.dialogLayout.addButton(buttonInfo);
+    // Keep the on-screen keyboard above the lightbox shade so its keys remain
+    // visible and tappable while a modal dialog is open.
+    _raiseKeyboardAboveDialog() {
+        let keyboardBox = Main.layoutManager.keyboardBox;
+        if (keyboardBox && keyboardBox.visible)
+            Main.uiGroup.set_child_above_sibling(keyboardBox, this);
     }
 
     _fadeOpen() {
         this._monitorConstraint.index = global.display.get_current_monitor();
 
-        this._setState(State.OPENING);
+        Main.uiGroup.set_child_above_sibling(this, null);
 
-        this.dialogLayout.opacity = 255;
         if (this._lightbox)
             this._lightbox.lightOn();
-        this.opacity = 0;
-        this.show();
-        this.ease({
-            opacity: 255,
-            duration: this.openAndCloseTime,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
-                this._setState(State.OPENED);
-                this.emit('opened');
-            }
-        });
-    }
 
-    setInitialKeyFocus(actor) {
-        if (this._initialKeyFocusDestroyId)
-            this._initialKeyFocus.disconnect(this._initialKeyFocusDestroyId);
-
-        this._initialKeyFocus = actor;
-
-        this._initialKeyFocusDestroyId = actor.connect('destroy', () => {
-            this._initialKeyFocus = null;
-            this._initialKeyFocusDestroyId = 0;
-        });
+        this._animateOpen();
     }
 
     /**
@@ -237,7 +143,23 @@ var ModalDialog = GObject.registerClass({
         if (!this.pushModal(timestamp))
             return false;
 
+        this._openedId = this.connect('opened', () => {
+            this.disconnect(this._openedId);
+            this._openedId = 0;
+            this._grabInitialKeyFocus();
+        });
+
         this._fadeOpen();
+
+        if (this._lightbox && !this._keyboardVisibleId) {
+            this._keyboardVisibleId = Main.layoutManager.connect('keyboard-visible-changed',
+                (lm, visible) => {
+                    if (visible)
+                        this._raiseKeyboardAboveDialog();
+                });
+            this._raiseKeyboardAboveDialog();
+        }
+
         return true;
     }
 
@@ -252,23 +174,17 @@ var ModalDialog = GObject.registerClass({
         if (this.state == State.CLOSED || this.state == State.CLOSING)
             return;
 
-        this._setState(State.CLOSING);
+        if (this._openedId) {
+            this.disconnect(this._openedId);
+            this._openedId = 0;
+        }
+
+        this._disconnectKeyboardTracking();
+
         this.popModal(timestamp);
         this._savedKeyFocus = null;
 
-        this.ease({
-            opacity: 0,
-            duration: this.openAndCloseTime,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
-                this._setState(State.CLOSED);
-                this.hide();
-                this.emit('closed');
-
-                if (this._destroyOnClose)
-                    this.destroy();
-            }
-        });
+        this._animateClose();
     }
 
     /**
@@ -305,23 +221,22 @@ var ModalDialog = GObject.registerClass({
      * pushModal:
      * @timestamp (int): (optional) timestamp optionally used to associate the
      * call with a specific user initiated event
+     * @mode (Cinnamon.ActionMode): (optional) action mode, defaults to SYSTEM_MODAL
      *
      * Pushes the modal to the modal stack so that it grabs the required
      * inputs.
      */
-    pushModal(timestamp) {
+    pushModal(timestamp, mode) {
         if (this._hasModal)
             return true;
-        if (!Main.pushModal(this, timestamp))
+        if (!Main.pushModal(this, timestamp, undefined, mode, () => this.close()))
             return false;
 
         this._hasModal = true;
+
         if (this._savedKeyFocus) {
             this._savedKeyFocus.grab_key_focus();
             this._savedKeyFocus = null;
-        } else {
-            let focus = this._initialKeyFocus || this.dialogLayout.initialKeyFocus;
-            focus.grab_key_focus();
         }
 
         if (!this._cinnamonReactive)
@@ -329,41 +244,6 @@ var ModalDialog = GObject.registerClass({
         return true;
     }
 
-    /**
-     * _fadeOutDialog:
-     * @timestamp (int): (optional) timestamp optionally used to associate the
-     * call with a specific user initiated event
-     *
-     * This method is like %close(), but fades the dialog out much slower,
-     * and leaves the lightbox in place. Once in the faded out state,
-     * the dialog can be brought back by an open call, or the lightbox
-     * can be dismissed by a close call.
-     *
-     * The main point of this method is to give some indication to the user
-     * that the dialog response has been acknowledged but will take a few
-     * moments before being processed.
-     *
-     * e.g., if a user clicked "Log Out" then the dialog should go away
-     * immediately, but the lightbox should remain until the logout is
-     * complete.
-     */
-     _fadeOutDialog(timestamp) {
-        if (this.state == State.CLOSED || this.state == State.CLOSING)
-            return;
-
-        if (this.state == State.FADED_OUT)
-            return;
-
-        this.popModal(timestamp);
-        this.dialogLayout.ease({
-            opacity: 0,
-            duration: FADE_OUT_DIALOG_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
-                this._setState(State.FADED_OUT);
-            }
-        });
-    }
 });
 
 /**
@@ -511,8 +391,8 @@ var InfoOSD = class {
         this.actor.opacity = 0;
         this.actor.show();
 
-        let x = monitor.x + Math.round((monitor.width - this.actor.width)/2);
-        let y = monitor.y + Math.round((monitor.height - this.actor.height)/2);
+        let x = monitor.x + (monitor.width - this.actor.width) / 2;
+        let y = monitor.y + (monitor.height - this.actor.height) / 2;
 
         this.actor.set_position(x, y);
         this.actor.opacity = 255;

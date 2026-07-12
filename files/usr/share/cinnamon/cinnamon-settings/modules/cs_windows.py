@@ -6,6 +6,7 @@ gi.require_version('CDesktopEnums', '3.0')
 from gi.repository import Gio, Gtk, CDesktopEnums
 
 from bin.SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
 
@@ -45,6 +46,7 @@ class Module:
             button_options.append([":close", _("Gnome")])
             button_options.append(["close:", _("Gnome Left")])
             button_options.append(["close:minimize,maximize", _("Classic Mac")])
+            button_options.append(["menu:minimize,maximize,close", _("Traditional")])
 
             widget = GSettingsComboBox(_("Buttons layout"), "org.cinnamon.desktop.wm.preferences", "button-layout", button_options, size_group=size_group)
             settings.add_row(widget)
@@ -97,6 +99,10 @@ class Module:
             widget = GSettingsSwitch(_("Bring windows which require attention to the current workspace"), "org.cinnamon.muffin", "bring-windows-to-current-workspace")
             settings.add_row(widget)
 
+            if util.get_session_type() == "wayland":
+                widget = GSettingsSwitch(_("Prevent applications from stealing focus"), "org.cinnamon.desktop.wm.preferences", "prevent-focus-stealing")
+                settings.add_row(widget)
+
             # It's weird to show a combo for two items. For now this is simpler to explain as a switch...
             widget = Switch(_("Give focus to new windows launched from a terminal"))
             widget.set_tooltip_text(_("Normally, all windows created by the user are given initial focus. "
@@ -134,7 +140,7 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            placement_options = [["automatic", _("Automatic")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["center", _("Center")]]
+            placement_options = [["center", _("Center")], ["pointer", _("Cursor")], ["manual", _("Manual")], ["automatic", _("Automatic")]]
             widget = GSettingsComboBox(_("Location of newly opened windows"), "org.cinnamon.muffin", "placement-mode", placement_options, size_group=size_group)
             settings.add_row(widget)
 

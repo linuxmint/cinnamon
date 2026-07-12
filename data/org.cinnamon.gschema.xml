@@ -456,9 +456,9 @@
 
     <key name="prevent-focus-stealing" type="b">
       <default>false</default>
-      <summary>[unused] Prevents windows that request user attention from stealing focus</summary>
+      <summary>deprecated - moved to org.cinnamon.desktop.wm.preferences</summary>
       <description>
-        This setting is no longer used.
+        This setting is no longer used. Use org.cinnamon.desktop.wm.preferences prevent-focus-stealing instead.
       </description>
     </key>
 
@@ -521,12 +521,31 @@
       <description>If true, the pointer will be set to the center of the new monitor when using pointer next/previous shortcuts.</description>
     </key>
 
+    <key type="b" name="internal-screensaver-enabled">
+      <default>true</default>
+      <summary>Use internal screensaver implementation. Requires cinnamon restart if changed.</summary>
+      <description>If true, use Cinnamon's internal screensaver for locking instead of the external cinnamon-screensaver daemon.</description>
+    </key>
+
+    <key type="b" name="session-locked-state">
+      <default>false</default>
+      <summary>Whether the session is currently locked</summary>
+      <description>Persists the screensaver locked state so it can be restored after a Cinnamon restart. This key is managed internally and should not be modified manually.</description>
+    </key>
+
+    <key type="b" name="debug-screensaver">
+      <default>false</default>
+      <summary>Enable screensaver debug logging</summary>
+      <description>If true, enables verbose debug logging for the screensaver, unlock dialog, and backup-locker.</description>
+    </key>
+
     <child name="theme" schema="org.cinnamon.theme"/>
     <child name="recorder" schema="org.cinnamon.recorder"/>
     <child name="keyboard" schema="org.cinnamon.keyboard"/>
     <child name="desklets" schema="org.cinnamon.desklets" />
     <child name="sounds" schema="org.cinnamon.sounds" />
     <child name="launcher" schema="org.cinnamon.launcher" />
+    <child name="screenshot" schema="org.cinnamon.screenshot" />
 
     <key name="enable-vfade" type="b">
       <default>true</default>
@@ -592,6 +611,15 @@
     <key name="hoverclick-position" type="s">
       <default>""</default>
       <summary>Stores the position of the hoverclick window so it can be restored there later - format is x::y</summary>
+    </key>
+    <key name="remember-mount-password" type="b">
+      <default>false</default>
+      <summary>Whether to remember password for mounting encrypted or remote filesystems</summary>
+      <description>
+        When an encrypted device or remote filesystem is mounted, a password
+        dialog may include a "Remember Password" checkbox. This key stores the
+        default state of that checkbox.
+      </description>
     </key>
   </schema>
 
@@ -687,38 +715,6 @@
         The filename for recorded screencasts will be a unique filename
         based on the current date, and use this extension. It should be
         changed when recording to a different container format.
-      </description>
-    </key>
-  </schema>
-
-  <schema id="org.cinnamon.background" path="/org/cinnamon/background/">
-    <key name="mode" type="s">
-      <default>"wallpaper"</default>
-      <summary>Background mode</summary>
-      <description>
-        This key defines the whether the desktop background shows one
-        single wallpaper, a slideshow or an online slideshow (Flickr).
-      </description>
-    </key>
-    <key name="slideshow-folder" type="s">
-      <default>""</default>
-      <summary>Folder to use for the slideshow</summary>
-      <description>
-        This key defines the folder to use for the slideshow.
-      </description>
-    </key>
-    <key name="slideshow-recursive" type="b">
-      <default>false</default>
-      <summary>Whether to list files recursively for the slideshow</summary>
-      <description>
-        This key defines whether to list files recursively for the slideshow.
-      </description>
-    </key>
-    <key name="slideshow-delay" type="i">
-      <default>15</default>
-      <summary>Delay for the slideshow</summary>
-      <description>
-        This key defines the delay for the slideshow.
       </description>
     </key>
   </schema>
@@ -989,6 +985,71 @@
       <default>300</default>
       <summary>Time between each checks (in seconds)</summary>
       <description></description>
+    </key>
+
+  </schema>
+
+  <enum id="org.cinnamon.screenshot.file-types">
+    <value nick="png"  value="0"/>
+    <value nick="jpg"  value="1"/>
+    <value nick="bmp"  value="2"/>
+    <value nick="tiff" value="3"/>
+  </enum>
+
+  <schema id="org.cinnamon.screenshot" path="/org/cinnamon/screenshot/">
+
+    <key name="delay" type="i">
+      <default>0</default>
+      <summary>Screenshot delay</summary>
+      <description>The number of seconds to wait before taking the screenshot.</description>
+    </key>
+
+    <key name="save-directory" type="s">
+      <default>''</default>
+      <summary>Default save folder</summary>
+      <description>URI of the folder where screenshots are saved by default. If empty, the user's Pictures folder is used.</description>
+    </key>
+
+    <key name="include-pointer" type="b">
+      <default>false</default>
+      <summary>Include pointer</summary>
+      <description>Include the mouse pointer in the screenshot.</description>
+    </key>
+
+    <key name="default-file-type" enum="org.cinnamon.screenshot.file-types">
+      <default>'png'</default>
+      <summary>Default file type</summary>
+      <description>The default file type extension for saved screenshots.</description>
+    </key>
+
+    <key name="include-shadow" type="b">
+      <default>true</default>
+      <summary>Include shadow</summary>
+      <description>Include the shadow when taking a window screenshot.</description>
+    </key>
+
+    <key name="launch-file-manager-after-save" type="b">
+      <default>false</default>
+      <summary>Launch file manager after saving</summary>
+      <description>When enabled, opens the file manager with the saved screenshot pre-selected after a successful save.</description>
+    </key>
+
+    <key name="autosave-to-file" type="b">
+      <default>false</default>
+      <summary>Autosave screenshot to file</summary>
+      <description>When enabled, saves the screenshot to file without showing the application's interactive window</description>
+    </key>
+
+    <key name="autosave-to-clipboard" type="b">
+      <default>false</default>
+      <summary>Copy saved screenshots to the clipboard</summary>
+      <description>When enabled, a copy of every screenshot that is saved to a file is also placed on the clipboard.</description>
+    </key>
+
+    <key name="use-flash" type="b">
+      <default>true</default>
+      <summary>Use a flash</summary>
+      <description>When enabled, a brief flash is shown over the captured area after taking a screenshot.</description>
     </key>
 
   </schema>

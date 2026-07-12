@@ -29,41 +29,10 @@ class BaseChooserButton(Gtk.Button):
         self.add(self.button_box)
         self.connect("button-release-event", self._on_button_clicked)
 
-    def popup_menu_below_button (self, *args):
-        # the introspection for GtkMenuPositionFunc seems to change with each Gtk version,
-        # this is a workaround to make sure we get the menu and the widget
-        menu = args[0]
-        widget = args[-1]
-        window = widget.get_window()
-        screen = window.get_screen()
-        monitor = screen.get_monitor_at_window(window)
-
-        warea = screen.get_monitor_workarea(monitor)
-        wrect = widget.get_allocation()
-        mrect = menu.get_allocation()
-
-        unused_var, window_x, window_y = window.get_origin()
-
-        # Position left edge of the menu with the right edge of the button
-        x = window_x + wrect.x + wrect.width
-        # Center the menu vertically with respect to the monitor
-        y = warea.y + (warea.height / 2) - (mrect.height / 2)
-
-        # Now, check if we're still touching the button - we want the right edge
-        # of the button always 100% touching the menu
-
-        if y > (window_y + wrect.y):
-            y = y - (y - (window_y + wrect.y))
-        elif (y + mrect.height) < (window_y + wrect.y + wrect.height):
-            y = y + ((window_y + wrect.y + wrect.height) - (y + mrect.height))
-
-        push_in = True # push_in is True so all menu is always inside screen
-        return x, y, push_in
-
     def _on_button_clicked(self, widget, event):
         if event.button == 1:
             self.menu.show_all()
-            self.menu.popup(None, None, self.popup_menu_below_button, self, event.button, event.time)
+            self.menu.popup_at_widget(self, Gdk.Gravity.EAST, Gdk.Gravity.WEST, event)
 
 class PictureChooserButton(BaseChooserButton):
     def __init__ (self, num_cols=4, button_picture_width=24, menu_picture_width=24, has_button_label=False, keep_square=False, frame=False):

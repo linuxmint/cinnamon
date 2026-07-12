@@ -2309,6 +2309,10 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
+        } else if (section == NMConnectionCategory.WIREGUARD) {
+            this._devices.wireguard.device.removeConnection(connection);
+            if (this._devices.wireguard.device.empty)
+                this._devices.wireguard.section.actor.hide();
         } else if (section != NMConnectionCategory.INVALID) {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++)

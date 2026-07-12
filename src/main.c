@@ -11,7 +11,13 @@
 #include <clutter/clutter.h>
 #include <dbus/dbus-shared.h>
 #include <glib/gi18n-lib.h>
+
+#if USE_GIR20
+#include <girepository/girepository.h>
+#else
 #include <girepository.h>
+#endif
+
 #include <meta/main.h>
 #include <meta/meta-plugin.h>
 #include <meta/prefs.h>
@@ -369,16 +375,30 @@ main (int argc, char **argv)
   cinnamon_a11y_init ();
   cinnamon_perf_log_init ();
 
+#if USE_GIR20
+  g_autoptr (GIRepository) repo = NULL;
+  repo = gi_repository_dup_default ();
+
+  gi_repository_prepend_search_path (repo, CINNAMON_PKGLIBDIR);
+  gi_repository_prepend_search_path (repo, MUFFIN_TYPELIB_DIR);
+#else
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
   g_irepository_prepend_search_path (MUFFIN_TYPELIB_DIR);
+#endif
 
   /* We need to explicitly add the directories where the private libraries are
    * installed to the GIR's library path, so that they can be found at runtime
    * when linking using DT_RUNPATH (instead of DT_RPATH), which is the default
    * for some linkers (e.g. gold) and in some distros (e.g. Debian).
    */
+
+#if USE_GIR20
+  gi_repository_prepend_library_path (repo, CINNAMON_PKGLIBDIR);
+  gi_repository_prepend_library_path (repo, MUFFIN_TYPELIB_DIR);
+#else
   g_irepository_prepend_library_path (CINNAMON_PKGLIBDIR);
   g_irepository_prepend_library_path (MUFFIN_TYPELIB_DIR);
+#endif
 
   /* Disable debug spew from various libraries */
   g_log_set_handler ("Cvc", G_LOG_LEVEL_DEBUG,

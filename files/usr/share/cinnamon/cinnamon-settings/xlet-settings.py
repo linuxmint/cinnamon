@@ -274,9 +274,15 @@ class MainWindow(object):
                 instance_exists = False
                 enabled = self.gsettings.get_strv(f'enabled-{self.type}s')
                 for definition in enabled:
-                    if self.uuid in definition and instance_id in definition.split(':'):
-                        instance_exists = True
-                        break
+                    parts = definition.split(':')
+                    if self.type == "applet" and len(parts) >= 5:
+                        if parts[3] == self.uuid and parts[4] == instance_id:
+                            instance_exists = True
+                            break
+                    elif self.type == "desklet" and len(parts) >= 2:
+                        if parts[0] == self.uuid and parts[1] == instance_id:
+                            instance_exists = True
+                            break
 
                 if not instance_exists:
                     continue

@@ -129,6 +129,7 @@ xml['org.cinnamon.SettingsDaemon.Power.Screen'] =
                 <arg type='u' name='new_percentage' direction='out'/> \
             </method> \
             <signal name='Changed'/> \
+            <property name='AmbientLightSupported' type='b' access='read'/> \
         </interface> \
     </node>",
     SETTINGS_DAEMON_POWER_NAME,

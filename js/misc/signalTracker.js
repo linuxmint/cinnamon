@@ -1,14 +1,19 @@
 /* exported addObjectSignalMethods */
 const GObject = imports.gi.GObject;
+const Clutter = imports.gi.Clutter;
 
 /**
  * @private
  * @param {Object} obj - an object
- * @returns {bool} - true if obj has a 'destroy' GObject signal
+ * @returns {bool} - true if obj's 'destroy' signal indicates its own lifecycle
+ *   end (i.e. obj is a Clutter.Actor or subclass).
+ *
+ * Some classes (e.g. Cinnamon.WM) declare a 'destroy' signal with
+ * domain-specific semantics unrelated to the emitter's own lifetime, so we
+ * only treat the signal as lifecycle for Clutter actors.
  */
-function _hasDestroySignal(obj) {
-    return obj instanceof GObject.Object &&
-        GObject.signal_lookup('destroy', obj);
+function _hasLifecycleDestroy(obj) {
+    return obj instanceof Clutter.Actor;
 }
 
 var TransientSignalHolder = GObject.registerClass(
@@ -20,7 +25,7 @@ class TransientSignalHolder extends GObject.Object {
     constructor(owner) {
         super();
 
-        if (_hasDestroySignal(owner))
+        if (_hasLifecycleDestroy(owner))
             owner.connectObject('destroy', () => this.destroy(), this);
     }
 
@@ -84,7 +89,7 @@ class SignalTracker {
      * @param {Object=} owner - object that owns the tracker
      */
     constructor(owner) {
-        if (_hasDestroySignal(owner))
+        if (_hasLifecycleDestroy(owner))
             this._ownerDestroyId = owner.connect_after('destroy', () => this.clear());
 
         this._owner = owner;
@@ -152,7 +157,7 @@ class SignalTracker {
      * @returns {void}
      */
     track(obj, ...handlerIds) {
-        if (_hasDestroySignal(obj))
+        if (_hasLifecycleDestroy(obj))
             this._trackDestroy(obj);
 
         this._getSignalData(obj).ownerSignals.push(...handlerIds);

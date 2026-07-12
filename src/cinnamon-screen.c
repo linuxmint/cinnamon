@@ -614,13 +614,13 @@ cinnamon_screen_get_monitor_index_for_rect (CinnamonScreen    *screen,
  *
  * Return value: a monitor index
  *
- * Deprecated: 6.4: Use meta_display_get_current_monitor() via global.display instead.
+ * Deprecated: 6.4: Use Main.layoutManager.currentMonitor.index or global.display.get_current_monitor() instead.
  */
 int
 cinnamon_screen_get_current_monitor (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
-  g_warning_once ("global.screen.get_current_monitor() is deprecated. Use global.display.get_current_monitor() instead.");
+  g_warning_once ("global.screen.get_current_monitor() is deprecated. Use Main.layoutManager.currentMonitor.index or global.display.get_current_monitor() instead.");
 
   return meta_display_get_current_monitor (screen->display);
 }
@@ -633,13 +633,13 @@ cinnamon_screen_get_current_monitor (CinnamonScreen *screen)
  *
  * Return value: the number of monitors
  *
- * Deprecated: 6.4: Use meta_display_get_n_monitors() via global.display instead.
+ * Deprecated: 6.4: Use Main.layoutManager.monitors.length or global.display.get_n_monitors() instead.
  */
 int
 cinnamon_screen_get_n_monitors (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 1);
-  g_warning_once ("global.screen.get_n_monitors() is deprecated. Use global.display.get_n_monitors() instead.");
+  g_warning_once ("global.screen.get_n_monitors() is deprecated. Use Main.layoutManager.monitors.length or global.display.get_n_monitors() instead.");
 
   return meta_display_get_n_monitors (screen->display);
 }
@@ -652,13 +652,13 @@ cinnamon_screen_get_n_monitors (CinnamonScreen *screen)
  *
  * Return value: a monitor index
  *
- * Deprecated: 6.4: Use meta_display_get_primary_monitor() via global.display instead.
+ * Deprecated: 6.4: Use Main.layoutManager.primaryIndex or global.display.get_primary_monitor() instead.
  */
 int
 cinnamon_screen_get_primary_monitor (CinnamonScreen *screen)
 {
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), 0);
-  g_warning_once ("global.screen.get_primary_monitor() is deprecated. Use global.display.get_primary_monitor() instead.");
+  g_warning_once ("global.screen.get_primary_monitor() is deprecated. Use Main.layoutManager.primaryIndex or global.display.get_primary_monitor() instead.");
 
   return meta_display_get_primary_monitor (screen->display);
 }
@@ -671,7 +671,7 @@ cinnamon_screen_get_primary_monitor (CinnamonScreen *screen)
  *
  * Stores the location and size of the indicated monitor in @geometry.
  *
- * Deprecated: 6.4: Use meta_display_get_monitor_geometry() via global.display instead.
+ * Deprecated: 6.4: Use Main.layoutManager.monitors[index] or global.display.get_monitor_geometry() instead.
  */
 void
 cinnamon_screen_get_monitor_geometry (CinnamonScreen    *screen,
@@ -681,7 +681,7 @@ cinnamon_screen_get_monitor_geometry (CinnamonScreen    *screen,
   g_return_if_fail (CINNAMON_IS_SCREEN (screen));
   g_return_if_fail (monitor >= 0 && monitor < meta_display_get_n_monitors (screen->display));
   g_return_if_fail (geometry != NULL);
-  g_warning_once ("global.screen.get_monitor_geometry() is deprecated. Use global.display.get_monitor_geometry() instead.");
+  g_warning_once ("global.screen.get_monitor_geometry() is deprecated. Use Main.layoutManager.monitors[index] (has x, y, width, height) or global.display.get_monitor_geometry() instead.");
 
   meta_display_get_monitor_geometry (screen->display, monitor, geometry);
 }
@@ -871,7 +871,7 @@ cinnamon_screen_get_active_workspace (CinnamonScreen *screen)
  *
  * Returns: %TRUE if there is a fullscreen window covering the specified monitor.
  *
- * Deprecated: 6.4: Use meta_display_get_monitor_in_fullscreen() via global.display instead.
+ * Deprecated: 6.4: Use Main.layoutManager.monitors[index].inFullscreen or global.display.get_monitor_in_fullscreen() instead.
  */
 gboolean
 cinnamon_screen_get_monitor_in_fullscreen (CinnamonScreen  *screen,
@@ -880,7 +880,7 @@ cinnamon_screen_get_monitor_in_fullscreen (CinnamonScreen  *screen,
   g_return_val_if_fail (CINNAMON_IS_SCREEN (screen), FALSE);
   g_return_val_if_fail (monitor >= 0 &&
                           monitor < meta_display_get_n_monitors (screen->display), FALSE);
-  g_warning_once ("global.screen.get_monitor_in_fullscreen() is deprecated. Use global.display.get_monitor_in_fullscreen() instead.");
+  g_warning_once ("global.screen.get_monitor_in_fullscreen() is deprecated. Use Main.layoutManager.monitors[index].inFullscreen or global.display.get_monitor_in_fullscreen() instead.");
 
   return meta_display_get_monitor_in_fullscreen (screen->display, monitor);
 }

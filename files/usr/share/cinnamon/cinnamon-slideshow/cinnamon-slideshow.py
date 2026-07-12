@@ -6,7 +6,9 @@ import os, locale
 from xml.etree import ElementTree
 from setproctitle import setproctitle
 
-from gi.repository import Gio, GLib
+import gi
+gi.require_version('GLibUnix', '2.0')
+from gi.repository import Gio, GLib, GLibUnix
 
 SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
 SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
@@ -53,7 +55,30 @@ class CinnamonSlideshowApplication(Gio.Application):
 
         self.connection = None
         self.registration_id = 0
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end)
+
+        self.cinnamon_seen = False
+        self.cinnamon_watch_id = Gio.bus_watch_name(
+            Gio.BusType.SESSION,
+            "org.Cinnamon",
+            Gio.BusNameWatcherFlags.NONE,
+            self.on_cinnamon_appeared,
+            self.on_cinnamon_vanished
+        )
+
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, sig, self.end)
+            except AttributeError:
+                GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, sig, self.end, None)
+
+    def on_cinnamon_appeared(self, connection, name, name_owner):
+        self.cinnamon_seen = True
+
+    def on_cinnamon_vanished(self, connection, name):
+        # Cinnamon owns org.Cinnamon; if it goes away (logout, crash, replace)
+        # this orphaned service should exit too, since nothing else will stop it.
+        if self.cinnamon_seen:
+            self.end()
 
     def do_startup(self):
         Gio.Application.do_startup(self)
@@ -63,7 +88,11 @@ class CinnamonSlideshowApplication(Gio.Application):
         try:
             self.connection = connection
             iface_info = Gio.DBusNodeInfo.new_for_xml(DBUS_INTERFACE_XML)
-            self.registration_id = connection.register_object(
+            try:
+                register = connection.register_object_with_closures2
+            except AttributeError:
+                register = connection.register_object
+            self.registration_id = register(
                 SLIDESHOW_DBUS_PATH,
                 iface_info.interfaces[0],
                 self.handle_method_call,
@@ -117,6 +146,10 @@ class CinnamonSlideshowApplication(Gio.Application):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
+
+        if self.cinnamon_watch_id > 0:
+            Gio.bus_unwatch_name(self.cinnamon_watch_id)
+            self.cinnamon_watch_id = 0
 
         self.disconnect_folder_monitor()
         self.quit()
