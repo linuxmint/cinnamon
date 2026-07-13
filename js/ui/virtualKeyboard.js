@@ -6,6 +6,7 @@ const Signals = imports.signals;
 
 const KeyboardManager = imports.ui.keyboardManager;
 const IBusManager = imports.misc.ibusManager;
+const IMFramework = imports.misc.imFramework;
 const BoxPointer = imports.ui.boxpointer;
 const Layout = imports.ui.layout;
 const Main = imports.ui.main;
@@ -232,7 +233,7 @@ var Key = GObject.registerClass({
     Signals: {
         'activated': {},
         'long-press': {},
-        'pressed': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING] },
+        'pressed': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING, GObject.TYPE_BOOLEAN] },
         'released': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING] },
     },
 }, class Key extends St.BoxLayout {
@@ -304,7 +305,7 @@ var Key = GObject.registerClass({
         this.emit('activated');
 
         if (this._extendedKeys.length === 0)
-            this.emit('pressed', this._getKeyval(key), key);
+            this.emit('pressed', this._getKeyval(key), key, false);
 
         if (key == this.key) {
             this._pressTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
@@ -333,8 +334,12 @@ var Key = GObject.registerClass({
             this._pressTimeoutId = 0;
         }
 
-        if (this._extendedKeys.length > 0)
-            this.emit('pressed', this._getKeyval(key), key);
+        if (this._extendedKeys.length > 0) {
+            // A released key that isn't the base key is an extended (long-press
+            // accent) subkey: a literal character with no keycode in the layout.
+            // Flag it so it's committed as text rather than synthesized as a keyval.
+            this.emit('pressed', this._getKeyval(key), key, key !== this.key);
+        }
 
         this.emit('released', this._getKeyval(key), key);
         this._hideSubkeys();
@@ -522,6 +527,144 @@ var ActiveGroupKey = GObject.registerClass({}, class ActiveGroupKey extends Key 
     }
 });
 
+// Drives fcitx via its session-bus Controller1 interface (org.fcitx.Fcitx5,
+// /controller). That is the daemon's control channel - independent of the input
+// frontend - so the same calls work whether apps reach fcitx over Wayland
+// text-input-v3 or the X11 dbusfrontend. Emits 'changed' when the active input
+// method may have changed (after our own Toggle, or an external group change).
+var FcitxController = class {
+    constructor() {
+        this._connection = null;
+        this._groupChangedId = 0;
+        this._cancellable = new Gio.Cancellable();
+        this._watchId = Gio.bus_watch_name(Gio.BusType.SESSION, 'org.fcitx.Fcitx5',
+                                           Gio.BusNameWatcherFlags.NONE,
+                                           this._onAppeared.bind(this),
+                                           this._onVanished.bind(this));
+    }
+
+    _onAppeared(connection) {
+        this._connection = connection;
+        this._groupChangedId = connection.signal_subscribe(
+            'org.fcitx.Fcitx5', 'org.fcitx.Fcitx.Controller1',
+            'InputMethodGroupsChanged', '/controller', null,
+            Gio.DBusSignalFlags.NONE, () => this.emit('changed'));
+        this.emit('changed');
+    }
+
+    _onVanished() {
+        // The bus connection itself survives fcitx going away; drop our
+        // subscription or a later _onAppeared would orphan it and double-fire.
+        if (this._connection && this._groupChangedId) {
+            this._connection.signal_unsubscribe(this._groupChangedId);
+            this._groupChangedId = 0;
+        }
+        this._connection = null;
+        this.emit('changed');
+    }
+
+    // Toggle the input method on/off (latin <-> active IME), like Ctrl+Space.
+    toggle() {
+        if (!this._connection)
+            return;
+        this._connection.call('org.fcitx.Fcitx5', '/controller',
+                              'org.fcitx.Fcitx.Controller1', 'Toggle', null, null,
+                              Gio.DBusCallFlags.NONE, -1, this._cancellable, (conn, res) => {
+            try {
+                conn.call_finish(res);
+            } catch (e) {
+                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+                // fcitx went away between the check and the call; ignore.
+            }
+            this.emit('changed');
+        });
+    }
+
+    // Current IM as {icon, label} via callback (either may be null). The icon is
+    // fcitx's own icon name - the same one its tray shows - so the OSK key can
+    // match it; the label (e.g. "en", "あ") is a text fallback for IMs with no
+    // icon. Null when fcitx is unavailable or has no answer.
+    getCurrentInfo(callback) {
+        if (!this._connection) {
+            callback(null);
+            return;
+        }
+        this._connection.call('org.fcitx.Fcitx5', '/controller',
+                              'org.fcitx.Fcitx.Controller1', 'CurrentInputMethodInfo',
+                              null, new GLib.VariantType('(sssssssbsa{sv})'),
+                              Gio.DBusCallFlags.NONE, -1, this._cancellable, (conn, res) => {
+            let info = null;
+            try {
+                // fields: uniqueName, name, nativeName, icon, label, ...
+                let r = conn.call_finish(res).deepUnpack();
+                info = { icon: r[3] || null, label: r[4] || r[1] || r[0] || null };
+            } catch (e) {
+                // Cancelled means we were destroyed - the callback would poke
+                // finalized actors, so don't deliver it at all.
+                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+                // No current IM / fcitx gone; leave info null.
+            }
+            callback(info);
+        });
+    }
+
+    destroy() {
+        this._cancellable.cancel();
+        if (this._connection && this._groupChangedId) {
+            this._connection.signal_unsubscribe(this._groupChangedId);
+            this._groupChangedId = 0;
+        }
+        if (this._watchId) {
+            Gio.bus_unwatch_name(this._watchId);
+            this._watchId = 0;
+        }
+        this._connection = null;
+    }
+};
+Signals.addSignalMethods(FcitxController.prototype);
+
+// The OSK's layout-switch key under fcitx: tapping it toggles the input method
+// (wired in _loadDefaultKeys), and the key shows fcitx's current IM label,
+// refreshed whenever the controller reports a change.
+var FcitxToggleKey = GObject.registerClass({}, class FcitxToggleKey extends Key {
+    _init(controller) {
+        this._fcitxController = controller;
+        this._destroyed = false;
+        super._init('', [], 'xsi-input-keyboard-symbolic');
+        this._changedId = this._fcitxController.connect('changed', this._refresh.bind(this));
+        this._refresh();
+        this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    _refresh() {
+        this._fcitxController.getCurrentInfo((info) => {
+            // Group changes rebuild the keys while the controller (and any
+            // in-flight reply) lives on in Keyboard - don't poke a dead key.
+            if (this._destroyed)
+                return;
+            // Prefer fcitx's own icon so the key matches the tray exactly; fall
+            // back to the text label, then to a generic keyboard icon.
+            if (info && info.icon)
+                this.updateKey('', info.icon);
+            else if (info && info.label)
+                this.updateKey(info.label, null);
+            else
+                this.updateKey('', 'xsi-input-keyboard-symbolic');
+            this.keyButton.add_style_class_name("non-alpha-key");
+        });
+    }
+
+    _onDestroy() {
+        this._destroyed = true;
+        if (this._changedId > 0) {
+            this._fcitxController.disconnect(this._changedId);
+            this._changedId = 0;
+        }
+    }
+});
+
 var KeyboardModel = class {
     constructor(groupName) {
         let names = [groupName];
@@ -580,8 +723,10 @@ var FocusTracker = class {
 
         this._ibusManager = IBusManager.getIBusManager();
         this._ibusManager.connect('set-cursor-location', (manager, rect) => {
-            /* Valid for X11 clients only */
-            if (Main.inputMethod.currentFocus)
+            /* Reported by clients using the client-side ibus modules (X11
+             * apps, and XWayland apps in a Wayland session); when the
+             * compositor input method has a focus, its rect wins. */
+            if (Main.inputMethod.get_focus())
                 return;
 
             this._setCurrentRect(rect);
@@ -935,6 +1080,11 @@ class Keyboard extends St.BoxLayout {
 
         this._keyboardController.destroy();
 
+        if (this._fcitxController) {
+            this._fcitxController.destroy();
+            this._fcitxController = null;
+        }
+
         if (!this._screensaverMode) {
             Main.layoutManager.untrackChrome(this);
             Main.layoutManager.keyboardBox.remove_actor(this);
@@ -1064,8 +1214,23 @@ class Keyboard extends St.BoxLayout {
             if (button.key == ' ')
                 button.setWidth(keys.length <= 3 ? 6 : 5);
 
-            button.connect('pressed', (actor, keyval, str) => {
-                if (!Main.inputMethod.currentFocus ||
+            button.connect('pressed', (actor, keyval, str, isText) => {
+                // Extended (accent) subkeys are literal characters with no keycode
+                // in the layout, so key synthesis only produces them when the
+                // current layout happens to contain them (and never on the native
+                // Wayland backend, which can't remap keycodes the way XTest can).
+                // Commit them as text whenever something is listening on the input
+                // method - a Cinnamon entry or a text-input client; this works for
+                // every IM implementation, including muffin's native fcitx one.
+                // With no input-method focus (an X11/XWayland window, or a Wayland
+                // client without text-input support) a commit would go nowhere, so
+                // fall through to key synthesis, which reaches those clients
+                // through the keyboard.
+                if (isText && Main.inputMethod.get_focus() != null) {
+                    this._keyboardController.commitString(str);
+                    return;
+                }
+                if (Main.inputMethod.get_focus() == null ||
                     !this._keyboardController.commitString(str, true)) {
                     if (keyval != 0) {
                         this._keyboardController.keyvalPress(keyval);
@@ -1101,17 +1266,24 @@ class Keyboard extends St.BoxLayout {
             let modifier = key.modifier;
 
             if (action === 'next-layout') {
-                let groups = this._keyboardController.getGroups();
-                if (groups.length > 1) {
-                    extraButton = new ActiveGroupKey(this._keyboardController);
+                if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX) {
+                    // Cinnamon's input-source groups are the wrong axis under fcitx
+                    // (fcitx owns dynamic layout/IM switching), so the key instead
+                    // toggles fcitx's own input method and shows its current label.
+                    if (!this._fcitxController)
+                        this._fcitxController = new FcitxController();
+                    extraButton = new FcitxToggleKey(this._fcitxController);
                 } else {
-                    continue;
+                    // Switches Cinnamon's input-source groups; omit with only one.
+                    let groups = this._keyboardController.getGroups();
+                    if (groups.length <= 1)
+                        continue;
+                    extraButton = new ActiveGroupKey(this._keyboardController);
                 }
             } else {
                 extraButton = new Key(key.label || '', [], icon);
             }
 
-            // extraButton.keyButton.add_style_class_name('default-key');
             if (key.extraClassName != null)
                 extraButton.keyButton.add_style_class_name(key.extraClassName);
             if (key.width != null)
@@ -1150,8 +1322,12 @@ class Keyboard extends St.BoxLayout {
                     this._releaseAllModifiers();
                 } else if (action == 'hide')
                     this.close();
-                else if (action == 'next-layout')
-                    this._keyboardController.activateNextGroup();
+                else if (action == 'next-layout') {
+                    if (this._fcitxController)
+                        this._fcitxController.toggle();
+                    else
+                        this._keyboardController.activateNextGroup();
+                }
             });
 
             if (switchToLevel == 0) {
@@ -1652,8 +1828,14 @@ var KeyboardController = class {
     commitString(string, fromKey) {
         if (string == null)
             return false;
-        /* Let ibus methods fall through keyval emission */
-        if (fromKey && this._currentSource.type == KeyboardManager.INPUT_SOURCE_TYPE_IBUS)
+        /* Regular keys must reach ibus engines and fcitx as key events -
+         * composition happens there, and a direct commit of the literal
+         * character would bypass it. (Under fcitx the sources are plain xkb
+         * ones - fcitx owns the IM axis - so the source type alone can't
+         * tell us; check the framework too.) */
+        if (fromKey &&
+            (this._currentSource.type == KeyboardManager.INPUT_SOURCE_TYPE_IBUS ||
+             IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX))
             return false;
 
         Main.inputMethod.commit(string);
@@ -1661,12 +1843,29 @@ var KeyboardController = class {
     }
 
     keyvalPress(keyval) {
-        this._virtualDevice.notify_keyval(Clutter.get_current_event_time(),
+        // Symbols outside the current layout can't be synthesized through the
+        // virtual device on Wayland (static keymaps, unlike XTest's dynamic
+        // remapping on X11); muffin types those atomically through a KWin-style
+        // temporary keymap instead, which reaches XWayland clients too. It
+        // returns false for in-layout keysyms, which take the normal path.
+        if (Meta.is_wayland_compositor() && Meta.wayland_type_keysym(keyval)) {
+            this._offLayoutKeyval = keyval;
+            return;
+        }
+        // notify_keyval() wants microseconds on the monotonic clock, not the
+        // millisecond event time; passing ms stamps the key ~1000x in the past
+        // and trips muffin's user-time sanity check on the first key after focus.
+        this._virtualDevice.notify_keyval(GLib.get_monotonic_time(),
                                           keyval, Clutter.KeyState.PRESSED);
     }
 
     keyvalRelease(keyval) {
-        this._virtualDevice.notify_keyval(Clutter.get_current_event_time(),
+        // Off-layout keysyms were pressed and released atomically above.
+        if (this._offLayoutKeyval === keyval) {
+            this._offLayoutKeyval = null;
+            return;
+        }
+        this._virtualDevice.notify_keyval(GLib.get_monotonic_time(),
                                           keyval, Clutter.KeyState.RELEASED);
     }
 };

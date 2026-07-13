@@ -40,7 +40,6 @@ class FcitxInputMethod extends Clutter.InputMethod {
         super._init();
         this._hints = 0;
         this._purpose = 0;
-        this._currentFocus = null;
         this._preeditStr = '';
         this._preeditPos = 0;
         this._preeditVisible = false;
@@ -62,10 +61,6 @@ class FcitxInputMethod extends Clutter.InputMethod {
                                            Gio.BusNameWatcherFlags.NONE,
                                            this._onNameAppeared.bind(this),
                                            this._onNameVanished.bind(this));
-    }
-
-    get currentFocus() {
-        return this._currentFocus;
     }
 
     _onSourceChanged() {
@@ -115,8 +110,12 @@ class FcitxInputMethod extends Clutter.InputMethod {
 
         this._updateCapabilities();
 
-        if (this._currentFocus)
+        if (this.get_focus()) {
             this._icCall('FocusIn', null);
+            // The new IC starts with no surrounding text; repopulate it now
+            // rather than waiting for the next caret move or edit.
+            this.request_surrounding();
+        }
     }
 
     _icCall(method, params, replyType = null, callback = null) {
@@ -138,6 +137,18 @@ class FcitxInputMethod extends Clutter.InputMethod {
     }
 
     _clear() {
+        // fcitx died (or is being torn down) possibly mid-composition. The
+        // preedit still painted on the focused actor is display-only (not
+        // buffer text), so nothing else can ever remove it - and the engine
+        // state is gone, but the text the user saw is not: commit it rather
+        // than discard those keystrokes (fcitx itself commits the preedit on
+        // unfocus for the same reason). The commit also clears the preedit
+        // rendering.
+        if (this._preeditVisible && this._preeditStr)
+            this.commit(this._preeditStr);
+        else if (this._preeditVisible)
+            this.set_preedit_text(null, 0);
+
         if (this._connection && this._signalIds.length > 0) {
             for (let id of this._signalIds)
                 this._connection.signal_unsubscribe(id);
@@ -166,6 +177,12 @@ class FcitxInputMethod extends Clutter.InputMethod {
         // UpdateFormattedPreedit(a(si) strings, i cursor)
         let [strings, pos] = params.deepUnpack();
         let preedit = strings.map(s => s[0]).join('');
+
+        // fcitx's preedit cursor is a UTF-8 byte offset; Clutter wants
+        // characters. utf8_strlen(str, n) counts the characters in the
+        // first n bytes (stopping at the terminator, so overshoot clamps).
+        if (pos > 0)
+            pos = GLib.utf8_strlen(preedit, pos);
 
         if (preedit.length > 0)
             this.set_preedit_text(preedit, pos);
@@ -204,7 +221,6 @@ class FcitxInputMethod extends Clutter.InputMethod {
     }
 
     vfunc_focus_in(focus) {
-        this._currentFocus = focus;
         this._icCall('FocusIn', null);
 
         if (this._hidePanelId) {
@@ -221,7 +237,6 @@ class FcitxInputMethod extends Clutter.InputMethod {
             this._updateCapabilities();
         }
 
-        this._currentFocus = null;
         this._icCall('FocusOut', null);
 
         if (this._preeditStr) {
@@ -254,7 +269,10 @@ class FcitxInputMethod extends Clutter.InputMethod {
     }
 
     vfunc_set_surrounding(text, cursor, anchor) {
-        if (!text)
+        // An empty string is a real update (the field is empty) and must be
+        // relayed, or fcitx keeps acting on the previous field's text; only
+        // null/undefined means "no surrounding available".
+        if (!text && text !== '')
             return;
         // SetSurroundingText(s text, u cursor, u anchor)
         this._icCall('SetSurroundingText',

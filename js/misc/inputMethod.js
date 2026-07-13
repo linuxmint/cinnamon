@@ -12,7 +12,6 @@ class InputMethod extends Clutter.InputMethod {
         super._init();
         this._hints = 0;
         this._purpose = 0;
-        this._currentFocus = null;
         this._preeditStr = '';
         this._preeditPos = 0;
         this._preeditVisible = false;
@@ -28,10 +27,6 @@ class InputMethod extends Clutter.InputMethod {
         this._currentSource = this._inputSourceManager.currentSource;
         if (this._ibus.is_connected())
             this._onConnected();
-    }
-
-    get currentFocus() {
-        return this._currentFocus;
     }
 
     _updateCapabilities() {
@@ -74,6 +69,16 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     _clear() {
+        // ibus died possibly mid-composition. The preedit still painted on
+        // the focused actor is display-only (not buffer text), so nothing
+        // else can ever remove it - and the engine state is gone, but the
+        // text the user saw is not: commit it rather than discard those
+        // keystrokes. The commit also clears the preedit rendering.
+        if (this._preeditVisible && this._preeditStr)
+            this.commit(this._preeditStr);
+        else if (this._preeditVisible)
+            this.set_preedit_text(null, 0);
+
         if (this._cancellable) {
             this._cancellable.cancel();
             this._cancellable = null;
@@ -146,7 +151,6 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     vfunc_focus_in(focus) {
-        this._currentFocus = focus;
         if (this._context) {
             this._context.focus_in();
             this._emitRequestSurrounding();
@@ -169,7 +173,6 @@ class InputMethod extends Clutter.InputMethod {
             this._context.set_content_type(this._purpose, this._hints);
         }
 
-        this._currentFocus = null;
         if (this._context)
             this._context.focus_out();
 
@@ -208,7 +211,10 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     vfunc_set_surrounding(text, cursor, anchor) {
-        if (!this._context || !text)
+        // An empty string is a real update (the field is empty) and must be
+        // relayed, or the engine keeps acting on the previous field's text;
+        // only null/undefined means "no surrounding available".
+        if (!this._context || (!text && text !== ''))
             return;
 
         let ibusText = IBus.Text.new_from_string(text);
