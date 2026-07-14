@@ -165,6 +165,7 @@ var Magnifier = class Magnifier {
         this._initialized = false;
         this.updateMagId = 0;
         this.enabled = this._appSettings.get_boolean(SHOW_KEY);
+        this._unfocusInhibited = false;
 
         this._appSettings.connect('changed::' + SHOW_KEY,
             () => {
@@ -211,6 +212,7 @@ var Magnifier = class Magnifier {
         this._mouseSprite = new Clutter.Actor({ request_mode: Clutter.RequestMode.CONTENT_SIZE });
         this._mouseSprite.content = new MouseSpriteContent();
         this._cursorTracker = cursorTracker;
+        this._seat = Clutter.get_default_backend().get_default_seat();
 
         this._updateMouseSprite();
 
@@ -235,6 +237,10 @@ var Magnifier = class Magnifier {
      */
     showSystemCursor() {
         this._initialize();
+        if (this._unfocusInhibited) {
+            this._seat.uninhibit_unfocus();
+            this._unfocusInhibited = false;
+        }
         this._cursorTracker.set_pointer_visible(true);
     }
 
@@ -244,6 +250,14 @@ var Magnifier = class Magnifier {
      */
     hideSystemCursor() {
         this._initialize();
+        // On Wayland, muffin drops the pointer's focus surface while the
+        // cursor is invisible, leaving clients unable to receive any pointer
+        // events. Inhibiting unfocus keeps client input working while we
+        // draw our own magnified cursor sprite.
+        if (!this._unfocusInhibited) {
+            this._seat.inhibit_unfocus();
+            this._unfocusInhibited = true;
+        }
         this._cursorTracker.set_pointer_visible(false);
     }
 
@@ -270,7 +284,7 @@ var Magnifier = class Magnifier {
         // Make sure system mouse pointer is shown when all zoom regions are
         // invisible.
         if (!activate)
-            this._cursorTracker.set_pointer_visible(true);
+            this.showSystemCursor();
 
         // Notify interested parties of this change
         this.emit('active-changed', activate);
