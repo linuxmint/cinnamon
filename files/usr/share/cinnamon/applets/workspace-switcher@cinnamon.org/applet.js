@@ -384,23 +384,44 @@ class WorkspaceGraph extends WorkspaceButton {
     setGraphSize() {
         this.workspace_size = this.workspace.get_work_area_all_monitors();
 
+        const sizePercent = Math.max(
+            25,
+            Math.min(100, this.applet.size_percent || 100)
+        );
+
+        const scaledPanelSize = Math.max(
+            12,
+            Math.round(this.applet._panelHeight * sizePercent / 100)
+        );
+
         if (this.applet.orientation == St.Side.LEFT ||
             this.applet.orientation == St.Side.RIGHT) {
-            this.width = this.applet._panelHeight -
+            this.width = scaledPanelSize -
                 this.getSizeAdjustment(this.applet.actor, true) -
                 this.getSizeAdjustment(this.actor, true);
+
+            this.width = Math.max(8, this.width);
             this.scaleFactor = this.workspace_size.width / this.width;
-            this.height = Math.round(this.workspace_size.height / this.scaleFactor);
+            this.height = Math.max(
+                8,
+                Math.round(this.workspace_size.height / this.scaleFactor)
+            );
         }
         else {
-            this.height = this.applet._panelHeight -
+            this.height = scaledPanelSize -
                 this.getSizeAdjustment(this.applet.actor, false) -
                 this.getSizeAdjustment(this.actor, false);
+
+            this.height = Math.max(8, this.height);
             this.scaleFactor = this.workspace_size.height / this.height;
-            this.width = Math.round(this.workspace_size.width / this.scaleFactor);
+            this.width = Math.max(
+                8,
+                Math.round(this.workspace_size.width / this.scaleFactor)
+            );
         }
 
         this.graphArea.set_size(this.width, this.height);
+        this.actor.set_size(this.width, this.height);
     }
 
     sortWindowsByUserTime(win1, win2) {
@@ -502,6 +523,7 @@ class CinnamonWorkspaceSwitcher extends Applet.Applet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("display-type", "display_type", this.queueCreateButtons);
         this.settings.bind("scroll-behavior", "scroll_behavior");
+        this.settings.bind("size-percent", "size_percent", this.queueCreateButtons);
 
         this.actor.connect('scroll-event', this.hook.bind(this));
 
