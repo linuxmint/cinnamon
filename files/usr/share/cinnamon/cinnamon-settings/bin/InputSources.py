@@ -41,9 +41,7 @@ class InputSourceSettingsPage(SettingsPage):
 
         self.test_layout_button = builder.get_object("test_layout")
         self.test_layout_button.connect("clicked", self.on_test_layout_clicked)
-        # TODO: maybe use tecla as an alternative for wayland, if we don't roll something ourselves.
-        # btw there's no plan for tecla to support different keyboard geometries than a standard pc105.
-        if not GLib.find_program_in_path("gkbd-keyboard-display"):
+        if AddKeyboardLayout.get_layout_preview_program() is None:
             self.test_layout_button.set_visible(False)
 
         self.engine_config_button = builder.get_object("engine_config_button")
@@ -218,7 +216,7 @@ class InputSourceSettingsPage(SettingsPage):
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
 
-        args = AddKeyboardLayout.make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
+        args = AddKeyboardLayout.make_layout_preview_args(source.xkb_layout, source.xkb_variant)
         subprocess.Popen(args)
 
     def on_engine_config_clicked(self, button, data=None):
