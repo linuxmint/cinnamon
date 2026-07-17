@@ -4,6 +4,8 @@ const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
+const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
 const IBus = imports.gi.IBus;
@@ -86,7 +88,9 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._propSection = new PopupMenu.PopupMenuSection();
             this.menu.addMenuItem(this._propSection);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.showLayoutAction = this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
+            this.showLayoutAction = null;
+            if (this._getLayoutDisplayProgram() !== null)
+                this.showLayoutAction = this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
             this.menu.addAction(_("Show Character Table"), () => {
                 Main.overview.hide();
                 Util.spawn(['gucharmap']);
@@ -104,16 +108,36 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         }
     }
 
+    _getLayoutDisplayProgram() {
+        // gkbd-keyboard-display (libgnomekbd) is X11-only, so on Wayland only
+        // tecla is usable. On X11 keep gkbd-keyboard-display preferred where
+        // still available (tecla only shows a standard pc105 geometry).
+        const candidates = Meta.is_wayland_compositor() ?
+            ['tecla'] : ['gkbd-keyboard-display', 'tecla'];
+        for (const program of candidates) {
+            if (GLib.find_program_in_path(program))
+                return program;
+        }
+        return null;
+    }
+
     _showActiveLayout() {
         Main.overview.hide();
 
         let source = this._inputSourcesManager.currentSource;
 
         let description = source.xkbLayout;
-        if (source.variant.length > 0)
-            description = '%s\t%s'.format(description, source.variant);
-
-        Util.spawn(['gkbd-keyboard-display', '-l', description]);
+        if (this._getLayoutDisplayProgram() === 'tecla') {
+            // '+' is the layout/variant separator accepted by every tecla
+            // version (space and tab only since tecla 48)
+            if (source.variant.length > 0)
+                description = '%s+%s'.format(description, source.variant);
+            Util.spawn(['tecla', description]);
+        } else {
+            if (source.variant.length > 0)
+                description = '%s\t%s'.format(description, source.variant);
+            Util.spawn(['gkbd-keyboard-display', '-l', description]);
+        }
     }
 
     _onCurrentSourceChanged() {
@@ -233,7 +257,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this.actor.hide();
         }
 
-        this.showLayoutAction.setSensitive(selected.type === 'xkb');
+        if (this.showLayoutAction !== null)
+            this.showLayoutAction.setSensitive(selected.type === 'xkb');
 
         this._updatePropertySection(selected.properties);
     }
