@@ -86,14 +86,19 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this.menu.addMenuItem(this._propSeparator);
             this._propSection = new PopupMenu.PopupMenuSection();
             this.menu.addMenuItem(this._propSection);
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.showLayoutAction = null;
-            if (this._getLayoutDisplayProgram() !== null)
+            const haveLayoutDisplay = this._getLayoutDisplayProgram() !== null;
+            const haveCharmap = GLib.find_program_in_path('gucharmap') !== null;
+            if (haveLayoutDisplay || haveCharmap)
+                this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            if (haveLayoutDisplay)
                 this.showLayoutAction = this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
-            this.menu.addAction(_("Show Character Table"), () => {
-                Main.overview.hide();
-                Util.spawn(['gucharmap']);
-            });
+            if (haveCharmap) {
+                this.menu.addAction(_("Show Character Table"), () => {
+                    Main.overview.hide();
+                    Util.spawn(['gucharmap']);
+                });
+            }
             this._applet_context_menu.addSettingsAction(_("Manage keyboard layouts"), 'keyboard', "layouts");
 
             this._inputSourcesManager = KeyboardManager.getInputSourceManager();
