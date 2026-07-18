@@ -420,7 +420,8 @@ class Spice_Harvester(GObject.Object):
             response = requests.get(url, proxies=proxy_info, stream=True, timeout=15)
             assert response.ok
 
-            totalSize = int(response.headers.get('content-length'))
+            content_length = response.headers.get('content-length')
+            totalSize = int(content_length) if content_length is not None else -1
 
             for data in response.iter_content(chunk_size=blockSize):
                 count += 1
