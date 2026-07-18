@@ -112,6 +112,14 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, True)
 
+    def get_instance_id(self, uuid):
+        # Let xlet-settings open on the instance located on the selected panel
+        for definition in self.spices.settings.get_strv('enabled-applets'):
+            parts = definition.split(':')
+            if len(parts) > 4 and parts[3] == uuid and parts[0] == f'panel{self.panel_id}':
+                return parts[4]
+        return None
+
     def panels_changed(self, *args):
         self.panels = []
         n_mons = Gdk.Screen.get_default().get_n_monitors()
