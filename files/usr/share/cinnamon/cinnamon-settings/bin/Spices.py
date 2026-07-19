@@ -287,6 +287,10 @@ class Spice_Harvester(GObject.Object):
         if self.window:
             self.window.set_progress(int(fraction*100))
 
+    def _set_progressbar_pulse(self):
+        for progressbar in self.progressbars:
+            progressbar.pulse()
+
     def _set_progressbar_visible(self, visible):
         for progressbar in self.progressbars:
             progressbar.revealer.set_reveal_child(visible)
@@ -299,10 +303,12 @@ class Spice_Harvester(GObject.Object):
             fraction = float(current) / float(total)
             text = "%s %i/%i" % (_("Downloading images:"), current, total)
             self._set_progressbar_text(text)
+            self._set_progressbar_fraction(fraction)
+        elif totalSize == -1:
+            self._set_progressbar_pulse()
         else:
             fraction = count * blockSize / float((totalSize / blockSize + 1) * (blockSize))
-
-        self._set_progressbar_fraction(fraction)
+            self._set_progressbar_fraction(fraction)
 
         while Gtk.events_pending():
             Gtk.main_iteration()
@@ -389,9 +395,10 @@ class Spice_Harvester(GObject.Object):
 
         try:
             response = requests.get(url, proxies=proxy_info, stream=True, timeout=15)
-            assert response.ok
+            response.raise_for_status()
 
-            totalSize = int(response.headers.get('content-length'))
+            content_length = response.headers.get('content-length')
+            totalSize = int(content_length) if content_length else -1
 
             for data in response.iter_content(chunk_size=blockSize):
                 count += 1
