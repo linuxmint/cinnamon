@@ -22,9 +22,14 @@ INPUT_SOURCE_SETTINGS = "org.cinnamon.desktop.input-sources"
 SHOW_ALL_SOURCES_KEY="show-all-sources"
 
 def get_layout_preview_program():
-    # tecla only shows a standard pc105 geometry, keep gkbd-keyboard-display
-    # (libgnomekbd) preferred where still available.
-    for program in ("gkbd-keyboard-display", "tecla"):
+    # gkbd-keyboard-display (libgnomekbd) is X11-only, so on Wayland only tecla
+    # is usable. On X11 keep gkbd-keyboard-display preferred where still
+    # available (tecla only shows a standard pc105 geometry).
+    if os.environ.get("XDG_SESSION_TYPE") == "wayland":
+        candidates = ("tecla",)
+    else:
+        candidates = ("gkbd-keyboard-display", "tecla")
+    for program in candidates:
         if GLib.find_program_in_path(program):
             return program
     return None

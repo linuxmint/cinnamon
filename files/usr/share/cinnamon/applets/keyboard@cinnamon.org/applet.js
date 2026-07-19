@@ -5,6 +5,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
 const IBus = imports.gi.IBus;
@@ -113,9 +114,12 @@ class CinnamonKeyboardApplet extends Applet.Applet {
     }
 
     _getLayoutDisplayProgram() {
-        // tecla only shows a standard pc105 geometry, keep gkbd-keyboard-display
-        // (libgnomekbd) preferred where still available.
-        for (const program of ['gkbd-keyboard-display', 'tecla']) {
+        // gkbd-keyboard-display (libgnomekbd) is X11-only, so on Wayland only
+        // tecla is usable. On X11 keep gkbd-keyboard-display preferred where
+        // still available (tecla only shows a standard pc105 geometry).
+        const candidates = Meta.is_wayland_compositor() ?
+            ['tecla'] : ['gkbd-keyboard-display', 'tecla'];
+        for (const program of candidates) {
             if (GLib.find_program_in_path(program))
                 return program;
         }
