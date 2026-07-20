@@ -1,3 +1,11 @@
+cinnamon (6.6.9) zena; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-calendar-server.py: Allow ICal 4.0.
+  * Spices.py: Gracefully handle a missing content-length header during downloads.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 20 Jul 2026 13:27:37 +0200
+
 cinnamon (6.6.8) zena; urgency=medium
 
   [ Michael Webster ]
