@@ -1,3 +1,10 @@
+cinnamon (5.4.13) vanessa; urgency=medium
+
+  [ Michael Webster ]
+  * Spices.py: Gracefully handle a missing content-length header during downloads.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 20 Jul 2026 13:32:18 +0200
+
 cinnamon (5.4.12) vanessa; urgency=medium
 
   [ Michael Webster ]
