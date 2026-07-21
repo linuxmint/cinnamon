@@ -231,8 +231,7 @@ st_viewport_dispose (GObject *object)
 
 static void
 st_viewport_allocate (ClutterActor           *actor,
-                      const ClutterActorBox  *box,
-                      ClutterAllocationFlags  flags)
+                      const ClutterActorBox  *box)
 {
   StViewport *viewport = ST_VIEWPORT (actor);
   StViewportPrivate *priv =
@@ -259,14 +258,14 @@ st_viewport_allocate (ClutterActor           *actor,
    * may not match the minimum sizes reported by the layout manager. When that
    * happens, the content box needs to be adjusted to match the reported minimum
    * sizes before being passed to clutter_layout_manager_allocate() */
-  clutter_actor_set_allocation (actor, box, flags);
+  clutter_actor_set_allocation (actor, box);
 
   content_box = viewport_box;
   content_box.x2 += MAX (0, min_width - avail_width);
   content_box.y2 += MAX (0, min_height - avail_height);
 
   clutter_layout_manager_allocate (layout, CLUTTER_CONTAINER (actor),
-                                   &content_box, flags);
+                                   &content_box);
 
   /* update adjustments for scrolling */
   if (priv->vadjustment)

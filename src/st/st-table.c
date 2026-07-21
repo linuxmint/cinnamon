@@ -218,8 +218,7 @@ st_table_finalize (GObject *gobject)
 
 static void
 st_table_homogeneous_allocate (ClutterActor          *self,
-                               const ClutterActorBox *content_box,
-                               gboolean               flags)
+                               const ClutterActorBox *content_box)
 {
   gfloat col_width, row_height;
   gint row_spacing, col_spacing;
@@ -275,8 +274,7 @@ st_table_homogeneous_allocate (ClutterActor          *self,
 
       clutter_actor_allocate_align_fill (child, &childbox,
                                          x_align_f, y_align_f,
-                                         meta->x_fill, meta->y_fill,
-                                         flags);
+                                         meta->x_fill, meta->y_fill);
     }
 
 }
@@ -558,8 +556,7 @@ st_table_calculate_row_heights (StTable *table,
 
 static void
 st_table_preferred_allocate (ClutterActor          *self,
-                             const ClutterActorBox *content_box,
-                             gboolean               flags)
+                             const ClutterActorBox *content_box)
 {
   gint row_spacing, col_spacing;
   gint i;
@@ -687,21 +684,19 @@ st_table_preferred_allocate (ClutterActor          *self,
 
       clutter_actor_allocate_align_fill (child, &childbox,
                                          x_align_f, y_align_f,
-                                         meta->x_fill, meta->y_fill,
-                                         flags);
+                                         meta->x_fill, meta->y_fill);
     }
 }
 
 static void
 st_table_allocate (ClutterActor          *self,
-                   const ClutterActorBox *box,
-                   ClutterAllocationFlags flags)
+                   const ClutterActorBox *box)
 {
   StTablePrivate *priv = ST_TABLE (self)->priv;
   StThemeNode *theme_node;
   ClutterActorBox content_box;
 
-  clutter_actor_set_allocation (self, box, flags);
+  clutter_actor_set_allocation (self, box);
 
   if (priv->n_cols < 1 || priv->n_rows < 1)
     {
@@ -712,9 +707,9 @@ st_table_allocate (ClutterActor          *self,
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
   if (priv->homogeneous)
-    st_table_homogeneous_allocate (self, &content_box, flags);
+    st_table_homogeneous_allocate (self, &content_box);
   else
-    st_table_preferred_allocate (self, &content_box, flags);
+    st_table_preferred_allocate (self, &content_box);
 }
 
 static void

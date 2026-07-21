@@ -93,12 +93,11 @@ clutter_container_iface_init (ClutterContainerIface *iface)
 
 static void
 st_bin_allocate (ClutterActor          *self,
-                 const ClutterActorBox *box,
-                 ClutterAllocationFlags flags)
+                 const ClutterActorBox *box)
 {
   StBinPrivate *priv = ST_BIN (self)->priv;
 
-  clutter_actor_set_allocation (self, box, flags);
+  clutter_actor_set_allocation (self, box);
 
   if (priv->child && clutter_actor_is_visible (priv->child))
     {
@@ -111,8 +110,7 @@ st_bin_allocate (ClutterActor          *self,
                              &x_align_f, &y_align_f);
       clutter_actor_allocate_align_fill (priv->child, &childbox,
                                          x_align_f, y_align_f,
-                                         priv->x_fill, priv->y_fill,
-                                         flags);
+                                         priv->x_fill, priv->y_fill);
     }
 }
 

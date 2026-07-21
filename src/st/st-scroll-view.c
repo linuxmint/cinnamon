@@ -695,8 +695,7 @@ st_scroll_view_get_preferred_height (ClutterActor *actor,
 
 static void
 st_scroll_view_allocate (ClutterActor          *actor,
-                         const ClutterActorBox *box,
-                         ClutterAllocationFlags flags)
+                         const ClutterActorBox *box)
 {
   ClutterActorBox content_box, child_box;
   gfloat avail_width, avail_height, sb_width, sb_height;
@@ -705,7 +704,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
   StScrollViewPrivate *priv = ST_SCROLL_VIEW (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
 
-  clutter_actor_set_allocation (actor, box, flags);
+  clutter_actor_set_allocation (actor, box);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
@@ -803,7 +802,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
   child_box.y1 = content_box.y1;
   child_box.y2 = content_box.y2 - (hscrollbar_visible ? sb_height : 0);
 
-  clutter_actor_allocate (priv->vscroll, &child_box, flags);
+  clutter_actor_allocate (priv->vscroll, &child_box);
 
   /* Horizontal scrollbar */
   if (clutter_actor_get_text_direction (actor) == CLUTTER_TEXT_DIRECTION_RTL)
@@ -819,7 +818,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
   child_box.y1 = content_box.y2 - sb_height;
   child_box.y2 = content_box.y2;
 
-  clutter_actor_allocate (priv->hscroll, &child_box, flags);
+  clutter_actor_allocate (priv->hscroll, &child_box);
 
   /* In case the scrollbar policy is NEVER or EXTERNAL or scrollbars
    * should be overlayed, we don't trim the content box allocation by
@@ -851,7 +850,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
   child_box.y2 = content_box.y2 - sb_height;
 
   if (priv->child)
-    clutter_actor_allocate (priv->child, &child_box, flags);
+    clutter_actor_allocate (priv->child, &child_box);
 
   if (priv->hscrollbar_visible != hscrollbar_visible)
     {
