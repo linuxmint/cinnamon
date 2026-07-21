@@ -21,11 +21,28 @@ MAX_LAYOUTS_PER_GROUP = 4
 INPUT_SOURCE_SETTINGS = "org.cinnamon.desktop.input-sources"
 SHOW_ALL_SOURCES_KEY="show-all-sources"
 
-def make_gkbd_keyboard_args(layout, variant):
-    if variant:
-        return ["gkbd-keyboard-display", "-l", f"{layout}\t{variant}"]
+def get_layout_preview_program():
+    # gkbd-keyboard-display (libgnomekbd) is X11-only, so on Wayland only tecla
+    # is usable. On X11 keep gkbd-keyboard-display preferred where still
+    # available (tecla only shows a standard pc105 geometry).
+    if os.environ.get("XDG_SESSION_TYPE") == "wayland":
+        candidates = ("tecla",)
     else:
-        return ["gkbd-keyboard-display", "-l", layout]
+        candidates = ("gkbd-keyboard-display", "tecla")
+    for program in candidates:
+        if GLib.find_program_in_path(program):
+            return program
+    return None
+
+def make_layout_preview_args(layout, variant):
+    program = get_layout_preview_program()
+    if program == "tecla":
+        # '+' is the layout/variant separator accepted by every tecla version
+        # (space and tab only since tecla 48)
+        return [program, f"{layout}+{variant}" if variant else layout]
+    if variant:
+        return [program, "-l", f"{layout}\t{variant}"]
+    return [program, "-l", layout]
 
 def make_ibus_display_name(engine):
     name = engine.get_longname()
@@ -99,7 +116,7 @@ class AddKeyboardLayoutDialog():
 
         self.response_id = None
 
-        if not GLib.find_program_in_path("gkbd-keyboard-display"):
+        if get_layout_preview_program() is None:
             self.preview_button.set_visible(False)
 
         self._ibus = IBus.Bus.new_async()
@@ -167,7 +184,7 @@ class AddKeyboardLayoutDialog():
         display_name = self.layouts_sort_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
         layout_layout = self.layouts_sort_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
         layout_variant = self.layouts_sort_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
-        args = make_gkbd_keyboard_args(layout_layout, layout_variant)
+        args = make_layout_preview_args(layout_layout, layout_variant)
         subprocess.Popen(args)
 
     def _on_all_sources_changed(self, button, data=None):
