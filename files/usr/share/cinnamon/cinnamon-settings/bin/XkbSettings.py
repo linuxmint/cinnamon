@@ -11,35 +11,31 @@ class XkbSettingsEditor(SettingsSection):
     # Allowed options per group. If a group is in this dict, only the listed options are shown.
     # If a group is not in this dict, all options from XkbInfo are shown.
     ALLOWED_OPTIONS = {
-        'grp': {
-            'wayland_allowed': False,
-            'options':
-                [
-                    "toggle",
-                    "lalt_toggle",
-                    "lwin_toggle",
-                    "rwin_toggle",
-                    "lshift_toggle",
-                    "rshift_toggle",
-                    "lctrl_toggle",
-                    "rctrl_toggle",
-                    "sclk_toggle",
-                    "menu_toggle",
-                    "caps_toggle",
-                    "shift_caps_toggle",
-                    "shifts_toggle",
-                    "alt_caps_toggle",
-                    "alt_space_toggle",
-                    "win_space_toggle",
-                    "ctrl_space_toggle",
-                    "ctrl_shift_toggle",
-                    "lctrl_lshift_toggle",
-                    "rctrl_rshift_toggle",
-                    "ctrl_alt_toggle",
-                    "alt_shift_toggle",
-                    "lalt_lshift_toggle",
-                ]
-        }
+        'grp': [
+            "toggle",
+            "lalt_toggle",
+            "lwin_toggle",
+            "rwin_toggle",
+            "lshift_toggle",
+            "rshift_toggle",
+            "lctrl_toggle",
+            "rctrl_toggle",
+            "sclk_toggle",
+            "menu_toggle",
+            "caps_toggle",
+            "shift_caps_toggle",
+            "shifts_toggle",
+            "alt_caps_toggle",
+            "alt_space_toggle",
+            "win_space_toggle",
+            "ctrl_space_toggle",
+            "ctrl_shift_toggle",
+            "lctrl_lshift_toggle",
+            "rctrl_rshift_toggle",
+            "ctrl_alt_toggle",
+            "alt_shift_toggle",
+            "lalt_lshift_toggle",
+        ]
     }
 
     LEFT_PANE_WIDTH = 250
@@ -88,19 +84,13 @@ class XkbSettingsEditor(SettingsSection):
             if not description:
                 continue
 
-            # Tag groups whose options only work under X11 (e.g. muffin has no
-            # 'grp' switching support on Wayland), driven by 'wayland_allowed'.
-            group_config = self.ALLOWED_OPTIONS.get(group_id)
-            if group_config is not None and not group_config.get('wayland_allowed', True):
-                description = _("%s (X11 only)") % description
-
             all_options = self.xkb_info.get_options_for_group(group_id) or []
             if not all_options:
                 continue
 
             # Options actually offered in the UI (curated where a whitelist exists).
             if group_id in self.ALLOWED_OPTIONS:
-                allowed = set(self.ALLOWED_OPTIONS[group_id]['options'])
+                allowed = set(self.ALLOWED_OPTIONS[group_id])
                 displayed_ids = [o for o in all_options
                                  if ':' in o and o.split(':', 1)[1] in allowed]
             else:
