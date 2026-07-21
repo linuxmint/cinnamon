@@ -109,6 +109,10 @@ class Module:
             switch = GSettingsSwitch(_("Lens mode"), "org.cinnamon.desktop.a11y.magnifier", "lens-mode")
             settings.add_reveal_row(switch, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
 
+            switch = GSettingsSwitch(_("Smoothing"), "org.cinnamon.desktop.a11y.magnifier", "smoothing")
+            switch.set_tooltip_text(_("Disable to see true pixels of display image."))
+            settings.add_reveal_row(switch, "org.cinnamon.desktop.a11y.applications", "screen-magnifier-enabled")
+
             self.zoom_stack = SettingsStack()
             self.zoom_stack.set_transition_type(Gtk.StackTransitionType.CROSSFADE)
 
