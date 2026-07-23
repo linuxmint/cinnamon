@@ -415,20 +415,29 @@ class Main:
         self.end()
 
     def panel_launcher_cb(self, success, dest_path):
-        if success:
-            settings = JsonSettingsWidgets.JSONSettingsHandler(self.json_path)
-            launchers = settings.get_value("launcherList")
-            if self.desktop_file is None:
-                launchers.append(os.path.split(dest_path)[1])
-            else:
-                i = launchers.index(self.desktop_file)
-                if i >= 0:
-                    del launchers[i]
-                    launchers.insert(i, os.path.split(dest_path)[1])
-            settings.save_settings()
-            if self.desktop_file is None:
-                self.ask_menu_launcher(dest_path)
-        self.end()
+        try:
+            if success:
+                settings = JsonSettingsWidgets.JSONSettingsHandler(self.json_path)
+                launchers = settings.get_value("launcherList")
+                new_name = os.path.split(dest_path)[1]
+                if self.desktop_file is None:
+                    launchers.append(new_name)
+                else:
+                    try:
+                        i = launchers.index(self.desktop_file)
+                    except ValueError:
+                        # The entry we were asked to edit is no longer in the
+                        # list (a previous edit may have already replaced it) -
+                        # add the new launcher instead of dropping the edit.
+                        if new_name not in launchers:
+                            launchers.append(new_name)
+                    else:
+                        launchers[i] = new_name
+                settings.save_settings()
+                if self.desktop_file is None:
+                    self.ask_menu_launcher(dest_path)
+        finally:
+            self.end()
 
     def nemo_launcher_cb(self, success, dest_path):
         if success:
