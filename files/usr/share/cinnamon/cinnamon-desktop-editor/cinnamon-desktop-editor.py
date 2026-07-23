@@ -4,6 +4,7 @@ import sys
 import os
 import gettext
 import glob
+import json
 from optparse import OptionParser
 import shutil
 import subprocess
@@ -434,10 +435,23 @@ class Main:
                     else:
                         launchers[i] = new_name
                 settings.save_settings()
+                self.notify_cinnamon(launchers)
                 if self.desktop_file is None:
                     self.ask_menu_launcher(dest_path)
         finally:
             self.end()
+
+    def notify_cinnamon(self, launchers):
+        # Cinnamon does not monitor the settings file for external changes -
+        # tell it to reload, the same way xlet-settings.py does after saving.
+        uuid = os.path.basename(os.path.dirname(self.json_path))
+        instance_id = os.path.splitext(os.path.basename(self.json_path))[0]
+        try:
+            proxy = Gio.DBusProxy.new_for_bus_sync(Gio.BusType.SESSION, Gio.DBusProxyFlags.NONE, None,
+                                                   "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon", None)
+            proxy.updateSetting('(ssss)', uuid, instance_id, "launcherList", json.dumps(launchers))
+        except GLib.Error as e:
+            print("Could not notify Cinnamon of launcher list change: %s" % e.message)
 
     def nemo_launcher_cb(self, success, dest_path):
         if success:
