@@ -212,7 +212,7 @@ class Module:
 
             face_path = os.path.join(self.accountService.get_home_dir(), ".face")
 
-            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 255, -1)
+            pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, -1, -1)
             pixbuf.savev(face_path, "png")
             self.accountService.set_icon_file(path)
             self.face_button.set_picture_from_file(path)
