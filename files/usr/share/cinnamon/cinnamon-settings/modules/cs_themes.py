@@ -32,7 +32,7 @@ THEME_FOLDERS = [
     os.path.join(GLib.get_user_data_dir(), "themes")
 ] + [os.path.join(datadir, "themes") for datadir in GLib.get_system_data_dirs()]
 
-THEMES_BLACKLIST = [
+ICON_THEMES_BLACKLIST = [
     "gnome", # not meant to be used as a theme. Provides icons to inheriting themes.
     "hicolor", # same
     "adwaita", "adwaita-dark", "adwaitalegacy", # incomplete outside of GNOME, doesn't support Cinnamon.
@@ -114,8 +114,6 @@ class Module:
 
         # Gtk themes -- Only shows themes that have a gtk-3.* variation
         for (name, path) in walk_directories(THEME_FOLDERS, self.filter_func_gtk_dir, return_directories=True):
-            if name.lower() in THEMES_BLACKLIST:
-                continue
             for theme in self.gtk_themes:
                 if name == theme[0]:
                     if path == THEME_FOLDERS[0]:
@@ -142,7 +140,7 @@ class Module:
         walked = walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d), return_directories=True)
         valid = []
         for directory in walked:
-            if directory[0].lower() in THEMES_BLACKLIST:
+            if directory[0].lower() in ICON_THEMES_BLACKLIST:
                 continue
             path = os.path.join(directory[1], directory[0], "index.theme")
             if os.path.exists(path):
@@ -162,8 +160,6 @@ class Module:
 
         # Cursor themes
         for (name, path) in walk_directories(ICON_FOLDERS, lambda d: os.path.isdir(d) and os.path.exists(os.path.join(d, "cursors")), return_directories=True):
-            if name.lower() in THEMES_BLACKLIST:
-                continue
             for theme in self.cursor_themes:
                 if name == theme[0]:
                     if path == ICON_FOLDERS[0]:
