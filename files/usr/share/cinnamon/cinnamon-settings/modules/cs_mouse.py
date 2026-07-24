@@ -30,9 +30,10 @@ class Module:
 
             page = SettingsPage()
 
-            settings = page.add_section(_("General"))
+            settings = page.add_rounded_section(_("General"))
 
             switch = GSettingsSwitch(_("Left handed (mouse buttons inverted)"), "org.cinnamon.desktop.peripherals.mouse", "left-handed")
+            switch.set_tooltip_text(_("blah blah"))
             settings.add_row(switch)
 
             switch = GSettingsSwitch(_("Reverse scrolling direction"), "org.cinnamon.desktop.peripherals.mouse", "natural-scroll")
@@ -50,7 +51,7 @@ class Module:
             spin = GSettingsSpinButton(_("Drag-and-drop threshold"), "org.cinnamon.desktop.peripherals.mouse", "drag-threshold", _("pixels"), 1, 400)
             settings.add_row(spin)
 
-            settings = page.add_section(_("Pointer size and speed"))
+            settings = page.add_rounded_section(_("Pointer size and speed"))
 
             widget = GSettingsRange(_("Size"), "org.cinnamon.desktop.interface", "cursor-size", _("Smaller"), _("Larger"), 5, 50, show_value=False)
             widget.add_mark(24.0, Gtk.PositionType.TOP, None)
@@ -70,7 +71,7 @@ class Module:
             combo = GSettingsComboBox(_("Acceleration"), "org.cinnamon.desktop.peripherals.mouse", "accel-profile", accel_profiles, valtype=str)
             settings.add_row(combo)
 
-            settings = page.add_section(_("Double-Click timeout"))
+            settings = page.add_rounded_section(_("Double-Click timeout"))
 
             slider = GSettingsRange(_("Timeout"), "org.cinnamon.desktop.peripherals.mouse", "double-click", _("Short"), _("Long"), 100, 1000, show_value=False)
             settings.add_row(slider)
@@ -100,7 +101,7 @@ class Module:
             revealer = SettingsRevealer("org.cinnamon.desktop.peripherals.touchpad", "send-events", values=("enabled", "disabled-on-external-mouse"))
             page.pack_start(revealer, False, True, 0)
 
-            settings = SettingsSection(_("General"))
+            settings = RoundedSettingsSection(_("General"))
             revealer.add(settings)
 
             switch = GSettingsSwitch(_("Tap to click"), "org.cinnamon.desktop.peripherals.touchpad", "tap-to-click")
@@ -119,7 +120,7 @@ class Module:
             combo = GSettingsComboBox(_("Click actions"), "org.cinnamon.desktop.peripherals.touchpad", "click-method", clickpad_list, valtype=str)
             settings.add_row(combo)
 
-            settings = SettingsSection(_("Scrolling"))
+            settings = RoundedSettingsSection(_("Scrolling"))
             revealer.add(settings)
 
             switch = GSettingsSwitch(_("Reverse scrolling direction"), "org.cinnamon.desktop.peripherals.touchpad", "natural-scroll")
@@ -128,7 +129,7 @@ class Module:
             combo = ScrollMethodCombo()
             settings.add_row(combo)
 
-            settings = SettingsSection(None)
+            settings = RoundedSettingsSection(None)
             revealer.add(settings)
 
             slider = GSettingsRange(_("Speed"), "org.cinnamon.desktop.peripherals.touchpad", "speed", _("Slower"), _("Faster"), -1.0, 1.0, show_value=False)
