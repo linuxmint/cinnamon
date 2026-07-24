@@ -978,6 +978,7 @@ NMDeviceVPN.prototype = {
         this.category = NMConnectionCategory.VPN;
 
         this._activeConnections = [];
+        this._maxVisible = Infinity;
 
         NMDevice.prototype._init.call(this, client, null, []);
     },
@@ -999,6 +1000,15 @@ NMDeviceVPN.prototype = {
 
         this._createSection();
         this.emit('active-connections-changed');
+    },
+
+    setMaxVisible: function(max) {
+        max = (max && max > 0) ? max : Infinity;
+        if (this._maxVisible === max)
+            return;
+        this._maxVisible = max;
+        this._clearSection();
+        this._createSection();
     },
 
     deactivate: function() {
@@ -1038,10 +1048,12 @@ NMDeviceVPN.prototype = {
     },
 
     _createSection: function() {
+        let pos = 0;
         for (let obj of this._connections) {
+            let isActive = this._activeConnections.some(ac => ac.connection === obj.connection);
             if (!obj.item) {
                 obj.item = new PopupMenu.PopupMenuItem(obj.name);
-                this._updateConnectionItemView(obj.item, obj.connection);
+                this._updateConnectionItemView(obj.item, obj.connection, isActive);
                 obj.item.connect('activate', Lang.bind(this, function() {
                     let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
                     if (activeConnection) {
@@ -1050,10 +1062,19 @@ NMDeviceVPN.prototype = {
                         this._client.activate_connection_async(obj.connection, this.device, null, null, null);
                     }
                 }));
-                this.section.addMenuItem(obj.item);
+                if (pos < this._maxVisible) {
+                    this.section.addMenuItem(obj.item);
+                } else {
+                    if (!this._overflowItem) {
+                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
+                        this.section.addMenuItem(this._overflowItem);
+                    }
+                    this._overflowItem.menu.addMenuItem(obj.item);
+                }
             } else {
-                this._updateConnectionItemView(obj.item, obj.connection, this._activeConnections.some(ac => ac.connection == obj.connection));
+                this._updateConnectionItemView(obj.item, obj.connection, isActive);
             }
+            pos++;
         }
     },
 };
@@ -1815,6 +1836,8 @@ CinnamonNetworkApplet.prototype = {
 
             this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+            this.settings.bind("cap-vpn-list", "_capVpnList", () => this._onVpnCapChanged());
+            this.settings.bind("num-visible-vpns", "_numVisibleVpns", () => this._onVpnCapChanged());
             this._setKeybinding();
 
             NM.Client.new_async(null, Lang.bind(this, this._clientGot));
@@ -1826,6 +1849,15 @@ CinnamonNetworkApplet.prototype = {
 
     _setKeybinding() {
         Main.keybindingManager.addXletHotKey(this, "network-open", this.keyOpen, Lang.bind(this, this._openMenu));
+    },
+
+    _vpnCap: function() {
+        return this._capVpnList ? this._numVisibleVpns : Infinity;
+    },
+
+    _onVpnCapChanged: function() {
+        if (this._devices && this._devices.vpn && this._devices.vpn.device)
+            this._devices.vpn.device.setMaxVisible(this._vpnCap());
     },
 
     _clientGot: function(obj, result) {
@@ -1898,6 +1930,7 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.section.actor.hide();
             this.menu.addMenuItem(this._devices.vpn.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
+            this._devices.vpn.device.setMaxVisible(this._vpnCap());
 
             this._devices.wireguard = {
                 section: new PopupMenu.PopupMenuSection(),
