@@ -1862,6 +1862,8 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 opacity: 255,
                 onComplete: () => {
                     this.animating = false;
+                    let [xPos, yPos] = this._calculatePosition();
+                    this.actor.set_position(xPos, yPos);
                 }
             }
 
@@ -1895,8 +1897,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.animating = false;
 
             let [xPos, yPos] = this._calculatePosition(); // should this be conditional on this._slidePosition being -1?
-            this.actor.x = xPos;
-            this.actor.y = yPos;
+            this.actor.set_position(xPos, yPos);
 
             this.actor.show();
         }
