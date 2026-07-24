@@ -74,7 +74,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _openMenu() {
-        this._update_timestamp();
+        this._update_notification_status();
         this.menu.toggle();
     }
 
@@ -310,13 +310,18 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         Util.spawnCommandLine("cinnamon-settings notifications");
     }
 
-    _update_timestamp() {
+    _update_notification_status() {
         let len = this.notifications.length;
         if (len > 0) {
             for (let i = 0; i < len; i++) {
                 let notification = this.notifications[i];
                 let orig_time = notification._timestamp;
                 notification._timeLabel.clutter_text.set_markup(timeify(orig_time));
+
+                // Disable body scroll for notifications and allow the notification widget to expand.
+                // This is to avoid having notifications with scrollable bodies inside the scrollable notification menu,
+                // which would be a bad user experience.
+                notification.setBodyExpand(true);
             }
         }
     }
