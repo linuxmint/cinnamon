@@ -20,6 +20,12 @@
         "default": "<Shift><Super>s",
         "tooltip" : "Set keybinding(s) to show the sound applet menu."
     },
+    "cycleOutputKey": {
+        "type": "keybinding",
+        "description": "Cycle through audio output devices",
+        "default": "<Super><Alt>Tab",
+        "tooltip" : "Set keybinding(s) to switch between audio output devices."
+    },
     "alwaysShowMuteInput": {
         "type": "switch",
         "description": "Always show input switch",
