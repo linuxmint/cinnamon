@@ -99,7 +99,6 @@ Depends:
  python3-pam | python3-pampy,
  python3-pexpect,
  python3-pil,
- python3-pyinotify,
  python3-requests,
  python3-setproctitle,
  python3-tinycss2,

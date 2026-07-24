@@ -15,7 +15,6 @@
 import os
 import signal
 import sys
-import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, GObject, Gdk, GLib
@@ -224,22 +223,6 @@ class NewLogDialog(Gtk.Dialog):
 
         return result
 
-class FileWatchHandler(pyinotify.ProcessEvent):
-    def my_init(self, view):
-        self.view = view
-
-    def process_IN_CLOSE_WRITE(self, event):
-        self.view.get_updates()
-
-    def process_IN_CREATE(self, event):
-        self.view.get_updates()
-
-    def process_IN_DELETE(self, event):
-        self.view.get_updates()
-
-    def process_IN_MODIFY(self, event):
-        self.view.get_updates()
-
 class FileWatcherView(Gtk.ScrolledWindow):
     def __init__(self, filename):
         Gtk.ScrolledWindow.__init__(self)
@@ -259,21 +242,18 @@ class FileWatcherView(Gtk.ScrolledWindow):
         self.show_all()
         self.get_updates()
 
-        handler = FileWatchHandler(view=self)
-        watch_manager = pyinotify.WatchManager()
-        self.notifier = pyinotify.ThreadedNotifier(watch_manager, handler)
-        watch_manager.add_watch(filename, (pyinotify.IN_CLOSE_WRITE |
-                                           pyinotify.IN_CREATE |
-                                           pyinotify.IN_DELETE |
-                                           pyinotify.IN_MODIFY))
-        self.notifier.start()
+        self.monitor = Gio.File.new_for_path(filename).monitor_file(Gio.FileMonitorFlags.NONE, None)
+        self.monitor.connect("changed", self.on_file_changed)
         self.connect("destroy", self.on_destroy)
         self.connect("size-allocate", self.on_size_changed)
 
+    def on_file_changed(self, monitor, gfile, other_file, event_type):
+        self.get_updates()
+
     def on_destroy(self, widget):
-        if self.notifier:
-            self.notifier.stop()
-            self.notifier = None
+        if self.monitor:
+            self.monitor.cancel()
+            self.monitor = None
 
     def on_size_changed(self, widget, bla):
         if self.changed > 0:
