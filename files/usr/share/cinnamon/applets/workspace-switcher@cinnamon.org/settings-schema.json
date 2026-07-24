@@ -19,5 +19,14 @@
             "Reversed": "reversed",
             "Disabled": "disabled"
         }
+    },
+    "size-percent": {
+        "type": "scale",
+        "default": 100,
+        "min": 25,
+        "max": 100,
+        "step": 5,
+        "description": "Workspace preview size",
+        "tooltip": "Adjust the workspace preview size relative to the panel size"
     }
 }
