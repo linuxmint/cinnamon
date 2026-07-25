@@ -253,7 +253,7 @@ var CinnamonUnmountNotifier = class extends MessageTray.Source {
 
     createNotificationIcon () {
         return new St.Icon({
-            icon_name: 'xapp-media-removable',
+            icon_name: 'xsi-media-removable',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: this.ICON_SIZE
         });
