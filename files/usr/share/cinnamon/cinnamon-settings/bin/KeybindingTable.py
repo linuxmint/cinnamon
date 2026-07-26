@@ -60,6 +60,7 @@ STATIC_KEYBINDINGS = \
       [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-workspace-selection"],
       [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop"],
       [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets"],
+      [_("Show panels over a fullscreen window"), CINNAMON_SCHEMA, "show-panels"],
       [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows"],
       [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward"],
       [_("Cycle through windows from all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-panels"],

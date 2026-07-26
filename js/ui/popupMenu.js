@@ -2771,6 +2771,11 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     _grab() {
+        // Over a fullscreen window, elevate the whole panel as the base layer
+        // before this menu's grab stacks on top, so the panel stays usable when
+        // the menu closes instead of collapsing.
+        Main.chromeRaiseManager.ensureRaisedForActor(this._owner.actor);
+
         if (!Main.pushModal(this._owner.actor, undefined, undefined, Cinnamon.ActionMode.POPUP,
                             () => this._closeMenu())) {
             return;

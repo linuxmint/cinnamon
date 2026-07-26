@@ -107,6 +107,7 @@ const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
+const ChromeRaise = imports.ui.chromeRaise;
 const PlacesManager = imports.ui.placesManager;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const KeyringPrompt = imports.ui.keyringPrompt;
@@ -153,6 +154,7 @@ var backgroundManager = null;
 var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
+var chromeRaiseManager = null;
 var osdWindowManager = null;
 var screensaverController = null;
 var lockdownSettings = null;
@@ -423,6 +425,10 @@ function start() {
     global.reparentActor(global.overlay_group, global.stage);
 
     global.menuStack = [];
+
+    // Created before LayoutManager so chromeRaiseManager is never null by the
+    // time chrome visibility recalculations can consult isPanelRaised().
+    chromeRaiseManager = new ChromeRaise.ChromeRaiseManager();
 
     layoutManager = new Layout.LayoutManager();
 
@@ -1353,6 +1359,21 @@ function _isModifierKeyval(symbol) {
            symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
 }
 
+// Invoke a keybinding action from the modal handler, collapsing a fullscreen
+// panel raise only if the shortcut closed the last modal stacked on it - a
+// menu, expo, ... (captured before the invoke, so a shortcut that merely
+// raised a bare panel isn't collapsed).
+function _invokeKeybindingAction(action) {
+    let hadStackedModal = chromeRaiseManager.hasStackedModal();
+    try {
+        keybindingManager.invoke_keybinding_action_by_id(action);
+    } catch (e) {
+        global.logError(`Exception in keybinding action: ${e}`);
+    }
+    if (hadStackedModal)
+        chromeRaiseManager.collapseIfBare();
+}
+
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
         return Clutter.EVENT_PROPAGATE;
@@ -1403,7 +1424,7 @@ function _stageEventHandler(actor, event) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
                 _shortcutInvokedSinceModifier = true;
-                keybindingManager.invoke_keybinding_action_by_id(action);
+                _invokeKeybindingAction(action);
                 return Clutter.EVENT_STOP;
             }
         }
@@ -1417,7 +1438,7 @@ function _stageEventHandler(actor, event) {
         if (_modifierOnlyAction > 0) {
             let action = _modifierOnlyAction;
             _modifierOnlyAction = 0;
-            keybindingManager.invoke_keybinding_action_by_id(action);
+            _invokeKeybindingAction(action);
             return Clutter.EVENT_STOP;
         }
 

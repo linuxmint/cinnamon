@@ -835,6 +835,8 @@ var Chrome = class {
 
                 if (global.display.get_n_monitors() == 1 || !monitor.inFullscreen) {
                     visible = true;
+                } else if (Main.chromeRaiseManager.isPanelRaised(actorData.actor)) {
+                    visible = true;
                 } else {
                     if (Main.modalActorFocusStack.length > 0) {
                         let modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
@@ -849,7 +851,8 @@ var Chrome = class {
             else {
                 let monitor = this.findMonitorForActor(actorData.actor);
 
-                if (!actorData.visibleInFullscreen && monitor && monitor.inFullscreen)
+                if (!actorData.visibleInFullscreen && monitor && monitor.inFullscreen &&
+                    !Main.chromeRaiseManager.isPanelRaised(actorData.actor))
                     visible = false;
                 else
                     visible = true;

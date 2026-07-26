@@ -672,6 +672,18 @@ var PanelManager = GObject.registerClass({
     }
 
     /**
+     * getPanelForActor:
+     * @actor (Clutter.Actor): an actor
+     *
+     * Finds the panel containing @actor
+     *
+     * Returns: the panel containing @actor (null if no panel does)
+     */
+    getPanelForActor(actor) {
+        return this.panels.find(panel => panel && panel.contains(actor)) || null;
+    }
+
+    /**
      * getPanel:
      * @monitorIndex (integer): index of monitor
      * @panelPosition (integer): where the panel is added
@@ -1698,8 +1710,15 @@ var Panel = GObject.registerClass({
         super.destroy();
     }
 
-    peekPanel() {
-        if (!this._hidden || this._peeking)
+    /**
+     * revealPanel:
+     *
+     * Immediately slides the panel in, cancelling any pending show/hide and
+     * skipping the show delay. Has no effect while the panel is disabled.
+     * The panel remains subject to the normal visibility logic afterwards.
+     */
+    revealPanel() {
+        if (this._destroyed)
             return;
 
         if (this._showHideTimer > 0) {
@@ -1707,8 +1726,15 @@ var Panel = GObject.registerClass({
             this._showHideTimer = 0;
         }
 
-        this._peeking = true;
         this._showPanel();
+    }
+
+    peekPanel() {
+        if (!this._hidden || this._peeking)
+            return;
+
+        this._peeking = true;
+        this.revealPanel();
 
         Mainloop.timeout_add(PANEL_PEEK_TIME, () => {
             this._peeking = false;
@@ -2912,7 +2938,8 @@ var Panel = GObject.registerClass({
     _updatePanelVisibility() {
         this._mouseEntered = this._mouseOnPanel();
 
-        if (this._panelEditMode || this._highlighted || this._peeking || this._panelHasOpenMenus())
+        if (this._panelEditMode || this._highlighted || this._peeking ||
+            this._panelHasOpenMenus() || Main.chromeRaiseManager.isPanelRaised(this))
             this._shouldShow = true;
         else {
             switch (this._autohideSettings) {
