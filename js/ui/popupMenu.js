@@ -1784,25 +1784,14 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
     /**
      * getPanel:
-     * 
-     * @returns panel (Clutter.Actor | null) actor of the panel this menu is on, or null if it is not on a panel 
+     *
+     * @returns panel (Clutter.Actor | null) actor of the panel this menu is on, or null if it is not on a panel
      */
     getPanel() {
-        let parentPanel = null;
-        if (this.sourceActor.get_name() == "panel") {
-            parentPanel = this.sourceActor;
-        } else {
-            let parent = this.sourceActor.get_parent();
-            while (parent) {
-                if (parent.get_name() == "panel") {
-                    parentPanel = parent;
-                    break;
-                }
-                parent = parent.get_parent();
-            }
-        }
+        if (!this.sourceActor)
+            return null;
 
-        return parentPanel;
+        return Main.panelManager.getPanelForActor(this.sourceActor);
     }
 
     /**
@@ -2797,6 +2786,7 @@ var PopupMenuManager = class PopupMenuManager {
         this._signals.disconnect(null, global.stage);
 
         this.grabbed = false;
+        this._didPop = false;
         Main.popModal(this._owner.actor);
     }
 
@@ -2964,13 +2954,49 @@ var PopupMenuManager = class PopupMenuManager {
                 return true;
             }
         } else if (eventType == Clutter.EventType.BUTTON_PRESS && !activeMenuContains) {
+            // A press on a panel closes the menu chain but still propagates,
+            // with the grab already popped - the actor under the pointer gets
+            // a complete press/release pair, so one click both dismisses the
+            // menu and acts (launch, activate, open another applet's menu).
+            if (this._srcIsOnPanel(event.get_source())) {
+                this._closeAllMenus();
+                if (!this.grabbed)
+                    return Clutter.EVENT_PROPAGATE;
+
+                global.logError("PopupMenuManager: menu chain did not close synchronously, swallowing panel click");
+                return true;
+            }
+
             this._closeMenu();
             return true;
+        } else if ((eventType == Clutter.EventType.MOTION ||
+                    eventType == Clutter.EventType.ENTER ||
+                    eventType == Clutter.EventType.LEAVE ||
+                    eventType == Clutter.EventType.SCROLL) &&
+                   this._srcIsOnPanel(event.get_source())) {
+            // Crossing, motion and scroll events pass through to panel actors
+            // so they keep their hover feedback and scroll actions while a
+            // menu is open - the press pass-through above already lets a
+            // click land on them.
+            return Clutter.EVENT_PROPAGATE;
         } else if (!this._shouldBlockEvent(event)) {
             return false;
         }
 
         return true;
+    }
+
+    _srcIsOnPanel(src) {
+        return src != null && Main.panelManager.getPanelForActor(src) != null;
+    }
+
+    // Close the whole chain, synchronously.
+    _closeAllMenus() {
+        let prev = null;
+        while (this._activeMenu && this._activeMenu !== prev) {
+            prev = this._activeMenu;
+            prev.close(true);
+        }
     }
 
     _closeMenu() {
