@@ -2532,10 +2532,9 @@ CinnamonNetworkApplet.prototype = {
                     let iconName = 'xsi-network-vpn';
                     if (mc._section == NMConnectionCategory.WIRELESS) {
                         const dev = mc._primaryDevice;
-                        if (dev) {
-                            const ap = dev.device.active_access_point;
-                            iconName = 'xsi-network-wireless-signal-' + signalToIcon(ap.strength) + '-secure-symbolic';
-                        }
+                        const ap = dev ? dev.device.active_access_point : null;
+                        if (ap)
+                            iconName = 'xsi-network-wireless-signal-' + signalToIcon(ap.strength) + '-secure';
                     }
                     this._setIcon(iconName);
                     this.set_applet_tooltip(_("Connected to the VPN"));
