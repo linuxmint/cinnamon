@@ -1041,7 +1041,8 @@ NMDeviceVPN.prototype = {
         for (let obj of this._connections) {
             if (!obj.item) {
                 obj.item = new PopupMenu.PopupMenuItem(obj.name);
-                this._updateConnectionItemView(obj.item, obj.connection);
+                this._updateConnectionItemView(obj.item, obj.connection,
+                                               this._activeConnections.some(ac => ac.connection == obj.connection));
                 obj.item.connect('activate', Lang.bind(this, function() {
                     let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
                     if (activeConnection) {
