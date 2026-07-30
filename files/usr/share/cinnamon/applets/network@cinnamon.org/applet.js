@@ -2604,6 +2604,8 @@ CinnamonNetworkApplet.prototype = {
         if (this._activeConnections.some(con => con.get_connection_type() === "wireguard")) {
             return NM.ConnectivityState.FULL;
         }
+
+        return state;
     },
 
     _proxyConnectivityCheckCallback(new_state) {
