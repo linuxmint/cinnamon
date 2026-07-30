@@ -168,7 +168,7 @@ NMNetworkMenuItem.prototype = {
         accessPoints = sortAccessPoints(accessPoints);
         this.bestAP = accessPoints[0];
         this._accessPoints = [ ];
-        for (let i = 0; i < accessPoints; i++) {
+        for (let i = 0; i < accessPoints.length; i++) {
             let ap = accessPoints[i];
             let apObj = {
                 ap: ap,
