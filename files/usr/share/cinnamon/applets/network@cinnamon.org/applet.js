@@ -1073,6 +1073,8 @@ NMDeviceWIREGUARD.prototype = {
         this.category = NMConnectionCategory.WIREGUARD;
         this._type = NM.SETTING_WIREGUARD_SETTING_NAME;
 
+        this._activeConnections = [];
+
         NMDevice.prototype._init.call(this, client, null, [ ]);
 
         // Tests:
@@ -1089,16 +1091,14 @@ NMDeviceWIREGUARD.prototype = {
     },
 
     get connected() {
-        return !!this._activeConnection;
+        return this._activeConnections.length > 0;
     },
 
-    setActiveConnection: function(activeConnection) {
-        if (activeConnection) {
-            activeConnection._type = NM.SETTING_WIREGUARD_SETTING_NAME;
-        }
-        NMDevice.prototype.setActiveConnection.call(this, activeConnection);
+    setActiveConnections: function(activeConnections) {
+        this._activeConnections = activeConnections || [];
 
-        this.emit('active-connection-changed');
+        this._createSection();
+        this.emit('active-connections-changed');
     },
 
     _shouldShowConnectionList: function() {
@@ -1106,8 +1106,48 @@ NMDeviceWIREGUARD.prototype = {
     },
 
     deactivate: function() {
-        if (this._activeConnection)
-            this._client.deactivate_connection(this._activeConnection, null);
+        for (let ac of this._activeConnections)
+            this._client.deactivate_connection(ac, null);
+
+        this._activeConnections = [];
+    },
+
+    _clearSection: function() {
+        if (this.section && this.section.removeAll)
+            this.section.removeAll();
+
+        this._autoConnectionItem = null;
+        this._overflowItem = null;
+
+        for (let i = 0; i < this._connections.length; i++) {
+            if (this._connections[i].item && this._connections[i].item.destroy)
+                this._connections[i].item.destroy();
+
+            this._connections[i].item = null;
+        }
+    },
+
+    /* A switch per tunnel: WireGuard connections are independent of one another,
+       so they are not a pick-one list. */
+    _createSection: function() {
+        for (let obj of this._connections) {
+            let active = this._activeConnections.some(ac => ac.connection == obj.connection);
+
+            if (!obj.item) {
+                obj.item = new PopupMenu.PopupSwitchMenuItem(obj.name, active);
+                obj.item.connect('toggled', (item, state) => {
+                    let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
+
+                    if (!state && activeConnection)
+                        this._client.deactivate_connection(activeConnection, null);
+                    else if (state && !activeConnection)
+                        this._client.activate_connection_async(obj.connection, this.device, null, null, null);
+                });
+                this.section.addMenuItem(obj.item);
+            } else {
+                obj.item.setToggleState(active);
+            }
+        }
     },
 
     statusLabel: null,
@@ -1905,9 +1945,9 @@ CinnamonNetworkApplet.prototype = {
                 device: new NMDeviceWIREGUARD(this._client),
                 item: new NMWiredSectionTitleMenuItem(_("WIREGUARD Connections"))
             };
-            this._devices.wireguard.device.connect('active-connection-changed', Lang.bind(this, function() {
+            this._devices.wireguard.device.connect('active-connections-changed', () => {
                 this._devices.wireguard.item.updateForDevice(this._devices.wireguard.device);
-            }));
+            });
             this._devices.wireguard.item.updateForDevice(this._devices.wireguard.device);
             this._devices.wireguard.section.addMenuItem(this._devices.wireguard.item);
             this._devices.wireguard.section.addMenuItem(this._devices.wireguard.device.section);
@@ -2149,6 +2189,8 @@ CinnamonNetworkApplet.prototype = {
             if (active._primaryDevice) {
                 if (active._type == NM.SETTING_VPN_SETTING_NAME)
                     this._devices.vpn.device.setActiveConnections([]);
+                else if (active._type == NM.SETTING_WIREGUARD_SETTING_NAME)
+                    this._devices.wireguard.device.setActiveConnections([]);
                 else
                     active._primaryDevice.setActiveConnection(null);
 
@@ -2170,6 +2212,7 @@ CinnamonNetworkApplet.prototype = {
         let default_ip6 = null;
 
         let vpnConnections = [];
+        let wireguardConnections = [];
 
         for (let a of this._activeConnections) {
             if (!a._inited) {
@@ -2246,16 +2289,20 @@ CinnamonNetworkApplet.prototype = {
             }
 
             if (a._primaryDevice) {
-                if (a._type == NM.SETTING_VPN_SETTING_NAME) {
+                if (a._type == NM.SETTING_VPN_SETTING_NAME)
                     vpnConnections.push(a);
-                } else {
+                else if (a._type == NM.SETTING_WIREGUARD_SETTING_NAME)
+                    wireguardConnections.push(a);
+                else
                     a._primaryDevice.setActiveConnection(a);
-                }
             }
         }
 
         if (this._devices.vpn && this._devices.vpn.device)
             this._devices.vpn.device.setActiveConnections(vpnConnections);
+
+        if (this._devices.wireguard && this._devices.wireguard.device)
+            this._devices.wireguard.device.setActiveConnections(wireguardConnections);
 
         this._mainConnection = activated || activating || default_ip4 || default_ip6 || null;
     },
