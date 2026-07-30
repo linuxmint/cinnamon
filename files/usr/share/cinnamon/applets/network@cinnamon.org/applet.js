@@ -2301,7 +2301,7 @@ CinnamonNetworkApplet.prototype = {
     _connectionRemoved: function(client, connection) {
         let pos = this._connections.indexOf(connection);
         if (pos != -1)
-            this._connections.splice(pos);
+            this._connections.splice(pos, 1);
 
         let section = connection._section;
 
