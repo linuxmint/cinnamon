@@ -3,6 +3,7 @@ const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
 const Lang = imports.lang;
+const Pango = imports.gi.Pango;
 const NM = imports.gi.NM;
 const Signals = imports.signals;
 const St = imports.gi.St;
@@ -75,6 +76,20 @@ function signalToIcon(value) {
     return 'none';
 }
 
+/* '-secure' when the access point is encrypted, '' when it is open.
+   _getApSecurityType() lives on NMDeviceWireless and caches its answer on the
+   access point, so pass the device wrapper when there is one. */
+function apSecuritySuffix(dev, ap) {
+    if (!ap)
+        return '';
+
+    let type = (dev && dev._getApSecurityType) ? dev._getApSecurityType(ap)
+                                               : ap._secType;
+
+    return (type != NMAccessPointSecurity.UNKNOWN &&
+            type != NMAccessPointSecurity.NONE) ? '-secure' : '';
+}
+
 // shared between NMNetworkMenuItem and NMDeviceWireless
 function sortAccessPoints(accessPoints) {
     return accessPoints.sort(function (one, two) {
@@ -87,6 +102,76 @@ function ssidToLabel(ssid) {
     if (!label)
         label = _("<unknown>");
     return label;
+}
+
+/* Frequency (MHz) -> band.  The 5 GHz band tops out at 5895; U-NII-5, the
+   bottom of 6 GHz, starts at 5925.  NM has no 6 GHz helper of its own. */
+function bandOfFrequency(freq) {
+    if (!freq)
+        return null;
+    if (freq < 2500)
+        return '2.4';
+    if (freq < 5925)
+        return '5';
+    return '6';
+}
+
+/* The distinct bands an SSID is reachable on, low to high. */
+function bandsOfAccessPoints(accessPoints) {
+    let seen = { };
+    for (let i = 0; i < accessPoints.length; i++) {
+        let b = bandOfFrequency(accessPoints[i].get_frequency());
+        if (b)
+            seen[b] = true;
+    }
+    return ['2.4', '5', '6'].filter(b => seen[b]);
+}
+
+/* What the wifi rows show.  Mirrored here from the applet's settings because
+   the menu items hold no reference back to the applet. */
+let ROW_OPTS = { band: true, width: false, security: false, percent: true };
+
+/* Cap on the SSID column.  Without one the menu simply grows to fit the longest
+   name in range -- a single "DO_NOT_CONNECT_MESH-FX4100-1CD8" was measured at
+   250px and dragged the whole panel out with it, and stock has the same problem.
+   St does NOT honour "max-width" for a label's preferred width (verified: a
+   250px label still reports 250 under max-width:150), so the cap has to be
+   applied as an explicit "width" and only when the natural width exceeds it --
+   otherwise every short SSID would be padded out to the cap and the menu would
+   get WIDER in the common case. */
+const MAX_SSID_WIDTH = 190;
+const MAX_SSID_CHARS = 24;
+
+/* Security label straight from the scan.
+   NMDeviceWireless._getApSecurityType() only understands PSK and 802.1X, so
+   WPA3-SAE and OWE fall through it and leave its result undefined.  Classify
+   from the raw flags instead, and distinguish personal from enterprise --
+   PSK vs KEY_MGMT_802_1X is exactly that distinction. */
+function apSecurityLabel(ap) {
+    const F = NM80211ApSecurityFlags;
+    let rsn = ap.rsn_flags, wpa = ap.wpa_flags;
+
+    if (rsn != F.NONE) {
+        if (rsn & F.KEY_MGMT_EAP_SUITE_B_192)
+            return 'WPA3-Ent';
+        if ((rsn & F.KEY_MGMT_SAE) && (rsn & F.KEY_MGMT_PSK))
+            return 'WPA2/3';          // transition mode, what nmcli calls "WPA2 WPA3"
+        if (rsn & F.KEY_MGMT_SAE)
+            return 'WPA3';
+        if ((rsn & F.KEY_MGMT_OWE) || (rsn & F.KEY_MGMT_OWE_TM))
+            return 'OWE';             // Enhanced Open -- encrypted but no key
+        if (rsn & F.KEY_MGMT_802_1X)
+            return 'WPA2-Ent';
+        return 'WPA2';
+    }
+
+    if (wpa != F.NONE)
+        return (wpa & F.KEY_MGMT_802_1X) ? 'WPA-Ent' : 'WPA';
+
+    if (ap.flags & NM80211ApFlags.PRIVACY)
+        return 'WEP';
+
+    return 'Open';
 }
 
 function NMNetworkMenuItem() {
@@ -106,6 +191,8 @@ NMNetworkMenuItem.prototype = {
 
         accessPoints = sortAccessPoints(accessPoints);
         this.bestAP = accessPoints[0];
+        this._allAps = accessPoints;
+        this._activeAp = null;
 
         if (!title) {
             let ssid = this.bestAP.get_ssid();
@@ -114,12 +201,30 @@ NMNetworkMenuItem.prototype = {
 
         this._label = new St.Label({ text: title });
         this.addActor(this._label);
-        let strStrengh = String(this.bestAP.strength);
-        strStrengh = strStrengh + '%';
-        this._labelStrength = new St.Label({ text: strStrengh });
-        this.addActor(this._labelStrength, { align: St.Align.END });
         this._icons = new St.BoxLayout({ style_class: 'nm-menu-item-icons' });
-        this.addActor(this._icons, { align: St.Align.END });
+        /* span: -1 makes availWidth run to the item's right edge, and align END
+           then places the box at its natural width flush against that edge, so
+           the bars line up with the switches on the other rows.  Without it a
+           two-column row stops short of a three-column one and leaves a gap to
+           the right of the bars. */
+        this.addActor(this._icons, { align: St.Align.END, span: -1 });
+
+        /* The band/strength text goes INSIDE the icon box rather than taking a
+           column of its own.  PopupBaseMenuItem inserts `spacing` between every
+           column -- 1em under Mint-Y, ~13px at Ubuntu 10 -- so a third column
+           cost two full gaps.  Inside the box it is separated by
+           .nm-menu-item-icons' .5em instead, returning roughly 1.5em of width
+           to the SSID, which is the column that actually needs it. */
+        this._labelStrength = new St.Label({ text: this._metaText() });
+        /* Never ellipsize the band/strength text.  St.Label defaults to
+           ellipsize END, so on the widest row the meta was truncating to
+           "2.4\u00b75 GHz\u2026" -- which reads as a broken column even though the
+           icon itself stays put.  Stock never hit this because its meta was
+           just "100%".  The SSID keeps the default and gives way instead: a
+           clipped network name is far less harmful than a clipped signal
+           reading, and it keeps the bars pinned right. */
+        this._labelStrength.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+        this._icons.add(this._labelStrength, { y_align: St.Align.MIDDLE, y_fill: false });
 
         this._signalIcon = new St.Icon({ icon_name: this._getIcon(),
                                          style_class: 'popup-menu-icon' });
@@ -136,6 +241,11 @@ NMNetworkMenuItem.prototype = {
             };
             this._accessPoints.push(apObj);
         }
+
+        /* Also cap here, not only from _refreshMeta(): rows that overflow into
+           the "More" submenu may never receive a strength update, and their
+           uncapped width still sizes the whole menu. */
+        this._capLabelWidth();
     },
 
     _updated: function(ap) {
@@ -143,9 +253,68 @@ NMNetworkMenuItem.prototype = {
             this.bestAP = ap;
 
         this._signalIcon.icon_name = this._getIcon();
-        let strStrengh = String(this.bestAP.strength);
-        strStrengh = strStrengh + '%';
-        this._labelStrength.set_text(strStrengh);
+        this._refreshMeta();
+    },
+
+    /* "2.4\u00b7[5]\u00b76 GHz \u00b7 75%" -- every band this SSID is on, with the
+       one we are associated to in brackets.  Brackets rather than bold: no
+       Pango markup to escape, and no reliance on the panel theme's weights. */
+    _metaText: function() {
+        let parts = [];
+
+        if (ROW_OPTS.band) {
+            let aps = (this._allAps && this._allAps.length) ? this._allAps : [ this.bestAP ];
+            let bands = bandsOfAccessPoints(aps);
+            let activeBand = this._activeAp ? bandOfFrequency(this._activeAp.get_frequency()) : null;
+            if (bands.length)
+                parts.push(bands.map(b => (b === activeBand ? '[' + b + ']' : b)).join('\u00b7') + ' GHz');
+        }
+
+        /* Channel width is a property of ONE access point, so on a merged
+           multi-band row this is the width of the strongest one only. */
+        if (ROW_OPTS.width && this.bestAP.bandwidth)
+            parts.push(this.bestAP.bandwidth + ' MHz');
+
+        if (ROW_OPTS.security)
+            parts.push(apSecurityLabel(this.bestAP));
+
+        if (ROW_OPTS.percent)
+            parts.push(String(this.bestAP.strength) + '%');
+
+        return parts.join(' \u00b7 ');
+    },
+
+    /* Setting the text is NOT enough.  The icon box caches a preferred width,
+       and it does not get invalidated when the child label's text changes.  So
+       when the meta shrinks -- "2.4\u00b75 GHz \u00b7 100%" -> "2.4\u00b75 GHz \u00b7 99%", which
+       happens on every signal update, ~8/min -- the box keeps its old, wider
+       allocation, St packs the children from the left, and the signal icon ends
+       up short of the right edge every other row lines up on.  This is what
+       makes the list look misaligned a few seconds after the menu is opened and
+       the scan results land.  queue_relayout() drops the cached size. */
+    _refreshMeta: function() {
+        this._labelStrength.set_text(this._metaText());
+        this._icons.queue_relayout();
+        this._capLabelWidth();
+    },
+
+    /* Hand-rolled max-width for the SSID (see MAX_SSID_WIDTH).
+       Deliberately keyed off TEXT LENGTH, not a measurement.  St applies neither
+       set_style() nor set_text() synchronously, so get_preferred_width() right
+       after either one returns a stale number -- measured live, a 31-character
+       name reported 43px immediately after set_text(), and a cleared style still
+       reported the old capped width.  Both make a measure-then-decide cap
+       oscillate or latch wrongly.  Character count needs no realized actor and
+       is stable on repeat calls; ~24 characters is about MAX_SSID_WIDTH in the
+       default panel font. */
+    _capLabelWidth: function() {
+        if (this._label.get_text().length > MAX_SSID_CHARS)
+            this._label.set_style('width: ' + MAX_SSID_WIDTH + 'px;');
+    },
+
+    setActiveAp: function(ap) {
+        this._activeAp = ap || null;
+        this._refreshMeta();
     },
 
     _getIcon: function() {
@@ -167,8 +336,9 @@ NMNetworkMenuItem.prototype = {
 
         accessPoints = sortAccessPoints(accessPoints);
         this.bestAP = accessPoints[0];
+        this._allAps = accessPoints;
         this._accessPoints = [ ];
-        for (let i = 0; i < accessPoints; i++) {
+        for (let i = 0; i < accessPoints.length; i++) {
             let ap = accessPoints[i];
             let apObj = {
                 ap: ap,
@@ -176,6 +346,8 @@ NMNetworkMenuItem.prototype = {
             };
             this._accessPoints.push(apObj);
         }
+
+        this._refreshMeta();
     },
 
     destroy: function() {
@@ -438,12 +610,24 @@ NMDevice.prototype = {
     },
 
     checkConnection: function(connection) {
-        let exists = this._findConnection(connection._uuid) != -1;
+        let pos = this._findConnection(connection._uuid);
+        let exists = pos != -1;
         let valid = this.connectionValid(connection);
-        if (exists && !valid)
+        if (exists && !valid) {
             this.removeConnection(connection);
-        else if (!exists && valid)
+        } else if (!exists && valid) {
             this.addConnection(connection);
+        } else if (exists) {
+            // edited in place -- most visibly, renamed
+            let obj = this._connections[pos];
+            obj.timestamp = connection._timestamp;
+            if (obj.name !== connection._name) {
+                obj.name = connection._name;
+                this._connections.sort(this._connectionSortFunction);
+                this._clearSection();
+                this._createSection();
+            }
+        }
     },
 
     addConnection: function(connection) {
@@ -746,6 +930,31 @@ NMDeviceWired.prototype = {
         this.category = NMConnectionCategory.WIRED;
 
         NMDevice.prototype._init.call(this, client, device, connections);
+
+        if (this.device && this.device.get_speed) {
+            this._speedChangedId = this.device.connect('notify::speed', () => {
+                if (this.statusItem)
+                    this.statusItem.setStatus(this.statusLabel);
+                this.emit('state-changed');
+            });
+        }
+    },
+
+    /* NMDevice.statusLabel is null for both ACTIVATED and DISCONNECTED, so a
+       connected wired row shows the adapter name and nothing else.  Show the
+       negotiated link speed instead. */
+    get statusLabel() {
+        if (this.device.state == NM.DeviceState.ACTIVATED && this.device.get_speed) {
+            let mbits = this.device.get_speed();
+            if (mbits > 0) {
+                if (mbits >= 1000) {
+                    let gb = mbits / 1000;
+                    return ((gb % 1) ? gb.toFixed(1) : String(gb)) + " Gb/s";
+                }
+                return mbits + " Mb/s";
+            }
+        }
+        return Object.getOwnPropertyDescriptor(NMDevice.prototype, 'statusLabel').get.call(this);
     },
 
     _createSection: function() {
@@ -983,7 +1192,30 @@ NMDeviceVPN.prototype = {
     },
 
     connectionValid: function(connection) {
-        return connection._type == NM.SETTING_VPN_SETTING_NAME;
+        return connection._type == NM.SETTING_VPN_SETTING_NAME ||
+               connection._type == NM.SETTING_WIREGUARD_SETTING_NAME;
+    },
+
+    /* Shown as the row's subtitle: "WireGuard", "OpenVPN", "PPTP", ... */
+    _kindLabel: function(connection) {
+        if (connection._type == NM.SETTING_WIREGUARD_SETTING_NAME)
+            return "WireGuard";
+
+        let vpn = connection.get_setting_vpn ? connection.get_setting_vpn() : null;
+        let service = vpn ? vpn.get_service_type() : null;
+        if (!service)
+            return _("VPN");
+
+        let short = String(service).split('.').pop();
+        if (!short)
+            return _("VPN");
+
+        let known = { openvpn: 'OpenVPN', pptp: 'PPTP', wireguard: 'WireGuard',
+                      openconnect: 'OpenConnect', vpnc: 'vpnc', l2tp: 'L2TP',
+                      sstp: 'SSTP', ssh: 'SSH', fortisslvpn: 'Fortinet' };
+        if (known[short.toLowerCase()])
+            return known[short.toLowerCase()];
+        return short.charAt(0).toUpperCase() + short.slice(1);
     },
 
     get empty() {
@@ -1009,7 +1241,7 @@ NMDeviceVPN.prototype = {
     },
 
     statusLabel: null,
-    controllable: true,
+    controllable: false,
 
     _clearSection: function() {
         if (this.section && this.section.removeAll)
@@ -1028,90 +1260,35 @@ NMDeviceVPN.prototype = {
 
     _updateConnectionItemView: function(item, connection, active) {
         item.label.text = connection._name  || _("Connected (private)");
-        if (active) {
-            item.setShowDot(true);
-            item.actor.add_style_class_name('popup-device-menu-item');
-        } else {
-            item.setShowDot(false);
-            item.actor.remove_style_class_name('popup-device-menu-item');
-        }
+        item.setStatus(this._kindLabel(connection));
+        if (item.setToggleState)
+            item.setToggleState(!!active);
     },
 
     _createSection: function() {
         for (let obj of this._connections) {
+            let active = this._activeConnections.some(ac => ac.connection == obj.connection);
             if (!obj.item) {
-                obj.item = new PopupMenu.PopupMenuItem(obj.name);
-                this._updateConnectionItemView(obj.item, obj.connection);
-                obj.item.connect('activate', Lang.bind(this, function() {
+                obj.item = new PopupMenu.PopupSwitchMenuItem(obj.name, active,
+                                                             { style_class: 'popup-subtitle-menu-item' });
+                this._updateConnectionItemView(obj.item, obj.connection, active);
+                obj.item.connect('toggled', (item, state) => {
                     let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
-                    if (activeConnection) {
+                    if (!state && activeConnection)
                         this._client.deactivate_connection(activeConnection, null);
-                    } else {
+                    else if (state && !activeConnection)
                         this._client.activate_connection_async(obj.connection, this.device, null, null, null);
-                    }
-                }));
+                });
                 this.section.addMenuItem(obj.item);
             } else {
-                this._updateConnectionItemView(obj.item, obj.connection, this._activeConnections.some(ac => ac.connection == obj.connection));
+                this._updateConnectionItemView(obj.item, obj.connection, active);
             }
         }
     },
 };
 
-function NMDeviceWIREGUARD() {
-    this._init.apply(this, arguments);
-}
-
-NMDeviceWIREGUARD.prototype = {
-    __proto__: NMDevice.prototype,
-
-    _init: function(client, device, connections) {
-        // Disable autoconnections
-        this._autoConnectionName = null;
-        this._client = client;
-        this.category = NMConnectionCategory.WIREGUARD;
-        this._type = NM.SETTING_WIREGUARD_SETTING_NAME;
-
-        NMDevice.prototype._init.call(this, client, null, [ ]);
-
-        // Tests:
-        this.category = NMConnectionCategory.WIREGUARD;
-        this._type = NM.SETTING_WIREGUARD_SETTING_NAME;
-    },
-
-    connectionValid: function(connection) {
-        return connection._type == NM.SETTING_WIREGUARD_SETTING_NAME;
-    },
-
-    get empty() {
-        return this._connections.length == 0;
-    },
-
-    get connected() {
-        return !!this._activeConnection;
-    },
-
-    setActiveConnection: function(activeConnection) {
-        if (activeConnection) {
-            activeConnection._type = NM.SETTING_WIREGUARD_SETTING_NAME;
-        }
-        NMDevice.prototype.setActiveConnection.call(this, activeConnection);
-
-        this.emit('active-connection-changed');
-    },
-
-    _shouldShowConnectionList: function() {
-        return true;
-    },
-
-    deactivate: function() {
-        if (this._activeConnection)
-            this._client.deactivate_connection(this._activeConnection, null);
-    },
-
-    statusLabel: null,
-    controllable: true
-};
+/* NMDeviceWIREGUARD removed: wireguard connections are handled by
+   NMDeviceVPN, which has supported several at once all along. */
 
 
 function NMDeviceWireless() {
@@ -1666,6 +1843,19 @@ NMDeviceWireless.prototype = {
         }
         this._activeConnectionItem.setShowDot(true);
         this._activeConnectionItem.actor.add_style_class_name('popup-device-menu-item');
+        if (this._activeConnectionItem.setActiveAp)
+            this._activeConnectionItem.setActiveAp(this.device.active_access_point);
+
+        /* '.popup-device-menu-item' is added a line above, AFTER the item was
+           built, and it sets font-weight: bold.  The icon box has by then cached
+           a preferred width computed from the pre-bold metrics, so on first
+           layout it is allocated ~8px wider than its children need; St packs
+           them from the left and the signal icon ends up short of the right
+           edge that every other row lines up on.  It self-corrects on the next
+           relayout, which is what made it look intermittent.  queue_relayout()
+           drops the cached size so the FIRST allocation is already right. */
+        this._activeConnectionItem.actor.queue_relayout();
+        this._activeConnectionItem._icons.queue_relayout();
     },
 
     _createAutomaticConnection: function(apObj) {
@@ -1796,10 +1986,10 @@ function CinnamonNetworkApplet(metadata, orientation, panel_height, instance_id)
 }
 
 CinnamonNetworkApplet.prototype = {
-    __proto__: Applet.IconApplet.prototype,
+    __proto__: Applet.TextIconApplet.prototype,
 
     _init: function(metadata, orientation, panel_height, instance_id) {
-        Applet.IconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
+        Applet.TextIconApplet.prototype._init.call(this, orientation, panel_height, instance_id);
 
         try {
             this.metadata = metadata;
@@ -1813,8 +2003,30 @@ CinnamonNetworkApplet.prototype = {
             this._currentIconName = undefined;
             this._setIcon('xsi-network-offline');
 
+            /* Dedicated tunnel indicator, sitting beside the link glyph rather
+               than on top of it, so "encrypted AP" and "VPN up" never share a
+               symbol. Hidden unless a tunnel is actually up. */
+            this._vpnIcon = new St.Icon({ icon_name: 'xsi-network-vpn',
+                                          icon_type: St.IconType.SYMBOLIC,
+                                          style_class: 'applet-icon' });
+            this._vpnIconBin = new St.Bin();
+            this._vpnIconBin.set_child(this._vpnIcon);
+            this.actor.add(this._vpnIconBin, { y_align: St.Align.MIDDLE, y_fill: false });
+            try {
+                /* Prefer [link][vpn][count]; if the ordering call is
+                   unavailable the appended position is still fine. */
+                this.actor.set_child_below_sibling(this._vpnIconBin, this._layoutBin);
+            } catch (e) {
+            }
+            this._vpnIconBin.hide();
+
             this.settings = new Settings.AppletSettings(this, metadata.uuid, this.instance_id);
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+            this.settings.bind("showBand", "showBand", this._onRowOptsChanged);
+            this.settings.bind("showChannelWidth", "showChannelWidth", this._onRowOptsChanged);
+            this.settings.bind("showSecurity", "showSecurity", this._onRowOptsChanged);
+            this.settings.bind("showSignalPercent", "showSignalPercent", this._onRowOptsChanged);
+            this._syncRowOpts();
             this._setKeybinding();
 
             NM.Client.new_async(null, Lang.bind(this, this._clientGot));
@@ -1893,25 +2105,11 @@ CinnamonNetworkApplet.prototype = {
                 this._devices.vpn.item.updateForDevice(this._devices.vpn.device);
             }));
             this._devices.vpn.item.updateForDevice(this._devices.vpn.device);
+            this._devices.vpn.item.actor.reactive = false;
             this._devices.vpn.section.addMenuItem(this._devices.vpn.item);
             this._devices.vpn.section.addMenuItem(this._devices.vpn.device.section);
             this._devices.vpn.section.actor.hide();
             this.menu.addMenuItem(this._devices.vpn.section);
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
-            this._devices.wireguard = {
-                section: new PopupMenu.PopupMenuSection(),
-                device: new NMDeviceWIREGUARD(this._client),
-                item: new NMWiredSectionTitleMenuItem(_("WIREGUARD Connections"))
-            };
-            this._devices.wireguard.device.connect('active-connection-changed', Lang.bind(this, function() {
-                this._devices.wireguard.item.updateForDevice(this._devices.wireguard.device);
-            }));
-            this._devices.wireguard.item.updateForDevice(this._devices.wireguard.device);
-            this._devices.wireguard.section.addMenuItem(this._devices.wireguard.item);
-            this._devices.wireguard.section.addMenuItem(this._devices.wireguard.device.section);
-            this._devices.wireguard.section.actor.hide();
-            this.menu.addMenuItem(this._devices.wireguard.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
             this.menu.addSettingsAction(_("Network Settings"), 'network');
@@ -1948,7 +2146,7 @@ CinnamonNetworkApplet.prototype = {
             this._ctypes[NM.SETTING_CDMA_SETTING_NAME] = NMConnectionCategory.WWAN;
             this._ctypes[NM.SETTING_GSM_SETTING_NAME] = NMConnectionCategory.WWAN;
             this._ctypes[NM.SETTING_VPN_SETTING_NAME] = NMConnectionCategory.VPN;
-            this._ctypes[NM.SETTING_WIREGUARD_SETTING_NAME] = NMConnectionCategory.WIREGUARD;
+            this._ctypes[NM.SETTING_WIREGUARD_SETTING_NAME] = NMConnectionCategory.VPN;
 
             this._readConnections();
             this._readDevices();
@@ -1977,6 +2175,70 @@ CinnamonNetworkApplet.prototype = {
         if (this._currentIconName !== name) {
             this.set_applet_icon_symbolic_name(name);
             this._currentIconName = name;
+        }
+    },
+
+    /* Remembers the physical-link tooltip so tunnel names can be appended. */
+    _setTooltip: function(text) {
+        this._baseTooltip = text;
+        this.set_applet_tooltip(text);
+    },
+
+    /* Mirror the settings into the module-level ROW_OPTS the menu items read. */
+    _syncRowOpts: function() {
+        ROW_OPTS.band     = this.showBand;
+        ROW_OPTS.width    = this.showChannelWidth;
+        ROW_OPTS.security = this.showSecurity;
+        ROW_OPTS.percent  = this.showSignalPercent;
+    },
+
+    _onRowOptsChanged: function() {
+        this._syncRowOpts();
+
+        // called from a settings change, long after _init, but be safe
+        if (!this._devices || !this._devices.wireless)
+            return;
+
+        for (let dev of this._devices.wireless.devices) {
+            dev._clearSection();
+            dev._createSection();
+        }
+    },
+
+    /* The panel icon is otherwise refreshed only by the periodic timer, so the
+       drawn bars can lag reality by up to 10s (2s with the menu open).  Watch
+       the active AP's strength directly.
+
+       Two things keep this cheap.  Only the ACTIVE access point is watched --
+       measured here, notify::strength fires ~8/min on it, but there were 35 APs
+       visible, so watching them all would be ~280/min.  And a redraw only
+       happens when the signal crosses one of signalToIcon()'s five buckets:
+       over 45s stationary that was zero times, against six unconditional timer
+       ticks in the same period. */
+    _watchSignal: function(ap) {
+        if (this._watchedAp === ap)
+            return;
+
+        if (this._watchedAp && this._watchedApId) {
+            try {
+                this._watchedAp.disconnect(this._watchedApId);
+            } catch (e) {
+                // access point already gone
+            }
+        }
+
+        this._watchedAp = ap || null;
+        this._watchedApId = 0;
+        this._watchedLevel = ap ? signalToIcon(ap.strength) : null;
+
+        if (ap) {
+            this._watchedApId = ap.connect('notify::strength', () => {
+                let level = signalToIcon(this._watchedAp.strength);
+                if (level !== this._watchedLevel) {
+                    this._watchedLevel = level;
+                    this._updateIcon();
+                }
+            });
         }
     },
 
@@ -2146,7 +2408,7 @@ CinnamonNetworkApplet.prototype = {
 
         for (let active of closedConnections) {
             if (active._primaryDevice) {
-                if (active._type == NM.SETTING_VPN_SETTING_NAME)
+                if (active._section == NMConnectionCategory.VPN)
                     this._devices.vpn.device.setActiveConnections([]);
                 else
                     active._primaryDevice.setActiveConnection(null);
@@ -2218,7 +2480,7 @@ CinnamonNetworkApplet.prototype = {
             }
 
             if (!a._primaryDevice) {
-                if (a._type != NM.SETTING_VPN_SETTING_NAME && a._type != NM.SETTING_WIREGUARD_SETTING_NAME) {
+                if (a._section != NMConnectionCategory.VPN) {
                     // find a good device to be considered primary
                     a._primaryDevice = null;
                     let devices = a.get_devices() || [ ];
@@ -2230,11 +2492,7 @@ CinnamonNetworkApplet.prototype = {
                         }
                     }
                 } else {
-                    if (a._type == NM.SETTING_VPN_SETTING_NAME)
-                        a._primaryDevice = this._devices.vpn.device;
-                    else {
-                        a._primaryDevice = this._devices.wireguard.device;
-                    }
+                    a._primaryDevice = this._devices.vpn.device;
                 }
 
                 if (a.state == NM.ActiveConnectionState.ACTIVATED &&
@@ -2245,11 +2503,10 @@ CinnamonNetworkApplet.prototype = {
             }
 
             if (a._primaryDevice) {
-                if (a._type == NM.SETTING_VPN_SETTING_NAME) {
+                if (a._section == NMConnectionCategory.VPN)
                     vpnConnections.push(a);
-                } else {
+                else
                     a._primaryDevice.setActiveConnection(a);
-                }
             }
         }
 
@@ -2301,7 +2558,7 @@ CinnamonNetworkApplet.prototype = {
     _connectionRemoved: function(client, connection) {
         let pos = this._connections.indexOf(connection);
         if (pos != -1)
-            this._connections.splice(pos);
+            this._connections.splice(pos, 1);
 
         let section = connection._section;
 
@@ -2309,10 +2566,6 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
-        } else if (section == NMConnectionCategory.WIREGUARD) {
-            this._devices.wireguard.device.removeConnection(connection);
-            if (this._devices.wireguard.device.empty)
-                this._devices.wireguard.section.actor.hide();
         } else if (section != NMConnectionCategory.INVALID) {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++)
@@ -2339,9 +2592,6 @@ CinnamonNetworkApplet.prototype = {
         if (section == NMConnectionCategory.VPN) {
             this._devices.vpn.device.checkConnection(connection);
             this._devices.vpn.section.actor.show();
-        } else if (section == NMConnectionCategory.WIREGUARD) {
-            this._devices.wireguard.device.checkConnection(connection);
-            this._devices.wireguard.section.actor.show();
         } else {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++) {
@@ -2370,8 +2620,6 @@ CinnamonNetworkApplet.prototype = {
 
         if (!this._devices.vpn.device.empty)
             this._devices.vpn.section.actor.show();
-        if (!this._devices.wireguard.device.empty)
-            this._devices.wireguard.section.actor.show();
     },
 
     _syncNMState: function() {
@@ -2404,35 +2652,31 @@ CinnamonNetworkApplet.prototype = {
 
             if (!mc) {
                 this._setIcon('xsi-network-offline');
-                this.set_applet_tooltip(_("No connection"));
+                this._setTooltip(_("No connection"));
             } else if (mc.state == NM.ActiveConnectionState.ACTIVATING) {
                 new_delay = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
                 case NMConnectionCategory.WWAN:
                     this._setIcon('xsi-network-cellular-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the cellular network..."));
+                    this._setTooltip(_("Connecting to the cellular network..."));
                     break;
                 case NMConnectionCategory.WIRELESS:
                     this._setIcon('xsi-network-wireless-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the wireless network..."));
+                    this._setTooltip(_("Connecting to the wireless network..."));
                     break;
                 case NMConnectionCategory.WIRED:
                     this._setIcon('xsi-network-wired-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the wired network..."));
+                    this._setTooltip(_("Connecting to the wired network..."));
                     break;
                 case NMConnectionCategory.VPN:
                     this._setIcon('xsi-network-vpn-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the VPN..."));
-                    break;
-                case NMConnectionCategory.WIREGUARD:
-                    this._setIcon('xsi-network-vpn-acquiring');
-                    this.set_applet_tooltip(_("Connecting to WIREGUARD..."));
+                    this._setTooltip(_("Connecting to the VPN..."));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
                     this._setIcon('xsi-network-wired-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the network..."));
+                    this._setTooltip(_("Connecting to the network..."));
                 }
             } else {
                 let dev;
@@ -2451,14 +2695,14 @@ CinnamonNetworkApplet.prototype = {
                                 break;
                             }
                             this._setIcon('xsi-network-wireless-connected');
-                            this.set_applet_tooltip(_("Connected to the wireless network"));
+                            this._setTooltip(_("Connected to the wireless network"));
                         } else {
                             if (limited_conn) {
                                 this._setIcon('xsi-network-wireless-no-route');
-                                this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " " + _("(Limited connectivity)"));
+                                this._setTooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " " + _("(Limited connectivity)"));
                             } else {
-                                this._setIcon('xsi-network-wireless-signal-' + signalToIcon(ap.strength));
-                                this.set_applet_tooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " ("+ ap.strength +"%)");
+                                this._setIcon('xsi-network-wireless-signal-' + signalToIcon(ap.strength) + apSecuritySuffix(dev, ap));
+                                this._setTooltip(_("Wireless connection") + ": " + ssidToLabel(ap.get_ssid()) + " ("+ ap.strength +"%)");
                             }
                         }
                     } else {
@@ -2468,11 +2712,11 @@ CinnamonNetworkApplet.prototype = {
                 case NMConnectionCategory.WIRED:
                     if (limited_conn) {
                         this._setIcon('xsi-network-wired-no-route');
-                        this.set_applet_tooltip(_("Connected to the wired network") + " " + _("(Limited connectivity)"));
+                        this._setTooltip(_("Connected to the wired network") + " " + _("(Limited connectivity)"));
 
                     } else {
                         this._setIcon('xsi-network-wired');
-                        this.set_applet_tooltip(_("Connected to the wired network"));
+                        this._setTooltip(_("Connected to the wired network"));
                     }
                     break;
                 case NMConnectionCategory.WWAN:
@@ -2484,16 +2728,16 @@ CinnamonNetworkApplet.prototype = {
                     if (!dev.mobileDevice) {
                         // this can happen for bluetooth in PAN mode
                         this._setIcon('xsi-network-cellular-connected');
-                        this.set_applet_tooltip(_("Connected to the cellular network"));
+                        this._setTooltip(_("Connected to the cellular network"));
                         break;
                     }
 
                     if (limited_conn) {
                         this._setIcon('xsi-network-cellular-no-route');
-                        this.set_applet_tooltip(_("Connected to the cellular network") + " " + _("(Limited connectivity)"));
+                        this._setTooltip(_("Connected to the cellular network") + " " + _("(Limited connectivity)"));
                     } else {
                         this._setIcon('xsi-network-cellular-signal-' + signalToIcon(dev.mobileDevice.signal_quality));
-                        this.set_applet_tooltip(_("Connected to the cellular network"));
+                        this._setTooltip(_("Connected to the cellular network"));
                     }
 
                     break;
@@ -2501,47 +2745,81 @@ CinnamonNetworkApplet.prototype = {
                     // Should we indicate limited connectivity for VPNs like we do above? What if the connection is to
                     // a local machine? Need to test.
                     this._setIcon('xsi-network-vpn');
-                    this.set_applet_tooltip(_("Connected to the VPN"));
-                    break;
-                case NMConnectionCategory.WIREGUARD:
-                    // Should we indicate limited connectivity for WIREGUARDs like we do above? What if the connection is to
-                    // a local machine? Need to test.
-                    this._setIcon('xsi-network-vpn');
-                    this.set_applet_tooltip(_("Connected to WIREGUARD"));
+                    this._setTooltip(_("Connected to the VPN"));
                     break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
                     this._setIcon('xsi-network-wired');
-                    this.set_applet_tooltip(_("Connected to the network"));
+                    this._setTooltip(_("Connected to the network"));
                     break;
                 }
             }
-            if (this._devices.wireguard.item && this._devices.wireguard.item._switch.state) {
-                this._setIcon('xsi-network-vpn');
-                this.set_applet_tooltip(_("Connected to WIREGUARD"));
-            }
+            /* Tunnels get their OWN indicator beside the link glyph, never a
+               padlock composited onto it -- see the note on edit 01b: the
+               "-secure" wifi variants already mean "this access point is
+               encrypted" in the menu, and one glyph must not carry two
+               meanings. */
+            let tunnels = this._activeConnections.filter(a => a._section === NMConnectionCategory.VPN);
+            let upTunnels = tunnels.filter(a => a.state === NM.ActiveConnectionState.ACTIVATED);
+            let actingTunnels = tunnels.filter(a => a.state === NM.ActiveConnectionState.ACTIVATING);
+
+            let physical = null;
             for (let i = 0; i < this._activeConnections.length; i++) {
-                const a = this._activeConnections[i];
-                if (a._section === NMConnectionCategory.VPN && a.state === NM.ActiveConnectionState.ACTIVATING) {
-                    this._setIcon('xsi-network-vpn-acquiring');
-                    this.set_applet_tooltip(_("Connecting to the VPN..."));
-                    break;
-                }
-                else if (a._section === NMConnectionCategory.VPN && a.state === NM.ActiveConnectionState.ACTIVATED) {
-                    let iconName = 'xsi-network-vpn';
-                    if (mc._section == NMConnectionCategory.WIRELESS) {
-                        const dev = mc._primaryDevice;
-                        if (dev) {
-                            const ap = dev.device.active_access_point;
-                            iconName = 'xsi-network-wireless-signal-' + signalToIcon(ap.strength) + '-secure-symbolic';
-                        }
-                    }
-                    this._setIcon(iconName);
-                    this.set_applet_tooltip(_("Connected to the VPN"));
-                    break;
+                let a = this._activeConnections[i];
+                if (a._section === NMConnectionCategory.WIRELESS ||
+                    a._section === NMConnectionCategory.WIRED ||
+                    a._section === NMConnectionCategory.WWAN) {
+                    if (!physical || a['default'])
+                        physical = a;
                 }
             }
+
+            /* A full-tunnel connection owns the default route, so it becomes
+               _mainConnection and the switch above would have drawn the tunnel
+               in place of the link.  Redraw the base from the physical
+               connection so signal strength survives. */
+            if (physical && mc && mc._section === NMConnectionCategory.VPN) {
+                if (physical._section === NMConnectionCategory.WIRELESS) {
+                    let pdev = physical._primaryDevice;
+                    let pap = (pdev && pdev.device) ? pdev.device.active_access_point : null;
+                    if (pap) {
+                        this._setIcon('xsi-network-wireless-signal-' + signalToIcon(pap.strength) + apSecuritySuffix(pdev, pap));
+                        this._setTooltip(_("Wireless connection") + ": " + ssidToLabel(pap.get_ssid()) + " (" + pap.strength + "%)");
+                    }
+                } else if (physical._section === NMConnectionCategory.WIRED) {
+                    this._setIcon('xsi-network-wired');
+                    this._setTooltip(_("Connected to the wired network"));
+                }
+            }
+
+            if (actingTunnels.length) {
+                this._vpnIcon.icon_name = 'xsi-network-vpn-acquiring';
+                this._vpnIconBin.show();
+                this.set_applet_tooltip(_("Connecting to the VPN..."));
+            } else if (upTunnels.length) {
+                this._vpnIcon.icon_name = 'xsi-network-vpn';
+                this._vpnIconBin.show();
+
+                let names = upTunnels.map(a => (a.connection && a.connection._name)
+                                               ? a.connection._name : _("VPN"));
+                this.set_applet_tooltip(this._baseTooltip
+                                        ? this._baseTooltip + "  \u00b7  " + names.join(', ')
+                                        : names.join(', '));
+            } else {
+                this._vpnIconBin.hide();
+            }
+
+            /* Panel badge: how many tunnels are up, once there is more than one. */
+            this.set_applet_label(upTunnels.length > 1 ? String(upTunnels.length) : "");
+
+            /* Keep the drawn bars honest between timer ticks. */
+            let watchAp = null;
+            if (physical && physical._section === NMConnectionCategory.WIRELESS) {
+                let pdev = physical._primaryDevice;
+                watchAp = (pdev && pdev.device) ? pdev.device.active_access_point : null;
+            }
+            this._watchSignal(watchAp);
         }
         catch (e) {
             global.logError(e);
@@ -2605,6 +2883,8 @@ CinnamonNetworkApplet.prototype = {
         if (this._activeConnections.some(con => con.get_connection_type() === "wireguard")) {
             return NM.ConnectivityState.FULL;
         }
+
+        return state;
     },
 
     _proxyConnectivityCheckCallback(new_state) {
