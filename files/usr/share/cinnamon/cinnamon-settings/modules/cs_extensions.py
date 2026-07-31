@@ -55,6 +55,11 @@ class ManageExtensionsPage(ManageSpicesPage):
     remove_button_text = _("Disable")
     uninstall_button_text = _("Uninstall")
     restore_button_text = _("Disable all")
+    use_inline_toggle = True
 
     def __init__(self, parent, spices, window):
         super(ManageExtensionsPage, self).__init__(parent, self.collection_type, spices, window)
+        self.instance_button.set_no_show_all(True)
+        self.remove_button.set_no_show_all(True)
+        self.instance_button.hide()
+        self.remove_button.hide()
