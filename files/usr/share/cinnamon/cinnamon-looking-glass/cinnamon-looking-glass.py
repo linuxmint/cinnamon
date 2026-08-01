@@ -228,7 +228,6 @@ class FileWatcherView(Gtk.ScrolledWindow):
         Gtk.ScrolledWindow.__init__(self)
 
         self.filename = filename
-        self.changed = 0
         self.update_id = 0
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -239,13 +238,16 @@ class FileWatcherView(Gtk.ScrolledWindow):
 
         self.textbuffer = self.textview.get_buffer()
 
+        # Keep the view pinned to the end of the log. The adjustment grows in
+        # steps as the text view validates line heights, so re-pin on each change.
+        self.get_vadjustment().connect("changed", self.on_vadjustment_changed)
+
         self.show_all()
         self.get_updates()
 
         self.monitor = Gio.File.new_for_path(filename).monitor_file(Gio.FileMonitorFlags.NONE, None)
         self.monitor.connect("changed", self.on_file_changed)
         self.connect("destroy", self.on_destroy)
-        self.connect("size-allocate", self.on_size_changed)
 
     def on_file_changed(self, monitor, gfile, other_file, event_type):
         self.get_updates()
@@ -255,21 +257,20 @@ class FileWatcherView(Gtk.ScrolledWindow):
             self.monitor.cancel()
             self.monitor = None
 
-    def on_size_changed(self, widget, bla):
-        if self.changed > 0:
-            end_iter = self.textbuffer.get_end_iter()
-            self.textview.scroll_to_iter(end_iter, 0, False, 0, 0)
-            self.changed -= 1
+        if self.update_id > 0:
+            GLib.source_remove(self.update_id)
+            self.update_id = 0
+
+    def on_vadjustment_changed(self, adjustment):
+        adjustment.set_value(adjustment.get_upper() - adjustment.get_page_size())
 
     def get_updates(self):
-        # only update 2 times per second max
-        # without this rate limiting, certain file modifications can cause
-        # a crash at Gtk.TextBuffer.set_text()
+        # only update 2 times per second max - a single write produces a
+        # changed/changes-done-hint pair, and update() re-reads the whole file
         if self.update_id == 0:
             self.update_id = GLib.timeout_add(500, self.update)
 
     def update(self):
-        self.changed = 2 # on_size_changed will be called twice, but only the second time is final
         self.update_id = 0
 
         try:
