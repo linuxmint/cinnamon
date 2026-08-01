@@ -270,8 +270,14 @@ class FileWatcherView(Gtk.ScrolledWindow):
 
     def update(self):
         self.changed = 2 # on_size_changed will be called twice, but only the second time is final
-        self.textbuffer.set_text(open(self.filename, 'r').read())
         self.update_id = 0
+
+        try:
+            with open(self.filename, 'r') as f:
+                self.textbuffer.set_text(f.read())
+        except OSError as e:
+            self.textbuffer.set_text("Could not read %s: %s" % (self.filename, e))
+
         return False
 
 class ClosableTabLabel(Gtk.Box):
