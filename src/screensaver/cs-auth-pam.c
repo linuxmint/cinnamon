@@ -41,7 +41,6 @@
 
 #include <glib.h>
 #include <glib/gstdio.h>
-#include <glib/gi18n-lib.h>
 
 #include "cs-auth.h"
 
@@ -165,7 +164,7 @@ auth_message_handler (CsAuthMessageStyle style,
         case CS_AUTH_MESSAGE_PROMPT_ECHO_ON:
                 break;
         case CS_AUTH_MESSAGE_PROMPT_ECHO_OFF:
-                if (msg != NULL && g_str_has_prefix (msg, _("Password:"))) {
+                if (msg != NULL && g_str_has_prefix (msg, "Password:")) {
                         did_we_ask_for_password = TRUE;
                 }
                 break;
@@ -390,7 +389,7 @@ create_pam_handle (const char      *username,
 	/* Initialize a PAM session for the user */
 	if ((status = pam_start (service, username, conv, &pam_handle)) != PAM_SUCCESS) {
 		pam_handle = NULL;
-                g_warning (_("Unable to establish service %s: %s\n"),
+                g_warning ("Unable to establish service %s: %s\n",
                            service,
                            PAM_STRERROR (NULL, status));
 
@@ -417,7 +416,7 @@ create_pam_handle (const char      *username,
         }
 
 	if ((status = pam_set_item (pam_handle, PAM_TTY, disp)) != PAM_SUCCESS) {
-                g_warning (_("Can't set PAM_TTY=%s"), display);
+                g_warning ("Can't set PAM_TTY=%s", display);
 
                 if (status_code != NULL) {
                         *status_code = status;
@@ -449,9 +448,9 @@ set_pam_error (GError **error,
                 char *msg;
 
                 if (did_we_ask_for_password) {
-                        msg = g_strdup (_("Incorrect password."));
+                        msg = g_strdup ("Incorrect password.");
                 } else {
-                        msg = g_strdup (_("Authentication failed."));
+                        msg = g_strdup ("Authentication failed.");
                 }
 
                 g_set_error (error,
@@ -465,18 +464,18 @@ set_pam_error (GError **error,
                              CS_AUTH_ERROR,
                              CS_AUTH_ERROR_AUTH_DENIED,
                              "%s",
-                             _("Not permitted to gain access at this time."));
+                             "Not permitted to gain access at this time.");
         } else if (status == PAM_ACCT_EXPIRED) {
                 g_set_error (error,
                              CS_AUTH_ERROR,
                              CS_AUTH_ERROR_AUTH_DENIED,
                              "%s",
-                             _("No longer permitted to access the system."));
+                             "No longer permitted to access the system.");
         } else {
                 g_set_error (error,
                              CS_AUTH_ERROR,
                              CS_AUTH_ERROR_AUTH_ERROR,
-                             _("Authentication error: %s"),
+                             "Authentication error: %s",
                              PAM_STRERROR (NULL, status));
         }
 
@@ -713,7 +712,7 @@ cs_auth_verify_user (const char       *username,
                 goto done;
         }
 
-        pam_set_item (pam_handle, PAM_USER_PROMPT, _("Username:"));
+        pam_set_item (pam_handle, PAM_USER_PROMPT, "Username:");
 
         did_we_ask_for_password = FALSE;
         if (! cs_auth_pam_verify_user (pam_handle, &status)) {
