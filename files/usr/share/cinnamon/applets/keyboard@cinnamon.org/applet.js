@@ -109,11 +109,11 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         let source = this._inputSourcesManager.currentSource;
 
-        let description = source.xkbLayout;
+        let args = ['cinnamon-keyboard-display', '-l', source.xkbLayout];
         if (source.variant.length > 0)
-            description = '%s\t%s'.format(description, source.variant);
+            args.push('-v', source.variant);
 
-        Util.spawn(['gkbd-keyboard-display', '-l', description]);
+        Util.spawn(args);
     }
 
     _onCurrentSourceChanged() {

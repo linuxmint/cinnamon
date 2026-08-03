@@ -41,10 +41,6 @@ class InputSourceSettingsPage(SettingsPage):
 
         self.test_layout_button = builder.get_object("test_layout")
         self.test_layout_button.connect("clicked", self.on_test_layout_clicked)
-        # TODO: maybe use tecla as an alternative for wayland, if we don't roll something ourselves.
-        # btw there's no plan for tecla to support different keyboard geometries than a standard pc105.
-        if not GLib.find_program_in_path("gkbd-keyboard-display"):
-            self.test_layout_button.set_visible(False)
 
         self.engine_config_button = builder.get_object("engine_config_button")
         self.engine_config_button.connect("clicked", self.on_engine_config_clicked)
@@ -218,7 +214,7 @@ class InputSourceSettingsPage(SettingsPage):
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
 
-        args = AddKeyboardLayout.make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
+        args = AddKeyboardLayout.make_keyboard_display_args(source.xkb_layout, source.xkb_variant)
         subprocess.Popen(args)
 
     def on_engine_config_clicked(self, button, data=None):
@@ -361,8 +357,7 @@ class IBusConfigDialog():
         add_dialog.dialog.show_all()
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
-            layout_type, layout_id = add_dialog.response
-            self.set_layout_override(layout_id)
+            self.set_layout_override(add_dialog.response.id)
         add_dialog.dialog.destroy()
 
     def on_clear_override_clicked(self, button, data=None):
@@ -569,7 +564,7 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         add_dialog.dialog.show_all()
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
-            self.add_layout(*add_dialog.response)
+            self.add_layout(add_dialog.response.type, add_dialog.response.id)
         add_dialog.dialog.destroy()
 
     def create_row(self, source, data=None):

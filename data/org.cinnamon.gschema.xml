@@ -546,6 +546,7 @@
     <child name="sounds" schema="org.cinnamon.sounds" />
     <child name="launcher" schema="org.cinnamon.launcher" />
     <child name="screenshot" schema="org.cinnamon.screenshot" />
+    <child name="layout-viewer" schema="org.cinnamon.layout-viewer" />
 
     <key name="enable-vfade" type="b">
       <default>true</default>
@@ -678,6 +679,20 @@
       <summary>Keyboard position</summary>
       <description>
         Keyboard position.
+      </description>
+    </key>
+  </schema>
+  <schema id="org.cinnamon.layout-viewer" path="/org/cinnamon/layout-viewer/"
+          gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="model" type="s">
+      <default>''</default>
+      <summary>Keyboard model the layout viewer draws</summary>
+      <description>
+        The keyboard model last chosen from cinnamon-keyboard-display's own
+        menu, so that it keeps showing the keyboard the user actually owns.
+        A model named on the command line is drawn for that run only and is
+        not recorded here. An empty string, or a name the viewer has no
+        geometry for, means use its default.
       </description>
     </key>
   </schema>

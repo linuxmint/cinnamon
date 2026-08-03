@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=Keyboard Layout Viewer
+Comment=Preview keyboard layouts
+Icon=keyboard
+Exec=cinnamon-keyboard-display
+Terminal=false
+Type=Application
+NoDisplay=true

@@ -1,0 +1,206 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Generated with glade 3.40.0 -->
+<interface>
+  <requires lib="gtk+" version="3.22"/>
+  <requires lib="xapp" version="0.0"/>
+  <object class="XAppGtkWindow" id="main_window">
+    <property name="can-focus">False</property>
+    <property name="window-position">center</property>
+    <child>
+      <object class="GtkBox" id="drawing_container">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="border-width">8</property>
+        <property name="orientation">vertical</property>
+        <child>
+          <object class="GtkStack" id="main_stack">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="transition-duration">100</property>
+            <child>
+              <object class="GtkStack" id="level_stack">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="transition-duration">100</property>
+                <child>
+                  <placeholder/>
+                </child>
+              </object>
+              <packing>
+                <property name="name">keyboard</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkBox" id="error_view">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="halign">center</property>
+                <property name="valign">center</property>
+                <property name="orientation">vertical</property>
+                <property name="spacing">12</property>
+                <child>
+                  <object class="GtkImage" id="error_image">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="pixel-size">64</property>
+                    <property name="icon-name">dialog-error-symbolic</property>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="error_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="label" translatable="yes">Unable to render layout</property>
+                    <property name="justify">center</property>
+                    <property name="wrap">True</property>
+                    <attributes>
+                      <attribute name="weight" value="bold"/>
+                      <attribute name="scale" value="1.3999999999999999"/>
+                    </attributes>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+              <packing>
+                <property name="name">error</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">True</property>
+            <property name="fill">True</property>
+            <property name="position">0</property>
+          </packing>
+        </child>
+        <child>
+          <object class="GtkBox" id="options_bar">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="margin-top">6</property>
+            <property name="orientation">vertical</property>
+            <property name="spacing">6</property>
+            <child>
+              <object class="GtkSeparator" id="options_separator">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">0</property>
+              </packing>
+            </child>
+            <child>
+              <object class="GtkLabel" id="options_label">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="ellipsize">end</property>
+                <property name="xalign">0</property>
+              </object>
+              <packing>
+                <property name="expand">False</property>
+                <property name="fill">True</property>
+                <property name="position">1</property>
+              </packing>
+            </child>
+          </object>
+          <packing>
+            <property name="expand">False</property>
+            <property name="fill">True</property>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+    <child type="titlebar">
+      <object class="GtkHeaderBar" id="header_bar">
+        <property name="visible">True</property>
+        <property name="can-focus">False</property>
+        <property name="show-close-button">True</property>
+        <child type="title">
+          <object class="GtkButton" id="layout_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <property name="tooltip-text" translatable="yes">Show a different layout</property>
+            <property name="relief">none</property>
+            <child>
+              <object class="GtkBox" id="layout_button_box">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="orientation">vertical</property>
+                <child>
+                  <object class="GtkLabel" id="title_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="ellipsize">end</property>
+                    <property name="single-line-mode">True</property>
+                    <style>
+                      <class name="title"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">0</property>
+                  </packing>
+                </child>
+                <child>
+                  <object class="GtkLabel" id="subtitle_label">
+                    <property name="visible">True</property>
+                    <property name="can-focus">False</property>
+                    <property name="ellipsize">end</property>
+                    <property name="single-line-mode">True</property>
+                    <style>
+                      <class name="subtitle"/>
+                    </style>
+                  </object>
+                  <packing>
+                    <property name="expand">False</property>
+                    <property name="fill">True</property>
+                    <property name="position">1</property>
+                  </packing>
+                </child>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkMenuButton" id="menu_button">
+            <property name="visible">True</property>
+            <property name="can-focus">True</property>
+            <property name="receives-default">True</property>
+            <child>
+              <object class="GtkImage" id="menu_button_image">
+                <property name="visible">True</property>
+                <property name="can-focus">False</property>
+                <property name="icon-name">open-menu-symbolic</property>
+              </object>
+            </child>
+          </object>
+        </child>
+        <child>
+          <object class="GtkStackSwitcher" id="level_switcher">
+            <property name="visible">True</property>
+            <property name="can-focus">False</property>
+            <property name="homogeneous">True</property>
+            <property name="stack">level_stack</property>
+          </object>
+          <packing>
+            <property name="position">1</property>
+          </packing>
+        </child>
+      </object>
+    </child>
+  </object>
+</interface>

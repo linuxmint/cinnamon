@@ -1,8 +1,10 @@
 #!/usr/bin/python3
 
+import collections
 import gettext
 import os
 import subprocess
+from pathlib import Path
 
 import cairo
 import gi
@@ -21,11 +23,48 @@ MAX_LAYOUTS_PER_GROUP = 4
 INPUT_SOURCE_SETTINGS = "org.cinnamon.desktop.input-sources"
 SHOW_ALL_SOURCES_KEY="show-all-sources"
 
-def make_gkbd_keyboard_args(layout, variant):
+CUSTOM_LAYOUT = "custom"
+SYSTEM_XKB_DIR = Path("/usr/share/X11/xkb")
+
+def libxkbcommon_xkb_dirs():
+    """The directories libxkbcommon searches that the X server does not.
+
+    Spelt as libxkbcommon spells them. /etc/xkb is that library's own
+    addition and is searched whether or not a home directory exists.
+    """
+    return (Path(GLib.get_user_config_dir()) / "xkb",
+            Path.home() / ".xkb",
+            Path("/etc/xkb"))
+
+def make_keyboard_display_args(layout, variant):
+    """Command line for the layout viewer.
+
+    The options are left to the viewer, which reads the session's own and
+    keeps up with them for as long as it is open.
+    """
+    args = ["cinnamon-keyboard-display", "-l", layout]
     if variant:
-        return ["gkbd-keyboard-display", "-l", f"{layout}\t{variant}"]
-    else:
-        return ["gkbd-keyboard-display", "-l", layout]
+        args += ["-v", variant]
+    return args
+
+def custom_layout_available():
+    """Whether xkeyboard-config's "custom" layout has a usable symbols file.
+
+    It names a file the user is expected to supply, and is listed whether
+    or not that exists, so offering it unconditionally puts a layout in
+    the chooser that cannot be added or previewed.
+
+    Where it may live depends on the session. Under Wayland muffin
+    compiles the keymap itself with libxkbcommon, which searches the home
+    directories and /etc/xkb as well; under X11 it hands the names to the
+    X server (XkbGetKeyboardByName), which reads only its own base
+    directory.
+    """
+    directories = [SYSTEM_XKB_DIR]
+    if GLib.getenv("XDG_SESSION_TYPE") == "wayland":
+        directories += libxkbcommon_xkb_dirs()
+    return any((directory / "symbols" / CUSTOM_LAYOUT).exists()
+               for directory in directories)
 
 def make_ibus_display_name(engine):
     name = engine.get_longname()
@@ -42,6 +81,12 @@ LAYOUT_DISPLAY_NAME_COLUMN = 1
 LAYOUT_TYPE_COLUMN = 2
 LAYOUT_LAYOUT_COLUMN = 3
 LAYOUT_VARIANT_COLUMN = 4
+
+# What the dialog hands back. The rows already carry the xkb layout and
+# variant, so a caller wanting to draw or compile the layout need not
+# resolve them from XkbInfo a second time.
+SelectedLayout = collections.namedtuple("SelectedLayout",
+                                        "type id layout variant")
 
 class AddKeyboardLayoutDialog():
     def __init__(self, used_ids, xkb_only=False):
@@ -98,9 +143,9 @@ class AddKeyboardLayoutDialog():
             self.dialog.set_title(_("Choose a Layout"))
 
         self.response_id = None
-
-        if not GLib.find_program_in_path("gkbd-keyboard-display"):
-            self.preview_button.set_visible(False)
+        # Only set once something is chosen, so a cancelled dialog leaves
+        # it None rather than unset.
+        self.response = None
 
         self._ibus = IBus.Bus.new_async()
         self._reload_all_engines()
@@ -167,7 +212,7 @@ class AddKeyboardLayoutDialog():
         display_name = self.layouts_sort_store.get_value(iter, LAYOUT_DISPLAY_NAME_COLUMN)
         layout_layout = self.layouts_sort_store.get_value(iter, LAYOUT_LAYOUT_COLUMN)
         layout_variant = self.layouts_sort_store.get_value(iter, LAYOUT_VARIANT_COLUMN)
-        args = make_gkbd_keyboard_args(layout_layout, layout_variant)
+        args = make_keyboard_display_args(layout_layout, layout_variant)
         subprocess.Popen(args)
 
     def _on_all_sources_changed(self, button, data=None):
@@ -182,9 +227,12 @@ class AddKeyboardLayoutDialog():
 
         assert iter is not None
 
-        layout_type = self.layouts_sort_store.get_value(iter, LAYOUT_TYPE_COLUMN)
-        layout_id = self.layouts_sort_store.get_value(iter, LAYOUT_ID_COLUMN)
-        self.response = (layout_type, layout_id)
+        store = self.layouts_sort_store
+        self.response = SelectedLayout(
+            type=store.get_value(iter, LAYOUT_TYPE_COLUMN),
+            id=store.get_value(iter, LAYOUT_ID_COLUMN),
+            layout=store.get_value(iter, LAYOUT_LAYOUT_COLUMN),
+            variant=store.get_value(iter, LAYOUT_VARIANT_COLUMN))
         print("Response:", self.response)
         self.dialog.response(Gtk.ResponseType.OK)
 
@@ -223,7 +271,10 @@ class AddKeyboardLayoutDialog():
             cell.set_property("text", "")
 
     def _load_layouts(self):
+        allow_custom = custom_layout_available()
         for layout in self.xkb_info.get_all_layouts():
+            if layout == CUSTOM_LAYOUT and not allow_custom:
+                continue
             self.add_xkb_row(None, layout)
 
     def add_xkb_row(self, lang_info, layout_id):
