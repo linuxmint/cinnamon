@@ -63,6 +63,7 @@ var Overview = GObject.registerClass({
         this._windowSwitchTimestamp = 0;
         this._lastActiveWorkspaceIndex = -1;
         this._lastHoveredWindow = null;
+        this._optCallerActionName = null;
 
         Main.layoutManager.connect('monitors-changed', this.hide.bind(this));
     }
@@ -305,7 +306,8 @@ var Overview = GObject.registerClass({
         }
     }
 
-    toggle() {
+    toggle(optCallerActionName) {
+        Main.overview._optCallerActionName = optCallerActionName;
         if (this._shown)
             this.hide();
         else

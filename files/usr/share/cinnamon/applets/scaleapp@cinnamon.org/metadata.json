@@ -1,0 +1,7 @@
+{
+"uuid": "scaleapp@cinnamon.org",
+"name": "Scale App",
+"description": "Click or hover to activate Scale App view",
+"icon": "cs-overview",
+ "max-instances": -1
+}
