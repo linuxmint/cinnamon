@@ -192,7 +192,7 @@ class InputSourceSettingsPage(SettingsPage):
         return source
 
     def on_add_layout_clicked(self, button, data=None):
-        self.current_input_sources_model.show_add_layout_dialog()
+        self.current_input_sources_model.show_add_layout_dialog(self.get_toplevel())
 
     def on_remove_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
@@ -219,7 +219,8 @@ class InputSourceSettingsPage(SettingsPage):
 
     def on_engine_config_clicked(self, button, data=None):
         source = self._get_selected_source()
-        dialog = IBusConfigDialog(source, self.current_input_sources_model.input_source_settings)
+        dialog = IBusConfigDialog(source, self.current_input_sources_model.input_source_settings,
+                                  self.get_toplevel())
         dialog.run()
         dialog.destroy()
 
@@ -246,7 +247,7 @@ class InputSourceSettingsPage(SettingsPage):
 
 
 class IBusConfigDialog():
-    def __init__(self, source, settings):
+    def __init__(self, source, settings, parent_window):
         self.source = source
         self.settings = settings
         self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
@@ -260,6 +261,7 @@ class IBusConfigDialog():
         builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
 
         self.dialog = builder.get_object("ibus_config_dialog")
+        self.dialog.set_transient_for(parent_window)
 
         # Set up name label
         name_label = builder.get_object("ibus_config_name_label")
@@ -295,7 +297,6 @@ class IBusConfigDialog():
             engine_settings_button.set_visible(False)
 
         self.update_layout_display()
-        self.dialog.show_all()
 
     def _get_engine_layout(self):
         ibus = IBus.Bus.new()
@@ -352,9 +353,7 @@ class IBusConfigDialog():
 
     def on_change_layout_clicked(self, button, data=None):
         # Show the layout picker in XKB-only mode
-        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], xkb_only=True)
-        add_dialog.dialog.set_transient_for(self.dialog)
-        add_dialog.dialog.show_all()
+        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], self.dialog, xkb_only=True)
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
             self.set_layout_override(add_dialog.response.id)
@@ -558,10 +557,9 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         self.column_size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.BOTH)
         self.items_changed(0, len(old_layouts), len(new_layouts))
 
-    def show_add_layout_dialog(self):
+    def show_add_layout_dialog(self, parent_window):
         used_ids = [source.id for source in self._sources]
-        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog(used_ids)
-        add_dialog.dialog.show_all()
+        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog(used_ids, parent_window)
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
             self.add_layout(add_dialog.response.type, add_dialog.response.id)

@@ -1376,9 +1376,7 @@ class KeyboardWindow:
             sys.path.insert(0, SETTINGS_PATH)
         from bin import AddKeyboardLayout
 
-        dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], xkb_only=True)
-        dialog.dialog.set_transient_for(self.window)
-        dialog.dialog.show_all()
+        dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], self.window, xkb_only=True)
         response = dialog.dialog.run()
         selected = dialog.response if response == Gtk.ResponseType.OK else None
         dialog.dialog.destroy()

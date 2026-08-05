@@ -89,7 +89,7 @@ SelectedLayout = collections.namedtuple("SelectedLayout",
                                         "type id layout variant")
 
 class AddKeyboardLayoutDialog():
-    def __init__(self, used_ids, xkb_only=False):
+    def __init__(self, used_ids, parent_window, xkb_only=False):
         self.input_source_settings = Gio.Settings(schema_id=INPUT_SOURCE_SETTINGS)
         self.original_used_ids = set(used_ids)
         self.xkb_only = xkb_only
@@ -99,6 +99,7 @@ class AddKeyboardLayoutDialog():
         builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
 
         self.dialog = builder.get_object("add_layout_dialog")
+        self.dialog.set_transient_for(parent_window)
         self.add_button = builder.get_object("add_button")
         self.add_button.connect("clicked", self._on_add_button_clicked)
         self.cancel_button = builder.get_object("cancel_button")
