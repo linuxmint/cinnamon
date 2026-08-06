@@ -8,8 +8,8 @@
     <property name="border-width">4</property>
     <property name="title" translatable="yes">Choose a Layout</property>
     <property name="default-height">400</property>
-    <property name="type-hint">dialog</property>
     <property name="destroy-with-parent">True</property>
+    <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
         <property name="can-focus">False</property>
@@ -127,11 +127,11 @@
     </child>
   </object>
   <object class="GtkDialog" id="ibus_config_dialog">
-    <property name="destroy-with-parent">True</property>
     <property name="can-focus">False</property>
     <property name="border-width">12</property>
     <property name="title" translatable="yes">Configure Input Method</property>
     <property name="default-width">450</property>
+    <property name="destroy-with-parent">True</property>
     <property name="type-hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkBox">
@@ -336,10 +336,15 @@
     <property name="can-focus">False</property>
     <property name="icon-name">xsi-go-down-symbolic</property>
   </object>
-  <object class="GtkImage" id="image3">
+  <object class="GtkImage" id="image4">
     <property name="visible">True</property>
     <property name="can-focus">False</property>
-    <property name="icon-name">mintlocale-im</property>
+    <property name="icon-name">list-add-symbolic</property>
+  </object>
+  <object class="GtkImage" id="image5">
+    <property name="visible">True</property>
+    <property name="can-focus">False</property>
+    <property name="icon-name">list-remove-symbolic</property>
   </object>
   <object class="GtkBox" id="input_sources_list_box">
     <property name="visible">True</property>
@@ -407,10 +412,11 @@
             <property name="can-focus">False</property>
             <child>
               <object class="GtkButton" id="add_layout">
-                <property name="label" translatable="yes">Add</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="image">image4</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -420,10 +426,11 @@
             </child>
             <child>
               <object class="GtkButton" id="remove_layout">
-                <property name="label" translatable="yes">Remove</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
+                <property name="image">image5</property>
+                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
@@ -473,13 +480,12 @@
             <property name="can-focus">False</property>
             <child>
               <object class="GtkButton" id="im_launch_button">
+                <property name="label" translatable="yes">Input Method</property>
                 <property name="visible">True</property>
                 <property name="can-focus">True</property>
                 <property name="receives-default">True</property>
                 <property name="no-show-all">True</property>
                 <property name="tooltip-text" translatable="yes">Change framework or install language support.</property>
-                <property name="image">image3</property>
-                <property name="always-show-image">True</property>
               </object>
               <packing>
                 <property name="expand">False</property>
