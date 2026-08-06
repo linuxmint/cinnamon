@@ -95,7 +95,7 @@ class MainWindow(object):
         self.type = args.type
         self.uuid = args.uuid
         self.tab = 0
-        self.instance_id = str(args.id)
+        self.instance_id = str(args.id) if args.id is not None else None
         if args.tab is not None:
             self.tab = int(args.tab)
 
@@ -112,6 +112,8 @@ class MainWindow(object):
                 if info["id"] == self.instance_id:
                     self.set_instance(info)
                     break
+            else:
+                self.set_instance(self.instance_info[0])
         else:
             self.set_instance(self.instance_info[0])
         try:

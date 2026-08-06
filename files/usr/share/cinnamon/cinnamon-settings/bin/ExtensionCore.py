@@ -161,10 +161,11 @@ def sanitize_html(string):
 
 
 class ManageSpicesRow(Gtk.ListBoxRow):
-    def __init__(self, extension_type, metadata, size_groups):
+    def __init__(self, extension_type, metadata, size_groups, instance_id_getter=None):
         super().__init__()
         self.extension_type = extension_type
         self.metadata = metadata
+        self.instance_id_getter = instance_id_getter
 
         self.status_ids = {}
 
@@ -357,7 +358,12 @@ class ManageSpicesRow(Gtk.ListBoxRow):
         if self.ext_config_app:
             subprocess.Popen([self.ext_config_app])
         else:
-            subprocess.Popen(['xlet-settings', self.extension_type, self.uuid])
+            command = ['xlet-settings', self.extension_type, self.uuid]
+            if self.instance_id_getter is not None:
+                instance_id = self.instance_id_getter(self.uuid)
+                if instance_id is not None:
+                    command += ['-i', instance_id]
+            subprocess.Popen(command)
 
     def add_status(self, status_id, icon_name, tooltip_text=''):
         if status_id in self.status_ids:
@@ -646,6 +652,10 @@ class ManageSpicesPage(SettingsPage):
         row = self.list_box.get_selected_row()
         subprocess.Popen(['xlet-about-dialog', self.collection_type + 's', row.uuid])
 
+    def get_instance_id(self, uuid):
+        # Overridden by pages that can tell which xlet instance the user means
+        return None
+
     def load_extensions(self, *args):
         for row in self.extension_rows:
             row.destroy()
@@ -656,7 +666,7 @@ class ManageSpicesPage(SettingsPage):
 
         for uuid, metadata in self.spices.get_installed().items():
             try:
-                extension_row = ManageSpicesRow(self.collection_type, metadata, size_groups)
+                extension_row = ManageSpicesRow(self.collection_type, metadata, size_groups, self.get_instance_id)
                 self.list_box.add(extension_row)
                 self.extension_rows.append(extension_row)
                 extension_row.set_enabled(self.spices.get_enabled(uuid))
