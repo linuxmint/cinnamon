@@ -48,6 +48,20 @@ void     cinnamon_get_file_contents_utf8         (const char                   *
                                                   CinnamonFileContentsCallback  callback,
                                                   gpointer                      user_data);
 
+/**
+ * CinnamonFindProgramCallback:
+ * @path: (nullable): The full path to the program, or %NULL if it wasn't found
+ * @user_data: (closure): Data passed to cinnamon_find_program_in_path()
+ *
+ * Callback type for cinnamon_find_program_in_path()
+ */
+typedef void (* CinnamonFindProgramCallback) (const gchar *path,
+                                              gpointer     user_data);
+
+void     cinnamon_find_program_in_path           (const char                  *program,
+                                                  CinnamonFindProgramCallback  callback,
+                                                  gpointer                     user_data);
+
 ClutterContent * cinnamon_util_get_content_for_window_actor (MetaWindowActor *window_actor,
                                                              MetaRectangle   *window_rect);
 
