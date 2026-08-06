@@ -13,7 +13,7 @@ const {RESERVE_KEYS} = Me.imports.constants;
 var Workspace = class Workspace {
     constructor(params) {
         this.state = params.state;
-        this.state.connect({
+        this.stateConnectionId = this.state.connect({
             orientation: (state) => {
                 this.on_orientation_changed(state.orientation);
             },
@@ -277,14 +277,19 @@ var Workspace = class Workspace {
 
     shouldWindowBeAdded(metaWindow) {
         return (this.state.settings.showAllWorkspaces
-            || metaWindow.is_on_all_workspaces()
-            || metaWindow.get_workspace() === this.metaWorkspace)
+                || metaWindow.is_on_all_workspaces()
+                || (metaWindow.get_workspace() === this.metaWorkspace))
         && Main.isInteresting(metaWindow)
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
 
-    windowWorkspaceChanged(display, metaWorkspace, metaWindow) {
-        this.windowAdded(metaWindow, metaWorkspace);
+    windowWorkspaceChanged(display, metaWindow, metaWorkspace) {
+        // If the window is removed the metaWorkspace will be null.
+        if (metaWorkspace) {
+            this.windowAdded(metaWorkspace, metaWindow);
+        } else {
+            this.windowRemoved(metaWorkspace, metaWindow);
+        }
     }
 
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {
@@ -395,15 +400,16 @@ var Workspace = class Workspace {
     windowRemoved(metaWorkspace, metaWindow) {
         if (!this.state) return;
 
-        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces
-            || !this.state.settings.showAllWorkspaces)
+        // Abort the remove if the window is just changing workspaces, window
+        // should always remain indexed on all workspaces while its mapped.
+        if (this.state.settings.showAllWorkspaces && !this.state.removingWindowFromWorkspaces &&
+            metaWindow.has_focus() && (global.workspace_manager.get_active_workspace_index() !== metaWorkspace.index()))
+            return;
+
+        // If the window is on all workspaces or we're showing windows in all workspaces,
+        // make sure to remove the window from all workspaces.
+        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces)
             && !this.state.removingWindowFromWorkspaces) {
-            // Abort the remove if the window is just changing workspaces, window
-            // should always remain indexed on all workspaces while its mapped.
-            // if (!metaWindow.showing_on_its_workspace()) return;
-            if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
-                && global.workspace_manager.get_active_workspace_index()
-                !== metaWorkspace.index())) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
@@ -435,7 +441,7 @@ var Workspace = class Workspace {
 
                         const refAppId = this.appGroups[refApp].groupState.appId;
 
-                        this.appGroups[refApp].destroy(true);
+                        this.appGroups[refApp].destroy();
                         this.appGroups[refApp] = undefined;
                         this.appGroups.splice(refApp, 1);
 
@@ -455,7 +461,7 @@ var Workspace = class Workspace {
                         }
                     }
                 } else {
-                    this.appGroups[refApp].destroy(true);
+                    this.appGroups[refApp].destroy();
                     this.appGroups[refApp] = undefined;
                     this.appGroups.splice(refApp, 1);
                 }
@@ -467,6 +473,9 @@ var Workspace = class Workspace {
         if (this.scrollToAppDebounceTimeoutId > 0) {
             GLib.source_remove(this.scrollToAppDebounceTimeoutId);
             this.scrollToAppDebounceTimeoutId = 0;
+        }
+        if (this.stateConnectionId) {
+            this.state.disconnect(this.stateConnectionId);
         }
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
