@@ -10,7 +10,8 @@ from bin import util
 
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
-OVERAMPLIFICATION_KEY = "allow-amplified-volume"
+OVERAMPLIFICATION_OUT_KEY = "allow-amplified-out-volume"
+OVERAMPLIFICATION_IN_KEY = "allow-amplified-in-volume"
 
 DECAY_STEP = .15
 
@@ -552,8 +553,8 @@ class Module:
         devSettings.add_row(self.woofer)
 
         # overamplification
-        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_KEY)
-        switch.set_tooltip_text(_("Allow the volume to exceed 100%, with reduced sound quality."))
+        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_OUT_KEY)
+        switch.set_tooltip_text(_("Allow the output volume to exceed 100%, with reduced sound quality."))
         devSettings.add_row(switch)
 
         ## Input page
@@ -582,6 +583,11 @@ class Module:
         self.inLevel = VolumeLevelBar(sizeGroup)
         devSettings.add_row(self.inLevel)
         self.inputStack.add_named(inputBox, "inputBox")
+
+        # overamplification
+        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_IN_KEY)
+        switch.set_tooltip_text(_("Allow the input volume to exceed 100%, with reduced sound quality."))
+        devSettings.add_row(switch)
 
         noInputsMessage = Gtk.Box()
         box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=12)
@@ -632,17 +638,28 @@ class Module:
         noAppsMessage.pack_start(box, True, True, 0)
         self.appStack.add_named(noAppsMessage, "noAppsMessage")
 
-        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_KEY}", self.onOverAmplificationChanged)
-        self.onOverAmplificationChanged()
+        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_OUT_KEY}", self.onOverAmplificationOutChanged)
+        self.onOverAmplificationOutChanged()
+        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_IN_KEY}", self.onOverAmplificationInChanged)
+        self.onOverAmplificationInChanged()
 
-    def onOverAmplificationChanged(self, settings=None, key=None):
-        overamplification = self.sound_settings.get_boolean(OVERAMPLIFICATION_KEY)
+    def onOverAmplificationOutChanged(self, settings=None, key=None):
+        overamplificationout = self.sound_settings.get_boolean(OVERAMPLIFICATION_OUT_KEY)
         self.outVolume.slider.clear_marks()
-        if overamplification:
+        if overamplificationout:
             self.outVolume.adjustment.set_upper(150)
             self.outVolume.setMark(100)
         else:
             self.outVolume.adjustment.set_upper(100)
+
+    def onOverAmplificationInChanged(self, settings=None, key=None):
+        overamplificationin = self.sound_settings.get_boolean(OVERAMPLIFICATION_IN_KEY)
+        self.inVolume.slider.clear_marks()
+        if overamplificationin:
+            self.inVolume.adjustment.set_upper(150)
+            self.inVolume.setMark(100)
+        else:
+            self.inVolume.adjustment.set_upper(100)
 
     def inializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")
