@@ -3,6 +3,7 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
+const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
 const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
@@ -87,9 +88,15 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this.menu.addMenuItem(this._propSection);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.showLayoutAction = this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
-            this.menu.addAction(_("Show Character Table"), () => {
-                Main.overview.hide();
-                Util.spawn(['gucharmap']);
+            Cinnamon.find_program_in_path('gucharmap', (path) => {
+                if (path == null || this.menu == null) {
+                    return;
+                }
+
+                this.menu.addAction(_("Show Character Table"), () => {
+                    Main.overview.hide();
+                    Util.spawn(['gucharmap']);
+                });
             });
             this._applet_context_menu.addSettingsAction(_("Manage keyboard layouts"), 'keyboard', "layouts");
 
