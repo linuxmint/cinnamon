@@ -626,6 +626,7 @@ class EventList {
         this._scroll_to_idle_id = 0;
         this._rows = [];
         this._current_event_data_list_timestamp = 0;
+        this._gnome_calendar_found = false;
 
         this.actor = new St.BoxLayout(
             {
@@ -638,7 +639,7 @@ class EventList {
         this.selected_date_label = new St.Label(
             {
                 style_class: "calendar-events-date-label",
-                reactive: true
+                reactive: false
             }
         );
 
@@ -665,9 +666,15 @@ class EventList {
         this.no_events_button = new St.Button(
             {
                 style_class: "calendar-events-no-events-button",
-                reactive: GLib.find_program_in_path("gnome-calendar")
+                reactive: false
             }
         );
+
+        Cinnamon.find_program_in_path("gnome-calendar", (path) => {
+            this._gnome_calendar_found = path != null;
+            this.selected_date_label.reactive = this._gnome_calendar_found;
+            this.no_events_button.reactive = this._gnome_calendar_found;
+        });
 
         this.no_events_button.connect('clicked', Lang.bind(this, () => {
             this.launch_calendar(this.selected_date);
@@ -803,7 +810,8 @@ class EventList {
                 event_data,
                 this.selected_date,
                 {
-                    use_24h: this.desktop_settings.get_boolean("clock-use-24h")
+                    use_24h: this.desktop_settings.get_boolean("clock-use-24h"),
+                    clickable: this._gnome_calendar_found
                 }
             );
 
@@ -865,7 +873,7 @@ class EventRow {
             this.actor.remove_style_pseudo_class("hover");
         }));
 
-        if (GLib.find_program_in_path("gnome-calendar")) {
+        if (params.clickable) {
             this.actor.connect("button-press-event", Lang.bind(this, (actor, event) => {
                 if (event.get_button() == Clutter.BUTTON_PRIMARY) {
                     this.emit("view-event", this.event.id);
