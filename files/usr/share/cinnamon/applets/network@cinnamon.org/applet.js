@@ -2409,7 +2409,7 @@ CinnamonNetworkApplet.prototype = {
                     // /etc/network/interfaces): there is no active connection
                     // to describe, but we are not offline either.
                     this._setIcon('xsi-network-wired');
-                    this.set_applet_tooltip(_("Connected to the network"));
+                    this.set_applet_tooltip(_("Connected through an unmanaged device"));
                 } else {
                     this._setIcon('xsi-network-offline');
                     this.set_applet_tooltip(_("No connection"));
