@@ -117,8 +117,8 @@ class ScreenshotApplication:
             area_rect = util.monitor_rect(self.args.monitor)
             if area_rect is None:
                 mode = 'screen'
-        include_pointer = self.args.include_pointer
-        include_shadow = self.args.include_shadow
+        include_pointer = self.args.include_pointer or prefs.get_include_pointer()
+        include_shadow = self.args.include_shadow or prefs.get_include_shadow()
         delay = self.args.delay if self.args.delay is not None else 0
 
         def done(pixbuf):
