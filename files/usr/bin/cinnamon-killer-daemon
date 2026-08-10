@@ -4,7 +4,6 @@
 and runs in the background to detect that keybinding
 """
 
-import os
 import syslog
 from setproctitle import setproctitle
 
@@ -12,7 +11,7 @@ import gi
 gi.require_version('Keybinder', '3.0')  # noqa
 gi.require_version('Gtk', '3.0')  # noqa
 from gi.repository import Keybinder
-from gi.repository import Gtk, Gio
+from gi.repository import Gtk, Gio, GLib
 
 SETTINGS_SCHEMA = 'org.cinnamon.desktop.keybindings.media-keys'
 SETTINGS_KEY = 'restart-cinnamon'
@@ -49,8 +48,8 @@ class KillerDaemon:
             syslog.syslog(detail)
 
     def restart_cinnamon(self, keystring, data):
-        os.system("nemo -n &")  # restart nemo if it's not running already
-        os.system("cinnamon-launcher &")  # restart Cinnamon whether it's running or not (can be handy in case of a DE freeze)
+        GLib.spawn_command_line_async("nemo -n")  # restart nemo if it's not running already
+        GLib.spawn_command_line_async("cinnamon-launcher")  # restart Cinnamon whether it's running or not (can be handy in case of a DE freeze)
 
 
 if __name__ == '__main__':
