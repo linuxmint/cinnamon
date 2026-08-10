@@ -663,6 +663,66 @@ function benchmark(count) {
     return results;
 }
 
+function checkDestroyedHandback() {
+    let applet = _applet();
+    let tray = Main.messageTray;
+    let failures = 0;
+
+    let handBack = (label, listed) => {
+        let source = new MessageTray.SystemNotificationSource("Test");
+        Main.messageTray.add(source);
+        sources.push(source);
+        let notification = new MessageTray.Notification(source, "handback", "body");
+        source.pushNotification(notification);
+        applet._notification_added(tray, notification);
+        if (!listed) {
+            let i = applet.notifications.indexOf(notification);
+            if (i !== -1)
+                applet.notifications.splice(i, 1);
+        }
+
+        let realActor = notification.actor;
+        notification.destroy(MessageTray.NotificationDestroyedReason.DISMISSED);
+        if (listed && applet.notifications.indexOf(notification) === -1)
+            applet.notifications.push(notification);
+
+        let touched = false;
+        Object.defineProperty(notification, "actor", {
+            configurable: true,
+            get: () => { touched = true; return realActor; }
+        });
+        try {
+            applet._notification_added(tray, notification);
+        } finally {
+            delete notification.actor;
+            notification.actor = realActor;
+        }
+
+        if (touched) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL handback ${label}: the applet read the actor of a destroyed notification`);
+        } else if (applet.notifications.indexOf(notification) !== -1) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL handback ${label}: a destroyed notification is still tracked`);
+        } else {
+            log(`[testNotificationsApplet] ok   handback ${label}`);
+        }
+    };
+
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        handBack("when the applet no longer tracks it", false);
+        applet._clear_all();
+        handBack("when the applet still tracks it", true);
+    } finally {
+        cleanup();
+    }
+
+    log(`[testNotificationsApplet] checkDestroyedHandback: ${failures === 0 ? "passed" : failures + " failures"}`);
+    return failures === 0;
+}
+
 const Extension = imports.ui.extension;
 
 function _sourceIsLive(id) {

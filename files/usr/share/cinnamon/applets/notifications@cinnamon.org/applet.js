@@ -175,19 +175,24 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             return;
         }
 
+        // The tray hands a notification back after hiding its banner even if it was
+        // destroyed meanwhile, and the actor is gone by then.
+        if (notification._destroyed) {
+            let destroyed_index = this.notifications.indexOf(notification);
+            if (destroyed_index != -1) {
+                this.notifications.splice(destroyed_index, 1);
+                this.update_list();
+            }
+            return;
+        }
+
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) { // This notification is already listed.
-            if (notification._destroyed) {
-                this.notifications.splice(existing_index, 1);
-            } else {
-                notification._inNotificationBin = true;
-                global.reparentActor(notification.actor, this._notificationbin);
-                notification._timeLabel.show();
-            }
+            notification._inNotificationBin = true;
+            global.reparentActor(notification.actor, this._notificationbin);
+            notification._timeLabel.show();
             this.update_list();
-            return;
-        } else if (notification._destroyed) {
             return;
         }
         // Add notification to list.
