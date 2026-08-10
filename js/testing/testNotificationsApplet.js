@@ -7,11 +7,8 @@
 // benchmark() stalls the session while it runs.
 
 const GLib = imports.gi.GLib;
-
 const Main = imports.ui.main;
-
 const MessageTray = imports.ui.messageTray;
-
 const AppletManager = imports.ui.appletManager;
 
 const UUID = "notifications@cinnamon.org";
@@ -25,19 +22,13 @@ function _applet() {
     return instances[0];
 }
 
+// One source per notification: a single source keeps only MAX_NOTIFICATIONS.
 function fill(n) {
     let applet = _applet();
 
-    for (let i = 0; i < n; i++) {
-        let source = new MessageTray.SystemNotificationSource("Test");
-        Main.messageTray.add(source);
-        sources.push(source);
-
-        let notification = new MessageTray.Notification(
-            source, `Test notification ${i}`, `Body text for notification ${i}.`);
-        source.pushNotification(notification);
-        applet._notification_added(Main.messageTray, notification);
-    }
+    for (let i = 0; i < n; i++)
+        _notify(applet, _newSource(), `Test notification ${i}`, undefined,
+                `Body text for notification ${i}.`);
     return applet.notifications.length;
 }
 
@@ -55,9 +46,17 @@ function cleanup() {
     log(`[testNotificationsApplet] cleaned up, ${applet.notifications.length} left`);
 }
 
-// Bin children that are real notification rows, in display order. Every child is one.
+// By identity, not position: an actor a caller parented itself is not mistaken for a row.
 function _rowActors(applet) {
-    return applet._notificationbin.get_children();
+    let list = applet._notificationList;
+    return applet._notificationbin.get_children().filter(k =>
+        k !== list._topSpacer && k !== list._bottomSpacer &&
+        list._fillers.indexOf(k) === -1);
+}
+
+function _activeFillers(applet) {
+    return applet._notificationList._fillers.filter(
+        filler => filler.get_parent() === applet._notificationbin);
 }
 
 // The order update_list() renders in: the applet's list, reversed when showNewestFirst is set.
@@ -135,6 +134,83 @@ function checkOrder() {
     return failures === 0;
 }
 
+// The spacers are permanent first and last bin children, so the pseudo classes land on them.
+function checkPseudoClasses() {
+    let applet = _applet();
+    let list = applet._notificationList;
+    let failures = 0;
+
+    let hasClass = (actor, name) => {
+        let classes = actor.get_style_pseudo_class();
+        return classes ? classes.split(/\s+/).indexOf(name) !== -1 : false;
+    };
+
+    let check = (label, expectedRows) => {
+        let rows = _rowActors(applet);
+        if (rows.length !== expectedRows) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL ${label}: ${rows.length} rows, expected ${expectedRows}`);
+            return;
+        }
+
+        let problems = [];
+        if (!hasClass(list._topSpacer, "first-child"))
+            problems.push("first-child is not on the top spacer");
+        if (!hasClass(list._bottomSpacer, "last-child"))
+            problems.push("last-child is not on the bottom spacer");
+        for (let i = 0; i < rows.length; i++) {
+            if (hasClass(rows[i], "first-child"))
+                problems.push(`row ${i} wrongly carries first-child`);
+            if (hasClass(rows[i], "last-child"))
+                problems.push(`row ${i} wrongly carries last-child`);
+        }
+
+        if (problems.length) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL ${label}: ${problems.join(", ")}`);
+        } else {
+            log(`[testNotificationsApplet] ok   ${label} (${rows.length} rows)`);
+        }
+    };
+
+    let original = applet.showNewestFirst;
+    try {
+
+    applet.menu.close();
+    applet._clear_all();
+
+    // The classes only get applied to mapped actors, so open the menu first.
+    applet._openMenu();
+    fill(6);
+    check("after arrivals", 6);
+
+    let listed = applet.notifications.slice();
+    listed[3].destroy(MessageTray.NotificationDestroyedReason.DISMISSED);
+    check("after destroying one from the middle", 5);
+    listed[0].destroy(MessageTray.NotificationDestroyedReason.DISMISSED);
+    check("after destroying the first", 4);
+    listed[5].destroy(MessageTray.NotificationDestroyedReason.DISMISSED);
+    check("after destroying the last", 3);
+
+    applet.showNewestFirst = !applet.showNewestFirst;
+    applet.update_list();
+    check("after flipping the sort order", 3);
+    applet.showNewestFirst = !applet.showNewestFirst;
+    applet.update_list();
+    check("after flipping back", 3);
+
+    fill(4);
+    check("after more arrivals", 7);
+
+    } finally {
+        applet.showNewestFirst = original;
+        cleanup();
+    }
+    log(`[testNotificationsApplet] checkPseudoClasses: ${failures === 0 ? "passed" : failures + " failures"}`);
+    return failures === 0;
+}
+
+// A rebuild while the tray holds one of the actors.
 function checkBannerHandover() {
     let applet = _applet();
     let tray = Main.messageTray;
@@ -176,6 +252,11 @@ function checkBannerHandover() {
                 }
             }
         }
+        // The borrowed row sits in the middle, so its gap must become a filler.
+        if (_activeFillers(applet).length === 0) {
+            failures++;
+            log("[testNotificationsApplet] FAIL banner: no filler opened for the borrowed row's gap");
+        }
         if (failures === 0)
             log("[testNotificationsApplet] ok   rebuild with an actor on loan to a banner");
 
@@ -208,6 +289,8 @@ function checkBannerHandover() {
     return failures === 0;
 }
 
+// The tray hands a notification back even if it was destroyed while shown, once its actor is
+// disposed. GJS logs a critical rather than throwing, so watch the property, not an exception.
 function checkDestroyedHandback() {
     let applet = _applet();
     let tray = Main.messageTray;
@@ -268,9 +351,13 @@ function checkDestroyedHandback() {
     return failures === 0;
 }
 
+// Fault injection. Asserted on each notification's own _destroyed flag, since _clear_all()
+// empties the list before the destroy loop runs.
 function checkFailedClear() {
     let applet = _applet();
     let failures = 0;
+    let victim = null;
+    let realDestroy = null;
 
     try {
         applet.menu.close();
@@ -281,8 +368,8 @@ function checkFailedClear() {
         // Index 2 throws, and _clear_all() destroys back-to-front, so 0 and 1 are never
         // attempted. All three should survive, then die on a retry without the fault.
         let survivors = applet.notifications.slice(0, 3);
-        let victim = applet.notifications[2];
-        let realDestroy = victim.destroy;
+        victim = applet.notifications[2];
+        realDestroy = victim.destroy;
         victim.destroy = function () { throw new Error("injected destroy failure"); };
 
         try {
@@ -300,7 +387,34 @@ function checkFailedClear() {
             log("[testNotificationsApplet] ok   survivors were not destroyed by the failed clear");
         }
 
+        let listedSurvivors = survivors.filter(n => applet.notifications.indexOf(n) !== -1);
+        if (listedSurvivors.length !== survivors.length) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL failed-clear: only ${listedSurvivors.length} survivor(s) stayed listed`);
+        } else {
+            log("[testNotificationsApplet] ok   survivors stayed listed after the failed clear");
+        }
+
+        let connectedSurvivors = survivors.filter(
+            n => n._appletScrollId !== 0 && n._appletDestroyId !== 0);
+        if (connectedSurvivors.length !== survivors.length) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL failed-clear: only ${connectedSurvivors.length} survivor(s) kept their applet signals`);
+        } else {
+            log("[testNotificationsApplet] ok   survivors kept their applet signals");
+        }
+
+        let renderedSurvivors = _rowActors(applet).filter(
+            actor => survivors.some(n => n.actor === actor));
+        if (renderedSurvivors.length !== survivors.length) {
+            failures++;
+            log(`[testNotificationsApplet] FAIL failed-clear: only ${renderedSurvivors.length} survivor(s) were rendered`);
+        } else {
+            log("[testNotificationsApplet] ok   survivors were rendered after the failed clear");
+        }
+
         victim.destroy = realDestroy;
+        realDestroy = null;
         applet._clear_all();
 
         let stillUndestroyed = survivors.filter(n => !n._destroyed);
@@ -311,6 +425,8 @@ function checkFailedClear() {
             log("[testNotificationsApplet] ok   retry destroyed the survivors");
         }
     } finally {
+        if (victim !== null && realDestroy !== null)
+            victim.destroy = realDestroy;
         cleanup();
     }
 
@@ -318,6 +434,7 @@ function checkFailedClear() {
     return failures === 0;
 }
 
+// Pumps the main loop until predicate() holds or maxRounds (about 2ms each) is used up.
 function _pumpUntil(predicate, maxRounds) {
     let ctx = GLib.MainContext.default();
     for (let i = 0; i < maxRounds; i++) {
@@ -329,6 +446,373 @@ function _pumpUntil(predicate, maxRounds) {
     return predicate();
 }
 
+// Waits for the deferred render _onScroll() schedules. The id only goes non-zero once the
+// scroll view allocates, so waiting for zero alone would return having waited for nothing.
+function _waitForDeferredRender(list) {
+    let scheduled = _pumpUntil(() => list._scrollRenderIdleId !== 0, 150);
+    let settled = _pumpUntil(() => list._scrollRenderIdleId === 0, 500);
+    return scheduled && settled;
+}
+
+function _waitForIdlePass(list, wasScheduled) {
+    if (!wasScheduled)
+        return false;
+    return _pumpUntil(() => list._idleDelayId === 0 && list._idleId === 0, 900);
+}
+
+function _newCheck(name) {
+    let ok = true;
+    return {
+        check: (label, condition) => {
+            global.log(name + ": " + label + ": " + (condition ? "ok" : "FAIL"));
+            if (!condition)
+                ok = false;
+        },
+        finish: () => {
+            global.log(name + ": " + (ok ? "all checks passed" : "FAILURES above"));
+            return ok;
+        }
+    };
+}
+
+// Not a test of how close the estimate lands, only that measured rows report their own height
+// and unbuilt ones get the mean.
+function checkRowHeights() {
+    let applet = _applet();
+    let result = _newCheck("checkRowHeights");
+    let check = result.check;
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        // Enough rows that plenty stay unbuilt: the overscan margin is attached on open.
+        fill(200);
+        applet._openMenu();
+
+        let list = applet._notificationList;
+        let heights = list._heights;
+        // The idle pass would keep attaching rows underneath these assertions.
+        list._cancelIdlePass();
+
+        let measured = Array.from(heights._measured.keys());
+        check("opening the menu measured some rows but not all (" +
+              measured.length + " of " + applet.notifications.length + ")",
+              measured.length > 0 && measured.length < applet.notifications.length);
+
+        // Without a real height a row falls back to the mean and everything below passes
+        // for the wrong reason.
+        let attachedUnmeasured = applet.notifications.filter(
+            n => list.isAttached(n) && !heights._measured.has(n));
+        check("every attached row was measured (" + list.attachedCount() +
+              " attached, " + attachedUnmeasured.length + " of them unmeasured)",
+              attachedUnmeasured.length === 0);
+        let measuredUnattached = measured.filter(n => !list.isAttached(n));
+        check("nothing unattached is holding a measured height (" +
+              measuredUnattached.length + ")", measuredUnattached.length === 0);
+
+        // Against the height the bin allocated, which is what the user sees and what the
+        // spacers and offsets have to agree with. Measuring at natural width instead put this
+        // out by up to 10px on a row that wraps.
+        _pumpUntil(() => false, 25);
+        let allocated = measured.filter(n => n.actor.mapped && n.actor.get_height() > 0);
+        let allocWorst = 0;
+        let allocWorstAt = -1;
+        for (let n of allocated) {
+            let err = Math.abs(heights.get(n) - n.actor.get_height());
+            if (err > allocWorst) {
+                allocWorst = err;
+                allocWorstAt = applet.notifications.indexOf(n);
+            }
+        }
+        check("the stored height is the height the bin allocated (" + allocated.length +
+              " rows, worst " + allocWorst.toFixed(1) + "px at index " + allocWorstAt + ")",
+              allocated.length > 0 && allocWorst < 1);
+
+        let mean = heights.estimate();
+        let sum = 0;
+        for (let n of measured)
+            sum += heights.get(n);
+        check("the estimate is the mean of what was measured (" + mean.toFixed(1) +
+              " vs " + (sum / measured.length).toFixed(1) + ")",
+              Math.abs(mean - sum / measured.length) < 0.01);
+
+        let unmeasured = applet.notifications.find(n => !heights._measured.has(n));
+        check("an unbuilt row gets the mean", unmeasured !== undefined &&
+              Math.abs(heights.get(unmeasured) - mean) < 0.01);
+
+        let victim = measured[0];
+        let was = heights.get(victim);
+        heights.record(victim, was + 100);
+        check("re-recording a row replaces its height rather than adding one (" +
+              heights._measured.size + " entries)", heights._measured.size === measured.length);
+        check("the mean moved by the change over the count (" + heights.estimate().toFixed(1) +
+              " vs " + (mean + 100 / measured.length).toFixed(1) + ")",
+              Math.abs(heights.estimate() - (mean + 100 / measured.length)) < 0.01);
+
+        heights.record(victim, was);
+        check("putting the height back restores the mean", Math.abs(heights.estimate() - mean) < 0.01);
+
+        heights.forget(victim);
+        check("forgetting a row drops it from the count (" + heights._measured.size + ")",
+              heights._measured.size === measured.length - 1);
+        check("forgetting a row leaves the mean of the rest",
+              Math.abs(heights.estimate() - (sum - was) / (measured.length - 1)) < 0.01);
+
+        // The offsets themselves, not a total recomputed the way _rebuildOffsets() does it.
+        list._rebuildOffsets();
+        let items = list._items;
+        check("the first row sits at zero (" + list._offsets[0] + ")", list._offsets[0] === 0);
+        let gaps = 0;
+        for (let i = 1; i < items.length; i++) {
+            let expected = list._offsets[i - 1] + heights.get(items[i - 1]);
+            if (Math.abs(list._offsets[i] - expected) > 0.01)
+                gaps++;
+        }
+        check("each row starts where the one above it ends (" + gaps + " that do not)", gaps === 0);
+        let last = items.length - 1;
+        check("the last row ends at the total height (" +
+              (list._offsets[last] + heights.get(items[last])).toFixed(1) + " vs " +
+              list.totalHeight().toFixed(1) + ")",
+              Math.abs(list._offsets[last] + heights.get(items[last]) - list.totalHeight()) < 0.01);
+
+        heights.invalidate();
+        check("with nothing measured the estimate is the fallback (" + heights.estimate() + ")",
+              heights.estimate() === 64);
+
+        // Otherwise a theme, font or scale change leaves the scrollbar on the fallback height.
+        list.invalidateHeights();
+        let unmeasuredAfterInvalidation = applet.notifications.filter(
+            n => list.isAttached(n) && !heights._measured.has(n));
+        check("height invalidation remeasured every attached row (" +
+              unmeasuredAfterInvalidation.length + " unmeasured)",
+              unmeasuredAfterInvalidation.length === 0);
+    } finally {
+        cleanup();
+        applet._notificationList.invalidateHeights();
+    }
+    return result.finish();
+}
+
+// Forces a scrollbar jump, which leaves a discontiguous attached set for the fillers to cover.
+function checkRenderedGeometry() {
+    let applet = _applet();
+    let list = applet._notificationList;
+    let result = _newCheck("checkRenderedGeometry");
+    let check = result.check;
+    let idlePassCancelled = false;
+    let adjustment = null;
+    let oldValue = 0;
+    let oldPageSize = 0;
+    let oldUpper = 0;
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        fill(100);
+        applet._openMenu();
+
+        // The idle-fill pass would attach rows on its own. Armed on a delay, so no race.
+        list._cancelIdlePass();
+        idlePassCancelled = true;
+
+        let bin = applet._notificationbin;
+        let notifications = applet.notifications.slice();
+        let adj = applet.scrollview.get_vscroll_bar().get_adjustment();
+        adjustment = adj;
+        oldValue = adj.value;
+        oldPageSize = adj.page_size;
+        oldUpper = adj.upper;
+        // Shared with whatever position an earlier open left: start from a known top.
+        adj.value = 0;
+        _waitForDeferredRender(list);
+
+        // Heights from the list, what _layoutChildren() sized against, not get_height().
+        function heightSum() {
+            let sum = 0;
+            for (let k of bin.get_children()) {
+                if (k === list._topSpacer || k === list._bottomSpacer ||
+                    list._fillers.indexOf(k) !== -1) {
+                    sum += k.get_height();
+                } else {
+                    let n = notifications.find(x => x.actor === k);
+                    sum += list._heights.get(n);
+                }
+            }
+            return sum;
+        }
+
+        function checkGeometry(label) {
+            let kids = bin.get_children();
+            check(label + ": spacers are the first and last children",
+                  kids[0] === list._topSpacer && kids[kids.length - 1] === list._bottomSpacer);
+
+            let actors = _rowActors(applet);
+            // list._items, not applet.notifications: showNewestFirst reverses the display order.
+            let wanted = list._items.filter(n => list._attached.has(n)).map(n => n.actor);
+            let orderOk = actors.length === wanted.length &&
+                          actors.every((a, i) => a === wanted[i]);
+            check(label + ": attached rows and fillers are in display order", orderOk);
+
+            let sum = heightSum();
+            let total = list.totalHeight();
+            check(label + ": children heights sum to the list total (" +
+                  sum.toFixed(1) + " vs " + total.toFixed(1) + ")", Math.abs(sum - total) < 1);
+        }
+
+        check("far fewer rows attached than exist (" + list.attachedCount() + " of " +
+              notifications.length + ")", list.attachedCount() < notifications.length);
+        check("initial range: no filler needed for one contiguous run",
+              _activeFillers(applet).length === 0);
+        checkGeometry("initial range");
+
+        // Attachment is grow-only, so a jump leaves two attached runs with a gap between them.
+        let attachedBeforeJump = list.attachedCount();
+        adj.page_size = adj.page_size || 400;
+        adj.upper = list.totalHeight();
+        adj.value = list.totalHeight() - adj.page_size;
+        let grew = _waitForDeferredRender(list) &&
+                   list.attachedCount() > attachedBeforeJump;
+        check("scrollbar jump attached new rows near the new position", grew);
+        check("discontiguous attached set needs at least one filler",
+              _activeFillers(applet).length >= 1);
+        checkGeometry("after scrollbar jump");
+
+        // Leave the scrollbar where a real reopen would find it, not stranded mid-jump.
+        adj.value = 0;
+        _waitForDeferredRender(list);
+    } finally {
+        if (adjustment !== null) {
+            adjustment.upper = oldUpper;
+            adjustment.page_size = oldPageSize;
+            adjustment.value = oldValue;
+        }
+        if (idlePassCancelled)
+            list._scheduleIdlePass();
+        cleanup();
+    }
+    return result.finish();
+}
+
+// Re-attaching costs a full style cascade, so scrolling back detaches nothing. Compares the
+// exact set, so a detach masked by an unrelated attach cannot pass.
+function checkGrowOnly() {
+    let applet = _applet();
+    let list = applet._notificationList;
+    function sameSet(a, b) {
+        if (a.size !== b.size)
+            return false;
+        for (let x of a)
+            if (!b.has(x))
+                return false;
+        return true;
+    }
+
+    function isSupersetOf(a, b) {
+        for (let x of b)
+            if (!a.has(x))
+                return false;
+        return true;
+    }
+
+    let result = _newCheck("checkGrowOnly");
+    let check = result.check;
+    let idlePassCancelled = false;
+    let adjustment = null;
+    let oldValue = 0;
+    let oldPageSize = 0;
+    let oldUpper = 0;
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        fill(150);
+        applet._openMenu();
+
+        // Cancelled for the same reason as in checkRenderedGeometry.
+        list._cancelIdlePass();
+        idlePassCancelled = true;
+
+        let adj = applet.scrollview.get_vscroll_bar().get_adjustment();
+        adjustment = adj;
+        oldValue = adj.value;
+        oldPageSize = adj.page_size;
+        oldUpper = adj.upper;
+        adj.value = 0;
+        _waitForDeferredRender(list);
+        let atTop = list.attachedCount();
+        let attachedAtTop = new Set(list._attached);
+
+        // About 15 rows: past the 10-row overscan so the range shifts, still under the cap.
+        // Scaled from the measured average row height, so it holds on any theme.
+        let avgRowHeight = list.totalHeight() / applet.notifications.length;
+        let scrollTarget = Math.min(list.totalHeight() - adj.page_size, 15 * avgRowHeight);
+        adj.value = Math.max(0, scrollTarget);
+        _waitForDeferredRender(list);
+        let atScrolled = list.attachedCount();
+        let attachedAtScrolled = new Set(list._attached);
+
+        check("scrolling down attached more rows (" + atTop + " -> " + atScrolled + ")",
+              atScrolled > atTop);
+        check("scrolling down detached nothing (" + attachedAtTop.size + " still attached)",
+              isSupersetOf(attachedAtScrolled, attachedAtTop));
+
+        adj.value = 0;
+        _waitForDeferredRender(list);
+        let attachedBackAtTop = new Set(list._attached);
+
+        check("scrolling back attached nothing new and detached nothing (" +
+              attachedAtScrolled.size + " -> " + attachedBackAtTop.size + ", same rows)",
+              sameSet(attachedAtScrolled, attachedBackAtTop));
+
+        // Walking the whole list is the only way to reach _trimToCap(): the scrolling above
+        // stays under the cap by design.
+        let cap = list._attachCap(...list._wantedRange());
+        let everAttached = new Set(attachedBackAtTop);
+        let steps = 12;
+        for (let i = 1; i <= steps; i++) {
+            adj.value = (i / steps) * Math.max(0, adj.upper - adj.page_size);
+            _waitForDeferredRender(list);
+            for (let n of list._attached)
+                everAttached.add(n);
+        }
+        check("walking the list attached more rows than the cap (" + everAttached.size +
+              " over the walk, cap " + cap + ")", everAttached.size > cap);
+        check("the cap held anyway (" + list.attachedCount() + " attached now)",
+              list.attachedCount() <= cap);
+
+        // A cap below the wanted range makes the two fight: the range attaches a row and the cap
+        // evicts it on the same pass. The cap has to leave the overscan on top of the range, so
+        // a fixed one fails here as soon as a viewport is tall enough. 3800 is a rotated 4K
+        // monitor, which is the case that caught the constant this replaced.
+        const OVERSCAN_BOTH_SIDES = 20;
+        let realPage = adj.page_size;
+        let tooTight = [];
+        try {
+            for (let page of [realPage, 400, 2000, 3800]) {
+                adj.page_size = page;
+                let [first, last] = list._wantedRange();
+                let capHere = list._attachCap(first, last);
+                if (capHere < (last - first) + OVERSCAN_BOTH_SIDES)
+                    tooTight.push(page + "px: cap " + capHere + " < range " + (last - first));
+            }
+        } finally {
+            adj.page_size = realPage;
+        }
+        check("the cap leaves the overscan above the wanted range at every viewport (" +
+              (tooTight.length > 0 ? tooTight.join("; ") : "400 to 3800px") + ")",
+              tooTight.length === 0);
+    } finally {
+        if (adjustment !== null) {
+            adjustment.upper = oldUpper;
+            adjustment.page_size = oldPageSize;
+            adjustment.value = oldValue;
+        }
+        if (idlePassCancelled)
+            list._scheduleIdlePass();
+        cleanup();
+    }
+    return result.finish();
+}
+
+// These run on the main loop the compositor shares, so the numbers are how long the desktop
+// stops repainting and dispatching input.
 function benchmark(count) {
     let applet = _applet();
     let n = count || 100;
@@ -377,6 +861,8 @@ function benchmark(count) {
 
 const Extension = imports.ui.extension;
 
+// True while GLib still holds the source. Asserting on _blinkTimeoutId alone cannot tell a
+// cancelled timer from one still queued against a torn-down applet.
 function _sourceIsLive(id) {
     if (!id)
         return false;
@@ -384,16 +870,10 @@ function _sourceIsLive(id) {
 }
 
 function _blinkNotify(applet, urgency) {
-    let source = new MessageTray.SystemNotificationSource();
-    Main.messageTray.add(source);
-    sources.push(source);
-    let notification = new MessageTray.Notification(source, "blink test", "body");
-    notification.setUrgency(urgency);
-    source.pushNotification(notification);
-    applet._notification_added(Main.messageTray, notification);
-    return notification;
+    return _notify(applet, _newSource(), "blink test", urgency);
 }
 
+// The blink re-arms a one second timeout while a critical notification is listed.
 function checkCriticalBlink() {
     let applet = _applet();
     if (!applet) {
@@ -455,12 +935,16 @@ function _liveMenus(actors) {
     return actors.filter(actor => actor !== null && kids.indexOf(actor) !== -1);
 }
 
+// Reloads the way a theme change or a panel move would. reloadExtension() returns long before
+// the applet exists, since Extension._init() is async, so pump rather than sleep.
 function _reloadAndWaitForApplet(maxRounds) {
     Extension.reloadExtension(UUID, Extension.Type.APPLET);
     let back = _pumpUntil(() => AppletManager.getRunningInstancesForUuid(UUID).length > 0, maxRounds);
     return back ? _applet() : null;
 }
 
+// on_applet_removed_from_panel() used to leave the menu in Main.uiGroup, drawable above a dead
+// applet. Reloads the extension rather than calling that by hand, which would stage the bug.
 function checkMenuNotLeaked() {
     let ok = true;
     function check(label, condition) {
@@ -567,8 +1051,9 @@ function checkSignalsDisconnected() {
 }
 
 // Urgency is set before the applet sees it, as notificationDaemon.js does.
-function _notify(applet, source, title, urgency) {
-    let notification = new MessageTray.Notification(source, title, "body");
+function _notify(applet, source, title, urgency, body) {
+    let notification = new MessageTray.Notification(
+        source, title, body === undefined ? "body" : body);
     if (urgency !== undefined)
         notification.setUrgency(urgency);
     source.pushNotification(notification);
@@ -1040,4 +1525,60 @@ function checkBorrowedActor() {
 
     global.log("checkBorrowedActor: " + (ok ? "all checks passed" : "FAILURES above"));
     return ok;
+}
+
+// Differing heights on purpose: with a uniform list the mean never moves, and a stale prefix
+// sum looks identical to a current one.
+function _fillVaried(n) {
+    let applet = _applet();
+    for (let i = 0; i < n; i++)
+        _notify(applet, _newSource(), `Varied ${i}`, undefined,
+                "word ".repeat(1 + (i % 9) * 6));
+    return applet.notifications.length;
+}
+
+// Measuring one row moves the mean, and so every offset. The idle fill measures as it attaches,
+// so it has to rebuild the offsets before anything reads them.
+function checkOffsetsCurrent() {
+    let applet = _applet();
+    let result = _newCheck("checkOffsetsCurrent");
+    let check = result.check;
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        _fillVaried(200);
+        applet._openMenu();
+
+        let list = applet._notificationList;
+        let heights = list._heights;
+        let sum = () => list._items.reduce((t, n) => t + heights.get(n), 0);
+        let idleWasScheduled = list._idleDelayId !== 0 || list._idleId !== 0;
+
+        _pumpUntil(() => false, 60);
+        check("rows really do differ in height (" + heights._measured.size + " measured, " +
+              new Set(Array.from(heights._measured.values())).size + " distinct)",
+              new Set(Array.from(heights._measured.values())).size > 1);
+        check("the total matches the heights after opening (" + list.totalHeight().toFixed(0) +
+              " vs " + sum().toFixed(0) + ")", Math.abs(list.totalHeight() - sum()) < 1);
+
+        // Most rows are unbuilt, so the mean sizes them and moving it must reach the offsets.
+        check("most rows are still sized from the mean (" + heights._measured.size + " of " +
+              list._items.length + " measured)", heights._measured.size < list._items.length);
+
+        check("the idle fill completed", _waitForIdlePass(list, idleWasScheduled));
+        check("the total still matches the heights (" + list.totalHeight().toFixed(0) +
+              " vs " + sum().toFixed(0) + ")", Math.abs(list.totalHeight() - sum()) < 1);
+
+        let gaps = 0;
+        for (let i = 1; i < list._items.length; i++) {
+            let expected = list._offsets[i - 1] + heights.get(list._items[i - 1]);
+            if (Math.abs(list._offsets[i] - expected) > 0.01)
+                gaps++;
+        }
+        check("each row still starts where the one above it ends (" + gaps + " that do not)",
+              gaps === 0);
+    } finally {
+        cleanup();
+    }
+    return result.finish();
 }
