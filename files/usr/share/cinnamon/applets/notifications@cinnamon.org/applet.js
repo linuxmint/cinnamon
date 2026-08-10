@@ -24,6 +24,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         // Settings
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this._interfaceSettings = new Gio.Settings({schema_id: 'org.cinnamon.desktop.interface'});
         this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
@@ -343,12 +344,17 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
     _update_timestamp() {
         let len = this.notifications.length;
-        if (len > 0) {
-            for (let i = 0; i < len; i++) {
-                let notification = this.notifications[i];
-                let orig_time = notification._timestamp;
-                notification._timeLabel.clutter_text.set_markup(timeify(orig_time));
-            }
+        if (len === 0)
+            return;
+
+        // Read the clock format and the time once, not once per notification.
+        let use_24h = this._interfaceSettings.get_boolean('clock-use-24h');
+        let now = new Date();
+
+        for (let i = 0; i < len; i++) {
+            let notification = this.notifications[i];
+            notification._timeLabel.clutter_text.set_markup(
+                timeify(notification._timestamp, use_24h, now));
         }
     }
 
@@ -386,10 +392,7 @@ function stringify(count) {
     }
 }
 
-function timeify(orig_time) {
-    let settings = new Gio.Settings({schema_id: 'org.cinnamon.desktop.interface'});
-    let use_24h = settings.get_boolean('clock-use-24h');
-    let now = new Date();
+function timeify(orig_time, use_24h, now) {
     let diff = Math.floor((now.getTime() - orig_time.getTime()) / 1000); // get diff in seconds
     let str;
     if (use_24h) {

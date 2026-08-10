@@ -911,3 +911,47 @@ function checkMenuNotLeaked() {
     global.log("checkMenuNotLeaked: " + (ok ? "all checks passed" : "FAILURES above"));
     return ok;
 }
+
+// Counts Gio.Settings constructions by swapping in a wrapper across the one call: applet.js
+// reads imports.gi.Gio.Settings at call time, so it sees it.
+function checkClockSettings() {
+    let applet = _applet();
+    const Gio = imports.gi.Gio;
+    let ok = true;
+    function check(label, condition) {
+        global.log("checkClockSettings: " + label + ": " + (condition ? "ok" : "FAIL"));
+        if (!condition)
+            ok = false;
+    }
+
+    const ROWS = 12;
+    let real = Gio.Settings;
+    let built = 0;
+
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        fill(ROWS);
+        applet._openMenu();
+
+        Gio.Settings = function (params) { built++; return new real(params); };
+        try {
+            applet._update_timestamp();
+        } finally {
+            Gio.Settings = real;
+        }
+
+        check("refreshing " + ROWS + " timestamps built no settings object (" + built + ")",
+              built === 0);
+
+        // The timestamps still say something, so the count above is not zero by accident.
+        let blank = applet.notifications.filter(n => !n._timeLabel.get_text()).length;
+        check("every row still has timestamp text (" + blank + " blank)", blank === 0);
+    } finally {
+        Gio.Settings = real;
+        cleanup();
+    }
+
+    global.log("checkClockSettings: " + (ok ? "all checks passed" : "FAILURES above"));
+    return ok;
+}
