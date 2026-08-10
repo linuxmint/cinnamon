@@ -665,6 +665,77 @@ function benchmark(count) {
 
 const Extension = imports.ui.extension;
 
+function _sourceIsLive(id) {
+    if (!id)
+        return false;
+    return GLib.MainContext.default().find_source_by_id(id) !== null;
+}
+
+function _blinkNotify(applet, urgency) {
+    let source = new MessageTray.SystemNotificationSource();
+    Main.messageTray.add(source);
+    sources.push(source);
+    let notification = new MessageTray.Notification(source, "blink test", "body");
+    notification.setUrgency(urgency);
+    source.pushNotification(notification);
+    applet._notification_added(Main.messageTray, notification);
+    return notification;
+}
+
+function checkCriticalBlink() {
+    let applet = _applet();
+    if (!applet) {
+        global.log("checkCriticalBlink: applet not running");
+        return false;
+    }
+
+    let ok = true;
+    function check(label, condition) {
+        global.log("checkCriticalBlink: " + label + ": " + (condition ? "ok" : "FAIL"));
+        if (!condition)
+            ok = false;
+    }
+
+    try {
+
+    applet.menu.close();
+    applet._clear_all();
+    check("idle: no timeout armed", applet._blinkTimeoutId === 0);
+
+    let critical = _blinkNotify(applet, MessageTray.Urgency.CRITICAL);
+    check("critical: blinking", applet._blinking === true);
+    check("critical: timeout armed", applet._blinkTimeoutId > 0);
+
+    let armed = applet._blinkTimeoutId;
+    applet.update_list();
+    check("re-entry: same timeout, not forked", applet._blinkTimeoutId === armed);
+
+    check("critical: the source is really queued", _sourceIsLive(armed));
+
+    critical.destroy(MessageTray.NotificationDestroyedReason.DISMISSED);
+    _blinkNotify(applet, MessageTray.Urgency.NORMAL);
+    check("below critical: not blinking", applet._blinking === false);
+    check("below critical: timeout removed", applet._blinkTimeoutId === 0);
+    check("below critical: the source is really gone", !_sourceIsLive(armed));
+
+    _blinkNotify(applet, MessageTray.Urgency.CRITICAL);
+    let armedAgain = applet._blinkTimeoutId;
+    applet._clear_all();
+    check("cleared: chain was running first", armedAgain > 0);
+    check("cleared: timeout removed", applet._blinkTimeoutId === 0);
+    check("cleared: the source is really gone", !_sourceIsLive(armedAgain));
+
+    // Removal is covered by checkSignalsDisconnected. Doing it here would trip on handlers a
+    // later commit disconnects, and report that as this check's own failure.
+
+    } finally {
+        try { cleanup(); } catch (e) { /* best effort */ }
+    }
+
+    global.log("checkCriticalBlink: " + (ok ? "all checks passed" : "FAILURES above"));
+    return ok;
+}
+
 // AppletPopupMenu parents its actor into Main.uiGroup, so a menu that outlived its applet is a
 // stray direct child of it. By actor identity, so the session language does not matter.
 function _liveMenus(actors) {

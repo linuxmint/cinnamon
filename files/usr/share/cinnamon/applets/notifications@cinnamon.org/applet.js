@@ -49,6 +49,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // States
         this._blinking = false;
         this._blink_toggle = false;
+        this._blinkTimeoutId = 0;
 
         this._display();
     }
@@ -59,6 +60,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel () {
+        this._stop_blinking();
         Main.keybindingManager.removeXletHotKey(this, "notification-open");
         Main.keybindingManager.removeXletHotKey(this, "notification-clear");
 
@@ -209,23 +211,23 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 }
                 switch (max_urgency) {
                     case Urgency.LOW:
-                        this._blinking = false;
+                        this._stop_blinking();
                         this.set_applet_icon_symbolic_name("low-notif");
                         break;
                     case Urgency.NORMAL:
                     case Urgency.HIGH:
-                        this._blinking = false;
+                        this._stop_blinking();
                         this.set_applet_icon_symbolic_name("normal-notif");
                         break;
                     case Urgency.CRITICAL:
-                        if (!this._blinking) {
+                        if (!this._blinking && this._blinkTimeoutId === 0) {
                             this._blinking = true;
                             this.critical_blink();
                         }
                         break;
                 }
             } else {    // There are no notifications.
-                this._blinking = false;
+                this._stop_blinking();
                 this.set_applet_label('');
                 this.set_applet_icon_symbolic_name("empty-notif");
                 this.clear_action.actor.hide();
@@ -325,7 +327,16 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         }
     }
 
+    _stop_blinking () {
+        this._blinking = false;
+        if (this._blinkTimeoutId > 0) {
+            Mainloop.source_remove(this._blinkTimeoutId);
+            this._blinkTimeoutId = 0;
+        }
+    }
+
     critical_blink () {
+        this._blinkTimeoutId = 0;
         if (!this._blinking)
             return;
         if (this._blink_toggle) {
@@ -334,7 +345,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this._applet_icon_box.child = this._alt_crit_icon;
         }
         this._blink_toggle = !this._blink_toggle;
-        Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
+        this._blinkTimeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
     }
 }
 
