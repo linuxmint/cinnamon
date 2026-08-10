@@ -736,6 +736,54 @@ function checkCriticalBlink() {
     return ok;
 }
 
+function checkSignalsDisconnected() {
+    let applet = _applet();
+    let ok = true;
+    function check(label, condition) {
+        global.log("checkSignalsDisconnected: " + label + ": " + (condition ? "ok" : "FAIL"));
+        if (!condition)
+            ok = false;
+    }
+
+    try {
+        applet.menu.close();
+        applet._clear_all();
+        fill(6);
+
+        // Emitting 'destroy' on a listed notification drops it from the applet's list. The
+        // tray destroys them of its own accord, so always pick one listed right now.
+        let before = applet.notifications.length;
+        check("something is listed to begin with (" + before + ")", before > 0);
+        applet.notifications[0].emit('destroy', MessageTray.NotificationDestroyedReason.DISMISSED);
+        check("the destroy handler is connected on arrival (" + before + " -> " +
+              applet.notifications.length + ")", applet.notifications.length === before - 1);
+
+        // Reload rather than calling on_applet_removed_from_panel() by hand, so the manager
+        // tears it down the way a theme change would. Held above zero so the applet's decrement
+        // does not reach 0 and clear the tray, which is what would leave nothing to leak.
+        let counter = MessageTray.extensionsHandlingNotifications;
+        MessageTray.extensionsHandlingNotifications = 2;
+        _reloadAndWaitForApplet(5000);
+        MessageTray.extensionsHandlingNotifications = counter;
+
+        let listed = applet.notifications.length;
+        check("removal left notifications listed, so there is something to leak (" +
+              listed + ")", listed > 0);
+        if (listed > 0) {
+            let target = applet.notifications[0];
+            target.emit('destroy', MessageTray.NotificationDestroyedReason.DISMISSED);
+            check("a listed notification no longer reaches the removed applet (" + listed +
+                  " -> " + applet.notifications.length + ")",
+                  applet.notifications.length === listed);
+        }
+    } finally {
+        try { cleanup(); } catch (e) { /* best effort */ }
+    }
+
+    global.log("checkSignalsDisconnected: " + (ok ? "all checks passed" : "FAILURES above"));
+    return ok;
+}
+
 // AppletPopupMenu parents its actor into Main.uiGroup, so a menu that outlived its applet is a
 // stray direct child of it. By actor identity, so the session language does not matter.
 function _liveMenus(actors) {

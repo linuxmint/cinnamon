@@ -59,6 +59,18 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         Main.keybindingManager.addXletHotKey(this, "notification-clear", this.keyClear, Lang.bind(this, this._clear_all));
     }
 
+    // Idempotent: three call sites can each get here first.
+    _disconnectNotificationSignals(notification) {
+        if (notification._appletScrollId) {
+            notification.disconnect(notification._appletScrollId);
+            notification._appletScrollId = 0;
+        }
+        if (notification._appletDestroyId) {
+            notification.disconnect(notification._appletDestroyId);
+            notification._appletDestroyId = 0;
+        }
+    }
+
     on_applet_removed_from_panel () {
         this._stop_blinking();
         Main.keybindingManager.removeXletHotKey(this, "notification-open");
@@ -68,6 +80,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         if (MessageTray.extensionsHandlingNotifications === 0) {
             this._clear_all();
         }
+
+        // Whatever is still listed keeps its handlers otherwise, and the applet with them.
+        for (let n of this.notifications)
+            this._disconnectNotificationSignals(n);
 
         this.signals.disconnectAllSignals();
         this.settings.finalize();
@@ -182,8 +198,12 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         notification.actor._parent_container = this._notificationbin;
         notification.actor.add_style_class_name('notification-applet-padding');
         // Register for destruction.
-        notification.connect('scrolling-changed', (notif, scrolling) => { this.menu.passEvents = scrolling });
-        notification.connect('destroy', () => {
+        // Ids kept on the notification: one that outlives this applet would otherwise keep a
+        // closure holding the applet alive.
+        notification._appletScrollId = notification.connect('scrolling-changed',
+            (notif, scrolling) => { this.menu.passEvents = scrolling });
+        notification._appletDestroyId = notification.connect('destroy', () => {
+            this._disconnectNotificationSignals(notification);
             let i = this.notifications.indexOf(notification);
             if (i != -1)
                 this.notifications.splice(i, 1);
