@@ -591,16 +591,16 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
     }
 
     _loadLauncher(path) {
-        let appSys = Cinnamon.AppSystem.get_default();
-        let app = appSys.lookup_app(path);
-        let appinfo = null;
-        if (!app) {
-            appinfo = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + path);
-            // Fallback to old launcher folder
-            if (!appinfo) {
-                appinfo = CMenu.DesktopAppInfo.new_from_filename(OLD_CUSTOM_LAUNCHERS_PATH + path);
-            }
-            if (!appinfo) {
+        let appinfo = CMenu.DesktopAppInfo.new_from_filename(CUSTOM_LAUNCHERS_PATH + path);
+        // Fallback to old launcher folder
+        if (!appinfo) {
+            appinfo = CMenu.DesktopAppInfo.new_from_filename(OLD_CUSTOM_LAUNCHERS_PATH + path);
+        }
+
+        let app = null;
+        if (!appinfo) {
+            app = Cinnamon.AppSystem.get_default().lookup_app(path);
+            if (!app) {
                 global.logWarning(`Failed to add launcher from path: ${path}`);
                 return null;
             }

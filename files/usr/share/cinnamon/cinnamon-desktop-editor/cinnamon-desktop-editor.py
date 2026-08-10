@@ -464,13 +464,14 @@ class Main:
             shutil.copy(dest_path, new_file_path)
 
     def get_desktop_path(self):
-        self.search_menu_sys()
-        if self.orig_file is None:
+        if self.mode == "cinnamon-launcher":
             panel_launchers = glob.glob(os.path.join(PANEL_LAUNCHER_PATH, "*.desktop"))
             old_panel_launchers = glob.glob(os.path.join(OLD_PANEL_LAUNCHER_PATH, "*.desktop"))
             for launcher in (panel_launchers + old_panel_launchers):
                 if os.path.split(launcher)[1] == self.desktop_file:
                     self.orig_file = launcher
+                    return
+        self.search_menu_sys()
 
     def search_menu_sys(self, parent=None):
         if parent is None:
