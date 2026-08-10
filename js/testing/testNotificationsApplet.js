@@ -662,3 +662,73 @@ function benchmark(count) {
         log(`[testNotificationsApplet] ${n} notifications, ${label}: ${results[label]} ms`);
     return results;
 }
+
+const Extension = imports.ui.extension;
+
+// AppletPopupMenu parents its actor into Main.uiGroup, so a menu that outlived its applet is a
+// stray direct child of it. By actor identity, so the session language does not matter.
+function _liveMenus(actors) {
+    let kids = Main.uiGroup.get_children();
+    return actors.filter(actor => actor !== null && kids.indexOf(actor) !== -1);
+}
+
+function _reloadAndWaitForApplet(maxRounds) {
+    Extension.reloadExtension(UUID, Extension.Type.APPLET);
+    let back = _pumpUntil(() => AppletManager.getRunningInstancesForUuid(UUID).length > 0, maxRounds);
+    return back ? _applet() : null;
+}
+
+function checkMenuNotLeaked() {
+    let ok = true;
+    function check(label, condition) {
+        global.log("checkMenuNotLeaked: " + label + ": " + (condition ? "ok" : "FAIL"));
+        if (!condition)
+            ok = false;
+    }
+
+    // One reload settles it. More are not more conclusive, and each tears the shell's applets
+    // down while this call is still pumping the main loop, which has killed the session.
+    const RELOADS = 1;
+    // About 10s of pumping, a bound rather than a wait; the reload usually lands in under 50ms.
+    const MAX_WAIT_ROUNDS = 5000;
+
+    let applet = _applet();
+    applet.menu.close();
+    applet._clear_all();
+
+    // A reload must destroy the menu before it, so exactly one of these stays parented.
+    let seen = [applet.menu.actor];
+    check("exactly one menu before reloading (" + _liveMenus(seen).length + ")",
+          _liveMenus(seen).length === 1);
+
+    let allCameBack = true;
+    for (let i = 0; i < RELOADS; i++) {
+        let reloaded = _reloadAndWaitForApplet(MAX_WAIT_ROUNDS);
+        if (!reloaded) {
+            allCameBack = false;
+            check("the applet came back after reload " + (i + 1), false);
+            break;
+        }
+        applet = reloaded;
+        seen.push(applet.menu.actor);
+    }
+    check("the applet came back after reloading", allCameBack);
+
+    // Exactly one, not "no more than before": zero is a failure this used to pass.
+    let live = _liveMenus(seen);
+    check("exactly one menu left after reloading (" + live.length + " of " + seen.length +
+          " seen)", live.length === 1);
+    check("the one left is the reloaded applet's own menu",
+          applet !== null && live.length === 1 && live[0] === applet.menu.actor);
+
+    // Leave a working applet regardless of the outcome above.
+    if (!applet)
+        applet = _reloadAndWaitForApplet(MAX_WAIT_ROUNDS);
+    if (!applet)
+        global.log("checkMenuNotLeaked: FAIL the applet did not come back; the panel is missing it");
+    else
+        try { cleanup(); } catch (e) { /* best effort */ }
+
+    global.log("checkMenuNotLeaked: " + (ok ? "all checks passed" : "FAILURES above"));
+    return ok;
+}
