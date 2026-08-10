@@ -71,6 +71,10 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         this.settings.finalize();
         this._crit_icon.destroy();
         this._alt_crit_icon.destroy();
+
+        // Otherwise every reload leaks another menu, still drawable above a dead applet.
+        this.menuManager.removeMenu(this.menu);
+        this.menu.destroy();
     }
 
     _openMenu() {
