@@ -199,10 +199,15 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // Add notification to list.
         notification._inNotificationBin = true;
         this.notifications.push(notification);
-        // Steal the notification panel.
-        this._notificationbin.add(notification.actor);
-        notification.actor._parent_container = this._notificationbin;
+        // Steal the notification panel. Style before parenting: St skips the restyle
+        // for an unmapped actor.
         notification.actor.add_style_class_name('notification-applet-padding');
+        // Insert where it belongs rather than appending and reordering after.
+        if (this.showNewestFirst)
+            this._notificationbin.insert_child_at_index(notification.actor, 0);
+        else
+            this._notificationbin.add(notification.actor);
+        notification.actor._parent_container = this._notificationbin;
         // Register for destruction.
         // Ids kept on the notification: one that outlives this applet would otherwise keep a
         // closure holding the applet alive.
@@ -275,34 +280,81 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _clear_all() {
-        let count = this.notifications.length;
+        // Iterate a snapshot: destroy() splices this.notifications from its own handler.
+        let list = this.notifications;
+        let count = list.length;
+        this.notifications = [];
         if (count > 0) {
-            for (let i = count-1; i >=0; i--) {
-                this._notificationbin.remove_actor(this.notifications[i].actor);
-                this.notifications[i].destroy(NotificationDestroyedReason.DISMISSED);
+            // Coalesce the first-child/last-child churn; each one restyles a subtree.
+            this._notificationbin.freeze_notify();
+            try {
+                for (let i = count - 1; i >= 0; i--) {
+                    // Unmap before destroying: tearing down an unmapped subtree skips
+                    // the style work. Not ours while the tray shows it as a banner.
+                    if (list[i].actor.get_parent() === this._notificationbin)
+                        this._notificationbin.remove_actor(list[i].actor);
+                    list[i].destroy(NotificationDestroyedReason.DISMISSED);
+                }
+            } finally {
+                this._notificationbin.thaw_notify();
+                // If a destroy() threw, keep tracking whatever survived so a
+                // second clear can finish the job. Normally there are none.
+                let survivors = list.filter(n => !n._destroyed);
+                if (survivors.length > 0)
+                    this.notifications = survivors.concat(this.notifications);
             }
         }
-        this.notifications = [];
         this.update_list();
     }
 
     _reorderNotifications() {
-        let orderedNotifications = this.notifications.slice();
+        let bin = this._notificationbin;
+        let count = this.notifications.length;
+        let idx = this.showNewestFirst ? count - 1 : 0;
+        let step = this.showNewestFirst ? -1 : 1;
 
-        if (this.showNewestFirst) {
-            orderedNotifications.reverse();
+        // If everything is already in the wanted order, drop what we no longer track
+        // and skip the moves. That covers arrivals and dismissals, nearly every call.
+        let child = bin.get_first_child();
+        let extras = [];
+        let ordered = true;
+        for (let i = 0, j = idx; i < count; i++, j += step) {
+            let want = this.notifications[j].actor;
+            while (child !== null && child !== want) {
+                extras.push(child);
+                child = child.get_next_sibling();
+            }
+            if (child === null) {
+                ordered = false;
+                break;
+            }
+            child = child.get_next_sibling();
+        }
+        if (ordered) {
+            while (child !== null) {
+                extras.push(child);
+                child = child.get_next_sibling();
+            }
+            for (let i = 0; i < extras.length; i++)
+                bin.remove_child(extras[i]);
+            return;
         }
 
-        // Remove all children without destroying them.
-        let children = this._notificationbin.get_children();
-        for (let i = 0; i < children.length; i++) {
-            this._notificationbin.remove_child(children[i]);
+        // Moving never unparents, so St skips the subtree restyle a re-add would cost.
+        // Count what is placed: a notification the tray has taken has no actor here.
+        let placed = 0;
+        for (let i = 0; i < count; i++, idx += step) {
+            let actor = this.notifications[idx].actor;
+            let parent = actor.get_parent();
+            if (parent === bin)
+                bin.set_child_at_index(actor, placed++);
+            else if (parent === null)
+                bin.insert_child_at_index(actor, placed++);
         }
 
-        // Add them back in desired order.
-        for (let i = 0; i < orderedNotifications.length; i++) {
-            this._notificationbin.add_child(orderedNotifications[i].actor);
-        }
+        // Anything past what we placed is a child we no longer track.
+        for (let i = bin.get_n_children() - 1; i >= placed; i--)
+            bin.remove_child(bin.get_child_at_index(i));
     }
 
     _show_hide_tray() { // Show or hide the notification tray.
@@ -353,8 +405,9 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         for (let i = 0; i < len; i++) {
             let notification = this.notifications[i];
-            notification._timeLabel.clutter_text.set_markup(
-                timeify(notification._timestamp, use_24h, now));
+            // set_text skips unchanged strings, which is most of them once the
+            // relative suffix stops changing after an hour.
+            notification._timeLabel.set_text(timeify(notification._timestamp, use_24h, now));
         }
     }
 
