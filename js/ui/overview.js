@@ -46,7 +46,7 @@ var Overview = GObject.registerClass({
             }
         });
         this._group.hide();
-        global.overlay_group.add_actor(this._group);
+        Main.switcherGroup.add_actor(this._group);
 
         this._scrollDirection = SwipeScrollDirection.NONE;
         this._scrollAdjustment = null;
@@ -266,7 +266,7 @@ var Overview = GObject.registerClass({
         this._group.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
-        global.overlay_group.add_actor(this.workspacesView);
+        Main.switcherGroup.add_actor(this.workspacesView);
         Main.panelManager.disablePanels();
 
         this._coverPane.raise_top();

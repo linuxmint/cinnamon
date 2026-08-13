@@ -177,6 +177,7 @@ var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
 var uiGroup = null;
+var switcherGroup = null;
 var magnifier = null;
 var locatePointer = null;
 var xdndHandler = null;
@@ -406,6 +407,11 @@ function start() {
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
     global.reparentActor(global.window_group, uiGroup);
+
+    // Holds the overview, expo, and app-switcher overlays. Sits just above
+    // window_group (the slot overlay_group used to occupy).
+    switcherGroup = new Clutter.Actor({ name: 'switcherGroup' });
+    uiGroup.add_actor(switcherGroup);
 
     let stage_bg = new Clutter.Actor();
     let constraint = new Clutter.BindConstraint({ source: global.stage, coordinate: Clutter.BindCoordinate.ALL, offset: 0 })

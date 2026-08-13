@@ -40,7 +40,7 @@ AppSwitcher3D.prototype = {
         this._background = Main.createFullScreenBackground();
 
         this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        Main.switcherGroup.add_actor(this._background);
 
         // create a container for all our widgets
         this.actor = new St.Widget({ visible: true, reactive: true, });
@@ -294,7 +294,7 @@ AppSwitcher3D.prototype = {
     },
 
     _destroyActors: function() {
-        global.overlay_group.remove_actor(this._background);
+        Main.switcherGroup.remove_actor(this._background);
         Main.uiGroup.remove_actor(this.actor);
         this.actor.destroy();
 

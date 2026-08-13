@@ -150,7 +150,8 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
         this._dummyCursor = new St.Widget({ opacity: 0 });
         Main.uiGroup.add_actor(this._dummyCursor);
 
-        Main.layoutManager.addChrome(this);
+        Main.layoutManager.addChrome(this, { doNotAdd: true });
+        global.overlay_group.add_actor(this);
 
         let box = new St.BoxLayout({ style_class: 'candidate-popup-content',
                                      vertical: true });

@@ -45,7 +45,7 @@ var Expo = GObject.registerClass({
         // rendering options without duplicating the texture data.
         this._background = Main.createFullScreenBackground();
         this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        Main.switcherGroup.add_actor(this._background);
 
         this._spacing = 0;
 
@@ -118,7 +118,7 @@ var Expo = GObject.registerClass({
         this._group.add_actor(this._windowCloseArea);
 
         this._group.hide();
-        global.overlay_group.add_actor(this._group);
+        Main.switcherGroup.add_actor(this._group);
 
         this._gradient.hide();
         this._coverPane.hide();
@@ -320,7 +320,7 @@ var Expo = GObject.registerClass({
 
             let items = Main.layoutManager.monitors.map(monitor => {
                 let clone = new Clutter.Clone({source: activeWorkspace});
-                global.overlay_group.add_actor(clone);
+                Main.switcherGroup.add_actor(clone);
                 clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
                 return { cleanupActor: clone, clone };
             });
@@ -438,7 +438,7 @@ var Expo = GObject.registerClass({
 
         let items = Main.layoutManager.monitors.map(monitor => {
             let cover = new Clutter.Group();
-            global.overlay_group.add_actor(cover);
+            Main.switcherGroup.add_actor(cover);
             cover.set_position(0, 0);
             cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
 
@@ -523,7 +523,7 @@ var Expo = GObject.registerClass({
                     if (!isFinished && this._activeAnim !== myAnim)
                         return;
                     if (cleanupActor.get_parent() !== null) {
-                        global.overlay_group.remove_actor(cleanupActor);
+                        Main.switcherGroup.remove_actor(cleanupActor);
                         cleanupActor.destroy();
                     }
                     completed++;
@@ -586,12 +586,12 @@ var Expo = GObject.registerClass({
 
         this._syncInputMode();
 
-        global.overlay_group.remove_actor(this._group);
+        Main.switcherGroup.remove_actor(this._group);
         this._group.destroy();
         this._group = null;
         this._expo = null;
 
-        global.overlay_group.remove_actor(this._background);
+        Main.switcherGroup.remove_actor(this._background);
         this._background.destroy();
         this._background = null;
 
