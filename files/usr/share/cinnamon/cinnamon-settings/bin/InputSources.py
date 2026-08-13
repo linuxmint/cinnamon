@@ -363,7 +363,7 @@ class IBusConfigDialog():
         self.clear_layout_override()
 
     def on_engine_settings_clicked(self, button, data=None):
-        subprocess.Popen([self.source.preferences], shell=True)
+        subprocess.Popen([self.source.preferences])
 
     def set_layout_override(self, layout_id):
         source_layouts = self.settings.get_value("source-layouts").unpack()
