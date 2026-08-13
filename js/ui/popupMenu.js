@@ -287,7 +287,13 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
     }
 
     setColumnWidths(widths) {
+        if (this._columnWidths &&
+            this._columnWidths.length === widths.length &&
+            this._columnWidths.every((width, i) => width === widths[i]))
+            return;
+
         this._columnWidths = widths;
+        this.actor.queue_relayout();
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
