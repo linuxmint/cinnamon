@@ -1,3 +1,57 @@
+cinnamon (6.7.5) alfa; urgency=medium
+
+  [ Clement Lefebvre ]
+  * settings: Add prevent-focus-stealing
+
+  [ Michael Webster ]
+  * st: Respect clutter_actor_get_resource_scale()'s return code.
+  * sound applet: Initialize this._playerIcon and simplify some code.
+  * polkitAuthenticationDialog.js: Clear _sessionRequestTimeoutId in its timeout callback.
+  * power applet: Introduce a short delay before initializing the backlight slider.
+  * layout.js: Use the current focus-window's monitor when possible to determine active index, the key_focus can often be the stage itself.
+  * input-method: Move InputSourceManager outside of individual IM implementations.
+  * main.js: Support fcitx5 in Wayland sessions.
+  * main.js: Move the overlay group above the ui group.
+  * virtualKeyboard.js: Support fcitx5, use im.get_focus() instead of currentFocus from input method subclasses.
+  * magnifier.js: Fix pointer events while magnified in Wayland.
+  * XkbSettings.py: Remove x11-only restriction on the 'grp' option group.
+  * panels: Add ChromeRaiseManager to improve panel interaction when working with fullscreen windows.
+  * popupMenu.js, close menus immediately on panel-click events, to allow button-press events to propagate directly to their target on the panel.
+  * panel.js: Fix layout restoration when hotplugging monitors.
+  * cinnamon-looking-glass.py: Handle deleted/missing file raising and exception with open().
+  * cinnamon-looking-glass.py: Change how file content tailing is maintained in a FileWatcherView.
+  * src/screensaver: Only translate backup-locker.c.
+  * makepot: Fix insufficient recursion for C and JS paths.
+  * Keyboard settings: Add keyboard layout viewer, remove dependency on gkbd-capplet.
+  * input-sources-list.ui: Fix rendering of AddKeyboardLayoutDialog's layout list when 'extras' are enabled.
+  * keyboard settings: Pass parent windows to AddKeyboardLayout and IBusConfigDialog, set destroy-with-parent.
+  * input-sources-list.ui: Use icons for add/remove layout, use a label for mintlocale-im launcher.
+  * cinnamon-util.c: Add cinnamon_find_program_in_path().
+  * keyboard applet: Check if gucharmap is installed before adding it to the menu.
+  * eventView.js: Don't check for gnome-calendar every time a row is created.
+  * panel-launchers: Resolve launchers from the panel-launchers directory first while in 'cinnamon-launcher' mode.
+  * cinnamon-screenshot: Respect prefs during launch via non- clipboard keybindings.
+  * js/ui: Move expo, overview, appswitcher into Main.switcherGroup.
+  * popupMenu.js: Queue a relayout when the number of columns changes.
+
+  [ Leigh Scott ]
+  * network: Remove stale wireguard connections (#13847)
+
+  [ Fabio Fantoni ]
+  * Improve debian packaging (#13811)
+  * looking-glass: replace pyinotify with Gio.FileMonitor (#13898)
+
+  [ Rubin ]
+  * cinnamon-desktop-editor: Fix panel launcher edits hanging the dialog and not refreshing the panel (#13896)
+
+  [ Alex Burger ]
+  * cinnamon-settings: open applet configuration on the selected panel's instance (#13883)
+
+  [ Harsh Sharma ]
+  * Fix typo in System Administration Keyword Filters (#13781)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 15 Aug 2026 12:45:47 +0200
+
 cinnamon (6.7.4) alfa; urgency=medium
 
   [ Clement Lefebvre ]
