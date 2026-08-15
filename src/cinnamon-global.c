@@ -1681,6 +1681,11 @@ cinnamon_global_app_launched_cb (GAppLaunchContext *context,
   if (!g_variant_lookup (platform_data, "pid", "i", &pid))
     return;
 
+  /* If pid == 0 the application was launched through D-Bus
+   * activation, therefore it's already in its own unit */
+  if (pid == 0)
+    return;
+
   app_name = g_app_info_get_id (info);
   if (app_name == NULL)
     app_name = g_app_info_get_executable (info);
