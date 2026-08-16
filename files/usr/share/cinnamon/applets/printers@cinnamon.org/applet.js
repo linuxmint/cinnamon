@@ -243,19 +243,25 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
     _bootstrapPrinters() {
         try {
-            Util.spawn_async(['/usr/bin/lpstat', '-e'], (out) => {
-                if (!out || !this._cancellable || this._cancellable.is_cancelled())
+            Util.spawnAsyncIO(['lpstat', '-e'], (out, err, exitCode) => {
+                if (!this._cancellable || this._cancellable.is_cancelled())
                     return;
 
-                for (const name of out.trim().split('\n')) {
-                    if (name.trim())
-                        this._getOrCreatePrinter(name.trim());
+                if (exitCode !== 0) {
+                    global.logWarning(`printers@cinnamon.org: could not list printers: ${err ? err.trim() : `lpstat exited with ${exitCode}`}`);
+                } else if (out) {
+                    for (const name of out.trim().split('\n')) {
+                        if (name.trim())
+                            this._getOrCreatePrinter(name.trim());
+                    }
                 }
 
                 this._updateApplet();
             });
         } catch (e) {
+            // lpstat is missing (no cups client installed) - nothing to list.
             global.logWarning(`printers@cinnamon.org: could not list printers: ${e.message}`);
+            this._updateApplet();
         }
     }
 
