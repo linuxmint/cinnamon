@@ -957,6 +957,12 @@ var PanelManager = GObject.registerClass({
                         AppletManager.loadAppletsOnPanel(panel);
                         panelsRestored = true;
                     }
+                } else {
+                    // The monitor may not be visible to Mutter yet. Some outputs,
+                    // including USB-C / DisplayPort-alt-mode adapters, can finish
+                    // link training and EDID negotiation after monitors-changed
+                    // fires, so retry briefly before leaving the panel orphaned.
+                    this._scheduleMissingPanelRetry(i);
                 }
             } else if (this.panelsMeta[i][0] >= this.monitorCount) {
                 if (this.panels[i]) {
@@ -992,6 +998,36 @@ var PanelManager = GObject.registerClass({
         this._setMainPanel();
         this._checkCanAddPanel();
         this._updateAllPointerBarriers();
+    }
+
+    _scheduleMissingPanelRetry(id, attempt = 0) {
+        const delays = [1000, 2000, 4000];
+        if (attempt >= delays.length)
+            return;
+
+        Mainloop.timeout_add(delays[attempt], () => {
+            // Stop retrying if the panel was restored elsewhere, or if the user
+            // removed its metadata while the timeout was pending.
+            if (!this.panelsMeta[id] || this.panels[id])
+                return false;
+
+            this.monitorCount = global.display.get_n_monitors();
+
+            if (this.panelsMeta[id][0] < this.monitorCount) {
+                let panel = this._loadPanel(id, this.panelsMeta[id][0], this.panelsMeta[id][1]);
+                if (panel) {
+                    AppletManager.loadAppletsOnPanel(panel);
+                    this._adjustVerticalPanelHeights();
+                    this._setMainPanel();
+                    this._checkCanAddPanel();
+                    this._updateAllPointerBarriers();
+                }
+            } else {
+                this._scheduleMissingPanelRetry(id, attempt + 1);
+            }
+
+            return false;
+        });
     }
 
     _onPanelEditModeChanged() {
