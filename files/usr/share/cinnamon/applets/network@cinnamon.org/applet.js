@@ -2403,8 +2403,17 @@ CinnamonNetworkApplet.prototype = {
             let mc = this._mainConnection;
 
             if (!mc) {
-                this._setIcon('xsi-network-offline');
-                this.set_applet_tooltip(_("No connection"));
+                if (this._client.state == NM.State.CONNECTED_GLOBAL) {
+                    // We are online through a device NetworkManager does not
+                    // manage (for instance one configured in
+                    // /etc/network/interfaces): there is no active connection
+                    // to describe, but we are not offline either.
+                    this._setIcon('xsi-network-wired');
+                    this.set_applet_tooltip(_("Connected through an unmanaged device"));
+                } else {
+                    this._setIcon('xsi-network-offline');
+                    this.set_applet_tooltip(_("No connection"));
+                }
             } else if (mc.state == NM.ActiveConnectionState.ACTIVATING) {
                 new_delay = FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS;
                 switch (mc._section) {
