@@ -236,11 +236,8 @@ var Overview = GObject.registerClass({
         if (this.visible || this.animationInProgress)
             return;
 
-        // The main BackgroundActor is inside global.window_group which is
-        // hidden when displaying the overview, so we create a new
-        // one. Instances of this class share a single CoglTexture behind the
-        // scenes which allows us to show the background with different
-        // rendering options without duplicating the texture data.
+        // The live background is inside global.window_group, which is hidden
+        // below, so build a separate one for the overview.
         this._background = Main.createFullScreenBackground();
         this._background.set_position(0, 0);
         this._group.add_actor(this._background);
@@ -263,6 +260,8 @@ var Overview = GObject.registerClass({
         this._coverPane.hide();
 
         Meta.disable_unredirect_for_display(global.display);
+
+        global.window_group.hide();
         this._group.show();
 
         this.workspacesView = new WorkspacesView.WorkspacesView();
@@ -396,6 +395,8 @@ var Overview = GObject.registerClass({
         this._background = null;
 
         Meta.enable_unredirect_for_display(global.display);
+
+        global.window_group.show();
 
         this.workspacesView.destroy();
         this.workspacesView = null;

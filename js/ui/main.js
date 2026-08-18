@@ -425,9 +425,8 @@ function start() {
     global.reparentActor(global.top_window_group, global.stage);
 
     // Keep the feedback/overlay group topmost, above the ui group and the top
-    // window group. It holds DND icons, overlay-layer-shell surfaces, and the
-    // fcitx input-method candidate popup, all of which must render above
-    // Cinnamon's own chrome.
+    // window group. It holds DND icons and the fcitx input-method candidate
+    // popup, both of which must render above Cinnamon's own chrome.
     global.reparentActor(global.overlay_group, global.stage);
 
     global.menuStack = [];
