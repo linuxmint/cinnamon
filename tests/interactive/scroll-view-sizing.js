@@ -106,11 +106,10 @@ FlowedBoxes.prototype = {
 	alloc.min_size = alloc.natural_size = height;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (actor, box) {
 	this._layoutChildren(box.x2 - box.x1,
            function(child, x1, y1, x2, y2) {
-	       child.allocate(new Clutter.ActorBox({ x1: x1, y1: y1, x2: x2, y2: y2 }),
-			      flags);
+	       child.allocate(new Clutter.ActorBox({ x1: x1, y1: y1, x2: x2, y2: y2 }));
 	   });
     }
 };
@@ -201,13 +200,12 @@ SizingIllustrator.prototype = {
 	alloc.natural_size = 400;
     },
 
-    _allocate: function (actor, box, flags) {
+    _allocate: function (actor, box) {
 	let allocWidth = box.x2 - box.x1;
 	let allocHeight = box.y2 - box.y1;
 
 	function alloc(child, x1, y1, x2, y2) {
-	    child.allocate(new Clutter.ActorBox({ x1: x1, y1: y1, x2: x2, y2: y2 }),
-	                   flags);
+	    child.allocate(new Clutter.ActorBox({ x1: x1, y1: y1, x2: x2, y2: y2 }));
 	}
 
 	alloc(this.child, 0, 0, this.width, this.height);

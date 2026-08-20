@@ -164,18 +164,17 @@ st_label_get_preferred_height (ClutterActor *actor,
 
 static void
 st_label_allocate (ClutterActor          *actor,
-                   const ClutterActorBox *box,
-                   ClutterAllocationFlags flags)
+                   const ClutterActorBox *box)
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   ClutterActorBox content_box;
 
-  clutter_actor_set_allocation (actor, box, flags);
+  clutter_actor_set_allocation (actor, box);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
-  clutter_actor_allocate (priv->label, &content_box, flags);
+  clutter_actor_allocate (priv->label, &content_box);
 }
 
 static void

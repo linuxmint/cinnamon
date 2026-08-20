@@ -196,13 +196,13 @@ var BoxPointer = GObject.registerClass({
         return themeNode.adjust_preferred_height(...height);
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (this._sourceActor && this._sourceActor.mapped) {
             this._reposition(box);
             this._updateFlip(box);
         }
 
-        this.set_allocation(box, flags);
+        this.set_allocation(box);
 
         let themeNode = this.get_theme_node();
         let borderWidth = themeNode.get_length('-arrow-border-width');
@@ -214,7 +214,7 @@ var BoxPointer = GObject.registerClass({
         childBox.y1 = 0;
         childBox.x2 = availWidth;
         childBox.y2 = availHeight;
-        this._border.allocate(childBox, flags);
+        this._border.allocate(childBox);
 
         childBox.x1 = borderWidth;
         childBox.y1 = borderWidth;
@@ -234,7 +234,7 @@ var BoxPointer = GObject.registerClass({
             childBox.x2 -= rise;
             break;
         }
-        this.bin.allocate(childBox, flags);
+        this.bin.allocate(childBox);
     }
 
     _drawBorder(area) {

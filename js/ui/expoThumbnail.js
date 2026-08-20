@@ -1741,8 +1741,8 @@ var ExpoThumbnailsBox = GObject.registerClass({
         return themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
     }
 
-    vfunc_allocate(box, flags) {
-        this.set_allocation(box, flags);
+    vfunc_allocate(box) {
+        this.set_allocation(box);
         this._allocBox = box;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
@@ -1809,7 +1809,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
         childBox.y1 = box.y1;
         childBox.y2 = box.y2 + this.thumbnails[0].title.height;
 
-        this.background.allocate(childBox, flags);
+        this.background.allocate(childBox);
 
         // During a workspace drag, build a virtual display order:
         // remove the source thumbnail and leave a gap at the drop position.
@@ -1877,7 +1877,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
             thumbnail.set_scale(scale, scale);
-            thumbnail.allocate(childBox, flags);
+            thumbnail.allocate(childBox);
 
             let framethemeNode = thumbnail.frame.get_theme_node();
             let borderWidth = framethemeNode.get_border_width(St.Side.BOTTOM);
@@ -1886,14 +1886,14 @@ var ExpoThumbnailsBox = GObject.registerClass({
             childBox.y1 = y1 - borderWidth;
             childBox.y2 = y2 + borderWidth;
             thumbnail.frame.set_scale((1 - thumbnail.slide_position), (1 - thumbnail.slide_position));
-            thumbnail.frame.allocate(childBox, flags);
+            thumbnail.frame.allocate(childBox);
 
             let thumbnailx = Math.round(x + (thumbnailWidth * thumbnail.slide_position / 2));
             childBox.x1 = Math.max(thumbnailx, thumbnailx + Math.round(thumbnailWidth/2) - Math.round(thumbnail.title.width/2));
             childBox.x2 = Math.min(thumbnailx + thumbnailWidth, childBox.x1 + thumbnail.title.width);
             childBox.y1 = y + thumbnailHeight + thTitleMargin;
             childBox.y2 = childBox.y1 + thumbnail.title.height;
-            thumbnail.title.allocate(childBox, flags);
+            thumbnail.title.allocate(childBox);
 
             if (animate) {
                 for (let actor of [thumbnail, thumbnail.frame, thumbnail.title]) {
@@ -1923,7 +1923,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
         childBox.y1 = y;
         childBox.y2 = childBox.y1 + buttonHeight;
 
-        this.button.allocate(childBox, flags);
+        this.button.allocate(childBox);
 
         this.emit('allocated');
     }

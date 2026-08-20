@@ -2888,8 +2888,8 @@ var Panel = GObject.registerClass({
         return [leftBoundary, rightBoundary];
     }
 
-    vfunc_allocate(box, flags) {
-        this.set_allocation(box, flags);
+    vfunc_allocate(box) {
+        this.set_allocation(box);
 
         const allocWidth = box.x2 - box.x1;
         const allocHeight = box.y2 - box.y1;
@@ -2904,15 +2904,15 @@ var Panel = GObject.registerClass({
 
             childBox.y1 = 0;
             childBox.y2 = leftBoundary;
-            this._leftBox.allocate(childBox, flags);
+            this._leftBox.allocate(childBox);
 
             childBox.y1 = leftBoundary;
             childBox.y2 = rightBoundary;
-            this._centerBox.allocate(childBox, flags);
+            this._centerBox.allocate(childBox);
 
             childBox.y1 = rightBoundary;
             childBox.y2 = allocHeight;
-            this._rightBox.allocate(childBox, flags);
+            this._rightBox.allocate(childBox);
         } else {
             let [leftBoundary, rightBoundary] = this._calculateBoxes(allocWidth, allocHeight, false);
             const isRTL = this.get_direction() === St.TextDirection.RTL;
@@ -2927,7 +2927,7 @@ var Panel = GObject.registerClass({
                 childBox.x1 = 0;
                 childBox.x2 = leftBoundary;
             }
-            this._leftBox.allocate(childBox, flags);
+            this._leftBox.allocate(childBox);
 
             if (isRTL) {
                 childBox.x1 = rightBoundary;
@@ -2936,7 +2936,7 @@ var Panel = GObject.registerClass({
                 childBox.x1 = leftBoundary;
                 childBox.x2 = rightBoundary;
             }
-            this._centerBox.allocate(childBox, flags);
+            this._centerBox.allocate(childBox);
 
             if (isRTL) {
                 childBox.x1 = 0;
@@ -2945,7 +2945,7 @@ var Panel = GObject.registerClass({
                 childBox.x1 = rightBoundary;
                 childBox.x2 = allocWidth;
             }
-            this._rightBox.allocate(childBox, flags);
+            this._rightBox.allocate(childBox);
         }
     }
 
