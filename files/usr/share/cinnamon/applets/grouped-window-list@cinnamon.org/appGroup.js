@@ -279,7 +279,7 @@ var AppGroup = class AppGroup {
         const direction = this.state.isHorizontal ? 'right' : 'bottom';
         const existingStyle = this.actor.style ? this.actor.style : '';
         let spacing = parseInt(appletActor.get_theme_node().get_length('spacing'));
-        if (!spacing) {
+        if (isNaN(spacing)) {
             spacing = 6;
         }
         this.actor.style = existingStyle + 'margin-' + direction + ':' + spacing + 'px;';
