@@ -267,7 +267,7 @@ Tooltip.prototype = {
     set_text: function(text) {
         this._tooltip.set_text(text);
         this._tooltip.clutter_text.set_use_markup(false);
-        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
+        this._tooltip.clutter_text.allocate_preferred_size();
         // we need to trigger a reallocation to make the tooltip the right size, but this can lead to the text getting
         // off-center in some situations, so also trigger a relayout.
         this._tooltip.queue_relayout();
@@ -282,7 +282,7 @@ Tooltip.prototype = {
     set_markup: function(markup) {
         this._tooltip.set_text(markup);
         this._tooltip.clutter_text.set_use_markup(true);
-        this._tooltip.clutter_text.allocate_preferred_size(Clutter.AllocationFlags.NONE);
+        this._tooltip.clutter_text.allocate_preferred_size();
         // we need to trigger a reallocation to make the tooltip the right size, but this can lead to the text getting
         // off-center in some situations, so also trigger a relayout.
         this._tooltip.queue_relayout();

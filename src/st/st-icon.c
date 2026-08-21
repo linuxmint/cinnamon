@@ -249,21 +249,20 @@ st_icon_style_changed (StWidget *widget)
 static gfloat
 st_icon_get_resource_scale (StIcon *icon)
 {
-  gfloat resource_scale = 1.0;
+  gfloat resource_scale;
 
-  if (!clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon), &resource_scale) ||
-      resource_scale <= 0.0)
+  resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon));
+  if (resource_scale <= 0.0)
     resource_scale = 1.0;
 
   return resource_scale;
 }
 
 static void
-st_icon_resource_scale_changed (GObject    *gobject,
-                                GParamSpec *pspec,
-                                gpointer    user_data)
+st_icon_resource_scale_changed (ClutterActor *actor,
+                                gpointer      user_data)
 {
-  StIcon *icon = ST_ICON (gobject);
+  StIcon *icon = ST_ICON (actor);
   StIconPrivate *priv = icon->priv;
   gfloat resource_scale;
 
@@ -344,7 +343,7 @@ st_icon_init (StIcon *self)
 
   self->priv->file_uri = NULL;
 
-  g_signal_connect (self, "notify::resource-scale",
+  g_signal_connect (self, "resource-scale-changed",
                     G_CALLBACK (st_icon_resource_scale_changed), NULL);
 }
 

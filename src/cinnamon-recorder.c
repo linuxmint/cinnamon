@@ -532,6 +532,13 @@ recorder_on_stage_notify_size (GObject          *object,
     recorder_pipeline_set_caps (recorder->current_pipeline);
 }
 
+static void
+recorder_on_stage_resource_scale_changed (ClutterActor     *stage,
+                                          CinnamonRecorder *recorder)
+{
+  recorder_on_stage_notify_size (G_OBJECT (stage), NULL, recorder);
+}
+
 static gboolean
 recorder_idle_redraw (gpointer data)
 {
@@ -628,8 +635,8 @@ recorder_connect_stage_callbacks (CinnamonRecorder *recorder)
                     G_CALLBACK (recorder_on_stage_notify_size), recorder);
   g_signal_connect (recorder->stage, "notify::height",
                     G_CALLBACK (recorder_on_stage_notify_size), recorder);
-  g_signal_connect (recorder->stage, "notify::resource-scale",
-                    G_CALLBACK (recorder_on_stage_notify_size), recorder);
+  g_signal_connect (recorder->stage, "resource-scale-changed",
+                    G_CALLBACK (recorder_on_stage_resource_scale_changed), recorder);
 }
 
 static void
@@ -643,6 +650,9 @@ recorder_disconnect_stage_callbacks (CinnamonRecorder *recorder)
                                         recorder);
   g_signal_handlers_disconnect_by_func (recorder->stage,
                                         (void *)recorder_on_stage_notify_size,
+                                        recorder);
+  g_signal_handlers_disconnect_by_func (recorder->stage,
+                                        (void *)recorder_on_stage_resource_scale_changed,
                                         recorder);
 
   /* We don't don't deselect for cursor changes in case someone else just

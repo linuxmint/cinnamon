@@ -140,7 +140,7 @@ var ScrollBox = class ScrollBox {
         this.signals.connect(this.scrollView, 'scroll-event', (actor, event) => this._onScroll(actor, event));
 
         // Track content size changes
-        this.signals.connect(this.container, 'allocation-changed', () => this.updateScrollButtonVisibility());
+        this.signals.connect(this.container, 'notify::allocation', () => this.updateScrollButtonVisibility());
 
         this.stateConnectionID = this.state.connect({
             orientation: (state) => this.on_orientation_changed()

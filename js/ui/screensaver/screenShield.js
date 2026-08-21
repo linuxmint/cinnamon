@@ -978,7 +978,7 @@ var ScreenShield = GObject.registerClass({
             }
         }
 
-        widget._allocationChangedId = widget.connect('allocation-changed',
+        widget._allocationChangedId = widget.connect('notify::allocation',
             this._onWidgetAllocationChanged.bind(this, widget));
 
         this._widgets.push(widget);
@@ -1056,7 +1056,7 @@ var ScreenShield = GObject.registerClass({
             return;
 
         this._infoPanel = new InfoPanel.InfoPanel();
-        this._infoPanel.connect('allocation-changed', this._positionInfoPanel.bind(this));
+        this._infoPanel.connect('notify::allocation', this._positionInfoPanel.bind(this));
         this.add_child(this._infoPanel);
         this._infoPanel.onScreensaverActivated();
     }

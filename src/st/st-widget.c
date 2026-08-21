@@ -405,9 +405,9 @@ st_widget_paint_background (StWidget *widget, ClutterPaintContext *paint_context
         }
 
       CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
-      gfloat resource_scale = 1.0;
+      gfloat resource_scale;
 
-      clutter_actor_get_resource_scale (CLUTTER_ACTOR (widget), &resource_scale);
+      resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (widget));
       st_theme_node_paint (theme_node,
                            fb,
                            &allocation,

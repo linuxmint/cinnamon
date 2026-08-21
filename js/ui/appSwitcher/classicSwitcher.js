@@ -334,7 +334,7 @@ ClassicSwitcher.prototype = {
             childBox.x2 = clone.x + width;
             childBox.y1 = clone.y;
             childBox.y2 = clone.y + height;
-            clone.actor.allocate(childBox, 0);
+            clone.actor.allocate(childBox);
             clone.actor.lower(this._appList.actor);
             if (lastClone) {
                 lastClone.lower(clone.actor);
@@ -356,7 +356,7 @@ ClassicSwitcher.prototype = {
             childBox.x2 = this.actor.x + this.actor.width;
             childBox.y1 = this.actor.y;
             childBox.y2 = this.actor.y + this.actor.height;
-            backdrop.allocate(childBox, 0);
+            backdrop.allocate(childBox);
             backdrop.opacity = 0;
 
             backdrop.ease({
