@@ -52,4 +52,6 @@ void cinnamon_glsl_effect_set_uniform_float    (CinnamonGLSLEffect *effect,
                                                 int                 total_count,
                                                 const float        *value);
 
+CoglPipeline *cinnamon_glsl_effect_get_pipeline (CinnamonGLSLEffect *effect);
+
 #endif /* __CINNAMON_GLSL_EFFECT_H__ */
