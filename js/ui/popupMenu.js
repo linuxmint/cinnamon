@@ -10,6 +10,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
 const St = imports.gi.St;
 const Atk = imports.gi.Atk;
+const Meta = imports.gi.Meta;
 
 const BoxPointer = imports.ui.boxpointer;
 const DND = imports.ui.dnd;
@@ -3506,7 +3507,8 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     _grab() {
-        if (!Main.pushModal(this._owner.actor)) {
+        if (!Main.pushModal(this._owner.actor, undefined,
+                            Meta.ModalOptions.POINTER_ALREADY_GRABBED)) {
             return;
         }
         this._signals.connect(global.stage, 'captured-event', this._onEventCapture, this);
