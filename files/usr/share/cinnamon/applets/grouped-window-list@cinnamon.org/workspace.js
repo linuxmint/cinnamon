@@ -395,9 +395,7 @@ var Workspace = class Workspace {
     windowRemoved(metaWorkspace, metaWindow) {
         if (!this.state) return;
 
-        if ((metaWindow.is_on_all_workspaces() || this.state.settings.showAllWorkspaces
-            || !this.state.settings.showAllWorkspaces)
-            && !this.state.removingWindowFromWorkspaces) {
+        if (!this.state.removingWindowFromWorkspaces) {
             // Abort the remove if the window is just changing workspaces, window
             // should always remain indexed on all workspaces while its mapped.
             // if (!metaWindow.showing_on_its_workspace()) return;
@@ -409,16 +407,23 @@ var Workspace = class Workspace {
             return;
         }
 
+        // A window can end up registered in more than one group when its app
+        // identity changes while it's open; re-scan until every registration
+        // is gone.
         let refWindow = -1;
-        const refApp = this.appGroups.findIndex( appGroup => {
-            const window = appGroup.groupState.metaWindows.findIndex( win => win === metaWindow);
-            if (window > -1) {
-                refWindow = window;
-                return true;
-            }
-        });
+        const findRef = () => {
+            refWindow = -1;
+            return this.appGroups.findIndex( appGroup => {
+                const window = appGroup.groupState.metaWindows.findIndex( win => win === metaWindow);
+                if (window > -1) {
+                    refWindow = window;
+                    return true;
+                }
+            });
+        };
 
-        if (refApp > -1) {
+        let refApp = findRef();
+        while (refApp > -1) {
             this.appGroups[refApp].windowRemoved(metaWorkspace, metaWindow, refWindow, (appId, isFavoriteApp) => {
                 if (isFavoriteApp) {
                     if (this.state.settings.groupApps || this.getWindowCount(appId) === 0) {
@@ -460,6 +465,8 @@ var Workspace = class Workspace {
                     this.appGroups.splice(refApp, 1);
                 }
             });
+
+            refApp = findRef();
         }
     }
 

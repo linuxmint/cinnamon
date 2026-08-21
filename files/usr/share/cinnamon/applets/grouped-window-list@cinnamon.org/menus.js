@@ -803,8 +803,14 @@ class WindowThumbnail {
         if (!this.metaWindowActor) {
             this.metaWindowActor = this.metaWindow.get_compositor_private();
         }
+        if (!this.metaWindowActor) {
+            return;
+        }
 
         const preview = WindowUtils.getCloneOrContent(this.metaWindowActor);
+        if (!preview) {
+            return;
+        }
         preview.opacity = 0;
         this.state.set({ lastOverlayPreview: preview });
 

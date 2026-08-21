@@ -620,27 +620,63 @@ static void
 tracked_window_changed (CinnamonWindowTracker *self,
                         MetaWindow         *window)
 {
-  /* It's simplest to just treat this as a remove + add. */
-  disassociate_window (self, window);
-  track_window (self, window);
+  CinnamonApp *old_app, *new_app = NULL;
+
+  /* get_app_for_window() returns any cached association before doing a
+   * real lookup, so take ours out of the table first - otherwise the
+   * window could never resolve past its initial (often window-backed)
+   * app. We own the table's ref after stealing.
+   */
+  old_app = g_hash_table_lookup (self->window_to_app, window);
+  if (old_app != NULL)
+    g_hash_table_steal (self->window_to_app, window);
+
+  if (cinnamon_window_tracker_is_window_interesting (self, window))
+    new_app = get_app_for_window (self, window);
+
+  /* A window-backed app is just a wrapper around its window, and
+   * get_app_for_window() creates a fresh one on every call - treat any
+   * two of them as the same app so identity churn (clients that set
+   * their wm-class or app id repeatedly) doesn't produce remove/add
+   * cycles downstream.
+   */
+  if (new_app == old_app ||
+      (new_app != NULL && old_app != NULL &&
+       cinnamon_app_is_window_backed (new_app) &&
+       cinnamon_app_is_window_backed (old_app)))
+    {
+      /* Unchanged: put the existing association back. */
+      if (old_app != NULL)
+        g_hash_table_insert (self->window_to_app, window, old_app);
+
+      g_clear_object (&new_app);
+    }
+  else
+    {
+      if (old_app != NULL)
+        {
+          _cinnamon_app_remove_window (old_app, window);
+          g_object_unref (old_app);
+        }
+
+      if (new_app != NULL)
+        {
+          g_hash_table_insert (self->window_to_app, window, new_app);
+          _cinnamon_app_add_window (new_app, window);
+        }
+
+      g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
+    }
+
   /* also just recalculate the focused app, in case it was the focused
      window that changed */
   update_focus_app (self);
 }
 
 static void
-on_wm_class_changed (MetaWindow  *window,
-                     GParamSpec  *pspec,
-                     gpointer     user_data)
-{
-  CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
-  tracked_window_changed (self, window);
-}
-
-static void
-on_gtk_application_id_changed (MetaWindow  *window,
-                               GParamSpec  *pspec,
-                               gpointer     user_data)
+on_tracked_window_changed (MetaWindow  *window,
+                           GParamSpec  *pspec,
+                           gpointer     user_data)
 {
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
   tracked_window_changed (self, window);
@@ -651,29 +687,10 @@ on_window_shown (MetaWindow *window,
                  gpointer    user_data)
 {
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (user_data);
-  CinnamonApp *old_app;
-  CinnamonApp *new_app;
 
   g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_window_shown), self);
 
-  old_app = g_hash_table_lookup (self->window_to_app, window);
-
-  if (old_app == NULL || !cinnamon_app_is_window_backed (old_app))
-    return;
-
-  new_app = get_app_for_window (self, window);
-
-  if (new_app != NULL && new_app != old_app && !cinnamon_app_is_window_backed (new_app))
-    {
-      _cinnamon_app_remove_window (old_app, window);
-      g_hash_table_replace (self->window_to_app, window, new_app);
-      _cinnamon_app_add_window (new_app, window);
-      g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
-    }
-  else if (new_app != NULL && new_app != old_app)
-    {
-      g_object_unref (new_app);
-    }
+  tracked_window_changed (self, window);
 }
 
 static void
@@ -681,6 +698,25 @@ track_window (CinnamonWindowTracker *self,
               MetaWindow      *window)
 {
   CinnamonApp *app;
+
+  /* Workspace changes re-add windows; don't disturb an existing
+   * association or stack duplicate handlers.
+   */
+  if (g_hash_table_contains (self->window_to_app, window))
+    return;
+
+  if (meta_window_is_override_redirect (window))
+    return;
+
+  /* Watch for identity and state changes even if the window isn't
+   * interesting yet - a skip-taskbar or window-type change can make it
+   * so, and nothing else notifies us.
+   */
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_tracked_window_changed), self);
+  g_signal_connect (window, "notify::wm-class", G_CALLBACK (on_tracked_window_changed), self);
+  g_signal_connect (window, "notify::gtk-application-id", G_CALLBACK (on_tracked_window_changed), self);
+  g_signal_connect (window, "notify::skip-taskbar", G_CALLBACK (on_tracked_window_changed), self);
+  g_signal_connect (window, "notify::window-type", G_CALLBACK (on_tracked_window_changed), self);
 
   if (!cinnamon_window_tracker_is_window_interesting (self, window))
     return;
@@ -692,14 +728,11 @@ track_window (CinnamonWindowTracker *self,
   /* At this point we've stored the association from window -> application */
   g_hash_table_insert (self->window_to_app, window, app);
 
-  g_signal_connect (window, "notify::wm-class", G_CALLBACK (on_wm_class_changed), self);
-  g_signal_connect (window, "notify::gtk-application-id", G_CALLBACK (on_gtk_application_id_changed), self);
-
   _cinnamon_app_add_window (app, window);
 
   g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
 
-  // For wayland windows that are window-backed (no app found, also
+  // For wayland windows that are window-backed (no app found), also
   // listen for 'shown' signal to retry the lookup in its callback.
   // It's  reasonable to expect the window to be fully associated by then.
   if (meta_window_get_client_type (window) == META_WINDOW_CLIENT_TYPE_WAYLAND &&
@@ -725,6 +758,9 @@ disassociate_window (CinnamonWindowTracker   *self,
 {
   CinnamonApp *app;
 
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_tracked_window_changed), self);
+  g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_window_shown), self);
+
   app = g_hash_table_lookup (self->window_to_app, window);
   if (!app)
     return;
@@ -733,13 +769,7 @@ disassociate_window (CinnamonWindowTracker   *self,
 
   g_hash_table_remove (self->window_to_app, window);
 
-  if (cinnamon_window_tracker_is_window_interesting (self, window))
-    {
-      _cinnamon_app_remove_window (app, window);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK(on_wm_class_changed), self);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_gtk_application_id_changed), self);
-      g_signal_handlers_disconnect_by_func (window, G_CALLBACK (on_window_shown), self);
-    }
+  _cinnamon_app_remove_window (app, window);
 
   g_signal_emit (self, signals[WINDOW_APP_CHANGED], 0, window);
 

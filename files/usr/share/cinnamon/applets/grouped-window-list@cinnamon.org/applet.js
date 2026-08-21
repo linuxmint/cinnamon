@@ -1042,9 +1042,20 @@ class GroupedWindowListApplet extends Applet.Applet {
     _onWindowAppChanged(tracker, metaWindow) {
         if (!metaWindow) return;
 
+        // Remove from every workspace first, then re-add where appropriate.
+        // Interleaving the two per-workspace makes each later workspace's
+        // removal fan-out delete the entry an earlier iteration just re-added,
+        // so a window whose app identity changes after mapping (e.g. gimp)
+        // ends up dropped from the list entirely.
+        this.state.removingWindowFromWorkspaces = true;
         this.workspaces.forEach(workspace => {
             if (!workspace) return;
             workspace.windowRemoved(workspace.metaWorkspace, metaWindow);
+        });
+        this.state.removingWindowFromWorkspaces = false;
+
+        this.workspaces.forEach(workspace => {
+            if (!workspace) return;
             workspace.windowAdded(workspace.metaWorkspace, metaWindow);
         });
     }
