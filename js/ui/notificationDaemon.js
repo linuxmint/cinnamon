@@ -268,13 +268,7 @@ NotificationDaemon.prototype = {
         let ndata = this._expireNotifications[0];
 
         if (ndata) {
-            if (ndata.notification) {
-                ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
-            } else {
-                // notification object not yet created (async PID lookup still pending)
-                this._expireNotifications.shift();
-                this._restartExpire();
-            }
+            ndata.notification.destroy(MessageTray.NotificationDestroyedReason.EXPIRED);
         }
 
         this._expireTimer = 0;
