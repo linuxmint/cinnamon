@@ -313,21 +313,17 @@ var Expo = GObject.registerClass({
             return;
         }
 
-        //We need to allocate activeWorkspace before we begin its clone animation
-        this._allocateID = this._expo.connect('allocated', () => {
-            this._expo.disconnect(this._allocateID);
-            this._allocateID = 0;
+        this._expo.get_allocation_box();
 
-            let items = Main.layoutManager.monitors.map(monitor => {
-                let clone = new Clutter.Clone({source: activeWorkspace});
-                Main.switcherGroup.add_actor(clone);
-                clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
-                return { cleanupActor: clone, clone };
-            });
-
-            this._activeAnim = { items, direction: 'show' };
-            this._runAnimation(true);
+        let items = Main.layoutManager.monitors.map(monitor => {
+            let clone = new Clutter.Clone({source: activeWorkspace});
+            Main.switcherGroup.add_actor(clone);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            return { cleanupActor: clone, clone };
         });
+
+        this._activeAnim = { items, direction: 'show' };
+        this._runAnimation(true);
     }
 
     // Return a 0..1 progress value for the currently-running transition on
@@ -397,18 +393,6 @@ var Expo = GObject.registerClass({
     }
 
     _animateNotVisible(options) {
-        // Cancel-before-allocated: _animateVisible set up the expo but is still
-        // waiting on _expo::allocated to build clones. Disconnect the pending
-        // handler and fall through to the snap-hide path below — we can't run
-        // a hide animation because the workspace actor isn't allocated yet.
-        let snapToHidden = false;
-        if (this._allocateID) {
-            this._expo.disconnect(this._allocateID);
-            this._allocateID = 0;
-            this.animationInProgress = false;
-            snapToHidden = true;
-        }
-
         // Cancel-during-show: reverse the in-progress show instead of bailing.
         if (this.animationInProgress && !this._hideInProgress && this._activeAnim) {
             this._reverseShowToHide(options);
@@ -425,7 +409,7 @@ var Expo = GObject.registerClass({
             activeWorkspace.overviewModeOff(true, true);
         }
 
-        if (snapToHidden || !Main.animations_enabled) {
+        if (!Main.animations_enabled) {
             this._group.hide();
             this._hideDone();
             return;

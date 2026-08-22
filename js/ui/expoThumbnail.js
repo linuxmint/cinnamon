@@ -1911,7 +1911,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
         let buttonHeight = this.button.get_theme_node().get_length('height');
         let buttonOverlap = this.button.get_theme_node().get_length('-cinnamon-close-overlap');
 
-        if (this.lastHovered && !this.lastHovered.doomed){
+        if (this.lastHovered && !this.lastHovered.doomed && this.lastHovered.has_allocation()){
             x = this.lastHovered.allocation.x1 + ((this.lastHovered.allocation.x2 - this.lastHovered.allocation.x1) * this.lastHovered.get_scale()[0]) - buttonOverlap;
             y = this.lastHovered.allocation.y1 - (buttonHeight - buttonOverlap);
         } else {
