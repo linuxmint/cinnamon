@@ -100,9 +100,9 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
     }
 
     _formatCountDown() {
-        let fmt = ngettext("Reverting to previous display settings in %d second.",
-                           "Reverting to previous display settings in %d seconds.");
-        return fmt.format(this._countDown);
+        return ngettext("Reverting to previous display settings in %d second.",
+                        "Reverting to previous display settings in %d seconds.",
+                        this._countDown).format(this._countDown);
     }
 
     _tick() {
