@@ -73,7 +73,6 @@ static void st_icon_update               (StIcon *icon);
 static gboolean st_icon_update_icon_size (StIcon *icon);
 static void st_icon_update_shadow_pipeline (StIcon *icon);
 static void st_icon_clear_shadow_pipeline (StIcon *icon);
-static gfloat st_icon_get_resource_scale (StIcon *icon);
 
 #define DEFAULT_ICON_SIZE 48
 #define DEFAULT_ICON_TYPE ST_ICON_SYMBOLIC
@@ -246,18 +245,6 @@ st_icon_style_changed (StWidget *widget)
   st_icon_update (self);
 }
 
-static gfloat
-st_icon_get_resource_scale (StIcon *icon)
-{
-  gfloat resource_scale;
-
-  resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon));
-  if (resource_scale <= 0.0)
-    resource_scale = 1.0;
-
-  return resource_scale;
-}
-
 static void
 st_icon_resource_scale_changed (ClutterActor *actor,
                                 gpointer      user_data)
@@ -266,7 +253,7 @@ st_icon_resource_scale_changed (ClutterActor *actor,
   StIconPrivate *priv = icon->priv;
   gfloat resource_scale;
 
-  resource_scale = st_icon_get_resource_scale (icon);
+  resource_scale = clutter_actor_get_resource_scale (actor);
   if (priv->resource_scale == resource_scale)
     return;
 
@@ -470,7 +457,7 @@ st_icon_update (StIcon *icon)
     return;
 
   priv->icon_scale = st_theme_context_get_scale_for_stage ();
-  priv->resource_scale = st_icon_get_resource_scale (icon);
+  priv->resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon));
 
   cache = st_texture_cache_get_default ();
   if (priv->gicon)

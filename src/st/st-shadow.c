@@ -194,6 +194,7 @@ struct _StShadowHelper {
 
   gfloat        width;
   gfloat        height;
+  gfloat        resource_scale;
 };
 
 /**
@@ -220,13 +221,15 @@ void
 st_shadow_helper_update (StShadowHelper *helper,
                          ClutterActor   *source)
 {
-  gfloat width, height;
+  gfloat width, height, resource_scale;
 
   clutter_actor_get_size (source, &width, &height);
+  resource_scale = clutter_actor_get_resource_scale (source);
 
   if (helper->pipeline == NULL ||
       helper->width != width ||
-      helper->height != height)
+      helper->height != height ||
+      helper->resource_scale != resource_scale)
     {
       if (helper->pipeline)
         cogl_object_unref (helper->pipeline);
@@ -234,6 +237,7 @@ st_shadow_helper_update (StShadowHelper *helper,
       helper->pipeline = _st_create_shadow_pipeline_from_actor (helper->shadow, source);
       helper->width = width;
       helper->height = height;
+      helper->resource_scale = resource_scale;
     }
 }
 

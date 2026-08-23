@@ -1031,11 +1031,24 @@ st_entry_class_init (StEntryClass *klass)
 }
 
 static void
+st_entry_resource_scale_changed (ClutterActor *actor,
+                                 gpointer      user_data)
+{
+  StEntryPrivate *priv = ST_ENTRY_PRIV (actor);
+
+  cogl_clear_object (&priv->text_shadow_material);
+  clutter_actor_queue_redraw (actor);
+}
+
+static void
 st_entry_init (StEntry *entry)
 {
   StEntryPrivate *priv;
 
   priv = entry->priv = st_entry_get_instance_private (entry);
+
+  g_signal_connect (entry, "resource-scale-changed",
+                    G_CALLBACK (st_entry_resource_scale_changed), NULL);
 
   priv->entry = g_object_new (CLUTTER_TYPE_TEXT,
                               "line-alignment", PANGO_ALIGN_LEFT,

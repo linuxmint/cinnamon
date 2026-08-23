@@ -266,11 +266,24 @@ st_label_class_init (StLabelClass *klass)
 }
 
 static void
+st_label_resource_scale_changed (ClutterActor *actor,
+                                 gpointer      user_data)
+{
+  StLabelPrivate *priv = ST_LABEL (actor)->priv;
+
+  g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+  clutter_actor_queue_redraw (actor);
+}
+
+static void
 st_label_init (StLabel *label)
 {
   StLabelPrivate *priv;
 
   label->priv = priv = st_label_get_instance_private (label);
+
+  g_signal_connect (label, "resource-scale-changed",
+                    G_CALLBACK (st_label_resource_scale_changed), NULL);
 
   label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                      "ellipsize", PANGO_ELLIPSIZE_END,
