@@ -579,6 +579,33 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     _devicesChanged() {
+        // Coalesce bursts of change notifications into one rebuild per 500ms.
+        // csd-power emits g-properties-changed for every UPower device update;
+        // a flapping AC adapter (loose plug) produces a storm of them (measured
+        // 126 signals in 3 minutes), and rebuilding the device menu - destroying
+        // and recreating every DeviceItem - on each signal floods GJS with
+        // garbage.  The resulting high-frequency GC blocks JS callbacks,
+        // including the shell's own paint path, so the whole screen goes black
+        // for seconds at a time (and pending actor destroys leak, leaving stuck
+        // notification banners).  The first signal is handled immediately, the
+        // rest of the burst is folded into one trailing rebuild.
+        if (this._rebuildGate === undefined)
+            this._rebuildGate = 0;
+        if (this._rebuildGate > 0) {
+            this._rebuildDirty = true;
+            return;
+        }
+        this._rebuildDirty = false;
+        this._rebuildGate = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+            this._rebuildGate = 0;
+            if (this._rebuildDirty)
+                this._devicesChanged();
+            return GLib.SOURCE_REMOVE;
+        });
+        this._devicesChangedReal();
+    }
+
+    _devicesChangedReal() {
 
         this._devices = [];
         this._primaryDevice = null;
