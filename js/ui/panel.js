@@ -1279,10 +1279,12 @@ var PanelContextMenu = class PanelContextMenu extends PopupMenu.PopupMenu {
     }
 
     open(animate) {
-        super.open.call(this, animate);
-
+        // Update item state before the menu lays out, not after - a
+        // style change once the menu is open re-invalidates it mid-frame.
         this.movePanelItem.setSensitive(Main.panelManager.canAddPanel);
         this.addPanelItem.setSensitive(Main.panelManager.canAddPanel);
+
+        super.open.call(this, animate);
 
         let {definitions} = AppletManager;
         let nonEmpty = false;

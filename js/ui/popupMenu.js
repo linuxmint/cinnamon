@@ -5,6 +5,7 @@ const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
 const Graphene = imports.gi.Graphene;
 const Gtk = imports.gi.Gtk;
+const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
@@ -1700,6 +1701,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                                   y_fill: true,
 								  x_fill: true });
         this.actor._delegate = this;
+        this._repositionLater = 0;
         this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
         this.setOrientation(orientation);
@@ -1851,6 +1853,12 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.show();
             this.actor.opacity = 0;
 
+            // Run the pending layout now, while we're still outside the
+            // frame cycle - menus (re)populated or restyled just before
+            // opening would otherwise resolve their styles inside the
+            // frame's own layout pass and re-invalidate it mid-cycle.
+            this.actor.get_allocation_box();
+
             let easeParams = {
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 duration: Main.wm.MENU_ANIMATION_TIME,
@@ -1894,6 +1902,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.y = yPos;
 
             this.actor.show();
+            this.actor.get_allocation_box();
         }
 
         this.emit('open-state-changed', true);
@@ -2123,10 +2132,27 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
     }
 
     _allocationChanged (actor, pspec) {
-        if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
-            let [xPos, yPos] = this._calculatePosition();
-            this.actor.set_position(xPos, yPos);
+        if (this.animating || this._repositionLater)
+            return;
+
+        this._repositionLater = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this._repositionLater = 0;
+
+            if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
+                let [xPos, yPos] = this._calculatePosition();
+                this.actor.set_position(xPos, yPos);
+            }
+            return false;
+        });
+    }
+
+    destroy() {
+        if (this._repositionLater) {
+            Meta.later_remove(this._repositionLater);
+            this._repositionLater = 0;
         }
+
+        super.destroy();
     }
 
     _onKeyPressEvent(actor, event) {
