@@ -31,27 +31,27 @@ class ClockWidget extends ScreensaverWidget.ScreensaverWidget {
             style_class: 'clock-time-label',
             x_align: Clutter.ActorAlign.CENTER
         });
-        this.add_child(this._timeLabel);
+        this.box.add_child(this._timeLabel);
 
         this._dateLabel = new St.Label({
             style_class: 'clock-date-label',
             x_align: Clutter.ActorAlign.CENTER
         });
         this._dateLabel.clutter_text.line_wrap = true;
-        this.add_child(this._dateLabel);
+        this.box.add_child(this._dateLabel);
 
         this._messageLabel = new St.Label({
             style_class: 'clock-message-label',
             x_align: Clutter.ActorAlign.CENTER
         });
         this._messageLabel.clutter_text.line_wrap = true;
-        this.add_child(this._messageLabel);
+        this.box.add_child(this._messageLabel);
 
         this._messageAuthor = new St.Label({
             style_class: 'clock-message-author',
             x_align: Clutter.ActorAlign.CENTER
         });
-        this.add_child(this._messageAuthor);
+        this.box.add_child(this._messageAuthor);
 
         this._wallClock = new CinnamonDesktop.WallClock();
         this._wallClock.connect('notify::clock', this._updateClock.bind(this));

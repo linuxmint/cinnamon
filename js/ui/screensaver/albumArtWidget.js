@@ -157,7 +157,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
             width: this._artSize,
             height: this._artSize
         });
-        this.add_child(this._artBin);
+        this.box.add_child(this._artBin);
         this._showDefaultArt();
 
         this._trackInfoBox = new St.BoxLayout({
@@ -167,7 +167,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
             y_expand: true,
             y_align: Clutter.ActorAlign.CENTER,
         });
-        this.add_child(this._trackInfoBox);
+        this.box.add_child(this._trackInfoBox);
 
         this._titleLabel = new St.Label({
             style_class: 'albumart-title',

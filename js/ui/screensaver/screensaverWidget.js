@@ -37,9 +37,15 @@ var FloatPosition = class FloatPosition {
  * Non-floating widgets (like PowerWidget) should not subclass this.
  */
 var ScreensaverWidget = GObject.registerClass(
-class ScreensaverWidget extends St.BoxLayout {
+class ScreensaverWidget extends St.Bin {
     _init(params) {
-        super._init(params);
+        super._init({ x_fill: false,
+                      y_fill: false,
+                      x_align: St.Align.MIDDLE,
+                      y_align: St.Align.MIDDLE });
+
+        this.box = new St.BoxLayout(params);
+        this.set_child(this.box);
 
         this._currentPosition = new FloatPosition();
         this._awakePosition = new FloatPosition();
