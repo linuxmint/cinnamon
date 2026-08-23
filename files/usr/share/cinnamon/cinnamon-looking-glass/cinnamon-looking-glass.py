@@ -17,7 +17,8 @@ import signal
 import sys
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GLib
+gi.require_version('XApp', '1.0')
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib, XApp
 from setproctitle import setproctitle
 
 import pageutils
@@ -420,7 +421,7 @@ class MelangeApp(Gtk.Application):
             self.window.hide()
 
     def construct_window(self):
-        self.window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+        self.window = XApp.GtkWindow(type=Gtk.WindowType.TOPLEVEL)
         headerbar = Gtk.HeaderBar()
         headerbar.set_title("Looking Glass")
         headerbar.set_subtitle("Cinnamon Troubleshooting Tool")
