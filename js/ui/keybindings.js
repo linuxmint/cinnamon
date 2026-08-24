@@ -43,13 +43,15 @@ const MEDIA_KEYS = [
     { key: MK.REPEAT,                     mode: Cinnamon.ActionMode.ALL },
     { key: MK.RANDOM,                     mode: Cinnamon.ActionMode.ALL },
 
-    // Screenshots
+    // Screenshots: ALL, not NORMAL - taking a screenshot is useful precisely
+    // while a menu or applet popup is open, and full-screen Print already
+    // worked there.
     { key: MK.SCREENSHOT,                 mode: Cinnamon.ActionMode.ALL },
-    { key: MK.SCREENSHOT_CLIP,            mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.WINDOW_SCREENSHOT,          mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.WINDOW_SCREENSHOT_CLIP,     mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.AREA_SCREENSHOT,            mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.AREA_SCREENSHOT_CLIP,       mode: Cinnamon.ActionMode.NORMAL },
+    { key: MK.SCREENSHOT_CLIP,            mode: Cinnamon.ActionMode.ALL },
+    { key: MK.WINDOW_SCREENSHOT,          mode: Cinnamon.ActionMode.ALL },
+    { key: MK.WINDOW_SCREENSHOT_CLIP,     mode: Cinnamon.ActionMode.ALL },
+    { key: MK.AREA_SCREENSHOT,            mode: Cinnamon.ActionMode.ALL },
+    { key: MK.AREA_SCREENSHOT_CLIP,       mode: Cinnamon.ActionMode.ALL },
 
     // Touchpad
     { key: MK.TOUCHPAD,                   mode: Cinnamon.ActionMode.NORMAL },
