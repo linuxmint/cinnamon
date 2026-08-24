@@ -199,13 +199,14 @@ class RenameUserDialog(Gtk.Dialog):
         valid = (
             bool(username) and
             bool(valid_format) and
-            not already_exists
+            not already_exists and
+            username != self.old_username
         )
 
         if valid:
             entry.set_icon_from_icon_name(
                 Gtk.EntryIconPosition.SECONDARY, None
-        )
+            )
         else:
             entry.set_icon_from_icon_name(
                 Gtk.EntryIconPosition.SECONDARY,
