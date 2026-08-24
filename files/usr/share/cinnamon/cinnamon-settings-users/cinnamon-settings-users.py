@@ -7,6 +7,8 @@ import gettext
 import shutil
 import re
 import subprocess
+import tempfile
+import stat
 from random import randint
 from setproctitle import setproctitle
 
@@ -57,6 +59,94 @@ def get_private_group(username):
     is_private = primary_group.gr_name == username
 
     return primary_group, is_private
+
+
+def user_has_running_processes(username):
+    return subprocess.run(
+        ["pgrep", "-u", username],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    ).returncode == 0
+
+
+def user_has_open_session(username):
+    try:
+        sessions = subprocess.check_output(
+            ["loginctl", "list-sessions", "--no-legend", "--no-pager"],
+            text=True
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+    for session in sessions.splitlines():
+        fields = session.split()
+        if len(fields) >= 3 and fields[2] == username:
+            return True
+
+    return False
+
+
+def read_user_crontab(username):
+    try:
+        result = subprocess.run(
+            ["crontab", "-u", username, "-l"],
+            capture_output=True,
+            text=True
+        )
+    except FileNotFoundError:
+        return None
+
+    if result.returncode == 0:
+        return result.stdout
+
+    return None
+
+
+def install_user_crontab(username, contents):
+    if contents is None:
+        return
+
+    subprocess.run(
+        ["crontab", "-u", username, "-"],
+        input=contents,
+        text=True,
+        check=True
+    )
+
+
+def rename_subid_entry(path, old_username, new_username):
+    if not os.path.exists(path):
+        return
+
+    with open(path) as source:
+        lines = source.readlines()
+
+    prefix = old_username + ":"
+    replacement = new_username + ":"
+    updated_lines = [
+        replacement + line[len(prefix):]
+        if line.startswith(prefix) else line
+        for line in lines
+    ]
+
+    if updated_lines == lines:
+        return
+
+    file_mode = stat.S_IMODE(os.stat(path).st_mode)
+    file_directory = os.path.dirname(path) or "."
+    descriptor, temporary_path = tempfile.mkstemp(dir=file_directory)
+
+    try:
+        with os.fdopen(descriptor, "w") as destination:
+            destination.writelines(updated_lines)
+        os.chmod(temporary_path, file_mode)
+        os.replace(temporary_path, path)
+    except Exception:
+        try:
+            os.unlink(temporary_path)
+        except FileNotFoundError:
+            pass
+        raise
 
 
 class RenameUserDialog(Gtk.Dialog):
@@ -1000,12 +1090,38 @@ class Module:
 
         if response == Gtk.ResponseType.OK:
             new_username = dialog.get_username()
+
+            has_processes = user_has_running_processes(old_username)
+            has_session = user_has_open_session(old_username)
+
+            if has_processes or has_session:
+                warning = _(
+                    "This user has running processes or an open session. "
+                    "Renaming the account may fail or leave applications "
+                    "in an inconsistent state. Continue?"
+                )
+                warning_dialog = Gtk.MessageDialog(
+                    self.window,
+                    Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                    Gtk.MessageType.WARNING,
+                    Gtk.ButtonsType.OK_CANCEL,
+                    warning
+                )
+                warning_dialog.set_title(_("Active User Session"))
+                warning_response = warning_dialog.run()
+                warning_dialog.destroy()
+
+                if warning_response != Gtk.ResponseType.OK:
+                    dialog.destroy()
+                    return
+
             primary_group, is_private = get_private_group(old_username)
             old_home = user.get_home_dir()
             new_home = os.path.join(
                 os.path.dirname(old_home),
                 new_username
             )
+            user_crontab = read_user_crontab(old_username)
 
             try:
                 subprocess.run(
@@ -1025,11 +1141,30 @@ class Module:
                         check=True
                     )
 
+                rename_subid_entry("/etc/subuid", old_username, new_username)
+                rename_subid_entry("/etc/subgid", old_username, new_username)
+
+                install_user_crontab(new_username, user_crontab)
+                if user_crontab is not None:
+                    subprocess.run(
+                        ["crontab", "-u", old_username, "-r"],
+                        check=False
+                    )
+
                 self.load_users()
                 self.load_groups()
 
-            except subprocess.CalledProcessError as error:
-                print("Rename failed: %s" % error)
+            except (subprocess.CalledProcessError, OSError) as error:
+                error_dialog = Gtk.MessageDialog(
+                    self.window,
+                    Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                    Gtk.MessageType.ERROR,
+                    Gtk.ButtonsType.OK,
+                    _("The user could not be renamed.")
+                )
+                error_dialog.format_secondary_text(str(error))
+                error_dialog.run()
+                error_dialog.destroy()
 
         dialog.destroy()
 
