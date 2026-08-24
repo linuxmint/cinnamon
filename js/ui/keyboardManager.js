@@ -319,6 +319,13 @@ var SubscriptableFlagIcon = GObject.registerClass({
                         return;
                     }
 
+                    // On HiDPI the texture cache hands back an actor that is
+                    // pre-scaled by the ui scale.  Without correcting its size
+                    // the surrounding St.Bin clamps only the height, so the
+                    // flag renders squashed (twice as wide as it should be).
+                    actor.set_size(actor.width / global.ui_scale,
+                                   actor.height / global.ui_scale);
+
                     this._image = actor;
                     this._imageBin.set_child(actor);
                     this._drawingArea.queue_repaint();

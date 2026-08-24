@@ -178,7 +178,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             let actor = null;
 
             if (source.type === 'ibus' || this._inputSourcesManager.showFlags) {
-                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22);
+                actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22 * global.ui_scale);
             }
 
             if (actor == null) {
@@ -217,7 +217,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this.set_applet_tooltip(selected.displayName);
 
         let actor = null;
-        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
+        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
 
         // IBus engines always show their own icon (flags are an xkb concept); xkb
         // layouts show a flag only when the user opted into flags.
