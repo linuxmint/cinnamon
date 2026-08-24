@@ -51,6 +51,82 @@ priv_helper = PrivHelper()
 (INDEX_USER_OBJECT, INDEX_USER_PICTURE, INDEX_USER_DESCRIPTION) = range(3)
 (INDEX_GID, INDEX_GROUPNAME) = range(2)
 
+def get_private_group(username):
+    passwd_entry = pwd.getpwnam(username)
+    primary_group = grp.getgrgid(passwd_entry.pw_gid)
+    is_private = primary_group.gr_name == username
+
+    return primary_group, is_private
+
+
+class RenameUserDialog(Gtk.Dialog):
+    def __init__(self, old_username, parent=None):
+        super(RenameUserDialog, self).__init__(
+            title=_("Rename User"),
+            transient_for=parent,
+            flags=Gtk.DialogFlags.MODAL
+        )
+
+        self.old_username = old_username
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(8)
+        grid.set_column_spacing(12)
+        grid.set_border_width(12)
+
+        grid.attach(Gtk.Label(_("New username:")), 0, 0, 1, 1)
+
+        self.username_entry = Gtk.Entry()
+        self.username_entry.set_text(old_username)
+        self.username_entry.connect("changed", self._validate_username)
+        grid.attach(self.username_entry, 1, 0, 1, 1)
+
+        self.get_content_area().add(grid)
+
+        self.add_buttons(
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+            _("Rename"), Gtk.ResponseType.OK
+        )
+
+        self.set_response_sensitive(Gtk.ResponseType.OK, False)
+        self.show_all()
+
+    def _validate_username(self, entry):
+        username = entry.get_text()
+
+        valid_format = re.match(
+            r"^[a-z_][a-z0-9_-]*$",
+            username
+        )
+
+        already_exists = False
+        try:
+            pwd.getpwnam(username)
+            already_exists = username != self.old_username
+        except KeyError:
+            pass
+
+        valid = (
+            bool(username) and
+            bool(valid_format) and
+            not already_exists
+        )
+
+        if valid:
+            entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, None
+        )
+        else:
+            entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY,
+                "dialog-warning-symbolic"
+            )
+
+        self.set_response_sensitive(Gtk.ResponseType.OK, valid)
+
+    def get_username(self):
+        return self.username_entry.get_text()
+
 class GroupDialog (Gtk.Dialog):
     def __init__ (self, label, value, parent = None):
         super(GroupDialog, self).__init__(None, parent)
@@ -478,6 +554,7 @@ class Module:
             self.builder.get_object("button_add_group").connect("clicked", self.on_group_addition)
             self.builder.get_object("button_edit_group").connect("clicked", self.on_group_edition)
             self.builder.get_object("button_delete_group").connect("clicked", self.on_group_deletion)
+            self.builder.get_object("button_edit_user").connect("clicked",self.on_user_edition)
 
             self.users = Gtk.TreeStore(object, GdkPixbuf.Pixbuf, str)
             self.users.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -516,6 +593,7 @@ class Module:
             self.builder.get_object("button_delete_user").set_sensitive(False)
             self.builder.get_object("button_edit_group").set_sensitive(False)
             self.builder.get_object("button_delete_group").set_sensitive(False)
+            self.builder.get_object("button_edit_user").set_sensitive(False)
 
             self.face_button = Gtk.Button()
             self.face_image = Gtk.Image()
@@ -798,6 +876,7 @@ class Module:
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             self.builder.get_object("button_delete_user").set_sensitive(True)
+            self.builder.get_object("button_edit_user").set_sensitive(True)
             self.realname_entry.set_text(user.get_real_name())
 
             if user.get_password_mode() == AccountsService.UserPasswordMode.REGULAR:
@@ -861,6 +940,7 @@ class Module:
 
         else:
             self.builder.get_object("button_delete_user").set_sensitive(False)
+            self.builder.get_object("button_edit_user").set_sensitive(False)
             self.builder.get_object("box_users").hide()
 
     def on_user_deletion(self, event):
@@ -908,8 +988,50 @@ class Module:
 
     def on_user_edition(self, event):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter is not None:
-            print("Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name())
+
+        if treeiter is None:
+            return
+
+        user = model[treeiter][INDEX_USER_OBJECT]
+        old_username = user.get_user_name()
+
+        dialog = RenameUserDialog(old_username, self.window)
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            new_username = dialog.get_username()
+            primary_group, is_private = get_private_group(old_username)
+            old_home = user.get_home_dir()
+            new_home = os.path.join(
+                os.path.dirname(old_home),
+                new_username
+            )
+
+            try:
+                subprocess.run(
+                    [
+                        "usermod",
+                        "-l", new_username,
+                        "-d", new_home,
+                        "-m",
+                        old_username
+                    ],
+                    check=True
+                )
+
+                if is_private:
+                    subprocess.run(
+                        ["groupmod", "-n", new_username, primary_group.gr_name],
+                        check=True
+                    )
+
+                self.load_users()
+                self.load_groups()
+
+            except subprocess.CalledProcessError as error:
+                print("Rename failed: %s" % error)
+
+        dialog.destroy()
 
 # GROUPS CALLBACKS
 
