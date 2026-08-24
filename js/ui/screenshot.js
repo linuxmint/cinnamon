@@ -415,7 +415,7 @@ class SelectArea {
             }
         });
 
-        return Clutter.EVENT_PROPAGATE;
+        return Clutter.EVENT_STOP;
     }
 
     _ungrab() {
@@ -531,7 +531,8 @@ class PickColor {
                 this._ungrab();
             }
         });
-        return Clutter.EVENT_PROPAGATE;
+
+        return Clutter.EVENT_STOP;
     }
 
     _ungrab() {
