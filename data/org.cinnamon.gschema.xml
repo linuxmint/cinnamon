@@ -1,6 +1,18 @@
 <schemalist>
   <schema id="org.cinnamon" path="/org/cinnamon/"
           gettext-domain="@GETTEXT_PACKAGE@">
+    <key name="calendar-backend" type="s">
+      <default>'clockenstein'</default>
+      <choices>
+        <choice value="clockenstein"/>
+        <choice value="eds"/>
+      </choices>
+      <summary>Calendar event backend</summary>
+      <description>
+        Selects the service used by Cinnamon to retrieve calendar events.
+        For EDS, install evolution-data-server and gir1.2-ecal-2.0.
+      </description>
+    </key>
     <key name="development-tools" type="b">
       <default>true</default>
       <summary>
