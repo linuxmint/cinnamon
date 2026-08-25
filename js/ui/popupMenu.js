@@ -3,6 +3,7 @@
 const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 const Graphene = imports.gi.Graphene;
 const Gtk = imports.gi.Gtk;
 const Meta = imports.gi.Meta;
@@ -2748,6 +2749,7 @@ var PopupMenuManager = class PopupMenuManager {
         this._menuStack = [];
         this._preGrabInputMode = null;
         this._grabbedFromKeynav = false;
+        this._failedGrabCloseId = 0;
         this._signals = new SignalManager.SignalManager(null);
     }
 
@@ -2791,14 +2793,44 @@ var PopupMenuManager = class PopupMenuManager {
         if (this._menus.length === 0) this.destroy();
     }
 
+    _pushModal() {
+        const onDismiss = () => this._closeMenu();
+
+        if (Main.pushModal(this._owner.actor, undefined, undefined,
+                           Cinnamon.ActionMode.POPUP, onDismiss)) {
+            return true;
+        }
+
+        // An ill-behaved client (chromium-based apps) can ask for a window menu
+        // without first dropping its own pointer grab. Gtk deliberately does this
+        // before handing the request over. Menus are modal through the stage input
+        // region rather than the pointer, so settle for the keyboard - the pointer
+        // follows once the client lets go of it.  Note: chromium itself doesn't
+        // encounter this, it provides its own custom titlebar popup - Cinnamon's is
+        // never shown.
+        return Main.pushModal(this._owner.actor, undefined,
+                              Meta.ModalOptions.POINTER_ALREADY_GRABBED,
+                              Cinnamon.ActionMode.POPUP, onDismiss);
+    }
+
     _grab() {
         // Over a fullscreen window, elevate the whole panel as the base layer
         // before this menu's grab stacks on top, so the panel stays usable when
         // the menu closes instead of collapsing.
         Main.chromeRaiseManager.ensureRaisedForActor(this._owner.actor);
 
-        if (!Main.pushModal(this._owner.actor, undefined, undefined, Cinnamon.ActionMode.POPUP,
-                            () => this._closeMenu())) {
+        if (!this._pushModal()) {
+            // Without a grab nothing can dismiss the menu, so it would sit there
+            // visible and unresponsive until something else took it down. Close
+            // it instead, deferred because we're inside the open-state-changed
+            // dispatch that opened it.
+            if (this._failedGrabCloseId === 0) {
+                this._failedGrabCloseId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    this._failedGrabCloseId = 0;
+                    this._closeMenu();
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
             return;
         }
         this._signals.connect(global.stage, 'captured-event', this._onEventCapture, this);
@@ -3037,6 +3069,11 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     destroy() {
+        if (this._failedGrabCloseId > 0) {
+            GLib.source_remove(this._failedGrabCloseId);
+            this._failedGrabCloseId = 0;
+        }
+
         this._signals.disconnectAllSignals();
         this.emit('destroy');
     }
