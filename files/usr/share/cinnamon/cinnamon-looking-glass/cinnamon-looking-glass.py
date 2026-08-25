@@ -22,7 +22,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GLib, XApp
 from setproctitle import setproctitle
 
 import pageutils
-from lookingglass_proxy import LookingGlassProxy
+from lookingglass_proxy import LookingGlassProxy, CinnamonProxy
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -380,6 +380,7 @@ class MelangeApp(Gtk.Application):
     def do_startup(self):
         Gtk.Application.do_startup(self)
         self.lg_proxy = LookingGlassProxy()
+        self.cinnamon_proxy = CinnamonProxy()
         # The status label is shown if we are not okay
         self.lg_proxy.connect("status-changed", self.update_status_from_proxy)
 
@@ -458,6 +459,7 @@ class MelangeApp(Gtk.Application):
         self.create_page("Inspect", "inspect")
         self.create_page("Windows", "windows")
         self.create_page("Extensions", "extensions")
+        self.create_page("Muffin Debug", "debug")
 
         table.attach(self.notebook, 0, num_columns, 0, 1)
 
@@ -609,8 +611,10 @@ class MelangeApp(Gtk.Application):
         self.notebook.set_current_page(page)
 
     def do_shutdown(self):
+        self.pages["debug"].release()
         self.window.destroy()
         self.lg_proxy = None
+        self.cinnamon_proxy = None
         Gtk.Application.do_shutdown(self)
 
 if __name__ == "__main__":

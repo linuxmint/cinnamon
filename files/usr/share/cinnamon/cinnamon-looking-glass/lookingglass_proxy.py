@@ -1,22 +1,26 @@
 #!/usr/bin/python3
 
-from gi.repository import Gio, GObject
+from gi.repository import Gio, GLib, GObject
 
 LG_DBUS_NAME = "org.Cinnamon.LookingGlass"
 LG_DBUS_PATH = "/org/Cinnamon/LookingGlass"
 
-class LookingGlassProxy(GObject.Object):
+CINNAMON_DBUS_NAME = "org.Cinnamon"
+CINNAMON_DBUS_PATH = "/org/Cinnamon"
+
+class ProxyBase(GObject.Object):
     __gsignals__ = {
-        'status-changed': (GObject.SignalFlags.RUN_LAST, None, (bool, )),
-        "signal": (GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.DETAILED, None, ())
+        'status-changed': (GObject.SignalFlags.RUN_LAST, None, (bool, ))
     }
 
-    def __init__(self):
+    def __init__(self, name, path):
         GObject.Object.__init__(self)
+        self._name = name
+        self._path = path
         self._proxy = None
         self.state = False
         Gio.bus_watch_name(Gio.BusType.SESSION,
-                           LG_DBUS_NAME,
+                           name,
                            Gio.BusNameWatcherFlags.NONE,
                            self.on_bus_connect,
                            self.on_bus_disconnect)
@@ -26,18 +30,6 @@ class LookingGlassProxy(GObject.Object):
 
     def get_is_ready(self):
         return self._proxy is not None and self._proxy.get_name_owner() is not None
-
-    def prepare_signal_name(self, signal):
-        out = signal[0].lower()
-
-        for letter in signal[1:]:
-            out += ("-" if letter.isupper() else "") + letter.lower()
-
-        return "signal::" + out
-
-    def on_signal(self, proxy, sender_name, signal_name, params):
-        detailed_name = self.prepare_signal_name(signal_name)
-        self.emit(detailed_name)
 
     def set_status(self, state):
         if state != self.state:
@@ -55,23 +47,49 @@ class LookingGlassProxy(GObject.Object):
 
     def init_proxy(self):
         try:
-            self._proxy = Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION,
-                                                    Gio.DBusProxyFlags.NONE,
-                                                    None,
-                                                    LG_DBUS_NAME,
-                                                    LG_DBUS_PATH,
-                                                    LG_DBUS_NAME,
-                                                    None,
-                                                    self.on_proxy_ready,
-                                                    None)
+            Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION,
+                                      Gio.DBusProxyFlags.NONE,
+                                      None,
+                                      self._name,
+                                      self._path,
+                                      self._name,
+                                      None,
+                                      self.on_proxy_ready,
+                                      None)
         except GLib.Error as e:
-            print("Could not establish proxy with Cinnamon looking-glass interface: %s" % e.message)
+            print("Could not establish proxy with %s: %s" % (self._name, e.message))
             self._proxy = None
 
     def on_proxy_ready(self, obj, result, data=None):
         self._proxy = Gio.DBusProxy.new_for_bus_finish(result)
-        self._proxy.connect("g-signal", self.on_signal)
+        self.on_proxy_created()
         self.refresh_status()
+
+    def on_proxy_created(self):
+        pass
+
+class LookingGlassProxy(ProxyBase):
+    __gsignals__ = {
+        "signal": (GObject.SignalFlags.RUN_LAST | GObject.SignalFlags.DETAILED, None, ())
+    }
+
+    def __init__(self):
+        ProxyBase.__init__(self, LG_DBUS_NAME, LG_DBUS_PATH)
+
+    def on_proxy_created(self):
+        self._proxy.connect("g-signal", self.on_signal)
+
+    def prepare_signal_name(self, signal):
+        out = signal[0].lower()
+
+        for letter in signal[1:]:
+            out += ("-" if letter.isupper() else "") + letter.lower()
+
+        return "signal::" + out
+
+    def on_signal(self, proxy, sender_name, signal_name, params):
+        detailed_name = self.prepare_signal_name(signal_name)
+        self.emit(detailed_name)
 
 # Proxy Methods:
     def Eval(self, code):
@@ -160,4 +178,19 @@ class LookingGlassProxy(GObject.Object):
                 return self._proxy.ReloadExtension('(ss)', uuid, xlet_type)
             except Exception:
                 pass
+        return False, ""
+
+# org.Cinnamon.Eval, unlike the looking glass one, returns its result and
+# does not add to the command history or the results page. It's used for
+# Setting flags from the muffin debug page.
+class CinnamonProxy(ProxyBase):
+    def __init__(self):
+        ProxyBase.__init__(self, CINNAMON_DBUS_NAME, CINNAMON_DBUS_PATH)
+
+    def Eval(self, code):
+        if self._proxy:
+            try:
+                return self._proxy.Eval('(s)', code)
+            except Exception as e:
+                print("Could not evaluate '%s': %s" % (code, e))
         return False, ""
