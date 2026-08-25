@@ -1115,6 +1115,11 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         else {
             this._volumeMax = this._volumeNorm;
             this._outputVolumeSection.set_mark(0);
+
+            if (this._output && this._output.volume > this._volumeMax) {
+                this._output.volume = this._volumeMax;
+                this._output.push_volume();
+            }
         }
         this._outputVolumeSection._update();
     }
