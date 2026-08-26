@@ -10,7 +10,7 @@ run_session() {
     cinnamon_pid=
     stop_process() {
         local process_pid=$1
-        test -n "$process_pid" || return
+        test -n "$process_pid" || return 0
 
         if kill -0 "$process_pid" 2>/dev/null; then
             kill "$process_pid" 2>/dev/null || true
