@@ -97,7 +97,7 @@ if test "${1:-}" = --session; then
     exit
 fi
 
-for command in dbus-run-session gdbus cinnamon Xvfb timeout; do
+for command in dbus-run-session gdbus cinnamon Xvfb setsid timeout; do
     command -v "$command" >/dev/null
 done
 
@@ -112,9 +112,25 @@ case "$master_compat" in
     *) exit 2 ;;
 esac
 test_root=$(mktemp -d /tmp/cinnamon-popup-signals.XXXXXX)
+session_pid=
+stop_session() {
+    local process_pid=$1
+    test -n "$process_pid" || return 0
+
+    if kill -0 -- "-$process_pid" 2>/dev/null; then
+        kill -TERM -- "-$process_pid" 2>/dev/null || true
+        for _ in {1..5}; do
+            kill -0 -- "-$process_pid" 2>/dev/null || break
+            sleep 0.1
+        done
+        kill -KILL -- "-$process_pid" 2>/dev/null || true
+    fi
+    wait "$process_pid" 2>/dev/null || true
+}
 cleanup_root() {
     status=$?
     trap - EXIT INT TERM
+    stop_session "$session_pid"
     resolved=$(realpath -- "$test_root")
     case "$resolved" in
         /tmp/cinnamon-popup-signals.*) ;;
@@ -134,10 +150,13 @@ test_home=$test_root/home
 test_runtime=$test_root/runtime
 
 session_status=0
-timeout --kill-after=5s 45s env -u AT_SPI_BUS_ADDRESS -u XMODIFIERS \
+setsid timeout --kill-after=5s 45s env -u AT_SPI_BUS_ADDRESS -u XMODIFIERS \
     HOME="$test_home" XDG_RUNTIME_DIR="$test_runtime" NO_AT_BRIDGE=1 \
     GIO_USE_VFS=local GVFS_DISABLE_FUSE=1 GTK_IM_MODULE=xim IBUS_USE_PORTAL=0 \
     dbus-run-session -- "$0" --session "$repo" "$test_root" "$master_compat" \
-    2>"$test_root/dbus.log" || session_status=$?
-sleep 1
+    2>"$test_root/dbus.log" &
+session_pid=$!
+wait "$session_pid" || session_status=$?
+stop_session "$session_pid"
+session_pid=
 exit "$session_status"
