@@ -521,6 +521,13 @@ var AppGroup = class AppGroup {
             return;
         }
 
+        // hideLabel() hides the label, so unrealized is the normal state of a pinned app with no
+        // windows. Bailing out here left such a button titleless once a window was opened.
+        // An unrealized actor is shown right away instead of being animated.
+        if (!this.label.realized) {
+            animate = false;
+        }
+
         const width = MAX_BUTTON_WIDTH * global.ui_scale;
 
         this.labelVisiblePref = true;
