@@ -502,6 +502,13 @@ var AppGroup = class AppGroup {
                     this.label.set_style('text-align: right;');
 
             this.label.allocate(childBox);
+        } else {
+            // An actor that is not allocated keeps its previous allocation and is still painted.
+            // A button that shrinks to icon size therefore left the old, wide label box behind and
+            // the text spilled over the neighbouring buttons. Collapse the box instead of skipping it.
+            childBox.x1 = childBox.x2 = box.x1;
+            childBox.y1 = childBox.y2 = box.y1;
+            this.label.allocate(childBox);
         }
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
