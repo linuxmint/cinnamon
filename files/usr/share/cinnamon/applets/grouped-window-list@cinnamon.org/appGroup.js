@@ -472,11 +472,15 @@ var AppGroup = class AppGroup {
             childBox.y1 = box.y1 + labelYPadding;
             childBox.y2 = childBox.y1 + Math.min(labelNaturalHeight, allocHeight);
 
+            // The same 6 px getPreferredWidth adds to natural_size - without it the label ends flush
+            // with the button edge and the ellipsis touches the border.
+            const labelPadding = 6 * global.ui_scale;
+
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = Math.min(this.iconBox.x + this.iconBox.width, box.x2);
-                childBox.x2 = box.x2;
+                childBox.x2 = Math.max(childBox.x1, box.x2 - labelPadding);
             } else {
-                childBox.x1 = box.x1;
+                childBox.x1 = Math.min(box.x1 + labelPadding, this.iconBox.x);
                 childBox.x2 = this.iconBox.x;
             }
 
