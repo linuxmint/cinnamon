@@ -1563,6 +1563,7 @@ var Panel = GObject.registerClass({
         this._mouseEntered = null;
         this._signalManager = new SignalManager.SignalManager(null);
         this.heightForZones = 0;
+        this._setPanelHeightLaterId = 0;
         this.margin_top = 0;
         this.margin_bottom = 0;
         this.margin_left = 0;
@@ -1606,7 +1607,7 @@ var Panel = GObject.registerClass({
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.connect('queue-relayout', () => this._setPanelHeight());
+        this.connect('queue-relayout', () => this._queueSetPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
@@ -1731,6 +1732,11 @@ var Panel = GObject.registerClass({
 
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
+
+        if (this._setPanelHeightLaterId > 0) {
+            Meta.later_remove(this._setPanelHeightLaterId);
+            this._setPanelHeightLaterId = 0;
+        }
 
         Main.layoutManager.removeChrome(this);
 
@@ -2493,6 +2499,17 @@ var Panel = GObject.registerClass({
         this._rightBox.set_vertical(false);
         this._rightBox.set_x_align(Clutter.ActorAlign.END);
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
+    }
+
+    _queueSetPanelHeight() {
+        if (this._setPanelHeightLaterId > 0)
+            return;
+
+        this._setPanelHeightLaterId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this._setPanelHeightLaterId = 0;
+            this._setPanelHeight();
+            return false;
+        });
     }
 
     _setPanelHeight() {
