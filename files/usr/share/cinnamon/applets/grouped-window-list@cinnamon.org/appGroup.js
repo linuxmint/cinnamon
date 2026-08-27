@@ -382,12 +382,18 @@ var AppGroup = class AppGroup {
                             this.workspaceState.lastFocusedApp === appId);
 
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            if (allocateForLabel) {
-                const max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
-                    labelNaturalSize + iconNaturalSize + 6 : 0;
+            // With no open window there is nothing to label (allocate() draws the label only when
+            // metaWindows.length > 0), so the button is icon only. Counting labelNaturalSize in here
+            // gave pinned apps arbitrarily different widths: an empty label reports 1 px or 5 px
+            // depending on its state.
+            if (allocateForLabel && this.groupState.metaWindows.length > 0) {
+                const max = this.labelVisiblePref ? labelNaturalSize + iconNaturalSize + 6 : 0;
                 alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
             } else {
-                alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
+                // Width from the panel icon size instead of the actor's natural width, so buttons with
+                // no label stay equal no matter what a particular image reports.
+                const iconWidth = this.iconSize ? this.iconSize * global.ui_scale : iconNaturalSize;
+                alloc.natural_size = iconWidth + 6 * global.ui_scale;
             }
             alloc.min_size = alloc.natural_size;
         } else {
