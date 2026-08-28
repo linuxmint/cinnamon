@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+const Cinnamon = imports.gi.Cinnamon;
 const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
@@ -11,6 +12,8 @@ const Tooltips = imports.ui.tooltips;
 const Util = imports.misc.util;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+
+const CONFIG_TOOL = 'system-config-printer';
 
 const PRINTER_STATE_STOPPED = 5;
 
@@ -141,9 +144,13 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.set_applet_tooltip(_("Printers"));
         this.set_applet_icon_symbolic_name('xsi-printer');
 
-        let printersContextItem = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
-        printersContextItem.connect('activate', () => Util.spawn(['system-config-printer']));
-        this._applet_context_menu.addMenuItem(printersContextItem);
+        // Kept hidden until the asynchronous lookup below says the program is
+        // there; the separator finalizeContextMenu() adds hides itself along
+        // with it.
+        this._printersContextItem = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
+        this._printersContextItem.connect('activate', () => Util.spawn([CONFIG_TOOL]));
+        this._applet_context_menu.addMenuItem(this._printersContextItem);
+        this._printersContextItem.actor.hide();
 
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menu.connect('open-state-changed', (menu, open) => {
@@ -163,6 +170,7 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
         this._printers = new Map();
         this._hasPrinterConfig = false;
+        this._hasConfigTool = false;
         this._cupsSubscription = null;
         this._rebuildId = 0;
         this._menuDirty = false;
@@ -170,6 +178,16 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this._wallClock = new CinnamonDesktop.WallClock();
 
         this._cancellable = new Gio.Cancellable();
+
+        Cinnamon.find_program_in_path(CONFIG_TOOL, (path) => {
+            if (path == null || !this._cancellable || this._cancellable.is_cancelled())
+                return;
+
+            this._hasConfigTool = true;
+            this._printersContextItem.actor.show();
+            this._scheduleMenuRebuild();
+        });
+
         Gio.DBus.session.call(
             'org.freedesktop.DBus', '/org/freedesktop/DBus',
             'org.freedesktop.DBus', 'ListActivatableNames',
@@ -243,19 +261,25 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
 
     _bootstrapPrinters() {
         try {
-            Util.spawn_async(['/usr/bin/lpstat', '-e'], (out) => {
-                if (!out || !this._cancellable || this._cancellable.is_cancelled())
+            Util.spawnAsyncIO(['lpstat', '-e'], (out, err, exitCode) => {
+                if (!this._cancellable || this._cancellable.is_cancelled())
                     return;
 
-                for (const name of out.trim().split('\n')) {
-                    if (name.trim())
-                        this._getOrCreatePrinter(name.trim());
+                if (exitCode !== 0) {
+                    global.logWarning(`printers@cinnamon.org: could not list printers: ${err ? err.trim() : `lpstat exited with ${exitCode}`}`);
+                } else if (out) {
+                    for (const name of out.trim().split('\n')) {
+                        if (name.trim())
+                            this._getOrCreatePrinter(name.trim());
+                    }
                 }
 
                 this._updateApplet();
             });
         } catch (e) {
+            // lpstat is missing (no cups client installed) - nothing to list.
             global.logWarning(`printers@cinnamon.org: could not list printers: ${e.message}`);
+            this._updateApplet();
         }
     }
 
@@ -474,8 +498,12 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
         this.menu.removeAll();
 
         if (this._printers.size === 0) {
-            let printersItem = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC);
-            printersItem.connect('activate', () => Util.spawn(['system-config-printer']));
+            let printersItem = new PopupMenu.PopupIconMenuItem(_("Printers"), 'xsi-printer', St.IconType.SYMBOLIC,
+                                                              { reactive: this._hasConfigTool });
+            if (this._hasConfigTool)
+                printersItem.connect('activate', () => Util.spawn([CONFIG_TOOL]));
+            else
+                printersItem.actor.add_style_class_name('popup-inactive-menu-item');
             this.menu.addMenuItem(printersItem);
         }
 
@@ -496,9 +524,11 @@ class CinnamonPrintersApplet extends Applet.TextIconApplet {
             printerItem.setButton(0, null, null, null);
             if (warning || printer.state === PRINTER_STATE_STOPPED || printer.jobs.size > 0)
                 printerItem.label.add_style_class_name('popup-device-menu-item');
-            printerItem.connect('activate', () => {
-                Util.spawn(['system-config-printer', '--show-jobs', name]);
-            });
+            if (this._hasConfigTool) {
+                printerItem.connect('activate', () => {
+                    Util.spawn([CONFIG_TOOL, '--show-jobs', name]);
+                });
+            }
 
             if (this._hasPrinterConfig) {
                 printerItem.setButton(1, 'xsi-emblem-system', _("Show properties"), () => {
