@@ -15,7 +15,7 @@ class Module:
     category = "hardware"
 
     def __init__(self, content_box):
-        keywords = _("mouse, touchpad, synaptic, double-click")
+        keywords = _("mouse, touchpad, synaptic, double-click, pointer")
         sidePage = SidePage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box, module=self)
         self.sidePage = sidePage
 
