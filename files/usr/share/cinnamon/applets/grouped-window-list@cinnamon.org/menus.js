@@ -462,6 +462,9 @@ class WindowThumbnail {
                 this.destroyOverlayPreview();
             },
             thumbnailCloseButtonOffset: ({thumbnailCloseButtonOffset}) => {
+                // This fires for every registered thumbnail, including ones whose
+                // button has not been created yet or has already been destroyed.
+                if (!this.button) return;
                 this.button.style = CLOSED_BUTTON_STYLE + `position: ${thumbnailCloseButtonOffset}px -2px;`;
             }
         });
