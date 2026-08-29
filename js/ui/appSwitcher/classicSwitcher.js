@@ -139,10 +139,15 @@ ClassicSwitcher.prototype = {
 
     _show: function() {
         Main.panelManager.panels.forEach(function(panel) { panel.actor.set_reactive(false); });
-        
+
         this.actor.opacity = 255;
         this._initialDelayTimeoutId = 0;
-        this._next();
+
+        let backward = this._binding.is_reversed();
+        if (backward)
+            this._previous();
+        else
+            this._next();
     },
     
     _hide: function() {
