@@ -156,7 +156,8 @@
  "show-bookmarks" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Other bookmarks"
+    "description" : "Custom folders and bookmarks",
+    "tooltip" : "Show custom folders pinned in Nemo (including Templates, if pinned)"
  },
  "system-position" : {
       "type": "combobox",
