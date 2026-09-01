@@ -173,6 +173,9 @@ NotificationDaemon.prototype = {
                 case Urgency.CRITICAL:
                     stockIcon = 'xsi-dialog-error-symbolic';
                     break;
+                default:
+                    stockIcon = 'xsi-dialog-information-symbolic';
+                    break;
             }
             return new St.Icon({ icon_name: stockIcon,
                                  icon_type: St.IconType.SYMBOLIC,
