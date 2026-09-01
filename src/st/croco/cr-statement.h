@@ -129,11 +129,11 @@ struct _CRAtCharsetRule
 	CRString * charset ;
 };
 
-/**The abstaction of the \@font-face rule.*/
+/**The abstraction of the \@font-face rule.*/
 typedef struct _CRAtFontFaceRule CRAtFontFaceRule ;
 struct _CRAtFontFaceRule
 {
-	/*a list of instanaces of #CRDeclaration*/
+	/*a list of instances of #CRDeclaration*/
 	CRDeclaration *decl_list ;
 } ;
 
@@ -215,7 +215,7 @@ struct _CRStatement
         CRParsingLocation location ;
 
         /**
-         *a custom pointer useable by
+         *a custom pointer usable by
          *applications that use libcroco.
          *libcroco itself will never modify
          *this pointer.

@@ -258,7 +258,7 @@ cr_num_dup (CRNum const * a_this)
  *instance of #CRNum
  *@a_type: the new type of #CRNum.
  *
- * Returns CR_OK upon succesful completion, an error code otherwise.
+ * Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_num_set (CRNum * a_this, gdouble a_val, enum CRNumType a_type)

@@ -92,7 +92,7 @@ struct _StWidgetPrivate
  * @short_description: Base class for stylable actors
  *
  * #StWidget is a simple abstract class on top of #ClutterActor. It
- * provides basic themeing properties.
+ * provides basic theming properties.
  *
  * Actors in the St library should subclass #StWidget if they plan
  * to obey to a certain #StStyle.

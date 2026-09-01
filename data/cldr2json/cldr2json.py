@@ -123,7 +123,7 @@ def locale_to_xkb(locale, name):
         if xkb:
             return xkb
         else:
-            raise KeyError("layout %s explicitely disabled in overrides"
+            raise KeyError("layout %s explicitly disabled in overrides"
                            % locale)
     xkb_names = sorted(name_to_xkb.keys())
     if name in xkb_names:

@@ -346,7 +346,7 @@ cr_input_unref (CRInput * a_this)
  *the current instance has reached the end of its input buffer,
  *FALSE otherwise.
  *
- *Tests wether the current instance of
+ *Tests whether the current instance of
  *#CRInput has reached its input buffer.
  *
  * Returns CR_OK upon successful completion, an error code otherwise.
@@ -644,12 +644,12 @@ cr_input_consume_char (CRInput * a_this, guint32 a_char)
  *@a_this: the this pointer of the current instance of #CRInput.
  *@a_char: the character to consume.
  *@a_nb_char: in/out parameter. The number of characters to consume.
- *If set to a negative value, the function will consume all the occurences
+ *If set to a negative value, the function will consume all the occurrences
  *of a_char found.
  *After return, if the return value equals CR_OK, this variable contains 
  *the number of characters actually consumed.
  *
- *Consumes up to a_nb_char occurences of the next contiguous characters 
+ *Consumes up to a_nb_char occurrences of the next contiguous characters 
  *which equal a_char. Note that the next character of the input stream
  **MUST* equal a_char to trigger the consumption, or else, the error
  *code CR_PARSING_ERROR is returned.

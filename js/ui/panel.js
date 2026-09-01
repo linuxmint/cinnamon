@@ -207,7 +207,7 @@ function getPanelLocFromName(pname) {
  * @def (string): a panel definition from settings, in the form ID:monitor:panelposition
  *
  * Parses a single panel definition, rejecting one that doesn't have three elements, or
- * whose id or monitor index is negative or unparseable - such an index matches neither a
+ * whose id or monitor index is negative or unparsable - such an index matches neither a
  * monitor nor a panel id, so the panel would be registered nowhere and its definition
  * never cleaned up. The position is not checked, getPanelLocFromName() maps anything it
  * doesn't recognise to PanelLoc.bottom.

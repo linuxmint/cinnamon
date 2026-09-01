@@ -382,7 +382,7 @@ st_theme_context_get_for_stage (ClutterStage *stage)
  *
  * Sets the default set of theme stylesheets for the context. This theme will
  * be used for the root node and for nodes descending from it, unless some other
- * style is explicitely specified.
+ * style is explicitly specified.
  */
 void
 st_theme_context_set_theme (StThemeContext          *context,

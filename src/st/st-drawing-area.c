@@ -223,7 +223,7 @@ st_drawing_area_queue_repaint (StDrawingArea *area)
  * @area: the #StDrawingArea
  *
  * Gets the Cairo context to paint to. This function must only be called
- * from a signal hander for the ::repaint signal.
+ * from a signal handler for the ::repaint signal.
  *
  * Return Value: (transfer none): the Cairo context for the paint operation
  */
@@ -244,7 +244,7 @@ st_drawing_area_get_context (StDrawingArea *area)
  *
  * Gets the size of the cairo surface being painted to, which is equal
  * to the size of the content area of the widget. This function must
- * only be called from a signal hander for the ::repaint signal.
+ * only be called from a signal handler for the ::repaint signal.
  */
 void
 st_drawing_area_get_surface_size (StDrawingArea *area,

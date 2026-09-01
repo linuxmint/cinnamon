@@ -485,7 +485,7 @@ st_adjustment_set_page_size (StAdjustment *adjustment,
 
       g_object_notify_by_pspec (G_OBJECT (adjustment), props[PROP_PAGE_SIZE]);
 
-      /* Well explicitely clamp after construction. */
+      /* We'll explicitly clamp after construction. */
       if (!priv->is_constructing)
         st_adjustment_clamp_page (adjustment, priv->lower, priv->upper);
 

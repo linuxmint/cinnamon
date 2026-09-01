@@ -125,10 +125,10 @@ function getObjKeysInfo(obj) {
                 let [t, v] = getObjInfo(obj[k]);
                 return { name: k.toString(), type: t, value: v, shortValue: "" };
             } catch (e) {
-                return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+                return { name: k.toString(), type: '[inaccessible]', value: '[inaccessible]', shortValue: "" }; 
             }
         } else {
-            return { name: k.toString(), type: '[inacessible]', value: '[inacessible]', shortValue: "" }; 
+            return { name: k.toString(), type: '[inaccessible]', value: '[inaccessible]', shortValue: "" }; 
         }
     });
 }

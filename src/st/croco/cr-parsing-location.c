@@ -33,9 +33,9 @@
 
 /**
  * cr_parsing_location_new:
- *Instanciates a new parsing location.
+ *Instantiates a new parsing location.
  *
- *Returns the newly instanciated #CRParsingLocation.
+ *Returns the newly instantiated #CRParsingLocation.
  *Must be freed by cr_parsing_location_destroy()
  */
 CRParsingLocation * 
@@ -58,7 +58,7 @@ cr_parsing_location_new (void)
  *
  *Initializes the an instance of #CRparsingLocation.
  *
- *Returns CR_OK upon succesful completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus 
 cr_parsing_location_init (CRParsingLocation *a_this)
@@ -77,7 +77,7 @@ cr_parsing_location_init (CRParsingLocation *a_this)
  *
  *Copies an instance of CRParsingLocation into another one.
  *
- *Returns CR_OK upon succesful completion, an error code
+ *Returns CR_OK upon successful completion, an error code
  *otherwise.
  */
 enum CRStatus 

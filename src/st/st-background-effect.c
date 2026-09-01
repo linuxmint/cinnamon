@@ -176,7 +176,7 @@ st_paint_background_blur_effect (StBackgroundBlurEffect *self,
 
 
     /* if this theme node has radiused corners then mask them out
-       as otherwise the efect will be square and show outside the actor
+       as otherwise the effect will be square and show outside the actor
        note that the default blend is fine.  We should only need to do this
        once as the mask will be fine for repeat use */
 
@@ -451,7 +451,7 @@ st_paint_background_bumpmap_effect (StBackgroundBumpmapEffect *self,
     cogl_pipeline_set_layer_texture (self->pipeline0, 0, self->bg_texture);
 
     /* if this theme node has radiused corners then mask them out
-       as otherwise the efect will be square and show outside the actor
+       as otherwise the effect will be square and show outside the actor
        note that the default blend is fine.  We should only need to do this
        once as the mask will be fine for repeat use */
 

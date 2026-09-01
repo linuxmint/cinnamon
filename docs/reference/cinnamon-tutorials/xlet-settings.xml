@@ -146,13 +146,13 @@ this.settings.connect("changed::height", Lang.bind(this, this.setAppletHeight));
 this.settings.bind("height", "appletHeight", this.setAppletHeight);</programlisting>
       </informalexample>
       <para>
-        Now lets take a close look at what's happening here.
+        Now let's take a close look at what's happening here.
       </para>
       <para>
         The first argument is of course the name of the key in your settings-schema.json file.
       </para>
       <para>
-        The third argument is a callback function which, like before, is called whenever the value changes. You don't need to pass a callback, but you wont be able to react to changes if you don't.
+        The third argument is a callback function which, like before, is called whenever the value changes. You don't need to pass a callback, but you won't be able to react to changes if you don't.
       </para>
       <para>
         However, it's the second argument that makes bindings so powerful. During the binding process, a new property is created on the <code>bindObject</code>. The bindObject is usually the one we passed to the provider when we initialized it, but there is now a bind function that will allow us to bind to something else if we want. The property can be used just like any variable, but it always reflects the current value of the settings, and if you assign a value to it, it will update the settings accordingly. This means that we can do things like this:

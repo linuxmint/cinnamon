@@ -163,7 +163,7 @@ SearchProvider.prototype = {
      * items which match the given search terms.  This
      * is expected to be a substring match on the metadata for a given
      * item.  Ordering of returned results is up to the discretion of the provider,
-     * but you should follow these heruistics:
+     * but you should follow these heuristics:
      *
      *  * Put items where the term matches multiple criteria (e.g. name and
      *    description) before single matches

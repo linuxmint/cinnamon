@@ -1144,7 +1144,7 @@ st_entry_set_text (StEntry     *entry,
 
   clutter_text_set_text (CLUTTER_TEXT (priv->entry), text);
 
-  /* Note: PROP_TEXT will get notfied from our notify::text handler connected
+  /* Note: PROP_TEXT will get notified from our notify::text handler connected
    * to priv->entry. */
 }
 

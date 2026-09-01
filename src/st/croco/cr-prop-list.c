@@ -156,7 +156,7 @@ cr_prop_list_prepend (CRPropList * a_this, CRPropList * a_to_prepend)
  *@a_prop_name: property name to append
  *@a_decl: the property value to append.
  *
- *Prepends a propertie to a list of properties 
+ *Prepends a property to a list of properties 
  *
  *Returns the new property list.
  */

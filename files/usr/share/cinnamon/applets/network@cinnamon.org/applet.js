@@ -114,9 +114,9 @@ NMNetworkMenuItem.prototype = {
 
         this._label = new St.Label({ text: title });
         this.addActor(this._label);
-        let strStrengh = String(this.bestAP.strength);
-        strStrengh = strStrengh + '%';
-        this._labelStrength = new St.Label({ text: strStrengh });
+        let strStrength = String(this.bestAP.strength);
+        strStrength = strStrength + '%';
+        this._labelStrength = new St.Label({ text: strStrength });
         this.addActor(this._labelStrength, { align: St.Align.END });
         this._icons = new St.BoxLayout({ style_class: 'nm-menu-item-icons' });
         this.addActor(this._icons, { align: St.Align.END });
@@ -143,9 +143,9 @@ NMNetworkMenuItem.prototype = {
             this.bestAP = ap;
 
         this._signalIcon.icon_name = this._getIcon();
-        let strStrengh = String(this.bestAP.strength);
-        strStrengh = strStrengh + '%';
-        this._labelStrength.set_text(strStrengh);
+        let strStrength = String(this.bestAP.strength);
+        strStrength = strStrength + '%';
+        this._labelStrength.set_text(strStrength);
     },
 
     _getIcon: function() {

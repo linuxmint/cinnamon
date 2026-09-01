@@ -105,7 +105,7 @@ cr_enc_handler_get_instance (enum CREncoding a_enc)
  *Given an encoding name (called an alias name)
  *the function returns the matching encoding type.
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_enc_handler_resolve_enc_alias (const guchar * a_alias_name,
@@ -143,7 +143,7 @@ cr_enc_handler_resolve_enc_alias (const guchar * a_alias_name,
  *
  *Converts a raw input buffer into an utf8 buffer.
  *
- *Returns CR_OK upon successfull completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_enc_handler_convert_input (CREncHandler * a_this,

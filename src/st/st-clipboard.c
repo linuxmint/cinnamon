@@ -21,7 +21,7 @@
  * SECTION:st-clipboard
  * @short_description: a simple representation of the clipboard
  *
- * #StCliboard is a very simple object representation of the clipboard
+ * #StClipboard is a very simple object representation of the clipboard
  * available to applications. Text is always assumed to be UTF-8 and non-text
  * items are not handled.
  */
@@ -70,7 +70,7 @@ st_clipboard_init (StClipboard *self)
  * Get the global #StClipboard object that represents the clipboard.
  *
  * Returns: (transfer none): a #StClipboard owned by St and must not be
- * unrefferenced or freed.
+ * unreferenced or freed.
  */
 StClipboard*
 st_clipboard_get_default (void)
@@ -148,13 +148,13 @@ transfer_cb (MetaSelection *selection,
 
 /**
  * st_clipboard_get_text:
- * @clipboard: A #StCliboard
+ * @clipboard: A #StClipboard
  * @type: The type of clipboard data you want
- * @callback: (scope async): function to be called when the text is retreived
+ * @callback: (scope async): function to be called when the text is retrieved
  * @user_data: data to be passed to the callback
  *
  * Request the data from the clipboard in text form. @callback is executed
- * when the data is retreived.
+ * when the data is retrieved.
  *
  */
 void

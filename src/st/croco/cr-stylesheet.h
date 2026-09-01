@@ -74,7 +74,7 @@ struct _CRStyleSheet
 	gpointer app_data ;
 
 	/**
-	 *the reference count of this insance
+	 *the reference count of this instance
 	 *Please, don't never ever modify it
 	 *directly. Use cr_stylesheet_ref()
 	 *and cr_stylesheet_unref() instead.

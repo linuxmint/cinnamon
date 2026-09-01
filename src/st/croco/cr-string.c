@@ -25,8 +25,8 @@
 #include "cr-string.h"
 
 /**
- *Instanciates a #CRString
- *@return the newly instanciated #CRString
+ *Instantiates a #CRString
+ *@return the newly instantiated #CRString
  *Must be freed with cr_string_destroy().
  */
 CRString *
@@ -45,10 +45,10 @@ cr_string_new (void)
 }
 
 /**
- *Instanciate a string and initialise it to
+ *Instantiate a string and initialise it to
  *a_string.
  *@param a_string the initial string
- *@return the newly instanciated string.
+ *@return the newly instantiated string.
  */
 CRString  *
 cr_string_new_from_string (const gchar * a_string)
@@ -66,10 +66,10 @@ cr_string_new_from_string (const gchar * a_string)
 }
 
 /**
- *Instanciates a #CRString from an instance of GString.
+ *Instantiates a #CRString from an instance of GString.
  *@param a_string the input string that will be copied into
- *the newly instanciated #CRString
- *@return the newly instanciated #CRString.
+ *the newly instantiated #CRString
+ *@return the newly instantiated #CRString.
  */
 CRString *
 cr_string_new_from_gstring (GString const *a_string)
@@ -141,7 +141,7 @@ cr_string_peek_raw_str (CRString const *a_this)
  *Returns the length of the internal raw NULL terminated
  *string of the current instance of #CRString.
  *@param a_this the current instance of #CRString.
- *@return the len of the internal raw NULL termninated string,
+ *@return the len of the internal raw NULL terminated string,
  *of -1 if no length can be returned.
  */
 gint

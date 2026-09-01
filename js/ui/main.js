@@ -8,7 +8,7 @@
  * @runDialog (RunDialog.RunDialog): The run dialog
  * @lookingGlass (LookingGlass.Melange): The looking glass object
  * @wm (WindowManager.WindowManager): The window manager
- * @messageTray (MessageTray.MessageTray): The mesesage tray
+ * @messageTray (MessageTray.MessageTray): The message tray
  * @notificationDaemon (NotificationDaemon.NotificationDaemon): The notification daemon
  * @windowAttentionHandler (WindowAttentionHandler.WindowAttentionHandler): The window attention handle
  * @screenRecorder (ScreenRecorder.ScreenRecorder): The recorder
@@ -64,7 +64,7 @@
  * @workspace_names (array): Names of workspace
  * @deskletContainer (DeskletManager.DeskletContainer): The desklet container.
  * \
- * This is a container that contains all the desklets as childs. Its actor is
+ * This is a container that contains all the desklets as children. Its actor is
  * put between @global.bottom_window_group and @global.uiGroup.
  * @software_rendering (boolean): Whether software rendering is used
  * @animations_enabled (boolean): Whether any effects or animations should be used.

@@ -720,13 +720,13 @@ add_matched_properties (StTheme      *a_this,
   for (cur_stmt = a_nodesheet->statements; cur_stmt; cur_stmt = cur_stmt->next)
     {
       /*
-       *initialyze the selector list in which we will
+       *initialize the selector list in which we will
        *really perform the search.
        */
       sel_list = NULL;
 
       /*
-       *get the the damn selector list in
+       *get the damn selector list in
        *which we have to look
        */
       switch (cur_stmt->type)
@@ -870,7 +870,7 @@ static int
 compare_declarations (gconstpointer a,
                       gconstpointer b)
 {
-  /* g_ptr_array_sort() is broooken */
+  /* g_ptr_array_sort() is broken */
   CRDeclaration *decl_a = *(CRDeclaration **) a;
   CRDeclaration *decl_b = *(CRDeclaration **) b;
 

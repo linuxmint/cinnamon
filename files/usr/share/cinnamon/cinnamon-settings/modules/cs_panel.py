@@ -432,7 +432,7 @@ class PanelWidgetBackend(object):
         self.on_setting_changed()
 
         # unless we have a binding direction get, we need to connect the handlers after hooking up the settings
-        # this is different from the GSettingsBackend because we cant use a bind here due to the complicated nature
+        # this is different from the GSettingsBackend because we can't use a bind here due to the complicated nature
         # of the getting and setting
         if self.bind_dir is None or (self.bind_dir & Gio.SettingsBindFlags.GET == 0):
             self.connect_widget_handlers()

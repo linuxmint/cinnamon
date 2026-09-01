@@ -143,7 +143,7 @@ st_shadow_equal (StShadow *shadow,
 /**
  * st_shadow_get_box:
  * @shadow: a #StShadow
- * @actor_box: the box allocated to a #ClutterAlctor
+ * @actor_box: the box allocated to a #ClutterActor
  * @shadow_box: computed box occupied by @shadow
  *
  * Gets the box used to paint @shadow, which will be partly
@@ -160,7 +160,7 @@ st_shadow_get_box (StShadow              *shadow,
 
   /* Inset shadows are drawn below the border, so returning
    * the original box is not actually correct; still, it's
-   * good enough for the purpose of determing additional space
+   * good enough for the purpose of determining additional space
    * required outside the actor box.
    */
   if (shadow->inset)

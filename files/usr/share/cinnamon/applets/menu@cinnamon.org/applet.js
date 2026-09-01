@@ -86,7 +86,7 @@ function shorten_path(path, filename) {
  * last child in the list.
  *
  * We could have this object regenerate off a signal
- * every time the visibles have changed in our applicationBox,
+ * every time the visible items have changed in our applicationBox,
  * but we really only need it when we start keyboard
  * navigating, so increase speed, we reload only when we
  * want to use it.

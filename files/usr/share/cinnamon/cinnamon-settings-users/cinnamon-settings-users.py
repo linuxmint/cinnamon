@@ -204,16 +204,16 @@ class PasswordDialog(Gtk.Dialog):
         self.new_password.connect("changed", self._on_passwords_changed)
         table.attach(self.new_password, 1, 3, 0, 1)
 
-        self.strengh_indicator = Gtk.ProgressBar()
-        self.strengh_indicator.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
-        self.strengh_indicator.set_fraction(0.0)
-        table.attach(self.strengh_indicator, 1, 2, 1, 2, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
-        self.strengh_indicator.set_size_request(-1, 1)
+        self.strength_indicator = Gtk.ProgressBar()
+        self.strength_indicator.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
+        self.strength_indicator.set_fraction(0.0)
+        table.attach(self.strength_indicator, 1, 2, 1, 2, xoptions=Gtk.AttachOptions.EXPAND|Gtk.AttachOptions.FILL)
+        self.strength_indicator.set_size_request(-1, 1)
 
-        self.strengh_label = Gtk.Label()
-        self.strengh_label.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
-        self.strengh_label.set_alignment(1, 0.5)
-        table.attach(self.strengh_label, 2, 3, 1, 2)
+        self.strength_label = Gtk.Label()
+        self.strength_label.set_tooltip_text(_("Your new password needs to be at least 8 characters long"))
+        self.strength_label.set_alignment(1, 0.5)
+        table.attach(self.strength_label, 2, 3, 1, 2)
 
         self.confirm_password = Gtk.Entry()
         self.confirm_password.connect("changed", self._on_passwords_changed)
@@ -325,20 +325,20 @@ class PasswordDialog(Gtk.Dialog):
         else:
             self.confirm_password.set_icon_from_icon_name(Gtk.EntryIconPosition.SECONDARY, None)
         if len(new_password) < 8:
-            self.strengh_label.set_text(_("Too short"))
-            self.strengh_indicator.set_fraction(0.0)
+            self.strength_label.set_text(_("Too short"))
+            self.strength_indicator.set_fraction(0.0)
         elif strength < 0.5:
-            self.strengh_label.set_text(_("Weak"))
-            self.strengh_indicator.set_fraction(0.2)
+            self.strength_label.set_text(_("Weak"))
+            self.strength_indicator.set_fraction(0.2)
         elif strength < 0.75:
-            self.strengh_label.set_text(_("Fair"))
-            self.strengh_indicator.set_fraction(0.4)
+            self.strength_label.set_text(_("Fair"))
+            self.strength_indicator.set_fraction(0.4)
         elif strength < 0.9:
-            self.strengh_label.set_text(_("Good"))
-            self.strengh_indicator.set_fraction(0.6)
+            self.strength_label.set_text(_("Good"))
+            self.strength_indicator.set_fraction(0.6)
         else:
-            self.strengh_label.set_text(_("Strong"))
-            self.strengh_indicator.set_fraction(1.0)
+            self.strength_label.set_text(_("Strong"))
+            self.strength_indicator.set_fraction(1.0)
 
         self.check_passwords()
 

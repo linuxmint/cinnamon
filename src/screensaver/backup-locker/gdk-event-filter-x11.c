@@ -113,7 +113,7 @@ cs_gdk_event_filter_xevent (CsGdkEventFilter *filter,
 
     ev = xevent;
     /* MapNotify is used to tell us when new windows are mapped.
-       ConfigureNofify is used to tell us when windows are raised. */
+       ConfigureNotify is used to tell us when windows are raised. */
     switch (ev->xany.type) {
         case MapNotify:
           {

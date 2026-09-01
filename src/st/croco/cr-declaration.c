@@ -313,7 +313,7 @@ cr_declaration_append (CRDeclaration * a_this, CRDeclaration * a_new)
  *@a_decls: the declaration to unlink.
  *
  *Unlinks the declaration from the declaration list.
- *case of a successfull completion, NULL otherwise.
+ *case of a successful completion, NULL otherwise.
  *
  *Returns a pointer to the unlinked declaration in
  */
@@ -599,7 +599,7 @@ cr_declaration_list_to_string (CRDeclaration const * a_this, gulong a_indent)
  *to put before the actual serialisation.
  *
  *Serializes the declaration list into a string
- *Returns the serialized form the declararation.
+ *Returns the serialized form of the declaration.
  */
 guchar *
 cr_declaration_list_to_string2 (CRDeclaration const * a_this,

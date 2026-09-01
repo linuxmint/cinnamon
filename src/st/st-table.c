@@ -617,7 +617,7 @@ st_table_preferred_allocate (ClutterActor          *self,
        * First check that we have a non-zero span. Then we loop over each of
        * the columns that we're spanning but we stop short if we go past the
        * number of columns in the table. This is necessary to avoid accessing
-       * uninitialised memory. We add the spacing in here too since we only
+       * uninitialized memory. We add the spacing in here too since we only
        * want to add as much spacing as times we successfully span.
        */
       if (col + col_span > priv->n_cols)

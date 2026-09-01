@@ -52,7 +52,7 @@ b2.add(new St.Label({ x: 50,
 
 ////////////////////////////////////////////////////////////////////////////////
 
-function createCollapsableBox(width) {
+function createCollapsibleBox(width) {
     let b = new St.BoxLayout({ width: width,
                                style: 'border: 1px solid black;'
                                       + 'font: 13px Sans;' });
@@ -81,7 +81,7 @@ function createCollapsableBox(width) {
 }
 
 for (let width = 200; width <= 500; width += 60 ) {
-    vbox.add(createCollapsableBox (width),
+    vbox.add(createCollapsibleBox (width),
              { x_fill: false,
                x_align: St.Align.MIDDLE });
 }

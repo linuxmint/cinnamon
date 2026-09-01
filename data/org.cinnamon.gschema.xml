@@ -986,7 +986,7 @@
 
     <key name="memory-limit-enabled" type="b">
       <default>true</default>
-      <summary>Whether to restart Cinnamon when it reachs the memory limit</summary>
+      <summary>Whether to restart Cinnamon when it reaches the memory limit</summary>
       <description></description>
     </key>
 
@@ -998,7 +998,7 @@
 
     <key name="check-frequency" type="i">
       <default>300</default>
-      <summary>Time between each checks (in seconds)</summary>
+      <summary>Time between each check (in seconds)</summary>
       <description></description>
     </key>
 
@@ -1046,7 +1046,7 @@
     <key name="launch-file-manager-after-save" type="b">
       <default>false</default>
       <summary>Launch file manager after saving</summary>
-      <description>When enabled, opens the file manager with the saved screenshot pre-selected after a successful save.</description>
+      <description>When enabled, opens the file manager with the saved screenshot preselected after a successful save.</description>
     </key>
 
     <key name="autosave-to-file" type="b">

@@ -200,7 +200,7 @@ class TestLocaleToXKB(unittest.TestCase):
 
 
 class LoadXKBMapplings(unittest.TestCase):
-    def test_dictionnary(self):
+    def test_dictionary(self):
         self.assertIsInstance(cldr2json.load_xkb_mappings(), dict)
 
     def test_mapping(self):

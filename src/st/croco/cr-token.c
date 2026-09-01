@@ -148,10 +148,10 @@ cr_token_new (void)
 }
 
 /**
- *Sets the type of curren instance of
+ *Sets the type of current instance of
  *#CRToken to 'S_TK' (S in the css2 spec)
  *@param a_this the current instance of #CRToken.
- *@return CR_OK upon successfull completion, an error
+ *@return CR_OK upon successful completion, an error
  *code otherwise.
  */
 enum CRStatus
@@ -170,7 +170,7 @@ cr_token_set_s (CRToken * a_this)
  *Sets the type of the current instance of
  *#CRToken to 'CDO_TK' (CDO as said by the css2 spec)
  *@param a_this the current instance of #CRToken.
- *@return CR_OK upon successfull completion, an error
+ *@return CR_OK upon successful completion, an error
  *code otherwise.
  */
 enum CRStatus
@@ -189,7 +189,7 @@ cr_token_set_cdo (CRToken * a_this)
  *Sets the type of the current token to
  *CDC_TK (CDC as said by the css2 spec).
  *@param a_this the current instance of #CRToken.
- *@return CR_OK upon successfull completion, an error
+ *@return CR_OK upon successful completion, an error
  *code otherwise.
  */
 enum CRStatus
@@ -208,7 +208,7 @@ cr_token_set_cdc (CRToken * a_this)
  *Sets the type of the current instance of
  *#CRToken to INCLUDES_TK (INCLUDES as said by the css2 spec).
  *@param a_this the current instance of #CRToken.
- *@return CR_OK upon successfull completion, an error
+ *@return CR_OK upon successful completion, an error
  *code otherwise.
  */
 enum CRStatus
@@ -227,7 +227,7 @@ cr_token_set_includes (CRToken * a_this)
  *Sets the type of the current instance of
  *#CRToken to DASHMATCH_TK (DASHMATCH as said by the css2 spec).
  *@param a_this the current instance of #CRToken.
- *@return CR_OK upon successfull completion, an error
+ *@return CR_OK upon successful completion, an error
  *code otherwise.
  */
 enum CRStatus

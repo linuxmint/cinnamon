@@ -1511,7 +1511,7 @@ cinnamon_recorder_record (CinnamonRecorder  *recorder,
   recorder_update_pointer (recorder);
   recorder_add_update_pointer_timeout (recorder);
 
-  /* Disable unredirection while we are recoring */
+  /* Disable unredirection while we are recording */
   meta_disable_unredirect_for_display (cinnamon_global_get_display (cinnamon_global_get ()));
 
   /* Set up repaint hook */
@@ -1562,7 +1562,7 @@ cinnamon_recorder_close (CinnamonRecorder *recorder)
 
   recorder->state = RECORDER_STATE_CLOSED;
 
-  /* Reenable after the recording */
+  /* Re-enable after the recording */
   meta_enable_unredirect_for_display (cinnamon_global_get_display (cinnamon_global_get ()));
 
   g_message ("Recording stopped");

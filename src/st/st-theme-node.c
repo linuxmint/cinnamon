@@ -3155,9 +3155,9 @@ st_theme_node_get_border_image (StThemeNode *node)
  * st_theme_node_get_horizontal_padding:
  * @node: a #StThemeNode
  *
- * Gets the total horizonal padding (left + right padding)
+ * Gets the total horizontal padding (left + right padding)
  *
- * Return value: the total horizonal padding
+ * Return value: the total horizontal padding
  *   in pixels
  */
 double

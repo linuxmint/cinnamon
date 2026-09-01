@@ -29,7 +29,7 @@ var deskletsDragging = false;
 var userDeskletsDir;
 
 var mouseTrackEnabled = false;
-var mouseTrackTimoutId = 0;
+var mouseTrackTimeoutId = 0;
 var promises = [];
 
 var deskletChangeKey = 0;
@@ -90,11 +90,11 @@ function getDeskletDefinition(definition) {
 
 function updateMouseTracking() {
     let enable = definitions.length > 0;
-    if (enable && !mouseTrackTimoutId) {
-        mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
-    } else if (!enable && mouseTrackTimoutId) {
-        Mainloop.source_remove(mouseTrackTimoutId);
-        mouseTrackTimoutId = 0;
+    if (enable && !mouseTrackTimeoutId) {
+        mouseTrackTimeoutId = Mainloop.timeout_add(500, checkMouseTracking);
+    } else if (!enable && mouseTrackTimeoutId) {
+        Mainloop.source_remove(mouseTrackTimeoutId);
+        mouseTrackTimeoutId = 0;
 
         for (let i = 0; i < definitions.length; i++) {
             if (definitions[i].desklet) {
@@ -145,7 +145,7 @@ function removeDesklet(uuid, desklet_id){
 }
 
 /**
- * getDefinitons:
+ * getDefinitions:
  *
  * Gets the list of enabled desklets. Returns an associative array of three items:
  * raw: the unprocessed array from gsettings
@@ -264,7 +264,7 @@ function _unloadDesklet(deskletDefinition, deleteConfig) {
         try {
             deskletDefinition.desklet.destroy(deleteConfig);
         } catch (e) {
-            global.logError("Failed to destroy desket: " + uuid + "/" + desklet_id, e);
+            global.logError("Failed to destroy desklet: " + uuid + "/" + desklet_id, e);
         }
 
         if (deleteConfig) {

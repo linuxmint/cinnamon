@@ -1030,7 +1030,7 @@ cr_statement_parse_from_buf (const guchar * a_buf, enum CREncoding a_encoding)
  *@a_buf: the buffer to parse.
  *@a_enc: the character encoding of a_buf.
  *
- *Parses a buffer that contains a ruleset statement an instanciates
+ *Parses a buffer that contains a ruleset statement an instantiates
  *a #CRStatement of type RULESET_STMT.
  *
  *Returns the newly built instance of #CRStatement in case of successful parsing,
@@ -1247,7 +1247,7 @@ cr_statement_at_media_rule_parse_from_buf (const guchar * a_buf,
  *in the \@media rule.
  *@a_media: the media string list. A list of GString pointers.
  *
- *Instanciates an instance of #CRStatement of type
+ *Instantiates an instance of #CRStatement of type
  *AT_MEDIA_RULE_STMT (\@media ruleset).
  *
  */
@@ -1308,7 +1308,7 @@ cr_statement_new_at_media_rule (CRStyleSheet * a_sheet,
  *to be imported.
  *@a_sheet: the imported parsed stylesheet.
  *
- *Creates a new instance of #CRStatment of type
+ *Creates a new instance of #CRStatement of type
  *#CRAtImportRule.
  *
  *Returns the newly built instance of #CRStatement.
@@ -1356,7 +1356,7 @@ cr_statement_new_at_import_rule (CRStyleSheet * a_container_sheet,
  *@a_encoding: the encoding of a_buf.
  *
  *Parses a buffer that contains an "\@import" rule and
- *instanciate a #CRStatement of type AT_IMPORT_RULE_STMT
+ *instantiate a #CRStatement of type AT_IMPORT_RULE_STMT
  *
  *Returns the newly built instance of #CRStatement in case of 
  *a successful parsing, NULL otherwise.
@@ -1699,7 +1699,7 @@ cr_statement_new_at_font_face_rule (CRStyleSheet * a_sheet,
  *Parses a buffer that contains an "\@font-face" rule and builds
  *an instance of #CRStatement of type AT_FONT_FACE_RULE_STMT out of it.
  *
- *Returns the newly built instance of #CRStatement in case of successufull
+ *Returns the newly built instance of #CRStatement in case of successful
  *parsing, NULL otherwise.
  */
 CRStatement *
@@ -2110,7 +2110,7 @@ cr_statement_ruleset_append_decl2 (CRStatement * a_this,
  *@a_this: the current statement.
  *@a_declaration: the declaration to append.
  *
- *Returns CR_OK upon sucessful completion, an error code
+ *Returns CR_OK upon successful completion, an error code
  *otherwise.
  */
 enum CRStatus
@@ -2164,7 +2164,7 @@ cr_statement_at_import_rule_set_imported_sheet (CRStatement * a_this,
  *only if the function returns CR_OK.
  *
  *Gets the stylesheet contained by the \@import rule statement.
- *Returns CR_OK upon sucessful completion, an error code otherwise.
+ *Returns CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_statement_at_import_rule_get_imported_sheet (CRStatement * a_this,

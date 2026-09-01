@@ -67,7 +67,7 @@ class Module:
                 self.proxy_handler = CsdDBusProxyHandler(self._on_proxy_ready)
             else:
                 print('using systemd backend')
-                self.proxy_handler = SytemdDBusProxyHandler(self._on_proxy_ready)
+                self.proxy_handler = SystemdDBusProxyHandler(self._on_proxy_ready)
 
             self.sync_24h_to_gnome()
 
@@ -136,7 +136,7 @@ class Module:
         seconds = int((self.datetime - datetime.datetime(1970, 1, 1, tzinfo=datetime.timezone.utc)).total_seconds())
         self.proxy_handler.set_time(seconds)
 
-class SytemdDBusProxyHandler(object):
+class SystemdDBusProxyHandler(object):
     def __init__(self, proxy_ready_callback):
         self.proxy_ready_callback = proxy_ready_callback
         try:

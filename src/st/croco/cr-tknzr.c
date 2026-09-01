@@ -106,7 +106,7 @@ CHECK_PARSING_STATUS (status, TRUE) \
  *Reads the next char from the input stream of the current parser.
  *In case of error, jumps to the "error:" label located in the
  *function where this macro is called.
- *@param parser the curent instance of #CRTknzr
+ *@param parser the current instance of #CRTknzr
  *@param to_char a pointer to the guint32 char where to store
  *the character read.
  */
@@ -250,10 +250,10 @@ static enum CRStatus cr_tknzr_parse_num (CRTknzr * a_this,
  * w ::= [ \t\r\n\f]*
  *
  *@param a_this the current instance of #CRTknzr.
- *@param a_start out param. Upon successfull completion, points
+ *@param a_start out param. Upon successful completion, points
  *to the beginning of the parsed white space, points to NULL otherwise.
  *Can also point to NULL is there is no white space actually.
- *@param a_end out param. Upon successfull completion, points
+ *@param a_end out param. Upon successful completion, points
  *to the end of the parsed white space, points to NULL otherwise.
  *Can also point to NULL is there is no white space actually.
  */
@@ -329,7 +329,7 @@ cr_tknzr_parse_w (CRTknzr * a_this,
  *parsed string.
  *@param a_end a pointer to the last character of the successfully parsed
  *string.
- *@result CR_OK uppon successfull completion, an error code otherwise.
+ *@result CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_parse_nl (CRTknzr * a_this, 
@@ -387,7 +387,7 @@ cr_tknzr_parse_nl (CRTknzr * a_this,
  *In any cases, it stops when it encounters a non white space character.
  *
  *@param a_this the current instance of #CRTknzr.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_try_to_skip_spaces (CRTknzr * a_this)
@@ -519,7 +519,7 @@ cr_tknzr_parse_comment (CRTknzr * a_this,
  *the caller.
  *@param a_end out parameter. A pointer to the last character
  *of the unicode escape sequence. Must *NOT* be deleted by the caller.
- *@return CR_OK if parsing succeded, an error code otherwise.
+ *@return CR_OK if parsing succeeded, an error code otherwise.
  *Error code can be either CR_PARSING_ERROR if the string 
  *parsed just doesn't
  *respect the production or another error if a 
@@ -658,12 +658,12 @@ cr_tknzr_parse_escape (CRTknzr * a_this, guint32 * a_esc_code,
  *string2 ::= \'([\t !#$%&(-~]|\\{nl}|\"|{nonascii}|{escape})*\'
  *
  *@param a_this the current instance of #CRTknzr.
- *@param a_start out parameter. Upon successfull completion, 
+ *@param a_start out parameter. Upon successful completion, 
  *points to the beginning of the string, points to an undefined value
  *otherwise.
- *@param a_end out parameter. Upon successfull completion, points to
+ *@param a_end out parameter. Upon successful completion, points to
  *the beginning of the string, points to an undefined value otherwise.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_parse_string (CRTknzr * a_this, CRString ** a_str)
@@ -788,7 +788,7 @@ cr_tknzr_parse_string (CRTknzr * a_this, CRString ** a_str)
  *@param a_end out param. A pointer to the ending point of the
  *token.
  *@param a_char out param. The actual parsed nmchar.
- *@return CR_OK upon successfull completion, 
+ *@return CR_OK upon successful completion, 
  *an error code otherwise.
  */
 static enum CRStatus
@@ -855,7 +855,7 @@ cr_tknzr_parse_nmstart (CRTknzr * a_this,
  *@param a_end out param. A pointer to the ending point of the
  *token.
  *@param a_char out param. The actual parsed nmchar.
- *@return CR_OK upon successfull completion, 
+ *@return CR_OK upon successful completion, 
  *an error code otherwise.
  */
 static enum CRStatus
@@ -915,14 +915,14 @@ cr_tknzr_parse_nmchar (CRTknzr * a_this, guint32 * a_char,
  *
  *Actually parses it using the css3 grammar:
  *ident ::= -?{nmstart}{nmchar}*
- *@param a_this the currens instance of #CRTknzr.
+ *@param a_this the current instance of #CRTknzr.
  *
  *@param a_str a pointer to parsed ident. If *a_str is NULL,
  *this function allocates a new instance of CRString. If not, 
  *the function just appends the parsed string to the one passed.
  *In both cases it is up to the caller to free *a_str.
  *
- *@return CR_OK upon successfull completion, an error code 
+ *@return CR_OK upon successful completion, an error code 
  *otherwise.
  */
 static enum CRStatus
@@ -1010,7 +1010,7 @@ cr_tknzr_parse_ident (CRTknzr * a_this, CRString ** a_str)
  *of CRString. If not, it just appends the parsed name to the passed *a_str.
  *In both cases, it is up to the caller to free *a_str.
  *
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_parse_name (CRTknzr * a_this, 
@@ -1116,7 +1116,7 @@ cr_tknzr_parse_hash (CRTknzr * a_this, CRString ** a_str)
  *
  *@param a_this the current instance of #CRTknzr.
  *@param a_str the successfully parsed url.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_parse_uri (CRTknzr * a_this, 
@@ -1238,7 +1238,7 @@ cr_tknzr_parse_uri (CRTknzr * a_this,
  *
  *@param a_this the "this pointer" of the current instance of
  *@param a_rgb out parameter the parsed rgb.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_parse_rgb (CRTknzr * a_this, CRRgb ** a_rgb)
@@ -1378,7 +1378,7 @@ cr_tknzr_parse_rgb (CRTknzr * a_this, CRRgb ** a_rgb)
  *the parsed atkeyword to the end of *a_str. In both cases it is up to
  *the caller to free *a_str.
  *
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 static enum CRStatus
 cr_tknzr_parse_atkeyword (CRTknzr * a_this, 
@@ -1472,11 +1472,11 @@ cr_tknzr_parse_important (CRTknzr * a_this,
  *[0-9]+|[0-9]*\.[0-9]+
  *@param a_this the current instance of #CRTknzr.
  *@param a_num out parameter. The parsed number.
- *@return CR_OK upon successfull completion, 
+ *@return CR_OK upon successful completion, 
  *an error code otherwise.
  *
  *The CSS specification says that numbers may be
- *preceeded by '+' or '-' to indicate the sign.
+ *preceded by '+' or '-' to indicate the sign.
  *Technically, the "num" construction as defined
  *by the tokenizer doesn't allow this, but we parse
  *it here for simplicity.
@@ -1717,7 +1717,7 @@ cr_tknzr_get_input (CRTknzr * a_this, CRInput ** a_input)
  *#CRParser.
  *@param a_byte out parameter the place where to store the byte
  *read.
- *@return CR_OK upon successfull completion, an error 
+ *@return CR_OK upon successful completion, an error 
  *code otherwise.
  */
 enum CRStatus
@@ -1733,7 +1733,7 @@ cr_tknzr_read_byte (CRTknzr * a_this, guchar * a_byte)
  *Reads the next char from the parser input stream.
  *@param a_this the current instance of #CRTknzr.
  *@param a_char out parameter. The read char.
- *@return CR_OK upon successfull completion, an error code
+ *@return CR_OK upon successful completion, an error code
  *otherwise.
  */
 enum CRStatus
@@ -1758,8 +1758,8 @@ cr_tknzr_read_char (CRTknzr * a_this, guint32 * a_char)
  *To "peek a char" means reads the next char without consuming it.
  *Subsequent calls to this function return the same char.
  *@param a_this the current instance of #CRTknzr.
- *@param a_char out parameter. The peeked char uppon successfull completion.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@param a_char out parameter. The peeked char upon successful completion.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_tknzr_peek_char (CRTknzr * a_this, guint32 * a_char)
@@ -1779,13 +1779,13 @@ cr_tknzr_peek_char (CRTknzr * a_this, guint32 * a_char)
 }
 
 /**
- *Peeks a byte ahead at a given postion in the parser input stream.
+ *Peeks a byte ahead at a given position in the parser input stream.
  *@param a_this the current instance of #CRTknzr.
  *@param a_offset the offset of the peeked byte starting from the current
  *byte in the parser input stream.
  *@param a_byte out parameter. The peeked byte upon 
- *successfull completion.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *successful completion.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_tknzr_peek_byte (CRTknzr * a_this, gulong a_offset, guchar * a_byte)
@@ -1811,7 +1811,7 @@ cr_tknzr_peek_byte (CRTknzr * a_this, gulong a_offset, guchar * a_byte)
  *@param a_offset the offset of the peeked byte starting from the current
  *byte in the parser input stream.
  *@param a_eof out parameter. If not NULL, is set to TRUE if we reached end of
- *file, FALE otherwise. If the caller sets it to NULL, this parameter 
+ *file, FALSE otherwise. If the caller sets it to NULL, this parameter 
  *is just ignored.
  *@return the peeked byte.
  */
@@ -1962,7 +1962,7 @@ cr_tknzr_unget_token (CRTknzr * a_this, CRToken * a_token)
  *@param a_tk out parameter. The returned token.
  *for the sake of mem leak avoidance, *a_tk must
  *be NULL.
- *@param CR_OK upon successfull completion, an error code
+ *@param CR_OK upon successful completion, an error code
  *otherwise.
  */
 enum CRStatus
@@ -2562,7 +2562,7 @@ cr_tknzr_get_next_token (CRTknzr * a_this, CRToken ** a_tk)
                                         status = cr_token_set_function
                                                 (token, str);
                                         CHECK_PARSING_STATUS (status, TRUE);
-                                        /*ownership is transfered
+                                        /*ownership is transferred
                                          *to token by cr_token_set_function.
                                          */
                                         if (str) {

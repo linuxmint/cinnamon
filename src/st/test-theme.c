@@ -357,7 +357,7 @@ test_border (void)
 
   /* group2 is defined as having a thin black border along the top three
    * sides with rounded joins, then a square-joined green border at the
-   * botttom
+   * bottom
    */
 
   assert_length ("group2", "border-top-width", 2.,

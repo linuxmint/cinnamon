@@ -644,7 +644,7 @@ def get_format_data(image, format):
     .. see also:: :func:`thumbnail.get_format_data`
 
     :param image: source image
-    :type impage: pil.Image
+    :type image: pil.Image
     :param format: image file type format
     :type format: string
     :returns: byte data of the image
@@ -658,7 +658,7 @@ def get_palette(image):
     """Gets the palette of an image as a sequence of (r, g, b) tuples.
 
     :param image: image with a palette
-    :type impage: pil.Image
+    :type image: pil.Image
     :returns: palette colors
     :rtype: a sequence of (r, g, b) tuples
     """
@@ -671,7 +671,7 @@ def get_used_palette_indices(image):
     """Get used color indices in an image palette.
 
     :param image: image with a palette
-    :type impage: pil.Image
+    :type image: pil.Image
     :returns: used colors of the palette
     :rtype: set of integers (0-255)
     """
@@ -682,7 +682,7 @@ def get_used_palette_colors(image):
     """Get used colors in an image palette as a sequence of (r, g, b) tuples.
 
     :param image: image with a palette
-    :type impage: pil.Image
+    :type image: pil.Image
     :returns: used colors of the palette
     :rtype: sequence of (r, g, b) tuples
     """
@@ -699,7 +699,7 @@ def get_unused_palette_indices(image):
     """Get unused color indices in an image palette.
 
     :param image: image with a palette
-    :type impage: pil.Image
+    :type image: pil.Image
     :returns: unused color indices of the palette
     :rtype: set of 0-255
     """
@@ -836,7 +836,7 @@ def paste(destination, source, box=(0, 0), mask=None, force=False):
     # Paste on top
     if mask and source == mask:
         if has_alpha(source):
-            # invert_alpha = the transparant pixels of the destination
+            # invert_alpha = the transparent pixels of the destination
             if has_alpha(destination) and (destination.size == source.size
                                            or force):
                 invert_alpha = ImageOps.invert(get_alpha(destination))
@@ -1057,8 +1057,8 @@ def save_safely(image, filename):
 def get_reverse_transposition(transposition):
     """Get the reverse transposition method.
 
-    :param transposition: transpostion, e.g. ``Image.ROTATE_90``
-    :returns: inverse transpostion, e.g. ``Image.ROTATE_270``
+    :param transposition: transposition, e.g. ``Image.ROTATE_90``
+    :returns: inverse transposition, e.g. ``Image.ROTATE_270``
     """
     if transposition == Image.ROTATE_90:
         return Image.ROTATE_270
@@ -1073,7 +1073,7 @@ def get_exif_transposition(orientation):
 
     :param orientation: exif orientation
     :type orientation: int
-    :returns: (transposition methods, reverse transpostion methods)
+    :returns: (transposition methods, reverse transposition methods)
     :rtype: tuple
     """
     #see EXIF.py

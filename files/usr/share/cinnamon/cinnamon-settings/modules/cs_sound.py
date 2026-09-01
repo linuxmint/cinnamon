@@ -511,7 +511,7 @@ class Module:
 
             self.appList = {}
 
-            self.inializeController()
+            self.initializeController()
             self.buildLayout()
 
         self.checkAppState()
@@ -644,7 +644,7 @@ class Module:
         else:
             self.outVolume.adjustment.set_upper(100)
 
-    def inializeController(self):
+    def initializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")
         self.controller.connect("state-changed", self.setChannelMap)
         self.controller.connect("output-added", self.deviceAdded, "output")

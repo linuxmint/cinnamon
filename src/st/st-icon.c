@@ -709,7 +709,7 @@ st_icon_set_gicon (StIcon *icon, GIcon *gicon)
  * st_icon_get_icon_size:
  * @icon: an icon
  *
- * Gets the size explicit size on the icon. This is not necesariily
+ * Gets the explicit size on the icon. This is not necessarily
  *  the size that the icon will actually be displayed at.
  *
  * Return value: the size explicitly set, or -1 if no size has been set

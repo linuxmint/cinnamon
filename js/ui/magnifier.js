@@ -104,10 +104,10 @@ var MouseSpriteContent = GObject.registerClass({
         if (!this._texture)
             return 1;
 
-        /* This is a workaround to guess the sprite scale; while it works file
+        /* This is a workaround to guess the sprite scale; while it works fine
          * in normal scenarios, it's not guaranteed to work in all the cases,
          * and so we should actually add an API to mutter that will allow us
-         * to know the real spirte texture scaling in order to adapt it to the
+         * to know the real sprite texture scaling in order to adapt it to the
          * wanted one. */
         let avgSize = (this._texture.get_width() + this._texture.get_height()) / 2;
         return Math.max (1, Math.floor (avgSize / Meta.prefs_get_cursor_size() + .1));
@@ -1113,7 +1113,7 @@ var ZoomRegion = class ZoomRegion {
 
     /**
      * getScreenPosition:
-     * Tell the outside world what the current mode is -- magnifiying the
+     * Tell the outside world what the current mode is -- magnifying the
      * top half, bottom half, etc.
      * @return:  the current mode.
      */

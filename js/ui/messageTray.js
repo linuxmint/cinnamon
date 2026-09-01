@@ -1017,8 +1017,8 @@ MessageTray.prototype = {
 
         let [x, y, mods] = global.get_pointer();
         // We save the distance of the mouse to the notification at the time
-        // when we started showing the it and then we update it in
-        // _notifiationTimeout() if the mouse is moving towards the notification.
+        // when we started showing it and then we update it in
+        // _notificationTimeout() if the mouse is moving towards the notification.
         // We don't pop down the notification if the mouse is moving towards it.
         this._lastSeenMouseDistance = Math.abs(this._notificationBin.y - y);
     },

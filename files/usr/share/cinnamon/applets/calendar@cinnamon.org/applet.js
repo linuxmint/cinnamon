@@ -173,7 +173,7 @@ class CinnamonCalendarApplet extends Applet.Applet {
                     this._updateClockAndDate();
             });
 
-            // Change the format string if the mouse is over the calender to account for the tooltip.
+            // Change the format string if the mouse is over the calendar to account for the tooltip.
             this._is_entered = false;
             this.actor.connect('enter-event', Lang.bind(this, function (menu, event) {
                 this._is_entered = true;

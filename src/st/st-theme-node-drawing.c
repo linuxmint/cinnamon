@@ -2185,7 +2185,7 @@ st_theme_node_paint (StThemeNode           *node,
  * @other: a different #StThemeNode
  *
  * Copy cached painting state from @other to @node. This function can be used to
- * optimize redrawing cached background images when the style on an element changess
+ * optimize redrawing cached background images when the style on an element changes
  * in a way that doesn't affect background drawing. This function must only be called
  * if st_theme_node_paint_equal (node, other) returns %TRUE.
  */

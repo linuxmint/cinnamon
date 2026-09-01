@@ -376,7 +376,7 @@ texture_load_data_free (gpointer p)
  * @pixbuf_loader: #GdkPixbufLoader loading the image
  * @width: the original width of the image
  * @height: the original height of the image
- * @data: pointer to the #Dimensions sructure containing available width and height for the image,
+ * @data: pointer to the #Dimensions structure containing available width and height for the image,
  *        available width or height can be -1 if the dimension is not limited
  *
  * Private function.
@@ -1045,7 +1045,7 @@ st_texture_cache_load_gicon_with_scale (StTextureCache    *cache,
   gicon_string = g_icon_to_string (icon);
   /* A return value of NULL indicates that the icon can not be serialized,
    * so don't have a unique identifier for it as a cache key, and thus can't
-   * be cached. If it is cachable, we hardcode a policy of FOREVER here for
+   * be cached. If it is cacheable, we hardcode a policy of FOREVER here for
    * now; we should actually blow this away on icon theme changes probably */
   policy = gicon_string != NULL ? ST_TEXTURE_CACHE_POLICY_FOREVER
                                 : ST_TEXTURE_CACHE_POLICY_NONE;

@@ -68,7 +68,7 @@
       <informalexample>
         <programlisting>
           const Cairo = imports.cairo; //Cairo graphics
-          const Lang = imports.lang; //useful JavaScript functions for extensing the language
+          const Lang = imports.lang; //useful JavaScript functions for extending the language
           const Gettext = imports.gettext; //Gettext translation
           const TweenEquations = imports.tweener.equations; //Tween equations for animations
         </programlisting>

@@ -75,7 +75,7 @@ orientation_funcs = [None,
                      ]
 def apply_orientation(im):
     """
-    Extract the oritentation EXIF tag from the image, which should be a PIL Image instance,
+    Extract the orientation EXIF tag from the image, which should be a PIL Image instance,
     and if there is an orientation tag that would rotate the image, apply that rotation to
     the Image instance given to do an in-place rotation.
 

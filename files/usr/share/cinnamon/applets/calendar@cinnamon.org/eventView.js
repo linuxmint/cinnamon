@@ -125,7 +125,7 @@ class EventData {
         this.modified = mod_time;
         // This is the last monotonic time we contacted our server to update our events. This
         // is used to cull deleted events.
-        this.last_update_timetamp = last_update_timestamp;
+        this.last_update_timestamp = last_update_timestamp;
     }
 
     starts_on_day(date) {
@@ -176,7 +176,7 @@ class EventDataList {
         this._events = {};
     }
 
-    add_or_update(event_data, last_update_timetamp) {
+    add_or_update(event_data, last_update_timestamp) {
         let existing = this._events[event_data.id];
 
         if (existing === undefined) {
@@ -184,7 +184,7 @@ class EventDataList {
         }
 
         if (existing !== undefined && event_data.equal(existing)) {
-            existing.last_update_timetamp = last_update_timetamp;
+            existing.last_update_timestamp = last_update_timestamp;
             existing.color = event_data.color;
             return false;
         }
@@ -209,10 +209,10 @@ class EventDataList {
         return true;
     }
 
-    cull_removed_events(last_update_timetamp) {
+    cull_removed_events(last_update_timestamp) {
         let to_remove = [];
         for (let id in this._events) {
-            if (this._events[id].last_update_timetamp < last_update_timetamp) {
+            if (this._events[id].last_update_timestamp < last_update_timestamp) {
                 to_remove.push(id);
             }
         }

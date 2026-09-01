@@ -1,6 +1,6 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 /*
- * st-scrollable-wiget.c: a scrollable actor
+ * st-viewport.c: a scrollable actor
  *
  * Copyright 2009 Intel Corporation.
  * Copyright 2009 Abderrahim Kitouni

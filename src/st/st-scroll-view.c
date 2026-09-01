@@ -49,7 +49,7 @@
  * inside the #StAdjustment.
  *
  * The second simplification that we make that allows us to implement
- * a straighforward height-for-width negotiation without multiple
+ * a straightforward height-for-width negotiation without multiple
  * allocate passes is that when the scrollbar policy is
  * AUTO, we always reserve space for the scrollbar in the
  * reported minimum and natural size.
@@ -186,7 +186,7 @@ st_scroll_view_get_property (GObject    *object,
 /**
  * st_scroll_view_update_fade_effect:
  * @scroll: a #StScrollView
- * @vfade_offset: The length of the veritcal fade effect, in pixels.
+ * @vfade_offset: The length of the vertical fade effect, in pixels.
  * @hfade_offset: The length of the horizontal fade effect, in pixels.
  *
  * Sets the height of the fade area area in pixels. A value of 0
@@ -821,7 +821,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
   clutter_actor_allocate (priv->hscroll, &child_box);
 
   /* In case the scrollbar policy is NEVER or EXTERNAL or scrollbars
-   * should be overlayed, we don't trim the content box allocation by
+   * should be overlaid, we don't trim the content box allocation by
    * the scrollbar size.
    * Fold this into the scrollbar sizes to simplify the rest of the
    * computations.

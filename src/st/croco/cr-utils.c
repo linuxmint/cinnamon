@@ -28,7 +28,7 @@
  *@file:
  *Some misc utility functions used
  *in the libcroco.
- *Note that troughout this file I will
+ *Note that throughout this file I will
  *refer to the CSS SPECIFICATIONS DOCUMENTATION
  *written by the w3c guys. You can find that document
  *at http://www.w3.org/TR/REC-CSS2/ .
@@ -40,8 +40,8 @@
  ****************************/
 
 /*
- *Here is the correspondance between the ucs-4 charactere codes
- *and there matching utf-8 encoding pattern as dscribed by RFC 2279:
+ *Here is the correspondence between the ucs-4 character codes
+ *and there matching utf-8 encoding pattern as described by RFC 2279:
  *
  *UCS-4 range (hex.)    UTF-8 octet sequence (binary)
  *------------------    -----------------------------
@@ -57,12 +57,12 @@
  *Given an utf8 string buffer, calculates
  *the length of this string if it was encoded
  *in ucs4.
- *@param a_in_start a pointer to the begining of
+ *@param a_in_start a pointer to the beginning of
  *the input utf8 string.
- *@param a_in_end a pointre to the end of the input
+ *@param a_in_end a pointer to the end of the input
  *utf8 string (points to the last byte of the buffer)
  *@param a_len out parameter the calculated length.
- *@return CR_OK upon succesfull completion, an error code
+ *@return CR_OK upon successful completion, an error code
  *otherwise.
  */
 enum CRStatus
@@ -181,7 +181,7 @@ cr_utils_utf8_str_len_as_ucs4 (const guchar * a_in_start,
  *buffer.
  *@param a_in_end a pointer to the end of the input buffer.
  *@param a_len out parameter. The computed length.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_ucs4_str_len_as_utf8 (const guint32 * a_in_start,
@@ -224,7 +224,7 @@ cr_utils_ucs4_str_len_as_utf8 (const guint32 * a_in_start,
  *buffer.
  *@param a_in_end a pointer to the end of the input buffer.
  *@param a_len out parameter. The computed length.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_ucs1_str_len_as_utf8 (const guchar * a_in_start,
@@ -264,7 +264,7 @@ cr_utils_ucs1_str_len_as_utf8 (const guchar * a_in_start,
  *If this size is actually smaller than the real needed size, the function
  *just converts what it can and returns a success status. After return,
  *this param points to the actual number of characters decoded.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_utf8_to_ucs4 (const guchar * a_in,
@@ -422,7 +422,7 @@ cr_utils_utf8_to_ucs4 (const guchar * a_in,
  *@param a_out output parameter. The resulting read char.
  *@param a_consumed the number of the bytes consumed to
  *decode the returned character code.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_read_char_from_utf8_buf (const guchar * a_in,
@@ -697,12 +697,12 @@ cr_utils_utf8_str_len_as_ucs1 (const guchar * a_in_start,
  *@param a_in the input string to convert.
  *@param a_in_len in/out parameter. The length of the input
  *string. After return, points to the actual number of bytes
- *consumed. This can be usefull to debug the input stream in case
+ *consumed. This can be useful to debug the input stream in case
  *of encoding error.
  *@param a_out out parameter. Points to the output string. It is allocated 
  *by this function and must be freed by the caller.
  *@param a_out_len out parameter. The length of the output string.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  *
  */
 enum CRStatus
@@ -741,7 +741,7 @@ cr_utils_utf8_str_to_ucs4 (const guchar * a_in,
  *If this size is actually smaller than the real needed size, the function
  *just converts what it can and returns a success status. After return,
  *this param points to the actual number of bytes in the buffer.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_ucs4_to_utf8 (const guint32 * a_in,
@@ -833,12 +833,12 @@ cr_utils_ucs4_to_utf8 (const guint32 * a_in,
  *@param a_in the input string to convert.
  *@param a_in_len in/out parameter. The length of the input
  *string. After return, points to the actual number of characters
- *consumed. This can be usefull to debug the input string in case
+ *consumed. This can be useful to debug the input string in case
  *of encoding error.
  *@param a_out out parameter. Points to the output string. It is allocated 
  *by this function and must be freed by the caller.
  *@param a_out_len out parameter. The length (in bytes) of the output string.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_ucs4_str_to_utf8 (const guint32 * a_in,
@@ -878,7 +878,7 @@ cr_utils_ucs4_str_to_utf8 (const guint32 * a_in,
  *If the output buffer size is shorter than the actual needed size, 
  *this function just convert what it can.
  *
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  *
  */
 enum CRStatus
@@ -933,7 +933,7 @@ cr_utils_ucs1_to_utf8 (const guchar * a_in,
  *@param a_in_end the end of the input string to convert.
  *@param a_out out parameter. The converted string.
  *@param a_out out parameter. The length of the converted string.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  *
  */
 enum CRStatus
@@ -982,13 +982,13 @@ cr_utils_ucs1_str_to_utf8 (const guchar * a_in,
  *@param a_out out parameter. Points to the resulting buffer.
  *Must be allocated by the caller. If the size of a_out is shorter
  *than its required size, this function converts what it can and return
- *a successfull status.
+ *a successful status.
  *
  *@param a_out_len in/out parameter. The size of the output buffer.
  *After return, points to the number of bytes consumed even in case of
  *encoding error.
  *
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  */
 enum CRStatus
 cr_utils_utf8_to_ucs1 (const guchar * a_in,
@@ -1132,7 +1132,7 @@ cr_utils_utf8_to_ucs1 (const guchar * a_in,
  *@param a_out out parameter. The resulting converted ucs4 buffer.
  *Must be freed by the caller.
  *@param a_out_len out parameter. The length of the converted buffer.
- *@return CR_OK upon successfull completion, an error code otherwise.
+ *@return CR_OK upon successful completion, an error code otherwise.
  *Note that out parameters are valid if and only if this function
  *returns CR_OK.
  */
