@@ -1929,6 +1929,23 @@ var Panel = GObject.registerClass({
             let panelLeft = 0;
             let panelRight = 0;
 
+            /* A barrier guarding a shared monitor edge belongs on the boundary
+             * itself, which is where muffin's native (Wayland) backend expects
+             * it. On X11 it has to sit one pixel inside instead, to keep it off
+             * the same line as the neighbouring monitor's opposing barrier.
+             *
+             * XFixes evaluates a motion's direction as a single bitmask across
+             * both axes (barrier_is_blocking_direction, Xi/xibarriers.c), so on
+             * a diagonal move a barrier that permits the horizontal direction is
+             * still counted as blocking, because of the vertical component. It
+             * then clamps nothing, and input_constrain_cursor() goes on to clear
+             * both X direction bits - so the barrier that would have blocked is
+             * never evaluated and the pointer passes straight through. Keeping
+             * the two barriers on separate lines lets barrier_find_nearest()
+             * pick the correct one by distance, avoiding the tie entirely.
+             */
+            let edgeOffset = Meta.is_wayland_compositor() ? 0 : 1;
+
             if (!noBarriers) {   // barriers are required
                 if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
                     switch (this.panelPosition) {
@@ -1938,10 +1955,10 @@ var Panel = GObject.registerClass({
                             break;
                         case PanelLoc.bottom:
                             panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.get_height());
-                            panelBottom = this.monitor.y + this.monitor.height -1;
+                            panelBottom = this.monitor.y + this.monitor.height - edgeOffset;
                             break;
                     }
-                    let x_coord = this.monitor.x + this.monitor.width - 1 - this.margin_right;
+                    let x_coord = this.monitor.x + this.monitor.width - edgeOffset - this.margin_right;
                     if (panelTop != panelBottom && x_coord >= 0)
                     {
                         if (screen_width > this.monitor.x + this.monitor.width - this.margin_right) {    // if there is a monitor to the right or panel offset into monitor
@@ -1971,7 +1988,7 @@ var Panel = GObject.registerClass({
                             break;
                         case PanelLoc.right:
                             panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.get_width());
-                            panelRight = this.monitor.x + this.monitor.width-1;
+                            panelRight = this.monitor.x + this.monitor.width - edgeOffset;
                             break;
                         default:
                             global.log("updatePanelBarriers - unrecognised panel position "+this.panelPosition);
@@ -1990,7 +2007,7 @@ var Panel = GObject.registerClass({
                         }
 
                         if (this.bottompanelHeight === 0) {
-                            let y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
+                            let y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom - edgeOffset;
                             if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
                                 || this.bottompanelHeight > 0 || this.margin_bottom > 0) {
                                 this._bottomPanelBarrier = new Meta.Barrier({
