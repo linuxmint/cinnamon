@@ -3173,7 +3173,7 @@ var Panel = GObject.registerClass({
         this.ease({
             opacity: 255,
             duration: AUTOHIDE_ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+            mode: Clutter.AnimationMode.EASE_IN_QUAD
         });
     }
 

@@ -30,10 +30,19 @@ const ICON_SIZE = 128;
 const ICON_OFFSET = -5;
 
 const WORKSPACE_DRAG_ANIMATION_TIME = 200;
+
+const SHADE_NEUTRAL = 127;
+const SHADE_DIMMED = Math.round(SHADE_NEUTRAL * (1 + -0.4));
+const SHADE_ANIMATION_TIME = 200;
+
 const DRAGGING_WINDOW_OPACITY = Math.round(255 * 0.8);
 const WINDOW_DND_SIZE = 256;
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
+
+function shadeColor(value) {
+    return Clutter.Color.new(value, value, value, 255);
+}
 
 // persistent throughout session
 var forceOverviewMode = false;
@@ -384,9 +393,12 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         let desktopBackground = Main.createFullScreenBackground();
         this.background.add_actor(desktopBackground);
 
-        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this.background.add_actor(backgroundShade);
-        backgroundShade.set_size(global.screen_width, global.screen_height);
+        /* A workspace added while expo is already open joins a scene that is
+           shaded, so it starts dimmed instead of animating in by itself. */
+        this._shadeEffect = new Clutter.BrightnessContrastEffect({ name: 'shade' });
+        this._shadeEffect.brightness =
+            shadeColor(box.shaded ? SHADE_DIMMED : SHADE_NEUTRAL);
+        this.background.add_effect(this._shadeEffect);
 
         this.shader = new St.Bin();
         this.shader.set_style('background-color: black;');
@@ -1284,7 +1296,26 @@ var ExpoThumbnailsBox = GObject.registerClass({
         return Clutter.EVENT_PROPAGATE;
     }
 
+    easeShade(dimmed, duration) {
+        this.shaded = dimmed;
+
+        if (!Main.animations_enabled)
+            duration = 0;
+
+        this.thumbnails.forEach(thumbnail => {
+            thumbnail.background.ease_property(
+                '@effects.shade.brightness',
+                shadeColor(dimmed ? SHADE_DIMMED : SHADE_NEUTRAL),
+                {
+                    duration: duration,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+        });
+    }
+
     show() {
+        this.shaded = false;
+
         global.window_manager.connectObject(
             'switch-workspace', this.activeWorkspaceChanged.bind(this), this);
         global.workspace_manager.connectObject(
@@ -1320,6 +1351,8 @@ var ExpoThumbnailsBox = GObject.registerClass({
             this.stateCounts[ThumbnailState[key]] = 0;
 
         this.addThumbnails(0, global.workspace_manager.n_workspaces);
+
+        this.easeShade(true, SHADE_ANIMATION_TIME);
 
         this.button.raise_top();
 

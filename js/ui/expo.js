@@ -462,6 +462,12 @@ var Expo = GObject.registerClass({
     }
 
     _runAnimation(toShow, reverseProgress = null) {
+        if (!toShow) {
+            this._expo.easeShade(false, reverseProgress !== null
+                                        ? Math.max(1, ANIMATION_TIME * reverseProgress)
+                                        : ANIMATION_TIME);
+        }
+
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let monitorSetting = global.settings.get_boolean('workspace-expo-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
 

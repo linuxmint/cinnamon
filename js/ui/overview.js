@@ -15,6 +15,14 @@ const WorkspacesView = imports.ui.workspacesView;
 
 // Time for initial animation going into Overview mode
 var ANIMATION_TIME = 200;
+var BG_SHADE_BRIGHTNESS = -0.4;
+
+const SHADE_NEUTRAL = 127;
+const SHADE_DIMMED = Math.round(SHADE_NEUTRAL * (1 + BG_SHADE_BRIGHTNESS));
+
+function shadeColor(value) {
+    return Clutter.Color.new(value, value, value, 255);
+}
 
 const SwipeScrollDirection = WorkspacesView.SwipeScrollDirection;
 
@@ -37,6 +45,9 @@ var Overview = GObject.registerClass({
 
         this._group = new St.Widget({ name: 'overview',
                                       reactive: true });
+        this._shadeEffect = new Clutter.BrightnessContrastEffect({ name: 'shade' });
+        this._shadeEffect.brightness = shadeColor(SHADE_NEUTRAL);
+        this._group.add_effect(this._shadeEffect);
         this._group._delegate = this;
         this._group.connect('style-changed', () => {
             let node = this._group.get_theme_node();
@@ -242,10 +253,6 @@ var Overview = GObject.registerClass({
         this._background.set_position(0, 0);
         this._group.add_actor(this._background);
 
-        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        backgroundShade.set_size(global.screen_width, global.screen_height);
-        this._background.add_actor(backgroundShade);
-
         this.visible = true;
         this.animationInProgress = true;
 
@@ -272,9 +279,8 @@ var Overview = GObject.registerClass({
         this._coverPane.show();
         this.emit('showing');
 
-        this._group.opacity = 0;
-        this._group.ease({
-            opacity: 255,
+        this._shadeEffect.brightness = shadeColor(SHADE_NEUTRAL);
+        this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_DIMMED), {
             duration: ANIMATION_TIME * 0.45,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => this._showDone()
@@ -344,9 +350,10 @@ var Overview = GObject.registerClass({
             this._coverPane.raise_top();
             this._coverPane.show();
             this.emit('hiding');
-            let progress = this._group.opacity / 255;
-            this._group.ease({
-                opacity: 0,
+            let faded = (SHADE_NEUTRAL - this._shadeEffect.brightness.red) /
+                        (SHADE_NEUTRAL - SHADE_DIMMED);
+            let progress = 1 - Math.sqrt(1 - faded);
+            this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_NEUTRAL), {
                 duration: Math.max(1, ANIMATION_TIME * 0.45 * progress),
                 mode: Clutter.AnimationMode.EASE_IN_QUAD,
                 onComplete: () => this._hideDone()
@@ -367,8 +374,7 @@ var Overview = GObject.registerClass({
         this._coverPane.show();
         this.emit('hiding');
 
-        this._group.ease({
-            opacity: 0,
+        this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_NEUTRAL), {
             duration: ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_IN_QUAD,
             onComplete: () => this._hideDone()
