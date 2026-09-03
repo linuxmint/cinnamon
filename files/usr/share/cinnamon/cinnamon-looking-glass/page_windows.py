@@ -35,6 +35,7 @@ class ModulePage(pageutils.BaseListView):
         self.inspect_app.connect("activate", self.on_inspect_application)
         self.popup.append(self.inspect_app)
         self.popup.show_all()
+        self.popup.attach_to_widget(self.tree_view)
 
     def cell_data_func_id(self, column, cell, model, tree_iter, data=None):
         value = model.get_value(tree_iter, 0)
@@ -79,7 +80,7 @@ class ModulePage(pageutils.BaseListView):
                 app = self.store.get_value(tree_iter, 3)
 
                 self.inspect_app.set_sensitive(app != "<untracked>")
-                self.popup.popup(None, None, None, None, event.button, event.time)
+                self.popup.popup_at_pointer(event)
             return True
 
     def on_status_change(self, proxy, online):

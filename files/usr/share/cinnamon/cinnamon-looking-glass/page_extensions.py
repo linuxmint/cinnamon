@@ -34,6 +34,7 @@ class ModulePage(pageutils.BaseListView):
         self.popup.append(self.view_web_page)
 
         self.popup.show_all()
+        self.popup.attach_to_widget(self.tree_view)
 
         self.tree_view.connect("button-press-event", self.on_button_press_event)
 
@@ -72,7 +73,7 @@ class ModulePage(pageutils.BaseListView):
 
                 self.view_web_page.set_sensitive(url != "")
                 self.view_source.set_label(uuid + " (View Source)")
-                self.popup.popup(None, None, None, None, event.button, event.time)
+                self.popup.popup_at_pointer(event)
             return True
         elif event.type == Gdk.EventType.DOUBLE_BUTTON_PRESS:
             if pthinfo is not None:

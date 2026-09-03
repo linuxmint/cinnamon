@@ -22,6 +22,7 @@ from gi.repository import Gio, Gtk, GObject, Gdk, GLib, XApp
 from setproctitle import setproctitle
 
 import pageutils
+from debug_tools import DebugButton
 from lookingglass_proxy import LookingGlassProxy, CinnamonProxy
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
@@ -427,6 +428,10 @@ class MelangeApp(Gtk.Application):
         headerbar.set_title("Looking Glass")
         headerbar.set_subtitle("Cinnamon Troubleshooting Tool")
         headerbar.set_show_close_button(True)
+
+        self.debug_button = DebugButton(self.cinnamon_proxy)
+        headerbar.pack_start(self.debug_button)
+
         self.window.set_titlebar(headerbar)
         self.window.set_icon_name("system-search")
         self.window.set_default_size(1000, 400)
@@ -459,7 +464,6 @@ class MelangeApp(Gtk.Application):
         self.create_page("Inspect", "inspect")
         self.create_page("Windows", "windows")
         self.create_page("Extensions", "extensions")
-        self.create_page("Muffin Debug", "debug")
 
         table.attach(self.notebook, 0, num_columns, 0, 1)
 
@@ -611,7 +615,7 @@ class MelangeApp(Gtk.Application):
         self.notebook.set_current_page(page)
 
     def do_shutdown(self):
-        self.pages["debug"].release()
+        self.debug_button.release()
         self.window.destroy()
         self.lg_proxy = None
         self.cinnamon_proxy = None

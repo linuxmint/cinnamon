@@ -1,5 +1,8 @@
 #!/usr/bin/python3
 
+# Write-only debug controls for the header bar. Cinnamon resets all of these
+# when it restarts, so they only ever get pushed out, never read back.
+
 import json
 from gi.repository import Gtk
 
@@ -25,29 +28,61 @@ UNUSED_TOPICS = {"COMPOSITOR", "ERRORS", "EVENTS", "THEMES"}
 def make_label(name):
     return LABEL_OVERRIDES.get(name, name.replace("_", " ").title())
 
-class ModulePage(Gtk.Box):
-    def __init__(self, parent):
-        Gtk.Box.__init__(self, orientation=Gtk.Orientation.VERTICAL, spacing=6)
-        self.parent = parent
+def add_control_row(box, label, control):
+    row = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
+    row.pack_start(Gtk.Label(label=label), False, False, 0)
+    row.pack_end(control, False, False, 0)
+    box.pack_start(row, False, False, 0)
+
+class SlowDownSpinButton(Gtk.SpinButton):
+    def __init__(self, proxy):
+        Gtk.SpinButton.__init__(self,
+                                adjustment=Gtk.Adjustment(value=1,
+                                                          lower=1,
+                                                          upper=20,
+                                                          step_increment=1,
+                                                          page_increment=1),
+                                numeric=True,
+                                width_chars=2,
+                                max_width_chars=2,
+                                valign=Gtk.Align.CENTER)
+        self.proxy = proxy
+
+        self.set_tooltip_text("Effects slow-down factor")
+        self.connect("value-changed", self.on_value_changed)
+
+        self.proxy.connect("status-changed", self.on_status_change)
+
+    def on_status_change(self, proxy, online):
+        if online:
+            self.set_value(1)
+
+    def on_value_changed(self, spin):
+        self.proxy.Eval("imports.gi.St.Settings.get().slow_down_factor = %d" % self.get_value_as_int())
+
+class DebugButton(Gtk.MenuButton):
+    def __init__(self, proxy):
+        Gtk.MenuButton.__init__(self, image=Gtk.Image(icon_name="xsi-cog-symbolic"))
+        self.proxy = proxy
         self.topic_checks = []
         self.freeze = False
         self.unredirect_inhibited = False
 
-        self.set_border_width(6)
+        content = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
+        content.set_border_width(6)
 
-        scanout_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=6)
-        scanout_box.pack_start(Gtk.Label(label="Allow unredirect / direct scanout"), False, False, 0)
         self.scanout_switch = Gtk.Switch(active=True, valign=Gtk.Align.CENTER)
         self.scanout_switch.set_tooltip_text("Turn off to keep every window redirected through the compositor")
         self.scanout_switch.connect("notify::active", self.on_scanout_toggled)
-        scanout_box.pack_end(self.scanout_switch, False, False, 0)
-        self.pack_start(scanout_box, False, False, 0)
+        add_control_row(content, "Allow unredirect / direct scanout", self.scanout_switch)
 
-        self.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+        add_control_row(content, "Effects slow-down factor", SlowDownSpinButton(proxy))
 
-        self.verbose_check = Gtk.CheckButton(label="Verbose (all topics)")
+        content.pack_start(Gtk.Separator(orientation=Gtk.Orientation.HORIZONTAL), False, False, 0)
+
+        self.verbose_check = Gtk.CheckButton(label="Verbose logging (enable all topics)")
         self.verbose_check.connect("toggled", self.on_verbose_toggled)
-        self.pack_start(self.verbose_check, False, False, 0)
+        content.pack_start(self.verbose_check, False, False, 0)
 
         self.groups_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.groups_box.set_border_width(6)
@@ -55,13 +90,21 @@ class ModulePage(Gtk.Box):
         scroller = Gtk.ScrolledWindow()
         scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        scroller.set_propagate_natural_height(True)
+        scroller.set_propagate_natural_width(True)
+        scroller.set_max_content_height(500)
         scroller.add(self.groups_box)
-        self.pack_start(scroller, True, True, 0)
+        content.pack_start(scroller, True, True, 0)
 
-        self.parent.cinnamon_proxy.connect("status-changed", self.on_status_change)
+        popover = Gtk.Popover()
+        popover.add(content)
+        content.show_all()
+        self.set_popover(popover)
+
+        self.proxy.connect("status-changed", self.on_status_change)
 
     def run_js(self, code):
-        return self.parent.cinnamon_proxy.Eval(code)
+        return self.proxy.Eval(code)
 
     def on_status_change(self, proxy, online):
         if not online:
@@ -114,7 +157,7 @@ class ModulePage(Gtk.Box):
         flowbox = Gtk.FlowBox()
         flowbox.set_selection_mode(Gtk.SelectionMode.NONE)
         flowbox.set_min_children_per_line(2)
-        flowbox.set_max_children_per_line(4)
+        flowbox.set_max_children_per_line(2)
         flowbox.set_homogeneous(True)
         self.groups_box.pack_start(flowbox, False, False, 0)
 
