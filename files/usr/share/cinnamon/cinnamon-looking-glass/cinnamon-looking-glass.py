@@ -539,7 +539,7 @@ class MelangeApp(Gtk.Application):
         menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
         menu.append(self.create_menu_item('Reset Cinnamon Settings', self.on_reset_clicked))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('Quit', self.on_delete))
+        menu.append(self.create_menu_item('Quit', self.on_quit))
         menu.show_all()
 
         button = Gtk.MenuButton(label="Actions \u25BE")
@@ -582,11 +582,14 @@ class MelangeApp(Gtk.Application):
             self.window.hide()
 
     def on_delete(self, widget=None, event=None):
+        self.window.hide()
+        return True
+
+    def on_quit(self, menu_item=None):
         tmp_pages = self.custom_pages.copy()
         for label, content in tmp_pages.items():
             self.on_close_tab(label, content)
         self.quit()
-        return False
 
     def on_window_state(self, widget, event):
         if event.new_window_state & Gdk.WindowState.ICONIFIED:
