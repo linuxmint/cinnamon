@@ -25,6 +25,36 @@ GROUPS = [
 # Still in MetaDebugTopic, but nothing passes them to meta_topic() any more.
 UNUSED_TOPICS = {"COMPOSITOR", "ERRORS", "EVENTS", "THEMES"}
 
+# ClutterDebugFlag is deliberately absent: every one of its flags only gates
+# CLUTTER_NOTE(), which expands to nothing unless clutter was built with
+# CLUTTER_ENABLE_DEBUG - and release builds aren't. The draw and pick flags
+# are checked directly, so they work anywhere.
+CLUTTER_FLAG_QUERY = """({
+    draw: Object.entries(imports.gi.Clutter.DrawDebugFlag).filter(e => typeof e[1] === 'number'),
+    pick: Object.entries(imports.gi.Clutter.PickDebugFlag).filter(e => typeof e[1] === 'number')
+})"""
+
+# Present in clutter's flag name table, but never tested for anywhere.
+UNUSED_DRAW_FLAGS = {"DISABLE_SWAP_EVENTS"}
+
+# Introspection calls it PICKING, but the flag is CLUTTER_DEBUG_NOP_PICKING -
+# it turns picking off rather than tracing it.
+PICK_LABELS = {
+    "PICKING": ("Disable picking",
+                "Makes picking a no-op, to measure what it costs. Cinnamon's panel, "
+                "menus and desklets stop responding to the mouse while this is on - "
+                "this window keeps working, so you can turn it back off.")
+}
+
+# Argument positions of meta_add_clutter_debug_flags(debug, draw, pick).
+DRAW_ARG = 1
+PICK_ARG = 2
+
+# Room the flag list has to leave for the controls above it and the popover's
+# own padding, and the least it should ever shrink to.
+LIST_MARGIN = 180
+MIN_LIST_HEIGHT = 150
+
 def make_label(name):
     return LABEL_OVERRIDES.get(name, name.replace("_", " ").title())
 
@@ -65,6 +95,7 @@ class DebugButton(Gtk.MenuButton):
         Gtk.MenuButton.__init__(self, image=Gtk.Image(icon_name="xsi-cog-symbolic"))
         self.proxy = proxy
         self.topic_checks = []
+        self.clutter_checks = []
         self.freeze = False
         self.unredirect_inhibited = False
 
@@ -87,21 +118,29 @@ class DebugButton(Gtk.MenuButton):
         self.groups_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=6)
         self.groups_box.set_border_width(6)
 
-        scroller = Gtk.ScrolledWindow()
-        scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
-        scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-        scroller.set_propagate_natural_height(True)
-        scroller.set_propagate_natural_width(True)
-        scroller.set_max_content_height(500)
-        scroller.add(self.groups_box)
-        content.pack_start(scroller, True, True, 0)
+        self.scroller = Gtk.ScrolledWindow()
+        self.scroller.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
+        self.scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+        self.scroller.set_propagate_natural_height(True)
+        self.scroller.set_propagate_natural_width(True)
+        self.scroller.add(self.groups_box)
+        content.pack_start(self.scroller, True, True, 0)
 
         popover = Gtk.Popover()
         popover.add(content)
+        popover.connect("show", self.on_popover_shown)
         content.show_all()
         self.set_popover(popover)
 
         self.proxy.connect("status-changed", self.on_status_change)
+
+    def on_popover_shown(self, popover):
+        # Gtk clips a popover to its toplevel, so a list taller than the window
+        # gets cut off rather than scrolled. Cap it to what the window can show.
+        window = self.get_toplevel()
+        if isinstance(window, Gtk.Window):
+            self.scroller.set_max_content_height(max(MIN_LIST_HEIGHT,
+                                                     window.get_allocated_height() - LIST_MARGIN))
 
     def run_js(self, code):
         return self.proxy.Eval(code)
@@ -110,26 +149,36 @@ class DebugButton(Gtk.MenuButton):
         if not online:
             return
 
-        if not self.topic_checks:
-            self.build_topics()
+        if not self.topic_checks and not self.clutter_checks:
+            self.build_flags()
 
         self.unredirect_inhibited = False
         self.freeze = True
         self.scanout_switch.set_active(True)
         self.verbose_check.set_active(False)
-        for check in self.topic_checks:
+        for check in self.topic_checks + self.clutter_checks:
             check.set_active(False)
         self.freeze = False
 
-    def build_topics(self):
-        success, data = self.run_js(TOPIC_QUERY)
+    def build_flags(self):
+        self.add_muffin_topics()
+        self.add_clutter_flags()
+        self.groups_box.show_all()
+
+    def query(self, code, what):
+        success, data = self.run_js(code)
         if not success:
-            return
+            return None
 
         try:
-            topics = json.loads(data)
+            return json.loads(data)
         except ValueError as e:
-            print("Could not read the muffin debug topic list: %s" % e)
+            print("Could not read the %s: %s" % (what, e))
+            return None
+
+    def add_muffin_topics(self):
+        topics = self.query(TOPIC_QUERY, "muffin debug topic list")
+        if topics is None:
             return
 
         # VERBOSE is the master toggle above, not one of the individual topics.
@@ -145,11 +194,30 @@ class DebugButton(Gtk.MenuButton):
                 grouped.update(name for name, value in members)
 
             if members:
-                self.add_group(title, members)
+                self.add_group(title, members, self.on_topic_toggled, self.topic_checks)
 
-        self.groups_box.show_all()
+    def add_clutter_flags(self):
+        flags = self.query(CLUTTER_FLAG_QUERY, "clutter debug flag list")
+        if flags is None:
+            return
 
-    def add_group(self, title, members):
+        draw = [(name, value) for name, value in flags["draw"]
+                if name not in UNUSED_DRAW_FLAGS]
+        if draw:
+            self.add_group("Clutter", draw, self.on_clutter_flag_toggled,
+                           self.clutter_checks, DRAW_ARG)
+
+        for name, value in flags["pick"]:
+            label, tooltip = PICK_LABELS.get(name, (make_label(name), None))
+            check = Gtk.CheckButton(label=label)
+            check.set_tooltip_text(tooltip)
+            check.flag = value
+            check.arg = PICK_ARG
+            check.connect("toggled", self.on_clutter_flag_toggled)
+            self.groups_box.pack_start(check, False, False, 0)
+            self.clutter_checks.append(check)
+
+    def add_group(self, title, members, on_toggled, checks, arg=None):
         label = Gtk.Label(halign=Gtk.Align.START)
         label.set_markup("<b>%s</b>" % title)
         self.groups_box.pack_start(label, False, False, 0)
@@ -163,10 +231,11 @@ class DebugButton(Gtk.MenuButton):
 
         for label_text, value in sorted((make_label(name), value) for name, value in members):
             check = Gtk.CheckButton(label=label_text)
-            check.topic = value
-            check.connect("toggled", self.on_topic_toggled)
+            check.flag = value
+            check.arg = arg
+            check.connect("toggled", on_toggled)
             flowbox.add(check)
-            self.topic_checks.append(check)
+            checks.append(check)
 
     def on_topic_toggled(self, check):
         if self.freeze:
@@ -174,7 +243,7 @@ class DebugButton(Gtk.MenuButton):
 
         active = check.get_active()
         method = "add_verbose_topic" if active else "remove_verbose_topic"
-        self.run_js("imports.gi.Meta.%s(%d)" % (method, check.topic))
+        self.run_js("imports.gi.Meta.%s(%d)" % (method, check.flag))
 
         # Removing a topic while everything was on leaves all the others on, so
         # only the master toggle needs correcting.
@@ -182,6 +251,16 @@ class DebugButton(Gtk.MenuButton):
             self.freeze = True
             self.verbose_check.set_active(False)
             self.freeze = False
+
+    def on_clutter_flag_toggled(self, check):
+        if self.freeze:
+            return
+
+        args = [0, 0, 0]
+        args[check.arg] = check.flag
+        method = "add" if check.get_active() else "remove"
+        self.run_js("imports.gi.Meta.%s_clutter_debug_flags(%d, %d, %d)"
+                    % (method, args[0], args[1], args[2]))
 
     def on_verbose_toggled(self, check):
         if self.freeze:
