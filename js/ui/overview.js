@@ -355,7 +355,7 @@ var Overview = GObject.registerClass({
             let progress = 1 - Math.sqrt(1 - faded);
             this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_NEUTRAL), {
                 duration: Math.max(1, ANIMATION_TIME * 0.45 * progress),
-                mode: Clutter.AnimationMode.EASE_IN_QUAD,
+                mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 onComplete: () => this._hideDone()
             });
             return;
@@ -376,7 +376,7 @@ var Overview = GObject.registerClass({
 
         this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_NEUTRAL), {
             duration: ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_IN_QUAD,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => this._hideDone()
         });
     }
