@@ -11,23 +11,43 @@ from setproctitle import setproctitle
 import signal
 
 import gi
-gi.require_version('EDataServer', '1.2')
-gi.require_version('ECal', '2.0')
-try:
-    gi.require_version('ICal', '4.0')
-except ValueError:
-    gi.require_version('ICal', '3.0')
 gi.require_version('Cinnamon', '0.1')
 from gi.repository import GLib, Gio, GObject
-from gi.repository import EDataServer, ECal, ICal, ICalGLib
 from gi.repository import Cinnamon
 
 BUS_NAME = "org.cinnamon.CalendarServer"
 BUS_PATH = "/org/cinnamon/CalendarServer"
+CLOCKENSTEIN_BUS_NAME = "org.x.clockenstein.Calendar.Service"
+CLOCKENSTEIN_BUS_PATH = "/org/x/clockenstein/Calendar/Service"
+CLOCKENSTEIN_BUS_INTERFACE = "org.x.clockenstein.Calendar.Service"
 
 STATUS_UNKNOWN = 0
 STATUS_NO_CALENDARS = 1
 STATUS_HAS_CALENDARS = 2
+
+EDataServer = None
+ECal = None
+ICal = None
+ICalGLib = None
+
+def load_eds():
+    global EDataServer, ECal, ICal, ICalGLib
+
+    gi.require_version('EDataServer', '1.2')
+    gi.require_version('ECal', '2.0')
+    try:
+        gi.require_version('ICal', '4.0')
+    except ValueError:
+        gi.require_version('ICal', '3.0')
+
+    from gi.repository import EDataServer as _EDataServer
+    from gi.repository import ECal as _ECal
+    from gi.repository import ICal as _ICal
+    from gi.repository import ICalGLib as _ICalGLib
+    EDataServer = _EDataServer
+    ECal = _ECal
+    ICal = _ICal
+    ICalGLib = _ICalGLib
 
 class CalendarInfo(GObject.Object):
     __gsignals__ = {
@@ -114,6 +134,10 @@ class CalendarServer(Gio.Application):
         self.registry_watcher = None
         self.client_appeared_id = 0
         self.client_disappeared_id = 0
+        self.backend = Gio.Settings.new("org.cinnamon").get_string("calendar-backend")
+        self.clockenstein_proxy = None
+        self.clockenstein_request = 0
+        self.clockenstein_event_uids = set()
 
         self.calendars = {}
 
@@ -121,7 +145,9 @@ class CalendarServer(Gio.Application):
         self.current_month_end = 0
 
         self.zone = None
-        self.update_timezone()
+        if self.backend == "eds":
+            load_eds()
+            self.update_timezone()
 
         try:
             self.session_bus = Gio.bus_get_sync(Gio.BusType.SESSION, None)
@@ -151,11 +177,84 @@ class CalendarServer(Gio.Application):
         Gio.Application.do_startup(self)
 
         self.hold()
-
-        EDataServer.SourceRegistry.new(None, self.got_registry_callback)
+        if self.backend == "clockenstein":
+            self.start_clockenstein()
+        else:
+            EDataServer.SourceRegistry.new(None, self.got_registry_callback)
 
     def do_activate(self):
         pass
+
+    def start_clockenstein(self):
+        Gio.DBusProxy.new_for_bus(
+            Gio.BusType.SESSION,
+            Gio.DBusProxyFlags.NONE,
+            None,
+            CLOCKENSTEIN_BUS_NAME,
+            CLOCKENSTEIN_BUS_PATH,
+            CLOCKENSTEIN_BUS_INTERFACE,
+            None,
+            self.clockenstein_proxy_ready,
+        )
+
+    def clockenstein_proxy_ready(self, source, result):
+        try:
+            self.clockenstein_proxy = Gio.DBusProxy.new_for_bus_finish(result)
+            self.clockenstein_proxy.connect("g-signal", self.clockenstein_signal)
+            self.interface.set_property("status", STATUS_HAS_CALENDARS)
+            if self.current_month_start != 0:
+                self.fetch_clockenstein_events()
+        except GLib.Error as e:
+            print("couldn't connect to Clockenstein calendar service:", e.message)
+            self.interface.set_property("status", STATUS_UNKNOWN)
+
+        # Stay alive to relay the daemon's Changed signal to CalendarServer
+        # clients. The EDS provider can sleep because clients query it again.
+
+    def clockenstein_signal(self, proxy, sender_name, signal_name, parameters):
+        if signal_name == "Changed" and self.current_month_start != 0:
+            self.fetch_clockenstein_events()
+
+    def fetch_clockenstein_events(self):
+        if self.clockenstein_proxy is None:
+            return
+
+        self.clockenstein_request += 1
+        request = self.clockenstein_request
+        parameters = GLib.Variant(
+            "(xx)", (self.current_month_start, self.current_month_end)
+        )
+        self.clockenstein_proxy.call(
+            "GetEvents",
+            parameters,
+            Gio.DBusCallFlags.NONE,
+            -1,
+            None,
+            self.clockenstein_events_ready,
+            request,
+        )
+
+    def clockenstein_events_ready(self, proxy, result, request):
+        if request != self.clockenstein_request:
+            return
+
+        try:
+            reply = proxy.call_finish(result)
+            events = reply.unpack()[0]
+        except GLib.Error as e:
+            print("couldn't retrieve Clockenstein events:", e.message)
+            return
+
+        event_uids = {event[0] for event in events}
+        removed_uids = self.clockenstein_event_uids - event_uids
+        self.clockenstein_event_uids = event_uids
+
+        if removed_uids:
+            self.interface.emit_events_removed("::".join(removed_uids))
+        if events:
+            self.interface.emit_events_added_or_updated(
+                GLib.Variant("a(sssbxxx)", events)
+            )
 
     def got_registry_callback(self, source, res):
         try:
@@ -254,18 +353,19 @@ class CalendarServer(Gio.Application):
                 self.interface.complete_set_time_range(inv)
                 return True
 
-        for calendar in self.calendars.values():
-            calendar.try_sync()
-
         self.current_month_start = time_since
         self.current_month_end = time_until
 
         self.interface.set_property("since", time_since)
         self.interface.set_property("until", time_until)
 
-        for uid in self.calendars.keys():
-            calendar = self.calendars[uid]
-            self.create_view_for_calendar(calendar)
+        if self.backend == "clockenstein":
+            self.fetch_clockenstein_events()
+        else:
+            for calendar in self.calendars.values():
+                calendar.try_sync()
+            for calendar in self.calendars.values():
+                self.create_view_for_calendar(calendar)
 
         self.interface.complete_set_time_range(inv)
         return True
@@ -516,12 +616,13 @@ class CalendarServer(Gio.Application):
             self.interface.emit_events_removed(uids_string)
 
     def exit(self):
-        if self.registry_watcher is not None:
+        if self.backend == "eds" and self.registry_watcher is not None:
             self.registry_watcher.disconnect(self.client_appeared_id)
             self.registry_watcher.disconnect(self.client_disappeared_id)
 
-        for uid in self.calendars.keys():
-            self.calendars[uid].destroy()
+        if self.backend == "eds":
+            for uid in self.calendars.keys():
+                self.calendars[uid].destroy()
 
         GLib.idle_add(self.quit)
 
