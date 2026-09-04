@@ -382,12 +382,18 @@ var AppGroup = class AppGroup {
                             this.workspaceState.lastFocusedApp === appId);
 
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            if (allocateForLabel) {
-                const max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
-                    labelNaturalSize + iconNaturalSize + 6 : 0;
+            // With no open window there is nothing to label (allocate() draws the label only when
+            // metaWindows.length > 0), so the button is icon only. Counting labelNaturalSize in here
+            // gave pinned apps arbitrarily different widths: an empty label reports 1 px or 5 px
+            // depending on its state.
+            if (allocateForLabel && this.groupState.metaWindows.length > 0) {
+                const max = this.labelVisiblePref ? labelNaturalSize + iconNaturalSize + 6 : 0;
                 alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
             } else {
-                alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
+                // Width from the panel icon size instead of the actor's natural width, so buttons with
+                // no label stay equal no matter what a particular image reports.
+                const iconWidth = this.iconSize ? this.iconSize * global.ui_scale : iconNaturalSize;
+                alloc.natural_size = iconWidth + 6 * global.ui_scale;
             }
             alloc.min_size = alloc.natural_size;
         } else {
@@ -472,11 +478,15 @@ var AppGroup = class AppGroup {
             childBox.y1 = box.y1 + labelYPadding;
             childBox.y2 = childBox.y1 + Math.min(labelNaturalHeight, allocHeight);
 
+            // The same 6 px getPreferredWidth adds to natural_size - without it the label ends flush
+            // with the button edge and the ellipsis touches the border.
+            const labelPadding = 6 * global.ui_scale;
+
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = Math.min(this.iconBox.x + this.iconBox.width, box.x2);
-                childBox.x2 = box.x2;
+                childBox.x2 = Math.max(childBox.x1, box.x2 - labelPadding);
             } else {
-                childBox.x1 = box.x1;
+                childBox.x1 = Math.min(box.x1 + labelPadding, this.iconBox.x);
                 childBox.x2 = this.iconBox.x;
             }
 
@@ -491,6 +501,13 @@ var AppGroup = class AppGroup {
                 else
                     this.label.set_style('text-align: right;');
 
+            this.label.allocate(childBox);
+        } else {
+            // An actor that is not allocated keeps its previous allocation and is still painted.
+            // A button that shrinks to icon size therefore left the old, wide label box behind and
+            // the text spilled over the neighbouring buttons. Collapse the box instead of skipping it.
+            childBox.x1 = childBox.x2 = box.x1;
+            childBox.y1 = childBox.y2 = box.y1;
             this.label.allocate(childBox);
         }
 
@@ -513,9 +530,15 @@ var AppGroup = class AppGroup {
         if (this.labelVisiblePref
             || !this.label
             || !this.state.isHorizontal
-            || this.label.is_finalized()
-            || !this.label.realized) {
+            || this.label.is_finalized()) {
             return;
+        }
+
+        // hideLabel() hides the label, so unrealized is the normal state of a pinned app with no
+        // windows. Bailing out here left such a button titleless once a window was opened.
+        // An unrealized actor is shown right away instead of being animated.
+        if (!this.label.realized) {
+            animate = false;
         }
 
         const width = MAX_BUTTON_WIDTH * global.ui_scale;
