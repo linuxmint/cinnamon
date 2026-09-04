@@ -110,6 +110,7 @@ class XAppStatusIcon {
         this.proxy = proxy;
 
         this.iconName = null;
+        this.icon_loader_handle = null;
 
         this.actor = new St.BoxLayout({
             style_class: "applet-box",
@@ -231,6 +232,9 @@ class XAppStatusIcon {
                 return;
             }
             else {
+                // Invalidate any in-flight image load
+                this.icon_loader_handle = null;
+
                 icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
                 this.icon_holder.show();
                 this.icon_holder.child = icon;
@@ -238,16 +242,19 @@ class XAppStatusIcon {
         }
         else {
             this.iconName = null;
+            this.icon_loader_handle = null;
             this.icon_holder.hide();
         }
     }
 
     _onImageLoaded(cache, handle, actor, data=null) {
+        /* The icon changed again (or this icon was destroyed) while the
+         * image was loading - discard the result. */
         if (handle !== this.icon_loader_handle) {
-            global.logError(`xapp-status@cinnamon.org: Icon or image seems out of sync (${this.name}`);
             return;
         }
 
+        this.icon_loader_handle = null;
         this.icon_holder.child = actor;
         this.icon_holder.show();
     }
@@ -276,7 +283,7 @@ class XAppStatusIcon {
         }
 
         this.show_label = (this.applet.orientation == St.Side.TOP || this.applet.orientation == St.Side.BOTTOM) &&
-                           this.proxy.label.length > 0;
+                           (label != null && label.length > 0);
 
         this.label.visible = this.show_label;
     }
@@ -384,7 +391,9 @@ class XAppStatusIcon {
     destroy() {
         this.proxy.disconnect(this._proxy_prop_change_id);
         this._proxy_prop_change_id = 0;
+        this.icon_loader_handle = null;
         this._tooltip.destroy();
+        this.actor.destroy();
     }
 }
 
@@ -538,7 +547,7 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     shouldIgnoreStatusIcon(icon_proxy) {
         let hiddenIcons = Main.systrayManager.getRoles();
 
-        let name = icon_proxy.name.toLowerCase();
+        let name = (icon_proxy.name || "").toLowerCase();
 
         if (hiddenIcons.indexOf(name) != -1 ) {
             return true;
@@ -548,8 +557,12 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     }
 
     _sortFunc(a, b) {
-        let asym = a.proxy.icon_name.includes("-symbolic");
-        let bsym = b.proxy.icon_name.includes("-symbolic");
+        /* These properties belong to another process and can't be assumed to be strings. */
+        let aname = a.proxy.name || "";
+        let bname = b.proxy.name || "";
+
+        let asym = (a.proxy.icon_name || "").includes("-symbolic");
+        let bsym = (b.proxy.icon_name || "").includes("-symbolic");
 
         if (asym && !bsym) {
             return 1;
@@ -559,8 +572,8 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
             return -1;
         }
 
-        return GLib.utf8_collate(a.proxy.name.replace("org.x.StatusIcon.", "").toLowerCase(),
-                                 b.proxy.name.replace("org.x.StatusIcon.", "").toLowerCase());
+        return GLib.utf8_collate(aname.replace("org.x.StatusIcon.", "").toLowerCase(),
+                                 bname.replace("org.x.StatusIcon.", "").toLowerCase());
     }
 
     sortIcons() {
@@ -613,6 +626,11 @@ class CinnamonXAppStatusApplet extends Applet.Applet {
     }
 
     on_applet_removed_from_panel() {
+        if (this._scaleUpdateId > 0) {
+            Mainloop.source_remove(this._scaleUpdateId);
+            this._scaleUpdateId = 0;
+        }
+
         this.signalManager.disconnectAllSignals();
 
         for (let key in this.statusIcons) {
