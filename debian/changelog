@@ -1,3 +1,50 @@
+cinnamon (6.7.6) alfa; urgency=medium
+
+  [ Michael Webster ]
+  * overview.js: Hide global.window_group when visible, update a comment.
+
+  [ Aleksey Samoilov ]
+  * Adapt to muffin's new allocation and resource scale API
+
+  [ Michael Webster ]
+  * resource-scale/allocataion: More updates for the new allocation and resource scale API.
+  * windowManager.js: Reset the window position after a minimize effect.
+  * cinnamon-window-tracker.c/gwl: Track window attributes even if a window is not yet interesting
+  * expo: Force layout immediately rather than building clones on the allocation signal handler.
+  * cinnamon-looking-glass.py: Use XAppGtkWindow.
+  * st: entry, icon, label, shadow - react to resource scale changes.
+  * popupMenu.js: Don't reposition the menu from inside the allocation cycle.
+  * screensaver: Make ScreensaverWidget fill its grid sector.
+  * screenshot.js: Don't propagate button release events.
+  * screensaverWidget.js: Scale internal content when the workarea requires it.
+  * cinnamon-looking-glass: Add a tab for enabling muffin debug topics and disabling scanout.
+
+  [ Anaxímeno Brito ]
+  * expo: Avoid dirty duplication when moving apps to another workspace (#13830)
+
+  [ Michael Webster ]
+  * popupMenu.js (x11): Don't leave a dead menu behind when the modal grab fails.
+
+  [ Kevin Langman ]
+  * Add CinnamonGLSLEffect.get_pipeline() (#13939)
+
+  [ Maksymilian Kruk ]
+  * add automatic volume decrease to 100% after disabling overamplification with higher volume set. (#13916)
+
+  [ Michael Webster ]
+  * panel.js: Defer _setPanelHeight() out of the queue-relayout handler.
+  * panel.js: Adjust pointer barrier positions based on session type, and document the reason.
+  * expo, overview: Use a Clutter effect to shade backgrounds instead of a shade actor.
+  * cinnamon-looking-glass: Move muffin debug controls, add slow-down control for effects.
+  * cinnamon-looking-glass.py: Don't terminate when the window is closed.
+  * overview.js: Use the same animation mode for opening and closing.
+  * cinnamon-looking-glass.py: Add some clutter debug flags.
+
+  [ Clement Lefebvre ]
+  * Migrate calendar backend to clockenstein (#13972)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Sat, 05 Sep 2026 15:14:31 +0100
+
 cinnamon (6.7.5) alfa; urgency=medium
 
   [ Clement Lefebvre ]
