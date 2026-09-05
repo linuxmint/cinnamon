@@ -1,5 +1,6 @@
 const Applet = imports.ui.applet;
 const St = imports.gi.St;
+const Pango = imports.gi.Pango;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
@@ -232,6 +233,11 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             });
             // Enforce a constant width and center the text
             actor.set_style("min-width: 2.5em; text-align: center;");
+            // Never ellipsize the two-letter layout code: when the panel is
+            // packed St would shrink the label and render "…", which is as
+            // wide as the code itself - the layout gets hidden without
+            // saving any space.
+            actor.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
         }
 
         this._panel_icon_box.set_child(actor);
@@ -253,6 +259,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         // Enforce a constant width and center the text
         actor.set_style("min-width: 2.5em; text-align: center;");
+        // See _syncGroup: never ellipsize the short code.
+        actor.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
 
         this._panel_icon_box.set_child(actor);
     }
