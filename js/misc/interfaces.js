@@ -98,6 +98,7 @@ xml['org.cinnamon.SettingsDaemon.Power'] =
     "<node> \
         <interface name='org.cinnamon.SettingsDaemon.Power'> \
             <property name='Icon' type='s' access='read'/> \
+            <property name='State' type='u' access='read'/> \
             <property name='Tooltip' type='s' access='read'/> \
             <method name='GetPrimaryDevice'> \
                 <arg name='device' type='(sssusduut)' direction='out' /> \
