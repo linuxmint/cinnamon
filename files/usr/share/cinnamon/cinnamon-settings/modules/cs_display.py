@@ -11,7 +11,7 @@ class Module:
     category = "hardware"
 
     def __init__(self, content_box):
-        keywords = _("display, screen, monitor, layout, resolution, dual, lcd")
+        keywords = _("display, screen, monitor, layout, resolution, dual, lcd, hidpi")
         self.sidePage = SidePage(_("Display"), "cs-display", keywords, content_box, 650, module=self)
         self.display_c_widget = None
 
