@@ -26,6 +26,18 @@
         "tooltip": "Always show the 'Mute input' switch in the context menu.",
         "default": false
     },
+    "alwaysExpandApplications": {
+        "type": "switch",
+        "description": "Always expand applications",
+        "tooltip": "Always expand the 'Applications' list in the context menu.",
+        "default": false
+    },
+    "alwaysExpandOutputDevice": {
+        "type": "switch",
+        "description": "Always expand output devices",
+        "tooltip": "Always expand the 'Output device' list in the context menu.",
+        "default": true
+    },
     "_knownPlayers": {
         "type": "generic",
         "default": ["banshee", "vlc", "rhythmbox"]
