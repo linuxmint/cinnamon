@@ -8,5 +8,21 @@
     "description": "Show menu",
     "default": "<Shift><Super>n",
     "tooltip": "Set keybinding(s) to show the network applet menu."
+  },
+  "cap-vpn-list": {
+    "type": "switch",
+    "default": false,
+    "description": "Limit VPN list",
+    "tooltip": "When enabled, the VPN section shows only the configured number of connections inline; the rest move into a \"More\" submenu. Disabled by default so the upstream behaviour of listing every VPN inline is preserved."
+  },
+  "num-visible-vpns": {
+    "type": "spinbutton",
+    "default": 5,
+    "min": 1,
+    "max": 50,
+    "step": 1,
+    "dependency": "cap-vpn-list",
+    "description": "Visible VPN connections before \"More\"",
+    "tooltip": "Number of VPN connections shown inline before the rest move into the \"More\" submenu."
   }
 }
