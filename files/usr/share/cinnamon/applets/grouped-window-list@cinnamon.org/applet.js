@@ -639,7 +639,89 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({lastTitleDisplay: titleDisplay});
     }
 
+    _matchFavoriteToWindow(fav, wmClass, wmInstance, gtkAppId) {
+        if (!fav || !fav.app) {
+            return false;
+        }
+
+        let favId = fav.id.toLowerCase();
+        // Get base name without path and .desktop
+        let baseName = favId.substring(favId.lastIndexOf('/') + 1).replace('.desktop', '');
+
+        // 1. Direct match on desktop ID base name (case-insensitive)
+        if (baseName === wmClass || baseName === wmInstance || (gtkAppId && baseName === gtkAppId)) {
+            return true;
+        }
+
+        // 2. Match on StartupWMClass from the app info
+        let appInfo = fav.app.get_app_info();
+        if (appInfo) {
+            let startupClass = appInfo.get_startup_wm_class ? appInfo.get_startup_wm_class() : null;
+            if (!startupClass) {
+                try {
+                    startupClass = appInfo.get_string("StartupWMClass");
+                } catch (e) {}
+            }
+            if (startupClass) {
+                startupClass = startupClass.toLowerCase();
+                if (startupClass === wmClass || startupClass === wmInstance) {
+                    return true;
+                }
+            }
+
+            // 3. Match executable/command name
+            let exec = appInfo.get_executable ? appInfo.get_executable() : null;
+            if (!exec) {
+                try {
+                    let cmd = appInfo.get_commandline ? appInfo.get_commandline() : "";
+                    if (cmd) {
+                        exec = cmd.split(' ')[0];
+                    }
+                } catch (e) {}
+            }
+            if (exec) {
+                let execBase = exec.substring(exec.lastIndexOf('/') + 1).toLowerCase();
+                if (execBase === wmClass || execBase === wmInstance) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    _matchWindowToPinnedApp(metaWindow) {
+        if (!this.pinnedFavorites || !this.pinnedFavorites._favorites) {
+            return null;
+        }
+
+        let wmClass = metaWindow.get_wm_class();
+        let wmInstance = metaWindow.get_wm_class_instance();
+        let gtkAppId = metaWindow.get_gtk_application_id ? metaWindow.get_gtk_application_id() : null;
+
+        wmClass = wmClass ? wmClass.toLowerCase() : "";
+        wmInstance = wmInstance ? wmInstance.toLowerCase() : "";
+        gtkAppId = gtkAppId ? gtkAppId.toLowerCase() : "";
+
+        // Iterate through pinned favorites
+        for (let fav of this.pinnedFavorites._favorites) {
+            if (this._matchFavoriteToWindow(fav, wmClass, wmInstance, gtkAppId)) {
+                return fav.app;
+            }
+        }
+        return null;
+    }
+
     getAppFromWindow(metaWindow) {
+        if (!metaWindow) {
+            return null;
+        }
+
+        // Try matching against pinned favorites first to prevent duplicate icons
+        let pinnedMatch = this._matchWindowToPinnedApp(metaWindow);
+        if (pinnedMatch) {
+            return pinnedMatch;
+        }
+
         const tracker = this.state.trigger('getTracker');
         if (!tracker) {
           return null;
@@ -651,6 +733,20 @@ class GroupedWindowListApplet extends Applet.Applet {
         if (!app) {
           app = tracker.get_app_from_pid(metaWindow.get_client_pid());
         }
+
+        // Fallback: If the tracker returned a transient app, check if its ID matches a pinned favorite
+        if (app && this.pinnedFavorites && this.pinnedFavorites._favorites) {
+            let appId = app.get_id().toLowerCase();
+            for (let fav of this.pinnedFavorites._favorites) {
+                if (!fav || !fav.app) continue;
+                let favId = fav.id.toLowerCase();
+                let baseName = favId.substring(favId.lastIndexOf('/') + 1).replace('.desktop', '');
+                if (appId === baseName || appId === favId) {
+                    return fav.app;
+                }
+            }
+        }
+
         return app;
     }
 
@@ -1030,6 +1126,9 @@ class GroupedWindowListApplet extends Applet.Applet {
 
     onWindowSkipTaskbarChanged(display, metaWindow) {
         const currentWorkspace = this.getCurrentWorkspace();
+        if (!currentWorkspace) {
+            return;
+        }
 
         if (metaWindow.is_skip_taskbar()) {
             currentWorkspace.windowRemoved(currentWorkspace.metaWorkspace, metaWindow);
