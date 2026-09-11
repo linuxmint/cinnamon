@@ -84,6 +84,13 @@ else
 endif
 message('Building recorder: @0@'.format(get_option('build_recorder')))
 
+# Background daemon
+gtk4 = dependency('gtk4', version: '>= 4.18')   # gtk_disable_portals()
+# Layer shell is how the daemon paints on Wayland and is no use without it, so
+# it follows the option rather than being required by an X11-only build.
+gtk4_layer_shell = dependency('gtk4-layer-shell-0', version: '>= 1.0.0',
+                              required: get_option('wayland'))
+cairo_xlib = dependency('cairo-xlib')
 
 # on some systems we need to find the math lib to make sure it builds
 cc = meson.get_compiler('c')
@@ -118,6 +125,7 @@ cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
 cinnamon_conf.set('BUILT_NM_AGENT', internal_nm_agent)
 cinnamon_conf.set10('USE_GIR20', use_gir20)
+cinnamon_conf.set10('HAVE_WAYLAND', get_option('wayland'))
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
@@ -226,7 +234,19 @@ configure_file(
     install_dir: 'share/cinnamon/js/misc/'
 )
 
-excluded_files = []
+excluded_files = ['usr/share/cinnamon/cinnamon-settings/config.py.in']
+
+cs_config_conf = configuration_data()
+cs_config_conf.set('PKGLIBDIR', join_paths(prefix, pkglibdir))
+cs_config_conf.set('USE_GIR20', use_gir20 ? 'True' : 'False')
+
+configure_file(
+    input: 'files/usr/share/cinnamon/cinnamon-settings/config.py.in',
+    output: 'config.py',
+    configuration: cs_config_conf,
+    install_dir: 'share/cinnamon/cinnamon-settings/'
+)
+
 if get_option('exclude_info_settings')
     excluded_files += ['usr/share/applications/cinnamon-settings-info.desktop']
     excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_info.py']

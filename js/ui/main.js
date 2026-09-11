@@ -42,15 +42,16 @@
  * @backgroundManager (BackgroundManager.BackgroundManager): The background
  * manager.
  * \
- * This listens to changes in the GNOME background settings and mirrors them to
- * the Cinnamon settings, since many applications have a "Set background"
- * button that modifies the GNOME background settings.
+ * This starts and watches cinnamon-background-daemon, which paints the
+ * wallpaper, and holds the startup reveal until it reports one on screen. It
+ * also translates an application's "Set as wallpaper" -- a write of the flat
+ * picture-uri key, in Cinnamon's schema or GNOME's -- into the per-monitor list
+ * the daemon reads.
  *
  * @slideshowManager (SlideshowManager.SlideshowManager): The slideshow manager.
  * \
- * This is responsible for managing the background slideshow, since the
- * background "slideshow" is created by cinnamon changing the active background
- * gsetting every x minutes.
+ * This starts cinnamon-slideshow when any monitor is configured to rotate its
+ * wallpaper. The rotation happens in that daemon; nothing here drives it.
  *
  * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
  * @systrayManager (Systray.SystrayManager): The systray manager
@@ -362,6 +363,11 @@ function start() {
 
     setRunState(RunState.STARTUP);
 
+    // Constructed this early so it can kick off the wallpaper daemon, which
+    // preloads and paints before we reveal the desktop.
+    backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager.hideBackground();
+
     screenshotService = new Screenshot.ScreenshotService();
 
     // Ensure CinnamonWindowTracker and CinnamonAppUsage are initialized; this will
@@ -392,9 +398,6 @@ function start() {
     themeManager = new ThemeManager.ThemeManager();
 
     settingsManager = new Settings.SettingsManager();
-
-    backgroundManager = new BackgroundManager.BackgroundManager();
-    backgroundManager.hideBackground();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
 
@@ -447,7 +450,22 @@ function start() {
                                 startupAnimationEnabled &&
                                 !software_rendering;
 
-    if (do_startup_animation) {
+    // On a fresh login we hold the desktop behind the startup cover until the
+    // wallpaper is on screen, whether or not we play the fade. (On a Cinnamon
+    // restart the wallpaper daemon is already up, so there's nothing to wait for.)
+    let first_login = !global.session_running;
+
+    // Comes down exactly once, from whichever path gets there first --
+    // _startupAnimationComplete() is not safe to run twice.
+    let revealed = false;
+    let revealDesktop = (animate) => {
+        if (revealed)
+            return;
+        revealed = true;
+        layoutManager._doStartupAnimation(animate);
+    };
+
+    if (first_login) {
         backgroundManager.showBackground();
         layoutManager._prepareStartupAnimation();
     }
@@ -612,18 +630,22 @@ function start() {
         // until the event loop is uncontended and idle.
         // This helps to prevent us from running the animation
         // when the system is bogged down
-        if (do_startup_animation) {
-            let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                layoutManager._doStartupAnimation();
-                return GLib.SOURCE_REMOVE;
+        if (first_login) {
+            backgroundManager.whenReady(() => {
+                // Play the login sound as we reveal, not at the start of the wait.
+                if (do_login_sound)
+                    soundManager.play('login');
+
+                GLib.idle_add(GLib.PRIORITY_LOW, () => {
+                    // Fade the cover away if the animation is enabled, otherwise drop it instantly.
+                    revealDesktop(do_startup_animation);
+                    return GLib.SOURCE_REMOVE;
+                });
             });
         } else {
             backgroundManager.showBackground();
             setRunState(RunState.RUNNING);
         }
-
-        if (do_login_sound && !global.session_running)
-		    soundManager.play('login');
 
         // Disable panel edit mode when Cinnamon starts
         if (global.settings.get_boolean("panel-edit-mode")) {
@@ -645,6 +667,10 @@ function start() {
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
     }).catch(error => {
         global.logError(`promise failed: ${error}`);
+        // The cover hides the cursor and swallows every event, so a failed
+        // init would otherwise look like a hung session.
+        if (first_login)
+            revealDesktop(false);
     });
 }
 

@@ -386,10 +386,10 @@ var LayoutManager = GObject.registerClass({
         this._chrome.updateRegions();
     }
 
-    _doStartupAnimation() {
+    _doStartupAnimation(animate) {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        this.startupAnimation.run();
+        this.startupAnimation.run(animate);
     }
 
     _startupAnimationComplete() {

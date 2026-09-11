@@ -1,4 +1,5 @@
 ignore = [
+    'background',
     'cinnamon-recorder-src.h',
     'cinnamon-recorder.h',
     'cinnamon-mount-operation.h',
