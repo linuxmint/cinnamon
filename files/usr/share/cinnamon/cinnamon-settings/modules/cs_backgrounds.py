@@ -658,6 +658,7 @@ class Module:
             self.bg_list = CinnamonBg.List.new()
             self.bg_list.connect("config-changed", self.on_config_changed)
             self.bg_list.connect("notify::mode", self.on_mode_changed)
+            self.bg_list.connect("monitors-changed", self.on_monitors_changed)
             # connector -> MonitorPage. Keyed the way the library keys items, so
             # a page outlives a rebuild that leaves its monitor alone.
             self._pages = {}
@@ -690,16 +691,16 @@ class Module:
             images_page.set_border_width(15)
             self.sidePage.stack.add_titled(images_page, "images", _("Images"))
 
-            # Section 1: background mode.
-            mode_section = SettingsSection()
+            self.mode_section = SettingsSection()
             mode_combo = GSettingsComboBox(_("Background mode"), "org.cinnamon.desktop.background",
                                            "background-mode",
                                            [("independent", _("Configure monitors individually")),
                                             ("mirror", _("Use the same background on all monitors")),
                                             ("spanned", _("Span a single background across all monitors"))])
-            mode_section.add_row(mode_combo)
+            self.mode_section.add_row(mode_combo)
+            self.mode_section.set_no_show_all(True)
 
-            images_page.pack_start(mode_section, False, False, 0)
+            images_page.pack_start(self.mode_section, False, False, 0)
 
             self.monitor_stack = Gtk.Stack()
             self.monitor_stack.set_no_show_all(True)
@@ -741,12 +742,21 @@ class Module:
             slideshow.add_row(widget)
 
             self.on_config_changed()
+            self.update_mode_visibility()
 
     def items(self):
         return list(self.bg_list)
 
     def spanned(self):
         return self.bg_list.props.mode == CinnamonBg.Mode.SPANNED
+
+    def on_monitors_changed(self, bg_list):
+        self.update_mode_visibility()
+
+    def update_mode_visibility(self):
+        # We don't need a mode combo if there is only one monitor.
+        n_monitors = len(self.bg_list.get_monitor_infos())
+        self.mode_section.set_visible(n_monitors > 1)
 
     def on_config_changed(self, bg_list=None):
         count = self.bg_list.get_n_items()
