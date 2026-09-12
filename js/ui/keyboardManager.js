@@ -286,6 +286,7 @@ var SubscriptableFlagIcon = GObject.registerClass({
                 this._load_file();
             }
         });
+        this.connect('resource-scale-changed', () => this._load_file());
     }
 
     get subscript() {
@@ -310,15 +311,18 @@ var SubscriptableFlagIcon = GObject.registerClass({
             return;
         }
 
+        const scale = this.get_resource_scale();
+
         try {
             this._loadHandle = St.TextureCache.get_default().load_image_from_file_async(
                 this._file.get_path(),
-                -1, this.get_height(),
+                -1, this.get_height() * scale,
                 (cache, handle, actor) => {
                     if (handle !== this._loadHandle) {
                         return;
                     }
 
+                    actor.set_size(actor.width / scale, actor.height / scale);
                     this._image = actor;
                     this._imageBin.set_child(actor);
                     this._drawingArea.queue_repaint();
