@@ -6,9 +6,12 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Cinnamon = imports.gi.Cinnamon;
 
+const Gio = imports.gi.Gio;
+
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const WorkspacesView = imports.ui.workspacesView;
+
 // ***************
 // This shows all of the windows on the current workspace
 // ***************
@@ -247,6 +250,22 @@ var Overview = GObject.registerClass({
         if (this.visible || this.animationInProgress)
             return;
 
+        this._prepareVisible();
+
+        this._shadeEffect.brightness = shadeColor(SHADE_NEUTRAL);
+        this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_DIMMED), {
+            duration: ANIMATION_TIME * 0.45,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => this._showDone()
+        });
+    }
+
+    /**
+     * _prepareVisible: puts everything the window selector needs on screen
+     * with no animation, so both _animateVisible() and gestureBegin() can
+     * start from here.
+     */
+    _prepareVisible() {
         // The live background is inside global.window_group, which is hidden
         // below, so build a separate one for the overview.
         this._background = Main.createFullScreenBackground();
@@ -277,14 +296,132 @@ var Overview = GObject.registerClass({
 
         this._coverPane.raise_top();
         this._coverPane.show();
-        this.emit('showing');
 
-        this._shadeEffect.brightness = shadeColor(SHADE_NEUTRAL);
-        this._group.ease_property('@effects.shade.brightness', shadeColor(SHADE_DIMMED), {
-            duration: ANIMATION_TIME * 0.45,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => this._showDone()
+        this.emit('showing');
+    }
+
+    // --- gestures that follow the fingers ---------------------------------
+    //
+    // Opening the selector shades the desktop and moves every window into
+    // its grid slot. The caller is TrackedViewAction in
+    // ui/gestures/actions.js: begin, any number of update, then one end.
+    //
+    // Workspace.zoomToOverview() checks gestureInProgress to skip its own
+    // animation; the first update moves the windows from there instead.
+
+    get gestureInProgress() {
+        return this._gestureAdjustment != null;
+    }
+
+    /**
+     * _setGestureProgress: holds the shade and every window at @progress
+     * between its real position and its grid slot.
+     */
+    _setGestureProgress(progress) {
+        const shade = SHADE_NEUTRAL + (SHADE_DIMMED - SHADE_NEUTRAL) * progress;
+        this._shadeEffect.brightness = shadeColor(Math.round(shade));
+
+        if (this.workspacesView)
+            this.workspacesView.setGestureProgress(progress);
+    }
+
+    /**
+     * gestureBegin: starts a swipe, opening a closed selector or closing
+     * an open one. The progress must exist before _prepareVisible() runs,
+     * since building the workspaces view reads gestureInProgress.
+     *
+     * Returns: false if the swipe cannot start, in which case do not call
+     * gestureUpdate() or gestureEnd().
+     */
+    gestureBegin() {
+        if (this.animationInProgress || this.gestureInProgress || !Main.animations_enabled)
+            return false;
+
+        const showing = !this._shown;
+
+        if (showing) {
+            if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.OVERVIEW,
+                                () => this._dismissGrab()))
+                return false;
+
+            this._modal = true;
+            this._shown = true;
+            this._gestureAdjustment = new St.Adjustment({ value: 0, lower: 0, upper: 1 });
+            this._prepareVisible();
+        } else {
+            this._gestureAdjustment = new St.Adjustment({ value: 1, lower: 0, upper: 1 });
+        }
+
+        this._gestureAdjustment.connect('notify::value',
+            () => this._setGestureProgress(this._gestureAdjustment.value));
+
+        this.workspacesView.prepareGesture();
+        this._setGestureProgress(showing ? 0 : 1);
+        this.animationInProgress = true;
+
+        return true;
+    }
+
+    /**
+     * gestureUpdate: clamps @progress (0 closed to 1 open) so the windows
+     * cannot overshoot either end.
+     */
+    gestureUpdate(progress) {
+        if (!this.gestureInProgress)
+            return;
+
+        this._gestureAdjustment.value = Math.min(1, Math.max(0, progress));
+    }
+
+    /**
+     * gestureEnd: animates to @target over @duration ms and commits. Uses
+     * ::stopped rather than a completion handler, so an interrupted settle
+     * still cleans up.
+     */
+    gestureEnd(target, duration) {
+        if (!this.gestureInProgress)
+            return;
+
+        this._gestureAdjustment.ease(target, {
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+            onStopped: () => this._gestureDone(target),
         });
+    }
+
+    /**
+     * _gestureDone: commits @target. 1 is the tail of a normal show; 0
+     * undoes what gestureBegin() prepared, the same work a finished hide
+     * does.
+     */
+    _gestureDone(target) {
+        this._gestureAdjustment = null;
+
+        // A click or a key can hide the selector while the settle runs. The
+        // hide has then undone everything this would commit.
+        if (!this.visible || this._hideInProgress)
+            return;
+
+        if (target >= 0.5) {
+            if (this.workspacesView)
+                this.workspacesView.endGesture(true);
+
+            this._showDone();
+            return;
+        }
+
+        // Only pixels moved while the fingers were down, so undo the rest
+        // here.
+        this._shown = false;
+        Main.panelManager.enablePanels();
+
+        if (this.workspacesView) {
+            this.workspacesView.endGesture(false);
+            this.workspacesView.hide();
+        }
+
+        this.emit('hiding');
+        this._hideDone();
     }
 
     hide() {

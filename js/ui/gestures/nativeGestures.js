@@ -1,6 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const { Clutter, GObject, Gio } = imports.gi;
+const { Clutter, GObject } = imports.gi;
 const Signals = imports.signals;
 
 const {
@@ -32,10 +32,6 @@ var TouchpadSwipeGesture = class {
         this._percentage = 0;
         this._baseDistance = 0;
         this._startTime = 0;
-
-        this._touchpadSettings = new Gio.Settings({
-            schema_id: 'org.cinnamon.desktop.peripherals.touchpad',
-        });
 
         this._stageEventId = global.stage.connect(
             'captured-event::touchpad', this._handleEvent.bind(this));
@@ -69,14 +65,6 @@ var TouchpadSwipeGesture = class {
         const time = event.get_time();
         const [dx, dy] = event.get_gesture_motion_delta_unaccelerated();
 
-        // Apply natural scroll setting
-        let adjDx = dx;
-        let adjDy = dy;
-        if (this._touchpadSettings.get_boolean('natural-scroll')) {
-            adjDx = -dx;
-            adjDy = -dy;
-        }
-
         if (this._state === TouchpadState.NONE) {
             if (dx === 0 && dy === 0) {
                 return Clutter.EVENT_PROPAGATE;
@@ -88,19 +76,19 @@ var TouchpadSwipeGesture = class {
         }
 
         if (this._state === TouchpadState.PENDING) {
-            this._cumulativeX += adjDx;
-            this._cumulativeY += adjDy;
+            this._cumulativeX += dx;
+            this._cumulativeY += dy;
 
             const distance = Math.sqrt(this._cumulativeX ** 2 + this._cumulativeY ** 2);
 
             if (distance >= DRAG_THRESHOLD_DISTANCE) {
-                // Determine direction
-                // Note: dx/dy are inverted for horizontal to match touchegg convention
+                // Direction of the fingers, not of scroll content; matches
+                // the touchscreen gestures below and Touchegg on X11.
                 if (Math.abs(this._cumulativeX) > Math.abs(this._cumulativeY)) {
-                    this._direction = this._cumulativeX > 0 ? GestureDirection.LEFT : GestureDirection.RIGHT;
+                    this._direction = this._cumulativeX < 0 ? GestureDirection.LEFT : GestureDirection.RIGHT;
                     this._baseDistance = TOUCHPAD_BASE_WIDTH;
                 } else {
-                    this._direction = this._cumulativeY > 0 ? GestureDirection.DOWN : GestureDirection.UP;
+                    this._direction = this._cumulativeY < 0 ? GestureDirection.UP : GestureDirection.DOWN;
                     this._baseDistance = TOUCHPAD_BASE_HEIGHT;
                 }
 
@@ -120,19 +108,12 @@ var TouchpadSwipeGesture = class {
             }
         }
 
-        // Calculate delta along the gesture direction
-        // Note: horizontal is inverted to match touchegg convention
+        // How far the fingers have gone in the direction they started in.
         let delta = 0;
         if (this._direction === GestureDirection.LEFT || this._direction === GestureDirection.RIGHT) {
-            delta = -adjDx;  // Inverted for horizontal
-            if (this._direction === GestureDirection.LEFT) {
-                delta = -delta;
-            }
+            delta = this._direction === GestureDirection.LEFT ? -dx : dx;
         } else {
-            delta = adjDy;
-            if (this._direction === GestureDirection.UP) {
-                delta = -delta;
-            }
+            delta = this._direction === GestureDirection.UP ? -dy : dy;
         }
 
         // Update percentage (can exceed 100%)

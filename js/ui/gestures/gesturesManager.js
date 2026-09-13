@@ -16,6 +16,15 @@ const { NativeGestureSource } = imports.ui.gestures.nativeGestureSource;
 const { ToucheggGestureSource } = imports.ui.gestures.toucheggGestureSource;
 
 const SCHEMA = "org.cinnamon.gestures";
+const TOUCHPAD_SCHEMA = "org.cinnamon.desktop.peripherals.touchpad";
+
+// A swipe and the swipe back.
+const OPPOSITE_DIRECTION = {
+    [GestureDirection.UP]: GestureDirection.DOWN,
+    [GestureDirection.DOWN]: GestureDirection.UP,
+    [GestureDirection.LEFT]: GestureDirection.RIGHT,
+    [GestureDirection.RIGHT]: GestureDirection.LEFT,
+};
 
 const NON_GESTURE_KEYS = [
     "enabled",
@@ -86,6 +95,7 @@ var GesturesManager = class {
     constructor(wm) {
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
+        this.touchpad_settings = new Gio.Settings({ schema_id: TOUCHPAD_SCHEMA })
         this.current_gesture = null;
         this.live_actions = new Map();
 
@@ -98,6 +108,7 @@ var GesturesManager = class {
         this.migrate_settings();
 
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
+        this.signalManager.connect(this.touchpad_settings, "changed::send-events", this.settings_or_devices_changed, this);
 
         this.gestureSource.connect('gesture-begin', this.gesture_begin.bind(this));
         this.gestureSource.connect('gesture-update', this.gesture_update.bind(this));
@@ -117,6 +128,18 @@ var GesturesManager = class {
             }
 
             const val = this.settings.get_string(key);
+
+            // Nothing matches an empty phase, so an action stored with one
+            // never runs. Older settings pages wrote them that way.
+            const parts = val.split("::");
+            if (parts.length > 1 && parts[parts.length - 1] === "") {
+                const custom = parts.length === 3 ? parts[1] : "";
+                this.settings.set_string(key, custom === ""
+                    ? `${parts[0]}::end`
+                    : `${parts[0]}::${custom}::end`);
+                continue;
+            }
+
             if (val === '' || val.includes("::")) {
                 continue;
             }
@@ -144,8 +167,16 @@ var GesturesManager = class {
         }
     }
 
+    // On X11, touchegg reads the touchpad through its own libinput handle,
+    // so muffin telling libinput to stop the device never reaches it: it
+    // keeps recognizing gestures even with the touchpad off. Rather than
+    // rely on that, gate on the setting directly, here, ourselves.
+    touchpad_enabled() {
+        return this.touchpad_settings.get_string("send-events") !== "disabled";
+    }
+
     settings_or_devices_changed(settings, key) {
-        if (this.settings.get_boolean("enabled")) {
+        if (this.settings.get_boolean("enabled") && this.touchpad_enabled()) {
             this.setup_actions();
             return;
         }
@@ -217,6 +248,41 @@ var GesturesManager = class {
         }
     }
 
+    /**
+     * definition_for:
+     *
+     * What this gesture does: the action set on it, or a way out of a view.
+     */
+    definition_for(type, direction, fingers) {
+        const definition = this.lookup_definition(type, direction, fingers);
+        if (definition != null) {
+            return definition;
+        }
+
+        return this.lookup_way_back(type, direction, fingers);
+    }
+
+    /**
+     * lookup_way_back: a swipe with nothing set takes the opposite
+     * direction's action if it opens a view that is open, so a view is
+     * always closable even when only its opener is bound.
+     */
+    lookup_way_back(type, direction, fingers) {
+        const opposite = OPPOSITE_DIRECTION[direction];
+        if (opposite === undefined) {
+            return null;
+        }
+
+        const definition = this.lookup_definition(type, opposite, fingers);
+        if (definition == null) {
+            return null;
+        }
+
+        const view = actions.view_for_action(definition.action);
+
+        return view != null && view.visible ? definition : null;
+    }
+
     lookup_definition(type, direction, fingers) {
         const key = this.construct_map_key(type, direction, fingers);
         const definition = this.live_actions.get(key);
@@ -240,7 +306,7 @@ var GesturesManager = class {
             return;
         }
 
-        const definition_match = this.lookup_definition(type, direction, fingers);
+        const definition_match = this.definition_for(type, direction, fingers);
 
         if (definition_match == null) {
             debug_gesture(`No definition for (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers}`);
@@ -262,7 +328,7 @@ var GesturesManager = class {
             return;
         }
 
-        const def  = this.lookup_definition(type, direction, fingers);
+        const def  = this.definition_for(type, direction, fingers);
         if (def == null || def !== this.current_gesture.definition) {
             this.current_gesture = null;
             global.logWarning("Invalid gesture update received, clearing current gesture");
@@ -279,7 +345,7 @@ var GesturesManager = class {
             return;
         }
 
-        const def  = this.lookup_definition(type, direction, fingers);
+        const def  = this.definition_for(type, direction, fingers);
         if (def == null || def !== this.current_gesture.definition) {
             this.current_gesture = null;
             global.logWarning("Invalid gesture end received, clearing current gesture");

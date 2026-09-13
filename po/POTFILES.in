@@ -204,6 +204,7 @@ js/ui/gestures/gesturesManager.js
 js/ui/gestures/nativeGestures.js
 js/ui/gestures/nativeGestureSource.js
 js/ui/gestures/toucheggGestureSource.js
+js/ui/gestures/tracking.js
 js/ui/hotCorner.js
 js/ui/ibusCandidatePopup.js
 js/ui/iconGrid.js
