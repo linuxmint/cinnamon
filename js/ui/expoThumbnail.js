@@ -1296,6 +1296,23 @@ var ExpoThumbnailsBox = GObject.registerClass({
         return Clutter.EVENT_PROPAGATE;
     }
 
+    /**
+     * setShadeProgress: sets the shade directly (0 undimmed to 1 fully
+     * dimmed) so a gesture can drive it frame by frame; easeShade() animates
+     * between the same ends.
+     */
+    setShadeProgress(progress) {
+        const value = SHADE_NEUTRAL + (SHADE_DIMMED - SHADE_NEUTRAL) * progress;
+
+        this.shaded = progress > 0.5;
+
+        this.thumbnails.forEach(thumbnail => {
+            const effect = thumbnail.background.get_effect('shade');
+            if (effect)
+                effect.brightness = shadeColor(value);
+        });
+    }
+
     easeShade(dimmed, duration) {
         this.shaded = dimmed;
 
@@ -1352,7 +1369,9 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
         this.addThumbnails(0, global.workspace_manager.n_workspaces);
 
-        this.easeShade(true, SHADE_ANIMATION_TIME);
+        // A gesture sets the shade itself, frame by frame.
+        if (!Main.expo.gestureInProgress)
+            this.easeShade(true, SHADE_ANIMATION_TIME);
 
         this.button.raise_top();
 
@@ -1471,6 +1490,23 @@ var ExpoThumbnailsBox = GObject.registerClass({
     }
 
     // returns true if symbol was understood, false otherwise
+    /**
+     * selectWorkspaceByOffset: the swipe equivalent of the arrow keys. Moves
+     * the keyboard highlight by @offset without activating, stopping at
+     * either end instead of wrapping.
+     */
+    selectWorkspaceByOffset(offset) {
+        const previous = this.kbThumbnailIndex;
+        const next = Math.max(0, Math.min(this.thumbnails.length - 1, previous + offset));
+
+        if (next === previous)
+            return;
+
+        this.kbThumbnailIndex = next;
+        this.thumbnails[previous].showKeyboardSelectedState(false);
+        this.thumbnails[next].showKeyboardSelectedState(true);
+    }
+
     selectNextWorkspace(symbol) {
         let prevIndex = this.kbThumbnailIndex;
         let lastIndex = this.thumbnails.length - 1;
