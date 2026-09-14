@@ -338,6 +338,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         if (this._profilesProxy && this._profilesProxy.Profiles) {
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.contentSection = new PopupMenu.PopupMenuSection();
+            this.menu.addMenuItem(this.contentSection);
 
             this.ActiveProfile = this._profilesProxy.ActiveProfile;
             this.Profiles = this._profilesProxy.Profiles;
@@ -570,7 +571,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             this.contentSection.addMenuItem(item);
         }
 
-        this.menu.addMenuItem(this.contentSection);
+        if (!this.contentSection.actor.get_parent()) {
+            this.menu.addMenuItem(this.contentSection);
+        }
     }
 
     _changeProfile(newProfile) {
