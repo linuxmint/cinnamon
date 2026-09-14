@@ -218,6 +218,7 @@ class Module:
             self.active_style = None
             self.active_mode_name = None
             self.active_variant = None
+            self.simplified_button = None
 
             # HiDPI support
             for mode in ["mixed", "dark", "light"]:
@@ -261,6 +262,11 @@ class Module:
             button.set_label(_("Simplified settings..."))
             button.set_halign(Gtk.Align.END)
             button.connect("clicked", self.on_simplified_button_clicked)
+            # no_show_all, or the show_all() done on the page would reveal the
+            # button again after update_simplified_button() hid it
+            button.set_no_show_all(True)
+            self.simplified_button = button
+            self.update_simplified_button()
             page.add(button)
 
             page = DownloadSpicesPage(self, 'theme', self.spices, self.window)
@@ -525,7 +531,13 @@ class Module:
             # Position style combo on "Custom"
             self.style_combo.append_text(_("Custom"))
             self.style_combo.set_active(len(self.styles.keys()))
+        self.update_simplified_button()
         self.ui_ready = True
+
+    def update_simplified_button(self):
+        # With no styles installed the simplified page has nothing to offer
+        if self.simplified_button is not None:
+            self.simplified_button.set_visible(len(self.styles) > 0)
 
     def on_customize_button_clicked(self, widget):
         self.set_button_chooser(self.icon_chooser, self.settings.get_string("icon-theme"), 'icons', 'icons', ICON_SIZE)
