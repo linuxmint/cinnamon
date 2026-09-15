@@ -307,7 +307,7 @@ var EventsManager = class EventsManager {
 
         this._gc_timer_id = 0;
 
-        this._reload_today_id = 0;
+        this._reload_id = 0;
 
         this._force_reload_pending = false;
         this._event_list = null;
@@ -450,7 +450,7 @@ var EventsManager = class EventsManager {
             }
         }
 
-        this.queue_reload_today(false);
+        this.queue_reload(false);
 
         this.emit("events-updated");
     }
@@ -460,7 +460,7 @@ var EventsManager = class EventsManager {
         // specific matching events to remove, just rebuild the
         // entire list.
         this.events_by_date = {};
-        this.queue_reload_today(true);
+        this.queue_reload(true);
     }
 
     _handle_status_notify(server, pspec) {
@@ -476,7 +476,7 @@ var EventsManager = class EventsManager {
         }
 
         this._cached_state = this._calendar_server.status;
-        this.queue_reload_today(true);
+        this.queue_reload(true);
         this.emit("has-calendars-changed");
     }
 
@@ -530,27 +530,30 @@ var EventsManager = class EventsManager {
         }
     }
 
-    _cancel_reload_today() {
-        if (this._reload_today_id > 0) {
-            Mainloop.source_remove(this._reload_today_id);
-            this._reload_today_id = 0;
+    _cancel_reload() {
+        if (this._reload_id > 0) {
+            Mainloop.source_remove(this._reload_id);
+            this._reload_id = 0;
         }
     }
 
-    queue_reload_today(force) {
-        this._cancel_reload_today();
+    queue_reload(force) {
+        this._cancel_reload();
 
         if (force) {
             this._force_reload_pending = true;
         }
 
-        this._reload_today_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_reload_today));
+        this._reload_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_reload));
     }
 
-    _idle_do_reload_today() {
-        this._reload_today_id = 0;
+    _idle_do_reload() {
+        this._reload_id = 0;
 
-        this.select_date(new Date(), this._force_reload_pending);
+        let date = this.current_selected_date.to_unix() > 0 ?
+            new Date(this.current_selected_date.to_unix() * 1000) : new Date();
+
+        this.select_date(date, this._force_reload_pending);
         this._force_reload_pending = false;
 
         return GLib.SOURCE_REMOVE;
