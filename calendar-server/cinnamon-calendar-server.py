@@ -348,10 +348,15 @@ class CalendarServer(Gio.Application):
         self.hold()
         self.release()
 
-        if time_since == self.current_month_start and time_until == self.current_month_end:
-            if not force_reload:
-                self.interface.complete_set_time_range(inv)
-                return True
+        range_changed = (time_since != self.current_month_start or
+                         time_until != self.current_month_end)
+
+        if not range_changed and not force_reload:
+            self.interface.complete_set_time_range(inv)
+            return True
+
+        if range_changed:
+            self.clockenstein_event_uids = set()
 
         self.current_month_start = time_since
         self.current_month_end = time_until
