@@ -16,8 +16,16 @@ LABEL_OVERRIDES = {
     "WORKAREA": "Work Area"
 }
 
+# Topics whose derived name doesn't say enough on its own.
+TOPIC_LABELS = {
+    "SCANOUT": ("Unredirect / direct scanout",
+                "Why a full-screen window is or isn't bypassing the compositor - "
+                "unredirect on X11, direct scanout on Wayland. Logs one line per "
+                "monitor, and only when the reason changes.")
+}
+
 GROUPS = [
-    ("Wayland", {"INPUT", "LAYER_SHELL", "SCANOUT"}),
+    ("Wayland", {"INPUT", "LAYER_SHELL"}),
     ("X11", {"GROUPS", "SHAPES", "SM", "SYNC"}),
     ("General", None)
 ]
@@ -194,7 +202,8 @@ class DebugButton(Gtk.MenuButton):
                 grouped.update(name for name, value in members)
 
             if members:
-                self.add_group(title, members, self.on_topic_toggled, self.topic_checks)
+                self.add_group(title, members, self.on_topic_toggled,
+                               self.topic_checks, labels=TOPIC_LABELS)
 
     def add_clutter_flags(self):
         flags = self.query(CLUTTER_FLAG_QUERY, "clutter debug flag list")
@@ -217,7 +226,7 @@ class DebugButton(Gtk.MenuButton):
             self.groups_box.pack_start(check, False, False, 0)
             self.clutter_checks.append(check)
 
-    def add_group(self, title, members, on_toggled, checks, arg=None):
+    def add_group(self, title, members, on_toggled, checks, arg=None, labels=None):
         label = Gtk.Label(halign=Gtk.Align.START)
         label.set_markup("<b>%s</b>" % title)
         self.groups_box.pack_start(label, False, False, 0)
@@ -229,8 +238,13 @@ class DebugButton(Gtk.MenuButton):
         flowbox.set_homogeneous(True)
         self.groups_box.pack_start(flowbox, False, False, 0)
 
-        for label_text, value in sorted((make_label(name), value) for name, value in members):
+        labels = labels or {}
+        entries = [labels.get(name, (make_label(name), None)) + (value,)
+                   for name, value in members]
+
+        for label_text, tooltip, value in sorted(entries, key=lambda entry: entry[0]):
             check = Gtk.CheckButton(label=label_text)
+            check.set_tooltip_text(tooltip)
             check.flag = value
             check.arg = arg
             check.connect("toggled", on_toggled)
