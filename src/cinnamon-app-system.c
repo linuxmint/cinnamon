@@ -291,7 +291,7 @@ capitalize (const gchar *name)
 
   first_letter_capped = g_utf8_strup (name, 1);
 
-  ret = g_strconcat (first_letter_capped, (name + 1), NULL);
+  ret = g_strconcat (first_letter_capped, g_utf8_next_char (name), NULL);
 
   g_free (first_letter_capped);
 
