@@ -325,7 +325,7 @@ rename_app (CinnamonApp *app,
             gboolean     flatpak_iteration)
 {
   RenameAppData *data;
-  const gchar *common_name;
+  const gchar *common_name, *exec;
   gchar *unique_name, *basename, *capitalized_exec;
   guint i;
 
@@ -359,7 +359,17 @@ rename_app (CinnamonApp *app,
       return;
     }
 
-  basename = g_path_get_basename (_cinnamon_app_get_executable (app));
+  exec = _cinnamon_app_get_executable (app);
+
+  if (exec == NULL)
+    {
+      DEBUG_RENAMING ("      Skipping rename of app at %s - it has no executable\n",
+                      cinnamon_app_get_id (app));
+
+      return;
+    }
+
+  basename = g_path_get_basename (exec);
 
   capitalized_exec = capitalize (basename);
   g_free (basename);
