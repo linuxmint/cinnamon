@@ -252,14 +252,14 @@ var createStore = function(state = {}, listeners = [], connections = 0) {
         }
         if (listener) {
             let newKeys = intersect(keys, listener.keys, true);
-            listener.keys.concat(newKeys);
+            listener.keys = listener.keys.concat(newKeys);
         } else {
             listeners.push({keys, callback, id});
         }
     }
 
     function connect(actions, callback) {
-        const id = connections++;
+        const id = ++connections;
         if (Array.isArray(actions)) {
             _connect(actions, callback, id);
         } else if (typeof actions === 'string') {
