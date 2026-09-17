@@ -254,7 +254,11 @@ var SubscriptableFlagIcon = GObject.registerClass({
         'file': GObject.ParamSpec.object(
             'file', 'file', 'file',
             GObject.ParamFlags.READWRITE,
-            Gio.File.$gtype)
+            Gio.File.$gtype),
+        'icon-size': GObject.ParamSpec.int(
+            'icon-size', 'icon-size', 'Unscaled icon height',
+            GObject.ParamFlags.READWRITE,
+            0, GLib.MAXINT32, 0)
     },
 }, class SubscriptableFlagIcon extends St.Widget {
     _init(params) {
@@ -262,6 +266,8 @@ var SubscriptableFlagIcon = GObject.registerClass({
         this._file = null;
         this._image = null;
         this._loadHandle = 0;
+        this._iconSize = 0;
+        this._scaledHeight = 0;
 
         super._init({
             style_class: 'input-source-switcher-flag-icon',
@@ -304,6 +310,32 @@ var SubscriptableFlagIcon = GObject.registerClass({
     set file(file) {
         this._file = file;
         this._load_file();
+    }
+
+    get icon_size() {
+        return this._iconSize;
+    }
+
+    set icon_size(size) {
+        this._iconSize = size;
+        this._updateSize();
+    }
+
+    _updateSize() {
+        const scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        const height = this._iconSize * scale;
+        if (height === this._scaledHeight) {
+            return;
+        }
+
+        this._scaledHeight = height;
+        this.set_height(height);
+        this._load_file();
+    }
+
+    vfunc_style_changed() {
+        super.vfunc_style_changed();
+        this._updateSize();
     }
 
     _load_file() {
@@ -1140,7 +1172,7 @@ var InputSourceManager = class {
                 style_class: actorClass,
                 file: file,
                 subscript: source.dupeId > 0 ? String(source.dupeId) : null,
-                height: size * global.ui_scale,
+                icon_size: size,
             });
         }
 
