@@ -21,6 +21,9 @@ const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 // how long to show the output icon when volume is adjusted during media playback.
 const OUTPUT_ICON_SHOW_TIME_SECONDS = 3;
 
+// cached for reuse by _cycleOutputDevice()
+const OUTPUT_DEVICE_ICON = new Gio.ThemedIcon({name: "xsi-audio-speakers-symbolic"});
+
 /* global values */
 let players_without_seek_support = ['telegram desktop', 'spotify', 'totem', 'xplayer', 'gnome-mplayer', 'pithos',
     'smplayer'];
@@ -987,6 +990,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (this.hideSystray) this.registerSystrayIcons();
 
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
+        this.settings.bind("cycleOutputKey", "cycleOutputKey", this._setCycleKeybinding);
         this.settings.bind("alwaysShowMuteInput", "alwaysShowMuteInput", this.on_settings_changed);
 
         this.settings.bind("tooltipShowVolume", "tooltipShowVolume", this.on_settings_changed);
@@ -997,6 +1001,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this.menu = new Applet.AppletPopupMenu(this, orientation);
         this.menuManager.addMenu(this.menu);
         this._setKeybinding();
+        this._setCycleKeybinding();
 
         this.set_applet_icon_symbolic_name('xsi-audio-x-generic');
 
@@ -1107,6 +1112,32 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         Main.keybindingManager.addXletHotKey(this, "sound-open", this.keyOpen, Lang.bind(this, this._openMenu));
     }
 
+    _setCycleKeybinding() {
+        Main.keybindingManager.addXletHotKey(this, "sound-cycle-output", this.cycleOutputKey, () => this._cycleOutputDevice());
+    }
+
+    _cycleOutputDevice() {
+        let outputDevices = this._devices.filter(d => d.type === "output");
+        if (outputDevices.length < 2)
+            return;
+
+        // Ask Cvc for the active device instead of relying on the menu's private _dot field.
+        let output = this._control.get_default_sink();
+        let activeDevice = output ? this._control.lookup_device_from_stream(output) : null;
+        let activeId = activeDevice ? activeDevice.get_id() : -1;
+
+        let nextIdx = (outputDevices.findIndex(d => d.id === activeId) + 1) % outputDevices.length;
+        let nextEntry = outputDevices[nextIdx];
+
+        nextEntry.item.activate();
+
+        let deviceLabel = nextEntry.description;
+        if (nextEntry.origin)
+            deviceLabel += " - " + nextEntry.origin;
+
+        Main.osdWindowManager.show(-1, OUTPUT_DEVICE_ICON, deviceLabel, null);
+    }
+
     _on_overamplification_change () {
         if (this._sound_settings.get_boolean(OVERAMPLIFICATION_KEY)) {
             this._volumeMax = 1.5 * this._volumeNorm;
@@ -1140,6 +1171,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
     on_applet_removed_from_panel () {
         Main.keybindingManager.removeXletHotKey(this, "sound-open");
+        Main.keybindingManager.removeXletHotKey(this, "sound-cycle-output");
         if (this.hideSystray)
             this.unregisterSystrayIcons();
         if (this._iconTimeoutId) {
@@ -1659,7 +1691,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if(selectItem.menu.numMenuItems > 1)
             selectItem.actor.show();
 
-        this._devices.push({id: id, type: type, item: item});
+        this._devices.push({id: id, type: type, item: item, description: device.description, origin: device.origin});
     }
 
     _onDeviceRemoved(control, id, type) {
