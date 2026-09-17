@@ -28,8 +28,8 @@ var deskletsDragging = false;
 
 var userDeskletsDir;
 
-var mouseTrackEnabled = false;
 var mouseTrackTimoutId = 0;
+var mouseTrackRestackedId = 0;
 var promises = [];
 
 var deskletChangeKey = 0;
@@ -92,9 +92,14 @@ function updateMouseTracking() {
     let enable = definitions.length > 0;
     if (enable && !mouseTrackTimoutId) {
         mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
+        // A window can be raised, minimized or unminimized between two timeouts,
+        // so don't wait for the next one to notice a desklet got covered.
+        mouseTrackRestackedId = global.display.connect('restacked', checkMouseTracking);
     } else if (!enable && mouseTrackTimoutId) {
         Mainloop.source_remove(mouseTrackTimoutId);
         mouseTrackTimoutId = 0;
+        global.display.disconnect(mouseTrackRestackedId);
+        mouseTrackRestackedId = 0;
 
         for (let i = 0; i < definitions.length; i++) {
             if (definitions[i].desklet) {
@@ -104,26 +109,55 @@ function updateMouseTracking() {
     }
 }
 
-function hasMouseWindow(){
-    let window = global.display.get_pointer_window(null);
-    return window && window.window_type !== Meta.WindowType.DESKTOP;
+function isCoveredByWindow(desklet) {
+    let [x, y] = desklet.actor.get_transformed_position();
+    let [width, height] = desklet.actor.get_transformed_size();
+
+    if (isNaN(x) || isNaN(y) || isNaN(width) || isNaN(height)) {
+        return true;
+    }
+
+    let rect = new Meta.Rectangle({ x: Math.round(x),
+                                    y: Math.round(y),
+                                    width: Math.round(width),
+                                    height: Math.round(height) });
+
+    let windows = global.workspace_manager.get_active_workspace().list_windows();
+    for (let i = 0; i < windows.length; i++) {
+        let window = windows[i];
+        if (window.window_type === Meta.WindowType.DESKTOP
+            || !window.showing_on_its_workspace()) {
+            continue;
+        }
+
+        // Any overlap is enough: the input region is a rectangle, so a desklet
+        // partially behind a window can only be all in or all out of it, and
+        // keeping it in would take the pointer away from that window.
+        if (window.get_frame_rect().overlap(rect)) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function checkMouseTracking() {
-    let enable = !hasMouseWindow();
-    if (mouseTrackEnabled !== enable) {
-        mouseTrackEnabled = enable;
-        for (let i = 0; i < definitions.length; i++) {
-            if (!definitions[i].desklet) {
-                continue;
-            }
-            if (enable) {
-                definitions[i].desklet._trackMouse();
-            } else {
-                definitions[i].desklet._untrackMouse();
-            }
+    // When desklets are raised on top of the windows they are given a modal
+    // grab, and the input region doesn't matter anymore.
+    let deskletsAbove = global.display.get_desklets_above();
+
+    for (let i = 0; i < definitions.length; i++) {
+        let desklet = definitions[i].desklet;
+        if (!desklet) {
+            continue;
+        }
+        if (deskletsAbove || !isCoveredByWindow(desklet)) {
+            desklet._trackMouse();
+        } else {
+            desklet._untrackMouse();
         }
     }
+
     return true;
 }
 
@@ -551,7 +585,6 @@ DeskletContainer.prototype = {
         if (!(source instanceof Desklet.Desklet)) return false;
         Main.uiGroup.remove_actor(actor);
         this.actor.add_actor(actor);
-        mouseTrackEnabled = -1; // forces an update of all desklet mouse tracks
         checkMouseTracking();
 
         // Update GSettings
@@ -588,7 +621,6 @@ DeskletContainer.prototype = {
         if (!(source instanceof Desklet.Desklet)) return false;
         Main.uiGroup.remove_actor(actor);
         this.actor.add_actor(actor);
-        mouseTrackEnabled = -1;
         checkMouseTracking();
         this._dragPlaceholder.hide();
         this.last_x = -1;
