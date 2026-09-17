@@ -2115,13 +2115,11 @@ CinnamonNetworkApplet.prototype = {
             devices.push(wrapper);
 
             this._syncSectionTitle(wrapper.category);
-        } else
-            log('Unknown network device type, is ' + device.get_device_type());
+        }
     },
 
     _deviceRemoved: function(client, device) {
         if (!device._delegate) {
-            log('Removing a network device that was not added');
             return;
         }
 
