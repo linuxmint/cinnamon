@@ -1,3 +1,30 @@
+cinnamon (6.7.7) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * backgrounds: Implement per-monitor wallpaper, new background daemon.
+  * cs_backgrounds.py: Hide the mode selector when only one monitor is found.
+  * cs_display.py: Hide fractional scaling conntrols in Wayland.
+  * keyboardManager.js: Fix scaling of the keyboard flag in wayland.
+  * cs_general.py: Add scanout-fullscreen-windows, show the correct option depending on session type.
+  * calendar-server: Don't report out-of-range clockenstein events as removed
+  * calendar@cinnamon.org: Reload the selected date on removals, not today
+  * cinnamon-looking-glass.py: Report session type in the headerbar.
+  * keyboardManager.js: Refresh SubscriptableFlagIcons when the ui scale changes (via StWidget's style-changed vfunc).
+
+  [ Fabio Fantoni ]
+  * cs_themes: hide the simplified settings button when no styles are installed (#13963)
+
+  [ Mirko Kerezovic ]
+  * appsys: Fix UTF-8 handling when capitalizing executable names (#14001)
+
+  [ Clement Lefebvre ]
+  * main.c: Only load atk-bridge if the accessibility bus is reachable
+  * network applet: Don't log devices we don't care about
+  * gwl: Show the window preview below the thumbnail, not over it
+  * main.c: Tell Muffin when the atk-bridge wasn't loaded
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 17 Sep 2026 16:11:45 +0100
+
 cinnamon (6.7.6) alfa; urgency=medium
 
   [ Michael Webster ]
