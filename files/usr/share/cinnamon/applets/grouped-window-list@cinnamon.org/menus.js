@@ -818,8 +818,8 @@ class WindowThumbnail {
         let [width, height] = this.metaWindowActor.get_size();
         this.state.lastOverlayPreview.set_position(x, y);
         this.state.lastOverlayPreview.set_size(width, height);
-        global.overlay_group.add_child(this.state.lastOverlayPreview);
-        global.overlay_group.set_child_above_sibling(this.state.lastOverlayPreview, null);
+        Main.switcherGroup.add_child(this.state.lastOverlayPreview);
+        Main.switcherGroup.set_child_above_sibling(this.state.lastOverlayPreview, null);
         setOpacity(this.state.settings.peekTimeIn, this.state.lastOverlayPreview, opacity);
     }
 
@@ -840,7 +840,7 @@ class WindowThumbnail {
     }
 
     _destroyOverlayPreview(overlayPreview) {
-        global.overlay_group.remove_child(overlayPreview);
+        Main.switcherGroup.remove_child(overlayPreview);
         overlayPreview.destroy();
 
         if(overlayPreview === this.state.lastOverlayPreview) {
