@@ -27,6 +27,8 @@ from lookingglass_proxy import LookingGlassProxy, CinnamonProxy
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
+SESSION_TYPE_QUERY = "imports.gi.Meta.is_wayland_compositor()"
+
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
 
@@ -384,6 +386,7 @@ class MelangeApp(Gtk.Application):
         self.cinnamon_proxy = CinnamonProxy()
         # The status label is shown if we are not okay
         self.lg_proxy.connect("status-changed", self.update_status_from_proxy)
+        self.cinnamon_proxy.connect("status-changed", self.update_session_type)
 
         if self.window is None:
             self.construct_window()
@@ -394,6 +397,18 @@ class MelangeApp(Gtk.Application):
         if online and self.init_activation:
             self.init_activation = False
             self.handle_commandline_action()
+
+    def update_session_type(self, proxy, online):
+        if not online:
+            self.session_label.set_text("")
+            return
+
+        success, data = proxy.Eval(SESSION_TYPE_QUERY)
+        if not success:
+            self.session_label.set_text("")
+            return
+
+        self.session_label.set_markup("Session type: <b>%s</b>" % ("Wayland" if data == "true" else "X11"))
 
     def do_activate(self):
         Gtk.Application.do_activate(self)
@@ -431,6 +446,11 @@ class MelangeApp(Gtk.Application):
 
         self.debug_button = DebugButton(self.cinnamon_proxy)
         headerbar.pack_start(self.debug_button)
+
+        self.session_label = Gtk.Label()
+        self.session_label.get_style_context().add_class("dim-label")
+        self.session_label.set_margin_start(12)
+        headerbar.pack_start(self.session_label)
 
         self.window.set_titlebar(headerbar)
         self.window.set_icon_name("system-search")
