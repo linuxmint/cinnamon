@@ -104,6 +104,7 @@ tray_sources = [
 
 libcinnamon_deps = [
     atk,
+    atspi,
     cjs,
     clutter,
     cmenu,

@@ -34,6 +34,7 @@ gcr = dependency('gcr-base-3', version: '>= 3.7.5')
 gdkx11 = dependency('gdk-x11-3.0')
 polkit = dependency('polkit-agent-1', version: '>= 0.100')
 atk = dependency('atk-bridge-2.0')
+atspi = dependency('atspi-2')
 gio = dependency('gio-2.0', version: '>= 2.36.0')
 gio_unix = dependency('gio-unix-2.0')
 

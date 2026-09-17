@@ -9,6 +9,7 @@ Build-Depends:
  gobject-introspection (>= 1.29.15),
  gtk-doc-tools,
  libatk-bridge2.0-dev,
+ libatspi2.0-dev,
  libcairo2-dev,
  libcinnamon-desktop-dev (>= 6.7),
  libcinnamon-menu-3-dev (>= 4.8),
