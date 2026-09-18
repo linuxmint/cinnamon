@@ -55,12 +55,20 @@ const RefreshFlags = Object.freeze({
 const REFRESH_ALL_MASK = 0b111111;
 
 const NO_MATCH = 99999;
+/* The order in which search results are listed, by button type.
+ * Unknown types are listed last. */
+const SEARCH_TYPE_ORDER = ['app', 'favorite', 'recent'];
 const MATCH_ADDERS = [
     0, // name
     1000, // keywords
     2000, // desc
     3000 // id
 ];
+
+function searchTypeRank(type) {
+    let index = SEARCH_TYPE_ORDER.indexOf(type);
+    return index < 0 ? SEARCH_TYPE_ORDER.length : index;
+}
 
 function calc_angle(x, y) {
     if (x === 0) { x = .001 }
@@ -2934,6 +2942,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             });
 
             buttons.sort((ba, bb) => {
+                /* Applications first, then favorite documents, then recent files. */
+                let rankA = searchTypeRank(ba.type);
+                let rankB = searchTypeRank(bb.type);
+
+                if (rankA !== rankB) {
+                    return rankA - rankB;
+                }
+
                 if (ba.matchIndex < bb.matchIndex) {
                     return -1;
                 } else
