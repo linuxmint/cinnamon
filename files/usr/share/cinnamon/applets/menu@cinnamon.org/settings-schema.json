@@ -30,7 +30,7 @@
         "appearance-menu" : {
             "type" : "section",
             "title" : "Options",
-            "keys" : ["search-position", "system-position", "show-description", "symbolic-category-icons", "category-icon-size",
+            "keys" : ["search-position", "system-position", "show-description", "show-category-icons", "symbolic-category-icons", "category-icon-size",
                       "application-icon-size", "sidebar-icon-size", "sidebar-max-width",
                       "reset-menu-size-button"]
         },
@@ -84,10 +84,16 @@
     "description" : "Text",
     "dependency" : "menu-custom"
  },
+ "show-category-icons" : {
+    "type" : "switch",
+    "default" : true,
+    "description" : "Show categories icons"
+ },
  "symbolic-category-icons" : {
     "type" : "switch",
     "default" : true,
-    "description" : "Use symbolic icons for categories"
+    "description" : "Use symbolic icons for categories",
+    "dependency" : "show-category-icons"
  },
  "category-icon-size" : {
     "type": "spinbutton",
@@ -96,7 +102,8 @@
     "max" : 48,
     "step" : 1,
     "units" : "px",
-    "description" : "Categories icon size"
+    "description" : "Categories icon size",
+    "dependency" : "show-category-icons"
  },
  "application-icon-size" : {
     "type": "spinbutton",
