@@ -781,7 +781,7 @@ class GroupedWindowListApplet extends Applet.Applet {
             currentWorkspace.appGroups[z].groupState.lastFocused
                 : source.groupState.metaWindows[z];
             Main.activateWindow(_window, global.get_current_time());
-            setTimeout(() => this.state.set({scrollActive: false}, 4000));
+            setTimeout(() => this.state.set({scrollActive: false}), 4000);
         }
     }
 
