@@ -274,35 +274,15 @@ var createStore = function(state = {}, listeners = [], connections = 0) {
         return id;
     }
 
-    function disconnectByKey(key) {
-        let listener = listeners.filter(function(listener) {
-            return listener.keys.indexOf(key) > -1;
-        });
-        let listenerIndex = listeners.indexOf(listener);
-        if (listenerIndex === -1) {
-            storeError('disconnect', key, 'Invalid disconnect key.');
-        }
-        listeners[listenerIndex] = undefined;
-        listeners.splice(listenerIndex, 1);
-    }
-
     function disconnect(key) {
-        if (typeof key === 'string') {
-            disconnectByKey(key);
-        } else if (Array.isArray(key)) {
-            for (let i = 0; i < key.length; i++) {
-                disconnectByKey(key[i]);
+        const keys = Array.isArray(key) ? key : [key];
+        listeners = listeners.filter(listener => {
+            if (typeof key === 'number') {
+                return listener.id !== key;
             }
-        } else if (typeof key === 'number') {
-            let len = listeners.slice().length;
-            for (let i = 0; i < len; i++) {
-                if (!listeners[i] || listeners[i].id !== key) {
-                    continue;
-                }
-                listeners[i] = undefined;
-                listeners.splice(i, 1);
-            }
-        }
+            listener.keys = listener.keys.filter(name => !keys.includes(name));
+            return listener.keys.length > 0;
+        });
     }
 
     function destroy() {
@@ -310,9 +290,7 @@ var createStore = function(state = {}, listeners = [], connections = 0) {
         for (let i = 0; i < keys.length; i++) {
             state[keys[i]] = undefined;
         }
-        for (let i = 0; i < listeners.length; i++) {
-            listeners[i] = undefined;
-        }
+        listeners = [];
     }
 
     return getAPIWithObject(state);
