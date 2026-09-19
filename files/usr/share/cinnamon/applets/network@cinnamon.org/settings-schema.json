@@ -8,5 +8,33 @@
     "description": "Show menu",
     "default": "<Shift><Super>n",
     "tooltip": "Set keybinding(s) to show the network applet menu."
+  },
+  "section2": {
+    "type": "section",
+    "description": "Wireless list"
+  },
+  "showBand": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show radio band",
+    "tooltip": "Show which band each network is on (2.4 / 5 / 6 GHz). The band you are currently associated to is shown in brackets."
+  },
+  "showSignalPercent": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Show signal percentage",
+    "tooltip": "Show the numeric signal strength next to the bars."
+  },
+  "showChannelWidth": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show channel width",
+    "tooltip": "Show the channel width in MHz (20 / 40 / 80 / 160). This is a property of a single access point, so for a network on several bands it reflects the strongest one only."
+  },
+  "showSecurity": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Show encryption type",
+    "tooltip": "Show WPA2 / WPA3 / WPA2-Ent / OWE / Open as text. The padlock icon always shows regardless of this setting."
   }
 }
