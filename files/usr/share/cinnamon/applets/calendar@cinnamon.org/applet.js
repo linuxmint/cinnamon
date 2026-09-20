@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const GObject = imports.gi.GObject;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
 const Pango = imports.gi.Pango;
@@ -21,6 +22,49 @@ const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 const DATE_FORMAT_SHORT = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%B %-e, %Y"));
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%A, %B %-e, %Y"));
 
+/* Holds the clock label and latches its width: grows to any wider string, but
+ * only snaps back down when the width drops by more than ~2 average character
+ * widths - ignores jitter from digit changes while still reclaiming space when
+ * a whole word shrinks ("Saturday" -> "Sunday").
+ *
+ * The latch is applied to the bin's own width request rather than the label,
+ * otherwise the label's natural width could never shrink again. */
+const LatchedWidthBin = GObject.registerClass(
+class LatchedWidthBin extends St.Bin {
+    _init(params) {
+        super._init(params);
+        this._latchedWidth = 0;
+    }
+
+    resetLatch() {
+        this._latchedWidth = 0;
+        this.updateLatch();
+    }
+
+    updateLatch() {
+        let label = this.get_child();
+        if (!label)
+            return;
+
+        let [, natWidth] = label.get_preferred_width(-1);
+        if (natWidth <= 0)
+            return;
+
+        let avgChar = natWidth / Math.max(1, label.get_text().length);
+
+        if (natWidth > this._latchedWidth ||
+            natWidth < this._latchedWidth - 2 * avgChar) {
+            this._latchedWidth = natWidth;
+            this.queue_relayout();
+        }
+    }
+
+    vfunc_get_preferred_width(forHeight) {
+        let [min, nat] = super.vfunc_get_preferred_width(forHeight);
+        return [Math.max(min, this._latchedWidth), Math.max(nat, this._latchedWidth)];
+    }
+});
+
 class CinnamonCalendarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
@@ -38,7 +82,7 @@ class CinnamonCalendarApplet extends Applet.Applet {
             });
             this._clockLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
 
-            this._labelBin = new St.Bin();
+            this._labelBin = new LatchedWidthBin();
             this._labelBin.set_child(this._clockLabel);
 
             this.actor.add(this._labelBin, { y_align: St.Align.MIDDLE, y_fill: false });
@@ -206,10 +250,9 @@ class CinnamonCalendarApplet extends Applet.Applet {
     }
 
     _onSettingsChanged() {
-        this._labelBin.min_width = 0;
-
         this._updateFormatString();
         this._updateClockAndDate();
+        this._labelBin.resetLatch();
         this.event_list.actor.visible = this.events_manager.is_active();
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
@@ -264,41 +307,15 @@ class CinnamonCalendarApplet extends Applet.Applet {
     }
 
     _onThemeSet() {
-        this._resetLabelWidth();
+        this._labelBin.resetLatch();
     }
 
     _onPanelEditModeChanged() {
-        this._resetLabelWidth();
+        this._labelBin.resetLatch();
     }
 
     on_panel_height_changed() {
-        this._resetLabelWidth();
-    }
-
-    _resetLabelWidth() {
-        this._labelBin.min_width = 0;
-        this._updateLabelWidth();
-    }
-
-    /* Grow to any wider string, but only snap back down when the width drops by
-     * more than ~2 average character widths - ignores jitter from digit changes
-     * while still reclaiming space when a whole word shrinks ("Saturday" -> "Sunday").
-     *
-     * We measure the label but force the min-width on the parent (_labelBin),
-     * not the label itself, otherwise the label's natural width could never
-     * shrink again. */
-    _updateLabelWidth() {
-        let [, natWidth] = this._clockLabel.get_preferred_width(-1);
-        if (natWidth <= 0) {
-            return;
-        }
-
-        let avgChar = natWidth / Math.max(1, this._clockLabel.get_text().length);
-
-        if (natWidth > this._labelBin.min_width ||
-            natWidth < this._labelBin.min_width - 2 * avgChar) {
-            this._labelBin.min_width = natWidth;
-        }
+        this._labelBin.resetLatch();
     }
 
     _events_manager_ready(em) {
@@ -322,7 +339,7 @@ class CinnamonCalendarApplet extends Applet.Applet {
 
         if (label_string) {
             this._clockLabel.set_text(label_string);
-            this._updateLabelWidth();
+            this._labelBin.updateLatch();
         }
 
         this.go_home_button.reactive = !this._calendar.todaySelected();
