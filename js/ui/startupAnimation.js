@@ -79,8 +79,8 @@ Animation.prototype = {
         }
     },
 
-    run: function() {
-        if (this.failed) {
+    run: function(animate) {
+        if (this.failed || !animate) {
             this._finished();
             return;
         }

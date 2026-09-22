@@ -2115,13 +2115,11 @@ CinnamonNetworkApplet.prototype = {
             devices.push(wrapper);
 
             this._syncSectionTitle(wrapper.category);
-        } else
-            log('Unknown network device type, is ' + device.get_device_type());
+        }
     },
 
     _deviceRemoved: function(client, device) {
         if (!device._delegate) {
-            log('Removing a network device that was not added');
             return;
         }
 
@@ -2309,6 +2307,10 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
+        } else if (section == NMConnectionCategory.WIREGUARD) {
+            this._devices.wireguard.device.removeConnection(connection);
+            if (this._devices.wireguard.device.empty)
+                this._devices.wireguard.section.actor.hide();
         } else if (section != NMConnectionCategory.INVALID) {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++)

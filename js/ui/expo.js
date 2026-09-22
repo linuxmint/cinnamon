@@ -45,7 +45,7 @@ var Expo = GObject.registerClass({
         // rendering options without duplicating the texture data.
         this._background = Main.createFullScreenBackground();
         this._background.hide();
-        global.overlay_group.add_actor(this._background);
+        Main.switcherGroup.add_actor(this._background);
 
         this._spacing = 0;
 
@@ -118,7 +118,7 @@ var Expo = GObject.registerClass({
         this._group.add_actor(this._windowCloseArea);
 
         this._group.hide();
-        global.overlay_group.add_actor(this._group);
+        Main.switcherGroup.add_actor(this._group);
 
         this._gradient.hide();
         this._coverPane.hide();
@@ -313,21 +313,17 @@ var Expo = GObject.registerClass({
             return;
         }
 
-        //We need to allocate activeWorkspace before we begin its clone animation
-        this._allocateID = this._expo.connect('allocated', () => {
-            this._expo.disconnect(this._allocateID);
-            this._allocateID = 0;
+        this._expo.get_allocation_box();
 
-            let items = Main.layoutManager.monitors.map(monitor => {
-                let clone = new Clutter.Clone({source: activeWorkspace});
-                global.overlay_group.add_actor(clone);
-                clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
-                return { cleanupActor: clone, clone };
-            });
-
-            this._activeAnim = { items, direction: 'show' };
-            this._runAnimation(true);
+        let items = Main.layoutManager.monitors.map(monitor => {
+            let clone = new Clutter.Clone({source: activeWorkspace});
+            Main.switcherGroup.add_actor(clone);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            return { cleanupActor: clone, clone };
         });
+
+        this._activeAnim = { items, direction: 'show' };
+        this._runAnimation(true);
     }
 
     // Return a 0..1 progress value for the currently-running transition on
@@ -397,18 +393,6 @@ var Expo = GObject.registerClass({
     }
 
     _animateNotVisible(options) {
-        // Cancel-before-allocated: _animateVisible set up the expo but is still
-        // waiting on _expo::allocated to build clones. Disconnect the pending
-        // handler and fall through to the snap-hide path below — we can't run
-        // a hide animation because the workspace actor isn't allocated yet.
-        let snapToHidden = false;
-        if (this._allocateID) {
-            this._expo.disconnect(this._allocateID);
-            this._allocateID = 0;
-            this.animationInProgress = false;
-            snapToHidden = true;
-        }
-
         // Cancel-during-show: reverse the in-progress show instead of bailing.
         if (this.animationInProgress && !this._hideInProgress && this._activeAnim) {
             this._reverseShowToHide(options);
@@ -425,7 +409,7 @@ var Expo = GObject.registerClass({
             activeWorkspace.overviewModeOff(true, true);
         }
 
-        if (snapToHidden || !Main.animations_enabled) {
+        if (!Main.animations_enabled) {
             this._group.hide();
             this._hideDone();
             return;
@@ -438,7 +422,7 @@ var Expo = GObject.registerClass({
 
         let items = Main.layoutManager.monitors.map(monitor => {
             let cover = new Clutter.Group();
-            global.overlay_group.add_actor(cover);
+            Main.switcherGroup.add_actor(cover);
             cover.set_position(0, 0);
             cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
 
@@ -478,6 +462,12 @@ var Expo = GObject.registerClass({
     }
 
     _runAnimation(toShow, reverseProgress = null) {
+        if (!toShow) {
+            this._expo.easeShade(false, reverseProgress !== null
+                                        ? Math.max(1, ANIMATION_TIME * reverseProgress)
+                                        : ANIMATION_TIME);
+        }
+
         let activeWorkspace = this._expo.lastActiveWorkspace;
         let monitorSetting = global.settings.get_boolean('workspace-expo-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
 
@@ -523,7 +513,7 @@ var Expo = GObject.registerClass({
                     if (!isFinished && this._activeAnim !== myAnim)
                         return;
                     if (cleanupActor.get_parent() !== null) {
-                        global.overlay_group.remove_actor(cleanupActor);
+                        Main.switcherGroup.remove_actor(cleanupActor);
                         cleanupActor.destroy();
                     }
                     completed++;
@@ -586,12 +576,12 @@ var Expo = GObject.registerClass({
 
         this._syncInputMode();
 
-        global.overlay_group.remove_actor(this._group);
+        Main.switcherGroup.remove_actor(this._group);
         this._group.destroy();
         this._group = null;
         this._expo = null;
 
-        global.overlay_group.remove_actor(this._background);
+        Main.switcherGroup.remove_actor(this._background);
         this._background.destroy();
         this._background = null;
 

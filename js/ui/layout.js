@@ -22,7 +22,7 @@ const StartupAnimation = imports.ui.startupAnimation;
 var KEYBOARD_FADE_TIME = 150;
 
 function isPopupMetaWindow(actor) {
-    switch(actor.meta_window.get_window_type()) {
+    switch(actor.meta_window?.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
     case Meta.WindowType.POPUP_MENU:
     case Meta.WindowType.COMBO:
@@ -345,12 +345,12 @@ var LayoutManager = GObject.registerClass({
     }
 
     get focusIndex() {
-        let i = 0;
-        if (global.stage.key_focus != null)
-            i = this.findMonitorIndexForActor(global.stage.key_focus);
-        else if (global.display.focus_window != null)
-            i = global.display.focus_window.get_monitor();
-        return i;
+        let keyFocus = global.stage.key_focus;
+        if (keyFocus != null && keyFocus != global.stage)
+            return this.findMonitorIndexForActor(keyFocus);
+        if (global.display.focus_window != null)
+            return global.display.focus_window.get_monitor();
+        return 0;
     }
 
     get focusMonitor() {
@@ -386,10 +386,10 @@ var LayoutManager = GObject.registerClass({
         this._chrome.updateRegions();
     }
 
-    _doStartupAnimation() {
+    _doStartupAnimation(animate) {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        this.startupAnimation.run();
+        this.startupAnimation.run(animate);
     }
 
     _startupAnimationComplete() {
@@ -403,6 +403,10 @@ var LayoutManager = GObject.registerClass({
 
     _updateKeyboardBox() {
         if (Main.panelManager == null || Main.virtualKeyboardManager == null) {
+            return;
+        }
+
+        if (this.keyboardMonitor == null) {
             return;
         }
 
@@ -831,6 +835,8 @@ var Chrome = class {
 
                 if (global.display.get_n_monitors() == 1 || !monitor.inFullscreen) {
                     visible = true;
+                } else if (Main.chromeRaiseManager.isPanelRaised(actorData.actor)) {
+                    visible = true;
                 } else {
                     if (Main.modalActorFocusStack.length > 0) {
                         let modalActor = Main.modalActorFocusStack[Main.modalActorFocusStack.length - 1].actor;
@@ -845,7 +851,8 @@ var Chrome = class {
             else {
                 let monitor = this.findMonitorForActor(actorData.actor);
 
-                if (!actorData.visibleInFullscreen && monitor && monitor.inFullscreen)
+                if (!actorData.visibleInFullscreen && monitor && monitor.inFullscreen &&
+                    !Main.chromeRaiseManager.isPanelRaised(actorData.actor))
                     visible = false;
                 else
                     visible = true;

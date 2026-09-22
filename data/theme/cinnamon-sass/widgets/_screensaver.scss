@@ -7,128 +7,114 @@
     background-color: black;
   }
 
+  .icon-button {
+    padding: to_em(16px);
+    border: 1px solid transparentize($fg_color, 0.9);
+    background-color: transparentize($fg_color, 0.85);
+    margin-left: $base_padding;
+    margin-right: $base_padding;
+  }
+
+  .prompt-dialog {
+    width: 34em;
+    background-color: transparent;
+    border: none;
+    padding: 0;
+    spacing: $base_padding * 4;
+
+    .user-widget-label {
+      font-weight: 400;
+      @include fontsize(20pt);
+      margin-bottom: .75em;
+    }
+
+    .user-icon {
+      icon-size: 128px;
+      border: 2px solid $borders_color;
+
+      & StIcon { padding: $base_padding * 5; }
+    }
+
+    &-password-entry {
+      @extend %entry;
+      width: 20em;
+      background-color: transparentize($fg_color, 0.8);
+      border-color: transparentize($fg_color, 0.6);
+    }
+  }
+
   // Clock widget
 
   .clock-widget {
-    padding: 6px;
-    spacing: 6px;
+    padding: $base_padding;
+    spacing: $base_padding;
 
     .clock-time-label {
-      font-size: 50pt;
-      font-weight: bold;
+      @include fontsize(72pt);
+
       color: white;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .clock-date-label {
-      font-size: 24pt;
-      font-weight: bold;
+      @extend %title_1;
+
       color: white;
-      text-align: center;
-      text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     }
 
     .clock-message-label {
       font-size: 14pt;
-      font-weight: bold;
       color: #cccccc;
-      text-align: center;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
       margin-top: $base_margin;
     }
 
     .clock-message-author {
       font-size: 12pt;
-      font-weight: bold;
       color: #acacac;
       text-align: center;
-      text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
     }
   }
 
   // Album art widget
 
   .albumart-widget {
-    padding: 10px;
-    spacing: 8px;
+    padding: $base_padding * 2;
+    spacing: $base_padding * 2;
+    min-width: 400px;
+    background-color: transparentize($fg_color, 0.85);
+    border: 1px solid transparentize($fg_color, 0.9);
+    border-radius: $modal_dialog_radius;
 
-    .albumart-info-container {
-      background-color: $bg_color;
-      border-radius: 0;
-      border: 1px solid $borders_color;
-      spacing: $base_margin * 2;
-      min-width: 220px;
+    .albumart-track-info-box {
+      spacing: $base_padding / 2;
+      max-width: 300px;
 
-      &:awake {
-        border-radius: 0 0 $modal_dialog_radius $modal_dialog_radius;
+      .albumart-title {
+        @extend %title_3;
+
+        font-weight: bold;
       }
 
-      .albumart-cover-bin {
-        padding: 8px;
-        background-color: $bg_color;
+      .albumart-artist {
+        @extend %title_4;
       }
 
-      .albumart-track-info-overlay {
-        spacing: 2px;
-        padding: 6px 6px;
-        background-gradient-direction: vertical;
-        background-gradient-start: transparentize($bg_color, 0.4);
-        background-gradient-end: $bg_color;
-
-        .albumart-title-overlay {
-          font-size: 11pt;
-          font-weight: bold;
-          text-align: center;
-          color: white;
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
-
-        .albumart-artist-overlay {
-          font-size: 10pt;
-          text-align: center;
-          color: rgba(255, 255, 255, 0.9);
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
-
-        .albumart-album-overlay {
-          font-size: 10pt;
-          text-align: center;
-          color: rgba(255, 255, 255, 0.8);
-          text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
-        }
+      .albumart-album {
+        @extend %heading;
       }
 
       .albumart-controls {
-        spacing: 8px;
+        spacing: $base_padding;
+        padding-top: $base_padding;
 
-        .albumart-control-button {
-          width: 36px;
-          height: 36px;
-          border-radius: 18px;
-          background-color: transparentize($fg_color, 0.9);
-
-          &:hover {
-            background-color: transparentize($fg_color, 0.8);
-          }
-
-          &:active {
-            background-color: transparentize($fg_color, 0.7);
-          }
-
-          &:insensitive {
-            color: transparentize($fg_color, 0.7);
-            background-color: transparentize($fg_color, 0.95);
-          }
-
-          StIcon {
-            icon-size: 20px;
-          }
+        .icon-button {
+          padding: to_em(8px);
+          border: 1px solid transparentize($fg_color, 0.9);
+          background-color: transparentize($fg_color, 0.85);
         }
       }
 
       .albumart-volume-box {
-        spacing: 8px;
+        spacing: $base_padding;
 
         .albumart-volume-icon {
           icon-size: 16px;
@@ -136,7 +122,7 @@
 
         .albumart-volume-slider {
           height: 20px;
-          min-width: 150px;
+          min-width: 280px;
           -slider-height: 4px;
           -slider-background-color: transparentize($fg_color, 0.8);
           -slider-border-color: transparent;
@@ -179,21 +165,5 @@
         color: $error_color;
       }
     }
-  }
-
-  // On-screen keyboard toggle
-
-  .osk-activate-button {
-    @extend %button;
-
-    border-radius: 9999px;
-    padding: $base_padding;
-    min-height: 16px;
-
-    StIcon {
-      icon-size: 24px;
-    }
-
-    &.flat { @extend %flat_button; }
   }
 }

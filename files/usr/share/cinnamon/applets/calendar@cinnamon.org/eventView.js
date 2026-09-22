@@ -28,7 +28,6 @@ const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 
 // https://www.w3schools.com/charsets/ref_utf_geometric.asp
 const ARROW_SEPARATOR = "  ►  "
-const EDS_BUS_NAME = "org.gnome.evolution.dataserver.Calendar8"
 
 function locale_cap(str) {
     return str.charAt(0).toLocaleUpperCase() + str.slice(1);
@@ -294,8 +293,9 @@ var EventsManager = class EventsManager {
     constructor(settings, desktop_settings) {
         this.settings = settings;
         this.desktop_settings = desktop_settings;
-        this._bus_watch_id
         this._calendar_server = null;
+        this._backend_settings = new Gio.Settings({ schema_id: "org.cinnamon" });
+        this._backend = this._backend_settings.get_string("calendar-backend");
         this.current_month_year = null;
         this.current_selected_date = GLib.DateTime.new_from_unix_local(0);
 
@@ -307,30 +307,19 @@ var EventsManager = class EventsManager {
 
         this._gc_timer_id = 0;
 
-        this._reload_today_id = 0;
+        this._reload_id = 0;
 
         this._force_reload_pending = false;
         this._event_list = null;
     }
 
     start_events() {
-        this._bus_watch_id = Gio.bus_watch_name(Gio.BusType.SESSION,
-                                                EDS_BUS_NAME,
-                                                Gio.BusNameWatcherFlags.NONE,
-                                                this.eds_service_found.bind(this),
-                                                null);
-    }
-
-    eds_service_found(connection, name, name_owner) {
-        Gio.bus_unwatch_name(this._bus_watch_id);
-        this._bus_watch_id = 0;
-
         if (this._calendar_server == null) {
             log("calendar@cinnamon.org: Calendar events supported.")
 
             Cinnamon.CalendarServerProxy.new_for_bus(
                 Gio.BusType.SESSION,
-                Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION,
+                Gio.DBusProxyFlags.NONE,
                 "org.cinnamon.CalendarServer",
                 "/org/cinnamon/CalendarServer",
                 null,
@@ -461,7 +450,7 @@ var EventsManager = class EventsManager {
             }
         }
 
-        this.queue_reload_today(false);
+        this.queue_reload(false);
 
         this.emit("events-updated");
     }
@@ -471,7 +460,7 @@ var EventsManager = class EventsManager {
         // specific matching events to remove, just rebuild the
         // entire list.
         this.events_by_date = {};
-        this.queue_reload_today(true);
+        this.queue_reload(true);
     }
 
     _handle_status_notify(server, pspec) {
@@ -487,7 +476,7 @@ var EventsManager = class EventsManager {
         }
 
         this._cached_state = this._calendar_server.status;
-        this.queue_reload_today(true);
+        this.queue_reload(true);
         this.emit("has-calendars-changed");
     }
 
@@ -496,7 +485,9 @@ var EventsManager = class EventsManager {
             return this._event_list;
         }
 
-        this._event_list = new EventList(this.settings, this.desktop_settings);
+        this._event_list = new EventList(
+            this.settings, this.desktop_settings, this._backend
+        );
 
         return this._event_list;
     }
@@ -523,7 +514,10 @@ var EventsManager = class EventsManager {
         // The calendar has 42 boxes
         let end = start.add_days(42).add_seconds(-1);
 
-        this._calendar_server.call_set_time_range(start.to_unix(), end.to_unix(), force, null, this.call_finished.bind(this));
+        this._calendar_server.call_set_time_range(
+            start.to_unix(), end.to_unix(), force, null,
+            this.call_finished.bind(this)
+        );
 
         this.last_update_timestamp = GLib.get_monotonic_time();
     }
@@ -536,27 +530,30 @@ var EventsManager = class EventsManager {
         }
     }
 
-    _cancel_reload_today() {
-        if (this._reload_today_id > 0) {
-            Mainloop.source_remove(this._reload_today_id);
-            this._reload_today_id = 0;
+    _cancel_reload() {
+        if (this._reload_id > 0) {
+            Mainloop.source_remove(this._reload_id);
+            this._reload_id = 0;
         }
     }
 
-    queue_reload_today(force) {
-        this._cancel_reload_today();
+    queue_reload(force) {
+        this._cancel_reload();
 
         if (force) {
             this._force_reload_pending = true;
         }
 
-        this._reload_today_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_reload_today));
+        this._reload_id = Mainloop.idle_add(Lang.bind(this, this._idle_do_reload));
     }
 
-    _idle_do_reload_today() {
-        this._reload_today_id = 0;
+    _idle_do_reload() {
+        this._reload_id = 0;
 
-        this.select_date(new Date(), this._force_reload_pending);
+        let date = this.current_selected_date.to_unix() > 0 ?
+            new Date(this.current_selected_date.to_unix() * 1000) : new Date();
+
+        this.select_date(date, this._force_reload_pending);
         this._force_reload_pending = false;
 
         return GLib.SOURCE_REMOVE;
@@ -606,26 +603,29 @@ var EventsManager = class EventsManager {
     }
 
     is_active() {
-        return this._inited &&
-               this.settings.getValue("show-events") &&
-               this._calendar_server !== null &&
-               // Not blocking STATUS_UNKNOWN allows our calendar to remain
+        if (!this._inited || !this.settings.getValue("show-events") ||
+            this._calendar_server === null) {
+            return false;
+        }
+        // Not blocking STATUS_UNKNOWN allows our calendar to remain
                // populated while the server is 'unowned' (sleeping), since
                // its cached property is set to 0 when its current owner exits.
-               this._calendar_server.status !== STATUS_NO_CALENDARS;
+        return this._calendar_server.status !== STATUS_NO_CALENDARS;
     }
 }
 Signals.addSignalMethods(EventsManager.prototype);
 
 class EventList {
-    constructor(settings, desktop_settings) {
+    constructor(settings, desktop_settings, backend) {
         this.settings = settings;
+        this.backend = backend;
         this.selected_date = GLib.DateTime.new_now_local();
         this.desktop_settings = desktop_settings;
         this._no_events_timeout_id = 0;
         this._scroll_to_idle_id = 0;
         this._rows = [];
         this._current_event_data_list_timestamp = 0;
+        this._calendar_found = false;
 
         this.actor = new St.BoxLayout(
             {
@@ -638,7 +638,7 @@ class EventList {
         this.selected_date_label = new St.Label(
             {
                 style_class: "calendar-events-date-label",
-                reactive: true
+                reactive: false
             }
         );
 
@@ -665,9 +665,11 @@ class EventList {
         this.no_events_button = new St.Button(
             {
                 style_class: "calendar-events-no-events-button",
-                reactive: GLib.find_program_in_path("gnome-calendar")
+                reactive: false
             }
         );
+
+        this._find_calendar_application();
 
         this.no_events_button.connect('clicked', Lang.bind(this, () => {
             this.launch_calendar(this.selected_date);
@@ -730,6 +732,12 @@ class EventList {
     }
 
     launch_calendar(gdate) {
+        if (this.backend === "clockenstein") {
+            Util.trySpawn(["clockenstein-calendar", `--date=${gdate.format("%F")}`], false);
+            this.emit("launched-calendar");
+            return;
+        }
+
         // --date will be broken anywhere but Mint 20.3 and upstream releases > 41.2
         // (unless some fixes are backported). Maintainer can patch this to comment
         // out either line here.
@@ -738,6 +746,18 @@ class EventList {
         Util.trySpawn(["gnome-calendar", "--date", gdate.format("%x")], false);
 
         this.emit("launched-calendar");
+    }
+
+    _find_calendar_application() {
+        const program = this.backend === "clockenstein" ? "clockenstein-calendar" : "gnome-calendar";
+        this._calendar_found = false;
+        this.selected_date_label.reactive = false;
+        this.no_events_button.reactive = false;
+        Cinnamon.find_program_in_path(program, (path) => {
+            this._calendar_found = path !== null;
+            this.selected_date_label.reactive = this._calendar_found;
+            this.no_events_button.reactive = this._calendar_found;
+        });
     }
 
     set_date(gdate) {
@@ -803,13 +823,18 @@ class EventList {
                 event_data,
                 this.selected_date,
                 {
-                    use_24h: this.desktop_settings.get_boolean("clock-use-24h")
+                    use_24h: this.desktop_settings.get_boolean("clock-use-24h"),
+                    clickable: this._calendar_found
                 }
             );
 
             row.connect("view-event", Lang.bind(this, (row, uuid) => {
-                this.emit("launched-calendar");
-                Util.trySpawn(["gnome-calendar", "--uuid", uuid], false);
+                if (this.backend === "clockenstein") {
+                    this.launch_calendar(this.selected_date);
+                } else {
+                    this.emit("launched-calendar");
+                    Util.trySpawn(["gnome-calendar", "--uuid", uuid], false);
+                }
             }));
 
             this.events_box.add_actor(row.actor);
@@ -865,7 +890,7 @@ class EventRow {
             this.actor.remove_style_pseudo_class("hover");
         }));
 
-        if (GLib.find_program_in_path("gnome-calendar")) {
+        if (params.clickable) {
             this.actor.connect("button-press-event", Lang.bind(this, (actor, event) => {
                 if (event.get_button() == Clutter.BUTTON_PRIMARY) {
                     this.emit("view-event", this.event.id);

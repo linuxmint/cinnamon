@@ -26,8 +26,18 @@ class Module:
 
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            switch = GSettingsSwitch(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", "unredirect-fullscreen-windows")
-            switch.set_tooltip_text(_("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode."))
+            # The two sessions bypass the compositor by different means, and a
+            # setting that works in one won't in the other, so they get their
+            # own keys.
+            if util.get_session_type() == "wayland":
+                bypass_key = "scanout-fullscreen-windows"
+                bypass_tooltip = _("Lets a full-screen window send its frames straight to the display instead of having them composited, which lowers latency. On a graphics card with limited video memory, a demanding game may freeze. Not every application can use it.")
+            else:
+                bypass_key = "unredirect-fullscreen-windows"
+                bypass_tooltip = _("Select this option to let full-screen applications skip the compositing manager and run at maximum speed. Unselect it if you're experiencing screen-tearing in full screen mode.")
+
+            switch = GSettingsSwitch(_("Disable compositing for full-screen windows"), "org.cinnamon.muffin", bypass_key)
+            switch.set_tooltip_text(bypass_tooltip)
             settings.add_row(switch)
 
             settings = page.add_section(_("Miscellaneous Options"))

@@ -3,8 +3,10 @@
 const Cairo = imports.cairo;
 const Mainloop = imports.mainloop;
 const Clutter = imports.gi.Clutter;
+const GLib = imports.gi.GLib;
 const Graphene = imports.gi.Graphene;
 const Gtk = imports.gi.Gtk;
+const Meta = imports.gi.Meta;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Signals = imports.signals;
@@ -287,7 +289,13 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
     }
 
     setColumnWidths(widths) {
+        if (this._columnWidths &&
+            this._columnWidths.length === widths.length &&
+            this._columnWidths.every((width, i) => width === widths[i]))
+            return;
+
         this._columnWidths = widths;
+        this.actor.queue_relayout();
     }
 
     _getPreferredWidth(actor, forHeight, alloc) {
@@ -336,7 +344,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
         alloc.min_size = alloc.natural_size = height;
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(actor, box) {
         let height = box.y2 - box.y1;
         let direction = this.actor.get_direction();
 
@@ -357,7 +365,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
             }
             dotBox.y1 = Math.round(box.y1 + (height - dotWidth) / 2);
             dotBox.y2 = dotBox.y1 + dotWidth;
-            this._dot.allocate(dotBox, flags);
+            this._dot.allocate(dotBox);
         }
 
         let x;
@@ -451,7 +459,7 @@ var PopupBaseMenuItem = class PopupBaseMenuItem {
             childBox.y1 = Math.round(box.y1 + (height - naturalHeight) / 2);
             childBox.y2 = childBox.y1 + naturalHeight;
 
-            child.actor.allocate(childBox, flags);
+            child.actor.allocate(childBox);
 
             if (direction == St.TextDirection.LTR)
                 x += availWidth + this._spacing;
@@ -491,6 +499,7 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
             }
             if (!this._ornament.child) {
                 let switchOrn = new CheckBox.CheckBox();
+                switchOrn.reactive = false;
                 switchOrn.set_checked(state);
                 this._ornament.child = switchOrn;
             } else {
@@ -505,6 +514,7 @@ var PopupMenuItem = class PopupMenuItem extends PopupBaseMenuItem {
             }
             if (!this._ornament.child) {
                 let radioOrn = new RadioButton.RadioButton();
+                radioOrn.reactive = false;
                 radioOrn.set_checked(state);
                 this._ornament.child = radioOrn;
             } else {
@@ -1147,6 +1157,7 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             }
             if (!this._ornament.child) {
                 let switchOrn = new CheckBox.CheckBox();
+                switchOrn.reactive = false;
                 switchOrn.set_checked(state);
                 this._ornament.child = switchOrn;
             } else {
@@ -1155,12 +1166,13 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             this._icon = null;
             break;
         case OrnamentType.DOT:
-            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof RadioButton.RadioButton))) {
+            if ((this._ornament.child) && (!(this._ornam. ent.child._delegate instanceof RadioButton.RadioButton))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
             if (!this._ornament.child) {
                 let radioOrn = new RadioButton.RadioButton();
+                radioOrn.reactive = false;
                 radioOrn.set_checked(state);
                 this._ornament.child = radioOrn;
             } else {
@@ -1690,6 +1702,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                                   y_fill: true,
 								  x_fill: true });
         this.actor._delegate = this;
+        this._repositionLater = 0;
         this._signals.connect(this.actor, 'key-press-event', Lang.bind(this, this._onKeyPressEvent));
 
         this.setOrientation(orientation);
@@ -1780,25 +1793,14 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
 
     /**
      * getPanel:
-     * 
-     * @returns panel (Clutter.Actor | null) actor of the panel this menu is on, or null if it is not on a panel 
+     *
+     * @returns panel (Clutter.Actor | null) actor of the panel this menu is on, or null if it is not on a panel
      */
     getPanel() {
-        let parentPanel = null;
-        if (this.sourceActor.get_name() == "panel") {
-            parentPanel = this.sourceActor;
-        } else {
-            let parent = this.sourceActor.get_parent();
-            while (parent) {
-                if (parent.get_name() == "panel") {
-                    parentPanel = parent;
-                    break;
-                }
-                parent = parent.get_parent();
-            }
-        }
+        if (!this.sourceActor)
+            return null;
 
-        return parentPanel;
+        return Main.panelManager.getPanelForActor(this.sourceActor);
     }
 
     /**
@@ -1852,6 +1854,12 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.show();
             this.actor.opacity = 0;
 
+            // Run the pending layout now, while we're still outside the
+            // frame cycle - menus (re)populated or restyled just before
+            // opening would otherwise resolve their styles inside the
+            // frame's own layout pass and re-invalidate it mid-cycle.
+            this.actor.get_allocation_box();
+
             let easeParams = {
                 mode: Clutter.AnimationMode.EASE_OUT_QUAD,
                 duration: Main.wm.MENU_ANIMATION_TIME,
@@ -1895,6 +1903,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
             this.actor.y = yPos;
 
             this.actor.show();
+            this.actor.get_allocation_box();
         }
 
         this.emit('open-state-changed', true);
@@ -2104,7 +2113,7 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 }
                 break;
         }
-        return [Math.round(xPos), Math.round(yPos)];
+        return [xPos, yPos];
     }
 
     _boxGetPreferredWidth (actor, forHeight, alloc) {
@@ -2119,15 +2128,32 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
         [alloc.min_size, alloc.natural_size] = this.box.get_preferred_height(forWidth);
     }
 
-    _boxAllocate (actor, box, flags) {
-        this.box.allocate(box, flags);
+    _boxAllocate (actor, box) {
+        this.box.allocate(box);
     }
 
     _allocationChanged (actor, pspec) {
-        if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
-            let [xPos, yPos] = this._calculatePosition();
-            this.actor.set_position(xPos, yPos);
+        if (this.animating || this._repositionLater)
+            return;
+
+        this._repositionLater = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this._repositionLater = 0;
+
+            if (!this.animating && !this.sourceActor.is_finalized() && this.sourceActor.get_stage() != null) {
+                let [xPos, yPos] = this._calculatePosition();
+                this.actor.set_position(xPos, yPos);
+            }
+            return false;
+        });
+    }
+
+    destroy() {
+        if (this._repositionLater) {
+            Meta.later_remove(this._repositionLater);
+            this._repositionLater = 0;
         }
+
+        super.destroy();
     }
 
     _onKeyPressEvent(actor, event) {
@@ -2509,7 +2535,7 @@ var PopupComboMenu = class PopupComboMenu extends PopupMenuBase {
         let activeItem = this._getMenuItems()[this._activeItemPos];
 
         let [sourceX, sourceY] = this.sourceActor.get_transformed_position();
-        this.actor.set_position(Math.round(sourceX), Math.round(sourceY - activeItem.actor.y));
+        this.actor.set_position(sourceX, sourceY - activeItem.actor.y);
 
         this.actor.raise_top();
 
@@ -2723,6 +2749,7 @@ var PopupMenuManager = class PopupMenuManager {
         this._menuStack = [];
         this._preGrabInputMode = null;
         this._grabbedFromKeynav = false;
+        this._failedGrabCloseId = 0;
         this._signals = new SignalManager.SignalManager(null);
     }
 
@@ -2766,9 +2793,44 @@ var PopupMenuManager = class PopupMenuManager {
         if (this._menus.length === 0) this.destroy();
     }
 
+    _pushModal() {
+        const onDismiss = () => this._closeMenu();
+
+        if (Main.pushModal(this._owner.actor, undefined, undefined,
+                           Cinnamon.ActionMode.POPUP, onDismiss)) {
+            return true;
+        }
+
+        // An ill-behaved client (chromium-based apps) can ask for a window menu
+        // without first dropping its own pointer grab. Gtk deliberately does this
+        // before handing the request over. Menus are modal through the stage input
+        // region rather than the pointer, so settle for the keyboard - the pointer
+        // follows once the client lets go of it.  Note: chromium itself doesn't
+        // encounter this, it provides its own custom titlebar popup - Cinnamon's is
+        // never shown.
+        return Main.pushModal(this._owner.actor, undefined,
+                              Meta.ModalOptions.POINTER_ALREADY_GRABBED,
+                              Cinnamon.ActionMode.POPUP, onDismiss);
+    }
+
     _grab() {
-        if (!Main.pushModal(this._owner.actor, undefined, undefined, Cinnamon.ActionMode.POPUP,
-                            () => this._closeMenu())) {
+        // Over a fullscreen window, elevate the whole panel as the base layer
+        // before this menu's grab stacks on top, so the panel stays usable when
+        // the menu closes instead of collapsing.
+        Main.chromeRaiseManager.ensureRaisedForActor(this._owner.actor);
+
+        if (!this._pushModal()) {
+            // Without a grab nothing can dismiss the menu, so it would sit there
+            // visible and unresponsive until something else took it down. Close
+            // it instead, deferred because we're inside the open-state-changed
+            // dispatch that opened it.
+            if (this._failedGrabCloseId === 0) {
+                this._failedGrabCloseId = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+                    this._failedGrabCloseId = 0;
+                    this._closeMenu();
+                    return GLib.SOURCE_REMOVE;
+                });
+            }
             return;
         }
         this._signals.connect(global.stage, 'captured-event', this._onEventCapture, this);
@@ -2788,6 +2850,7 @@ var PopupMenuManager = class PopupMenuManager {
         this._signals.disconnect(null, global.stage);
 
         this.grabbed = false;
+        this._didPop = false;
         Main.popModal(this._owner.actor);
     }
 
@@ -2955,13 +3018,49 @@ var PopupMenuManager = class PopupMenuManager {
                 return true;
             }
         } else if (eventType == Clutter.EventType.BUTTON_PRESS && !activeMenuContains) {
+            // A press on a panel closes the menu chain but still propagates,
+            // with the grab already popped - the actor under the pointer gets
+            // a complete press/release pair, so one click both dismisses the
+            // menu and acts (launch, activate, open another applet's menu).
+            if (this._srcIsOnPanel(event.get_source())) {
+                this._closeAllMenus();
+                if (!this.grabbed)
+                    return Clutter.EVENT_PROPAGATE;
+
+                global.logError("PopupMenuManager: menu chain did not close synchronously, swallowing panel click");
+                return true;
+            }
+
             this._closeMenu();
             return true;
+        } else if ((eventType == Clutter.EventType.MOTION ||
+                    eventType == Clutter.EventType.ENTER ||
+                    eventType == Clutter.EventType.LEAVE ||
+                    eventType == Clutter.EventType.SCROLL) &&
+                   this._srcIsOnPanel(event.get_source())) {
+            // Crossing, motion and scroll events pass through to panel actors
+            // so they keep their hover feedback and scroll actions while a
+            // menu is open - the press pass-through above already lets a
+            // click land on them.
+            return Clutter.EVENT_PROPAGATE;
         } else if (!this._shouldBlockEvent(event)) {
             return false;
         }
 
         return true;
+    }
+
+    _srcIsOnPanel(src) {
+        return src != null && Main.panelManager.getPanelForActor(src) != null;
+    }
+
+    // Close the whole chain, synchronously.
+    _closeAllMenus() {
+        let prev = null;
+        while (this._activeMenu && this._activeMenu !== prev) {
+            prev = this._activeMenu;
+            prev.close(true);
+        }
     }
 
     _closeMenu() {
@@ -2970,6 +3069,11 @@ var PopupMenuManager = class PopupMenuManager {
     }
 
     destroy() {
+        if (this._failedGrabCloseId > 0) {
+            GLib.source_remove(this._failedGrabCloseId);
+            this._failedGrabCloseId = 0;
+        }
+
         this._signals.disconnectAllSignals();
         this.emit('destroy');
     }

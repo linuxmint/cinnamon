@@ -169,6 +169,11 @@ st_password_entry_init (StPasswordEntry *entry)
   clutter_text = st_entry_get_clutter_text (ST_ENTRY (entry));
   clutter_text_set_password_char (clutter_text, BULLET);
 
+  /* Declare the password purpose so the input method (ibus) disables any active
+   * IME engine while this entry is focused, matching the behaviour external
+   * apps get from a password GtkEntry. */
+  clutter_text_set_input_purpose (clutter_text, CLUTTER_INPUT_CONTENT_PURPOSE_PASSWORD);
+
   g_signal_connect (clutter_text, "notify::password-char",
                     G_CALLBACK (clutter_text_password_char_cb), entry);
 }

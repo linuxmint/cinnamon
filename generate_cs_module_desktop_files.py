@@ -40,13 +40,6 @@ for module in modules:
         mod = module.Module(None)
         name = mod.name
 
-        if name == "display":
-            # skip the display module, its desktop file is provided by CCC
-            continue
-        elif name == "accessibility":
-            # rename modules which cs_*.py filename doesn't match their .desktop filename
-            name = "universal-access"
-
         if mod.category in "admin":
             category = "Settings;System;"
         else:

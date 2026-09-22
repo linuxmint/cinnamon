@@ -62,7 +62,7 @@ class ManageAppletsPage(ManageSpicesPage):
 
         self.panels = []
         self.current_panel_index = 0
-        print("in applets", config.PARSED_ARGS)
+
         if config.PARSED_ARGS.panel is not None and config.PARSED_ARGS.panel.isdecimal():
             self.panel_id = int(config.PARSED_ARGS.panel)
         else:
@@ -111,6 +111,14 @@ class ManageAppletsPage(ManageSpicesPage):
         self.panel_id = int(self.panels[self.current_panel_index].split(":")[0])
 
         self.spices.send_proxy_signal('highlightPanel', '(ib)', self.panel_id, True)
+
+    def get_instance_id(self, uuid):
+        # Let xlet-settings open on the instance located on the selected panel
+        for definition in self.spices.settings.get_strv('enabled-applets'):
+            parts = definition.split(':')
+            if len(parts) > 4 and parts[3] == uuid and parts[0] == f'panel{self.panel_id}':
+                return parts[4]
+        return None
 
     def panels_changed(self, *args):
         self.panels = []

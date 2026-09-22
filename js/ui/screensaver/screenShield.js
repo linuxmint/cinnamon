@@ -22,7 +22,7 @@ const POWER_SCHEMA = 'org.cinnamon.settings-daemon.plugins.power';
 const FADE_TIME = 200;
 const MOTION_THRESHOLD = 100;
 
-const FLOAT_TIMER_INTERVAL = 5;
+const FLOAT_TIMER_INTERVAL = 30;
 const DEBUG_FLOAT = false;  // Set to true for 5-second intervals during development
 
 const MAX_SCREENSAVER_WIDGETS = 3;
@@ -169,15 +169,32 @@ var ScreenShield = GObject.registerClass({
         this.add_child(this._keyboardBox);
         this._oskVisible = false;
 
+        this._bottomButtonLayout = new St.BoxLayout();
+        this._keyboardBox.add_child(this._bottomButtonLayout);
+
         this._oskButton = new St.Button({
-            style_class: 'osk-activate-button',
+            style_class: 'icon-button',
             important: true,
             can_focus: true,
             reactive: true
         });
         this._oskButton.set_child(new St.Icon({ icon_name: 'xsi-input-keyboard-symbolic' }));
         this._oskButton.connect('clicked', this._toggleScreensaverKeyboard.bind(this));
-        this._keyboardBox.add_child(this._oskButton);
+        this._bottomButtonLayout.add_child(this._oskButton);
+
+        this._screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
+        if (this._screensaverSettings.get_boolean('user-switch-enabled') &&
+            !Main.lockdownSettings.get_boolean('disable-user-switching')) {
+            this._switchUserButton = new St.Button({
+                style_class: 'icon-button',
+                important: true,
+                can_focus: true,
+                reactive: true,
+                icon_name: 'xsi-switch-user-symbolic',
+            });
+            this._bottomButtonLayout.add_child(this._switchUserButton);
+            this._switchUserButton.connect('clicked', this._onSwitchUser.bind(this));
+        }
 
         this._capturedEventId = 0;
         this._lastMotionX = -1;
@@ -425,6 +442,7 @@ var ScreenShield = GObject.registerClass({
         this._activationPending = true;
 
         Main.dismissInternalModals();
+        Main.magnifier.disableForScreensaver()
 
         _log('ScreenShield: requesting screensaver modal grab');
         Main.pushScreensaverModal(this, global.get_current_time(), Cinnamon.ActionMode.LOCK_SCREEN,
@@ -588,6 +606,7 @@ var ScreenShield = GObject.registerClass({
                 this.hide();
                 this._screenShieldGroup.hide();
                 this._destroyAllWidgets();
+                this._destroyBackgrounds();
                 global.stage.show_cursor();
 
                 if (Main.deskletContainer)
@@ -596,11 +615,16 @@ var ScreenShield = GObject.registerClass({
                 this._activationTime = 0;
                 this._setState(State.HIDDEN);
                 this._deactivating = false;
+                Main.magnifier.enableForScreensaver();
 
                 if (emitUnlocked)
                     this.emit('unlocked');
             }
         });
+    }
+
+    _onSwitchUser() {
+        Util.switchToGreeter();
     }
 
     isLocked() {
@@ -776,7 +800,7 @@ var ScreenShield = GObject.registerClass({
         if (this._oskVisible)
             return;
 
-        this._oskButton.hide();
+        this._bottomButtonLayout.hide();
         Main.virtualKeyboardManager.openForScreensaver(this._keyboardBox, this);
         this._oskVisible = true;
         this._positionKeyboardBox();
@@ -789,7 +813,7 @@ var ScreenShield = GObject.registerClass({
 
         Main.virtualKeyboardManager.closeForScreensaver();
         this._oskVisible = false;
-        this._oskButton.show();
+        this._bottomButtonLayout.show();
         this._positionKeyboardBox();
         this._positionUnlockDialog();
     }
@@ -814,14 +838,14 @@ var ScreenShield = GObject.registerClass({
                 keyboard.height = height;
             }
         } else {
-            let [, natWidth] = this._oskButton.get_preferred_width(-1);
-            let [, natHeight] = this._oskButton.get_preferred_height(natWidth);
+            let [, natWidth] = this._bottomButtonLayout.get_preferred_width(-1);
+            let [, natHeight] = this._bottomButtonLayout.get_preferred_height(natWidth);
             let padding = 24 * global.ui_scale;
 
             let x = monitor.x + (monitor.width - natWidth) / 2;
             let y = monitor.y + monitor.height - natHeight - padding;
 
-            this._keyboardBox.set_position(Math.floor(x), Math.floor(y));
+            this._keyboardBox.set_position(x, y);
             this._keyboardBox.set_size(natWidth, natHeight);
         }
     }
@@ -846,39 +870,19 @@ var ScreenShield = GObject.registerClass({
     }
 
     _positionWidget(widget, monitor, position) {
-        widget._isBeingPositioned = true;
-
         // Divide monitor into 3x3 grid
         let sectorWidth = monitor.width / 3;
         let sectorHeight = monitor.height / 3;
 
         // St.Align values map directly to sector indices (START=0, MIDDLE=1, END=2)
-        let sectorX = position.halign;
-        let sectorY = position.valign;
+        let x = monitor.x + (position.halign * sectorWidth);
+        let y = monitor.y + (position.valign * sectorHeight);
 
-        // Calculate sector bounds
-        let sectorLeft = monitor.x + (sectorX * sectorWidth);
-        let sectorTop = monitor.y + (sectorY * sectorHeight);
-
-        // Get widget's preferred size
-        let [, natWidth] = widget.get_preferred_width(-1);
-        let [, natHeight] = widget.get_preferred_height(natWidth);
-
-        // Constrain widget size to fit within sector
-        let widgetWidth = Math.min(natWidth, sectorWidth);
-        let widgetHeight = Math.min(natHeight, sectorHeight);
-
-        // If we constrained width, recalculate height with new width
-        if (widgetWidth < natWidth) {
-            [, natHeight] = widget.get_preferred_height(widgetWidth);
-            widgetHeight = Math.min(natHeight, sectorHeight);
-        }
-
-        let x = sectorLeft + (sectorWidth - widgetWidth) / 2;
-        let y = sectorTop + (sectorHeight - widgetHeight) / 2;
-
-        widget.set_position(Math.floor(x), Math.floor(y));
-        widget._isBeingPositioned = false;
+        // The widget centers its own content within the sector, so widgets
+        // that change size re-center during layout rather than needing to be
+        // repositioned from here.
+        widget.set_position(x, y);
+        widget.set_size(sectorWidth, sectorHeight);
     }
 
     _scheduleWidgetLoading() {
@@ -954,21 +958,12 @@ var ScreenShield = GObject.registerClass({
             }
         }
 
-        widget._allocationChangedId = widget.connect('allocation-changed',
-            this._onWidgetAllocationChanged.bind(this, widget));
-
         this._widgets.push(widget);
 
         this.add_child(widget);
+        this._positionWidgetByState(widget);
 
         widget.onScreensaverActivated();
-    }
-
-    _onWidgetAllocationChanged(widget) {
-        if (widget._isBeingPositioned)
-            return;
-
-        this._positionWidgetByState(widget);
     }
 
     _validateAwakePosition(widget) {
@@ -1012,10 +1007,6 @@ var ScreenShield = GObject.registerClass({
         this._stopFloatTimer();
         this._destroyInfoPanel();
         for (let widget of this._widgets) {
-            if (widget._allocationChangedId) {
-                widget.disconnect(widget._allocationChangedId);
-                widget._allocationChangedId = 0;
-            }
             widget.onScreensaverDeactivated();
             widget.destroy();
         }
@@ -1032,8 +1023,13 @@ var ScreenShield = GObject.registerClass({
             return;
 
         this._infoPanel = new InfoPanel.InfoPanel();
-        this._infoPanel.connect('allocation-changed', this._positionInfoPanel.bind(this));
-        this.add_child(this._infoPanel);
+        this._infoPanelBin = new St.Bin({ x_fill: false,
+                                          y_fill: false,
+                                          x_align: St.Align.END,
+                                          y_align: St.Align.START,
+                                          child: this._infoPanel });
+        this.add_child(this._infoPanelBin);
+        this._positionInfoPanel();
         this._infoPanel.onScreensaverActivated();
     }
 
@@ -1041,6 +1037,8 @@ var ScreenShield = GObject.registerClass({
         if (this._infoPanel) {
             this._infoPanel.onScreensaverDeactivated();
             this._infoPanel.destroy();
+            this._infoPanelBin.destroy();
+            this._infoPanelBin = null;
             this._infoPanel = null;
         }
     }
@@ -1054,14 +1052,14 @@ var ScreenShield = GObject.registerClass({
         if (!monitor)
             monitor = Main.layoutManager.primaryMonitor;
 
-        let [, natWidth] = this._infoPanel.get_preferred_width(-1);
-        let [, natHeight] = this._infoPanel.get_preferred_height(natWidth);
-
+        // Inset the bin by the padding and let it anchor the panel to the
+        // top-right corner, so the panel re-anchors itself as its content
+        // changes size rather than being repositioned from JS.
         let padding = 12 * global.ui_scale;
-        let x = monitor.x + monitor.width - natWidth - padding;
-        let y = monitor.y + padding;
 
-        this._infoPanel.set_position(Math.floor(x), Math.floor(y));
+        this._infoPanelBin.set_position(monitor.x + padding, monitor.y + padding);
+        this._infoPanelBin.set_size(monitor.width - (padding * 2),
+                                    monitor.height - (padding * 2));
     }
 
     _positionWidgetByState(widget) {

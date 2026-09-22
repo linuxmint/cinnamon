@@ -30,10 +30,19 @@ const ICON_SIZE = 128;
 const ICON_OFFSET = -5;
 
 const WORKSPACE_DRAG_ANIMATION_TIME = 200;
+
+const SHADE_NEUTRAL = 127;
+const SHADE_DIMMED = Math.round(SHADE_NEUTRAL * (1 + -0.4));
+const SHADE_ANIMATION_TIME = 200;
+
 const DRAGGING_WINDOW_OPACITY = Math.round(255 * 0.8);
 const WINDOW_DND_SIZE = 256;
 
 const DEMANDS_ATTENTION_CLASS_NAME = "window-list-item-demands-attention";
+
+function shadeColor(value) {
+    return Clutter.Color.new(value, value, value, 255);
+}
 
 // persistent throughout session
 var forceOverviewMode = false;
@@ -117,7 +126,7 @@ var ExpoWindowClone = GObject.registerClass({
             let clone = clones[i].actor;
             this.clone.add_actor(clone);
             let [width, height] = clone.get_size();
-            clone.set_position(Math.round((pwidth - width) / 2), Math.round((pheight - height) / 2));
+            clone.set_position((pwidth - width) / 2, (pheight - height) / 2);
         }
     }
 
@@ -384,9 +393,12 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         let desktopBackground = Main.createFullScreenBackground();
         this.background.add_actor(desktopBackground);
 
-        let backgroundShade = new St.Bin({style_class: 'workspace-overview-background-shade'});
-        this.background.add_actor(backgroundShade);
-        backgroundShade.set_size(global.screen_width, global.screen_height);
+        /* A workspace added while expo is already open joins a scene that is
+           shaded, so it starts dimmed instead of animating in by itself. */
+        this._shadeEffect = new Clutter.BrightnessContrastEffect({ name: 'shade' });
+        this._shadeEffect.brightness =
+            shadeColor(box.shaded ? SHADE_DIMMED : SHADE_NEUTRAL);
+        this.background.add_effect(this._shadeEffect);
 
         this.shader = new St.Bin();
         this.shader.set_style('background-color: black;');
@@ -642,6 +654,39 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         this.doRemoveWindow(metaWin);
     }
 
+    syncWindow(metaWin) {
+        if (this.state > ThumbnailState.NORMAL) {
+            return;
+        }
+
+        let win = metaWin.get_compositor_private();
+        let index = this.lookupIndex(metaWin);
+        let shouldHaveWindow = win && this.isMyWindow(win) && this.isExpoWindow(win);
+
+        if (shouldHaveWindow) {
+            if (index === -1) {
+                this.doAddWindow(metaWin);
+            } else {
+                this.windows[index].origX = win.x;
+                this.windows[index].origY = win.y;
+            }
+            this.restack(true);
+            return;
+        }
+
+        if (index === -1) {
+            return;
+        }
+
+        let clone = this.windows[index];
+        this.windows.splice(index, 1);
+        clone.destroy();
+
+        if (this.overviewMode) {
+            this.overviewModeOn();
+        }
+    }
+
     onDestroy(actor) {
         actor.remove_all_transitions();
         if (this._collapseId) {
@@ -699,11 +744,14 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
         });
         clone.connect('drag-end', (clone) => {
             this.box.emit('drag-end');
+            this.box.queueWindowSync(clone.metaWindow);
             if (clone.dragCancelled) {
                 // stacking order may have been disturbed
                 this.restack();
             }
-            this.overviewModeOn();
+            if (clone.visible) {
+                this.overviewModeOn();
+            }
         });
         this.contents.add_actor(clone);
 
@@ -1006,11 +1054,6 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
 
     handleDragOverOrDrop(dropping, source, actor, x, y, time) {
         this.hovering = false; // normal hover logic is off during dnd
-        if (dropping) {
-            let draggable = source._draggable;
-            actor.opacity = draggable._dragOrigOpacity;
-            global.reparentActor(actor, draggable._dragOrigParent);
-        }
 
         if (source == Main.xdndHandler) {
             return DND.DragMotionResult.CONTINUE;
@@ -1061,6 +1104,16 @@ var ExpoWorkspaceThumbnail = GObject.registerClass({
                 if (dropping) {
                     metaWindow.move_to_monitor(targetMonitor);
                 }
+            }
+        }
+
+        if (dropping && canDrop) {
+            let draggable = source._draggable;
+            actor.opacity = draggable._dragOrigOpacity;
+            global.reparentActor(actor, draggable._dragOrigParent);
+
+            if (movingWorkspaces) {
+                actor.hide();
             }
         }
 
@@ -1187,6 +1240,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
         this._initialAllocTimeoutId = 0;
         this._updateStatesLaterId = 0;
+        this._windowSyncIdleIds = new Set();
 
         let allocId = this.connect('notify::allocation', () => {
             this.disconnect(allocId);
@@ -1209,6 +1263,8 @@ var ExpoThumbnailsBox = GObject.registerClass({
                 Meta.later_remove(this._updateStatesLaterId);
                 this._updateStatesLaterId = 0;
             }
+            this._windowSyncIdleIds.forEach(id => GLib.source_remove(id));
+            this._windowSyncIdleIds.clear();
         });
 
         this.toggleGlobalOverviewMode = function() {
@@ -1240,7 +1296,26 @@ var ExpoThumbnailsBox = GObject.registerClass({
         return Clutter.EVENT_PROPAGATE;
     }
 
+    easeShade(dimmed, duration) {
+        this.shaded = dimmed;
+
+        if (!Main.animations_enabled)
+            duration = 0;
+
+        this.thumbnails.forEach(thumbnail => {
+            thumbnail.background.ease_property(
+                '@effects.shade.brightness',
+                shadeColor(dimmed ? SHADE_DIMMED : SHADE_NEUTRAL),
+                {
+                    duration: duration,
+                    mode: Clutter.AnimationMode.EASE_OUT_QUAD
+                });
+        });
+    }
+
     show() {
+        this.shaded = false;
+
         global.window_manager.connectObject(
             'switch-workspace', this.activeWorkspaceChanged.bind(this), this);
         global.workspace_manager.connectObject(
@@ -1276,6 +1351,8 @@ var ExpoThumbnailsBox = GObject.registerClass({
             this.stateCounts[ThumbnailState[key]] = 0;
 
         this.addThumbnails(0, global.workspace_manager.n_workspaces);
+
+        this.easeShade(true, SHADE_ANIMATION_TIME);
 
         this.button.raise_top();
 
@@ -1318,6 +1395,15 @@ var ExpoThumbnailsBox = GObject.registerClass({
 
     removeSelectedWorkspace() {
         this.thumbnails[this.kbThumbnailIndex].removeWorkspace();
+    }
+
+    queueWindowSync(metaWin) {
+        let id = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this._windowSyncIdleIds.delete(id);
+            this.thumbnails.forEach(thumbnail => thumbnail.syncWindow(metaWin));
+            return GLib.SOURCE_REMOVE;
+        });
+        this._windowSyncIdleIds.add(id);
     }
 
     _startWorkspaceDrag(sourceIndex) {
@@ -1741,8 +1827,8 @@ var ExpoThumbnailsBox = GObject.registerClass({
         return themeNode.adjust_preferred_width(totalSpacing, Main.layoutManager.primaryMonitor.width);
     }
 
-    vfunc_allocate(box, flags) {
-        this.set_allocation(box, flags);
+    vfunc_allocate(box) {
+        this.set_allocation(box);
         this._allocBox = box;
         let rtl = (St.Widget.get_default_direction () == St.TextDirection.RTL);
 
@@ -1809,7 +1895,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
         childBox.y1 = box.y1;
         childBox.y2 = box.y2 + this.thumbnails[0].title.height;
 
-        this.background.allocate(childBox, flags);
+        this.background.allocate(childBox);
 
         // During a workspace drag, build a virtual display order:
         // remove the source thumbnail and leave a gap at the drop position.
@@ -1877,7 +1963,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
             childBox.y1 = y1;
             childBox.y2 = y1 + portholeHeight;
             thumbnail.set_scale(scale, scale);
-            thumbnail.allocate(childBox, flags);
+            thumbnail.allocate(childBox);
 
             let framethemeNode = thumbnail.frame.get_theme_node();
             let borderWidth = framethemeNode.get_border_width(St.Side.BOTTOM);
@@ -1886,14 +1972,14 @@ var ExpoThumbnailsBox = GObject.registerClass({
             childBox.y1 = y1 - borderWidth;
             childBox.y2 = y2 + borderWidth;
             thumbnail.frame.set_scale((1 - thumbnail.slide_position), (1 - thumbnail.slide_position));
-            thumbnail.frame.allocate(childBox, flags);
+            thumbnail.frame.allocate(childBox);
 
             let thumbnailx = Math.round(x + (thumbnailWidth * thumbnail.slide_position / 2));
             childBox.x1 = Math.max(thumbnailx, thumbnailx + Math.round(thumbnailWidth/2) - Math.round(thumbnail.title.width/2));
             childBox.x2 = Math.min(thumbnailx + thumbnailWidth, childBox.x1 + thumbnail.title.width);
             childBox.y1 = y + thumbnailHeight + thTitleMargin;
             childBox.y2 = childBox.y1 + thumbnail.title.height;
-            thumbnail.title.allocate(childBox, flags);
+            thumbnail.title.allocate(childBox);
 
             if (animate) {
                 for (let actor of [thumbnail, thumbnail.frame, thumbnail.title]) {
@@ -1911,7 +1997,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
         let buttonHeight = this.button.get_theme_node().get_length('height');
         let buttonOverlap = this.button.get_theme_node().get_length('-cinnamon-close-overlap');
 
-        if (this.lastHovered && !this.lastHovered.doomed){
+        if (this.lastHovered && !this.lastHovered.doomed && this.lastHovered.has_allocation()){
             x = this.lastHovered.allocation.x1 + ((this.lastHovered.allocation.x2 - this.lastHovered.allocation.x1) * this.lastHovered.get_scale()[0]) - buttonOverlap;
             y = this.lastHovered.allocation.y1 - (buttonHeight - buttonOverlap);
         } else {
@@ -1923,7 +2009,7 @@ var ExpoThumbnailsBox = GObject.registerClass({
         childBox.y1 = y;
         childBox.y2 = childBox.y1 + buttonHeight;
 
-        this.button.allocate(childBox, flags);
+        this.button.allocate(childBox);
 
         this.emit('allocated');
     }

@@ -1,0 +1,24 @@
+[Desktop Entry]
+Exec=cinnamon-screenshot --interactive
+Terminal=false
+Type=Application
+Icon=applets-screenshooter
+StartupNotify=true
+Categories=GTK;Utility;
+OnlyShowIn=X-Cinnamon;
+Actions=screen-shot;window-shot;area-shot;
+Name=Screenshot
+Comment=Save images of your screen or individual windows
+Keywords=snapshot;capture;print;screenshot;
+
+[Desktop Action screen-shot]
+Name=Take a Screenshot of the Whole Screen
+Exec=cinnamon-screenshot
+
+[Desktop Action window-shot]
+Name=Take a Screenshot of the Current Window
+Exec=cinnamon-screenshot -w
+
+[Desktop Action area-shot]
+Name=Take a Screenshot of an Area
+Exec=cinnamon-screenshot -a

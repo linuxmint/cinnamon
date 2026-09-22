@@ -3,11 +3,13 @@ const St = imports.gi.St;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
+const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
 const Signals = imports.signals;
 const KeyboardManager = imports.ui.keyboardManager;
 const IBus = imports.gi.IBus;
 const IBusManager = imports.misc.ibusManager;
+const IMFramework = imports.misc.imFramework;
 const SignalManager = imports.misc.signalManager;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
@@ -57,11 +59,16 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this._selectedLayout = null;
         this._layoutItems = new Map();
 
+        // Under fcitx, layout/IME state and indication belong to fcitx's own tray
+        // icon. Stay hidden and don't suppress the external IM's tray icon.
+        this._imIsFcitx = IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX;
 
         try {
             this.metadata = metadata;
-            Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
-            Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid);
+            if (!this._imIsFcitx) {
+                Main.systrayManager.registerTrayIconReplacement("keyboard", metadata.uuid);
+                Main.systrayManager.registerTrayIconReplacement("input-method", metadata.uuid);
+            }
 
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.menu = new Applet.AppletPopupMenu(this, orientation);
@@ -81,9 +88,15 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this.menu.addMenuItem(this._propSection);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             this.showLayoutAction = this.menu.addAction(_("Show Keyboard Layout"), () => this._showActiveLayout());
-            this.menu.addAction(_("Show Character Table"), () => {
-                Main.overview.hide();
-                Util.spawn(['gucharmap']);
+            Cinnamon.find_program_in_path('gucharmap', (path) => {
+                if (path == null || this.menu == null) {
+                    return;
+                }
+
+                this.menu.addAction(_("Show Character Table"), () => {
+                    Main.overview.hide();
+                    Util.spawn(['gucharmap']);
+                });
             });
             this._applet_context_menu.addSettingsAction(_("Manage keyboard layouts"), 'keyboard', "layouts");
 
@@ -103,11 +116,11 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         let source = this._inputSourcesManager.currentSource;
 
-        let description = source.xkbLayout;
+        let args = ['cinnamon-keyboard-display', '-l', source.xkbLayout];
         if (source.variant.length > 0)
-            description = '%s\t%s'.format(description, source.variant);
+            args.push('-v', source.variant);
 
-        Util.spawn(['gkbd-keyboard-display', '-l', description]);
+        Util.spawn(args);
     }
 
     _onCurrentSourceChanged() {
@@ -119,7 +132,8 @@ class CinnamonKeyboardApplet extends Applet.Applet {
     }
 
     _onPanelEditModeChanged() {
-        this.actor.visible = global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._inputSourcesManager.multipleSources;
+        this.actor.visible = !this._imIsFcitx &&
+            (global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._inputSourcesManager.multipleSources);
     }
 
     on_applet_added_to_panel() {
@@ -163,7 +177,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
             let actor = null;
 
-            if (this._inputSourcesManager.showFlags) {
+            if (source.type === 'ibus' || this._inputSourcesManager.showFlags) {
                 actor = this._inputSourcesManager.createFlagIcon(source, POPUP_MENU_ICON_STYLE_CLASS, 22);
             }
 
@@ -180,7 +194,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._layoutSection.addMenuItem(menuItem);
         }
 
-        if (!this._inputSourcesManager.multipleSources) {
+        if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
             this.menu.close();
             this.actor.hide();
         } else {
@@ -205,7 +219,9 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         let actor = null;
         const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
 
-        if (this._inputSourcesManager.showFlags) {
+        // IBus engines always show their own icon (flags are an xkb concept); xkb
+        // layouts show a flag only when the user opted into flags.
+        if (selected.type === 'ibus' || this._inputSourcesManager.showFlags) {
             actor = this._inputSourcesManager.createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
         }
 
@@ -220,7 +236,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         this._panel_icon_box.set_child(actor);
 
-        if (!this._inputSourcesManager.multipleSources) {
+        if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
             this.actor.hide();
         }
 
@@ -298,18 +314,13 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
                     let group = item.radioGroup;
                     for (let j = 0; j < group.length; ++j) {
-                        if (group[j] == item) {
-                            item.setOrnament(PopupMenu.OrnamentType.DOT, true);
-                            item.prop.set_state(IBus.PropState.CHECKED);
-                            ibusManager.activateProperty(item.prop.get_key(),
-                                                         IBus.PropState.CHECKED);
-                        } else {
-                            group[j].setOrnament(PopupMenu.OrnamentType.DOT, false);
-                            group[j].prop.set_state(IBus.PropState.UNCHECKED);
-                            ibusManager.activateProperty(group[j].prop.get_key(),
-                                                         IBus.PropState.UNCHECKED);
-                        }
+                        let checked = group[j] == item;
+                        group[j].setOrnament(PopupMenu.OrnamentType.DOT, checked);
+                        group[j].prop.set_state(checked ? IBus.PropState.CHECKED
+                                                        : IBus.PropState.UNCHECKED);
                     }
+                    ibusManager.activateProperty(item.prop.get_key(),
+                                                 IBus.PropState.CHECKED);
                 });
                 break;
 

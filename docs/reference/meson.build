@@ -9,6 +9,7 @@ if get_option('docs')
     )
 
     subdir('cinnamon')
+    subdir('cinnamon-bg')
     subdir('cinnamon-js')
     subdir('cinnamon-tutorials')
     subdir('st')

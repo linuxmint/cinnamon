@@ -1029,6 +1029,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._output = null;
         this._outputMutedId = 0;
         this._outputIcon = "xsi-audio-volume-muted";
+        this._playerIcon = [null, false];
 
         this._input = null;
         this._inputMutedId = 0;
@@ -1114,6 +1115,11 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         else {
             this._volumeMax = this._volumeNorm;
             this._outputVolumeSection.set_mark(0);
+
+            if (this._output && this._output.volume > this._volumeMax) {
+                this._output.volume = this._volumeMax;
+                this._output.push_volume();
+            }
         }
         this._outputVolumeSection._update();
     }
@@ -1325,19 +1331,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._icon_path = null;
         }
 
-        if (player && (player === true || player._playerStatus == 'Playing')) {
-            // Something is playing
-            if (this.showalbum) {
-                if (path) {
-                    this.setIcon(path, "player-path");
-                } else {
-                    this.setIcon('xsi-media-optical-cd-audio', 'player-name');
-                }
-            } else {
-                this.setIcon('xsi-audio-x-generic', 'player-name');
-            }
+        if (player && (player === true || player._playerStatus == 'Playing') && this.showalbum && path) {
+            // Playing with album art enabled and available - show the art
+            this.setIcon(path, "player-path");
         } else {
-            // Nothing is playing - clear player icon and show volume icon
             this._playerIcon = [null, false];
             this.setIcon(this._outputIcon);
         }

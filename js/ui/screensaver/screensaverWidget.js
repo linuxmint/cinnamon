@@ -1,5 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
+const Clutter = imports.gi.Clutter;
 const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 
@@ -37,13 +38,44 @@ var FloatPosition = class FloatPosition {
  * Non-floating widgets (like PowerWidget) should not subclass this.
  */
 var ScreensaverWidget = GObject.registerClass(
-class ScreensaverWidget extends St.BoxLayout {
+class ScreensaverWidget extends St.Bin {
     _init(params) {
-        super._init(params);
+        super._init({ x_fill: false,
+                      y_fill: false,
+                      x_align: St.Align.MIDDLE,
+                      y_align: St.Align.MIDDLE });
+
+        this.box = new St.BoxLayout(params);
+        this.box.set_pivot_point(0.5, 0.5);
+        this.set_child(this.box);
 
         this._currentPosition = new FloatPosition();
         this._awakePosition = new FloatPosition();
         this._nextPosition = new FloatPosition();
+    }
+
+    vfunc_allocate(box) {
+        this.set_allocation(box);
+
+        let contentBox = this.get_theme_node().get_content_box(box);
+        let availWidth = contentBox.x2 - contentBox.x1;
+        let availHeight = contentBox.y2 - contentBox.y1;
+
+        let [, natWidth] = this.box.get_preferred_width(-1);
+        let [, natHeight] = this.box.get_preferred_height(natWidth);
+
+        let scale = 1;
+        if (natWidth > availWidth || natHeight > availHeight)
+            scale = Math.min(availWidth / natWidth, availHeight / natHeight);
+
+        let childBox = new Clutter.ActorBox();
+        childBox.x1 = contentBox.x1 + (availWidth - natWidth) / 2;
+        childBox.y1 = contentBox.y1 + (availHeight - natHeight) / 2;
+        childBox.x2 = childBox.x1 + natWidth;
+        childBox.y2 = childBox.y1 + natHeight;
+
+        this.box.allocate(childBox);
+        this.box.set_scale(scale, scale);
     }
 
     setAwakePosition(monitor, halign, valign) {

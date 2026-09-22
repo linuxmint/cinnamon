@@ -4,10 +4,6 @@
   &-thumbnails { spacing: 26px; }
   &-thumbnails-background { padding: 8px; }
 
-  // this controls both the darkness of thumbnails in expo and
-  // the darkness of the overiew backgroound
-  &-overview-background-shade { background-color: transparentize(black, 0.8); }
-
   &-add-button {
     background-image: url("add-workspace.svg");
     height: 200px;

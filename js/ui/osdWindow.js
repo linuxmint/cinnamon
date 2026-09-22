@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Gdk = imports.gi.Gdk;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
@@ -15,21 +14,6 @@ const Main = imports.ui.main;
 const LEVEL_ANIMATION_TIME = 100;
 const FADE_TIME = 100;
 const HIDE_TIMEOUT = 1500;
-
-function convertGdkIndex(monitorIndex) {
-    let screen = Gdk.Screen.get_default();
-    let rect = screen.get_monitor_geometry(monitorIndex);
-    let cx = rect.x + rect.width / 2;
-    let cy = rect.y + rect.height / 2;
-    for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
-        let monitor = Main.layoutManager.monitors[i];
-        if (cx >= monitor.x && cx < monitor.x + monitor.width &&
-            cy >= monitor.y && cy < monitor.y + monitor.height)
-            monitorIndex = i;
-    }
-
-    return monitorIndex;
-};
 
 var OsdWindow = GObject.registerClass(
 class OsdWindow extends Clutter.Actor {
@@ -199,13 +183,11 @@ var OsdWindowManager = class {
         this._osdWindows[monitorIndex].show();
     }
 
-    show(monitorIndex, icon, label, level, convertIndex) {
+    show(monitorIndex, icon, label, level) {
         if (this._osdWindows.length === 0)
             return;
 
         if (monitorIndex !== -1) {
-            if (convertIndex)
-                monitorIndex = convertGdkIndex(monitorIndex);
             for (let i = 0; i < this._osdWindows.length; i++) {
                 if (i === monitorIndex)
                     this._showOsdWindow(i, icon, label, level);

@@ -15,16 +15,19 @@
 import os
 import signal
 import sys
-import pyinotify
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GObject, Gdk, GLib
+gi.require_version('XApp', '1.0')
+from gi.repository import Gio, Gtk, GObject, Gdk, GLib, XApp
 from setproctitle import setproctitle
 
 import pageutils
-from lookingglass_proxy import LookingGlassProxy
+from debug_tools import DebugButton
+from lookingglass_proxy import LookingGlassProxy, CinnamonProxy
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
+
+SESSION_TYPE_QUERY = "imports.gi.Meta.is_wayland_compositor()"
 
 MELANGE_DBUS_NAME = "org.Cinnamon.Melange"
 MELANGE_DBUS_PATH = "/org/Cinnamon/Melange"
@@ -224,28 +227,11 @@ class NewLogDialog(Gtk.Dialog):
 
         return result
 
-class FileWatchHandler(pyinotify.ProcessEvent):
-    def my_init(self, view):
-        self.view = view
-
-    def process_IN_CLOSE_WRITE(self, event):
-        self.view.get_updates()
-
-    def process_IN_CREATE(self, event):
-        self.view.get_updates()
-
-    def process_IN_DELETE(self, event):
-        self.view.get_updates()
-
-    def process_IN_MODIFY(self, event):
-        self.view.get_updates()
-
 class FileWatcherView(Gtk.ScrolledWindow):
     def __init__(self, filename):
         Gtk.ScrolledWindow.__init__(self)
 
         self.filename = filename
-        self.changed = 0
         self.update_id = 0
         self.set_shadow_type(Gtk.ShadowType.ETCHED_IN)
         self.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
@@ -256,42 +242,47 @@ class FileWatcherView(Gtk.ScrolledWindow):
 
         self.textbuffer = self.textview.get_buffer()
 
+        # Keep the view pinned to the end of the log. The adjustment grows in
+        # steps as the text view validates line heights, so re-pin on each change.
+        self.get_vadjustment().connect("changed", self.on_vadjustment_changed)
+
         self.show_all()
         self.get_updates()
 
-        handler = FileWatchHandler(view=self)
-        watch_manager = pyinotify.WatchManager()
-        self.notifier = pyinotify.ThreadedNotifier(watch_manager, handler)
-        watch_manager.add_watch(filename, (pyinotify.IN_CLOSE_WRITE |
-                                           pyinotify.IN_CREATE |
-                                           pyinotify.IN_DELETE |
-                                           pyinotify.IN_MODIFY))
-        self.notifier.start()
+        self.monitor = Gio.File.new_for_path(filename).monitor_file(Gio.FileMonitorFlags.NONE, None)
+        self.monitor.connect("changed", self.on_file_changed)
         self.connect("destroy", self.on_destroy)
-        self.connect("size-allocate", self.on_size_changed)
+
+    def on_file_changed(self, monitor, gfile, other_file, event_type):
+        self.get_updates()
 
     def on_destroy(self, widget):
-        if self.notifier:
-            self.notifier.stop()
-            self.notifier = None
+        if self.monitor:
+            self.monitor.cancel()
+            self.monitor = None
 
-    def on_size_changed(self, widget, bla):
-        if self.changed > 0:
-            end_iter = self.textbuffer.get_end_iter()
-            self.textview.scroll_to_iter(end_iter, 0, False, 0, 0)
-            self.changed -= 1
+        if self.update_id > 0:
+            GLib.source_remove(self.update_id)
+            self.update_id = 0
+
+    def on_vadjustment_changed(self, adjustment):
+        adjustment.set_value(adjustment.get_upper() - adjustment.get_page_size())
 
     def get_updates(self):
-        # only update 2 times per second max
-        # without this rate limiting, certain file modifications can cause
-        # a crash at Gtk.TextBuffer.set_text()
+        # only update 2 times per second max - a single write produces a
+        # changed/changes-done-hint pair, and update() re-reads the whole file
         if self.update_id == 0:
             self.update_id = GLib.timeout_add(500, self.update)
 
     def update(self):
-        self.changed = 2 # on_size_changed will be called twice, but only the second time is final
-        self.textbuffer.set_text(open(self.filename, 'r').read())
         self.update_id = 0
+
+        try:
+            with open(self.filename, 'r') as f:
+                self.textbuffer.set_text(f.read())
+        except OSError as e:
+            self.textbuffer.set_text("Could not read %s: %s" % (self.filename, e))
+
         return False
 
 class ClosableTabLabel(Gtk.Box):
@@ -333,7 +324,11 @@ class MelangeApp(Gtk.Application):
         self.startup_mode = None
 
     def do_dbus_register(self, connection, path):
-        self.reg_id = connection.register_object(
+        try:
+            register = connection.register_object_with_closures2
+        except AttributeError:
+            register = connection.register_object
+        self.reg_id = register(
             path,
             interface_node_info.interfaces[0],
             self._method_cb,
@@ -388,8 +383,10 @@ class MelangeApp(Gtk.Application):
     def do_startup(self):
         Gtk.Application.do_startup(self)
         self.lg_proxy = LookingGlassProxy()
+        self.cinnamon_proxy = CinnamonProxy()
         # The status label is shown if we are not okay
         self.lg_proxy.connect("status-changed", self.update_status_from_proxy)
+        self.cinnamon_proxy.connect("status-changed", self.update_session_type)
 
         if self.window is None:
             self.construct_window()
@@ -400,6 +397,18 @@ class MelangeApp(Gtk.Application):
         if online and self.init_activation:
             self.init_activation = False
             self.handle_commandline_action()
+
+    def update_session_type(self, proxy, online):
+        if not online:
+            self.session_label.set_text("")
+            return
+
+        success, data = proxy.Eval(SESSION_TYPE_QUERY)
+        if not success:
+            self.session_label.set_text("")
+            return
+
+        self.session_label.set_markup("Session type: <b>%s</b>" % ("Wayland" if data == "true" else "X11"))
 
     def do_activate(self):
         Gtk.Application.do_activate(self)
@@ -429,11 +438,20 @@ class MelangeApp(Gtk.Application):
             self.window.hide()
 
     def construct_window(self):
-        self.window = Gtk.Window(type=Gtk.WindowType.TOPLEVEL)
+        self.window = XApp.GtkWindow(type=Gtk.WindowType.TOPLEVEL)
         headerbar = Gtk.HeaderBar()
         headerbar.set_title("Looking Glass")
         headerbar.set_subtitle("Cinnamon Troubleshooting Tool")
         headerbar.set_show_close_button(True)
+
+        self.debug_button = DebugButton(self.cinnamon_proxy)
+        headerbar.pack_start(self.debug_button)
+
+        self.session_label = Gtk.Label()
+        self.session_label.get_style_context().add_class("dim-label")
+        self.session_label.set_margin_start(12)
+        headerbar.pack_start(self.session_label)
+
         self.window.set_titlebar(headerbar)
         self.window.set_icon_name("system-search")
         self.window.set_default_size(1000, 400)
@@ -541,7 +559,7 @@ class MelangeApp(Gtk.Application):
         menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
         menu.append(self.create_menu_item('Reset Cinnamon Settings', self.on_reset_clicked))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('Quit', self.on_delete))
+        menu.append(self.create_menu_item('Quit', self.on_quit))
         menu.show_all()
 
         button = Gtk.MenuButton(label="Actions \u25BE")
@@ -584,11 +602,14 @@ class MelangeApp(Gtk.Application):
             self.window.hide()
 
     def on_delete(self, widget=None, event=None):
+        self.window.hide()
+        return True
+
+    def on_quit(self, menu_item=None):
         tmp_pages = self.custom_pages.copy()
         for label, content in tmp_pages.items():
             self.on_close_tab(label, content)
         self.quit()
-        return False
 
     def on_window_state(self, widget, event):
         if event.new_window_state & Gdk.WindowState.ICONIFIED:
@@ -617,8 +638,10 @@ class MelangeApp(Gtk.Application):
         self.notebook.set_current_page(page)
 
     def do_shutdown(self):
+        self.debug_button.release()
         self.window.destroy()
         self.lg_proxy = None
+        self.cinnamon_proxy = None
         Gtk.Application.do_shutdown(self)
 
 if __name__ == "__main__":

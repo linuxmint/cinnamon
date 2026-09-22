@@ -9,8 +9,8 @@ import gettext
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
-
-from gi.repository import GLib, Gtk, Gdk, XApp, Gio
+gi.require_version('GLibUnix', '2.0')
+from gi.repository import GLib, Gtk, Gdk, XApp, Gio, GLibUnix
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -117,7 +117,10 @@ class HoverClickWindow(XApp.GtkWindow):
         self.settings.connect("changed::hoverclick-layout", self.update_layout)
         self.settings.connect("changed::hoverclick-action", self.on_action_changed)
         self.connect("delete-event", self.exit)
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit)
+        try:
+            GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit)
+        except AttributeError:
+            GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit, None)
 
     def action_changed(self, button, action):
         if self.doing_setup:

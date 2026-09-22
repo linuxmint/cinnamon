@@ -150,7 +150,8 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
         this._dummyCursor = new St.Widget({ opacity: 0 });
         Main.uiGroup.add_actor(this._dummyCursor);
 
-        Main.layoutManager.addChrome(this);
+        Main.layoutManager.addChrome(this, { doNotAdd: true });
+        global.overlay_group.add_actor(this);
 
         let box = new St.BoxLayout({ style_class: 'candidate-popup-content',
                                      vertical: true });
@@ -293,8 +294,8 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
     }
 
     _setDummyCursorGeometry(x, y, w, h) {
-        this._dummyCursor.set_position(Math.round(x), Math.round(y));
-        this._dummyCursor.set_size(Math.round(w), Math.round(h));
+        this._dummyCursor.set_position(x, y);
+        this._dummyCursor.set_size(w, h);
 
         if (this.visible)
             this.setPosition(this._dummyCursor, 0);

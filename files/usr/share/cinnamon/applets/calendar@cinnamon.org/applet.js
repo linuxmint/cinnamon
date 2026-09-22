@@ -1,8 +1,10 @@
 const Applet = imports.ui.applet;
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const GObject = imports.gi.GObject;
 const Lang = imports.lang;
 const Clutter = imports.gi.Clutter;
+const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 const Util = imports.misc.util;
 const PopupMenu = imports.ui.popupMenu;
@@ -20,7 +22,50 @@ const DAY_FORMAT = CinnamonDesktop.WallClock.lctime_format("cinnamon", "%A");
 const DATE_FORMAT_SHORT = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%B %-e, %Y"));
 const DATE_FORMAT_FULL = CinnamonDesktop.WallClock.lctime_format("cinnamon", _("%A, %B %-e, %Y"));
 
-class CinnamonCalendarApplet extends Applet.TextApplet {
+/* Holds the clock label and latches its width: grows to any wider string, but
+ * only snaps back down when the width drops by more than ~2 average character
+ * widths - ignores jitter from digit changes while still reclaiming space when
+ * a whole word shrinks ("Saturday" -> "Sunday").
+ *
+ * The latch is applied to the bin's own width request rather than the label,
+ * otherwise the label's natural width could never shrink again. */
+const LatchedWidthBin = GObject.registerClass(
+class LatchedWidthBin extends St.Bin {
+    _init(params) {
+        super._init(params);
+        this._latchedWidth = 0;
+    }
+
+    resetLatch() {
+        this._latchedWidth = 0;
+        this.updateLatch();
+    }
+
+    updateLatch() {
+        let label = this.get_child();
+        if (!label)
+            return;
+
+        let [, natWidth] = label.get_preferred_width(-1);
+        if (natWidth <= 0)
+            return;
+
+        let avgChar = natWidth / Math.max(1, label.get_text().length);
+
+        if (natWidth > this._latchedWidth ||
+            natWidth < this._latchedWidth - 2 * avgChar) {
+            this._latchedWidth = natWidth;
+            this.queue_relayout();
+        }
+    }
+
+    vfunc_get_preferred_width(forHeight) {
+        let [min, nat] = super.vfunc_get_preferred_width(forHeight);
+        return [Math.max(min, this._latchedWidth), Math.max(nat, this._latchedWidth)];
+    }
+});
+
+class CinnamonCalendarApplet extends Applet.Applet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
@@ -30,6 +75,19 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.menuManager = new PopupMenu.PopupMenuManager(this);
             this.orientation = orientation;
 
+            this._clockLabel = new St.Label({
+                reactive: true,
+                track_hover: true,
+                style_class: 'applet-label'
+            });
+            this._clockLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
+
+            this._labelBin = new LatchedWidthBin();
+            this._labelBin.set_child(this._clockLabel);
+
+            this.actor.add(this._labelBin, { y_align: St.Align.MIDDLE, y_fill: false });
+            this.actor.set_label_actor(this._clockLabel);
+
             this._initContextMenu();
             this.menu.setCustomStyleClass('calendar-background');
 
@@ -38,6 +96,8 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
 
             this.clock = new CinnamonDesktop.WallClock();
             this.clock_notify_id = 0;
+            this.theme_set_id = 0;
+            this.panel_edit_mode_id = 0;
 
             // Events
             this.events_manager = new EventView.EventsManager(this.settings, this.desktop_settings);
@@ -192,6 +252,7 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
     _onSettingsChanged() {
         this._updateFormatString();
         this._updateClockAndDate();
+        this._labelBin.resetLatch();
         this.event_list.actor.visible = this.events_manager.is_active();
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
     }
@@ -245,6 +306,18 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         }
     }
 
+    _onThemeSet() {
+        this._labelBin.resetLatch();
+    }
+
+    _onPanelEditModeChanged() {
+        this._labelBin.resetLatch();
+    }
+
+    on_panel_height_changed() {
+        this._labelBin.resetLatch();
+    }
+
     _events_manager_ready(em) {
         this.event_list.actor.visible = this.events_manager.is_active();
         this.events_manager.select_date(this._calendar.getSelectedDate(), true);
@@ -264,8 +337,10 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             label_string = this.clock.get_clock_for_format(this.custom_format);
         }
 
-        if (label_string)
-            this.set_applet_label(label_string);
+        if (label_string) {
+            this._clockLabel.set_text(label_string);
+            this._labelBin.updateLatch();
+        }
 
         this.go_home_button.reactive = !this._calendar.todaySelected();
         if (this._calendar.todaySelected()) {
@@ -303,6 +378,14 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
             this.clock_notify_id = this.clock.connect("notify::clock", () => this._clockNotify());
         }
 
+        if (this.theme_set_id == 0) {
+            this.theme_set_id = Main.themeManager.connect("theme-set", () => this._onThemeSet());
+        }
+
+        if (this.panel_edit_mode_id == 0) {
+            this.panel_edit_mode_id = global.settings.connect("changed::panel-edit-mode", () => this._onPanelEditModeChanged());
+        }
+
         /* Populates the calendar so our menu allocation is correct for animation */
         this.events_manager.start_events();
         this._resetCalendar();
@@ -313,6 +396,14 @@ class CinnamonCalendarApplet extends Applet.TextApplet {
         if (this.clock_notify_id > 0) {
             this.clock.disconnect(this.clock_notify_id);
             this.clock_notify_id = 0;
+        }
+        if (this.theme_set_id > 0) {
+            Main.themeManager.disconnect(this.theme_set_id);
+            this.theme_set_id = 0;
+        }
+        if (this.panel_edit_mode_id > 0) {
+            global.settings.disconnect(this.panel_edit_mode_id);
+            this.panel_edit_mode_id = 0;
         }
     }
 

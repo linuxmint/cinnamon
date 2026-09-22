@@ -181,28 +181,6 @@
   }
 }
 
-// Audio selection dialog
-
-.audio-device-selection-dialog {
-  min-width: 24em;
-
-  .audio-selection-box {
-    spacing: $base_padding *2;
-
-    .audio-selection-device {
-      @extend %flat_button;
-      border-radius: $base_border_radius;
-
-      .audio-selection-device-box {
-        padding: $base_padding * 2;
-        spacing: $base_padding * 2;
-      }
-
-      .audio-selection-device-icon { icon-size: 64px;}
-    }
-  }
-}
-
 // Shared grouped-list style for autorun and processes dialogs
 %grouped-dialog-list {
     .dialog-list-box {
@@ -259,9 +237,7 @@
   }
 }
 
-// Popup dialog (non-modal, draggable)
+// Popup dialog (non-modal, draggable).
+// Modal dialogs use a lightbox to draw attention to themselves; popups don't,
 .popup-dialog {
-  .dialog {
-    box-shadow: 0 -1px $accent_bg_color;
-  }
 }

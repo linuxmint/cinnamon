@@ -11,7 +11,7 @@ export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
 %:
-	dh $@ --with gir,python3
+	dh $@
 
 override_dh_auto_configure:
 	dh_auto_configure -- \

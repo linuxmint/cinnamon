@@ -7,6 +7,8 @@ const Signals = imports.signals;
 const ByteArray = imports.byteArray;
 
 const IBusManager = imports.misc.ibusManager;
+const IMFramework = imports.misc.imFramework;
+const LoginManager = imports.misc.loginManager;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Cairo = imports.cairo;
@@ -107,6 +109,10 @@ var KeyboardManager = class {
         if (!this._current)
             return;
 
+        // The live X keymap may have been changed out from under us (e.g. a
+        // keyboard re-enumerating across suspend/resume), so clear the cache
+        // to force _applyLayoutGroup to re-push it.
+        this._currentKeymap = null;
         this._applyLayoutGroup(this._current.group);
         this._applyLayoutGroupIndex(this._current.groupIndex);
     }
@@ -160,8 +166,14 @@ var KeyboardManager = class {
     }
 
     _buildGroupStrings(_group) {
-        let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout &&
-                                                g.variant === this._localeLayoutInfo.variant);
+        if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX) {
+            // Under fcitx, Cinnamon owns only the base layout; fcitx manages any
+            // alternate layouts itself. Send a single-group keymap.
+            let base = _group[0] || this._localeLayoutInfo;
+            return [base.layout, base.variant];
+        }
+
+        let alreadyIncluded = _group.some(g => g.layout === this._localeLayoutInfo.layout);
         let group = alreadyIncluded ? _group : _group.concat(this._localeLayoutInfo);
         let layouts = group.map(g => g.layout).join(',');
         let variants = group.map(g => g.variant).join(',');
@@ -191,6 +203,12 @@ var InputSource = class {
         this.variant = variant;
         this.preferences = prefs;
         this._layoutOverride = layoutOverride;
+
+        // ibus only: the engine's static icon and the key of the property that
+        // carries its dynamic state icon (e.g. mozc hiragana/katakana). Set after
+        // construction in _inputSourcesChanged.
+        this.engineIcon = null;
+        this.iconPropKey = null;
 
         this.properties = null;
 
@@ -236,7 +254,11 @@ var SubscriptableFlagIcon = GObject.registerClass({
         'file': GObject.ParamSpec.object(
             'file', 'file', 'file',
             GObject.ParamFlags.READWRITE,
-            Gio.File.$gtype)
+            Gio.File.$gtype),
+        'icon-size': GObject.ParamSpec.int(
+            'icon-size', 'icon-size', 'Unscaled icon height',
+            GObject.ParamFlags.READWRITE,
+            0, GLib.MAXINT32, 0)
     },
 }, class SubscriptableFlagIcon extends St.Widget {
     _init(params) {
@@ -244,6 +266,8 @@ var SubscriptableFlagIcon = GObject.registerClass({
         this._file = null;
         this._image = null;
         this._loadHandle = 0;
+        this._iconSize = 0;
+        this._scaledHeight = 0;
 
         super._init({
             style_class: 'input-source-switcher-flag-icon',
@@ -263,11 +287,12 @@ var SubscriptableFlagIcon = GObject.registerClass({
 
         this.add_child(this._drawingArea);
 
-        this.connect('allocation-changed', () => {
+        this.connect('notify::allocation', () => {
             if (this._image == null) {
                 this._load_file();
             }
         });
+        this.connect('resource-scale-changed', () => this._load_file());
     }
 
     get subscript() {
@@ -287,20 +312,49 @@ var SubscriptableFlagIcon = GObject.registerClass({
         this._load_file();
     }
 
+    get icon_size() {
+        return this._iconSize;
+    }
+
+    set icon_size(size) {
+        this._iconSize = size;
+        this._updateSize();
+    }
+
+    _updateSize() {
+        const scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        const height = this._iconSize * scale;
+        if (height === this._scaledHeight) {
+            return;
+        }
+
+        this._scaledHeight = height;
+        this.set_height(height);
+        this._load_file();
+    }
+
+    vfunc_style_changed() {
+        super.vfunc_style_changed();
+        this._updateSize();
+    }
+
     _load_file() {
         if (this._file == null || this.get_parent() == null) {
             return;
         }
 
+        const scale = this.get_resource_scale();
+
         try {
             this._loadHandle = St.TextureCache.get_default().load_image_from_file_async(
                 this._file.get_path(),
-                -1, this.get_height(),
+                -1, this.get_height() * scale,
                 (cache, handle, actor) => {
                     if (handle !== this._loadHandle) {
                         return;
                     }
 
+                    actor.set_size(actor.width / scale, actor.height / scale);
                     this._image = actor;
                     this._imageBin.set_child(actor);
                     this._drawingArea.queue_repaint();
@@ -398,6 +452,12 @@ var Locale1Settings = class {
                                 if (sourcesList.length > 0) {
                                     let sources = GLib.Variant.new('a(ss)', sourcesList);
                                     settings.set_value(KEY_INPUT_SOURCES, sources);
+                                }
+
+                                if (settings.get_strv(KEY_KEYBOARD_OPTIONS).length == 0) {
+                                    let options = _options.split(',').filter(o => o.length > 0);
+                                    if (options.length > 0)
+                                        settings.set_strv(KEY_KEYBOARD_OPTIONS, options);
                                 }
                             });
     }
@@ -505,6 +565,14 @@ var InputSourceManager = class {
 
         global.display.connect('modifiers-accelerator-activated', () => this._modifiersSwitcher(false));
 
+        // The keyboard device can re-initialize across suspend and drop our
+        // xkb group/options, so re-apply them on resume.
+        this._loginManager = LoginManager.getLoginManager();
+        this._loginManager.connect('prepare-for-sleep', (lm, aboutToSuspend) => {
+            if (!aboutToSuspend)
+                this._keyboardManager.reapply();
+        });
+
         this._sourcesPerWindow = false;
         this._focusWindowNotifyId = 0;
         this._overviewShowingId = 0;
@@ -513,6 +581,20 @@ var InputSourceManager = class {
         this._sourcesPerWindowChanged();
         this._disableIBus = false;
         this._reloading = false;
+        this._initialized = false;
+    }
+
+    // One-time startup population of the input sources and application of the
+    // base keymap. reload() itself activates the resolved source (and thus
+    // applies its layout), so no explicit activate() is needed here. Called by
+    // main.js for every session, so paths that don't build a JS input method
+    // (e.g. Wayland fcitx, which adopts muffin's native backend) still get set
+    // up.
+    ensureInitialized() {
+        if (this._initialized)
+            return;
+        this._initialized = true;
+        this.reload();
     }
 
     reload() {
@@ -531,6 +613,9 @@ var InputSourceManager = class {
     }
 
     _setupKeybindings() {
+        if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX)
+            return;
+
         let kb = this._kb_settings.get_strv("switch-input-source");
         Main.keybindingManager.addHotKeyArray(
             "switch-input-source", kb,
@@ -630,6 +715,10 @@ var InputSourceManager = class {
         if (is === this._currentSource)
             return;
 
+        // A switch between two xkb layouts doesn't change the ibus engine.
+        let xkbToXkb = this._currentSource?.type == INPUT_SOURCE_TYPE_XKB &&
+                       is.type == INPUT_SOURCE_TYPE_XKB;
+
         // The focus changes during holdKeyboard/releaseKeyboard may trick
         // the client into hiding UI containing the currently focused entry.
         // So holdKeyboard/releaseKeyboard are not called when
@@ -637,7 +726,7 @@ var InputSourceManager = class {
         // E.g. Focusing on a password entry in a popup in Xorg Firefox
         // will emit 'set-content-type' signal.
         // https://gitlab.gnome.org/GNOME/gnome-shell/issues/391
-        if (!this._reloading)
+        if (!this._reloading && !xkbToXkb)
             holdKeyboard();
         this._keyboardManager.apply(is.xkbId);
 
@@ -653,10 +742,18 @@ var InputSourceManager = class {
         else
             engine = 'xkb:us::eng';
 
-        if (!this._reloading)
-            this._ibusManager.setEngine(engine, releaseKeyboard);
-        else
+        if (this._reloading) {
             this._ibusManager.setEngine(engine);
+        } else if (xkbToXkb) {
+            // muffin freezes the keyboard for grp: switches (via
+            // modifiers-accelerator-activated) and delegates the unfreeze to
+            // this handler, so release it even though we skipped holdKeyboard -
+            // synchronously, without waiting on the ibus round-trip.
+            this._ibusManager.setEngine(engine);
+            releaseKeyboard();
+        } else {
+            this._ibusManager.setEngine(engine, releaseKeyboard);
+        }
 
         if (is.type == INPUT_SOURCE_TYPE_IBUS && (is.id === this._currentSource?.id)) {
             this._ibusManager.refreshCurrentEngineProperties();
@@ -689,6 +786,8 @@ var InputSourceManager = class {
             let xkbLayout;
             let variant;
             let prefs = '';
+            let engineIcon = null;
+            let iconPropKey = null;
             let type = sources[i].type;
             let id = sources[i].id;
             let exists = false;
@@ -714,10 +813,12 @@ var InputSourceManager = class {
                     exists = true;
                     displayName = '%s (%s)'.format(language, longName);
                     shortName = this._makeEngineShortName(engineDesc);
-                    flagName = shortName;  // TODO
+                    flagName = shortName;
                     xkbLayout = engineDesc.get_layout();
                     variant = engineDesc.get_layout_variant();
                     prefs = engineDesc.get_setup() || '';
+                    engineIcon = engineDesc.get_icon();
+                    iconPropKey = engineDesc.get_icon_prop_key();
                 }
             }
 
@@ -726,7 +827,7 @@ var InputSourceManager = class {
                     shortName = shortName.toUpperCase();
                 }
 
-                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs });
+                infosList.push({ type, id, displayName, shortName, flagName, xkbLayout, variant, prefs, engineIcon, iconPropKey });
             }
         }
 
@@ -782,6 +883,8 @@ var InputSourceManager = class {
                                      info.prefs,
                                      i,
                                      layoutOverride);
+            is.engineIcon = info.engineIcon;
+            is.iconPropKey = info.iconPropKey;
             is.connect('activate', this.activateInputSource.bind(this));
 
             let key = is.shortName;
@@ -820,7 +923,15 @@ var InputSourceManager = class {
 
         this.emit('sources-changed');
 
-        this._inputSources[0].activate();
+        // Preserve the active layout across a rebuild rather than snapping back
+        // to the first one. The list was just rebuilt into new InputSource
+        // objects, so re-resolve the previously-current source by type+id (e.g.
+        // after a settings edit, an ibus (re)connect, or the password
+        // content-type toggle that drops IME sources). Falls back to index 0
+        // when there's no match (first load, or the current source was removed).
+        let newSource = this._getNewInputSource(this._currentSource);
+        if (newSource)
+            newSource.activate();
 
         // All ibus engines are preloaded here to reduce the launching time
         // when users switch the input sources.
@@ -986,6 +1097,8 @@ var InputSourceManager = class {
     }
 
     get multipleSources() {
+        if (this.numInputSources == 0)
+            return false;
         return this.numInputSources > 1 || this.inputSources[0].type == INPUT_SOURCE_TYPE_IBUS;
     }
 
@@ -993,21 +1106,77 @@ var InputSourceManager = class {
         return this._interface_settings.get_boolean("keyboard-layout-show-flags");
     }
 
-    createFlagIcon(source, actorClass, size) {
-        let actor = null;
-        let name = source.flagName;
+    _findProperty(props, key) {
+        if (!props)
+            return null;
 
-        const file = Gio.file_new_for_path(getFlagFileName(name));
-        if (file.query_exists(null)) {
-            actor = new SubscriptableFlagIcon({
+        let p;
+        for (let i = 0; (p = props.get(i)) != null; ++i) {
+            if (p.get_key() == key)
+                return p;
+            if (p.get_prop_type() == IBus.PropType.MENU) {
+                let sub = this._findProperty(p.get_sub_props(), key);
+                if (sub)
+                    return sub;
+            }
+        }
+        return null;
+    }
+
+    _getEngineIcon(source) {
+        if (source.type != INPUT_SOURCE_TYPE_IBUS)
+            return null;
+
+        // Prefer the engine's live state icon (the property named by its
+        // icon-prop-key, e.g. mozc's hiragana/katakana), which is only present
+        // once the active engine has registered its properties.
+        if (source.iconPropKey) {
+            let prop = this._findProperty(source.properties, source.iconPropKey);
+            if (prop) {
+                let icon = prop.get_icon();
+                if (icon && icon.length > 0)
+                    return icon;
+            }
+        }
+
+        // The generic keyboard icon isn't distinguishing; let it fall through.
+        if (source.engineIcon && source.engineIcon.length > 0 && source.engineIcon != 'ibus-keyboard')
+            return source.engineIcon;
+
+        return null;
+    }
+
+    // For ibus sources this is the engine icon (St.Icon); for xkb sources it's the
+    // layout's country flag. Returns null when neither is available.
+    createFlagIcon(source, actorClass, size) {
+        if (source.type == INPUT_SOURCE_TYPE_IBUS) {
+            let icon = this._getEngineIcon(source);
+            if (!icon)
+                return null;
+
+            let gicon = icon[0] == '/'
+                ? new Gio.FileIcon({ file: Gio.file_new_for_path(icon) })
+                : new Gio.ThemedIcon({ name: icon });
+
+            return new St.Icon({
                 style_class: actorClass,
-                file: file,
-                subscript: source.dupeId > 0 ? String(source.dupeId) : null,
-                height: size * global.ui_scale,
+                gicon: gicon,
+                icon_size: size,
             });
         }
 
-        return actor;
+        let name = source.flagName;
+        const file = Gio.file_new_for_path(getFlagFileName(name));
+        if (file.query_exists(null)) {
+            return new SubscriptableFlagIcon({
+                style_class: actorClass,
+                file: file,
+                subscript: source.dupeId > 0 ? String(source.dupeId) : null,
+                icon_size: size,
+            });
+        }
+
+        return null;
     }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);

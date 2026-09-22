@@ -1,0 +1,217 @@
+{
+    "pc105": {
+        "description": "Generic 105-key PC",
+        "blocks": [
+            {
+                "name": "function",
+                "x": 0.0, "y": 0.0,
+                "rows": [
+                    { "keys": [
+                        {"k": "ESC"}, {"gap": 1.0},
+                        {"k": "FK01"}, {"k": "FK02"}, {"k": "FK03"}, {"k": "FK04"}, {"gap": 0.5},
+                        {"k": "FK05"}, {"k": "FK06"}, {"k": "FK07"}, {"k": "FK08"}, {"gap": 0.5},
+                        {"k": "FK09"}, {"k": "FK10"}, {"k": "FK11"}, {"k": "FK12"}
+                    ]}
+                ]
+            },
+            {
+                "name": "system",
+                "x": 15.5, "y": 0.0,
+                "rows": [
+                    { "keys": [{"k": "PRSC"}, {"k": "SCLK"}, {"k": "PAUS"}] }
+                ]
+            },
+            {
+                "name": "alpha",
+                "x": 0.0, "y": 1.5,
+                "rows": [
+                    { "keys": [
+                        {"k": "TLDE"}, {"k": "AE01"}, {"k": "AE02"}, {"k": "AE03"}, {"k": "AE04"},
+                        {"k": "AE05"}, {"k": "AE06"}, {"k": "AE07"}, {"k": "AE08"}, {"k": "AE09"},
+                        {"k": "AE10"}, {"k": "AE11"}, {"k": "AE12"}, {"k": "BKSP", "w": 2.0}
+                    ]},
+                    { "keys": [
+                        {"k": "TAB", "w": 1.5}, {"k": "AD01"}, {"k": "AD02"}, {"k": "AD03"},
+                        {"k": "AD04"}, {"k": "AD05"}, {"k": "AD06"}, {"k": "AD07"}, {"k": "AD08"},
+                        {"k": "AD09"}, {"k": "AD10"}, {"k": "AD11"}, {"k": "AD12"},
+                        {"k": "RTRN", "w": 1.5, "h": 2.0, "shape": "iso-return"}
+                    ]},
+                    { "keys": [
+                        {"k": "CAPS", "w": 1.75}, {"k": "AC01"}, {"k": "AC02"}, {"k": "AC03"},
+                        {"k": "AC04"}, {"k": "AC05"}, {"k": "AC06"}, {"k": "AC07"}, {"k": "AC08"},
+                        {"k": "AC09"}, {"k": "AC10"}, {"k": "AC11"}, {"k": "BKSL"}
+                    ]},
+                    { "keys": [
+                        {"k": "LFSH", "w": 1.25}, {"k": "LSGT"}, {"k": "AB01"}, {"k": "AB02"},
+                        {"k": "AB03"}, {"k": "AB04"}, {"k": "AB05"}, {"k": "AB06"}, {"k": "AB07"},
+                        {"k": "AB08"}, {"k": "AB09"}, {"k": "AB10"}, {"k": "RTSH", "w": 2.75}
+                    ]},
+                    { "keys": [
+                        {"k": "LCTL", "w": 1.5}, {"k": "LWIN", "w": 1.25}, {"k": "LALT", "w": 1.25},
+                        {"k": "SPCE", "w": 5.75}, {"k": "RALT", "w": 1.25}, {"k": "RWIN", "w": 1.25},
+                        {"k": "COMP", "w": 1.25}, {"k": "RCTL", "w": 1.5}
+                    ]}
+                ]
+            },
+            {
+                "name": "navigation",
+                "x": 15.5, "y": 1.5,
+                "rows": [
+                    { "keys": [{"k": "INS"}, {"k": "HOME"}, {"k": "PGUP"}] },
+                    { "keys": [{"k": "DELE"}, {"k": "END"}, {"k": "PGDN"}] },
+                    { "keys": [] },
+                    { "keys": [{"gap": 1.0}, {"k": "UP"}] },
+                    { "keys": [{"k": "LEFT"}, {"k": "DOWN"}, {"k": "RGHT"}] }
+                ]
+            },
+            {
+                "name": "numpad",
+                "x": 19.0, "y": 1.5,
+                "rows": [
+                    { "keys": [{"k": "NMLK"}, {"k": "KPDV"}, {"k": "KPMU"}, {"k": "KPSU"}] },
+                    { "keys": [{"k": "KP7"}, {"k": "KP8"}, {"k": "KP9"},
+                               {"k": "KPAD", "h": 2.0}] },
+                    { "keys": [{"k": "KP4"}, {"k": "KP5"}, {"k": "KP6"}] },
+                    { "keys": [{"k": "KP1"}, {"k": "KP2"}, {"k": "KP3"},
+                               {"k": "KPEN", "h": 2.0}] },
+                    { "keys": [{"k": "KP0", "w": 2.0}, {"k": "KPDL"}] }
+                ]
+            }
+        ]
+    },
+
+    "pc104": {
+        "inherits": "pc105",
+        "description": "Generic 104-key PC",
+        "drop": ["LSGT", "RTRN", "BKSL"],
+        "override": {
+            "LFSH": {"w": 2.25}
+        },
+        "insert": [
+            {"k": "BKSL", "after": "AD12", "row": 1, "w": 1.5},
+            {"k": "RTRN", "after": "AC11", "row": 2, "w": 2.25}
+        ]
+    },
+
+    "pc102": {
+        "inherits": "pc105",
+        "description": "Generic 102-key PC",
+        "drop": ["LWIN", "RWIN", "COMP"],
+        "override": {
+            "LALT": {"w": 1.5},
+            "SPCE": {"w": 9.0},
+            "RALT": {"w": 1.5}
+        }
+    },
+
+    "jp106": {
+        "inherits": "pc105",
+        "description": "Japanese 106-key",
+        "drop": ["LSGT"],
+        "override": {
+            "BKSP": {"w": 1.0},
+            "SPCE": {"w": 2.0}
+        },
+        "insert": [
+            {"k": "AE13", "after": "AE12", "row": 0},
+            {"k": "AB11", "after": "AB10", "row": 3},
+            {"k": "MUHE", "before": "SPCE", "row": 4, "w": 1.25},
+            {"k": "HENK", "after": "SPCE", "row": 4, "w": 1.25},
+            {"k": "HKTG", "after": "HENK", "row": 4, "w": 1.25}
+        ]
+    },
+
+    "abnt2": {
+        "inherits": "pc105",
+        "description": "Brazilian ABNT2",
+        "override": {
+            "RTSH": {"w": 1.75}
+        },
+        "insert": [
+            {"k": "AB11", "after": "AB10", "row": 3}
+        ]
+    },
+
+    "applealu_iso": {
+        "description": "Apple Aluminium (ISO)",
+        "blocks": [
+            {
+                "name": "function",
+                "x": 0.0, "y": 0.0,
+                "rows": [
+                    { "keys": [
+                        {"k": "ESC"}, {"gap": 1.0},
+                        {"k": "FK01"}, {"k": "FK02"}, {"k": "FK03"}, {"k": "FK04"}, {"gap": 0.5},
+                        {"k": "FK05"}, {"k": "FK06"}, {"k": "FK07"}, {"k": "FK08"}, {"gap": 0.5},
+                        {"k": "FK09"}, {"k": "FK10"}, {"k": "FK11"}, {"k": "FK12"}
+                    ]}
+                ]
+            },
+            {
+                "name": "system",
+                "_comment": "Three more keys where a PC keeps Print/Scroll Lock/Pause. xkeyboard-config's own geometry carries an eject key and runs on to FK19; we stop here, at the width of the block below. The caps read F13-F15, but that is only what they send under fkeys:basic_13-24, so they are labelled from whatever the options make them.",
+                "x": 15.5, "y": 0.0,
+                "rows": [
+                    { "keys": [{"k": "FK13"}, {"k": "FK14"}, {"k": "FK15"}] }
+                ]
+            },
+            {
+                "name": "alpha",
+                "x": 0.0, "y": 1.5,
+                "rows": [
+                    { "keys": [
+                        {"k": "TLDE"}, {"k": "AE01"}, {"k": "AE02"}, {"k": "AE03"}, {"k": "AE04"},
+                        {"k": "AE05"}, {"k": "AE06"}, {"k": "AE07"}, {"k": "AE08"}, {"k": "AE09"},
+                        {"k": "AE10"}, {"k": "AE11"}, {"k": "AE12"}, {"k": "BKSP", "w": 2.0}
+                    ]},
+                    { "keys": [
+                        {"k": "TAB", "w": 1.5}, {"k": "AD01"}, {"k": "AD02"}, {"k": "AD03"},
+                        {"k": "AD04"}, {"k": "AD05"}, {"k": "AD06"}, {"k": "AD07"}, {"k": "AD08"},
+                        {"k": "AD09"}, {"k": "AD10"}, {"k": "AD11"}, {"k": "AD12"},
+                        {"k": "RTRN", "w": 1.5, "h": 2.0, "shape": "iso-return"}
+                    ]},
+                    { "keys": [
+                        {"k": "CAPS", "w": 1.75}, {"k": "AC01"}, {"k": "AC02"}, {"k": "AC03"},
+                        {"k": "AC04"}, {"k": "AC05"}, {"k": "AC06"}, {"k": "AC07"}, {"k": "AC08"},
+                        {"k": "AC09"}, {"k": "AC10"}, {"k": "AC11"}, {"k": "BKSL"}
+                    ]},
+                    { "keys": [
+                        {"k": "LFSH", "w": 1.25}, {"k": "LSGT"}, {"k": "AB01"}, {"k": "AB02"},
+                        {"k": "AB03"}, {"k": "AB04"}, {"k": "AB05"}, {"k": "AB06"}, {"k": "AB07"},
+                        {"k": "AB08"}, {"k": "AB09"}, {"k": "AB10"}, {"k": "RTSH", "w": 2.75}
+                    ]},
+                    { "keys": [
+                        {"k": "LCTL", "w": 1.25}, {"k": "LALT", "w": 1.25},
+                        {"k": "LWIN", "w": 1.5}, {"k": "SPCE", "w": 7.0},
+                        {"k": "RWIN", "w": 1.5}, {"k": "RALT", "w": 1.25},
+                        {"k": "RCTL", "w": 1.25}
+                    ]}
+                ]
+            },
+            {
+                "name": "navigation",
+                "x": 15.5, "y": 1.5,
+                "rows": [
+                    { "keys": [{"k": "INS"}, {"k": "HOME"}, {"k": "PGUP"}] },
+                    { "keys": [{"k": "DELE"}, {"k": "END"}, {"k": "PGDN"}] },
+                    { "keys": [] },
+                    { "keys": [{"gap": 1.0}, {"k": "UP"}] },
+                    { "keys": [{"k": "LEFT"}, {"k": "DOWN"}, {"k": "RGHT"}] }
+                ]
+            },
+            {
+                "name": "numpad",
+                "_comment": "Apple's numpad is not a PC's: an equals key takes the place of divide and pushes divide and multiply along the top row, while minus and plus move down the right-hand column. The first key is still NMLK, which here sends Clear rather than Num_Lock.",
+                "x": 19.0, "y": 1.5,
+                "rows": [
+                    { "keys": [{"k": "NMLK"}, {"k": "KPEQ"}, {"k": "KPDV"}, {"k": "KPMU"}] },
+                    { "keys": [{"k": "KP7"}, {"k": "KP8"}, {"k": "KP9"}, {"k": "KPSU"}] },
+                    { "keys": [{"k": "KP4"}, {"k": "KP5"}, {"k": "KP6"}, {"k": "KPAD"}] },
+                    { "keys": [{"k": "KP1"}, {"k": "KP2"}, {"k": "KP3"},
+                               {"k": "KPEN", "h": 2.0}] },
+                    { "keys": [{"k": "KP0", "w": 2.0}, {"k": "KPDL"}] }
+                ]
+            }
+        ]
+    }
+}

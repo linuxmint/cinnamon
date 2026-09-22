@@ -3,13 +3,12 @@
 import os
 import gettext
 import _thread as thread
-import subprocess
 import locale
 import time
 import hashlib
 import mimetypes
+from functools import cache
 import pickle
-import shutil
 from io import BytesIO
 from xml.etree import ElementTree
 
@@ -17,6 +16,12 @@ from PIL import Image
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, Pango, GLib
+
+import config
+
+config.add_private_typelib_path()
+gi.require_version("CinnamonBg", "1.0")
+from gi.repository import CinnamonBg
 
 from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
@@ -31,12 +36,11 @@ BACKGROUND_COLOR_SHADING_TYPES = [
 
 BACKGROUND_PICTURE_OPTIONS = [
     ("none", _("No picture")),
+    ("zoom", _("Zoom (default)")),
     ("wallpaper", _("Mosaic")),
     ("centered", _("Centered")),
     ("scaled", _("Scaled")),
-    ("stretched", _("Stretched")),
-    ("zoom", _("Zoom")),
-    ("spanned", _("Spanned"))
+    ("stretched", _("Stretched"))
 ]
 
 BACKGROUND_ICONS_SIZE = 100
@@ -98,61 +102,114 @@ def apply_orientation(im):
     return im
 
 
-class ColorsWidget(SettingsWidget):
-    def __init__(self, size_group):
-        super(ColorsWidget, self).__init__(dep_key=None)
+class AspectWidget(SettingsWidget):
+    def __init__(self, size_group, module):
+        super(AspectWidget, self).__init__(dep_key=None)
+        self.module = module
+        self._updating = False
 
-        #gsettings
-        self.settings = Gio.Settings("org.cinnamon.desktop.background")
-
-        # settings widgets
-        combo = Gtk.ComboBox()
-        key = 'color-shading-type'
-        value = self.settings.get_string(key)
+        self.combo = Gtk.ComboBox()
         renderer_text = Gtk.CellRendererText()
-        combo.pack_start(renderer_text, True)
-        combo.add_attribute(renderer_text, "text", 1)
+        self.combo.pack_start(renderer_text, True)
+        self.combo.add_attribute(renderer_text, "text", 1)
         model = Gtk.ListStore(str, str)
-        combo.set_model(model)
-        combo.set_id_column(0)
-        for option in BACKGROUND_COLOR_SHADING_TYPES:
-            iter = model.append([option[0], option[1]])
-            if value == option[0]:
-                combo.set_active_iter(iter)
-        combo.connect('changed', self.on_combo_changed, key)
+        self.combo.set_model(model)
+        self.combo.set_id_column(0)
+        for option in BACKGROUND_PICTURE_OPTIONS:
+            model.append([option[0], option[1]])
+        self.combo.connect('changed', self.on_combo_changed)
 
         self.content_widget = Gtk.Box(valign=Gtk.Align.CENTER)
-        self.content_widget.pack_start(combo, False, False, 2)
+        self.content_widget.pack_start(self.combo, False, False, 2)
+        self.add_to_size_group(size_group)
+        self.label = SettingsLabel(_("Picture aspect"))
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+        self.show_all()
+        self.set_no_show_all(True)
+        self.refresh()
 
-        # Primary color
+    def refresh(self):
+        spanned = self.module.spanned()
+        item = self.module.effective_item()
+        if spanned or item is None:
+            return
+        self._updating = True
+        self.combo.set_active_id(item.props.picture_options)
+        self._updating = False
+
+    def on_combo_changed(self, widget):
+        if self._updating:
+            return
+        tree_iter = widget.get_active_iter()
+        if tree_iter is not None:
+            self.module.write_placement(widget.get_model()[tree_iter][0])
+
+
+class ColorsWidget(SettingsWidget):
+    def __init__(self, size_group, module):
+        super(ColorsWidget, self).__init__(dep_key=None)
+        self.module = module
+        self._updating = False
+
+        self.combo = Gtk.ComboBox()
+        renderer_text = Gtk.CellRendererText()
+        self.combo.pack_start(renderer_text, True)
+        self.combo.add_attribute(renderer_text, "text", 1)
+        model = Gtk.ListStore(str, str)
+        self.combo.set_model(model)
+        self.combo.set_id_column(0)
+        for option in BACKGROUND_COLOR_SHADING_TYPES:
+            model.append([option[0], option[1]])
+        self.combo.connect('changed', self.on_combo_changed)
+
+        self.content_widget = Gtk.Box(valign=Gtk.Align.CENTER)
+        self.content_widget.pack_start(self.combo, False, False, 2)
+
+        self.color_buttons = {}
         for key in ['primary-color', 'secondary-color']:
             color_button = Gtk.ColorButton()
             color_button.set_use_alpha(True)
-            rgba = Gdk.RGBA()
-            rgba.parse(self.settings.get_string(key))
-            color_button.set_rgba(rgba)
             color_button.connect('color-set', self.on_color_changed, key)
             self.content_widget.pack_start(color_button, False, False, 2)
+            self.color_buttons[key] = color_button
 
-        # Keep a ref on the second color button (so we can hide/show it when appropriate)
-        self.color2_button = color_button
+        self.color2_button = self.color_buttons['secondary-color']
         self.color2_button.set_no_show_all(True)
-        self.show_or_hide_color2(value)
         self.add_to_size_group(size_group)
         self.label = SettingsLabel(_("Background color"))
         self.pack_start(self.label, False, False, 0)
         self.pack_end(self.content_widget, False, False, 0)
+        self.refresh()
+
+    def refresh(self):
+        item = self.module.effective_item()
+        if item is None:
+            return
+        shading = item.props.color_shading_type
+        self._updating = True
+        self.combo.set_active_id(shading)
+        for key, value in (('primary-color', item.props.primary_color),
+                           ('secondary-color', item.props.secondary_color)):
+            rgba = Gdk.RGBA()
+            rgba.parse(value)
+            self.color_buttons[key].set_rgba(rgba)
+        self._updating = False
+        self.show_or_hide_color2(shading)
 
     def on_color_changed(self, widget, key):
-        color_string = widget.get_color().to_string()
-        self.settings.set_string(key, color_string)
+        if self._updating:
+            return
+        self.module.write_color(key, widget.get_rgba().to_string())
 
-    def on_combo_changed(self, widget, key):
+    def on_combo_changed(self, widget):
+        if self._updating:
+            return
         tree_iter = widget.get_active_iter()
         if tree_iter is not None:
-            value = widget.get_model()[tree_iter][0]
-            self.settings.set_string(key, value)
-            self.show_or_hide_color2(value)
+            nick = widget.get_model()[tree_iter][0]
+            self.module.write_shading(nick)
+            self.show_or_hide_color2(nick)
 
     def show_or_hide_color2(self, value):
         if value == 'solid':
@@ -160,13 +217,435 @@ class ColorsWidget(SettingsWidget):
         else:
             self.color2_button.show()
 
+
+class SlideshowSwitch(SettingsWidget):
+    def __init__(self, module):
+        super(SlideshowSwitch, self).__init__(dep_key=None)
+        self.module = module
+        self._updating = False
+        self.content_widget = Gtk.Switch(valign=Gtk.Align.CENTER)
+        self.content_widget.connect("notify::active", self.on_toggled)
+        self.label = SettingsLabel(_("Slideshow"))
+        self.pack_start(self.label, False, False, 0)
+        self.pack_end(self.content_widget, False, False, 0)
+        self.refresh()
+
+    def refresh(self):
+        self._updating = True
+        item = self.module.effective_item()
+        self.content_widget.set_active(item.props.slideshow if item is not None else False)
+        self._updating = False
+
+    def on_toggled(self, widget, param):
+        if self._updating:
+            return
+        self.module.write_slideshow(widget.get_active())
+
+
+def walk_widgets(widget):
+    yield widget
+    if isinstance(widget, Gtk.Container):
+        for child in widget.get_children():
+            yield from walk_widgets(child)
+
+
+def _row_header(row, before, _data=None):
+    if before is None:
+        row.set_header(None)
+    elif row.get_header() is None:
+        row.set_header(Gtk.Separator.new(Gtk.Orientation.HORIZONTAL))
+
+
+def _row_list():
+    list_box = Gtk.ListBox()
+    list_box.set_selection_mode(Gtk.SelectionMode.NONE)
+    list_box.set_header_func(_row_header, None)
+    return list_box
+
+
+def _add_row(list_box, widget):
+    row = Gtk.ListBoxRow(can_focus=False)
+    row.add(widget)
+    list_box.add(row)
+    return row
+
+
+class FramedSection(Gtk.Frame):
+    def __init__(self):
+        super().__init__(shadow_type=Gtk.ShadowType.IN)
+        self.get_style_context().add_class("view")
+        self.box = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        self.add(self.box)
+
+    def pack(self, widget, expand=False, fill=False):
+        self.box.pack_start(widget, expand, fill, 0)
+
+
+class MonitorPage(Gtk.Box):
+    """Everything one monitor's background is configured with: the folder and
+    thumbnail picker, and the appearance rows beneath it.
+    """
+
+    def __init__(self, module, item):
+        super().__init__(orientation=Gtk.Orientation.VERTICAL, spacing=0)
+        self.module = module
+        self.item = None
+        self._notify_ids = []
+        self._loading = False
+
+        self._browsing_source = None
+        self.shown_collection = None
+
+        self.mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
+        self.mainbox.expand = True
+        self.mainbox.set_border_width(2)
+
+        left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+        left_vbox.set_border_width(2)
+        right_vbox.set_border_width(2)
+
+        folder_scroller = Gtk.ScrolledWindow.new(None, None)
+        folder_scroller.set_shadow_type(Gtk.ShadowType.IN)
+        folder_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        folder_scroller.set_property("min-content-width", 150)
+
+        self.folder_tree = Gtk.TreeView.new()
+        self.folder_tree.set_headers_visible(False)
+        cell = Gtk.CellRendererText()
+        cell.set_alignment(0, 0)
+        pb_cell = Gtk.CellRendererPixbuf()
+        column = Gtk.TreeViewColumn()
+        column.pack_start(pb_cell, False)
+        column.pack_start(cell, True)
+        column.add_attribute(pb_cell, "icon-name", 1)
+        column.add_attribute(cell, "text", 2)
+        column.set_alignment(0)
+        self.folder_tree.append_column(column)
+        self.folder_tree.set_model(module.collection_store)
+        self.folder_tree.set_row_separator_func(module.is_row_separator, None)
+        self.folder_tree.connect("cursor-changed", self.on_folder_source_changed)
+        folder_scroller.add(self.folder_tree)
+
+        button_toolbar = Gtk.Toolbar.new()
+        button_toolbar.set_icon_size(1)
+        Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(button_toolbar), "inline-toolbar")
+        self.add_folder_button = Gtk.ToolButton.new(None, None)
+        self.add_folder_button.set_icon_name("xsi-list-add-symbolic")
+        self.add_folder_button.set_tooltip_text(_("Add new folder"))
+        self.add_folder_button.connect("clicked", lambda w: self.add_new_folder())
+        self.remove_folder_button = Gtk.ToolButton.new(None, None)
+        self.remove_folder_button.set_icon_name("xsi-list-remove-symbolic")
+        self.remove_folder_button.set_tooltip_text(_("Remove selected folder"))
+        self.remove_folder_button.connect("clicked", lambda w: self.remove_folder())
+        button_toolbar.insert(self.add_folder_button, 0)
+        button_toolbar.insert(self.remove_folder_button, 1)
+
+        image_scroller = Gtk.ScrolledWindow.new(None, None)
+        image_scroller.set_shadow_type(Gtk.ShadowType.IN)
+        image_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
+        self.icon_view = ThreadedIconView()
+        self.icon_view.connect("selection-changed", self.on_wallpaper_selection_changed)
+        image_scroller.add(self.icon_view)
+
+        left_vbox.pack_start(folder_scroller, True, True, 0)
+        left_vbox.pack_start(button_toolbar, False, False, 0)
+        right_vbox.pack_start(image_scroller, True, True, 0)
+        self.mainbox.pack_start(left_vbox, False, False, 2)
+        self.mainbox.pack_start(right_vbox, True, True, 2)
+
+        size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+        self._aspect_widget = AspectWidget(size_group, self)
+        self._colors_widget = ColorsWidget(size_group, self)
+        self._slideshow_switch = SlideshowSwitch(self)
+
+        self.pack_start(self.mainbox, True, True, 0)
+
+        self._picker_separator = Gtk.Separator.new(Gtk.Orientation.HORIZONTAL)
+        self.pack_start(self._picker_separator, False, False, 0)
+
+        rows = _row_list()
+        self._aspect_row = _add_row(rows, self._aspect_widget)
+        _add_row(rows, self._colors_widget)
+        self._slideshow_row = _add_row(rows, self._slideshow_switch)
+        self.pack_start(rows, False, False, 0)
+
+        self.show_all()
+        for gated in (self.mainbox, self._picker_separator,
+                      self._aspect_row, self._slideshow_row):
+            gated.set_no_show_all(True)
+
+        self.set_item(item)
+
+    def set_item(self, item):
+        for handler in self._notify_ids:
+            self.item.disconnect(handler)
+        self._notify_ids = []
+        self.item = item
+
+        if item is None:
+            return
+
+        for signal, callback in (("notify::picture-options", self._on_placement_notify),
+                                 ("notify::color-shading-type", self._on_colors_notify),
+                                 ("notify::primary-color", self._on_colors_notify),
+                                 ("notify::secondary-color", self._on_colors_notify),
+                                 ("notify::slideshow", self._on_slideshow_notify),
+                                 ("notify::slideshow-source", self._on_source_notify),
+                                 ("notify::picture-uri", self._on_uri_notify)):
+            self._notify_ids.append(item.connect(signal, callback))
+
+        self.refresh()
+
+    def teardown(self):
+        self.set_item(None)
+        self.icon_view.stop_loading()
+
+    def _on_placement_notify(self, item, pspec):
+        self._aspect_row.set_visible(not self.spanned())
+        self._aspect_widget.refresh()
+        self.update_picker_visibility()
+
+    def _on_colors_notify(self, item, pspec):
+        self._colors_widget.refresh()
+
+    def _on_slideshow_notify(self, item, pspec):
+        self._slideshow_switch.refresh()
+        self.update_grid_sensitivity()
+
+    def _on_source_notify(self, item, pspec):
+        self.refresh_picker()
+
+    def _on_uri_notify(self, item, pspec):
+        if item.props.slideshow:
+            return
+        self.icon_view.set_pending_selection(self.current_uri())
+
+    def refresh(self):
+        self._aspect_row.set_visible(not self.spanned())
+        self._aspect_widget.refresh()
+        self._colors_widget.refresh()
+        self._slideshow_switch.refresh()
+        self.update_picker_visibility()
+        self.update_grid_sensitivity()
+        self.refresh_picker()
+
+    def effective_item(self):
+        return self.item
+
+    def spanned(self):
+        return self.module.spanned()
+
+    def write_entries(self, apply):
+        if self.item is None:
+            return
+        apply(self.item)
+        self.module.bg_list.save()
+
+    def write_placement(self, nick):
+        self.write_entries(lambda item: setattr(item.props, "picture_options", nick))
+
+        if nick != "none" and not self.current_source():
+            self.select_default_source()
+
+    def write_shading(self, nick):
+        self.write_entries(lambda item: setattr(item.props, "color_shading_type", nick))
+
+    def write_color(self, key, color_str):
+        field = "primary_color" if key == "primary-color" else "secondary_color"
+        self.write_entries(lambda item: setattr(item.props, field, color_str))
+
+    def write_slideshow(self, enabled):
+        # Switching the slideshow on is the moment a folder becomes the user's
+        # choice, the same way picking an image is, so commit one now.
+        if enabled:
+            source = self._browsing_source or self.current_source()
+            if source is None:
+                self.select_default_source()
+                source = self._browsing_source or self.current_source()
+            if source and self.item is not None and self.item.props.slideshow_source != source:
+                self.write_entries(lambda item: setattr(item.props, "slideshow_source", source))
+            elif not source:
+                print("cs_backgrounds: enabling the slideshow with no source: "
+                      "no usable background collection was found")
+        self.write_entries(lambda item: setattr(item.props, "slideshow", enabled))
+
+    def update_grid_sensitivity(self):
+        slideshow = self.item is not None and self.item.props.slideshow
+        self.icon_view.set_sensitive(not slideshow)
+        self.icon_view.set_selection_mode(Gtk.SelectionMode.NONE if slideshow
+                                          else Gtk.SelectionMode.SINGLE)
+
+    def update_picker_visibility(self):
+        has_picture = (self.item is not None
+                       and self.item.props.picture_options != "none")
+        self.mainbox.set_visible(has_picture)
+        self._picker_separator.set_visible(has_picture)
+        self._slideshow_row.set_visible(has_picture)
+
+    def current_uri(self):
+        return self.item.props.picture_uri if self.item is not None else ""
+
+    def current_source(self):
+        if self.item is None:
+            return None
+        source = self.item.props.slideshow_source
+        if source:
+            return source
+        uri = self.item.props.picture_uri
+        if uri:
+            parent = Gio.File.new_for_uri(uri).get_parent()
+            if parent is not None:
+                return self.module.format_source(BACKGROUND_COLLECTION_TYPE_DIRECTORY,
+                                                 parent.get_path())
+        return None
+
+    def select_folder_source(self, source):
+        if not source:
+            return False
+        store = self.module.collection_store
+        tree_iter = store.get_iter_first()
+        while tree_iter is not None:
+            row = store[tree_iter]
+            if not row[STORE_IS_SEPARATOR]:
+                if self.module.format_source(row[STORE_TYPE], row[STORE_PATH]) == source:
+                    self.folder_tree.set_cursor(store.get_path(tree_iter))
+                    self.remove_folder_button.set_sensitive(row[STORE_TYPE] != BACKGROUND_COLLECTION_TYPE_XML)
+                    self.update_icon_view(row[STORE_PATH], row[STORE_TYPE])
+                    return True
+            tree_iter = store.iter_next(tree_iter)
+        return False
+
+    def select_default_source(self):
+        store = self.module.collection_store
+        tree_iter = store.get_iter_first()
+        while tree_iter is not None:
+            row = store[tree_iter]
+            if not row[STORE_IS_SEPARATOR] and os.path.exists(row[STORE_PATH]):
+                self.folder_tree.set_cursor(store.get_path(tree_iter))
+                return
+            tree_iter = store.iter_next(tree_iter)
+
+    def show_first_collection(self):
+        # Display-only fallback for a monitor with nothing stored yet: the first
+        # collection, shown without becoming its choice.
+        store = self.module.collection_store
+        tree_iter = store.get_iter_first()
+        while tree_iter is not None:
+            row = store[tree_iter]
+            if not row[STORE_IS_SEPARATOR]:
+                self.folder_tree.get_selection().select_path(store.get_path(tree_iter))
+                self.remove_folder_button.set_sensitive(row[STORE_TYPE] != BACKGROUND_COLLECTION_TYPE_XML)
+                self.update_icon_view(row[STORE_PATH], row[STORE_TYPE])
+                return
+            tree_iter = store.iter_next(tree_iter)
+
+    def refresh_picker(self):
+        # Point the folder tree and thumbnail grid at this monitor's stored
+        # source, and queue a highlight of its picture. With nothing stored,
+        # or a source naming a collection the sidebar no longer lists, fall
+        # back to the first collection rather than showing an empty grid.
+        self._browsing_source = None
+        self._loading = True
+        try:
+            if not self.select_folder_source(self.current_source()):
+                self.show_first_collection()
+        finally:
+            self._loading = False
+        self.icon_view.set_pending_selection(self.current_uri())
+
+    def update_icon_view(self, path=None, type=None):
+        if path != self.shown_collection:
+            self.shown_collection = path
+            picture_list = []
+            if path is not None and os.path.exists(path):
+                if type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+                    files = os.listdir(path)
+                    files.sort()
+                    for i in files:
+                        picture_list.append({"filename": os.path.join(path, i)})
+                elif type == BACKGROUND_COLLECTION_TYPE_XML:
+                    picture_list += self.module.parse_xml_backgrounds_list(path)
+
+            self.icon_view.set_pictures_list(picture_list, path)
+            self.update_grid_sensitivity()
+
+    def on_folder_source_changed(self, tree):
+        if self._loading:
+            return
+        self.remove_folder_button.set_sensitive(True)
+        if tree.get_selection() is None:
+            return
+        folder_paths, tree_iter = tree.get_selection().get_selected()
+        if not tree_iter:
+            return
+        collection_path = folder_paths[tree_iter][STORE_PATH]
+        collection_type = folder_paths[tree_iter][STORE_TYPE]
+        collection_source = self.module.format_source(collection_type, collection_path)
+        if not os.path.exists(collection_path):
+            return
+        # Browsing is not a choice: remember what is on screen and persist it
+        # only if the user actually picks an image from it.
+        self._browsing_source = collection_source
+        # Unless a slideshow is running, then the grid is insensitive and there
+        # is no image to pick, so choosing the folder is the choice. The daemon
+        # rotates onto it at once.
+        if (self.item is not None and self.item.props.slideshow and
+                self.item.props.slideshow_source != collection_source):
+            self.write_entries(lambda item: setattr(item.props, "slideshow_source", collection_source))
+        if collection_type == BACKGROUND_COLLECTION_TYPE_XML:
+            self.remove_folder_button.set_sensitive(False)
+        self.update_icon_view(collection_path, collection_type)
+
+    def get_selected_wallpaper(self):
+        selected_items = self.icon_view.get_selected_items()
+        if len(selected_items) == 1:
+            path = selected_items[0]
+            tree_iter = self.icon_view.get_model().get_iter(path)
+            return self.icon_view.get_model().get(tree_iter, 0)[0]
+        return None
+
+    def on_wallpaper_selection_changed(self, iconview):
+        if self._loading or self.item is None:
+            return
+        wallpaper = self.get_selected_wallpaper()
+        if not wallpaper or "filename" not in wallpaper:
+            return
+        uri = Gio.File.new_for_path(wallpaper["filename"]).get_uri()
+
+        if uri == self.current_uri():
+            return
+
+        if (self._browsing_source is not None and
+                self.item.props.slideshow_source != self._browsing_source):
+            source = self._browsing_source
+            self.write_entries(lambda item: setattr(item.props, "slideshow_source", source))
+
+        self.write_entries(lambda item: setattr(item.props, "picture_uri", uri))
+
+        if self.item.props.picture_options == "none":
+            self.write_entries(lambda item: setattr(item.props, "picture_options", "zoom"))
+
+    def add_new_folder(self):
+        self.module.add_new_folder()
+
+    def remove_folder(self):
+        if self.folder_tree.get_selection() is None:
+            return
+        self.icon_view.clear()
+        self.shown_collection = None
+        folder_paths, tree_iter = self.folder_tree.get_selection().get_selected()
+        if tree_iter:
+            self.module.remove_collection(tree_iter, folder_paths[tree_iter][STORE_PATH])
+
+
 class Module:
     name = "backgrounds"
     category = "appear"
     comment = _("Change your desktop's background")
 
     def __init__(self, content_box):
-        keywords = _("background, picture, slideshow")
+        keywords = _("background, picture, slideshow, wallpaper")
         self.sidePage = SidePage(_("Backgrounds"), "cs-backgrounds", keywords, content_box, module=self)
 
     def on_module_selected(self):
@@ -176,145 +655,175 @@ class Module:
             self.sidePage.stack = SettingsStack()
             self.sidePage.add_widget(self.sidePage.stack)
 
-            self.shown_collection = None  # Which collection is displayed in the UI
+            self.bg_list = CinnamonBg.List.new()
+            self.bg_list.connect("config-changed", self.on_config_changed)
+            self.bg_list.connect("notify::mode", self.on_mode_changed)
+            self.bg_list.connect("monitors-changed", self.on_monitors_changed)
+            # connector -> MonitorPage. Keyed the way the library keys items, so
+            # a page outlives a rebuild that leaves its monitor alone.
+            self._pages = {}
 
-            self._background_schema = Gio.Settings(schema="org.cinnamon.desktop.background")
-            self._slideshow_schema = Gio.Settings(schema="org.cinnamon.desktop.background.slideshow")
-            self._slideshow_schema.connect("changed::slideshow-enabled", self.on_slideshow_enabled_changed)
             self.add_folder_dialog = Gtk.FileChooserDialog(title=_("Add Folder"),
                                                            action=Gtk.FileChooserAction.SELECT_FOLDER,
                                                            buttons=(Gtk.STOCK_CANCEL, Gtk.ResponseType.CANCEL,
                                                                     Gtk.STOCK_OPEN, Gtk.ResponseType.OK))
 
-            self.xdg_pictures_directory = os.path.expanduser("~/Pictures")
-            xdg_config = os.path.expanduser("~/.config/user-dirs.dirs")
-            if os.path.exists(xdg_config) and shutil.which("xdg-user-dir"):
-                path = subprocess.check_output(["xdg-user-dir", "PICTURES"]).decode("utf-8").rstrip("\n")
-                if os.path.exists(path):
-                    self.xdg_pictures_directory = path
+            self.xdg_pictures_directory = (GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES)
+                                           or os.path.expanduser("~/Pictures"))
 
             self.get_user_backgrounds()
 
-            # Images
-
-            mainbox = Gtk.Box.new(Gtk.Orientation.HORIZONTAL, 2)
-            mainbox.expand = True
-            mainbox.set_border_width(8)
-
-            self.sidePage.stack.add_titled(mainbox, "images", _("Images"))
-
-            left_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-            right_vbox = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
-
-            folder_scroller = Gtk.ScrolledWindow.new(None, None)
-            folder_scroller.set_shadow_type(Gtk.ShadowType.IN)
-            folder_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-            folder_scroller.set_property("min-content-width", 150)
-
-            self.folder_tree = Gtk.TreeView.new()
-            self.folder_tree.set_headers_visible(False)
-            folder_scroller.add(self.folder_tree)
-
-            button_toolbar = Gtk.Toolbar.new()
-            button_toolbar.set_icon_size(1)
-            Gtk.StyleContext.add_class(Gtk.Widget.get_style_context(button_toolbar), "inline-toolbar")
-            self.add_folder_button = Gtk.ToolButton.new(None, None)
-            self.add_folder_button.set_icon_name("xsi-list-add-symbolic")
-            self.add_folder_button.set_tooltip_text(_("Add new folder"))
-            self.add_folder_button.connect("clicked", lambda w: self.add_new_folder())
-            self.remove_folder_button = Gtk.ToolButton.new(None, None)
-            self.remove_folder_button.set_icon_name("xsi-list-remove-symbolic")
-            self.remove_folder_button.set_tooltip_text(_("Remove selected folder"))
-            self.remove_folder_button.connect("clicked", lambda w: self.remove_folder())
-            button_toolbar.insert(self.add_folder_button, 0)
-            button_toolbar.insert(self.remove_folder_button, 1)
-
-            image_scroller = Gtk.ScrolledWindow.new(None, None)
-            image_scroller.set_shadow_type(Gtk.ShadowType.IN)
-            image_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
-
-            self.icon_view = ThreadedIconView()
-            image_scroller.add(self.icon_view)
-            self.icon_view.connect("selection-changed", self.on_wallpaper_selection_changed)
-
-            right_vbox.pack_start(image_scroller, True, True, 0)
-            left_vbox.pack_start(folder_scroller, True, True, 0)
-            left_vbox.pack_start(button_toolbar, False, False, 0)
-
-            mainbox.pack_start(left_vbox, False, False, 2)
-            mainbox.pack_start(right_vbox, True, True, 2)
-
-            left_vbox.set_border_width(2)
-            right_vbox.set_border_width(2)
-
+            # The collections sidebar is the same for every monitor, so one model
+            # is shared by every page's folder tree; only the cursor is per-page.
             self.collection_store = Gtk.ListStore(bool,    # is separator
                                                   str,     # Icon name
                                                   str,     # Display name
                                                   str,     # Path
                                                   str)     # Type of collection
-            cell = Gtk.CellRendererText()
-            cell.set_alignment(0, 0)
-            pb_cell = Gtk.CellRendererPixbuf()
-            self.folder_column = Gtk.TreeViewColumn()
-            self.folder_column.pack_start(pb_cell, False)
-            self.folder_column.pack_start(cell, True)
-            self.folder_column.add_attribute(pb_cell, "icon-name", 1)
-            self.folder_column.add_attribute(cell, "text", 2)
-
-            self.folder_column.set_alignment(0)
-
-            self.folder_tree.append_column(self.folder_column)
-            self.folder_tree.connect("cursor-changed", self.on_folder_source_changed)
-
             self.get_system_backgrounds()
+            self.collection_store.append([True, None, None, None, None])
+            for item in self.user_backgrounds:
+                self.collection_store.append(item)
 
-            tree_separator = [True, None, None, None, None]
-            self.collection_store.append(tree_separator)
+            # The Images page: mode selector, then the monitor switcher over the
+            # per-monitor pages.
+            images_page = Gtk.Box.new(Gtk.Orientation.VERTICAL, 0)
+            images_page.set_border_width(15)
+            self.sidePage.stack.add_titled(images_page, "images", _("Images"))
 
-            if len(self.user_backgrounds) > 0:
-                for item in self.user_backgrounds:
-                    self.collection_store.append(item)
+            self.mode_section = SettingsSection()
+            mode_combo = GSettingsComboBox(_("Background mode"), "org.cinnamon.desktop.background",
+                                           "background-mode",
+                                           [("independent", _("Configure monitors individually")),
+                                            ("mirror", _("Use the same background on all monitors")),
+                                            ("spanned", _("Span a single background across all monitors"))])
+            self.mode_section.add_row(mode_combo)
+            self.mode_section.set_no_show_all(True)
 
-            self.folder_tree.set_model(self.collection_store)
-            self.folder_tree.set_row_separator_func(self.is_row_separator, None)
+            images_page.pack_start(self.mode_section, False, False, 0)
 
-            self.get_initial_path()
+            self.monitor_stack = Gtk.Stack()
+            self.monitor_stack.set_no_show_all(True)
+            self.monitor_switcher = Gtk.StackSwitcher(homogeneous=True, halign=Gtk.Align.FILL, margin_top=3, margin_bottom=3)
+            self.monitor_switcher.set_stack(self.monitor_stack)
+            self.monitor_revealer = Gtk.Revealer(margin_top=3, margin_bottom=3)
+            self.monitor_revealer.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
+            self.monitor_revealer.set_transition_duration(150)
+            self.monitor_revealer.add(self.monitor_switcher)
+            images_page.pack_start(self.monitor_revealer, False, False, 0)
 
-            # Settings
+            # Section 2: the selected monitor's configuration, and nothing else.
+            picker_section = FramedSection()
+
+            # Shown until the monitor layout lands, which is what an empty model
+            # means; the stack takes its place once there is something to show.
+            self.spinner = Gtk.Spinner(halign=Gtk.Align.CENTER,
+                                       valign=Gtk.Align.CENTER,
+                                       height_request=48,
+                                       width_request=48)
+            self.spinner.start()
+            self.spinner.show()
+            self.spinner.set_no_show_all(True)
+
+            picker_section.pack(self.spinner, True, True)
+            picker_section.pack(self.monitor_stack, True, True)
+
+            images_page.pack_start(picker_section, True, True, 0)
 
             page = SettingsPage()
-
-            settings = page.add_section(_("Background Settings"))
-
-            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
-
             self.sidePage.stack.add_titled(page, "settings", _("Settings"))
 
-            widget = GSettingsSwitch(_("Play backgrounds as a slideshow"), "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
-            settings.add_row(widget)
+            slideshow = page.add_section(_("Slideshow"))
 
             widget = GSettingsSpinButton(_("Delay"), "org.cinnamon.desktop.background.slideshow", "delay", _("minutes"), 1, 1440)
-            settings.add_reveal_row(widget, "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
+            slideshow.add_row(widget)
 
             widget = GSettingsSwitch(_("Play images in random order"), "org.cinnamon.desktop.background.slideshow", "random-order")
-            settings.add_reveal_row(widget, "org.cinnamon.desktop.background.slideshow", "slideshow-enabled")
+            slideshow.add_row(widget)
 
-            widget = GSettingsComboBox(_("Picture aspect"), "org.cinnamon.desktop.background", "picture-options", BACKGROUND_PICTURE_OPTIONS, size_group=size_group)
-            settings.add_row(widget)
+            self.on_config_changed()
+            self.update_mode_visibility()
 
-            widget = ColorsWidget(size_group)
-            settings.add_row(widget)
+    def items(self):
+        return list(self.bg_list)
+
+    def spanned(self):
+        return self.bg_list.props.mode == CinnamonBg.Mode.SPANNED
+
+    def on_monitors_changed(self, bg_list):
+        self.update_mode_visibility()
+
+    def update_mode_visibility(self):
+        # We don't need a mode combo if there is only one monitor.
+        n_monitors = len(self.bg_list.get_monitor_infos())
+        self.mode_section.set_visible(n_monitors > 1)
+
+    def on_config_changed(self, bg_list=None):
+        count = self.bg_list.get_n_items()
+        populated = count > 0
+
+        self.spinner.set_visible(not populated)
+        self.monitor_stack.set_visible(populated)
+        self.monitor_revealer.set_reveal_child(count > 1)
+        if populated:
+            self.sync_pages()
+
+    def on_mode_changed(self, bg_list, pspec):
+        self.bg_list.save()
+
+    def ellipsize_switcher_labels(self):
+        for button in self.monitor_switcher.get_children():
+            for widget in walk_widgets(button):
+                if isinstance(widget, Gtk.Label):
+                    widget.set_ellipsize(Pango.EllipsizeMode.MIDDLE)
+
+    def page_title(self, item):
+        connector = item.props.connector
+        name = item.props.monitor_label or _("All monitors")
+        return "%s  %s" % (name, connector) if connector else name
+
+    def sync_pages(self):
+        items = self.items()
+        keys = [item.props.connector or "all" for item in items]
+        current = [self.monitor_stack.child_get_property(child, "name")
+                   for child in self.monitor_stack.get_children()]
+
+        if keys == current:
+            for item, key in zip(items, keys):
+                page = self._pages[key]
+                if page.item is not item:
+                    page.set_item(item)
+                self.monitor_stack.child_set_property(page, "title", self.page_title(item))
+            self.ellipsize_switcher_labels()
+            return
+
+        previous = self.monitor_stack.get_visible_child_name()
+
+        for page in self._pages.values():
+            page.teardown()
+            page.destroy()
+        self._pages = {}
+
+        for item, key in zip(items, keys):
+            page = MonitorPage(self, item)
+            self._pages[key] = page
+            self.monitor_stack.add_titled(page, key, self.page_title(item))
+
+        if previous in keys:
+            self.monitor_stack.set_visible_child_name(previous)
+
+        self.ellipsize_switcher_labels()
+
+    def remove_collection(self, tree_iter, path):
+        self.collection_store.remove(tree_iter)
+        for item in self.user_backgrounds:
+            if item[STORE_PATH] == path:
+                self.user_backgrounds.remove(item)
+                self.update_folder_list()
+                break
 
     def is_row_separator(self, model, iter, data):
         return model.get_value(iter, 0)
-
-    def on_slideshow_enabled_changed(self, settings, key):
-        if self._slideshow_schema.get_boolean("slideshow-enabled"):
-            self.icon_view.set_sensitive(False)
-            self.icon_view.set_selection_mode(Gtk.SelectionMode.NONE)
-        else:
-            self.icon_view.set_sensitive(True)
-            self.icon_view.set_selection_mode(Gtk.SelectionMode.SINGLE)
 
     def get_system_backgrounds(self):
         picture_list = []
@@ -368,76 +877,6 @@ class Module:
         # returns 'type://path'
         return f"{type}://{path}"
 
-    def get_initial_path(self):
-        try:
-            image_source = self._slideshow_schema.get_string("image-source")
-            tree_iter = self.collection_store.get_iter_first()
-            collection = self.collection_store[tree_iter]
-            collection_type = collection[STORE_TYPE]
-            collection_path = collection[STORE_PATH]
-            collection_source = self.format_source(collection_type, collection_path)
-            self.remove_folder_button.set_sensitive(True)
-
-            if image_source != "" and "://" in image_source:
-                while tree_iter is not None:
-                    if collection_source == image_source:
-                        tree_path = self.collection_store.get_path(tree_iter)
-                        self.folder_tree.set_cursor(tree_path)
-                        if collection_type == BACKGROUND_COLLECTION_TYPE_XML:
-                            self.remove_folder_button.set_sensitive(False)
-                        self.update_icon_view(collection_path, collection_type)
-                        return
-                    tree_iter = self.collection_store.iter_next(tree_iter)
-                    collection = self.collection_store[tree_iter]
-                    collection_type = collection[STORE_TYPE]
-                    collection_path = collection[STORE_PATH]
-                    collection_source = self.format_source(collection_type, collection_path)
-            else:
-                self._slideshow_schema.set_string("image-source", collection_source)
-                tree_path = self.collection_store.get_path(tree_iter)
-                self.folder_tree.get_selection().select_path(tree_path)
-                if collection_type == BACKGROUND_COLLECTION_TYPE_XML:
-                    self.remove_folder_button.set_sensitive(False)
-                self.update_icon_view(collection_path, collection_type)
-        except Exception as detail:
-            print(detail)
-
-    def on_row_activated(self, tree, path, column):
-        self.folder_tree.set_selection(path)
-
-    def on_folder_source_changed(self, tree):
-        self.remove_folder_button.set_sensitive(True)
-        if tree.get_selection() is not None:
-            folder_paths, iter = tree.get_selection().get_selected()
-            if iter:
-                collection_path = folder_paths[iter][STORE_PATH]
-                collection_type = folder_paths[iter][STORE_TYPE]
-                collection_source = self.format_source(collection_type, collection_path)
-                if os.path.exists(collection_path):
-                    if collection_source != self._slideshow_schema.get_string("image-source"):
-                        self._slideshow_schema.set_string("image-source", collection_source)
-                    if collection_type == BACKGROUND_COLLECTION_TYPE_XML:
-                        self.remove_folder_button.set_sensitive(False)
-                    self.update_icon_view(collection_path, collection_type)
-
-    def get_selected_wallpaper(self):
-        selected_items = self.icon_view.get_selected_items()
-        if len(selected_items) == 1:
-            path = selected_items[0]
-            iter = self.icon_view.get_model().get_iter(path)
-            return self.icon_view.get_model().get(iter, 0)[0]
-        return None
-
-    def on_wallpaper_selection_changed(self, iconview):
-        wallpaper = self.get_selected_wallpaper()
-        if wallpaper:
-            for key in wallpaper:
-                if key == "filename":
-                    gfile = Gio.File.new_for_path(wallpaper[key])
-                    self._background_schema.set_string("picture-uri", gfile.get_uri())
-                elif key == "options":
-                    self._background_schema.set_string("picture-options", wallpaper[key])
-
     def add_new_folder(self):
         res = self.add_folder_dialog.run()
         if res == Gtk.ResponseType.OK:
@@ -457,19 +896,6 @@ class Module:
             self.update_folder_list()
         self.add_folder_dialog.hide()
 
-    def remove_folder(self):
-        if self.folder_tree.get_selection() is not None:
-            self.icon_view.clear()
-            folder_paths, iter = self.folder_tree.get_selection().get_selected()
-            if iter:
-                path = folder_paths[iter][STORE_PATH]
-                self.collection_store.remove(iter)
-                for item in self.user_backgrounds:
-                    if item[STORE_PATH] == path:
-                        self.user_backgrounds.remove(item)
-                        self.update_folder_list()
-                        break
-
     def update_folder_list(self):
         path = CONFIG_FOLDER
         if not os.path.exists(path):
@@ -488,26 +914,6 @@ class Module:
 
         with open(path, "w") as f:
             f.write(file_data)
-
-    def update_icon_view(self, path=None, type=None):
-        if path != self.shown_collection:
-            self.shown_collection = path
-            picture_list = []
-            if os.path.exists(path):
-                if type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-                    files = os.listdir(path)
-                    files.sort()
-                    for i in files:
-                        filename = os.path.join(path, i)
-                        picture_list.append({"filename": filename})
-                elif type == BACKGROUND_COLLECTION_TYPE_XML:
-                    picture_list += self.parse_xml_backgrounds_list(path)
-
-            self.icon_view.set_pictures_list(picture_list, path)
-            if self._slideshow_schema.get_boolean("slideshow-enabled"):
-                self.icon_view.set_sensitive(False)
-            else:
-                self.icon_view.set_sensitive(True)
 
     def splitLocaleCode(self, localeCode):
         try:
@@ -569,6 +975,39 @@ class Module:
             print(detail)
             return []
 
+@cache
+def _pil_mime_types():
+    Image.init()
+    return {Image.MIME[f] for f in Image.OPEN if f in Image.MIME}
+
+
+@cache
+def _gdk_pixbuf_mime_types():
+    gdk = set()
+    for fmt in GdkPixbuf.Pixbuf.get_formats():
+        gdk.update(fmt.get_mime_types())
+
+    return gdk
+
+
+@cache
+def decodable_mime_types():
+    # An image one of the two loaders can actually open. Both halves matter:
+    # mimetypes.guess_type() calls a GIMP .xcf image/x-xcf, which neither loader
+    # can decode, and PIL registers a few types (postscript, mpeg) that are not
+    # images at all.
+    return {mime for mime in _gdk_pixbuf_mime_types() | _pil_mime_types()
+            if mime.startswith("image/")}
+
+
+@cache
+def gdk_pixbuf_only_mime_types():
+    # The types gdk-pixbuf can decode but PIL cannot, which therefore have to be
+    # rasterized with gdk-pixbuf. We don't just use gdk-pixbuf for everything because
+    # PIL is *much* more efficient at processing large images.
+    return _gdk_pixbuf_mime_types() - _pil_mime_types()
+
+
 class PixCache(object):
 
     def __init__(self):
@@ -578,7 +1017,7 @@ class PixCache(object):
         if filename is None:
             return None
         mimetype = mimetypes.guess_type(filename)[0]
-        if mimetype is None or not mimetype.startswith("image/"):
+        if mimetype not in decodable_mime_types():
             return None
 
         if filename not in self._data:
@@ -610,8 +1049,8 @@ class PixCache(object):
                         os.remove(cache_filename)
 
                 if not loaded:
-                    if mimetype in ("image/svg+xml", "image/avif", "image/jxl"):
-                        # rasterize svg with Gdk-Pixbuf and convert to PIL Image
+                    if mimetype in gdk_pixbuf_only_mime_types():
+                        # Rasterize with gdk-pixbuf and convert to a PIL Image.
                         tmp_pix = GdkPixbuf.Pixbuf.new_from_file(filename)
                         mode = "RGBA" if tmp_pix.props.has_alpha else "RGB"
                         img = Image.frombytes(mode, (tmp_pix.props.width, tmp_pix.props.height),
@@ -699,6 +1138,32 @@ class ThreadedIconView(Gtk.IconView):
         self._loaded_data = []
         self._loaded_data_lock = thread.allocate_lock()
 
+        self._pending_uri = None
+        self._progress_id = 0
+
+    def set_pending_selection(self, uri):
+        # Remember the picture to highlight, and try now in case its folder is
+        # already loaded; otherwise _check_loading_progress retries as thumbs
+        # arrive.
+        self._pending_uri = uri or None
+        self._try_pending_selection()
+
+    def _try_pending_selection(self):
+        if not self._pending_uri:
+            return
+        model = self.get_model()
+        iter = model.get_iter_first()
+        while iter is not None:
+            data = model.get_value(iter, 0)
+            filename = data.get("filename") if isinstance(data, dict) else None
+            if filename and Gio.File.new_for_path(filename).get_uri() == self._pending_uri:
+                path = model.get_path(iter)
+                self.select_path(path)
+                self.scroll_to_path(path, False, 0, 0)
+                self._pending_uri = None
+                return
+            iter = model.iter_next(iter)
+
     def visible_func(self, model, iter, data=None):
         item_path = model.get_value(iter, 3)
         return item_path == self.current_path
@@ -709,7 +1174,7 @@ class ThreadedIconView(Gtk.IconView):
         for i in pictures_list:
             self.add_picture(i, path)
 
-    def clear(self):
+    def stop_loading(self):
         self._loading_queue_lock.acquire()
         self._loading_queue = []
         self._loading_queue_lock.release()
@@ -723,6 +1188,18 @@ class ThreadedIconView(Gtk.IconView):
             is_loading = self._loading
             self._loading_lock.release()
 
+        self._loaded_data_lock.acquire()
+        self._loaded_data = []
+        self._loaded_data_lock.release()
+
+        if self._progress_id > 0:
+            GLib.source_remove(self._progress_id)
+            self._progress_id = 0
+
+        self._pending_uri = None
+
+    def clear(self):
+        self.stop_loading()
         self._model.clear()
 
     def add_picture(self, picture, path):
@@ -738,7 +1215,8 @@ class ThreadedIconView(Gtk.IconView):
         self._loading_lock.release()
 
         if start_loading:
-            GLib.timeout_add(100, self._check_loading_progress)
+            if self._progress_id == 0:
+                self._progress_id = GLib.timeout_add(100, self._check_loading_progress)
             thread.start_new_thread(self._do_load, (path,))
 
     def _check_loading_progress(self):
@@ -754,6 +1232,12 @@ class ThreadedIconView(Gtk.IconView):
 
         for i in to_load:
             self._model.append(i)
+
+        if to_load:
+            self._try_pending_selection()
+
+        if not res:
+            self._progress_id = 0
 
         return res
 

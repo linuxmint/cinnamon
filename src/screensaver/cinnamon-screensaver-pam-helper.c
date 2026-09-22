@@ -29,7 +29,6 @@
 #include <signal.h>
 
 #include <glib-unix.h>
-#include <glib/gi18n.h>
 #include <glib/gprintf.h>
 #include <gio/gunixinputstream.h>
 
@@ -526,8 +525,6 @@ main (int    argc,
 
     g_unix_signal_add (SIGTERM, (GSourceFunc) handle_sigterm, NULL);
 
-    bindtextdomain (GETTEXT_PACKAGE, "/usr/share/locale");
-
     if (! privileged_initialization (&argc, argv, debug_mode))
     {
         response_lock_init_failed ();
@@ -536,13 +533,12 @@ main (int    argc,
 
     static GOptionEntry entries [] = {
         { "debug", 0, 0, G_OPTION_ARG_NONE, &debug_mode,
-          N_("Show debugging output"), NULL },
+          "Show debugging output", NULL },
         { NULL }
     };
 
-    context = g_option_context_new (N_("\n\nPAM interface for cinnamon-screensaver."));
-    g_option_context_set_translation_domain (context, GETTEXT_PACKAGE);
-    g_option_context_add_main_entries (context, entries, GETTEXT_PACKAGE);
+    context = g_option_context_new ("\n\nPAM interface for cinnamon-screensaver.");
+    g_option_context_add_main_entries (context, entries, NULL);
 
     if (!g_option_context_parse (context, &argc, &argv, &error)) {
         g_critical ("Failed to parse arguments: %s", error->message);

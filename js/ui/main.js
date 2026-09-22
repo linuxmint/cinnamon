@@ -42,15 +42,16 @@
  * @backgroundManager (BackgroundManager.BackgroundManager): The background
  * manager.
  * \
- * This listens to changes in the GNOME background settings and mirrors them to
- * the Cinnamon settings, since many applications have a "Set background"
- * button that modifies the GNOME background settings.
+ * This starts and watches cinnamon-background-daemon, which paints the
+ * wallpaper, and holds the startup reveal until it reports one on screen. It
+ * also translates an application's "Set as wallpaper" -- a write of the flat
+ * picture-uri key, in Cinnamon's schema or GNOME's -- into the per-monitor list
+ * the daemon reads.
  *
  * @slideshowManager (SlideshowManager.SlideshowManager): The slideshow manager.
  * \
- * This is responsible for managing the background slideshow, since the
- * background "slideshow" is created by cinnamon changing the active background
- * gsetting every x minutes.
+ * This starts cinnamon-slideshow when any monitor is configured to rotate its
+ * wallpaper. The rotation happens in that daemon; nothing here drives it.
  *
  * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
  * @systrayManager (Systray.SystrayManager): The systray manager
@@ -93,7 +94,6 @@ const PointerTracker = imports.misc.pointerTracker;
 
 const AutomountManager = imports.ui.automountManager;
 const AutorunManager = imports.ui.autorunManager;
-const AudioDeviceSelection = imports.ui.audioDeviceSelection;
 const SoundManager = imports.ui.soundManager;
 const BackgroundManager = imports.ui.backgroundManager;
 const Config = imports.misc.config;
@@ -108,6 +108,7 @@ const OsdWindow = imports.ui.osdWindow;
 const Overview = imports.ui.overview;
 const Expo = imports.ui.expo;
 const Panel = imports.ui.panel;
+const ChromeRaise = imports.ui.chromeRaise;
 const PlacesManager = imports.ui.placesManager;
 const PolkitAuthenticationAgent = imports.ui.polkitAuthenticationAgent;
 const KeyringPrompt = imports.ui.keyringPrompt;
@@ -132,12 +133,15 @@ const Systray = imports.ui.systray;
 const Accessibility = imports.ui.accessibility;
 const ModalDialog = imports.ui.modalDialog;
 const InputMethod = imports.misc.inputMethod;
+const FcitxInputMethod = imports.misc.fcitxInputMethod;
+const IMFramework = imports.misc.imFramework;
 const ScreenRecorder = imports.ui.screenRecorder;
 const {GesturesManager} = imports.ui.gestures.gesturesManager;
 const {MonitorLabeler} = imports.ui.monitorLabeler;
 const {CinnamonPortalHandler} = imports.misc.portalHandlers;
 const {EndSessionDialog} = imports.ui.endSessionDialog;;
 const {KeyboardManager, getInputSourceManager} = imports.ui.keyboardManager;
+const GnomeSession = imports.misc.gnomeSession;
 
 var LAYOUT_TRADITIONAL = "traditional";
 var LAYOUT_FLIPPED = "flipped";
@@ -151,6 +155,7 @@ var backgroundManager = null;
 var slideshowManager = null;
 var placesManager = null;
 var panelManager = null;
+var chromeRaiseManager = null;
 var osdWindowManager = null;
 var screensaverController = null;
 var lockdownSettings = null;
@@ -165,7 +170,6 @@ var messageTray = null;
 var notificationDaemon = null;
 var windowAttentionHandler = null;
 var screenRecorder = null;
-var cinnamonAudioSelectionDBusService = null;
 var cinnamonDBusService = null;
 var cinnamonMountOpDBusService = null;
 var automountManager = null;
@@ -174,6 +178,7 @@ var screenshotService = null;
 var modalCount = 0;
 var modalActorFocusStack = [];
 var uiGroup = null;
+var switcherGroup = null;
 var magnifier = null;
 var locatePointer = null;
 var xdndHandler = null;
@@ -212,6 +217,7 @@ var popup_rendering_actor = null;
 var xlet_startup_error = false;
 
 var endSessionDialog = null;
+var sessionManagerProxy = null;
 
 var gpuOffloadHelper = null;
 var gpu_offload_supported = false;
@@ -284,6 +290,11 @@ function do_shutdown_sequence() {
     });
 }
 
+function onSessionOver() {
+    global.log("Session is ending");
+    soundManager.disable();
+}
+
 function _reparentActor(actor, newParent) {
     let parent = actor.get_parent();
     if (parent)
@@ -348,10 +359,14 @@ function start() {
     lockdownSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.lockdown' });
 
     new CinnamonPortalHandler();
-    cinnamonAudioSelectionDBusService = new AudioDeviceSelection.AudioDeviceSelectionDBus();
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
 
     setRunState(RunState.STARTUP);
+
+    // Constructed this early so it can kick off the wallpaper daemon, which
+    // preloads and paints before we reveal the desktop.
+    backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager.hideBackground();
 
     screenshotService = new Screenshot.ScreenshotService();
 
@@ -384,9 +399,6 @@ function start() {
 
     settingsManager = new Settings.SettingsManager();
 
-    backgroundManager = new BackgroundManager.BackgroundManager();
-    backgroundManager.hideBackground();
-
     slideshowManager = new SlideshowManager.SlideshowManager();
 
     keybindingManager = new Keybindings.KeybindingManager();
@@ -398,7 +410,11 @@ function start() {
     uiGroup.set_flags(Clutter.ActorFlags.NO_LAYOUT);
 
     global.reparentActor(global.window_group, uiGroup);
-    global.reparentActor(global.overlay_group, uiGroup);
+
+    // Holds the overview, expo, and app-switcher overlays. Sits just above
+    // window_group (the slot overlay_group used to occupy).
+    switcherGroup = new Clutter.Actor({ name: 'switcherGroup' });
+    uiGroup.add_actor(switcherGroup);
 
     let stage_bg = new Clutter.Actor();
     let constraint = new Clutter.BindConstraint({ source: global.stage, coordinate: Clutter.BindCoordinate.ALL, offset: 0 })
@@ -411,7 +427,16 @@ function start() {
 
     global.reparentActor(global.top_window_group, global.stage);
 
+    // Keep the feedback/overlay group topmost, above the ui group and the top
+    // window group. It holds DND icons and the fcitx input-method candidate
+    // popup, both of which must render above Cinnamon's own chrome.
+    global.reparentActor(global.overlay_group, global.stage);
+
     global.menuStack = [];
+
+    // Created before LayoutManager so chromeRaiseManager is never null by the
+    // time chrome visibility recalculations can consult isPanelRaised().
+    chromeRaiseManager = new ChromeRaise.ChromeRaiseManager();
 
     layoutManager = new Layout.LayoutManager();
 
@@ -425,7 +450,22 @@ function start() {
                                 startupAnimationEnabled &&
                                 !software_rendering;
 
-    if (do_startup_animation) {
+    // On a fresh login we hold the desktop behind the startup cover until the
+    // wallpaper is on screen, whether or not we play the fade. (On a Cinnamon
+    // restart the wallpaper daemon is already up, so there's nothing to wait for.)
+    let first_login = !global.session_running;
+
+    // Comes down exactly once, from whichever path gets there first --
+    // _startupAnimationComplete() is not safe to run twice.
+    let revealed = false;
+    let revealDesktop = (animate) => {
+        if (revealed)
+            return;
+        revealed = true;
+        layoutManager._doStartupAnimation(animate);
+    };
+
+    if (first_login) {
         backgroundManager.showBackground();
         layoutManager._prepareStartupAnimation();
     }
@@ -527,8 +567,21 @@ function start() {
 
     _loadOskLayouts();
     keyboardManager = new KeyboardManager();
-    inputMethod = new InputMethod.InputMethod();
-    Clutter.get_default_backend().set_input_method(inputMethod);
+    getInputSourceManager().ensureInitialized();
+    let framework = IMFramework.getFramework();
+    if (framework === IMFramework.FRAMEWORK_FCITX && Meta.is_wayland_compositor()) {
+        // On Wayland muffin installs a native input-method-v2 backend that
+        // bridges to an external fcitx; adopt it as Main.inputMethod instead of
+        // the X11 D-Bus backend. It is already set on the Clutter backend.
+        inputMethod = Clutter.get_default_backend().get_input_method();
+    }
+    if (inputMethod == null) {
+        if (framework === IMFramework.FRAMEWORK_FCITX && !Meta.is_wayland_compositor())
+            inputMethod = new FcitxInputMethod.FcitxInputMethod();
+        else
+            inputMethod = new InputMethod.InputMethod();
+        Clutter.get_default_backend().set_input_method(inputMethod);
+    }
     virtualKeyboardManager = new VirtualKeyboard.VirtualKeyboardManager();
     virtualKeyboardManager.connect("enabled-changed", () => {
         if (runDialog !== null) {
@@ -577,18 +630,22 @@ function start() {
         // until the event loop is uncontended and idle.
         // This helps to prevent us from running the animation
         // when the system is bogged down
-        if (do_startup_animation) {
-            let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                layoutManager._doStartupAnimation();
-                return GLib.SOURCE_REMOVE;
+        if (first_login) {
+            backgroundManager.whenReady(() => {
+                // Play the login sound as we reveal, not at the start of the wait.
+                if (do_login_sound)
+                    soundManager.play('login');
+
+                GLib.idle_add(GLib.PRIORITY_LOW, () => {
+                    // Fade the cover away if the animation is enabled, otherwise drop it instantly.
+                    revealDesktop(do_startup_animation);
+                    return GLib.SOURCE_REMOVE;
+                });
             });
         } else {
             backgroundManager.showBackground();
             setRunState(RunState.RUNNING);
         }
-
-        if (do_login_sound && !global.session_running)
-		    soundManager.play('login');
 
         // Disable panel edit mode when Cinnamon starts
         if (global.settings.get_boolean("panel-edit-mode")) {
@@ -597,9 +654,23 @@ function start() {
 
         global.connect('shutdown', do_shutdown_sequence);
 
+        GnomeSession.SessionManager(function(proxy, error) {
+            if (error) {
+                global.logWarning("Main: failed to connect to the session manager: " + error);
+                return;
+            }
+
+            sessionManagerProxy = proxy;
+            sessionManagerProxy.connectSignal('SessionOver', onSessionOver);
+        });
+
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
     }).catch(error => {
         global.logError(`promise failed: ${error}`);
+        // The cover hides the cursor and swallows every event, so a failed
+        // init would otherwise look like a hung session.
+        if (first_login)
+            revealDesktop(false);
     });
 }
 
@@ -1307,6 +1378,11 @@ function _shouldFilterKeybinding(entry) {
  */
 let _modifierOnlyAction = 0;
 
+// Tracks whether a keybinding shortcut has actually been invoked through this
+// handler since the most recent modifier-key press while in a modal state. Used
+// to tell a bare modifier tap apart from a modifier used as part of a shortcut.
+let _shortcutInvokedSinceModifier = false;
+
 function _isModifierKeyval(symbol) {
     return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
            symbol === Clutter.KEY_Control_L || symbol === Clutter.KEY_Control_R ||
@@ -1314,22 +1390,38 @@ function _isModifierKeyval(symbol) {
            symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
 }
 
+// Invoke a keybinding action from the modal handler, collapsing a fullscreen
+// panel raise only if the shortcut closed the last modal stacked on it - a
+// menu, expo, ... (captured before the invoke, so a shortcut that merely
+// raised a bare panel isn't collapsed).
+function _invokeKeybindingAction(action) {
+    let hadStackedModal = chromeRaiseManager.hasStackedModal();
+    try {
+        keybindingManager.invoke_keybinding_action_by_id(action);
+    } catch (e) {
+        global.logError(`Exception in keybinding action: ${e}`);
+    }
+    if (hadStackedModal)
+        chromeRaiseManager.collapseIfBare();
+}
+
 function _stageEventHandler(actor, event) {
     if (modalCount == 0)
-        return false;
+        return Clutter.EVENT_PROPAGATE;
 
     let eventType = event.type();
 
     if (eventType !== Clutter.EventType.KEY_PRESS &&
         eventType !== Clutter.EventType.KEY_RELEASE) {
         if (!popup_rendering_actor || eventType !== Clutter.EventType.BUTTON_RELEASE)
-            return false;
-        return (event.get_source() && popup_rendering_actor.contains(event.get_source()));
+            return Clutter.EVENT_PROPAGATE;
+        return (event.get_source() && popup_rendering_actor.contains(event.get_source()))
+            ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE;
     }
 
     if (event.get_source() instanceof Clutter.Text &&
         (event.get_flags() & Clutter.EventFlags.INPUT_METHOD)) {
-        return false;
+        return Clutter.EVENT_PROPAGATE;
     }
 
     let keyCode = event.get_key_code();
@@ -1337,15 +1429,16 @@ function _stageEventHandler(actor, event) {
 
     if (eventType === Clutter.EventType.KEY_PRESS) {
         if (_isModifierKeyval(event.get_key_symbol())) {
+            _shortcutInvokedSinceModifier = false;
             let action = global.display.get_keybinding_action(keyCode, modifierState);
             if (action > 0) {
                 let entry = keybindingManager.getBindingById(action);
                 if (!_shouldFilterKeybinding(entry)) {
                     _modifierOnlyAction = action;
-                    return true;
+                    return Clutter.EVENT_STOP;
                 }
             }
-            return false;
+            return Clutter.EVENT_PROPAGATE;
         }
 
         _modifierOnlyAction = 0;
@@ -1354,30 +1447,40 @@ function _stageEventHandler(actor, event) {
         // here.
         if (event.get_key_symbol() === Clutter.KEY_ISO_Next_Group) {
             getInputSourceManager()._modifiersSwitcher(false);
-            return true;
+            return Clutter.EVENT_STOP;
         }
 
         let action = global.display.get_keybinding_action(keyCode, modifierState);
         if (action > 0) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
-                keybindingManager.invoke_keybinding_action_by_id(action);
-                return true;
+                _shortcutInvokedSinceModifier = true;
+                _invokeKeybindingAction(action);
+                return Clutter.EVENT_STOP;
             }
         }
 
-        return false;
+        return Clutter.EVENT_PROPAGATE;
     }
 
-    // Release event - activate the single-key modifier keybinding if one was stored.
-    if (_isModifierKeyval(event.get_key_symbol()) && _modifierOnlyAction > 0) {
-        let action = _modifierOnlyAction;
-        _modifierOnlyAction = 0;
-        keybindingManager.invoke_keybinding_action_by_id(action);
-        return true;
+    // Release event
+    if (_isModifierKeyval(event.get_key_symbol())) {
+        // Activate the single-key modifier keybinding if one was stored.
+        if (_modifierOnlyAction > 0) {
+            let action = _modifierOnlyAction;
+            _modifierOnlyAction = 0;
+            _invokeKeybindingAction(action);
+            return Clutter.EVENT_STOP;
+        }
+
+        // If the modifier was used as part of a shortcut (a keybinding was invoked
+        // here while it was held), consume its release so it isn't mistaken for a
+        // bare tap.
+        if (_shortcutInvokedSinceModifier)
+            return Clutter.EVENT_STOP;
     }
 
-    return false;
+    return Clutter.EVENT_PROPAGATE;
 }
 
 function _findModal(actor) {
@@ -1390,6 +1493,7 @@ function _findModal(actor) {
 
 function _completeModalSetup(actor, mode, onDismiss) {
     _modifierOnlyAction = 0;
+    _shortcutInvokedSinceModifier = false;
 
     if (modalCount == 0)
         Meta.disable_unredirect_for_display(global.display);

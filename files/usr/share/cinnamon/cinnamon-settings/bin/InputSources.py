@@ -15,12 +15,15 @@ from xapp.SettingsWidgets import SettingsPage
 from xapp.GSettingsWidgets import PXGSettingsBackend, GSettingsSwitch
 
 from bin import AddKeyboardLayout
+from bin.util import using_fcitx
 
 MAX_LAYOUTS_PER_GROUP = 4
 
 class InputSourceSettingsPage(SettingsPage):
     def __init__(self):
         super().__init__()
+
+        self._reselect_index = None
 
         builder = Gtk.Builder()
         builder.set_translation_domain('cinnamon')
@@ -38,13 +41,19 @@ class InputSourceSettingsPage(SettingsPage):
 
         self.test_layout_button = builder.get_object("test_layout")
         self.test_layout_button.connect("clicked", self.on_test_layout_clicked)
-        # TODO: maybe use tecla as an alternative for wayland, if we don't roll something ourselves.
-        # btw there's no plan for tecla to support different keyboard geometries than a standard pc105.
-        if not GLib.find_program_in_path("gkbd-keyboard-display"):
-            self.test_layout_button.set_visible(False)
 
         self.engine_config_button = builder.get_object("engine_config_button")
         self.engine_config_button.connect("clicked", self.on_engine_config_clicked)
+
+        self.im_launch_button = builder.get_object("im_launch_button")
+        self.im_launch_button.connect("clicked", lambda widget: subprocess.Popen(["mintlocale-im"]))
+        if not GLib.find_program_in_path("mintlocale-im"):
+            self.im_launch_button.set_visible(False)
+
+        # Configure is ibus-engine-specific; fcitx engines are configured in fcitx.
+        if using_fcitx():
+            self.engine_config_button.set_no_show_all(True)
+            self.engine_config_button.set_visible(False)
         self.add_layout_button = builder.get_object("add_layout")
         self.add_layout_button.connect("clicked", self.on_add_layout_clicked)
         self.remove_layout_button = builder.get_object("remove_layout")
@@ -55,6 +64,31 @@ class InputSourceSettingsPage(SettingsPage):
         self.move_layout_down_button.connect("clicked", self.on_move_layout_down_clicked)
 
         self.update_widgets()
+
+        if using_fcitx():
+            # Under fcitx, layout switching, the applet and per-window memory are
+            # owned by fcitx, and input methods are configured in fcitx's own
+            # tools. Explain that, with handoffs to those tools, in place of our
+            # options/shortcuts.
+            infobar = Gtk.InfoBar()
+            infobar.set_message_type(Gtk.MessageType.INFO)
+            label = Gtk.Label(
+                _("In Fcitx mode, input methods, additional layouts and their "
+                  "switching shortcuts are managed by Fcitx. Only the first "
+                  "layout configured here is used.")
+            )
+            label.set_line_wrap(True)
+            label.set_xalign(0.0)
+            infobar.get_content_area().add(label)
+
+            manage_button = Gtk.Button(label=_("Manage Fcitx"))
+            manage_button.connect("clicked", lambda widget: subprocess.Popen(["fcitx5-configtool"]))
+            infobar.get_action_area().pack_start(manage_button, False, False, 0)
+
+            infobar.show_all()
+            self.pack_start(infobar, False, False, 0)
+            self.reorder_child(infobar, 0)
+            return
 
         section = self.add_section(_("Options"))
         widget = GSettingsSwitch(
@@ -132,7 +166,15 @@ class InputSourceSettingsPage(SettingsPage):
     def _update_selected_row(self, data=None):
         self.input_sources_list.handler_block(self.source_activate_handler)
 
-        self.input_sources_list.unselect_all()
+        row = None
+        if self._reselect_index is not None:
+            row = self.input_sources_list.get_row_at_index(self._reselect_index)
+            self._reselect_index = None
+
+        if row is not None:
+            self.input_sources_list.select_row(row)
+        else:
+            self.input_sources_list.unselect_all()
 
         self.input_sources_list.handler_unblock(self.source_activate_handler)
         self.update_widgets()
@@ -150,7 +192,7 @@ class InputSourceSettingsPage(SettingsPage):
         return source
 
     def on_add_layout_clicked(self, button, data=None):
-        self.current_input_sources_model.show_add_layout_dialog()
+        self.current_input_sources_model.show_add_layout_dialog(self.get_toplevel())
 
     def on_remove_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
@@ -160,22 +202,25 @@ class InputSourceSettingsPage(SettingsPage):
     def on_move_layout_up_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
+            self._reselect_index = self.current_input_sources_model.get_item_index(source) - 1
             self.current_input_sources_model.move_layout_up(source)
 
     def on_move_layout_down_clicked(self, button, data=None):
         source = self._get_selected_source()
         if source is not None:
+            self._reselect_index = self.current_input_sources_model.get_item_index(source) + 1
             self.current_input_sources_model.move_layout_down(source)
 
     def on_test_layout_clicked(self, button, data=None):
         source = self._get_selected_source()
 
-        args = AddKeyboardLayout.make_gkbd_keyboard_args(source.xkb_layout, source.xkb_variant)
+        args = AddKeyboardLayout.make_keyboard_display_args(source.xkb_layout, source.xkb_variant)
         subprocess.Popen(args)
 
     def on_engine_config_clicked(self, button, data=None):
         source = self._get_selected_source()
-        dialog = IBusConfigDialog(source, self.current_input_sources_model.input_source_settings)
+        dialog = IBusConfigDialog(source, self.current_input_sources_model.input_source_settings,
+                                  self.get_toplevel())
         dialog.run()
         dialog.destroy()
 
@@ -202,7 +247,7 @@ class InputSourceSettingsPage(SettingsPage):
 
 
 class IBusConfigDialog():
-    def __init__(self, source, settings):
+    def __init__(self, source, settings, parent_window):
         self.source = source
         self.settings = settings
         self.xkb_info = CinnamonDesktop.XkbInfo.new_with_extras()
@@ -216,6 +261,7 @@ class IBusConfigDialog():
         builder.add_from_file("/usr/share/cinnamon/cinnamon-settings/bin/input-sources-list.ui")
 
         self.dialog = builder.get_object("ibus_config_dialog")
+        self.dialog.set_transient_for(parent_window)
 
         # Set up name label
         name_label = builder.get_object("ibus_config_name_label")
@@ -251,7 +297,6 @@ class IBusConfigDialog():
             engine_settings_button.set_visible(False)
 
         self.update_layout_display()
-        self.dialog.show_all()
 
     def _get_engine_layout(self):
         ibus = IBus.Bus.new()
@@ -308,13 +353,10 @@ class IBusConfigDialog():
 
     def on_change_layout_clicked(self, button, data=None):
         # Show the layout picker in XKB-only mode
-        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], xkb_only=True)
-        add_dialog.dialog.set_transient_for(self.dialog)
-        add_dialog.dialog.show_all()
+        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog([], self.dialog, xkb_only=True)
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
-            layout_type, layout_id = add_dialog.response
-            self.set_layout_override(layout_id)
+            self.set_layout_override(add_dialog.response.id)
         add_dialog.dialog.destroy()
 
     def on_clear_override_clicked(self, button, data=None):
@@ -515,13 +557,12 @@ class CurrentInputSourcesModel(GObject.Object, Gio.ListModel):
         self.column_size_group = Gtk.SizeGroup(Gtk.SizeGroupMode.BOTH)
         self.items_changed(0, len(old_layouts), len(new_layouts))
 
-    def show_add_layout_dialog(self):
+    def show_add_layout_dialog(self, parent_window):
         used_ids = [source.id for source in self._sources]
-        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog(used_ids)
-        add_dialog.dialog.show_all()
+        add_dialog = AddKeyboardLayout.AddKeyboardLayoutDialog(used_ids, parent_window)
         ret = add_dialog.dialog.run()
         if ret == Gtk.ResponseType.OK:
-            self.add_layout(*add_dialog.response)
+            self.add_layout(add_dialog.response.type, add_dialog.response.id)
         add_dialog.dialog.destroy()
 
     def create_row(self, source, data=None):

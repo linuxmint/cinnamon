@@ -9,6 +9,15 @@ calendar_generated = gnome.gdbus_codegen('cinnamon-calendar',
   namespace: 'Cinnamon'
 )
 
+# The background daemon's readiness interface. One codegen for both sides: the
+# shell links the proxy (to gate the startup animation on the wallpaper being on
+# screen) and src/background/daemon links the skeleton.
+background_generated = gnome.gdbus_codegen('cinnamon-background',
+  sources: 'org.Cinnamon.Background.xml',
+  interface_prefix: 'org.Cinnamon.',
+  namespace: 'Cinnamon',
+)
+
 cinnamon_headers = [
     'cinnamon-action-mode.h',
     'cinnamon-app.h',
@@ -71,7 +80,8 @@ cinnamon_sources = [
     'cinnamon-window-tracker.c',
     'cinnamon-wm.c',
     cinnamon_headers,
-    calendar_generated
+    calendar_generated,
+    background_generated
 ]
 
 cinnamon_enum_types = gnome.mkenums_simple(
@@ -94,6 +104,7 @@ tray_sources = [
 
 libcinnamon_deps = [
     atk,
+    atspi,
     cjs,
     clutter,
     cmenu,
@@ -202,6 +213,7 @@ executable(
 )
 
 subdir('screensaver')
+subdir('background')
 
 cinnamon_gir_includes = [
     'Clutter-0',

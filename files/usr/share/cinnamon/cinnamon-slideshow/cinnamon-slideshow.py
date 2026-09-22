@@ -1,18 +1,54 @@
 #!/usr/bin/python3
 
-import random
 import signal
+import sys
 import os, locale
+from functools import cache
 from xml.etree import ElementTree
 from setproctitle import setproctitle
 
-from gi.repository import Gio, GLib
+import gi
+gi.require_version('GLibUnix', '2.0')
+gi.require_version('GdkPixbuf', '2.0')
+from gi.repository import Gio, GLib, GLibUnix, GdkPixbuf
+
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-settings')
+import config
+
+config.add_private_typelib_path()
+gi.require_version('CinnamonBg', '1.0')
+from gi.repository import CinnamonBg
+
+from slideshow_rotation import PerMonitorRotation, parse_source, list_directory_images
 
 SLIDESHOW_DBUS_NAME = "org.Cinnamon.Slideshow"
 SLIDESHOW_DBUS_PATH = "/org/Cinnamon/Slideshow"
 
 BACKGROUND_COLLECTION_TYPE_DIRECTORY = "directory"
 BACKGROUND_COLLECTION_TYPE_XML = "xml"
+
+# Spelled out rather than read off the enum value: pygobject does not reliably
+# expose value_nick (see cinnamon a8aca115a). Indexed by CinnamonBg.Mode.
+MODE_NAMES = ("independent", "mirror", "spanned")
+
+
+def mode_name(mode):
+    try:
+        return MODE_NAMES[int(mode)]
+    except (IndexError, TypeError, ValueError):
+        return str(mode)
+
+VERBOSE = False
+
+
+def set_verbose(value):
+    global VERBOSE
+    VERBOSE = value
+
+
+def log(message):
+    if VERBOSE:
+        print("slideshow: " + message, flush=True)
 
 # D-Bus interface XML definition
 DBUS_INTERFACE_XML = '''
@@ -25,6 +61,15 @@ DBUS_INTERFACE_XML = '''
 </node>
 '''
 
+@cache
+def decodable_mime_types():
+    mimes = set()
+    for fmt in GdkPixbuf.Pixbuf.get_formats():
+        mimes.update(fmt.get_mime_types())
+
+    return mimes
+
+
 class CinnamonSlideshowApplication(Gio.Application):
     def __init__(self):
         super().__init__(
@@ -35,35 +80,73 @@ class CinnamonSlideshowApplication(Gio.Application):
         self.slideshow_settings = Gio.Settings(schema="org.cinnamon.desktop.background.slideshow")
         self.background_settings = Gio.Settings(schema="org.cinnamon.desktop.background")
 
+        self.bg_list = CinnamonBg.List.new()
+        self.rotation = None
+        self._n_streams = 0
+        self.active = False
+        self._last_mode = None
+        self._rotating = {}      # stream id -> folder, as of the last setup
+        self._reeval_id = 0
+        self._folder_monitors = {}   # directory path -> (Gio.FileMonitor, handler id)
+        self._folder_reload_id = 0
+
+        # config-changed is everything except a wallpaper advancing, so our own
+        # rotation writes never come back to us as though they were edits.
+        self.bg_list.connect("config-changed", self.on_config_changed)
+        self.slideshow_settings.connect("changed::random-order", self.on_random_order_changed)
+
         if self.slideshow_settings.get_boolean("slideshow-paused"):
             self.slideshow_settings.set_boolean("slideshow-paused", False)
 
-        self.image_playlist = []
-        self.used_image_playlist = []
-        self.images_ready = False
-        self.update_in_progress = False
-        self.starting_image = self.background_settings.get_string("picture-uri")
-        self.current_image = self.starting_image
-
         self.update_id = 0
-        self.loop_counter = self.slideshow_settings.get_int("delay")
-
-        self.folder_monitor = None
-        self.folder_monitor_id = 0
+        self.random_order = self.slideshow_settings.get_boolean("random-order")
 
         self.connection = None
         self.registration_id = 0
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGINT, self.end)
+
+        self.cinnamon_seen = False
+        self.cinnamon_watch_id = Gio.bus_watch_name(
+            Gio.BusType.SESSION,
+            "org.Cinnamon",
+            Gio.BusNameWatcherFlags.NONE,
+            self.on_cinnamon_appeared,
+            self.on_cinnamon_vanished
+        )
+
+        for sig in (signal.SIGINT, signal.SIGTERM):
+            try:
+                GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, sig, self.end)
+            except AttributeError:
+                GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, sig, self.end, None)
+
+    def on_cinnamon_appeared(self, connection, name, name_owner):
+        self.cinnamon_seen = True
+
+    def on_cinnamon_vanished(self, connection, name):
+        # Cinnamon owns org.Cinnamon; if it goes away (logout, crash, replace)
+        # this orphaned service should exit too, since nothing else will stop it.
+        log("cinnamon vanished (seen=%s)" % self.cinnamon_seen)
+        if self.cinnamon_seen:
+            self.end()
 
     def do_startup(self):
         Gio.Application.do_startup(self)
         self.hold()
+        log("do_startup (mode=%s, active=%s)" % (
+            mode_name(self.bg_list.props.mode), self.should_be_active()))
+        if self.should_be_active():
+            log("slideshow work present — self-starting")
+            GLib.idle_add(self.begin)
 
     def do_dbus_register(self, connection, object_path):
         try:
             self.connection = connection
             iface_info = Gio.DBusNodeInfo.new_for_xml(DBUS_INTERFACE_XML)
-            self.registration_id = connection.register_object(
+            try:
+                register = connection.register_object_with_closures2
+            except AttributeError:
+                register = connection.register_object
+            self.registration_id = register(
                 SLIDESHOW_DBUS_PATH,
                 iface_info.interfaces[0],
                 self.handle_method_call,
@@ -84,6 +167,7 @@ class CinnamonSlideshowApplication(Gio.Application):
         Gio.Application.do_dbus_unregister(self, connection, path)
 
     def do_activate(self):
+        log("do_activate")
         self.setup_slideshow()
 
     def handle_method_call(self, connection, sender, object_path, interface_name, method_name, parameters, invocation):
@@ -111,230 +195,228 @@ class CinnamonSlideshowApplication(Gio.Application):
             )
 
     def begin(self):
+        log("begin")
+        if self.active:
+            log("begin: already active, ignoring")
+            return
+        if not self.should_be_active():
+            log("begin: nothing to slideshow; staying idle")
+            return
         self.setup_slideshow()
+        self.active = True
 
     def end(self):
+        log("end")
+        self.active = False
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
-
-        self.disconnect_folder_monitor()
+        if self._reeval_id > 0:
+            GLib.source_remove(self._reeval_id)
+            self._reeval_id = 0
+        if self._folder_reload_id > 0:
+            GLib.source_remove(self._folder_reload_id)
+            self._folder_reload_id = 0
+        self._sync_folder_monitors([])
+        self.rotation = None
+        self._rotating = {}
+        if self.cinnamon_watch_id > 0:
+            Gio.bus_unwatch_name(self.cinnamon_watch_id)
+            self.cinnamon_watch_id = 0
         self.quit()
 
     def get_next_image(self):
-        if self.update_id > 0:
-            GLib.source_remove(self.update_id)
-            self.update_id = 0
-
-        self.loop_counter = self.slideshow_settings.get_int("delay")
-        self.start_mainloop()
+        log("getNextImage (mode=%s)" % mode_name(self.bg_list.props.mode))
+        self.begin()
+        self.advance_all()
 
     def setup_slideshow(self):
         self.load_settings()
-        self.connect_signals()
-        self.gather_images()
-        if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-            self.connect_folder_monitor()
-        self.start_mainloop()
+        self._last_mode = self.bg_list.props.mode
+        log("setup_slideshow: mode=%s" % mode_name(self._last_mode))
 
-    def format_source(self, type, path):
-        # returns 'type://path'
-        return "%s://%s" % (type, path)
-
-    def load_settings(self):
-        self.random_order = self.slideshow_settings.get_boolean("random-order")
-        self.collection = self.slideshow_settings.get_string("image-source")
-        self.collection_path = ""
-        self.collection_type = None
-        if self.collection != "" and "://" in self.collection:
-            (self.collection_type, self.collection_path) = self.collection.split("://")
-            self.collection_path = os.path.expanduser(self.collection_path)
-
-    def connect_signals(self):
-        self.slideshow_settings.connect("changed::image-source", self.on_slideshow_source_changed)
-        self.slideshow_settings.connect("changed::random-order", self.on_random_order_changed)
-        self.background_settings.connect("changed::picture-uri", self.on_picture_uri_changed)
-
-    def connect_folder_monitor(self):
-        folder_path = Gio.file_new_for_path(self.collection_path)
-        self.folder_monitor = folder_path.monitor_directory(0, None)
-        self.folder_monitor_id = self.folder_monitor.connect("changed", self.on_monitored_folder_changed)
-
-    def disconnect_folder_monitor(self):
-        if self.folder_monitor_id > 0:
-            self.folder_monitor.disconnect(self.folder_monitor_id)
-            self.folder_monitor_id = 0
-
-    def gather_images(self):
-        if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-            folder_at_path = Gio.file_new_for_path(self.collection_path)
-
-            if folder_at_path.query_exists(None):
-                folder_at_path.enumerate_children_async("standard::name,standard::type,standard::content-type",
-                                                        Gio.FileQueryInfoFlags.NONE,
-                                                        GLib.PRIORITY_LOW,
-                                                        None,
-                                                        self.gather_images_cb,
-                                                        None)
-
-        elif self.collection_type == BACKGROUND_COLLECTION_TYPE_XML:
-            pictures = self.parse_xml_backgrounds_list(self.collection_path)
-            for picture in pictures:
-                filename = picture["filename"]
-                self.add_image_to_playlist(filename)
-
-    def gather_images_cb(self, obj, res, user_data):
-        all_files = []
-        enumerator = obj.enumerate_children_finish(res)
-        def on_next_file_complete(obj, res, user_data=all_files):
-            files = obj.next_files_finish(res)
-            file_list = all_files
-            if len(files) != 0:
-                file_list = file_list.extend(files)
-                enumerator.next_files_async(100, GLib.PRIORITY_LOW, None, on_next_file_complete, None)
-            else:
-                enumerator.close(None)
-                self.ensure_file_is_image(file_list)
-
-        enumerator.next_files_async(100, GLib.PRIORITY_LOW, None, on_next_file_complete, all_files)
-
-    def ensure_file_is_image(self, file_list):
-        for item in file_list:
-            file_type = item.get_file_type()
-            if file_type is not Gio.FileType.DIRECTORY:
-                file_contents = item.get_content_type()
-                if file_contents.startswith("image"):
-                    self.add_image_to_playlist(self.collection_path + "/" + item.get_name())
-
-    def add_image_to_playlist(self, file_path):
-        image = Gio.file_new_for_path(file_path)
-        image_uri = image.get_uri()
-        self.image_playlist.append(image_uri)
-        if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-            self.image_playlist.sort()
-        self.images_ready = True
-
-    def on_slideshow_source_changed(self, settings, key):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
-        self.disconnect_folder_monitor()
-        self.image_playlist = []
-        self.used_image_playlist = []
-        self.images_ready = False
-        self.collection = self.slideshow_settings.get_string("image-source")
-        self.collection_path = ""
-        self.collection_type = None
-        if self.collection != "" and "://" in self.collection:
-            (self.collection_type, self.collection_path) = self.collection.split("://")
-            self.collection_path = os.path.expanduser(self.collection_path)
-        if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-            self.connect_folder_monitor()
-        self.gather_images()
-        self.loop_counter = self.slideshow_settings.get_int("delay")
-        self.start_mainloop()
 
-    def on_monitored_folder_changed(self, monitor, file1, file2, event_type):
-        try:
-            if event_type == Gio.FileMonitorEvent.DELETED:
-                file_uri = file1.get_uri()
-                if self.image_playlist.count(file_uri) > 0:
-                    index_to_remove = self.image_playlist.index(file_uri)
-                    del self.image_playlist[index_to_remove]
-                elif self.used_image_playlist.count(file_uri) > 0:
-                    index_to_remove = self.used_image_playlist.index(file_uri)
-                    del self.used_image_playlist[index_to_remove]
+        descriptors = self._build_streams()
+        self._n_streams = len(descriptors)
+        self._sync_folder_monitors(descriptors)
 
-            if event_type == Gio.FileMonitorEvent.CREATED:
-                file_path = file1.get_path()
-                file_info = file1.query_info("standard::type,standard::content-type", Gio.FileQueryInfoFlags.NONE, None)
-                file_type = file_info.get_file_type()
-                if file_type is not Gio.FileType.DIRECTORY:
-                    file_contents = file_info.get_content_type()
-                    if file_contents.startswith("image"):
-                        self.add_image_to_playlist(file_path)
-        except:
-            pass
+        streams = {d["id"]: d["folder"] for d in descriptors}
+        restarted = {mid for mid, folder in streams.items()
+                     if mid in self._rotating and self._rotating[mid] != folder}
+        self._rotating = streams
+        if restarted:
+            log("  new folder, cycling now: %s" % ", ".join(sorted(restarted)))
+
+        self.rotation = PerMonitorRotation(descriptors, self.random_order)
+        for mid, uri in self.rotation.initial(restarted):
+            log("  initial assign %s -> %s" % (mid, uri))
+            self._apply(mid, uri)
+        self.bg_list.save_pictures()
+
+        self.start_timer()
+
+    def _build_streams(self):
+        # One stream per rotating item. The model is already what is on screen,
+        # so there is no mode to branch on and nothing to materialise.
+        descriptors = []
+        for item in self.bg_list:
+            name = item.props.connector or "all"
+            if not item.props.slideshow:
+                log("  %s: static (no rotation)" % name)
+                continue
+            source = item.props.slideshow_source
+            images = self.gather_source_images(source)
+            current = item.props.picture_uri or None
+            log("  %s: source=%s (%d images) current=%s"
+                % (name, source, len(images), current))
+            if not images:
+                print("slideshow: %s: no usable images in '%s'; not rotating"
+                      % (name, source), flush=True)
+            descriptors.append({"id": name, "folder": source,
+                                "images": images, "current": current})
+        return descriptors
+
+    def _sync_folder_monitors(self, descriptors):
+        wanted = set()
+        for d in descriptors:
+            stype, path = parse_source(d["folder"])
+            if stype == BACKGROUND_COLLECTION_TYPE_DIRECTORY and path:
+                wanted.add(path)
+
+        for path in [p for p in self._folder_monitors if p not in wanted]:
+            monitor, handler = self._folder_monitors.pop(path)
+            monitor.disconnect(handler)
+            monitor.cancel()
+
+        for path in wanted - set(self._folder_monitors):
+            try:
+                monitor = Gio.file_new_for_path(path).monitor_directory(
+                    Gio.FileMonitorFlags.NONE, None)
+            except GLib.Error as e:
+                print("slideshow: cannot watch '%s' for changes: %s"
+                      % (path, e.message), file=sys.stderr, flush=True)
+                continue
+            self._folder_monitors[path] = (monitor,
+                                           monitor.connect("changed", self.on_folder_changed))
+            log("  watching %s" % path)
+
+    def on_folder_changed(self, monitor, changed_file, other_file, event_type):
+        if self._folder_reload_id > 0:
+            GLib.source_remove(self._folder_reload_id)
+        self._folder_reload_id = GLib.timeout_add(500, self.reload_folders)
+
+    def reload_folders(self):
+        self._folder_reload_id = 0
+        if self.rotation is None:
+            return GLib.SOURCE_REMOVE
+        for source in self.rotation.folders():
+            images = self.gather_source_images(source)
+            log("folder changed: %s now has %d images" % (source, len(images)))
+            self.rotation.set_folder_images(source, images)
+        return GLib.SOURCE_REMOVE
+
+    def _item_for_id(self, mid):
+        for item in self.bg_list:
+            if (item.props.connector or "all") == mid:
+                return item
+        return None
+
+    def _apply(self, mid, uri):
+        item = self._item_for_id(mid)
+        if item is None:
+            return
+        item.props.picture_uri = uri
+
+        if item.props.picture_options == "none":
+            item.props.picture_options = "zoom"
+
+    def load_settings(self):
+        self.random_order = self.slideshow_settings.get_boolean("random-order")
 
     def on_random_order_changed(self, settings, key):
         self.random_order = self.slideshow_settings.get_boolean("random-order")
 
-    def on_picture_uri_changed(self, settings, key):
-        if self.update_in_progress:
-            return
-        else:
-            if self.background_settings.get_string("picture-uri") != self.current_image:
-                self.slideshow_settings.set_boolean("slideshow-enabled", False)
+        if self.rotation is not None:
+            self.rotation.random_order = self.random_order
 
-    def start_mainloop(self):
+    def gather_source_images(self, source):
+        stype, path = parse_source(source)
+        if stype == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+            return [Gio.file_new_for_path(p).get_uri()
+                    for p in list_directory_images(path, decodable_mime_types())]
+        if stype == BACKGROUND_COLLECTION_TYPE_XML:
+            return [Gio.file_new_for_path(pic["filename"]).get_uri()
+                    for pic in self.parse_xml_backgrounds_list(path)]
+        return []
+
+    def should_be_active(self):
+        return any(item.props.slideshow for item in self.bg_list)
+
+    def on_config_changed(self, bg_list):
+        self._schedule_reevaluate()
+
+    def _schedule_reevaluate(self):
+        if self._reeval_id > 0:
+            GLib.source_remove(self._reeval_id)
+        self._reeval_id = GLib.timeout_add(150, self._reevaluate)
+
+    def _reevaluate(self):
+        self._reeval_id = 0
+        if not self.should_be_active():
+            if self.bg_list.get_n_items() == 0:
+                log("reevaluate: monitor list not loaded yet; staying put")
+                return GLib.SOURCE_REMOVE
+
+            log("reevaluate: no slideshow monitors; exiting")
+            self.end()
+            return GLib.SOURCE_REMOVE
+        if not self.active:
+            log("reevaluate: a slideshow monitor is present; starting")
+            self.begin()
+            return GLib.SOURCE_REMOVE
+
+        log("reevaluate: config changed; re-setup")
+        self.setup_slideshow()
+        return GLib.SOURCE_REMOVE
+
+    def start_timer(self):
         if self.update_id > 0:
             GLib.source_remove(self.update_id)
             self.update_id = 0
+        n = max(1, self._n_streams)
+        delay = self.slideshow_settings.get_int("delay")
+        interval = max(1, int(delay * 60 / n))
+        log("start_timer: interval=%ds (delay=%dm / %d streams)" % (interval, delay, n))
+        self.update_id = GLib.timeout_add_seconds(interval, self.tick)
 
-        if not self.images_ready:
-            self.update_id = GLib.timeout_add_seconds(1, self.start_mainloop)
+    def tick(self):
+        if self.slideshow_settings.get_boolean("slideshow-paused"):
+            log("tick: paused")
+            return True
+        result = self.rotation.tick()
+        if result is not None:
+            mid, uri = result
+            log("tick: advance %s -> %s" % (mid, uri))
+            self._apply(mid, uri)
+            self.bg_list.save_pictures()
         else:
-            if self.loop_counter >= self.slideshow_settings.get_int("delay") and not self.slideshow_settings.get_boolean("slideshow-paused"):
-                self.loop_counter = 1
-                self.update_background()
-                self.update_id = GLib.timeout_add_seconds(60, self.start_mainloop)
-            else:
-                self.loop_counter = self.loop_counter + 1
-                self.update_id = GLib.timeout_add_seconds(60, self.start_mainloop)
+            log("tick: no advance")
+        return True
 
-    def update_background(self):
-        if self.update_in_progress:
+    def advance_all(self):
+        if self.rotation is None:
+            self.setup_slideshow()
             return
-
-        self.update_in_progress = True
-
-        if len(self.image_playlist) == 0:
-            self.move_used_images_to_original_playlist()
-
-        next_image = self.get_next_image_from_list()
-        if next_image is not None:
-            self.background_settings.set_string("picture-uri", next_image)
-            self.current_image = next_image
-
-        self.update_in_progress = False
-
-    def get_next_image_from_list(self):
-        if self.random_order:
-            index = random.randint(0, len(self.image_playlist) - 1)
-            image = self.image_playlist[index]
-        else:
-            self.maybe_skip_past_last_image()
-            index = 0
-            image = self.image_playlist[index]
-
-        self.move_image_to_used_playlist(index, image)
-
-        return image
-
-    def maybe_skip_past_last_image(self):
-        if self.starting_image is None:
-            return
-        # Check if the starting image is in our list (we've rebooted or otherwise a new process)
-        if self.starting_image in self.image_playlist:
-            # Make sure it's *not* the last image in our list. (We want to start over anyhow, if it is)
-            if self.image_playlist[-1] != self.starting_image:
-                # Move all images leading up to, and including this one, to the 'used' bin.
-                while self.image_playlist[0] != self.starting_image:
-                    self.move_image_to_used_playlist(0, self.image_playlist[0])
-                self.move_image_to_used_playlist(0, self.image_playlist[0])
-
-        self.starting_image = None
-
-    def move_image_to_used_playlist(self, index, image):
-        self.image_playlist.pop(index)
-        self.used_image_playlist.append(image)
-
-    def move_used_images_to_original_playlist(self):
-        self.image_playlist = self.used_image_playlist
-        if self.collection_type == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
-            self.image_playlist.sort()
-        self.used_image_playlist = []
-
+        changed = self.rotation.advance_all()
+        for mid, uri in changed:
+            log("getNextImage: advance %s -> %s" % (mid, uri))
+            self._apply(mid, uri)
+        if changed:
+            self.bg_list.save_pictures()
+        self.start_timer()
 
 ########### TAKEN FROM CS_BACKGROUND
     def splitLocaleCode(self, localeCode):
@@ -389,11 +471,14 @@ class CinnamonSlideshowApplication(Gio.Application):
                             res.append(wallpaperData)
             return res
         except Exception as detail:
-            print(detail)
+            print("slideshow: failed to parse background list '%s': %s" % (filename, detail), flush=True)
             return []
 
 if __name__ == "__main__":
     setproctitle("cinnamon-slideshow")
 
+    if "--verbose" in sys.argv or "-v" in sys.argv:
+        set_verbose(True)
+
     app = CinnamonSlideshowApplication()
-    app.run()
+    app.run([a for a in sys.argv if a not in ("--verbose", "-v")])

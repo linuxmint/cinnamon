@@ -17,3 +17,11 @@ mkdir -p tmp
 meson setup tmp
 meson compile -C tmp cinnamon_css
 sudo cp tmp/data/theme/cinnamon-sass/cinnamon.css /usr/share/cinnamon/theme/
+
+sudo rm -f /usr/bin/cinnamon-settings-users
+sudo rm -f /usr/share/applications/cinnamon-settings-info.desktop
+sudo rm -f /usr/share/applications/cinnamon-settings-user.desktop
+sudo rm -f /usr/share/applications/cinnamon-settings-users.desktop
+sudo rm -f /usr/share/cinnamon/cinnamon-settings/modules/cs_info.py
+sudo rm -f /usr/share/cinnamon/cinnamon-settings/modules/cs_user.py
+sudo rm -rf /usr/share/cinnamon/cinnamon-settings-users

@@ -207,6 +207,28 @@ cinnamon_glsl_effect_class_init (CinnamonGLSLEffectClass *klass)
   gobject_class->dispose = cinnamon_glsl_effect_dispose;
 }
 
+ /**
+ * cinnamon_glsl_effect_get_pipeline:
+ * @effect: a #CinnamonGLSLEffect
+ *
+ * Returns: (transfer none): the #CoglPipeline actually used to paint
+ * @effect. This is the same pipeline that cinnamon_glsl_effect_paint_target()
+ * draws with, so it may be used to bind additional texture layers (via
+ * cogl_pipeline_set_layer_texture(), starting at layer 1 since layer 0 is
+ * reserved for the actor's own texture) or set other per-frame pipeline
+ * state. Note that this is deliberately distinct from the inherited
+ * clutter_offscreen_effect_get_pipeline(), which returns
+ * ClutterOffscreenEffect's own internal pipeline — a different object that
+ * CinnamonGLSLEffect never actually draws with, since it overrides
+ * paint_target().
+ */
+CoglPipeline *
+cinnamon_glsl_effect_get_pipeline (CinnamonGLSLEffect *effect)
+{
+  CinnamonGLSLEffectPrivate *priv = cinnamon_glsl_effect_get_instance_private (effect);
+  return priv->pipeline;
+}
+
 /**
  * cinnamon_glsl_effect_get_uniform_location:
  * @effect: a #CinnamonGLSLEffect

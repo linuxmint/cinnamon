@@ -1,9 +1,10 @@
 #!/usr/bin/python3
 
 from bin.SettingsWidgets import SidePage
+from bin import util
 from xapp.GSettingsWidgets import *
 
-FRACTIONAL_ENABLE_OPTIONS = ["scale-monitor-framebuffer", "x11-randr-fractional-scaling"]
+X11_FRACTIONAL_FEATURE = "x11-randr-fractional-scaling"
 
 class Module:
     name = "display"
@@ -51,43 +52,37 @@ class Module:
             switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
             settings.add_row(switch)
 
-            switch = Switch(_("Enable fractional scaling controls (experimental)"))
-            switch.set_tooltip_text(_("Select this option to display additional layout controls for per-monitor scaling."))
-            settings.add_row(switch)
-            self.fractional_switch = switch.content_widget
+            if util.get_session_type() != "wayland":
+                switch = Switch(_("Enable fractional scaling controls (experimental)"))
+                switch.set_tooltip_text(_("Select this option to display additional layout controls for per-monitor scaling."))
+                settings.add_row(switch)
+                self.fractional_switch = switch.content_widget
 
-            self.muffin_settings = Gio.Settings(schema_id="org.cinnamon.muffin")
-            self.experimental_features_changed(self.muffin_settings, "x11-randr-fractional-scaling")
-            self.muffin_settings.connect("changed::experimental-features", self.experimental_features_changed)
-            self.fractional_switch.connect("notify::active", self.fractional_switch_toggled)
+                self.muffin_settings = Gio.Settings(schema_id="org.cinnamon.muffin")
+                self.experimental_features_changed(self.muffin_settings, "experimental-features")
+                self.muffin_settings.connect("changed::experimental-features", self.experimental_features_changed)
+                self.fractional_switch.connect("notify::active", self.fractional_switch_toggled)
 
-            scale_mode_options = [["scale-up",      _("Scale content up"  )],
-                                  ["scale-ui-down", _("Scale content down")]]
+                scale_mode_options = [["scale-up",      _("Scale content up"  )],
+                                      ["scale-ui-down", _("Scale content down")]]
 
-            widget = GSettingsComboBox(_("Fractional scaling mode"), "org.cinnamon.muffin.x11", "fractional-scale-mode", scale_mode_options)
-            settings.add_reveal_row(widget, "org.cinnamon.muffin", "experimental-features", [], lambda val, vals: "x11-randr-fractional-scaling" in val)
+                widget = GSettingsComboBox(_("Fractional scaling mode"), "org.cinnamon.muffin.x11", "fractional-scale-mode", scale_mode_options)
+                settings.add_reveal_row(widget, "org.cinnamon.muffin", "experimental-features", [], lambda val, vals: X11_FRACTIONAL_FEATURE in val)
 
     def experimental_features_changed(self, settings, key):
         self.fractional_switch.freeze_notify()
 
         features = self.muffin_settings.get_strv("experimental-features")
-        self.fractional_switch.set_active(set(FRACTIONAL_ENABLE_OPTIONS).issubset(features))
+        self.fractional_switch.set_active(X11_FRACTIONAL_FEATURE in features)
 
         self.fractional_switch.thaw_notify()
 
     def fractional_switch_toggled(self, switch, pspec):
-        active = switch.get_active()
         features = self.muffin_settings.get_strv("experimental-features")
+        features = [f for f in features if f != X11_FRACTIONAL_FEATURE]
 
-        for enabler in FRACTIONAL_ENABLE_OPTIONS:
-            try:
-                while True:
-                    features.remove(enabler)
-            except ValueError:
-                pass
-
-        if active:
-            features.extend(FRACTIONAL_ENABLE_OPTIONS)
+        if switch.get_active():
+            features.append(X11_FRACTIONAL_FEATURE)
 
         self.muffin_settings.set_strv("experimental-features", features)
 

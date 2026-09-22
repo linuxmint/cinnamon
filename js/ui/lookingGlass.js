@@ -296,7 +296,7 @@ var Inspector = GObject.registerClass({
         this._borderPaintTarget = null;
         this._borderPaintId = null;
         eventHandler.connect('destroy', () => { this._onDestroy() });
-        this._capturedEventId = global.stage.connect('captured-event', (...args) => { this._onCapturedEvent(...args) });
+        this._capturedEventId = global.stage.connect('captured-event', (...args) => this._onCapturedEvent(...args));
 
         // this._target is the actor currently shown by the inspector.
         // this._pointerTarget is the actor directly under the pointer.
@@ -305,6 +305,7 @@ var Inspector = GObject.registerClass({
         // out, or move the pointer outside of _pointerTarget.
         this._target = null;
         this._pointerTarget = null;
+        this._selectionMade = false;
         this.passThroughEvents = false;
         this._updatePassthroughText();
     }
@@ -333,20 +334,29 @@ var Inspector = GObject.registerClass({
                 return this._onKeyPressEvent(actor, event);
             case Clutter.EventType.BUTTON_PRESS:
                 return this._onButtonPressEvent(actor, event);
+            case Clutter.EventType.BUTTON_RELEASE:
+                // _selectionMade is set on BUTTON_PRESS, but defer closure until
+                // release so that it doesn't hit the same actor we just chose - some
+                // actors, like window-list items, are activated on release, not press.
+                if (this._selectionMade) {
+                    this._close();
+                }
+                return Clutter.EVENT_STOP;
             case Clutter.EventType.SCROLL:
                 return this._onScrollEvent(actor, event);
             case Clutter.EventType.MOTION:
                 return this._onMotionEvent(actor, event);
+
             default:
                 return Clutter.EVENT_STOP;
         }
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (!this._eventHandler)
             return;
 
-        this.set_allocation(box, flags);
+        this.set_allocation(box);
 
         let primary = Main.layoutManager.primaryMonitor;
 
@@ -358,7 +368,7 @@ var Inspector = GObject.registerClass({
         childBox.x2 = childBox.x1 + natWidth;
         childBox.y1 = primary.y + Math.floor((primary.height - natHeight) / 2);
         childBox.y2 = childBox.y1 + natHeight;
-        this._eventHandler.allocate(childBox, flags);
+        this._eventHandler.allocate(childBox);
     }
 
     _close() {
@@ -386,7 +396,7 @@ var Inspector = GObject.registerClass({
             let [stageX, stageY] = event.get_coords();
             this.emit('target', this._target, stageX, stageY);
         }
-        this._close();
+        this._selectionMade = true;
         return Clutter.EVENT_STOP;
     }
 

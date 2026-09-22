@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const Clutter = imports.gi.Clutter;
 const Gio = imports.gi.Gio;
+const GLib = imports.gi.GLib;
 const Interfaces = imports.misc.interfaces
 const Lang = imports.lang;
 const LoginManager = imports.misc.loginManager;
@@ -99,6 +100,7 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this._step = .05;
         this._readyCallback = readyCallback || null;
         this.proxy = null;
+        this._setupTimeoutId = 0;
 
         this.connect("drag-begin", () => {
             this._seeking = true;
@@ -116,7 +118,18 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         this.tooltipText = label;
         this.tooltip = new Tooltips.Tooltip(this.actor, this.tooltipText);
 
-        Interfaces.getDBusProxyAsync(busName, this._dbusAcquired.bind(this));
+        this.actor.connect("destroy", () => {
+            if (this._setupTimeoutId > 0) {
+                GLib.source_remove(this._setupTimeoutId);
+                this._setupTimeoutId = 0;
+            }
+        });
+
+        this._setupTimeoutId = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, 3, () => {
+            this._setupTimeoutId = 0;
+            Interfaces.getDBusProxyAsync(busName, this._dbusAcquired.bind(this));
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     _dbusAcquired(proxy, error) {
@@ -132,6 +145,18 @@ class BrightnessSlider extends PopupMenu.PopupSliderMenuItem {
         if (this._readyCallback) {
             this._readyCallback();
         }
+
+        // The proxy can resolve before csd-power has claimed its bus name during
+        // session startup, in which case these calls fail with ServiceUnknown and
+        // the slider would stay hidden forever. Re-query whenever the service
+        // appears so we recover once csd-power is up.
+        this.proxy.connect("notify::g-name-owner", this._serviceAppeared.bind(this));
+        this._serviceAppeared();
+    }
+
+    _serviceAppeared() {
+        if (this.proxy.g_name_owner == null)
+            return;
 
         this.proxy.GetPercentageRemote((b, error) => {
             if (error)

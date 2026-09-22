@@ -347,8 +347,7 @@ st_widget_get_preferred_height (ClutterActor *self,
 
 static void
 st_widget_allocate (ClutterActor          *actor,
-                    const ClutterActorBox *box,
-                    ClutterAllocationFlags flags)
+                    const ClutterActorBox *box)
 {
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   ClutterActorBox content_box;
@@ -359,7 +358,7 @@ st_widget_allocate (ClutterActor          *actor,
    * manager, meaning that we can't modify it for children only.
    */
 
-  clutter_actor_set_allocation (actor, box, flags);
+  clutter_actor_set_allocation (actor, box);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
@@ -367,8 +366,7 @@ st_widget_allocate (ClutterActor          *actor,
    * currently installed layout manager */
   clutter_layout_manager_allocate (clutter_actor_get_layout_manager (actor),
                                    CLUTTER_CONTAINER (actor),
-                                   &content_box,
-                                   flags);
+                                   &content_box);
 }
 
 /**
@@ -407,10 +405,14 @@ st_widget_paint_background (StWidget *widget, ClutterPaintContext *paint_context
         }
 
       CoglFramebuffer *fb = clutter_paint_context_get_framebuffer (paint_context);
+      gfloat resource_scale;
+
+      resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (widget));
       st_theme_node_paint (theme_node,
                            fb,
                            &allocation,
                            opacity,
+                           resource_scale,
                            widget->priv->background_blur_effect,
                            widget->priv->background_bumpmap_effect);
     }

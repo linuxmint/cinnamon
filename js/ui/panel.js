@@ -203,6 +203,33 @@ function getPanelLocFromName(pname) {
 };
 
 /**
+ * parsePanelDef:
+ * @def (string): a panel definition from settings, in the form ID:monitor:panelposition
+ *
+ * Parses a single panel definition, rejecting one that doesn't have three elements, or
+ * whose id or monitor index is negative or unparseable - such an index matches neither a
+ * monitor nor a panel id, so the panel would be registered nowhere and its definition
+ * never cleaned up. The position is not checked, getPanelLocFromName() maps anything it
+ * doesn't recognise to PanelLoc.bottom.
+ *
+ * Returns: [id, monitor index, panel position], or null if the definition is unusable
+ */
+function parsePanelDef(def) {
+    let elements = def.split(":");
+    if (elements.length != 3)
+        return null;
+
+    let id = parseInt(elements[PanelDefElement.ID]);
+    let monitorIndex = parseInt(elements[PanelDefElement.MONITOR]);
+    let panelPosition = getPanelLocFromName(elements[PanelDefElement.POSITION]);
+
+    if (isNaN(id) || id < 0 || isNaN(monitorIndex) || monitorIndex < 0)
+        return null;
+
+    return [id, monitorIndex, panelPosition];
+};
+
+/**
  * toStandardIconSize:
  * @maxSize (integer): the maximum size of the icon
  *
@@ -235,66 +262,12 @@ function setHeightForPanel(panel) {
     return height;
 }
 
-function convertSettingsXMonToLMon(strv) {
-    let out = [];
-
-    for (let i = 0; i < strv.length; i++) {
-        let elements = strv[i].split(":");
-
-        if (elements.length !== 3)
-            continue;
-
-        let [id, xmon, pos] = elements;
-
-        if (xmon > global.display.get_n_monitors() - 1) {
-            // log("Skipping panel enabled info for monitor we don't have: " + strv[i]);
-            out.push(strv[i]);
-            continue;
-        }
-
-        let l_mon = xmon;
-        if (!Meta.is_wayland_compositor())
-            l_mon = global.display.xinerama_index_to_logical_index(xmon);
-
-        out.push(`${id}:${l_mon}:${pos}`);
-
-        // log(`xmon: ${id}:${xmon}:${pos}  to lmon: ${id}:${l_mon}:${pos}`);
-    }
-
-    return out;
-}
-
-function convertSettingsLMonToXMon(strv) {
-    let out = [];
-
-    for (let i = 0; i < strv.length; i++) {
-        let elements = strv[i].split(":");
-
-        if (elements.length !== 3)
-            continue;
-
-        let [id, lmon, pos] = elements;
-
-        let x_mon = lmon;
-        if (!Meta.is_wayland_compositor())
-            x_mon = global.display.logical_index_to_xinerama_index(lmon);
-
-        out.push(`${id}:${x_mon}:${pos}`);
-
-        // log(`l_mon: ${id}:${l_mon}:${pos}  to xmon: ${id}:${x_mon}:${pos}`);
-    }
-
-    return out;
-}
-
 function getPanelsEnabledList() {
-    let panelProperties = global.settings.get_strv("panels-enabled");
-    return convertSettingsXMonToLMon(panelProperties);
+    return global.settings.get_strv("panels-enabled");
 }
 
 function setPanelsEnabledList(list) {
-    let converted = convertSettingsLMonToXMon(list)
-    let panelProperties = global.settings.set_strv("panels-enabled", converted);
+    global.settings.set_strv("panels-enabled", list);
 }
 
 function updatePanelsMeta(meta, panel_props) {
@@ -383,75 +356,82 @@ var PanelManager = GObject.registerClass({
      *                 vertical panels to fit snugly between horizontal ones
      */
     _fullPanelLoad() {
-        let monitor = 0;
         // panel id, monitor, panel type
         let stash = [];
 
-        let monitorCount = global.display.get_n_monitors();
         let panelDefs = getPanelsEnabledList();
 
-        // First pass through just to count the monitors,
-        // as there is no ordering to rely on
-        let goodDefs = [];
+        // First pass through to discard unusable and conflicting definitions. There is no
+        // ordering to rely on, so of a conflicting pair whichever comes first is kept.
+        let keptDefs = [];
         let removals = [];
+        let seenIds = new Set();
+        let seenSlots = new Set();
+
         for (let i = 0, len = panelDefs.length; i < len; i++) {
-            let elements = panelDefs[i].split(":");
-            if (elements.length != 3) {
+            let def = parsePanelDef(panelDefs[i]);
+            if (!def) {
                 global.log("Invalid panel definition: " + panelDefs[i]);
-                removals.push(i);
-                continue;
-            }
-
-            if (elements[PanelDefElement.MONITOR] >= monitorCount) {
-                // Ignore, but don't remove. Less monitors can be a temporary condition.
-                global.log("Ignoring panel definition for nonexistent monitor: " + panelDefs[i]);
-                continue;
-            }
-
-            // Some sanitizing
-            if (goodDefs.find((goodDef) => {
-                const goodElements = goodDef.split(":");
-                // Ignore any duplicate IDs
-                if (goodElements[PanelDefElement.ID] === elements[PanelDefElement.ID]) {
-                    global.log("Duplicate ID detected in panel definition: " + panelDefs[i]);
-                    return true;
-                }
-                // Ignore any duplicate monitor/position combinations
-                if ((goodElements[PanelDefElement.MONITOR] === elements[PanelDefElement.MONITOR]) && (goodElements[PanelDefElement.POSITION] === elements[PanelDefElement.POSITION])) {
-                    global.log("Duplicate monitor+position detected in panel definition: " + panelDefs[i]);
-                    return true;
-                }
-
-                return false;
-            })) {
                 removals.push(panelDefs[i]);
                 continue;
             }
 
-            goodDefs.push(panelDefs[i]);
+            let [id, monitorIndex, panelPosition] = def;
+            let slot = monitorIndex + ":" + panelPosition;
+            let duplicate = false;
+
+            if (seenIds.has(id)) {
+                global.log("Duplicate ID detected in panel definition: " + panelDefs[i]);
+                duplicate = true;
+            } else if (seenSlots.has(slot)) {
+                global.log("Duplicate monitor+position detected in panel definition: " + panelDefs[i]);
+                duplicate = true;
+            }
+
+            if (duplicate) {
+                // A missing monitor can be a temporary condition, so leave its definitions in
+                // settings and let a session that can see the monitor resolve the conflict.
+                if (monitorIndex < this.monitorCount)
+                    removals.push(panelDefs[i]);
+                else
+                    keptDefs.push(panelDefs[i]);
+                continue;
+            }
+
+            seenIds.add(id);
+            seenSlots.add(slot);
+            keptDefs.push(panelDefs[i]);
+            stash.push(def);
         }
 
-        if (removals.length > 0) {
-            let cleanDefs = panelDefs.filter((def) => !removals.includes(def));
+        // Definitions we merely failed to understand are the user's entire panel layout, so
+        // don't write an empty list over all of them - there would be nothing to recover from.
+        if (removals.length > 0 && keptDefs.length > 0) {
             global.log("Removing invalid panel definitions: " + removals);
-            setPanelsEnabledList(cleanDefs);
+            setPanelsEnabledList(keptDefs);
         }
 
-        // set up the list of panels
-        for (let i = 0, len = goodDefs.length; i < len; i++) {
-            let elements = goodDefs[i].split(":");
-            // panel orientation
-            let jj = getPanelLocFromName(elements[PanelDefElement.POSITION]);
+        // Panels belonging to monitors that aren't currently connected can't be created, but
+        // _loadPanel() still records their metadata. Without it _onMonitorsChanged() has no way
+        // of knowing they exist, and can't restore them when the monitor is plugged back in.
+        for (let i = 0, len = stash.length; i < len; i++) {
+            let [id, monitorIndex, panelPosition] = stash[i];
+            if (monitorIndex < this.monitorCount)
+                continue;
 
-            monitor = parseInt(elements[PanelDefElement.MONITOR]);
-            // load what we are going to use to call loadPanel into an array
-            stash[i] = [parseInt(elements[PanelDefElement.ID]), monitor, jj];
+            this._loadPanel(id, monitorIndex, panelPosition);
+
+            // _loadPanel() returns null here either way, so check the metadata itself - it
+            // can reject a definition before recording it, leaving nothing to restore from.
+            if (!this.panelsMeta[id])
+                global.logError("Panel " + id + " could not be registered, and will not be " +
+                                "restored if monitor " + monitorIndex + " is reconnected");
         }
 
         // When using mixed horizontal and vertical panels draw the vertical panels first.
         // This is done so that when using a box shadow on the panel to create a border the border will be drawn over the
         // top of the vertical panel.
-        for (let i = 0; i <= monitorCount; i++) {
+        for (let i = 0; i < this.monitorCount; i++) {
             let pleft, pright;
             for (let j = 0, len = stash.length; j < len; j++) {
                 if (stash[j][2] == PanelLoc.left && stash[j][1] == i) {
@@ -485,15 +465,8 @@ var PanelManager = GObject.registerClass({
                 }
             }
         }
-        //
-        // At this point all the panels are shown, so work through them and adjust
-        // vertical panel heights so as to fit snugly between horizontal panels
-        //
-        for (let i = 0, len = this.panels.length; i < len; i++) {
-            if (this.panels[i])
-                if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
-                    this.panels[i]._moveResizePanel();
-        }
+
+        this._adjustVerticalPanelHeights();
     }
 
    /**
@@ -726,6 +699,18 @@ var PanelManager = GObject.registerClass({
     }
 
     /**
+     * getPanelForActor:
+     * @actor (Clutter.Actor): an actor
+     *
+     * Finds the panel containing @actor
+     *
+     * Returns: the panel containing @actor (null if no panel does)
+     */
+    getPanelForActor(actor) {
+        return this.panels.find(panel => panel && panel.contains(actor)) || null;
+    }
+
+    /**
      * getPanel:
      * @monitorIndex (integer): index of monitor
      * @panelPosition (integer): where the panel is added
@@ -820,8 +805,11 @@ var PanelManager = GObject.registerClass({
         // metaList [i][0] is the monitor index, metaList [i][1] is the panelPosition
         metaList[ID] = [monitorIndex, panelPosition];
 
+        // Keep this check below the metadata assignment - a panel whose monitor index is out of
+        // range is still registered here, which is what lets _onMonitorsChanged() restore it
+        // once that monitor is connected.
         if (monitorIndex < 0 || monitorIndex >= this.monitorCount) {
-            global.log("Monitor " + monitorIndex + " not found. Not creating panel");
+            global.log("Not creating panel " + ID + ", monitor " + monitorIndex + " not found");
             return null;
         }
         let[toppheight,botpheight] = heightsUsedMonitor(monitorIndex, panelList);
@@ -844,6 +832,22 @@ var PanelManager = GObject.registerClass({
     }
 
     /**
+     * _adjustVerticalPanelHeights:
+     *
+     * Re-fits every vertical panel to the horizontal panels currently on its monitor. Call
+     * this after a batch of panel creation or destruction - a vertical panel built before
+     * the horizontal panels it has to fit between sized itself against the wrong heights.
+     */
+    _adjustVerticalPanelHeights() {
+        for (let i = 0, len = this.panels.length; i < len; i++) {
+            if (!this.panels[i])
+                continue;
+            if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
+                this.panels[i]._moveResizePanel();
+        }
+    }
+
+    /**
      * _onPanelsEnabledChanged:
      *
      * This will be called whenever the panels-enabled settings key is changed
@@ -861,16 +865,13 @@ var PanelManager = GObject.registerClass({
 
         for (let i = 0; i < panelProperties.length; i ++) {
 
-            let elements = panelProperties[i].split(":");
-            if (elements.length != 3) {
+            let def = parsePanelDef(panelProperties[i]);
+            if (!def) {
                 global.log("Invalid panel definition: " + panelProperties[i]);
                 continue;
             }
 
-            // each panel is stored as ID:monitor:panelposition
-            let ID = parseInt(elements[0]);
-            let mon = parseInt(elements[1]);
-            let ploc = getPanelLocFromName(elements[2]);
+            let [ID, mon, ploc] = def;
 
             // If (existing) panel is moved
             if (this.panels[ID]) {
@@ -916,15 +917,9 @@ var PanelManager = GObject.registerClass({
         this.panels = newPanels;
         this.panelsMeta = newMeta;
 
-        // Adjust any vertical panel heights so as to fit snugly between horizontal panels
-        // Scope for minor optimisation here, doesn't need to adjust verticals if no horizontals added or removed
-        // or if any change from making space for panel dummys needs to be reflected.
-        for (let i = 0, len = this.panels.length; i < len; i++) {
-            if (this.panels[i]) {
-                if (this.panels[i].panelPosition == PanelLoc.left || this.panels[i].panelPosition == PanelLoc.right)
-                    this.panels[i]._moveResizePanel();
-            }
-        }
+        // Scope for minor optimisation here - only needed if a horizontal panel was added or
+        // removed, or if space made for panel dummys has to be reflected.
+        this._adjustVerticalPanelHeights();
 
         this._setMainPanel();
         this._checkCanAddPanel();
@@ -948,6 +943,7 @@ var PanelManager = GObject.registerClass({
         let panelProperties = getPanelsEnabledList()
         // adjust any changes to logical/xinerama monitor relationships
         let monitors_changed = updatePanelsMeta(this.panelsMeta, panelProperties) || oldCount !== this.monitorCount;
+        let panelsRestored = false;
 
         for (let i = 0, len = this.panelsMeta.length; i < len; i++) {
             if (!this.panelsMeta[i])
@@ -957,8 +953,10 @@ var PanelManager = GObject.registerClass({
             if (!this.panels[i]) {
                 if (this.panelsMeta[i][0] < this.monitorCount) {
                     let panel = this._loadPanel(i, this.panelsMeta[i][0], this.panelsMeta[i][1]);
-                    if (panel)
+                    if (panel) {
                         AppletManager.loadAppletsOnPanel(panel);
+                        panelsRestored = true;
+                    }
                 }
             } else if (this.panelsMeta[i][0] >= this.monitorCount) {
                 if (this.panels[i]) {
@@ -980,6 +978,11 @@ var PanelManager = GObject.registerClass({
                 }
             }
         }
+
+        // Restored panels are created in id order, so a vertical panel may have been built before
+        // the horizontal panels it has to fit between.
+        if (panelsRestored)
+            this._adjustVerticalPanelHeights();
 
         if (this.addPanelMode) {
             this._destroyDummyPanels();
@@ -1276,10 +1279,12 @@ var PanelContextMenu = class PanelContextMenu extends PopupMenu.PopupMenu {
     }
 
     open(animate) {
-        super.open.call(this, animate);
-
+        // Update item state before the menu lays out, not after - a
+        // style change once the menu is open re-invalidates it mid-frame.
         this.movePanelItem.setSensitive(Main.panelManager.canAddPanel);
         this.addPanelItem.setSensitive(Main.panelManager.canAddPanel);
+
+        super.open.call(this, animate);
 
         let {definitions} = AppletManager;
         let nonEmpty = false;
@@ -1558,6 +1563,7 @@ var Panel = GObject.registerClass({
         this._mouseEntered = null;
         this._signalManager = new SignalManager.SignalManager(null);
         this.heightForZones = 0;
+        this._setPanelHeightLaterId = 0;
         this.margin_top = 0;
         this.margin_bottom = 0;
         this.margin_left = 0;
@@ -1601,7 +1607,7 @@ var Panel = GObject.registerClass({
         this._onPanelEditModeChanged();
         this._processPanelAutoHide();
 
-        this.connect('queue-relayout', () => this._setPanelHeight());
+        this.connect('queue-relayout', () => this._queueSetPanelHeight());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
@@ -1727,6 +1733,11 @@ var Panel = GObject.registerClass({
         this._destroyed = true;    // set this early so that any routines triggered during
                                    // the destroy process can test it
 
+        if (this._setPanelHeightLaterId > 0) {
+            Meta.later_remove(this._setPanelHeightLaterId);
+            this._setPanelHeightLaterId = 0;
+        }
+
         Main.layoutManager.removeChrome(this);
 
         if (removeIconSizes)
@@ -1752,8 +1763,15 @@ var Panel = GObject.registerClass({
         super.destroy();
     }
 
-    peekPanel() {
-        if (!this._hidden || this._peeking)
+    /**
+     * revealPanel:
+     *
+     * Immediately slides the panel in, cancelling any pending show/hide and
+     * skipping the show delay. Has no effect while the panel is disabled.
+     * The panel remains subject to the normal visibility logic afterwards.
+     */
+    revealPanel() {
+        if (this._destroyed)
             return;
 
         if (this._showHideTimer > 0) {
@@ -1761,8 +1779,15 @@ var Panel = GObject.registerClass({
             this._showHideTimer = 0;
         }
 
-        this._peeking = true;
         this._showPanel();
+    }
+
+    peekPanel() {
+        if (!this._hidden || this._peeking)
+            return;
+
+        this._peeking = true;
+        this.revealPanel();
 
         Mainloop.timeout_add(PANEL_PEEK_TIME, () => {
             this._peeking = false;
@@ -1904,6 +1929,23 @@ var Panel = GObject.registerClass({
             let panelLeft = 0;
             let panelRight = 0;
 
+            /* A barrier guarding a shared monitor edge belongs on the boundary
+             * itself, which is where muffin's native (Wayland) backend expects
+             * it. On X11 it has to sit one pixel inside instead, to keep it off
+             * the same line as the neighbouring monitor's opposing barrier.
+             *
+             * XFixes evaluates a motion's direction as a single bitmask across
+             * both axes (barrier_is_blocking_direction, Xi/xibarriers.c), so on
+             * a diagonal move a barrier that permits the horizontal direction is
+             * still counted as blocking, because of the vertical component. It
+             * then clamps nothing, and input_constrain_cursor() goes on to clear
+             * both X direction bits - so the barrier that would have blocked is
+             * never evaluated and the pointer passes straight through. Keeping
+             * the two barriers on separate lines lets barrier_find_nearest()
+             * pick the correct one by distance, avoiding the tie entirely.
+             */
+            let edgeOffset = Meta.is_wayland_compositor() ? 0 : 1;
+
             if (!noBarriers) {   // barriers are required
                 if (this.panelPosition == PanelLoc.top || this.panelPosition == PanelLoc.bottom) {
                     switch (this.panelPosition) {
@@ -1913,10 +1955,10 @@ var Panel = GObject.registerClass({
                             break;
                         case PanelLoc.bottom:
                             panelTop    = this.monitor.y + this.monitor.height - Math.floor(this.get_height());
-                            panelBottom = this.monitor.y + this.monitor.height -1;
+                            panelBottom = this.monitor.y + this.monitor.height - edgeOffset;
                             break;
                     }
-                    let x_coord = this.monitor.x + this.monitor.width - 1 - this.margin_right;
+                    let x_coord = this.monitor.x + this.monitor.width - edgeOffset - this.margin_right;
                     if (panelTop != panelBottom && x_coord >= 0)
                     {
                         if (screen_width > this.monitor.x + this.monitor.width - this.margin_right) {    // if there is a monitor to the right or panel offset into monitor
@@ -1946,7 +1988,7 @@ var Panel = GObject.registerClass({
                             break;
                         case PanelLoc.right:
                             panelLeft  = this.monitor.x + this.monitor.width - Math.floor(this.get_width());
-                            panelRight = this.monitor.x + this.monitor.width-1;
+                            panelRight = this.monitor.x + this.monitor.width - edgeOffset;
                             break;
                         default:
                             global.log("updatePanelBarriers - unrecognised panel position "+this.panelPosition);
@@ -1965,7 +2007,7 @@ var Panel = GObject.registerClass({
                         }
 
                         if (this.bottompanelHeight === 0) {
-                            y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom -1;
+                            let y_coord = this.monitor.y + this.monitor.height - Math.floor(this.bottompanelHeight)- this.margin_bottom - edgeOffset;
                             if (screen_height > this.monitor.y + this.monitor.height         // if there is a monitor below
                                 || this.bottompanelHeight > 0 || this.margin_bottom > 0) {
                                 this._bottomPanelBarrier = new Meta.Barrier({
@@ -2476,6 +2518,17 @@ var Panel = GObject.registerClass({
         this._rightBox.set_y_align(Clutter.ActorAlign.FILL);
     }
 
+    _queueSetPanelHeight() {
+        if (this._setPanelHeightLaterId > 0)
+            return;
+
+        this._setPanelHeightLaterId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this._setPanelHeightLaterId = 0;
+            this._setPanelHeight();
+            return false;
+        });
+    }
+
     _setPanelHeight() {
         let height = setHeightForPanel(this);
         if (height === this.heightForZones)
@@ -2871,8 +2924,8 @@ var Panel = GObject.registerClass({
         return [leftBoundary, rightBoundary];
     }
 
-    vfunc_allocate(box, flags) {
-        this.set_allocation(box, flags);
+    vfunc_allocate(box) {
+        this.set_allocation(box);
 
         const allocWidth = box.x2 - box.x1;
         const allocHeight = box.y2 - box.y1;
@@ -2887,15 +2940,15 @@ var Panel = GObject.registerClass({
 
             childBox.y1 = 0;
             childBox.y2 = leftBoundary;
-            this._leftBox.allocate(childBox, flags);
+            this._leftBox.allocate(childBox);
 
             childBox.y1 = leftBoundary;
             childBox.y2 = rightBoundary;
-            this._centerBox.allocate(childBox, flags);
+            this._centerBox.allocate(childBox);
 
             childBox.y1 = rightBoundary;
             childBox.y2 = allocHeight;
-            this._rightBox.allocate(childBox, flags);
+            this._rightBox.allocate(childBox);
         } else {
             let [leftBoundary, rightBoundary] = this._calculateBoxes(allocWidth, allocHeight, false);
             const isRTL = this.get_direction() === St.TextDirection.RTL;
@@ -2910,7 +2963,7 @@ var Panel = GObject.registerClass({
                 childBox.x1 = 0;
                 childBox.x2 = leftBoundary;
             }
-            this._leftBox.allocate(childBox, flags);
+            this._leftBox.allocate(childBox);
 
             if (isRTL) {
                 childBox.x1 = rightBoundary;
@@ -2919,7 +2972,7 @@ var Panel = GObject.registerClass({
                 childBox.x1 = leftBoundary;
                 childBox.x2 = rightBoundary;
             }
-            this._centerBox.allocate(childBox, flags);
+            this._centerBox.allocate(childBox);
 
             if (isRTL) {
                 childBox.x1 = 0;
@@ -2928,7 +2981,7 @@ var Panel = GObject.registerClass({
                 childBox.x1 = rightBoundary;
                 childBox.x2 = allocWidth;
             }
-            this._rightBox.allocate(childBox, flags);
+            this._rightBox.allocate(childBox);
         }
     }
 
@@ -2966,7 +3019,8 @@ var Panel = GObject.registerClass({
     _updatePanelVisibility() {
         this._mouseEntered = this._mouseOnPanel();
 
-        if (this._panelEditMode || this._highlighted || this._peeking || this._panelHasOpenMenus())
+        if (this._panelEditMode || this._highlighted || this._peeking ||
+            this._panelHasOpenMenus() || Main.chromeRaiseManager.isPanelRaised(this))
             this._shouldShow = true;
         else {
             switch (this._autohideSettings) {
@@ -3119,7 +3173,7 @@ var Panel = GObject.registerClass({
         this.ease({
             opacity: 255,
             duration: AUTOHIDE_ANIMATION_TIME,
-            mode: Clutter.AnimationMode.EASE_OUT_QUAD
+            mode: Clutter.AnimationMode.EASE_IN_QUAD
         });
     }
 

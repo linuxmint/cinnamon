@@ -4,16 +4,13 @@ const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const Config = imports.misc.config;
 const Extension = imports.ui.extension;
-const Flashspot = imports.ui.flashspot;
 const KeyboardManager = imports.ui.keyboardManager;
 const Main = imports.ui.main;
 const AppletManager = imports.ui.appletManager;
 const DeskletManager = imports.ui.deskletManager;
 const ExtensionSystem = imports.ui.extensionSystem;
 const SearchProviderManager = imports.ui.searchProviderManager;
-const ModalDialog = imports.ui.modalDialog;
 const Util = imports.misc.util;
-const Cinnamon = imports.gi.Cinnamon;
 
 const CinnamonIface =
     '<node> \
@@ -23,34 +20,8 @@ const CinnamonIface =
                 <arg type="b" direction="out" name="success" /> \
                 <arg type="s" direction="out" name="result" /> \
             </method> \
-            <method name="ScreenshotArea"> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
-                <arg type="b" direction="in" name="flash"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
-            <method name="ScreenshotWindow"> \
-                <arg type="b" direction="in" name="include_frame"/> \
-                <arg type="b" direction="in" name="include_cursor"/> \
-                <arg type="b" direction="in" name="flash"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
-            <method name="Screenshot"> \
-                <arg type="b" direction="in" name="include_frame"/> \
-                <arg type="b" direction="in" name="flash"/> \
-                <arg type="s" direction="in" name="filename"/> \
-            </method> \
             <method name="ShowOSD"> \
                 <arg type="a{sv}" direction="in" name="params"/> \
-            </method> \
-            <method name="FlashArea"> \
-                <arg type="i" direction="in" name="x"/> \
-                <arg type="i" direction="in" name="y"/> \
-                <arg type="i" direction="in" name="width"/> \
-                <arg type="i" direction="in" name="height"/> \
             </method> \
             <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
@@ -191,75 +162,6 @@ var CinnamonDBus = class {
         return [success, returnValue];
     }
 
-    _onScreenshotComplete(obj, result, area, flash) {
-        if (flash) {
-            let flashspot = new Flashspot.Flashspot(area);
-            flashspot.fire();
-        }
-    }
-
-    /**
-     * ScreenshotArea:
-     * @include_cursor: Whether to include the mouse cursor
-     * @x: The X coordinate of the area
-     * @y: The Y coordinate of the area
-     * @width: The width of the area
-     * @height: The height of the area
-     * @flash: Whether to flash the edges of area
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the passed in area and saves it
-     * in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    ScreenshotArea(include_cursor, x, y, width, height, flash, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_area(include_cursor, x, y, width, height, filename,
-            (obj, result, area) => {
-                this._onScreenshotComplete(obj, result, area, flash);
-            });
-    }
-
-    /**
-     * ScreenshotWindow:
-     * @include_frame: Whether to include the frame or not
-     * @include_cursor: Whether to include the mouse cursor
-     * @flash: Whether to flash the edges of the window
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the focused window (optionally omitting the frame)
-     * and saves it in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    ScreenshotWindow(include_frame, include_cursor, flash, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot_window(include_frame, include_cursor, filename,
-            (obj, result, area) => {
-                this._onScreenshotComplete(obj, result, area, flash);
-            });
-    }
-
-    /**
-     * Screenshot:
-     * @include_cursor: Whether to include the mouse cursor
-     * @flash: Whether to flash the edges of the screen
-     * @filename: The filename for the screenshot
-     *
-     * Takes a screenshot of the whole screen and saves it
-     * in @filename as png image, it returns a boolean
-     * indicating whether the operation was successful or not.
-     *
-     */
-    Screenshot(include_cursor, flash, filename) {
-        let screenshot = new Cinnamon.Screenshot();
-        screenshot.screenshot(include_cursor, filename,
-            (obj, result, area) => {
-                this._onScreenshotComplete(obj, result, area, flash);
-            });
-    }
-
     ShowOSD(params) {
         for (let param in params)
             params[param] = params[param].deep_unpack();
@@ -275,17 +177,7 @@ var CinnamonDBus = class {
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], false);
-    }
-
-    FlashArea(x, y, width, height) {
-        let flashspot = new Flashspot.Flashspot({
-            x: x,
-            y: y,
-            width: width,
-            height: height
-        });
-        flashspot.fire();
+        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level']);
     }
 
     get OverviewActive() {
@@ -446,7 +338,7 @@ var CinnamonDBus = class {
     }
 
     ToggleKeyboard() {
-        Main.screensaverController.toggleKeyboard();
+        Main.toggleKeyboard();
     }
 
     GetMonitors() {
@@ -456,8 +348,7 @@ var CinnamonDBus = class {
             for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
                 let current = Main.layoutManager.monitors[i];
 
-                let xinerama_index = global.display.logical_index_to_xinerama_index(current.index);
-                monitors.push(xinerama_index);
+                monitors.push(current.index);
             }
         } catch (e) {
             log(e.message);
@@ -479,8 +370,7 @@ var CinnamonDBus = class {
             throw new Error("GetMonitorWorkRect: invalid monitor index: " + index + ".  Must be 0 to " + (n_mons - 1));
         }
 
-        let logical_index = global.display.xinerama_index_to_logical_index(index);
-        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(logical_index);
+        let rect = global.workspace_manager.get_active_workspace().get_work_area_for_monitor(index);
 
         return [rect.x, rect.y, rect.width, rect.height];
     }
