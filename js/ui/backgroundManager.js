@@ -21,6 +21,9 @@ const READY_FALLBACK_MS = 4000;
 const RESTART_LIMIT = 1;
 const RESTART_WINDOW_US = 60 * GLib.USEC_PER_SEC;
 
+// gsettings cannot be trusted at session start
+const LISTENER_DELAY_SECONDS = 10;
+
 var BackgroundManager = class {
     constructor() {
         this._daemonProxy = null;
@@ -28,6 +31,7 @@ var BackgroundManager = class {
         this._onDaemonReady = null;
         this._daemonHadOwner = false;
         this._daemonExitTimes = [];
+        this._gnomeSettings = null;
 
         this._startDaemon();
         Gio.bus_watch_name(Gio.BusType.SESSION, DAEMON_NAME,
@@ -37,17 +41,14 @@ var BackgroundManager = class {
 
         this._cinnamonSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.background" });
 
-        this._cinnamonPictureUri = this._cinnamonSettings.get_string("picture-uri");
-        this._cinnamonSettings.connect("changed::picture-uri",
-                                       this._onCinnamonPictureURIChanged.bind(this));
-
         let schema = Gio.SettingsSchemaSource.get_default();
-        if (!schema.lookup("org.gnome.desktop.background", true))
-            return;
+        if (schema.lookup("org.gnome.desktop.background", true))
+            this._gnomeSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.background" });
 
-        this._gnomeSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.background" });
-        this._pictureUri = this._gnomeSettings.get_string("picture-uri");
-        this._gnomeSettings.connect("changed::picture-uri", this._onPictureURIChanged.bind(this));
+        GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, LISTENER_DELAY_SECONDS, () => {
+            this._listenForExternalUris();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     showBackground() {
@@ -152,25 +153,56 @@ var BackgroundManager = class {
         this._startDaemon();
     }
 
-    _applyExternalUri(uri, source) {
-        if (uri == "")
+    _listenForExternalUris() {
+        this._cinnamonSettings.connect("change-event", (settings, keys) => {
+            if (this._pictureUriWritten(keys))
+                this._onCinnamonPictureURIChanged(settings, "picture-uri");
+            return false;
+        });
+
+        if (!this._gnomeSettings)
             return;
-        // set_single_uri() replaces the list with one zoomed entry, discarding
-        // any per-monitor layout.
-        if (LOGGING) {
-            global.log("BackgroundManager: %s picture-uri -> single background (%s)".format(source, uri));
-        }
-        CinnamonBg.List.set_single_uri(uri);
+
+        this._gnomeSettings.connect("change-event", (settings, keys) => {
+            if (this._pictureUriWritten(keys))
+                this._onGnomePictureURIChanged(settings, "picture-uri");
+            return false;
+        });
+    }
+
+    _pictureUriWritten(keys) {
+        return keys.some(quark => GLib.quark_to_string(quark) == "picture-uri");
     }
 
     _onCinnamonPictureURIChanged(settings, key) {
-        this._cinnamonPictureUri = this._cinnamonSettings.get_string(key);
-        this._applyExternalUri(this._cinnamonPictureUri, "Cinnamon");
+        const uri = settings.get_string(key);
+
+        if (uri == "")
+            return;
+
+        if (LOGGING) {
+            global.log("BackgroundManager: Cinnamon picture-uri -> single background (%s)".format(uri));
+        }
+
+        // set_single_uri() replaces the list with one zoomed entry, discarding
+        // any per-monitor layout.
+        CinnamonBg.List.set_single_uri(uri);
     }
 
-    _onPictureURIChanged(settings, key) {
-        this._pictureUri = this._gnomeSettings.get_string(key);
-        this._applyExternalUri(this._pictureUri, "GNOME");
+    _onGnomePictureURIChanged(settings, key) {
+        const uri = settings.get_string(key);
+
+        if (uri == "")
+            return;
+
+        if (LOGGING) {
+            global.log("BackgroundManager: GNOME picture-uri -> Cinnamon picture-uri (%s)".format(uri));
+        }
+
+        if (this._cinnamonSettings.get_string("picture-uri") == uri)
+            CinnamonBg.List.set_single_uri(uri);
+        else
+            this._cinnamonSettings.set_string("picture-uri", uri);
     }
 
     _basename(uri) {
