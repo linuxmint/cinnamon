@@ -320,6 +320,7 @@ class MonitorPage(Gtk.Box):
         column.pack_start(cell, True)
         column.add_attribute(pb_cell, "icon-name", 1)
         column.add_attribute(cell, "text", 2)
+        column.set_cell_data_func(cell, self._style_collection_name)
         column.set_alignment(0)
         self.folder_tree.append_column(column)
         self.folder_tree.set_model(module.collection_store)
@@ -570,6 +571,12 @@ class MonitorPage(Gtk.Box):
             self.icon_view.set_pictures_list(picture_list, path)
             self.update_grid_sensitivity()
 
+    def _style_collection_name(self, column, cell, model, tree_iter, data=None):
+        path = model[tree_iter][STORE_PATH]
+
+        cell.props.style = (Pango.Style.ITALIC if path in self.module.transient_backgrounds
+                            else Pango.Style.NORMAL)
+
     def on_folder_source_changed(self, tree):
         if self._loading:
             return
@@ -671,6 +678,10 @@ class Module:
             self.xdg_pictures_directory = (GLib.get_user_special_dir(GLib.UserDirectory.DIRECTORY_PICTURES)
                                            or os.path.expanduser("~/Pictures"))
 
+            # Folders shown for this session only.
+            self.transient_backgrounds = []
+            self._located_current_wallpapers = False
+
             self.get_user_backgrounds()
 
             # The collections sidebar is the same for every monitor, so one model
@@ -766,6 +777,9 @@ class Module:
         self.monitor_stack.set_visible(populated)
         self.monitor_revealer.set_reveal_child(count > 1)
         if populated:
+            if not self._located_current_wallpapers:
+                self._located_current_wallpapers = True
+                self.add_current_wallpaper_locations()
             self.sync_pages()
 
     def on_mode_changed(self, bg_list, pspec):
@@ -873,6 +887,48 @@ class Module:
             self.user_backgrounds.append([False, "xsi-folder-pictures-symbolic", self.xdg_pictures_directory.split("/")[-1], self.xdg_pictures_directory, BACKGROUND_COLLECTION_TYPE_DIRECTORY])
             self.update_folder_list()
 
+    def add_current_wallpaper_locations(self):
+        # Show the folder the current wallpaper resides in if it's not included
+        # in the existing sets/folders.  This is temporary, only so the user can
+        # modify options on the actual current wallpaper.
+        listed_folders = set()
+        collection_files = []
+
+        for row in self.collection_store:
+            if row[STORE_IS_SEPARATOR]:
+                continue
+            if row[STORE_TYPE] == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+                listed_folders.add(row[STORE_PATH])
+            else:
+                collection_files.append(row[STORE_PATH])
+
+        # A picture belonging to one of the xml collections is already reachable
+        # under that collection's name, so its folder is not wanted.
+        listed_pictures = set()
+        for xml_path in collection_files:
+            for picture in self.parse_xml_backgrounds_list(xml_path):
+                listed_pictures.add(picture["filename"])
+
+        for item in self.items():
+            uri = item.props.picture_uri
+            if not uri:
+                continue
+
+            path = Gio.File.new_for_uri(uri).get_path()
+            if path is None or path in listed_pictures:
+                continue
+
+            folder = os.path.dirname(path)
+            if folder in listed_folders or folder in self.transient_backgrounds:
+                continue
+            if not os.path.isdir(folder):
+                continue
+
+            self.transient_backgrounds.append(folder)
+            self.collection_store.append([False, "xsi-folder-symbolic",
+                                          os.path.basename(folder), folder,
+                                          BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+
     def format_source(self, type, path):
         # returns 'type://path'
         return f"{type}://{path}"
@@ -887,6 +943,21 @@ class Module:
                 if background[STORE_PATH] == folder_path:
                     self.add_folder_dialog.hide()
                     return
+
+            if folder_path in self.transient_backgrounds:
+                self.transient_backgrounds.remove(folder_path)
+                icon = ("xsi-folder-pictures-symbolic" if folder_path == self.xdg_pictures_directory
+                        else "xsi-folder-symbolic")
+                self.user_backgrounds.append([False, icon, folder_name, folder_path,
+                                              BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+                self.update_folder_list()
+                # Repaint the row it already has, so it stops being italic.
+                for row in self.collection_store:
+                    if row[STORE_PATH] == folder_path:
+                        self.collection_store.row_changed(row.path, row.iter)
+                        break
+                self.add_folder_dialog.hide()
+                return
             if folder_path == self.xdg_pictures_directory:
                 icon = "xsi-folder-pictures-symbolic"
             else:
