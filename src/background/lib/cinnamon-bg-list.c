@@ -112,7 +112,8 @@ load_single (CinnamonBgList *self)
         return;
 
     /* Migration only: an empty list means a pre-list config, so seed the single
-       item from the legacy keys. Retires itself on the first save. */
+       item from the legacy keys, and write it out so this happens once rather
+       than on every login for as long as the user changes nothing. */
     GVariantBuilder b;
 
     g_variant_builder_init (&b, G_VARIANT_TYPE ("a{sv}"));
@@ -162,8 +163,31 @@ load_single (CinnamonBgList *self)
     }
 
     g_autoptr(GVariant) v = g_variant_ref_sink (g_variant_builder_end (&b));
+    CinnamonBgItem *item = cinnamon_bg_item_new_from_variant (v);
 
-    g_ptr_array_add (self->stored, cinnamon_bg_item_new_from_variant (v));
+    g_ptr_array_add (self->stored, item);
+
+    /* The guard is "the key has never been set", like the mode above: an empty
+       list the user arrived at deliberately is a configuration, not a pre-list
+       desktop, and must not be seeded over. */
+    g_autoptr(GVariant) stored_list = g_settings_get_user_value (self->settings,
+                                                                "picture-uri-list");
+
+    if (!stored_list) {
+        GVariantBuilder out;
+
+        g_variant_builder_init (&out, G_VARIANT_TYPE ("aa{sv}"));
+        g_variant_builder_add_value (&out, cinnamon_bg_item_to_variant (item));
+
+        if (self->changed_id)
+            g_signal_handler_block (self->settings, self->changed_id);
+
+        g_settings_set_value (self->settings, "picture-uri-list",
+                              g_variant_builder_end (&out));
+
+        if (self->changed_id)
+            g_signal_handler_unblock (self->settings, self->changed_id);
+    }
 }
 
 /* Reloads from GSettings, discarding unsaved changes. Called by constructed()
