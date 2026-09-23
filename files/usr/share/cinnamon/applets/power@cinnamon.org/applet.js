@@ -281,6 +281,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._deviceItems = [];
         this._devices = [];
         this._primaryDeviceId = null;
+        this._rebuildGate = 0;
+        this._rebuildDirty = false;
+        this._removed = false;
         this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -579,18 +582,11 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     _devicesChanged() {
-        // Coalesce bursts of change notifications into one rebuild per 500ms.
-        // csd-power emits g-properties-changed for every UPower device update;
-        // a flapping AC adapter (loose plug) produces a storm of them (measured
-        // 126 signals in 3 minutes), and rebuilding the device menu - destroying
-        // and recreating every DeviceItem - on each signal floods GJS with
-        // garbage.  The resulting high-frequency GC blocks JS callbacks,
-        // including the shell's own paint path, so the whole screen goes black
-        // for seconds at a time (and pending actor destroys leak, leaving stuck
-        // notification banners).  The first signal is handled immediately, the
-        // rest of the burst is folded into one trailing rebuild.
-        if (this._rebuildGate === undefined)
-            this._rebuildGate = 0;
+        if (this._removed)
+            return;
+
+        // Refresh immediately, then coalesce further device changes into
+        // one trailing rebuild per 500ms while notifications keep arriving.
         if (this._rebuildGate > 0) {
             this._rebuildDirty = true;
             return;
@@ -616,6 +612,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         // Identify the primary battery device
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function (device, error) {
+            if (this._removed)
+                return;
+
             if (error) {
                 this._primaryDeviceId = null;
             }
@@ -630,6 +629,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
             // Scan battery devices
             this._proxy.GetDevicesRemote(Lang.bind(this, function (result, error) {
+                if (this._removed)
+                    return;
+
                 this._deviceItems.forEach(function (i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
@@ -784,6 +786,13 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
+        this._removed = true;
+        if (this._rebuildGate > 0) {
+            GLib.source_remove(this._rebuildGate);
+            this._rebuildGate = 0;
+        }
+        this._rebuildDirty = false;
+
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
 
         if (!this._profilesProxy)
