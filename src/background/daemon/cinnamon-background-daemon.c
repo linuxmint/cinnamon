@@ -54,6 +54,11 @@ struct _CinnamonBackgroundDaemon
     /* uri (char *) -> CachedImage *. Source pixbufs are only needed while
      * rendering. */
     GHashTable  *pixbuf_cache;
+
+    /* uri (char *) -> GFileMonitor *, for the files the last draw painted.
+     * Firefox's "Set as wallpaper" always saves to the same filename - 
+     * ~/Firefox_wallpaper.png - so it would go unnoticed. */
+    GHashTable  *file_monitors;
     guint        malloc_trim_id;
 
     /* connector (char *) -> BgRenderInput * (heap); rebuilt each draw */
@@ -92,6 +97,7 @@ G_DEFINE_TYPE (CinnamonBackgroundDaemon, cinnamon_background_daemon, G_TYPE_APPL
 
 static void draw_background (CinnamonBackgroundDaemon *daemon);
 static void set_empty_layout (CinnamonBackgroundDaemon *daemon);
+static void queue_draw_background (CinnamonBackgroundDaemon *daemon);
 
 /* pixbuf cache */
 
@@ -190,6 +196,72 @@ get_pixbuf_for_uri (CinnamonBackgroundDaemon *daemon, const char *uri)
     g_hash_table_insert (daemon->pixbuf_cache, g_strdup (uri), ci);
 
     return pixbuf;
+}
+
+static void
+file_monitor_free (gpointer data)
+{
+    GFileMonitor *monitor = data;
+
+    g_file_monitor_cancel (monitor);
+    g_object_unref (monitor);
+}
+
+static void
+on_picture_file_changed (GFileMonitor      *monitor,
+                         GFile             *file,
+                         GFile             *other,
+                         GFileMonitorEvent  event,
+                         gpointer           data)
+{
+    CinnamonBackgroundDaemon *daemon = data;
+
+    if (event != G_FILE_MONITOR_EVENT_CHANGES_DONE_HINT &&
+        event != G_FILE_MONITOR_EVENT_CREATED)
+        return;
+
+    g_autofree char *path = g_file_get_path (file);
+
+    g_debug ("Background image changed on disk: %s", path);
+
+    queue_draw_background (daemon);
+}
+
+static void
+watch_picture_files (CinnamonBackgroundDaemon *daemon, GHashTable *wanted)
+{
+    GHashTableIter iter;
+    gpointer key;
+
+    g_hash_table_iter_init (&iter, daemon->file_monitors);
+    while (g_hash_table_iter_next (&iter, &key, NULL)) {
+        if (!g_hash_table_contains (wanted, key))
+            g_hash_table_iter_remove (&iter);
+    }
+
+    g_hash_table_iter_init (&iter, wanted);
+    while (g_hash_table_iter_next (&iter, &key, NULL)) {
+        const char *uri = key;
+
+        if (g_hash_table_contains (daemon->file_monitors, uri))
+            continue;
+
+        g_autoptr(GFile) file = g_file_new_for_uri (uri);
+
+        if (!g_file_is_native (file))
+            continue;
+
+        g_autoptr(GError) error = NULL;
+        GFileMonitor *monitor = g_file_monitor_file (file, G_FILE_MONITOR_NONE, NULL, &error);
+
+        if (monitor == NULL) {
+            g_warning ("Could not watch background image %s for changes: %s", uri, error->message);
+            continue;
+        }
+
+        g_signal_connect (monitor, "changed", G_CALLBACK (on_picture_file_changed), daemon);
+        g_hash_table_insert (daemon->file_monitors, g_strdup (uri), monitor);
+    }
 }
 
 static void
@@ -385,9 +457,13 @@ cinnamon_background_daemon_build_render_inputs (CinnamonBackgroundDaemon *daemon
     guint n = monitors->len;
 
     if (n == 0) {
+        g_hash_table_remove_all (daemon->file_monitors);
         set_empty_layout (daemon);
         return;
     }
+
+    g_autoptr(GHashTable) painted = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                           g_free, NULL);
 
     GVariantBuilder layout;
     g_variant_builder_init (&layout, G_VARIANT_TYPE ("a(sssb)"));
@@ -413,6 +489,9 @@ cinnamon_background_daemon_build_render_inputs (CinnamonBackgroundDaemon *daemon
         item_to_render_input (item, in);
 
         g_hash_table_insert (daemon->resolved, g_strdup (connector), in);
+
+        if (in->uri && in->uri[0] != '\0')
+            g_hash_table_add (painted, g_strdup (in->uri));
         g_hash_table_insert (daemon->content, g_strdup (connector),
                              GUINT_TO_POINTER (content_hash (in)));
 
@@ -426,6 +505,8 @@ cinnamon_background_daemon_build_render_inputs (CinnamonBackgroundDaemon *daemon
         g_autofree char *desc = describe_resolved (in);
         g_debug ("  %s: %s", connector, desc);
     }
+
+    watch_picture_files (daemon, painted);
 
     g_clear_pointer (&daemon->layout, g_variant_unref);
     daemon->layout = g_variant_ref_sink (g_variant_new ("(s@a(sssb))",
@@ -803,6 +884,7 @@ cinnamon_background_daemon_finalize (GObject *object)
 
     g_clear_pointer (&daemon->layout, g_variant_unref);
     g_clear_pointer (&daemon->pixbuf_cache, g_hash_table_destroy);
+    g_clear_pointer (&daemon->file_monitors, g_hash_table_destroy);
     g_clear_pointer (&daemon->resolved, g_hash_table_destroy);
     g_clear_pointer (&daemon->content, g_hash_table_destroy);
 
@@ -828,6 +910,8 @@ cinnamon_background_daemon_init (CinnamonBackgroundDaemon *daemon)
 {
     daemon->pixbuf_cache = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                   g_free, cached_image_free);
+    daemon->file_monitors = g_hash_table_new_full (g_str_hash, g_str_equal,
+                                                   g_free, file_monitor_free);
     daemon->resolved = g_hash_table_new_full (g_str_hash, g_str_equal, g_free,
                                               render_input_free);
     daemon->content = g_hash_table_new_full (g_str_hash, g_str_equal, g_free, NULL);
