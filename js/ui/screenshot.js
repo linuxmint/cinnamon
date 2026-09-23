@@ -377,7 +377,7 @@ class SelectArea {
     }
 
     _onButtonPress(actor, event) {
-        if (this.active) {
+        if (this.active || this._ungrabbed) {
             return Clutter.EVENT_STOP;
         }
 
@@ -405,6 +405,12 @@ class SelectArea {
     }
 
     _onButtonRelease(actor, event) {
+        // Keep the first result while the selection fades out.
+        if (!this.active || this._finishing)
+            return Clutter.EVENT_PROPAGATE;
+
+        this._finishing = true;
+
         this._result = this._getGeometry();
         this._group.ease({
             opacity: 0,
@@ -419,6 +425,12 @@ class SelectArea {
     }
 
     _ungrab() {
+        // One-shot guard, NOT this.active: Escape legitimately calls
+        // _ungrab() before any selection started (active is still false).
+        if (this._ungrabbed)
+            return;
+        this._ungrabbed = true;
+
         this.active = false;
 
         if (this.stage_event_id > 0) {
@@ -499,7 +511,7 @@ class PickColor {
     }
 
     _onButtonPress(actor, event) {
-        if (this.active) {
+        if (this.active || this._ungrabbed) {
             return Clutter.EVENT_STOP;
         }
 
@@ -522,6 +534,12 @@ class PickColor {
     }
 
     _onButtonRelease(actor, event) {
+        // Keep the first result while the selection fades out.
+        if (!this.active || this._finishing)
+            return Clutter.EVENT_PROPAGATE;
+
+        this._finishing = true;
+
         this._result = this._getGeometry();
         this._group.ease({
             opacity: 0,
@@ -536,6 +554,12 @@ class PickColor {
     }
 
     _ungrab() {
+        // One-shot guard, NOT this.active: Escape legitimately calls
+        // _ungrab() before any selection started (active is still false).
+        if (this._ungrabbed)
+            return;
+        this._ungrabbed = true;
+
         this.active = false;
 
         if (this.stage_event_id > 0) {
@@ -658,6 +682,10 @@ class SelectWindow {
         if (window === null)
             return Clutter.EVENT_STOP;
 
+        if (this._finishing || this._ungrabbed)
+            return Clutter.EVENT_STOP;
+        this._finishing = true;
+
         this._result = window;
         this._group.ease({
             opacity: 0,
@@ -672,6 +700,10 @@ class SelectWindow {
     }
 
     _ungrab() {
+        if (this._ungrabbed)
+            return;
+        this._ungrabbed = true;
+
         Main.popModal(this._group);
         global.unset_cursor();
         this.emit('finished', this._result);
