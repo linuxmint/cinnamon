@@ -243,14 +243,15 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _clear_all() {
-        let count = this.notifications.length;
-        if (count > 0) {
-            for (let i = count-1; i >=0; i--) {
-                this._notificationbin.remove_actor(this.notifications[i].actor);
-                this.notifications[i].destroy(NotificationDestroyedReason.DISMISSED);
-            }
-        }
+        let toDestroy = this.notifications.slice();
+
+        // Clear tracking state first so destroy handlers skip redundant work.
         this.notifications = [];
+        this._notificationbin.remove_all_children();
+
+        for (let notification of toDestroy) {
+            notification.destroy(NotificationDestroyedReason.DISMISSED);
+        }
         this.update_list();
     }
 
