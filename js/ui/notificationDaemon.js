@@ -65,6 +65,10 @@ const NotificationDaemonIface =
                 <arg type="u"/> \
                 <arg type="s"/> \
             </signal> \
+            <signal name="NotificationReplied"> \
+                <arg type="u"/> \
+                <arg type="s"/> \
+            </signal> \
         </interface> \
     </node>';
 
@@ -474,6 +478,9 @@ NotificationDaemon.prototype = {
                 function(n, actionId) {
                     this._emitActionInvoked(ndata.id, actionId);
                 }));
+            notification.connect('reply', (n, text) => {
+                this._emitNotificationReplied(ndata.id, text);
+            });
         } else {
             notification.update(summary, body, { icon: iconActor,
                                                  bodyMarkup: true,
@@ -509,6 +516,9 @@ NotificationDaemon.prototype = {
 
         notification.clearButtons();
 
+        let inlineReplyHint = hints.maybeGet('x-canonical-private-inline-reply') || hints.maybeGet('inline-reply');
+        let hasReplyAction = false;
+
         if (actions.length) {
             notification.setUseActionIcons(hints.maybeGet('action-icons') == true);
             for (let i = 0; i < actions.length - 1; i += 2) {
@@ -517,7 +527,10 @@ NotificationDaemon.prototype = {
                         function() {
                             this._emitActionInvoked(ndata.id, "default");
                         }));
-                else
+                else if (inlineReplyHint && actions[i] === inlineReplyHint) {
+                    notification.addReplyButton(actions[i], actions[i + 1]);
+                    hasReplyAction = true;
+                } else
                     notification.addButton(actions[i], actions[i + 1]);
             }
         }
@@ -536,6 +549,12 @@ NotificationDaemon.prototype = {
         // 'transient' is a reserved keyword in JS, so we have to retrieve the value
         // of the 'transient' hint with hints['transient'] rather than hints.transient
         notification.setTransient(hints.maybeGet('transient') == true);
+
+        if (inlineReplyHint != null) {
+            notification.setInlineReply(true, inlineReplyHint, !hasReplyAction);
+        } else {
+            notification.setInlineReply(false, null, false);
+        }
 
         let sourceIconActor = source.useNotificationIcon ? this._iconForNotificationData(appIcon, hints, source.ICON_SIZE) : null;
         source.processNotification(notification, sourceIconActor);
@@ -562,6 +581,8 @@ NotificationDaemon.prototype = {
             'icon-static',
             'persistence',
             'sound',
+            'inline-reply',
+            'x-canonical-private-inline-reply',
         ];
     },
 
@@ -601,6 +622,11 @@ NotificationDaemon.prototype = {
     _emitActionInvoked: function(id, action) {
         this._dbusImpl.emit_signal('ActionInvoked',
                                    GLib.Variant.new('(us)', [id, action]));
+    },
+
+    _emitNotificationReplied: function(id, text) {
+        this._dbusImpl.emit_signal('NotificationReplied',
+                                   GLib.Variant.new('(us)', [id, text]));
     },
 
     _onTrayIconAdded: function(o, icon) {
