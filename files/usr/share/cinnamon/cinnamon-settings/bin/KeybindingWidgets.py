@@ -156,7 +156,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     }
 
     # l10n constants - get them translated here so they use Cinnamon's gettext context
-    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to set a new accelerator key."),
+    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to assign or modify an accelerator key."),
                                    _("Press Escape or click again to cancel the operation."),
                                    _("Press Backspace to clear the existing keybinding."))
     UNASSIGNED = _("unassigned")
