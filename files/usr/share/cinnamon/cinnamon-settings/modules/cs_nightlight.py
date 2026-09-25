@@ -136,8 +136,8 @@ class TimeSpinButton(Gtk.SpinButton):
         return True
 
     def frac_to_h_m(self, fraction):
-        hours = int(fraction)
-        minutes = int((fraction - hours) * 60)
+        total_minutes = round(fraction * 60)
+        hours, minutes = divmod(total_minutes, 60)
         return hours, minutes
 
     def get_time_fraction(self):
