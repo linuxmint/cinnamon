@@ -111,6 +111,7 @@ class XAppStatusIcon {
 
         this.iconName = null;
         this.icon_loader_handle = null;
+        this._imageResourceScale = null;
 
         this.actor = new St.BoxLayout({
             style_class: "applet-box",
@@ -140,6 +141,7 @@ class XAppStatusIcon {
         this.actor.connect('button-release-event', Lang.bind(this, this.onButtonReleaseEvent));
         this.actor.connect('scroll-event', (...args) => this.onScrollEvent(...args));
         this.actor.connect('enter-event', Lang.bind(this, this.onEnterEvent));
+        this.actor.connect('resource-scale-changed', () => this._onResourceScaleChanged());
 
         this._proxy_prop_change_id = this.proxy.connect('g-properties-changed', Lang.bind(this, this.on_properties_changed))
 
@@ -219,7 +221,8 @@ class XAppStatusIcon {
 
             // Assume symbolic icons would always be square/suitable for an StIcon.
             if (iconName.includes("/") && type != St.IconType.SYMBOLIC) {
-                const scaledIconSize = this.iconSize * global.ui_scale;
+                this._imageResourceScale = this.actor.get_resource_scale();
+                const scaledIconSize = this.iconSize * global.ui_scale * this._imageResourceScale;
                 this.icon_loader_handle = St.TextureCache.get_default().load_image_from_file_async(
                     iconName,
                     /* If top/bottom panel, allow the image to expand horizontally,
@@ -234,6 +237,7 @@ class XAppStatusIcon {
             else {
                 // Invalidate any in-flight image load
                 this.icon_loader_handle = null;
+                this._imageResourceScale = null;
 
                 icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
                 this.icon_holder.show();
@@ -243,7 +247,15 @@ class XAppStatusIcon {
         else {
             this.iconName = null;
             this.icon_loader_handle = null;
+            this._imageResourceScale = null;
             this.icon_holder.hide();
+        }
+    }
+
+    _onResourceScaleChanged() {
+        if (this._imageResourceScale !== null &&
+            this.actor.get_resource_scale() !== this._imageResourceScale) {
+            this.setIconName(this.iconName);
         }
     }
 
@@ -255,6 +267,7 @@ class XAppStatusIcon {
         }
 
         this.icon_loader_handle = null;
+        actor.set_size(actor.width / this._imageResourceScale, actor.height / this._imageResourceScale);
         this.icon_holder.child = actor;
         this.icon_holder.show();
     }
