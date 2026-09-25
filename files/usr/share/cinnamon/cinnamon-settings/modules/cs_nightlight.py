@@ -171,6 +171,9 @@ class ScheduleWidget(SettingsWidget):
         adjust.connect("value-changed", self.to_spinner_values_changed, self.end_hr)
         self.content_widget.pack_start(self.end_hr, True, True, 0)
 
+        self.color_settings.connect("changed::night-light-schedule-from", self.on_settings_changed, self.start_hr)
+        self.color_settings.connect("changed::night-light-schedule-to", self.on_settings_changed, self.end_hr)
+
         self.show_all()
 
     def from_spinner_values_changed(self, adjustment, spinner):
@@ -178,3 +181,11 @@ class ScheduleWidget(SettingsWidget):
 
     def to_spinner_values_changed(self, adjustment, spinner):
         self.color_settings.set_double("night-light-schedule-to", spinner.get_time_fraction())
+
+    def on_settings_changed(self, settings, key, spinner):
+        value = settings.get_double(key)
+        adjustment = spinner.get_adjustment()
+        # Skip when the change originated from this spinner to avoid a feedback loop
+        if adjustment.get_value() == value:
+            return
+        adjustment.set_value(value)
