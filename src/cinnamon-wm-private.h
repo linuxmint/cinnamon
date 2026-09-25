@@ -55,9 +55,6 @@ void _cinnamon_wm_confirm_display_change (CinnamonWM            *wm);
 MetaCloseDialog * _cinnamon_wm_create_close_dialog (CinnamonWM     *wm,
                                                  MetaWindow  *window);
 
-MetaInhibitShortcutsDialog * _cinnamon_wm_create_inhibit_shortcuts_dialog (CinnamonWM     *wm,
-                                                                        MetaWindow  *window);
-
 G_END_DECLS
 
 #endif /* __CINNAMON_WM_PRIVATE_H__ */
