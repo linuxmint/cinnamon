@@ -3,6 +3,7 @@
 const Lang = imports.lang;
 
 const Clutter = imports.gi.Clutter;
+const Gio = imports.gi.Gio;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Pango = imports.gi.Pango;
@@ -453,7 +454,8 @@ AppIcon.prototype = {
         } else {
             this.icon = this.app ?
                 this.app.create_icon_texture_for_window(size, this.window) :
-                new St.Icon({ icon_name: 'application-default-icon',
+                new St.Icon({ gicon: Gio.ThemedIcon.new_from_names(['application-default-icon',
+                                                                    'application-x-executable']),
                               icon_type: St.IconType.FULLCOLOR,
                               icon_size: size });
         }

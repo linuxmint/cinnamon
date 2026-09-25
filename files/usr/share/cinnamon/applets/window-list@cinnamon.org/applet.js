@@ -822,7 +822,8 @@ class AppMenuButton {
         // window-backed and app-backed windows without special-casing.
         let icon = this.app ?
             this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon',
+            new St.Icon({ gicon: Gio.ThemedIcon.new_from_names(['application-default-icon',
+                                                                'application-x-executable']),
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
 
