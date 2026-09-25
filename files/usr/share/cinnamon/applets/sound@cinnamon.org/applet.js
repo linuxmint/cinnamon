@@ -1656,8 +1656,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
         selectItem.menu.addMenuItem(item);
         //show the menu if we have more than two devices
-        if(selectItem.menu.numMenuItems > 1)
+        if(selectItem.menu.numMenuItems > 1) {
             selectItem.actor.show();
+            // show input section so user can switch devices even without an active recording app
+            if (type === "input") {
+                this._inputSection.actor.show();
+                if (this.alwaysShowMuteInput)
+                    this.mute_in_switch.actor.show();
+            }
+        }
 
         this._devices.push({id: id, type: type, item: item});
     }
@@ -1671,8 +1678,15 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
                 //hide submenu if showing them is unnecessary
                 let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
-                if (selectItem.menu.numMenuItems <= 1)
+                if (selectItem.menu.numMenuItems <= 1) {
                     selectItem.actor.hide();
+                    // hide input section when back to one device and nothing is recording
+                    if (type === "input" && this._recordingAppsNum === 0) {
+                        this._inputSection.actor.hide();
+                        if (!this.alwaysShowMuteInput)
+                            this.mute_in_switch.actor.hide();
+                    }
+                }
 
                 this._devices.splice(i, 1);
                 break;
