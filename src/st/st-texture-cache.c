@@ -35,6 +35,10 @@
 #define CACHE_PREFIX_FILE "file:"
 #define CACHE_PREFIX_FILE_FOR_CAIRO "file-for-cairo:"
 
+/* Arbitrary cap on concurrent texture loads in flight. See comment on
+ * loading_textures_counter in StTextureCachePrivate above. */
+#define MAX_PARALLEL_LOAD_TASKS 9
+
 struct _StTextureCachePrivate
 {
   GtkIconTheme *icon_theme;
@@ -56,11 +60,22 @@ struct _StTextureCachePrivate
   GHashTable *image_type_table;
 
   GCancellable *cancellable;
+
+  /* Number of textures currently loading, and requests deferred because
+   * MAX_PARALLEL_LOAD_TASKS was reached. Rate-limiting concurrent loads
+   * avoids starving GTask's default thread pool scheduler -- notably an
+   * issue now that most icon formats are loaded via glycin's sandboxed,
+   * per-call IPC round-trip rather than in-process, which is slow enough
+   * per call that submitting hundreds of requests at once (e.g. populating
+   * a large app menu) could leave many of them never completing. */
+  uint32_t loading_textures_counter;
+  GQueue *pending_tasks;
 };
 
 static void st_texture_cache_dispose (GObject *object);
 static void st_texture_cache_finalize (GObject *object);
 static void load_image_type_table (StTextureCache *cache);
+static void texture_load_data_free (gpointer p);
 
 enum
 {
@@ -204,6 +219,8 @@ st_texture_cache_init (StTextureCache *self)
 
   self->priv->cancellable = g_cancellable_new ();
 
+  self->priv->pending_tasks = g_queue_new ();
+
   on_icon_theme_changed (settings, NULL, self);
 }
 
@@ -217,6 +234,12 @@ st_texture_cache_dispose (GObject *object)
   g_clear_object (&self->priv->settings);
   g_clear_object (&self->priv->icon_theme);
   g_clear_object (&self->priv->cancellable);
+
+  if (self->priv->pending_tasks)
+    {
+      g_queue_free_full (self->priv->pending_tasks, texture_load_data_free);
+      self->priv->pending_tasks = NULL;
+    }
 
   g_clear_pointer (&self->priv->keyed_cache, g_hash_table_destroy);
   g_clear_pointer (&self->priv->keyed_surface_cache, g_hash_table_destroy);
@@ -370,6 +393,9 @@ texture_load_data_free (gpointer p)
 
   g_slice_free (AsyncTextureLoadData, data);
 }
+
+static void load_texture_async (StTextureCache       *cache,
+                                AsyncTextureLoadData *data);
 
 /**
  * on_image_size_prepared:
@@ -627,6 +653,9 @@ finish_texture_load (AsyncTextureLoadData *data,
 
   cache = data->cache;
 
+  g_assert (cache->priv->loading_textures_counter > 0);
+  cache->priv->loading_textures_counter--;
+
   g_hash_table_remove (cache->priv->outstanding_requests, data->key);
 
   if (pixbuf == NULL)
@@ -672,6 +701,10 @@ finish_texture_load (AsyncTextureLoadData *data,
 
 out:
   texture_load_data_free (data);
+
+  data = g_queue_pop_head (cache->priv->pending_tasks);
+  if (data)
+    load_texture_async (cache, data);
 }
 
 static void
@@ -711,6 +744,14 @@ static void
 load_texture_async (StTextureCache       *cache,
                     AsyncTextureLoadData *data)
 {
+  if (cache->priv->loading_textures_counter >= MAX_PARALLEL_LOAD_TASKS)
+    {
+      g_queue_push_tail (cache->priv->pending_tasks, data);
+      return;
+    }
+
+  cache->priv->loading_textures_counter++;
+
   if (data->file)
     {
       GTask *task = g_task_new (cache, NULL, on_pixbuf_loaded, data);
