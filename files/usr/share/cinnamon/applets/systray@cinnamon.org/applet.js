@@ -66,6 +66,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
     }
 
     on_applet_removed_from_panel() {
+        if (this._scaleUpdateId > 0) {
+            Mainloop.source_remove(this._scaleUpdateId);
+            this._scaleUpdateId = 0;
+        }
+
         this._signalManager.disconnectAllSignals();
 
         this._clearIcons();
@@ -93,6 +98,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     _clearIcons() {
         this.button_box.get_children().forEach((button) => {
+            if (button._showTimeoutId > 0) {
+                GLib.source_remove(button._showTimeoutId);
+                button._showTimeoutId = 0;
+            }
+
             // button.set_size(-1, -1);
             button.remove_actor(button.child);
             button.destroy();
@@ -156,7 +166,9 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
             icon.visible = false;
             icon.opacity = 0;
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            button._showTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+                button._showTimeoutId = 0;
+
                 if (icon.is_finalized()) {
                     button.destroy();
                     return GLib.SOURCE_REMOVE;
@@ -212,6 +224,15 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
     _onTrayIconRemoved(o, icon) {
         const parent = icon.get_parent();
+
+        if (parent == null) {
+            return;
+        }
+
+        if (parent._showTimeoutId > 0) {
+            GLib.source_remove(parent._showTimeoutId);
+            parent._showTimeoutId = 0;
+        }
 
         parent.remove_actor(icon);
         parent.destroy()
