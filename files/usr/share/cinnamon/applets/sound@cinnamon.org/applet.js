@@ -15,6 +15,7 @@ const Settings = imports.ui.settings;
 const Slider = imports.ui.slider;
 const Pango = imports.gi.Pango;
 const MprisPlayerModule = imports.misc.mprisPlayer;
+const AlbumArt = imports.misc.albumArt;
 
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
@@ -35,6 +36,7 @@ x = _("Stopped");
 const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 const ICON_SIZE = 28;
+const COVER_SIZE = 300;
 
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
 const OVERAMPLIFICATION_KEY = "allow-amplified-volume";
@@ -552,16 +554,16 @@ class Player extends PopupMenu.PopupMenuSection {
 
         // Cover Box (art + track info)
         this._trackCover = new St.Bin({x_align: St.Align.MIDDLE});
-        this._trackCoverFile = this._trackCoverFileTmp = false;
+        this._artLoader = new AlbumArt.AlbumArtLoader();
+        this._artUrl = null;
         this.coverBox = new Clutter.Box();
         let l = new Clutter.BinLayout({x_align: Clutter.BinAlignment.FILL, y_align: Clutter.BinAlignment.END});
         this.coverBox.set_layout_manager(l);
 
         // Cover art
-        this.cover = new St.Icon({icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+        this.cover = new St.Icon({icon_name: "media-optical", icon_size: COVER_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.coverBox.add_actor(this.cover);
 
-        this._cover_load_handle = 0;
         this._cover_path = null;
 
         // Track info (artist + title)
@@ -631,13 +633,13 @@ class Player extends PopupMenu.PopupMenuSection {
         this._applet._updatePlayerMenuItems();
 
         this._setStatus(this._mediaServerPlayer.PlaybackStatus);
-        this._setMetadata(this._mediaServerPlayer.Metadata);
+        this._setMetadata();
+
+        this._metadataChangedId = this._mprisPlayer.connect('metadata-changed', () => this._setMetadata());
 
         this._propChangedId = this._prop.connectSignal('PropertiesChanged', (proxy, sender, [iface, props]) => {
             if (props.PlaybackStatus)
                 this._setStatus(props.PlaybackStatus.unpack());
-            if (props.Metadata)
-                this._setMetadata(props.Metadata.deep_unpack());
             if (props.CanGoNext || props.CanGoPrevious)
                 this._updateControls();
             if (props.LoopStatus)
@@ -709,106 +711,27 @@ class Player extends PopupMenu.PopupMenuSection {
         });
     }
 
-    _setMetadata(metadata) {
-        if (!metadata)
+    _setMetadata() {
+        const player = this._mprisPlayer;
+        if (!player)
             return;
 
-        let trackid = "";  // D-Bus path: A unique identity for this track
-        if (metadata["mpris:trackid"]) {
-            trackid = metadata["mpris:trackid"].unpack();
-        }
+        this._seeker.setTrack(player.getTrackId(), player.getLengthSeconds());
 
-        let trackLength = 0; // Track length in secs
-        if (metadata["mpris:length"]) {
-            trackLength = metadata["mpris:length"].unpack() / 1000000;
-        }
-        this._seeker.setTrack(trackid, trackLength);
-
-        if (metadata["xesam:artist"]) {
-            switch (metadata["xesam:artist"].get_type_string()) {
-                case 's':
-                    // smplayer sends a string
-                    this._artist = metadata["xesam:artist"].unpack();
-                    break;
-                case 'as':
-                    // others send an array of strings
-                    this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
-                    break;
-                default:
-                    this._artist = _("Unknown Artist");
-            }
-            // make sure artist isn't empty
-            if (!this._artist) this._artist = _("Unknown Artist");
-        }
-        else
-            this._artist = _("Unknown Artist");
-
+        this._artist = player.getArtist() || _("Unknown Artist");
         this.artistLabel.set_text(this._artist);
 
-        if (metadata["xesam:album"])
-            this._album = metadata["xesam:album"].unpack();
-        else
-            this._album = _("Unknown Album");
+        this._album = player.getAlbum() || _("Unknown Album");
 
-        if (metadata["xesam:title"])
-            this._title = metadata["xesam:title"].unpack();
-        else
-            this._title = _("Unknown Title");
+        this._title = player.getTitle() || _("Unknown Title");
         this.titleLabel.set_text(this._title);
 
-        let change = false;
-        if (metadata["mpris:artUrl"]) {
-            let artUrl = metadata["mpris:artUrl"].unpack();
-            if (this._trackCoverFile != artUrl) {
-                this._trackCoverFile = artUrl;
-                change = true;
-            }
-        }
-        else {
-            if (this._trackCoverFile != false) {
-                this._trackCoverFile = false;
-                change = true;
-            }
+        const artUrl = player.getProcessedArtUrl();
+        if (artUrl !== this._artUrl) {
+            this._artUrl = artUrl;
+            this._artLoader.load(artUrl, COVER_SIZE, (actor, path) => this._setCover(actor, path));
         }
 
-        if (change) {
-            if (this._trackCoverFile) {
-                let cover_path = "";
-                if (this._trackCoverFile.match(/^http/)) {
-                    if (!this._trackCoverFileTmp)
-                        this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
-                    Util.spawn_async(['wget', this._trackCoverFile, '-O', this._trackCoverFileTmp.get_path()], () => this._onDownloadedCover());
-                }
-                else if (this._trackCoverFile.match(/data:image\/(png|jpeg);base64,/)) {
-                    if (!this._trackCoverFileTmp)
-                        this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
-                    const cover_base64 = this._trackCoverFile.split(',')[1];
-                    const base64_decode = data => new Promise(resolve => resolve(GLib.base64_decode(data)));
-                    if (!cover_base64) {
-                        return;
-                    }
-                    base64_decode(cover_base64)
-                    .then(decoded => {
-                        this._trackCoverFileTmp.replace_contents(
-                            decoded,
-                            null,
-                            false,
-                            Gio.FileCreateFlags.REPLACE_DESTINATION,
-                            null
-                        );
-                        return this._trackCoverFileTmp.get_path();
-                    })
-                    .then(path => this._showCover(path));
-                }
-                else {
-                    cover_path = decodeURIComponent(this._trackCoverFile);
-                    cover_path = cover_path.replace("file://", "");
-                    this._showCover(cover_path);
-                }
-            }
-            else
-                this._showCover(false);
-        }
         this._applet.setAppletTextIcon(this, true);
     }
 
@@ -875,44 +798,22 @@ class Player extends PopupMenu.PopupMenuSection {
         this._shuffleButton.setActive(status);
     }
 
-    _onDownloadedCover() {
-        let cover_path = this._trackCoverFileTmp.get_path();
-        this._showCover(cover_path);
-    }
-
-    _showCover(cover_path) {
-        if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-            let newCover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
-            this.coverBox.remove_actor(this.cover);
-            this.cover = newCover;
-            this.coverBox.add_actor(this.cover);
-            this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
-            this._cover_path = null;
-            this._applet.setAppletTextIcon(this, null);
-        }
-        else {
-            this._cover_path = cover_path;
-            const cover_size = 300 * global.ui_scale;
-            this._cover_load_handle = St.TextureCache.get_default().load_image_from_file_async(cover_path, cover_size, cover_size, this._on_cover_loaded.bind(this));
-        }
-    }
-
-    _on_cover_loaded(cache, handle, actor) {
-        if (handle !== this._cover_load_handle) {
-            // Maybe a cover image load stalled? Make sure our requests match the callback.
-            return;
-        }
-
+    _setCover(actor, path) {
         this.coverBox.remove_actor(this.cover);
 
-        // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
-        // (and move the player controls as a result).
-        actor.margin_bottom = (300 * global.ui_scale) - actor.height;
+        if (actor) {
+            // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
+            // (and move the player controls as a result).
+            actor.margin_bottom = (COVER_SIZE * global.ui_scale) - actor.height;
+            this.cover = actor;
+        } else {
+            this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: COVER_SIZE, icon_type: St.IconType.FULLCOLOR});
+        }
 
-        this.cover = actor;
+        this._cover_path = path;
         this.coverBox.add_actor(this.cover);
         this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
-        this._applet.setAppletTextIcon(this, this._cover_path);
+        this._applet.setAppletTextIcon(this, path);
     }
 
     onSettingsChanged() {
@@ -924,6 +825,14 @@ class Player extends PopupMenu.PopupMenuSection {
         if (this._readyId && this._mprisPlayer) {
             this._mprisPlayer.disconnect(this._readyId);
             this._readyId = 0;
+        }
+        if (this._metadataChangedId && this._mprisPlayer) {
+            this._mprisPlayer.disconnect(this._metadataChangedId);
+            this._metadataChangedId = 0;
+        }
+        if (this._artLoader) {
+            this._artLoader.destroy();
+            this._artLoader = null;
         }
 
         if (this._seeker)

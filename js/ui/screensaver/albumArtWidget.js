@@ -13,6 +13,7 @@ const GObject = imports.gi.GObject;
 const Pango = imports.gi.Pango;
 const St = imports.gi.St;
 
+const AlbumArt = imports.misc.albumArt;
 const MprisPlayer = imports.misc.mprisPlayer;
 const ScreensaverWidget = imports.ui.screensaver.screensaverWidget;
 const SignalManager = imports.misc.signalManager;
@@ -49,8 +50,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
         this._mprisManager = MprisPlayer.getMprisPlayerManager();
         this._currentPlayer = null;
         this._currentArtUrl = null;
-        this._coverFileTmp = null;
-        this._coverLoadHandle = 0;
+        this._artLoader = new AlbumArt.AlbumArtLoader();
 
         if (this._allowMediaControl) {
             this._volumeControl = new Cvc.MixerControl({ name: 'Cinnamon Screensaver' });
@@ -391,136 +391,12 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
     }
 
     _loadAlbumArt(url) {
-        if (!url || url === "") {
-            this._showDefaultArt();
-            return;
-        }
-
-        if (url.match(/^https?:\/\//)) {
-            // Remote URL - download it
-            this._downloadAlbumArt(url);
-        } else if (url.match(/^file:\/\//)) {
-            this._loadLocalArt(url);
-        } else if (url.match(/^data:image\//)) {
-            // Base64 data URL
-            this._loadBase64Art(url);
-        } else {
-            this._showDefaultArt();
-        }
-    }
-
-    _ensureTempFile() {
-        this._cleanupTempFile();
-
-        try {
-            let [file, iostream] = Gio.file_new_tmp('XXXXXX.albumart-cover');
-            iostream.close(null);
-            this._coverFileTmp = file;
-            return true;
-        } catch (e) {
-            global.logError(`AlbumArtWidget: Failed to create temp file: ${e}`);
-            this._showDefaultArt();
-            return false;
-        }
-    }
-
-    _showArtFromPath(path) {
-        this._coverLoadHandle = St.TextureCache.get_default().load_image_from_file_async(
-            path,
-            this._artSize,
-            this._artSize,
-            this._onCoverLoaded.bind(this)
-        );
-    }
-
-    _onCoverLoaded(cache, handle, actor) {
-        if (handle !== this._coverLoadHandle) {
-            return;
-        }
-
-        if (actor) {
-            this._artBin.set_child(actor);
-        } else {
-            this._showDefaultArt();
-        }
-    }
-
-    _loadLocalArt(url) {
-        let file = Gio.File.new_for_uri(url);
-        file.query_info_async(
-            Gio.FILE_ATTRIBUTE_STANDARD_TYPE,
-            Gio.FileQueryInfoFlags.NONE,
-            GLib.PRIORITY_DEFAULT,
-            null,
-            (f, result) => {
-                try {
-                    f.query_info_finish(result);
-                    this._showArtFromPath(f.get_path());
-                } catch (e) {
-                    this._showDefaultArt();
-                }
-            }
-        );
-    }
-
-    _downloadAlbumArt(url) {
-        if (!this._ensureTempFile())
-            return;
-
-        let src = Gio.File.new_for_uri(url);
-        src.copy_async(
-            this._coverFileTmp,
-            Gio.FileCopyFlags.OVERWRITE,
-            GLib.PRIORITY_DEFAULT,
-            null, null,
-            (source, result) => {
-                try {
-                    source.copy_finish(result);
-                    this._showArtFromPath(this._coverFileTmp.get_path());
-                } catch (e) {
-                    global.logWarning(`AlbumArtWidget: Failed to download album art: ${e.message}`);
-                    this._showDefaultArt();
-                }
-            }
-        );
-    }
-
-    _loadBase64Art(dataUrl) {
-        let match = dataUrl.match(/^data:image\/(png|jpeg|jpg);base64,(.+)$/);
-        if (!match) {
-            this._showDefaultArt();
-            return;
-        }
-
-        if (!this._ensureTempFile())
-            return;
-
-        let decoded;
-        try {
-            decoded = GLib.base64_decode(match[2]);
-        } catch (e) {
-            global.logError(`AlbumArtWidget: Failed to decode base64 art: ${e}`);
-            this._showDefaultArt();
-            return;
-        }
-
-        let bytes = new GLib.Bytes(decoded);
-        this._coverFileTmp.replace_contents_bytes_async(
-            bytes,
-            null,
-            false,
-            Gio.FileCreateFlags.REPLACE_DESTINATION,
-            null,
-            (file, result) => {
-                try {
-                    file.replace_contents_finish(result);
-                    this._showArtFromPath(this._coverFileTmp.get_path());
-                } catch (e) {
-                    global.logError(`AlbumArtWidget: Failed to write base64 art: ${e}`);
-                    this._showDefaultArt();
-                }
-            }
-        );
+        this._artLoader.load(url, ALBUM_ART_SIZE_BASE, (actor) => {
+            if (actor)
+                this._artBin.set_child(actor);
+            else
+                this._showDefaultArt();
+        });
     }
 
     _showDefaultArt() {
@@ -555,18 +431,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
     }
 
     onScreensaverDeactivated() {
-        this._cleanupTempFile();
-    }
-
-    _cleanupTempFile() {
-        if (this._coverFileTmp) {
-            try {
-                this._coverFileTmp.delete(null);
-            } catch (e) {
-                // Ignore - file may not exist
-            }
-            this._coverFileTmp = null;
-        }
+        this._artLoader.destroy();
     }
 
     destroy() {
@@ -574,7 +439,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
             this._signalManager.disconnectAllSignals();
         }
         this._disconnectFromPlayer();
-        this._cleanupTempFile();
+        this._artLoader.destroy();
 
         if (this._outputStream) {
             if (this._outputVolumeId) {
