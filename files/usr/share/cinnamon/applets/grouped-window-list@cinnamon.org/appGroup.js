@@ -1202,6 +1202,10 @@ var AppGroup = class AppGroup {
             Mainloop.source_remove(this.flashTimer);
             this.flashTimer = 0;
         }
+        if (this.appKeyTimeout) {
+            clearTimeout(this.appKeyTimeout);
+            this.appKeyTimeout = 0;
+        }
 
         if (this.rightClickMenu) {
             if (this.rightClickMenu.isOpen) {
