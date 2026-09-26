@@ -281,6 +281,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._deviceItems = [];
         this._devices = [];
         this._primaryDeviceId = null;
+        this._rebuildGate = 0;
+        this._rebuildDirty = false;
+        this._removed = false;
         this.panel_icon_name = ''; // remember the panel icon name (so we only set it when it actually changes)
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
@@ -579,6 +582,26 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     _devicesChanged() {
+        if (this._removed)
+            return;
+
+        // Refresh immediately, then coalesce further device changes into
+        // one trailing rebuild per 500ms while notifications keep arriving.
+        if (this._rebuildGate > 0) {
+            this._rebuildDirty = true;
+            return;
+        }
+        this._rebuildDirty = false;
+        this._rebuildGate = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
+            this._rebuildGate = 0;
+            if (this._rebuildDirty)
+                this._devicesChanged();
+            return GLib.SOURCE_REMOVE;
+        });
+        this._devicesChangedReal();
+    }
+
+    _devicesChangedReal() {
 
         this._devices = [];
         this._primaryDevice = null;
@@ -589,6 +612,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         // Identify the primary battery device
         this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function (device, error) {
+            if (this._removed)
+                return;
+
             if (error) {
                 this._primaryDeviceId = null;
             }
@@ -603,6 +629,9 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
             // Scan battery devices
             this._proxy.GetDevicesRemote(Lang.bind(this, function (result, error) {
+                if (this._removed)
+                    return;
+
                 this._deviceItems.forEach(function (i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
@@ -757,6 +786,13 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     on_applet_removed_from_panel() {
+        this._removed = true;
+        if (this._rebuildGate > 0) {
+            GLib.source_remove(this._rebuildGate);
+            this._rebuildGate = 0;
+        }
+        this._rebuildDirty = false;
+
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
 
         if (!this._profilesProxy)
