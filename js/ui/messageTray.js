@@ -797,6 +797,10 @@ MessageTray.prototype = {
         Main.expo.connect('hiding', updateLockState);
     },
 
+    getResourceScale: function () {
+        return this._notificationBin.get_resource_scale();
+    },
+
     contains: function (source) {
         return this._getSourceIndex(source) >= 0;
     },
