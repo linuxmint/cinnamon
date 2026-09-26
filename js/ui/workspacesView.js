@@ -129,6 +129,36 @@ class WorkspacesView extends St.Widget {
         return this._workspaces[index];
     }
 
+    // Overview drives these three during a swipe; see ui/overview.js.
+    // Every workspace is prepared, matching zoomToOverview().
+
+    /**
+     * prepareGesture: lays out every workspace for the overview, ready to
+     * be held partway by setGestureProgress().
+     */
+    prepareGesture() {
+        for (const workspace of this._workspaces)
+            workspace.prepareOverviewGesture();
+    }
+
+    /**
+     * setGestureProgress:
+     * @progress: 0 for the real desktop layout, 1 for the overview layout
+     */
+    setGestureProgress(progress) {
+        for (const workspace of this._workspaces)
+            workspace.setOverviewProgress(progress);
+    }
+
+    /**
+     * endGesture:
+     * @shown: whether the swipe ended with the overview open
+     */
+    endGesture(shown) {
+        for (const workspace of this._workspaces)
+            workspace.endOverviewGesture(shown);
+    }
+
     hide() {
         let activeWorkspaceIndex = global.workspace_manager.get_active_workspace_index();
         let activeWorkspace = this._workspaces[activeWorkspaceIndex];
@@ -265,6 +295,60 @@ class WorkspacesView extends St.Widget {
         });
         this._workspaces.push(workspace);
         this.add_child(workspace);
+    }
+
+    /**
+     * workspaceScrollBegin: a gesture drives the scroll between the
+     * side-by-side workspaces, one per snap point.
+     *
+     * Returns: { snapPoints, progress }, or null if there is one workspace.
+     */
+    workspaceScrollBegin() {
+        if (this._workspaces.length < 2)
+            return null;
+
+        // Same flag a mouse swipe-scroll sets: without it,
+        // _activeWorkspaceChanged() reacts to each boundary crossing with
+        // its own ease, fighting the per-frame value this gesture writes.
+        this._scrolling = true;
+
+        return {
+            snapPoints: this._workspaces.map((workspace, index) => index),
+            progress: this._scrollAdjustment.value,
+        };
+    }
+
+    workspaceScrollUpdate(progress) {
+        this._scrollAdjustment.value = progress;
+    }
+
+    /**
+     * workspaceScrollEnd: scrolls to @target over @duration ms, then
+     * activates it once settled, since activating early animates the
+     * same change twice.
+     */
+    workspaceScrollEnd(target, duration) {
+        const land = () => {
+            const workspace = global.workspace_manager.get_workspace_by_index(target);
+            if (workspace && !workspace.active)
+                workspace.activate(global.get_current_time());
+
+            // Only now: clearing it earlier would mistake this activation
+            // for one crossed mid-swipe and skip it.
+            this._scrolling = false;
+        };
+
+        if (duration === 0) {
+            this._scrollAdjustment.value = target;
+            land();
+            return;
+        }
+
+        this._scrollAdjustment.ease(target, {
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+            onComplete: land,
+        });
     }
 
     _activeWorkspaceChanged(wm, from, to, direction) {
