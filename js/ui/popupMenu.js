@@ -3074,6 +3074,9 @@ var PopupMenuManager = class PopupMenuManager {
             this._failedGrabCloseId = 0;
         }
 
+        if (this.grabbed)
+            this._ungrab();
+
         this._signals.disconnectAllSignals();
         this.emit('destroy');
     }
