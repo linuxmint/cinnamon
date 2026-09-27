@@ -75,7 +75,7 @@ class RecorderIcon {
 
     refresh() {
         this.setOrientation(this.applet.orientation);
-        this._indicator.set_size(this.iconSize, this.iconSize);
+        this._indicator.set_size(this.iconSize * global.ui_scale, this.iconSize * global.ui_scale);
         this._indicator.queue_repaint();
     }
 

@@ -402,7 +402,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
     _showDefaultArt() {
         let defaultIcon = new St.Icon({
             icon_name: 'media-optical',
-            icon_size: this._artSize,
+            icon_size: ALBUM_ART_SIZE_BASE,
             icon_type: St.IconType.FULLCOLOR
         });
         this._artBin.set_child(defaultIcon);
