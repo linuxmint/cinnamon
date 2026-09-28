@@ -5,6 +5,7 @@ const { Gio, GLib, IBus, Meta } = imports.gi;
 const Signals = imports.signals;
 
 const IBusCandidatePopup = imports.ui.ibusCandidatePopup;
+const IMFramework = imports.misc.imFramework;
 
 // Ensure runtime version matches
 _checkIBusVersion(1, 5, 2);
@@ -47,6 +48,11 @@ var IBusManager = class {
         this._registerPropertiesId = 0;
         this._currentEngineName = null;
         this._preloadEnginesId = 0;
+        this._ibus = null;
+
+        if (IMFramework.getFramework() !== IMFramework.FRAMEWORK_IBUS) {
+            return;
+        }
 
         this._ibus = IBus.Bus.new_async();
         this._ibus.connect('connected', this._onConnected.bind(this));
@@ -163,18 +169,8 @@ var IBusManager = class {
             this._panelService.connect('set-content-type', this._setContentType.bind(this));
         } catch (e) {
         }
-        // If an engine is already active we need to get its properties
-        this._ibus.get_global_engine_async(-1, this._cancellable, (_bus, res) => {
-            let engine;
-            try {
-                engine = this._ibus.get_global_engine_async_finish(res);
-                if (!engine)
-                    return;
-            } catch (e) {
-                return;
-            }
-            this._engineChanged(this._ibus, engine.get_name());
-        });
+
+        this.refreshCurrentEngineProperties();
         this._updateReadiness();
     }
 
@@ -213,6 +209,8 @@ var IBusManager = class {
     }
 
     activateProperty(key, state) {
+        if (!this._panelService)
+            return;
         this._panelService.property_activate(key, state);
     }
 
@@ -245,6 +243,23 @@ var IBusManager = class {
                 if (callback)
                     callback();
             });
+    }
+
+    refreshCurrentEngineProperties() {
+        if (!this._ready)
+            return;
+        // If an engine is already active we need to get its properties
+        this._ibus.get_global_engine_async(-1, this._cancellable, (_bus, res) => {
+            let engine;
+            try {
+                engine = this._ibus.get_global_engine_async_finish(res);
+                if (!engine)
+                    return;
+            } catch (e) {
+                return;
+            }
+            this._engineChanged(this._ibus, engine.get_name());
+        });
     }
 
     preloadEngines(ids) {

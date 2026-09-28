@@ -164,18 +164,17 @@ st_label_get_preferred_height (ClutterActor *actor,
 
 static void
 st_label_allocate (ClutterActor          *actor,
-                   const ClutterActorBox *box,
-                   ClutterAllocationFlags flags)
+                   const ClutterActorBox *box)
 {
   StLabelPrivate *priv = ST_LABEL (actor)->priv;
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
   ClutterActorBox content_box;
 
-  clutter_actor_set_allocation (actor, box, flags);
+  clutter_actor_set_allocation (actor, box);
 
   st_theme_node_get_content_box (theme_node, box, &content_box);
 
-  clutter_actor_allocate (priv->label, &content_box, flags);
+  clutter_actor_allocate (priv->label, &content_box);
 }
 
 static void
@@ -267,11 +266,24 @@ st_label_class_init (StLabelClass *klass)
 }
 
 static void
+st_label_resource_scale_changed (ClutterActor *actor,
+                                 gpointer      user_data)
+{
+  StLabelPrivate *priv = ST_LABEL (actor)->priv;
+
+  g_clear_pointer (&priv->text_shadow_pipeline, cogl_object_unref);
+  clutter_actor_queue_redraw (actor);
+}
+
+static void
 st_label_init (StLabel *label)
 {
   StLabelPrivate *priv;
 
   label->priv = priv = st_label_get_instance_private (label);
+
+  g_signal_connect (label, "resource-scale-changed",
+                    G_CALLBACK (st_label_resource_scale_changed), NULL);
 
   label->priv->label = g_object_new (CLUTTER_TYPE_TEXT,
                                      "ellipsize", PANGO_ELLIPSIZE_END,
@@ -388,12 +400,12 @@ st_label_set_text (StLabel     *label,
  * Returns: (transfer none): ethe #ClutterText used by #StLabel. The label
  * is owned by the #StLabel and should not be unref'ed by the application.
  */
-ClutterActor*
+ClutterText *
 st_label_get_clutter_text (StLabel *label)
 {
   g_return_val_if_fail (ST_IS_LABEL (label), NULL);
 
-  return label->priv->label;
+  return (ClutterText *) label->priv->label;
 }
 
 

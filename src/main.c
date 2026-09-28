@@ -11,13 +11,20 @@
 #include <clutter/clutter.h>
 #include <dbus/dbus-shared.h>
 #include <glib/gi18n-lib.h>
+
+#if USE_GIR20
+#include <girepository/girepository.h>
+#else
 #include <girepository.h>
+#endif
+
 #include <meta/main.h>
 #include <meta/meta-plugin.h>
 #include <meta/prefs.h>
 #include <meta/util.h>
 
 #include <atk-bridge.h>
+#include <atspi/atspi.h>
 #include "cinnamon-global.h"
 #include "cinnamon-global-private.h"
 #include "cinnamon-perf-log.h"
@@ -146,6 +153,11 @@ cinnamon_dbus_init (gboolean  replace,
   /* ...and the org.gnome.Magnifier service. */
                             MAGNIFIER_DBUS_SERVICE, FALSE,
                             NULL);
+  /* ...and the on-screen keyboard service */
+  cinnamon_dbus_acquire_name (bus,
+                           DBUS_NAME_FLAG_REPLACE_EXISTING,
+                           &request_name_result,
+                           "org.gnome.Caribou.Keyboard", FALSE);
 
   /* At login, cinnamon.desktop requests that cinnamon-session start cinnamon
    * during CSM_MANAGER_PHASE_WINDOW_MANAGER.  This call should return FALSE.
@@ -215,10 +227,26 @@ cinnamon_a11y_init (void)
 {
   cally_accessibility_init ();
 
+  /* Tells Muffin whether GTK should be stopped from loading the ATK bridge
+   * (see meta_x11_init_gdk_display() in muffin/src/x11/meta-x11-display.c).
+   * Muffin reads it in meta_run(), after this.
+   * Set it whenever we don't load the bridge ourselves. Unset it first in case
+   * it was inherited (e.g. cinnamon --replace). */
+  g_unsetenv ("CINNAMON_NO_AT_BRIDGE");
+
   if (clutter_get_accessibility_enabled () == FALSE)
     {
       g_warning ("Accessibility: clutter has no accessibility enabled"
                  " skipping the atk-bridge load");
+      g_setenv ("CINNAMON_NO_AT_BRIDGE", "1", TRUE);
+    }
+  else if (atspi_get_a11y_bus () == NULL)
+    {
+      /* atk-bridge crashes later (e.g. when embedding tray icons)
+       * if it gets loaded without a bus. */
+      g_warning ("Accessibility: unable to connect to the accessibility bus,"
+                 " skipping the atk-bridge load");
+      g_setenv ("CINNAMON_NO_AT_BRIDGE", "1", TRUE);
     }
   else
     {
@@ -304,8 +332,6 @@ main (int argc, char **argv)
   GError *error = NULL;
   int ecode;
   gboolean session_running;
-  gchar *env_no_gail;
-  gchar *env_no_at_bridge;
 
   bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
   bind_textdomain_codeset (GETTEXT_PACKAGE, "UTF-8");
@@ -325,26 +351,7 @@ main (int argc, char **argv)
 
   meta_plugin_manager_set_plugin_type (cinnamon_plugin_get_type ());
 
-  /* Prevent meta_init() from causing gtk to load gail and at-bridge */
-  env_no_gail = g_strdup (g_getenv ("NO_GAIL"));
-  env_no_at_bridge = g_strdup (g_getenv ("NO_AT_BRIDGE"));
-  g_setenv ("NO_GAIL", "1", TRUE);
-  g_setenv ("NO_AT_BRIDGE", "1", TRUE);
   meta_init ();
-  if (env_no_gail != NULL)
-    {
-      g_setenv ("NO_GAIL", env_no_gail, TRUE);
-      g_free (env_no_gail);
-    }
-  else
-    g_unsetenv ("NO_GAIL");
-  if (env_no_at_bridge != NULL)
-    {
-      g_setenv ("NO_AT_BRIDGE", env_no_at_bridge, TRUE);
-      g_free (env_no_at_bridge);
-    }
-  else
-    g_unsetenv ("NO_AT_BRIDGE");
 
   /* FIXME: Add gjs API to set this stuff and don't depend on the
    * environment.  These propagate to child processes.
@@ -364,16 +371,30 @@ main (int argc, char **argv)
   cinnamon_a11y_init ();
   cinnamon_perf_log_init ();
 
+#if USE_GIR20
+  g_autoptr (GIRepository) repo = NULL;
+  repo = gi_repository_dup_default ();
+
+  gi_repository_prepend_search_path (repo, CINNAMON_PKGLIBDIR);
+  gi_repository_prepend_search_path (repo, MUFFIN_TYPELIB_DIR);
+#else
   g_irepository_prepend_search_path (CINNAMON_PKGLIBDIR);
   g_irepository_prepend_search_path (MUFFIN_TYPELIB_DIR);
+#endif
 
   /* We need to explicitly add the directories where the private libraries are
    * installed to the GIR's library path, so that they can be found at runtime
    * when linking using DT_RUNPATH (instead of DT_RPATH), which is the default
    * for some linkers (e.g. gold) and in some distros (e.g. Debian).
    */
+
+#if USE_GIR20
+  gi_repository_prepend_library_path (repo, CINNAMON_PKGLIBDIR);
+  gi_repository_prepend_library_path (repo, MUFFIN_TYPELIB_DIR);
+#else
   g_irepository_prepend_library_path (CINNAMON_PKGLIBDIR);
   g_irepository_prepend_library_path (MUFFIN_TYPELIB_DIR);
+#endif
 
   /* Disable debug spew from various libraries */
   g_log_set_handler ("Cvc", G_LOG_LEVEL_DEBUG,

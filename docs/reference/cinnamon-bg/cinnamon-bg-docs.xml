@@ -1,0 +1,280 @@
+<?xml version="1.0"?>
+<!DOCTYPE book PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+               "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd"
+[
+  <!ENTITY version SYSTEM "../version.xml">
+  <!ENTITY % local.common.attrib "xmlns:xi  CDATA  #FIXED 'http://www.w3.org/2003/XInclude'">
+]>
+<book id="index">
+  <bookinfo>
+    <title>CinnamonBg Reference Manual</title>
+    <releaseinfo>
+      This document is for Cinnamon &version;.
+    </releaseinfo>
+  </bookinfo>
+
+  <chapter id="overview">
+    <title>Overview</title>
+
+    <para>
+      CinnamonBg owns the Cinnamon desktop background model. It is a small
+      GObject/GIO library (no GTK) shared by every component that reads or
+      writes the background configuration, so they all agree on what the desktop
+      should look like.
+    </para>
+    <para>
+      It is private to Cinnamon: the library and its typelib install to
+      Cinnamon's own package directory rather than the system ones.
+    </para>
+
+    <section id="overview-data-model">
+      <title>The data model</title>
+      <para>
+        The configuration lives in two keys of the
+        <literal>org.cinnamon.desktop.background</literal> GSettings schema:
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <literal>picture-uri-list</literal> (<literal>aa{sv}</literal>) — an
+            array of vardicts, one entry per monitor. Each entry is a
+            <link linkend="CinnamonBgItem"><type>CinnamonBgItem</type></link>: monitor identity (<literal>connector</literal>,
+            <literal>index</literal>) plus what to paint
+            (<literal>picture-uri</literal>, <literal>picture-options</literal>,
+            the color fields) and whether it rotates
+            (<literal>slideshow</literal>, <literal>slideshow-source</literal>).
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <literal>background-mode</literal> — the model is reshaped for it:
+            independent holds one entry per connected monitor, mirror and spanned
+            hold exactly one. <link linkend="cinnamon-bg-list-save"><function>cinnamon_bg_list_save()</function></link>
+            writes the model, so saving while in mirror or spanned collapses the
+            key to that single entry and the per-monitor picks are gone.
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        These two keys are the whole current model.
+      </para>
+    </section>
+
+    <section id="overview-legacy">
+      <title>Legacy flat keys (deprecated)</title>
+      <para>
+        The schema also carries the flat keys from the pre-list design, which it
+        documents itself.
+      </para>
+      <para>
+        <literal>picture-options</literal>,
+        <literal>color-shading-type</literal>, <literal>primary-color</literal>
+        and <literal>secondary-color</literal> are never written, and are read
+        exactly once: when <literal>picture-uri-list</literal> is empty, to seed
+        the representative entry. That covers a fresh install and the upgrade
+        from the pre-list model, where they still hold the user's placement and
+        colors. The first save retires them.
+      </para>
+      <para>
+        <literal>picture-uri</literal> is the exception and is <emphasis>not</emphasis>
+        deprecated: besides seeding as above, it remains the "set as wallpaper"
+        entry point that external applications write. The library never watches
+        it — see <link linkend="overview-consumers">Who reads and who writes</link>.
+      </para>
+    </section>
+
+    <section id="overview-modes">
+      <title>Background modes</title>
+      <informaltable>
+        <tgroup cols="4">
+          <thead>
+            <row>
+              <entry>background-mode</entry>
+              <entry>Edited as</entry>
+              <entry>Rotated as</entry>
+              <entry>Painted as</entry>
+            </row>
+          </thead>
+          <tbody>
+            <row>
+              <entry><literal>independent</literal></entry>
+              <entry>the selected monitor's entry only</entry>
+              <entry>staggered (delay / N)</entry>
+              <entry>per-monitor</entry>
+            </row>
+            <row>
+              <entry><literal>mirror</literal></entry>
+              <entry>the representative entry (the one with no connector)</entry>
+              <entry>synced (all change together)</entry>
+              <entry>the same image on every monitor</entry>
+            </row>
+            <row>
+              <entry><literal>spanned</literal></entry>
+              <entry>the representative entry (the one with no connector)</entry>
+              <entry>synced</entry>
+              <entry>one image across the whole desktop</entry>
+            </row>
+          </tbody>
+        </tgroup>
+      </informaltable>
+      <para>
+        <link linkend="CinnamonBgMode"><type>CinnamonBgMode</type></link> mirrors this key one-for-one, so a consumer
+        can simply read its <link linkend="CinnamonBgList--mode"><literal>“mode”</literal></link> property. Only
+        <link linkend="CINNAMON-BG-MODE-INDEPENDENT:CAPS"><literal>CINNAMON_BG_MODE_INDEPENDENT</literal></link> changes how monitors are matched
+        to entries; mirror and spanned resolve identically — both fan the
+        representative entry out to every monitor — and diverge only in the
+        renderer, which paints spanned across the monitor union.
+      </para>
+    </section>
+
+    <section id="overview-model">
+      <title>What the model holds</title>
+      <para>
+        Consumers never read <literal>picture-uri-list</literal> directly, and
+        never match monitors to entries themselves. A
+        <type>CinnamonBgList</type> is a <type>GListModel</type> holding exactly
+        what should be presented: one <type>CinnamonBgItem</type> per connected
+        monitor in independent mode, exactly one in mirror and spanned. Editing
+        the model is editing the configuration; there is no resolved view sitting
+        in front of a separate authoritative one.
+      </para>
+      <para>
+        The key can still hold more than the model does — an entry for a monitor
+        that is not currently connected has nowhere to appear. That is the whole
+        difference between the two ways of persisting:
+        <link linkend="cinnamon-bg-list-save"><function>cinnamon_bg_list_save()</function></link>
+        replaces the key with the model and so drops those entries, while
+        <link linkend="cinnamon-bg-list-save-pictures"><function>cinnamon_bg_list_save_pictures()</function></link>
+        leaves them alone.
+      </para>
+      <para>
+        The model is derived whenever either key or the monitor layout moves. In
+        independent mode each monitor is matched to a stored entry by:
+      </para>
+      <orderedlist>
+        <listitem><para>its <literal>connector</literal> (for example <literal>eDP-1</literal>);</para></listitem>
+        <listitem><para>otherwise its logical-monitor <literal>index</literal>, so a layout survives connectors being renamed between X11 and Wayland sessions;</para></listitem>
+        <listitem><para>otherwise the nearest matched neighbor, so a newly plugged monitor shows something sensible instead of black.</para></listitem>
+      </orderedlist>
+      <para>
+        Mirror and spanned do not match per monitor at all. They present one
+        item, seeded from the representative entry — the one carrying no
+        connector, or failing that the primary monitor's.
+      </para>
+      <para>
+        Items are reused across rebuilds, matched by connector, so a reference a
+        consumer holds stays live across an edit made in another process and its
+        properties notify in place.
+      </para>
+      <para>
+        The layout arrives asynchronously from the window manager, so a list that
+        has just been created holds nothing at all. It starts loading on
+        construction, so a consumer only has to wait rather than ask for it;
+        <link linkend="cinnamon-bg-list-get-monitor-infos"><function>cinnamon_bg_list_get_monitor_infos()</function></link>
+        is empty until the reply lands. Watch <literal>config-changed</literal> and re-read
+        from there.
+      </para>
+    </section>
+
+    <section id="overview-consumers">
+      <title>Who reads and who writes</title>
+      <para>
+        Three processes build a <type>CinnamonBgList</type>: the background
+        daemon, the settings panel, and the slideshow daemon.
+      </para>
+      <itemizedlist>
+        <listitem>
+          <para>
+            <emphasis>cinnamon-background-daemon</emphasis> (the renderer)
+            never writes the configuration. It asks the model what each monitor
+            should show, paints the result, and pushes the primary monitor's
+            picture uri out to AccountsService so the greeter matches. It also
+            publishes its own RenderedLayout property on its dbus interface
+            (<literal>org.Cinnamon.Background</literal>), useful for reporting
+            what images are currently being rendered to an applet.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>The settings panel</emphasis> owns the mode. It writes the
+            <literal>background-mode</literal> key directly and calls
+            <link linkend="cinnamon-bg-list-save"><function>cinnamon_bg_list_save()</function></link> once the list reports the
+            new mode; <link linkend="cinnamon-bg-list-set-mode"><function>cinnamon_bg_list_set_mode()</function></link> is the
+            equivalent for a C consumer. It makes configuration
+            edits by setting properties on model items and calling
+            <function>cinnamon_bg_list_save()</function>.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>The slideshow daemon</emphasis> only advances
+            <literal>picture-uri</literal> on model items as it rotates, persisting
+            with <link linkend="cinnamon-bg-list-save-pictures"><function>cinnamon_bg_list_save_pictures()</function></link>,
+            which moves pictures without changing which entries the key holds. A
+            rotation is not a configuration edit, so it must not prune the entry
+            of a monitor that happens to be unplugged. It never writes
+            <literal>background-mode</literal>.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>Cinnamon's slideshowManager</emphasis> only ever reads
+            GSettings, and builds no BgList. It calls <link linkend="cinnamon-bg-list-has-slideshow"><function>cinnamon_bg_list_has_slideshow()</function></link>, which reads the keys directly.
+          </para>
+        </listitem>
+        <listitem>
+          <para>
+            <emphasis>Cinnamon's backgroundManager</emphasis> builds no list
+            either. It is the only thing that reacts to a flat
+            <literal>picture-uri</literal>, which is how
+            an external "set as wallpaper" arrives: either on our own key (what
+            <literal>xdg-desktop-portal-xapp</literal> writes) or on
+            <literal>org.gnome.desktop.background</literal>'s (which some
+            applications still set directly). It turns either into
+            <link linkend="cinnamon-bg-list-set-single-uri"><function>cinnamon_bg_list_set_single_uri()</function></link> — deliberately destructive, since
+            asking for one wallpaper means one image on every monitor.
+          </para>
+        </listitem>
+      </itemizedlist>
+      <para>
+        That both of Cinnamon's own consumers reach the library only through
+        <link linkend="cinnamon-bg-list-has-slideshow"><function>cinnamon_bg_list_has_slideshow()</function></link>
+        and
+        <link linkend="cinnamon-bg-list-set-single-uri"><function>cinnamon_bg_list_set_single_uri()</function></link>
+        is deliberate. Both are static and touch nothing but
+        <type>GSettings</type>, so the shell never constructs a list and never
+        acquires the window manager's <literal>DisplayConfig</literal> proxy that
+        one would bring with it.
+      </para>
+      <para>
+        <link linkend="cinnamon-bg-list-save"><function>cinnamon_bg_list_save()</function></link> writes
+        <literal>picture-uri-list</literal> alone, so a component that only meant
+        to change a picture cannot write back whatever mode it happens to be
+        holding. Changing the mode is a separate, deliberate call.
+        <function>cinnamon_bg_list_set_single_uri()</function> is the one
+        exception, and an explicit one: it sets the mode to mirror along with the
+        picture, because one wallpaper on every monitor is what it means.
+      </para>
+    </section>
+  </chapter>
+
+  <chapter id="api-reference">
+    <title>API reference</title>
+    <xi:include href="xml/cinnamon-bg-item.xml"/>
+    <xi:include href="xml/cinnamon-bg-list.xml"/>
+    <xi:include href="xml/cinnamon-bg-monitor-info.xml"/>
+    <xi:include href="xml/cinnamon-bg-enums.xml"/>
+  </chapter>
+
+  <chapter id="object-tree">
+    <title>Object Hierarchy</title>
+    <xi:include href="xml/tree_index.sgml"/>
+  </chapter>
+
+  <index id="api-index-full">
+    <title>API Index</title>
+    <xi:include href="xml/api-index-full.xml"><xi:fallback /></xi:include>
+  </index>
+
+  <xi:include href="xml/annotation-glossary.xml"><xi:fallback /></xi:include>
+</book>

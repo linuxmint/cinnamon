@@ -741,8 +741,8 @@ get_file_contents_utf8_task_finished (GObject      *source,
 /**
  * cinnamon_get_file_contents_utf8:
  * @path: UTF-8 encoded filename path
- * @callback: (scope async): The callback to call when finished
- * @user_data: (closure): data to pass with the callback
+ * @callback: (scope async) (closure user_data): The callback to call when finished
+ * @user_data: data to pass with the callback
  *
  * Asynchronously load the contents of a file as a NUL terminated
  * string, validating it as UTF-8.  Embedded NUL characters count as
@@ -777,6 +777,78 @@ cinnamon_get_file_contents_utf8         (const char                   *path,
 
   g_task_set_task_data (task, async_path, (GDestroyNotify) g_free);
   g_task_run_in_thread (task, get_file_contents_utf8_thread);
+
+  g_object_unref (task);
+}
+
+typedef struct
+{
+    CinnamonFindProgramCallback callback;
+    gpointer user_data;
+} CinnamonFindProgramCallbackData;
+
+static void
+find_program_in_path_thread (GTask        *task,
+                             gpointer      source_object,
+                             gpointer      task_data,
+                             GCancellable *cancellable)
+{
+    const gchar *program = (const gchar *) task_data;
+
+    g_task_return_pointer (task, g_find_program_in_path (program), g_free);
+}
+
+static void
+find_program_in_path_task_finished (GObject      *source,
+                                    GAsyncResult *result,
+                                    gpointer      user_data)
+{
+    CinnamonFindProgramCallbackData *data = (CinnamonFindProgramCallbackData *) user_data;
+    gchar *path;
+
+    path = g_task_propagate_pointer (G_TASK (result), NULL);
+
+    (* data->callback) (path, data->user_data);
+
+    g_free (path);
+    g_slice_free (CinnamonFindProgramCallbackData, data);
+}
+
+/**
+ * cinnamon_find_program_in_path:
+ * @program: the program to look for
+ * @callback: (scope async) (closure user_data): The callback to call when finished
+ * @user_data: data to pass with the callback
+ *
+ * Asynchronous wrapper for #g_find_program_in_path(). Calls callback with
+ * the full path to @program, or %NULL if it wasn't found.
+ **/
+void
+cinnamon_find_program_in_path (const char                  *program,
+                               CinnamonFindProgramCallback  callback,
+                               gpointer                     user_data)
+{
+  GTask *task;
+  CinnamonFindProgramCallbackData *data;
+
+  if (program == NULL || callback == NULL)
+    {
+      g_critical ("cinnamon_find_program_in_path: program and callback cannot be null");
+      return;
+    }
+
+  data = g_slice_new (CinnamonFindProgramCallbackData);
+
+  data->callback = callback;
+  data->user_data = user_data;
+
+  task = g_task_new (NULL,
+                     NULL,
+                     find_program_in_path_task_finished,
+                     data);
+
+  g_task_set_task_data (task, g_strdup (program), (GDestroyNotify) g_free);
+  g_task_run_in_thread (task, find_program_in_path_thread);
 
   g_object_unref (task);
 }

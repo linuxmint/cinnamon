@@ -14,6 +14,7 @@ SoundManager.prototype = {
         this.keys = ["switch", "close", "map", "minimize", "maximize", "unmaximize", "tile", "login", "plug", "unplug", "notification"];
         this.desktop_keys = ["volume"];
         this.startup_delay = true;
+        this.disabled = false;
         this.enabled = {};
         this.file = {};
         this.settings = new Gio.Settings({ schema_id: 'org.cinnamon.sounds' });
@@ -25,6 +26,12 @@ SoundManager.prototype = {
         Mainloop.timeout_add_seconds(10, Lang.bind(this, function() {
             this.startup_delay = false;
         }));
+    },
+
+    // Called when the session is ending - silence all feedback sounds so we
+    // don't play over the logout sound as clients and helper daemons tear down.
+    disable: function() {
+        this.disabled = true;
     },
 
     _cacheSettings: function() {
@@ -61,6 +68,8 @@ SoundManager.prototype = {
     /* Public methods. */
 
     playSoundFile: function(id, filename) {
+        if (this.disabled)
+            return;
         global.display.get_sound_player().play_from_file
         (
             Gio.File.new_for_path(filename),
@@ -70,6 +79,8 @@ SoundManager.prototype = {
     },
 
     playSound: function(id, name) {
+        if (this.disabled)
+            return;
         global.display.get_sound_player().play_from_theme
         (
             name,

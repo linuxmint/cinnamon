@@ -9,11 +9,11 @@ from gi.repository import Gio, Gtk, GObject, GLib
 
 from xapp.SettingsWidgets import SettingsWidget, SettingsLabel
 from xapp.GSettingsWidgets import PXGSettingsBackend
-from ChooserButtonWidgets import DateChooserButton, TimeChooserButton
-from KeybindingWidgets import ButtonKeybinding
-import util
+from bin.ChooserButtonWidgets import DateChooserButton, TimeChooserButton
+from bin.KeybindingWidgets import ButtonKeybinding
+from bin import util
 
-import KeybindingTable
+from bin import KeybindingTable
 
 settings_objects = {}
 
@@ -39,9 +39,12 @@ class BinFileMonitor(GObject.GObject):
 
         for path in self.paths:
             file = Gio.File.new_for_path(path)
-            mon = file.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
-            mon.connect("changed", self.queue_emit_changed)
-            self.monitors.append(mon)
+            try:
+                mon = file.monitor_directory(Gio.FileMonitorFlags.SEND_MOVED, None)
+                mon.connect("changed", self.queue_emit_changed)
+                self.monitors.append(mon)
+            except GLib.Error as e:
+                pass
 
     def _emit_changed(self):
         self.emit("changed")

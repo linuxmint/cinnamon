@@ -3,9 +3,9 @@
 from pathlib import Path
 import sys
 
-from ExtensionCore import ManageSpicesPage, DownloadSpicesPage
-from Spices import Spice_Harvester
-from SettingsWidgets import SidePage
+from bin.ExtensionCore import ManageSpicesPage, DownloadSpicesPage
+from bin.Spices import Spice_Harvester
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 from gi.repository import GLib
 

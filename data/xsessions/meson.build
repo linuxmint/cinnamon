@@ -1,6 +1,5 @@
 session_deskop_files = [
   'cinnamon.desktop',
-  'cinnamon2d.desktop',
 ]
 
 foreach session_deskop_file : session_deskop_files

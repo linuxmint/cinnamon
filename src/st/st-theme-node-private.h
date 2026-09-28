@@ -107,6 +107,7 @@ struct _StThemeNode {
   /* Graphics state */
   float alloc_width;
   float alloc_height;
+  float resource_scale;
 
   CoglPipeline *background_shadow_material;
   CoglPipeline *box_shadow_material;

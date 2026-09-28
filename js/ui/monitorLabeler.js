@@ -1,3 +1,4 @@
+const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const Gio = imports.gi.Gio;
@@ -14,122 +15,126 @@ const common_css =
   text-align: center;   \
 ";
 
-var MonitorLabel = class {
-    constructor(monitor, connector, info) {
+var MonitorLabel = GObject.registerClass(
+class MonitorLabel extends St.BoxLayout {
+    _init(monitor, connector, info) {
         this._monitor = monitor;
         this._connector = connector;
         this._index = info[0];
         this._cloned = info[1];
-        this._display_name = info[2];
+        this._displayName = info[2];
         this._color = info[3];
 
-        this.actor = new St.BoxLayout({ style: `${common_css} background-color: ${this._color};`,
-                                        vertical: true });
+        super._init({
+            style: `${common_css} background-color: ${this._color};`,
+            vertical: true,
+        });
 
-        let label_text;
+        let labelText;
 
         if (this._cloned) {
             let str = _("Mirrored Displays");
-            label_text = `<b>${str}</b>`;
+            labelText = `<b>${str}</b>`;
         } else {
-            label_text = `<b>${this._index}  ${this._display_name}</b>\n${this._connector}`
+            labelText = `<b>${this._index}  ${this._displayName}</b>\n${this._connector}`
         }
 
         this._label = new St.Label();
-        this._label.clutter_text.set_markup(label_text);
-        this.actor.add(this._label);
+        this._label.clutter_text.set_markup(labelText);
+        this.add_child(this._label);
 
-        Main.uiGroup.add_child(this.actor);
+        Main.uiGroup.add_child(this);
 
-        this.actor.x = monitor.x + 6 * global.ui_scale;
-        this.actor.y = monitor.y + 6 * global.ui_scale;
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(monitor.index);
+        this.x = workArea.x + 6 * global.ui_scale;
+        this.y = workArea.y + 6 * global.ui_scale;
     }
-}
+});
 
 var MonitorLabeler = class {
     constructor() {
         this._labels = [];
-        this._tracked_clients = new Map();
+        this._trackedClients = new Map();
         this._active = false;
-        this._monitor_manager = Meta.MonitorManager.get();
+        this._monitorManager = Meta.MonitorManager.get();
 
-        this._show_idle_id = 0;
+        this._showIdleId = 0;
     }
 
     show(dict, sender) {
         this._active = true;
-        this.watch_sender(sender);
+        this.watchSender(sender);
 
-        if (this._show_idle_id != 0) {
-            GLib.source_remove(this._show_idle_id);
-            this._show_idle_id = 0;
+        if (this._showIdleId != 0) {
+            GLib.source_remove(this._showIdleId);
+            this._showIdleId = 0;
         }
 
-        this._show_idle_id = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => this._real_show(dict));
+        this._showIdleId = GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => this._realShow(dict));
     }
 
-    _real_show(dict) {
+    _realShow(dict) {
         for (let label of this._labels) {
-            label.actor.destroy();
+            label.destroy();
         }
 
         this._labels = [];
 
         for (let connector in dict) {
-            let index = this._monitor_manager.get_monitor_for_connector(connector);
+            let index = this._monitorManager.get_monitor_for_connector(connector);
             if (index == -1) {
                 continue;
             }
 
-            let layout_monitor = 0;
+            let layoutMonitor = 0;
 
             try {
-                layout_monitor = Main.layoutManager.monitors[index];
+                layoutMonitor = Main.layoutManager.monitors[index];
             } catch {
                 continue;
             }
 
             let info = dict[connector].deep_unpack();
 
-            let label = new MonitorLabel(layout_monitor, connector, info);
+            let label = new MonitorLabel(layoutMonitor, connector, info);
             this._labels.push(label);
         }
 
-        this._show_idle_id = 0;
+        this._showIdleId = 0;
 
         return GLib.SOURCE_REMOVE;
     }
 
     hide(sender=null) {
-        const watch_handle = this._tracked_clients.get(sender);
-        if (watch_handle !== undefined) {
-            Gio.bus_unwatch_name(watch_handle);
-            this._tracked_clients.delete(sender)
+        const watchHandle = this._trackedClients.get(sender);
+        if (watchHandle !== undefined) {
+            Gio.bus_unwatch_name(watchHandle);
+            this._trackedClients.delete(sender)
         }
 
-        if (this._tracked_clients.size > 0) {
+        if (this._trackedClients.size > 0) {
             return;
         }
 
-        if (this._show_idle_id != 0) {
-            GLib.source_remove(this._show_idle_id);
-            this._show_idle_id = 0;
+        if (this._showIdleId != 0) {
+            GLib.source_remove(this._showIdleId);
+            this._showIdleId = 0;
         }
 
         for (let label of this._labels) {
-            label.actor.destroy();
+            label.destroy();
         }
 
         this._labels = [];
         this._active = false;
     }
 
-    watch_sender(sender) {
-        if (this._tracked_clients.has(sender)) {
+    watchSender(sender) {
+        if (this._trackedClients.has(sender)) {
             return;
         }
 
-        let watch_handle = Gio.bus_watch_name(Gio.BusType.SESSION, sender, 0, null, (c, name) => this.hide(name))
-        this._tracked_clients.set(sender, watch_handle);
+        let watchHandle = Gio.bus_watch_name(Gio.BusType.SESSION, sender, 0, null, (c, name) => this.hide(name))
+        this._trackedClients.set(sender, watchHandle);
     }
 };

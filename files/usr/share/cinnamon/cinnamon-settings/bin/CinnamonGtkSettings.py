@@ -34,14 +34,14 @@ class GtkSettingsEditor:
 
         self.default_settings = Gtk.Settings.get_default()
     def _get_keyfile(self):
-        keyfile = None
+        keyfile = GLib.KeyFile()
+
         try:
-            keyfile = GLib.KeyFile()
             keyfile.load_from_file(self._path, 0)
         except:
             pass
-        finally:
-            return keyfile
+
+        return keyfile
 
     def get_boolean(self, key):
         keyfile = self._get_keyfile()

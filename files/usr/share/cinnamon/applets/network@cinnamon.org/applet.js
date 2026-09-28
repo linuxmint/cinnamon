@@ -150,12 +150,12 @@ NMNetworkMenuItem.prototype = {
 
     _getIcon: function() {
         if (this.bestAP.mode == NM80211Mode.ADHOC)
-            return 'network-workgroup';
+            return 'xsi-network-workgroup';
         else if (this.bestAP._secType != NMAccessPointSecurity.UNKNOWN &&
             this.bestAP._secType != NMAccessPointSecurity.NONE)
-            return 'network-wireless-signal-' + signalToIcon(this.bestAP.strength) + '-secure';
+            return 'xsi-network-wireless-signal-' + signalToIcon(this.bestAP.strength) + '-secure';
         else
-            return 'network-wireless-signal-' + signalToIcon(this.bestAP.strength);
+            return 'xsi-network-wireless-signal-' + signalToIcon(this.bestAP.strength);
     },
 
     updateAccessPoints: function(accessPoints) {
@@ -882,7 +882,7 @@ NMDeviceModem.prototype = {
     },
 
     _getSignalIcon: function() {
-        return 'network-cellular-signal-' + signalToIcon(this.mobileDevice.signal_quality);
+        return 'xsi-network-cellular-signal-' + signalToIcon(this.mobileDevice.signal_quality);
     },
 
     _createSection: function() {
@@ -1653,7 +1653,7 @@ NMDeviceWireless.prototype = {
             if (this._activeNetwork)
                 this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined, { reactive: false });
             else
-                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(this._activeConnection.connection._name, 'network-wireless-connected', { reactive: false });
+                this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(this._activeConnection.connection._name, 'xsi-network-wireless-connected', { reactive: false });
         } else {
             // We cannot read the connection (due to ACL, or API incompatibility), but we still show signal if we have it
             if (this._activeNetwork)
@@ -1661,7 +1661,7 @@ NMDeviceWireless.prototype = {
                                                                    { reactive: false });
             else
                 this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(_("Connected (private)"),
-                                                                              'network-wireless-connected',
+                                                                              'xsi-network-wireless-connected',
                                                                               { reactive: false });
         }
         this._activeConnectionItem.setShowDot(true);
@@ -2115,13 +2115,11 @@ CinnamonNetworkApplet.prototype = {
             devices.push(wrapper);
 
             this._syncSectionTitle(wrapper.category);
-        } else
-            log('Unknown network device type, is ' + device.get_device_type());
+        }
     },
 
     _deviceRemoved: function(client, device) {
         if (!device._delegate) {
-            log('Removing a network device that was not added');
             return;
         }
 
@@ -2309,6 +2307,10 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
+        } else if (section == NMConnectionCategory.WIREGUARD) {
+            this._devices.wireguard.device.removeConnection(connection);
+            if (this._devices.wireguard.device.empty)
+                this._devices.wireguard.section.actor.hide();
         } else if (section != NMConnectionCategory.INVALID) {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++)

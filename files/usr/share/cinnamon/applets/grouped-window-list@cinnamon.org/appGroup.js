@@ -2,6 +2,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
 const Main = imports.ui.main;
 const DND = imports.ui.dnd;
@@ -11,8 +12,9 @@ const Mainloop = imports.mainloop;
 const {SignalManager} = imports.misc.signalManager;
 const {unref} = imports.misc.util;
 
-const createStore = require('./state');
-const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = require('./menus');
+const Me = imports.ui.extension.getCurrentExtension();
+const {createStore} = Me.imports.state;
+const {AppMenuButtonRightClickMenu, HoverMenuController, AppThumbnailHoverMenu} = Me.imports.menus;
 const {
     FLASH_INTERVAL,
     FLASH_MAX_COUNT,
@@ -20,7 +22,7 @@ const {
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
     TitleDisplay
-} = require('./constants');
+} = Me.imports.constants;
 
 const _reLetterRtl = new RegExp("\\p{Script=Hebrew}|\\p{Script=Arabic}", "u");
 const _reLetter = new RegExp("\\p{L}", "u");
@@ -59,7 +61,7 @@ const getFocusState = function(metaWindow) {
     return false;
 };
 
-class AppGroup {
+var AppGroup = class AppGroup {
     constructor(params) {
         this.state = params.state;
         this.workspaceState = params.workspaceState;
@@ -119,31 +121,50 @@ class AppGroup {
         });
         this.actor.add_child(this.progressOverlay);
 
-        // Create the app button icon, number label, and text label for titleDisplay
+        // Create the app button icon, window count and notification badges, and text label for titleDisplay
         this.iconBox = new Cinnamon.Slicer({name: 'appMenuIcon'});
         this.actor.add_child(this.iconBox);
         this.setActorAttributes(null, params.metaWindow);
 
-        this.badge = new St.BoxLayout({
+        this.windowsBadge = new St.BoxLayout({
             style_class: 'grouped-window-list-badge',
             important: true,
-            x_align: St.Align.START,
+            x_align: St.Align.MIDDLE,
             y_align: St.Align.MIDDLE,
             show_on_set_parent: false,
         });
-        this.numberLabel = new St.Label({
+        this.windowsBadgeLabel = new St.Label({
             style_class: 'grouped-window-list-number-label',
             important: true,
-            text: '',
-            anchor_x: -3 * global.ui_scale,
+            text: ''
         });
-        this.numberLabel.clutter_text.ellipsize = false;
-        this.badge.add(this.numberLabel, {
+        this.windowsBadgeLabel.clutter_text.ellipsize = false;
+        this.windowsBadge.add(this.windowsBadgeLabel, {
             x_align: St.Align.START,
             y_align: St.Align.START,
         });
-        this.actor.add_child(this.badge);
-        this.badge.set_text_direction(St.TextDirection.LTR);
+        this.actor.add_child(this.windowsBadge);
+        this.windowsBadge.set_text_direction(St.TextDirection.LTR);
+
+        this.notificationsBadge = new St.BoxLayout({
+            style_class: 'grouped-window-list-notifications-badge',
+            important: true,
+            x_align: St.Align.MIDDLE,
+            y_align: St.Align.MIDDLE,
+            show_on_set_parent: false,
+        });
+        this.notificationsBadgeLabel = new St.Label({
+            style_class: 'grouped-window-list-notifications-badge-label',
+            important: true,
+            text: ''
+        });
+        this.notificationsBadgeLabel.clutter_text.ellipsize = false;
+        this.notificationsBadge.add(this.notificationsBadgeLabel, {
+            x_align: St.Align.START,
+            y_align: St.Align.START,
+        });
+        this.actor.add_child(this.notificationsBadge);
+        this.notificationsBadge.set_text_direction(St.TextDirection.LTR);
 
         this.label = new St.Label({
             style_class: 'grouped-window-list-button-label',
@@ -281,6 +302,22 @@ class AppGroup {
             });
         }
 
+        if (icon instanceof St.Icon) {
+            let gicon = icon.get_gicon();
+            if (gicon?.get_names) {
+                let iconTheme = Gtk.IconTheme.get_default();
+                let hasAnyIcon = gicon.get_names()
+                    .some(name => iconTheme.lookup_icon(name, icon.icon_size, 0));
+                if (!hasAnyIcon) {
+                    icon = new St.Icon({
+                        icon_name: 'application-x-executable',
+                        icon_size: this.iconSize,
+                        icon_type: St.IconType.FULLCOLOR
+                    });
+                }
+            }
+        }
+
         const oldChild = this.iconBox.get_child();
         this.iconBox.set_child(icon);
 
@@ -338,10 +375,6 @@ class AppGroup {
     getPreferredWidth(actor, forHeight, alloc) {
         const [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_width(forHeight);
         const [labelMinSize, labelNaturalSize] = this.label.get_preferred_width(forHeight);
-        // The label text starts in the center of the icon, so we should allocate the space
-        // needed for the icon plus the space needed for(label - icon/2)
-        alloc.min_size = 1 * global.ui_scale;
-
         const {appId} = this.groupState;
 
         const allocateForLabel = this.labelVisiblePref ||
@@ -356,22 +389,26 @@ class AppGroup {
             } else {
                 alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
             }
+            alloc.min_size = alloc.natural_size;
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
+            alloc.min_size = 1 * global.ui_scale;
         }
     }
 
     getPreferredHeight(actor, forWidth, alloc) {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
-        alloc.min_size = Math.min(iconMinSize, labelMinSize);
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
+        alloc.min_size = alloc.natural_size;
     }
 
-    allocate(actor, box, flags) {
+    allocate(actor, box) {
         const allocWidth = box.x2 - box.x1;
         const allocHeight = box.y2 - box.y1;
         const childBox = new Clutter.ActorBox();
+        const windowBadgeBox = new Clutter.ActorBox();
+        const notifBadgeBox = new Clutter.ActorBox();
         const direction = this.actor.get_text_direction();
 
         // Set the icon to be left-justified (or right-justified) and centered vertically
@@ -392,17 +429,39 @@ class AppGroup {
             [childBox.x1, childBox.x2] = center(allocWidth + offset, naturalWidth);
         }
 
-        this.iconBox.allocate(childBox, flags);
+        this.iconBox.allocate(childBox);
 
-        // Set badge position
-        const windowCountFactor = this.groupState.windowCount > 9 ? 1.5 : 2;
-        const badgeOffset = 2 * global.ui_scale;
-        childBox.x1 = childBox.x1 - badgeOffset;
-        childBox.x2 = childBox.x1 + (this.numberLabel.width * windowCountFactor);
-        childBox.y1 = Math.max(childBox.y1 - badgeOffset, 0);
-        childBox.y2 = childBox.y1 + this.badge.get_preferred_height(childBox.get_width())[1];
+        // Set windows badge position
+        const windowBadgeOffset = 3 * global.ui_scale;
+        const windowBadgeXCenter = this.iconBox.x + windowBadgeOffset;
+        const windowBadgeYCenter = this.iconBox.y + windowBadgeOffset;
+        const [wLabelMinWidth, wLabelMinHeight, wLabelNaturalWidth, wLabelNaturalHeight] = this.windowsBadgeLabel.get_preferred_size();
+        const windowBadgesize = Math.max(wLabelNaturalWidth, wLabelNaturalHeight);
+        windowBadgeBox.x1 = Math.max(windowBadgeXCenter - Math.floor(windowBadgesize / 2), 0);
+        windowBadgeBox.x2 = windowBadgeBox.x1 + windowBadgesize;
+        windowBadgeBox.y1 = Math.max(windowBadgeYCenter - Math.floor(windowBadgesize / 2), 0);
+        windowBadgeBox.y2 = windowBadgeBox.y1 + windowBadgesize;
+        const windowLabelPosX = Math.floor((windowBadgesize - wLabelNaturalWidth) / 2);
+        const windowLabelPosY = Math.floor((windowBadgesize - wLabelNaturalHeight) / 2);
+        this.windowsBadgeLabel.set_anchor_point(-windowLabelPosX, -windowLabelPosY);
+        this.windowsBadge.set_size(windowBadgesize, windowBadgesize);
+        this.windowsBadge.allocate(windowBadgeBox);
 
-        this.badge.allocate(childBox, flags);
+        // Set notifications badge position
+        const notifBadgeOffset = 3 * global.ui_scale;
+        const notifBadgeXCenter = this.iconBox.x + this.iconBox.width - notifBadgeOffset;
+        const notifBadgeYCenter = this.iconBox.y + notifBadgeOffset;
+        const [nLabelMinWidth, nLabelMinHeight, nLabelNaturalWidth, nLabelNaturalHeight] = this.notificationsBadgeLabel.get_preferred_size();
+        const notifBadgesize = Math.max(nLabelNaturalWidth, nLabelNaturalHeight);
+        notifBadgeBox.x2 = Math.min(notifBadgeXCenter + Math.floor(notifBadgesize / 2), box.x2);
+        notifBadgeBox.x1 = notifBadgeBox.x2 - notifBadgesize;
+        notifBadgeBox.y1 = Math.max(notifBadgeYCenter - Math.floor(notifBadgesize / 2), 0);
+        notifBadgeBox.y2 = notifBadgeBox.y1 + notifBadgesize;
+        const notifLabelPosX = Math.floor((notifBadgesize - nLabelNaturalWidth) / 2);
+        const notifLabelPosY = Math.floor((notifBadgesize - nLabelNaturalHeight) / 2);
+        this.notificationsBadgeLabel.set_anchor_point(-notifLabelPosX, -notifLabelPosY);
+        this.notificationsBadge.set_size(notifBadgesize, notifBadgesize);
+        this.notificationsBadge.allocate(notifBadgeBox);
 
         // Set label position
         if (this.drawLabel) {
@@ -432,7 +491,7 @@ class AppGroup {
                 else
                     this.label.set_style('text-align: right;');
 
-            this.label.allocate(childBox, flags);
+            this.label.allocate(childBox);
         }
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
@@ -447,7 +506,7 @@ class AppGroup {
             });
         }
 
-        if (this.progressOverlay.visible) this.allocateProgress(childBox, flags);
+        if (this.progressOverlay.visible) this.allocateProgress(childBox);
     }
 
     showLabel(animate = false) {
@@ -494,7 +553,7 @@ class AppGroup {
     }
 
     onEnter() {
-        if (this.state.panelEditMode) return false;
+        if (this.state.panelEditMode || this.state.scrollActive) return false;
 
         this.actor.add_style_pseudo_class('hover');
 
@@ -550,7 +609,7 @@ class AppGroup {
         return total / count;
     }
 
-    allocateProgress(childBox = null, flags = 0) {
+    allocateProgress(childBox = null) {
         if (!childBox) childBox = new Clutter.ActorBox();
         childBox.y1 = 0;
         childBox.y2 = this.actor.height;
@@ -561,7 +620,7 @@ class AppGroup {
             childBox.x1 = 0;
             childBox.x2 = Math.max(this.actor.width * (this.progress / 100.0), 1.0);
         }
-        this.progressOverlay.allocate(childBox, flags);
+        this.progressOverlay.allocate(childBox);
     }
 
     onProgressChange(metaWindow) {
@@ -581,7 +640,7 @@ class AppGroup {
         const {appId, metaWindows, lastFocused} = this.groupState;
 
         if (hasFocus === undefined) {
-            hasFocus = this.workspaceState.lastFocusedApp === appId;
+            hasFocus = this.workspaceState.lastFocusedApp === appId && getFocusState(lastFocused);
         }
 
         // If any of the windows associated with our app have focus,
@@ -676,8 +735,8 @@ class AppGroup {
     }
 
     showOrderLabel(number) {
-        this.numberLabel.text = (number + 1).toString();
-        this.badge.show();
+        this.windowsBadgeLabel.text = (number + 1).toString();
+        this.windowsBadge.show();
     }
 
     launchNewInstance(offload=false) {
@@ -887,11 +946,8 @@ class AppGroup {
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
-            this.signals.connect(metaWindow, 'notify::gtk-application-id', (w) => this.onAppChange(w));
-            this.signals.connect(metaWindow, 'notify::wm-class', (w) => this.onAppChange(w));
-            this.signals.connect(metaWindow, 'unmanaged', (w) => this.onAppChange(w));
-
             this.signals.connect(metaWindow, 'notify::icon', (w) => this.setIcon(w));
+            this.signals.connect(metaWindow, 'notify::icon-name', (w) => this.setIcon(w));
 
             if (metaWindow.progress !== undefined) {
                 // Check if GWL is starting with pre-existing windows that have progress,
@@ -917,6 +973,7 @@ class AppGroup {
             this.setIcon(metaWindow)
 
             this.calcWindowNumber();
+            this.updateNotificationsBadge();
             this.onFocusChange();
         }
         set({
@@ -931,8 +988,6 @@ class AppGroup {
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
-        this.signals.disconnect('notify::gtk-application-id', metaWindow);
-        this.signals.disconnect('notify::wm-class', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
@@ -956,13 +1011,6 @@ class AppGroup {
                 cb(this.groupState.appId, this.groupState.isFavoriteApp);
             }
         }
-    }
-
-    onAppChange(metaWindow) {
-        if (!this.workspaceState) return;
-
-        this.workspaceState.trigger('windowRemoved', metaWindow);
-        this.workspaceState.trigger('windowAdded', metaWindow);
     }
 
     onWindowTitleChanged(metaWindow, refresh) {
@@ -1074,20 +1122,24 @@ class AppGroup {
     calcWindowNumber() {
         if (this.groupState.willUnmount) return;
 
-        const windowCount = this.groupState.metaWindows ? this.groupState.metaWindows.length : 0;
-        this.numberLabel.text = windowCount.toString();
-
-        this.groupState.set({windowCount});
-
-        if (this.state.settings.numDisplay) {
-            if (windowCount <= 1) {
-                this.badge.hide();
-            } else {
-                this.badge.show();
-
-            }
+        this.groupState.set({windowCount: this.groupState.metaWindows ? this.groupState.metaWindows.length : 0});
+        
+        if (this.groupState.windowCount > 1 && this.state.settings.enableWindowCountBadges) {
+            this.windowsBadgeLabel.text = this.groupState.windowCount.toString();
+            this.windowsBadge.show();
         } else {
-            this.badge.hide();
+            this.windowsBadge.hide();
+        }
+    }
+
+    updateNotificationsBadge() {
+        const nCount = Main.notificationDaemon.getNotificationCountForApp(this.groupState.app);
+
+        if (nCount > 0 && this.state.settings.enableNotificationBadges) {
+            this.notificationsBadgeLabel.text = nCount.toString();
+            this.notificationsBadge.show();
+        } else {
+            this.notificationsBadge.hide();
         }
     }
 
@@ -1172,5 +1224,3 @@ class AppGroup {
         }
     }
 }
-
-module.exports = AppGroup;

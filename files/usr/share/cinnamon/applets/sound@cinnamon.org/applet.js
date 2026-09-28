@@ -2,7 +2,6 @@ const Applet = imports.ui.applet;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
 const Gio = imports.gi.Gio;
-const Interfaces = imports.misc.interfaces;
 const Util = imports.misc.util;
 const Cinnamon = imports.gi.Cinnamon;
 const Clutter = imports.gi.Clutter;
@@ -15,9 +14,9 @@ const Main = imports.ui.main;
 const Settings = imports.ui.settings;
 const Slider = imports.ui.slider;
 const Pango = imports.gi.Pango;
+const MprisPlayerModule = imports.misc.mprisPlayer;
+const AlbumArt = imports.misc.albumArt;
 
-const MEDIA_PLAYER_2_PATH = "/org/mpris/MediaPlayer2";
-const MEDIA_PLAYER_2_NAME = "org.mpris.MediaPlayer2";
 const MEDIA_PLAYER_2_PLAYER_NAME = "org.mpris.MediaPlayer2.Player";
 
 // how long to show the output icon when volume is adjusted during media playback.
@@ -37,6 +36,7 @@ x = _("Stopped");
 const VOLUME_ADJUSTMENT_STEP = 0.05; /* Volume adjustment step in % */
 
 const ICON_SIZE = 28;
+const COVER_SIZE = 300;
 
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
 const OVERAMPLIFICATION_KEY = "allow-amplified-volume";
@@ -100,7 +100,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 
         this.app_icon = app_icon;
         if (this.app_icon == null) {
-            this.iconName = this.isMic ? "microphone-sensitivity-muted" : "audio-volume-muted";
+            this.iconName = this.isMic ? "xsi-microphone-sensitivity-muted" : "xsi-audio-volume-muted";
             this.icon = new St.Icon({icon_name: this.iconName, icon_type: St.IconType.SYMBOLIC, icon_size: 16});
         }
         else {
@@ -257,7 +257,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
             else
                 icon = "high";
         }
-        return this.isMic? "microphone-sensitivity-" + icon : "audio-volume-" + icon;
+        return this.isMic? "xsi-microphone-sensitivity-" + icon : "xsi-audio-volume-" + icon;
     }
 }
 
@@ -483,36 +483,36 @@ class StreamMenuSection extends PopupMenu.PopupMenuSection {
 }
 
 class Player extends PopupMenu.PopupMenuSection {
-    constructor(applet, busname, owner) {
+    constructor(applet, mprisPlayer) {
         super();
-        this._owner = owner;
-        this._busName = busname;
+        this._mprisPlayer = mprisPlayer;
+        this._owner = mprisPlayer.getOwner();
+        this._busName = mprisPlayer.getBusName();
         this._applet = applet;
 
-        // We'll update this later with a proper name
-        this._name = this._busName;
+        // Get name from MprisPlayer
+        this._name = mprisPlayer.getIdentity() || this._busName;
 
-        let asyncReadyCb = (proxy, error, property) => {
-            if (error)
-                log(error);
-            else {
-                this[property] = proxy;
+        // Get proxies from MprisPlayer (shared module handles creation)
+        this._mediaServer = mprisPlayer.getMediaServerProxy();
+        this._mediaServerPlayer = mprisPlayer.getMediaServerPlayerProxy();
+        this._prop = mprisPlayer.getPropertiesProxy();
+
+        // If MprisPlayer is already ready, initialize immediately
+        if (mprisPlayer.isReady()) {
+            this._dbus_acquired();
+        } else {
+            // Wait for proxies to be ready
+            this._readyId = mprisPlayer.connect('ready', () => {
+                this._mediaServer = mprisPlayer.getMediaServerProxy();
+                this._mediaServerPlayer = mprisPlayer.getMediaServerPlayerProxy();
+                this._prop = mprisPlayer.getPropertiesProxy();
+                this._name = mprisPlayer.getIdentity() || this._busName;
+                mprisPlayer.disconnect(this._readyId);
+                this._readyId = 0;
                 this._dbus_acquired();
-            }
-        };
-
-        Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_NAME,
-                                              this._busName,
-                                              (p, e) => asyncReadyCb(p, e, '_mediaServer'));
-
-        Interfaces.getDBusProxyWithOwnerAsync(MEDIA_PLAYER_2_PLAYER_NAME,
-                                              this._busName,
-                                              (p, e) => asyncReadyCb(p, e, '_mediaServerPlayer'));
-
-        Interfaces.getDBusPropertiesAsync(this._busName,
-                                          MEDIA_PLAYER_2_PATH,
-                                          (p, e) => asyncReadyCb(p, e, '_prop'));
-
+            });
+        }
     }
 
     _dbus_acquired() {
@@ -554,16 +554,16 @@ class Player extends PopupMenu.PopupMenuSection {
 
         // Cover Box (art + track info)
         this._trackCover = new St.Bin({x_align: St.Align.MIDDLE});
-        this._trackCoverFile = this._trackCoverFileTmp = false;
+        this._artLoader = new AlbumArt.AlbumArtLoader();
+        this._artUrl = null;
         this.coverBox = new Clutter.Box();
         let l = new Clutter.BinLayout({x_align: Clutter.BinAlignment.FILL, y_align: Clutter.BinAlignment.END});
         this.coverBox.set_layout_manager(l);
 
         // Cover art
-        this.cover = new St.Icon({icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
+        this.cover = new St.Icon({icon_name: "media-optical", icon_size: COVER_SIZE, icon_type: St.IconType.FULLCOLOR});
         this.coverBox.add_actor(this.cover);
 
-        this._cover_load_handle = 0;
         this._cover_path = null;
 
         // Track info (artist + title)
@@ -633,13 +633,13 @@ class Player extends PopupMenu.PopupMenuSection {
         this._applet._updatePlayerMenuItems();
 
         this._setStatus(this._mediaServerPlayer.PlaybackStatus);
-        this._setMetadata(this._mediaServerPlayer.Metadata);
+        this._setMetadata();
+
+        this._metadataChangedId = this._mprisPlayer.connect('metadata-changed', () => this._setMetadata());
 
         this._propChangedId = this._prop.connectSignal('PropertiesChanged', (proxy, sender, [iface, props]) => {
             if (props.PlaybackStatus)
                 this._setStatus(props.PlaybackStatus.unpack());
-            if (props.Metadata)
-                this._setMetadata(props.Metadata.deep_unpack());
             if (props.CanGoNext || props.CanGoPrevious)
                 this._updateControls();
             if (props.LoopStatus)
@@ -711,106 +711,27 @@ class Player extends PopupMenu.PopupMenuSection {
         });
     }
 
-    _setMetadata(metadata) {
-        if (!metadata)
+    _setMetadata() {
+        const player = this._mprisPlayer;
+        if (!player)
             return;
 
-        let trackid = "";  // D-Bus path: A unique identity for this track
-        if (metadata["mpris:trackid"]) {
-            trackid = metadata["mpris:trackid"].unpack();
-        }
+        this._seeker.setTrack(player.getTrackId(), player.getLengthSeconds());
 
-        let trackLength = 0; // Track length in secs
-        if (metadata["mpris:length"]) {
-            trackLength = metadata["mpris:length"].unpack() / 1000000;
-        }
-        this._seeker.setTrack(trackid, trackLength);
-
-        if (metadata["xesam:artist"]) {
-            switch (metadata["xesam:artist"].get_type_string()) {
-                case 's':
-                    // smplayer sends a string
-                    this._artist = metadata["xesam:artist"].unpack();
-                    break;
-                case 'as':
-                    // others send an array of strings
-                    this._artist = metadata["xesam:artist"].deep_unpack().join(", ");
-                    break;
-                default:
-                    this._artist = _("Unknown Artist");
-            }
-            // make sure artist isn't empty
-            if (!this._artist) this._artist = _("Unknown Artist");
-        }
-        else
-            this._artist = _("Unknown Artist");
-
+        this._artist = player.getArtist() || _("Unknown Artist");
         this.artistLabel.set_text(this._artist);
 
-        if (metadata["xesam:album"])
-            this._album = metadata["xesam:album"].unpack();
-        else
-            this._album = _("Unknown Album");
+        this._album = player.getAlbum() || _("Unknown Album");
 
-        if (metadata["xesam:title"])
-            this._title = metadata["xesam:title"].unpack();
-        else
-            this._title = _("Unknown Title");
+        this._title = player.getTitle() || _("Unknown Title");
         this.titleLabel.set_text(this._title);
 
-        let change = false;
-        if (metadata["mpris:artUrl"]) {
-            let artUrl = metadata["mpris:artUrl"].unpack();
-            if (this._trackCoverFile != artUrl) {
-                this._trackCoverFile = artUrl;
-                change = true;
-            }
-        }
-        else {
-            if (this._trackCoverFile != false) {
-                this._trackCoverFile = false;
-                change = true;
-            }
+        const artUrl = player.getProcessedArtUrl();
+        if (artUrl !== this._artUrl) {
+            this._artUrl = artUrl;
+            this._artLoader.load(artUrl, COVER_SIZE, (actor, path) => this._setCover(actor, path));
         }
 
-        if (change) {
-            if (this._trackCoverFile) {
-                let cover_path = "";
-                if (this._trackCoverFile.match(/^http/)) {
-                    if (!this._trackCoverFileTmp)
-                        this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
-                    Util.spawn_async(['wget', this._trackCoverFile, '-O', this._trackCoverFileTmp.get_path()], () => this._onDownloadedCover());
-                }
-                else if (this._trackCoverFile.match(/data:image\/(png|jpeg);base64,/)) {
-                    if (!this._trackCoverFileTmp)
-                        this._trackCoverFileTmp = Gio.file_new_tmp('XXXXXX.mediaplayer-cover')[0];
-                    const cover_base64 = this._trackCoverFile.split(',')[1];
-                    const base64_decode = data => new Promise(resolve => resolve(GLib.base64_decode(data)));
-                    if (!cover_base64) {
-                        return;
-                    }
-                    base64_decode(cover_base64)
-                    .then(decoded => {
-                        this._trackCoverFileTmp.replace_contents(
-                            decoded,
-                            null,
-                            false,
-                            Gio.FileCreateFlags.REPLACE_DESTINATION,
-                            null
-                        );
-                        return this._trackCoverFileTmp.get_path();
-                    })
-                    .then(path => this._showCover(path));
-                }
-                else {
-                    cover_path = decodeURIComponent(this._trackCoverFile);
-                    cover_path = cover_path.replace("file://", "");
-                    this._showCover(cover_path);
-                }
-            }
-            else
-                this._showCover(false);
-        }
         this._applet.setAppletTextIcon(this, true);
     }
 
@@ -877,38 +798,22 @@ class Player extends PopupMenu.PopupMenuSection {
         this._shuffleButton.setActive(status);
     }
 
-    _onDownloadedCover() {
-        let cover_path = this._trackCoverFileTmp.get_path();
-        this._showCover(cover_path);
-    }
-
-    _showCover(cover_path) {
-        if (! cover_path || ! GLib.file_test(cover_path, GLib.FileTest.EXISTS)) {
-            this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: 300, icon_type: St.IconType.FULLCOLOR});
-            cover_path = null;
-        }
-        else {
-            this._cover_path = cover_path;
-            this._cover_load_handle = St.TextureCache.get_default().load_image_from_file_async(cover_path, 300, 300, this._on_cover_loaded.bind(this));
-        }
-    }
-
-    _on_cover_loaded(cache, handle, actor) {
-        if (handle !== this._cover_load_handle) {
-            // Maybe a cover image load stalled? Make sure our requests match the callback.
-            return;
-        }
-
+    _setCover(actor, path) {
         this.coverBox.remove_actor(this.cover);
 
-        // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
-        // (and move the player controls as a result).
-        actor.margin_bottom = 300 - actor.height;
+        if (actor) {
+            // Make sure any oddly-shaped album art doesn't affect the height of the applet popup
+            // (and move the player controls as a result).
+            actor.margin_bottom = (COVER_SIZE * global.ui_scale) - actor.height;
+            this.cover = actor;
+        } else {
+            this.cover = new St.Icon({style_class: 'sound-player-generic-coverart', important: true, icon_name: "media-optical", icon_size: COVER_SIZE, icon_type: St.IconType.FULLCOLOR});
+        }
 
-        this.cover = actor;
+        this._cover_path = path;
         this.coverBox.add_actor(this.cover);
         this.coverBox.set_child_below_sibling(this.cover, this.trackInfo);
-        this._applet.setAppletTextIcon(this, this._cover_path);
+        this._applet.setAppletTextIcon(this, path);
     }
 
     onSettingsChanged() {
@@ -917,9 +822,25 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     destroy() {
-        this._seeker.destroy();
-        if (this._prop)
+        if (this._readyId && this._mprisPlayer) {
+            this._mprisPlayer.disconnect(this._readyId);
+            this._readyId = 0;
+        }
+        if (this._metadataChangedId && this._mprisPlayer) {
+            this._mprisPlayer.disconnect(this._metadataChangedId);
+            this._metadataChangedId = 0;
+        }
+        if (this._artLoader) {
+            this._artLoader.destroy();
+            this._artLoader = null;
+        }
+
+        if (this._seeker)
+            this._seeker.destroy();
+        if (this._prop && this._propChangedId)
             this._prop.disconnectSignal(this._propChangedId);
+
+        this._mprisPlayer = null;
 
         PopupMenu.PopupMenuSection.prototype.destroy.call(this);
     }
@@ -992,40 +913,6 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._playerItems = [];
         this._activePlayer = null;
 
-        Interfaces.getDBusAsync((proxy, error) => {
-            if (error) {
-                // ?? what else should we do if we fail completely here?
-                throw error;
-            }
-
-            this._dbus = proxy;
-
-            // player DBus name pattern
-            let name_regex = /^org\.mpris\.MediaPlayer2\./;
-            // load players
-            this._dbus.ListNamesRemote((names) => {
-                for (let n in names[0]) {
-                    let name = names[0][n];
-                    if (name_regex.test(name))
-                        this._dbus.GetNameOwnerRemote(name, (owner) => this._addPlayer(name, owner[0]));
-                }
-            });
-
-            // watch players
-            this._ownerChangedId = this._dbus.connectSignal('NameOwnerChanged',
-                (proxy, sender, [name, old_owner, new_owner]) => {
-                    if (name_regex.test(name)) {
-                        if (new_owner && !old_owner)
-                            this._addPlayer(name, new_owner);
-                        else if (old_owner && !new_owner)
-                            this._removePlayer(name, old_owner);
-                        else
-                            this._changePlayerOwner(name, old_owner, new_owner);
-                    }
-                }
-            );
-        });
-
         this._control = new Cvc.MixerControl({ name: 'Cinnamon Volume Control' });
         this._control.connect('state-changed', (...args) => this._onControlStateChanged(...args));
 
@@ -1051,6 +938,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._output = null;
         this._outputMutedId = 0;
         this._outputIcon = "xsi-audio-volume-muted";
+        this._playerIcon = [null, false];
 
         this._input = null;
         this._inputMutedId = 0;
@@ -1100,6 +988,20 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         this._volumeControlShown = false;
 
         this._showFixedElements();
+
+        // Use shared MPRIS module for player discovery.
+        this._mprisManager = MprisPlayerModule.getMprisPlayerManager();
+        this._playerAddedId = this._mprisManager.connect('player-added', (manager, mprisPlayer) => {
+            this._addPlayer(mprisPlayer);
+        });
+        this._playerRemovedId = this._mprisManager.connect('player-removed', (manager, busName, owner) => {
+            this._removePlayer(busName, owner);
+        });
+
+        for (let mprisPlayer of this._mprisManager.getPlayers()) {
+            this._addPlayer(mprisPlayer);
+        }
+
         this.set_show_label_in_vertical_panels(false);
         this.set_applet_label(this._applet_label.get_text());
 
@@ -1122,6 +1024,11 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         else {
             this._volumeMax = this._volumeNorm;
             this._outputVolumeSection.set_mark(0);
+
+            if (this._output && this._output.volume > this._volumeMax) {
+                this._output.volume = this._volumeMax;
+                this._output.push_volume();
+            }
         }
         this._outputVolumeSection._update();
     }
@@ -1149,7 +1056,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._iconTimeoutId = 0;
         }
 
-        this._dbus.disconnectSignal(this._ownerChangedId);
+        if (this._mprisManager) {
+            this._mprisManager.disconnect(this._playerAddedId);
+            this._mprisManager.disconnect(this._playerRemovedId);
+        }
 
         for(let i in this._players)
             this._players[i].destroy();
@@ -1299,7 +1209,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             if (source === "output") {
                 // if we have an active player, but are changing the volume, show the output icon and after three seconds change back to the player icon unless muted
                 this.set_applet_icon_symbolic_name(this._outputIcon);
-                if (this.stream && !this.stream.is_muted) {
+                if (this._output && !this._output.is_muted) {
                     this._iconTimeoutId = Mainloop.timeout_add_seconds(OUTPUT_ICON_SHOW_TIME_SECONDS, () => {
                         this.setIcon();
                     });
@@ -1330,15 +1240,12 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             this._icon_path = null;
         }
 
-        if (this.showalbum) {
-            if (path && player && (player === true || player._playerStatus == 'Playing')) {
-                this.setIcon(path, "player-path");
-            } else {
-                this.setIcon('xsi-media-optical-cd-audio', 'player-name');
-            }
-        }
-        else {
-            this.setIcon('xsi-audio-x-generic', 'player-name');
+        if (player && (player === true || player._playerStatus == 'Playing') && this.showalbum && path) {
+            // Playing with album art enabled and available - show the art
+            this.setIcon(path, "player-path");
+        } else {
+            this._playerIcon = [null, false];
+            this.setIcon(this._outputIcon);
         }
     }
 
@@ -1398,7 +1305,10 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 /^org\.mpris\.MediaPlayer2\.vlc-\d+$/.test(busName);
     }
 
-    _addPlayer(busName, owner) {
+    _addPlayer(mprisPlayer) {
+        let owner = mprisPlayer.getOwner();
+        let busName = mprisPlayer.getBusName();
+
         if (this._players[owner]) {
             let prevName = this._players[owner]._busName;
             // HAVE: ADDING: ACTION:
@@ -1411,12 +1321,12 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             else
                 return;
         } else if (owner) {
-            let player = new Player(this, busName, owner);
+            let player = new Player(this, mprisPlayer);
 
             // Add the player to the list of active players in GUI.
-            // We don't have the org.mpris.MediaPlayer2 interface set up at this point,
-            // add the player's busName as a placeholder until we can get its Identity.
-            let item = new PopupMenu.PopupMenuItem(busName);
+            // Use the identity from MprisPlayer if available, otherwise busName as placeholder
+            let displayName = mprisPlayer.getIdentity() || busName;
+            let item = new PopupMenu.PopupMenuItem(displayName);
             item.activate = () => this._switchPlayer(player._owner);
             this._chooseActivePlayerItem.menu.addMenuItem(item);
 
@@ -1425,7 +1335,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
             this._changeActivePlayer(owner);
             this._updatePlayerMenuItems();
-            this.setAppletTextIcon();
+            this.setAppletTextIcon(this._players[this._activePlayer], true);
         }
     }
 
@@ -1434,7 +1344,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             // The player exists, switch to it
             this._changeActivePlayer(owner);
             this._updatePlayerMenuItems();
-            this.setAppletTextIcon();
+            this.setAppletTextIcon(this._players[this._activePlayer], true);
         } else {
             // The player doesn't seem to exist. Remove it from the players list
             this._removePlayerItem(owner);
@@ -1470,17 +1380,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                 }
             }
             this._updatePlayerMenuItems();
-            this.setAppletTextIcon();
-        }
-    }
-
-    _changePlayerOwner(busName, oldOwner, newOwner) {
-        if (this._players[oldOwner] && busName == this._players[oldOwner]._busName) {
-            this._players[newOwner] = this._players[oldOwner];
-            this._players[newOwner]._owner = newOwner;
-            delete this._players[oldOwner];
-            if (this._activePlayer == oldOwner)
-                this._activePlayer = newOwner;
+            this.setAppletTextIcon(this._players[this._activePlayer], true);
         }
     }
 
@@ -1580,6 +1480,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         if (this.playerControl && this._activePlayer != null) {
             let menuItem = this._players[player];
             this.menu.addMenuItem(menuItem, 2);
+            this._icon_path = menuItem._cover_path || null;
+        } else {
+            this._icon_path = null;
         }
 
         this._updatePlayerMenuItems();

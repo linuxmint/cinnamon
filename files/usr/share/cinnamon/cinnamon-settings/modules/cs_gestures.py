@@ -6,7 +6,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk
 
-from SettingsWidgets import SidePage, SettingsWidget
+from bin.SettingsWidgets import SidePage, SettingsWidget
 from xapp.GSettingsWidgets import *
 
 SCHEMA = "org.cinnamon.gestures"

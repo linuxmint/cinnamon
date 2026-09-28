@@ -1,0 +1,17 @@
+import gi
+
+PARSED_ARGS = []
+PKGLIBDIR = "@PKGLIBDIR@"
+GIREPOSITORY_VERSION = "3.0" if @USE_GIR20@ else "2.0"
+
+def add_private_typelib_path():
+    # Make CinnamonBg importable.
+
+    gi.require_version("GIRepository", GIREPOSITORY_VERSION)
+    from gi.repository import GIRepository
+
+    repo = (GIRepository.Repository.dup_default() if GIREPOSITORY_VERSION == "3.0"
+            else GIRepository.Repository.get_default())
+
+    repo.prepend_library_path(PKGLIBDIR)
+    repo.prepend_search_path(PKGLIBDIR)

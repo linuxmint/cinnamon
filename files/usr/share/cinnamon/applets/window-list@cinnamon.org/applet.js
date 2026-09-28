@@ -63,6 +63,7 @@ const PopupMenu = imports.ui.popupMenu;
 const Settings = imports.ui.settings;
 const SignalManager = imports.misc.signalManager;
 const Tooltips = imports.ui.tooltips;
+const MessageTray = imports.ui.messageTray;
 const WindowUtils = imports.misc.windowUtils;
 
 const MAX_TEXT_LENGTH = 1000;
@@ -309,6 +310,27 @@ class AppMenuButton {
         this._label = new St.Label();
         this.actor.add_actor(this._label);
 
+        this.notificationsBadge = new St.BoxLayout({
+            style_class: 'grouped-window-list-notifications-badge',
+            important: true,
+            x_align: St.Align.MIDDLE,
+            y_align: St.Align.MIDDLE,
+            show_on_set_parent: false,
+        });
+        this.notificationsBadgeLabel = new St.Label({
+            style_class: 'grouped-window-list-notifications-badge-label',
+            important: true,
+            text: ''
+        });
+        this.notificationsBadgeLabel.clutter_text.ellipsize = false;
+        this.notificationsBadge.add(this.notificationsBadgeLabel, {
+            x_align: St.Align.START,
+            y_align: St.Align.START,
+        });
+        this.actor.add_child(this.notificationsBadge);
+        this.notificationsBadge.set_text_direction(St.TextDirection.LTR);
+        this.notificationsBadge.show();
+
         this.updateLabelVisible();
 
         this._visible = true;
@@ -362,6 +384,9 @@ class AppMenuButton {
         this.onScrollModeChanged();
         this._needsAttention = false;
 
+        this.app = this._getApp();
+        this.appId = this.app ? this.app.get_id() : null;
+        this.updateNotificationsBadge();
         this.setDisplayTitle();
         this.onFocus();
         this.setIcon();
@@ -373,6 +398,7 @@ class AppMenuButton {
         this._signals.connect(this.metaWindow, "notify::minimized", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::tile-mode", this.setDisplayTitle, this);
         this._signals.connect(this.metaWindow, "notify::icon", this.setIcon, this);
+        this._signals.connect(this.metaWindow, "notify::icon-name", this.setIcon, this);
         this._signals.connect(this.metaWindow, "notify::appears-focused", this.onFocus, this);
         this._signals.connect(this.metaWindow, "unmanaged", this.onUnmanaged, this);
     }
@@ -507,10 +533,7 @@ class AppMenuButton {
 
     setDisplayTitle() {
         let title   = this.metaWindow.get_title();
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
-
-        if (!title) title = app ? app.get_name() : '?';
+        if (!title) title = this.app ? this.app.get_name() : '?';
 
         /* Sanitize the window title to prevent dodgy window titles such as
          * "); DROP TABLE windows; --. Turn all whitespaces into " " because
@@ -525,6 +548,18 @@ class AppMenuButton {
             this._tooltip.set_text(title);
 
         this._label.set_text(title);
+    }
+
+    _getApp() {
+        const tracker = Cinnamon.WindowTracker.get_default();
+        let app = tracker.get_window_app(this.metaWindow);
+        if (!app) {
+          app = tracker.get_app_from_pid(this.metaWindow.get_pid());
+        }
+        if (!app) {
+          app = tracker.get_app_from_pid(this.metaWindow.get_client_pid());
+        }
+        return app;
     }
 
     destroy() {
@@ -683,11 +718,12 @@ class AppMenuButton {
         }
     }
 
-    _allocate(actor, box, flags) {
+    _allocate(actor, box) {
         let allocWidth = box.x2 - box.x1;
         let allocHeight = box.y2 - box.y1;
 
-        let childBox = new Clutter.ActorBox();
+        const childBox = new Clutter.ActorBox();
+        const notifBadgeBox = new Clutter.ActorBox();
 
         let [minWidth, minHeight, naturalWidth, naturalHeight] = this._iconBox.get_preferred_size();
 
@@ -715,7 +751,23 @@ class AppMenuButton {
             childBox.x1 = box.x1 + Math.floor(Math.max(0, allocWidth - naturalWidth) / 2);
             childBox.x2 = Math.min(childBox.x1 + naturalWidth, box.x2);
         }
-        this._iconBox.allocate(childBox, flags);
+        this._iconBox.allocate(childBox);
+
+        // Set notifications badge position
+        const notifBadgeOffset = 3 * global.ui_scale;
+        const notifBadgeXCenter = this._iconBox.x + this._iconBox.width - notifBadgeOffset;
+        const notifBadgeYCenter = this._iconBox.y + notifBadgeOffset;
+        const [nLabelMinWidth, nLabelMinHeight, nLabelNaturalWidth, nLabelNaturalHeight] = this.notificationsBadgeLabel.get_preferred_size();
+        const notifBadgesize = Math.max(nLabelNaturalWidth, nLabelNaturalHeight);
+        notifBadgeBox.x2 = Math.min(notifBadgeXCenter + Math.floor(notifBadgesize / 2), box.x2);
+        notifBadgeBox.x1 = notifBadgeBox.x2 - notifBadgesize;
+        notifBadgeBox.y1 = Math.max(notifBadgeYCenter - Math.floor(notifBadgesize / 2), 0);
+        notifBadgeBox.y2 = notifBadgeBox.y1 + notifBadgesize;
+        const notifLabelPosX = Math.floor((notifBadgesize - nLabelNaturalWidth) / 2);
+        const notifLabelPosY = Math.floor((notifBadgesize - nLabelNaturalHeight) / 2);
+        this.notificationsBadgeLabel.set_anchor_point(-notifLabelPosX, -notifLabelPosY);
+        this.notificationsBadge.set_size(notifBadgesize, notifBadgesize);
+        this.notificationsBadge.allocate(notifBadgeBox);
 
         if (this.drawLabel) {
             [minWidth, minHeight, naturalWidth, naturalHeight] = this._label.get_preferred_size();
@@ -732,7 +784,7 @@ class AppMenuButton {
                 childBox.x1 = box.x1;
             }
 
-            this._label.allocate(childBox, flags);
+            this._label.allocate(childBox);
         }
 
         if (!this.progressOverlay.visible) {
@@ -744,7 +796,7 @@ class AppMenuButton {
         childBox.x2 = this.actor.width;
         childBox.y2 = this.actor.height;
 
-        this.progressOverlay.allocate(childBox, flags);
+        this.progressOverlay.allocate(childBox);
 
         let clip_width = Math.max((this.actor.width) * (this._progress / 100.0), 1.0);
         this.progressOverlay.set_clip(0, 0, clip_width, this.actor.height);
@@ -763,13 +815,13 @@ class AppMenuButton {
     }
 
     setIcon() {
-        let tracker = Cinnamon.WindowTracker.get_default();
-        let app = tracker.get_window_app(this.metaWindow);
-
         this.icon_size = this._applet.icon_size;
 
-        let icon = app ?
-            app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
+        // create_icon_texture_for_window uses the window's own (XApp) icon-name when
+        // it has one, and otherwise falls back to the app icon - so it covers both
+        // window-backed and app-backed windows without special-casing.
+        let icon = this.app ?
+            this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
             new St.Icon({ icon_name: 'application-default-icon',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
@@ -814,6 +866,17 @@ class AppMenuButton {
             }
             return continueFlashing;
         });
+    }
+
+    updateNotificationsBadge() {
+        const nCount = Main.notificationDaemon.getNotificationCountForApp(this.app);
+
+        if (nCount > 0 && this._applet.enableNotifications) {
+            this.notificationsBadgeLabel.text = nCount.toString();
+            this.notificationsBadge.show();
+        } else {
+            this.notificationsBadge.hide();
+        }
     }
 };
 
@@ -897,22 +960,22 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let subMenu = new PopupMenu.PopupSubMenuMenuItem(_("Applet preferences"));
         this.addMenuItem(subMenu);
 
-        item = new PopupMenu.PopupIconMenuItem(_("About..."), "dialog-question", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("About..."), "xsi-dialog-question", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.openAbout));
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "system-run", St.IconType.SYMBOLIC);
-        this._signals.connect(item, 'activate', Lang.bind(this._launcher._applet, this._launcher._applet.configureApplet));
+        item = new PopupMenu.PopupIconMenuItem(_("Configure..."), "xsi-preferences", St.IconType.SYMBOLIC);
+        this._signals.connect(item, 'activate', () => this._launcher._applet.configureApplet());
         subMenu.menu.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Remove 'Window list'"), "xsi-edit-delete", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', (actor, event) => this._launcher._applet.confirmRemoveApplet(event));
         subMenu.menu.addMenuItem(item);
 
         this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         // Close all/others
-        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "application-exit", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close all"), "xsi-exit", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -921,7 +984,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }));
         this.addMenuItem(item);
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "window-close", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close others"), "xsi-window-close", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', Lang.bind(this, function() {
             for (let window of this._windows)
                 if (window.actor.visible &&
@@ -943,12 +1006,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         }
 
         if (mw.minimized) {
-            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "view-sort-descending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Restore"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 Main.activateWindow(mw, global.get_current_time());
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "view-sort-ascending", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Minimize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.minimize();
             });
@@ -956,12 +1019,12 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
 
         if (mw.get_maximized()) {
-            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "view-restore", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Unmaximize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.unmaximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
         } else {
-            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "view-fullscreen", St.IconType.SYMBOLIC);
+            item = new PopupMenu.PopupIconMenuItem(_("Maximize"), "xsi-empty-icon", St.IconType.SYMBOLIC);
             this._signals.connect(item, 'activate', function() {
                 mw.maximize(Meta.MaximizeFlags.HORIZONTAL | Meta.MaximizeFlags.VERTICAL);
             });
@@ -969,7 +1032,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         this.addMenuItem(item);
         item.setSensitive(mw.can_maximize())
 
-        item = new PopupMenu.PopupIconMenuItem(_("Close"), "edit-delete", St.IconType.SYMBOLIC);
+        item = new PopupMenu.PopupIconMenuItem(_("Close"), "xsi-window-close", St.IconType.SYMBOLIC);
         this._signals.connect(item, 'activate', function() {
             mw.delete(global.get_current_time());
         });
@@ -1043,6 +1106,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.settings.bind("window-hover", "windowHover", this._onPreviewChanged);
         this.settings.bind("window-preview-show-label", "showLabel", this._onPreviewChanged);
         this.settings.bind("window-preview-scale", "previewScale", this._onPreviewChanged);
+        this.settings.bind("enable-notifications", "enableNotifications", this._updateAllNotificationBadges);
         this.settings.bind("last-window-order", "lastWindowOrder", null);
 
         this.signals.connect(global.display, 'window-created', this._onWindowAddedAsync, this);
@@ -1052,6 +1116,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         this.signals.connect(Main.panelManager, 'monitors-changed', this._updateWatchedMonitors, this);
         this.signals.connect(global.window_manager, 'switch-workspace', this._refreshAllItems, this);
         this.signals.connect(Cinnamon.WindowTracker.get_default(), "window-app-changed", this._onWindowAppChanged, this);
+        this.signals.connect(Main.messageTray, 'notify-applet-update', this._onNotificationReceived, this);
 
         this.signals.connect(this.actor, 'style-changed', Lang.bind(this, this._updateSpacing));
 
@@ -1064,11 +1129,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
     on_applet_added_to_panel(userEnabled) {
         this._updateSpacing();
         this.appletEnabled = true;
+        MessageTray.extensionsHandlingNotifications++;
     }
 
     on_applet_removed_from_panel() {
         this.signals.disconnectAllSignals();
         this.settings.finalize();
+        MessageTray.extensionsHandlingNotifications--;
     }
 
     on_applet_instances_changed() {
@@ -1177,7 +1244,14 @@ class CinnamonWindowListApplet extends Applet.Applet {
     }
 
     _onWindowAppChanged(tracker, metaWindow) {
-        this._refreshItemByMetaWindow(metaWindow);
+        let window = this._windows.find(win => (win.metaWindow == metaWindow));
+
+        if (window) {
+            window.app = window._getApp();
+            window.appId = window.app ? window.app.get_id() : null;
+            window.setIcon();
+            window.setDisplayTitle();
+        }
     }
 
     _onWindowSkipTaskbarChanged(display, metaWindow) {
@@ -1260,7 +1334,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
             window.setDisplayTitle();
         }
     }
-    
+
     _updateLabels() {
         for (let window of this._windows)
             window.updateLabelVisible();
@@ -1455,13 +1529,13 @@ class CinnamonWindowListApplet extends Applet.Applet {
         source.actor.hide();
         if (this._dragPlaceholder == undefined) {
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this._dragPlaceholder.child.set_width (source.actor.width);
-            this._dragPlaceholder.child.set_height (source.actor.height);
+            this._dragPlaceholder.set_width (source.actor.width);
+            this._dragPlaceholder.set_height (source.actor.height);
 
-            this.manager_container.insert_child_at_index(this._dragPlaceholder.actor,
+            this.manager_container.insert_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         } else {
-            this.manager_container.set_child_at_index(this._dragPlaceholder.actor,
+            this.manager_container.set_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         }
 
@@ -1482,7 +1556,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
 
     clearDragPlaceholder() {
         if (this._dragPlaceholder) {
-            this._dragPlaceholder.actor.destroy();
+            this._dragPlaceholder.destroy();
             this._dragPlaceholder = undefined;
             this._dragPlaceholderPos = undefined;
         }
@@ -1506,6 +1580,40 @@ class CinnamonWindowListApplet extends Applet.Applet {
             Mainloop.source_remove(this._tooltipErodeTimer);
             this._tooltipErodeTimer = null;
         }
+    }
+
+    _onNotificationReceived(mtray, notification) {
+        let appId = notification.source.app?.get_id();
+
+        if (!appId) {
+            return;
+        }
+
+        // Add notification to all appMenuButton's with appId
+        let notificationAdded = false;
+        this._windows.forEach(window => {
+            if (appId === window.appId) {
+                notificationAdded = true;
+                window.updateNotificationsBadge();
+            }
+        });
+
+        if (notificationAdded) {
+            notification.appId = appId;
+            notification.connect('destroy',  () => this._onNotificationDestroyed(notification));
+        }
+    }
+
+    _onNotificationDestroyed(notification) {
+        this._windows.forEach(window => {
+            if (notification.appId === window.appId) {
+                window.updateNotificationsBadge();
+            }
+        });
+    }
+
+    _updateAllNotificationBadges() {
+        this._windows.forEach(window => window.updateNotificationsBadge());
     }
 }
 

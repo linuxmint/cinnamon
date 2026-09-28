@@ -1,10 +1,13 @@
 ignore = [
+    'background',
     'cinnamon-recorder-src.h',
     'cinnamon-recorder.h',
+    'cinnamon-mount-operation.h',
     st_headers,
     st_private_headers,
     tray_headers,
     sniffer_headers,
+    backup_locker_headers,
 ]
 
 if not internal_nm_agent

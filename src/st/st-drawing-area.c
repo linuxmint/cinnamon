@@ -35,11 +35,14 @@
 #include "st-drawing-area.h"
 
 #include <cairo.h>
+#include <math.h>
 
 struct _StDrawingAreaPrivate {
   CoglTexture *texture;
   CoglPipeline *pipeline;
   cairo_t *context;
+  guint width;
+  guint height;
   guint needs_repaint : 1;
   guint in_repaint : 1;
 };
@@ -76,6 +79,7 @@ st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
   StThemeNode *theme_node = st_widget_get_theme_node (ST_WIDGET (self));
   ClutterActorBox allocation_box;
   ClutterActorBox content_box;
+  float resource_scale;
   guint width, height;
 
   (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class))->paint (self, paint_context);
@@ -83,8 +87,13 @@ st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
   clutter_actor_get_allocation_box (self, &allocation_box);
   st_theme_node_get_content_box (theme_node, &allocation_box, &content_box);
 
-  width = (int)(0.5 + content_box.x2 - content_box.x1);
-  height = (int)(0.5 + content_box.y2 - content_box.y1);
+  resource_scale = clutter_actor_get_resource_scale (self);
+
+  priv->width = (int)(0.5 + content_box.x2 - content_box.x1);
+  priv->height = (int)(0.5 + content_box.y2 - content_box.y1);
+
+  width = ceilf (priv->width * resource_scale);
+  height = ceilf (priv->height * resource_scale);
 
   if (priv->pipeline == NULL)
     {
@@ -120,6 +129,7 @@ st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
           cairo_surface_t *surface;
 
           surface = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, width, height);
+          cairo_surface_set_device_scale (surface, resource_scale, resource_scale);
           priv->context = cairo_create (surface);
           priv->in_repaint = TRUE;
           priv->needs_repaint = FALSE;
@@ -158,6 +168,15 @@ st_drawing_area_paint (ClutterActor *self, ClutterPaintContext *paint_context)
 }
 
 static void
+st_drawing_area_resource_scale_changed (ClutterActor *self)
+{
+  st_drawing_area_queue_repaint (ST_DRAWING_AREA (self));
+
+  if (CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class)->resource_scale_changed)
+    CLUTTER_ACTOR_CLASS (st_drawing_area_parent_class)->resource_scale_changed (self);
+}
+
+static void
 st_drawing_area_style_changed (StWidget  *self)
 {
   StDrawingArea *area = ST_DRAWING_AREA (self);
@@ -177,6 +196,7 @@ st_drawing_area_class_init (StDrawingAreaClass *klass)
 
   gobject_class->dispose = st_drawing_area_dispose;
   actor_class->paint = st_drawing_area_paint;
+  actor_class->resource_scale_changed = st_drawing_area_resource_scale_changed;
   widget_class->style_changed = st_drawing_area_style_changed;
 
   st_drawing_area_signals[REPAINT] =
@@ -259,7 +279,7 @@ st_drawing_area_get_surface_size (StDrawingArea *area,
   priv = area->priv;
 
   if (width)
-    *width = cogl_texture_get_width (priv->texture);
+    *width = priv->width;
   if (height)
-    *height = cogl_texture_get_height (priv->texture);
+    *height = priv->height;
 }

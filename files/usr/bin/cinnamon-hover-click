@@ -9,8 +9,8 @@ import gettext
 import gi
 gi.require_version('Gtk', '3.0')
 gi.require_version('XApp', '1.0')
-
-from gi.repository import GLib, Gtk, Gdk, XApp, Gio
+gi.require_version('GLibUnix', '2.0')
+from gi.repository import GLib, Gtk, Gdk, XApp, Gio, GLibUnix
 
 signal.signal(signal.SIGINT, signal.SIG_DFL)
 
@@ -41,11 +41,12 @@ class HoverClickWindow(XApp.GtkWindow):
         self.popup = None
 
         self.settings = Gio.Settings(schema_id="org.cinnamon")
+        self.a11y_mouse_settings = Gio.Settings(schema_id="org.cinnamon.desktop.a11y.mouse")
 
         self.mainbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, margin=4)
         self.add(self.mainbox)
 
-        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, homogeneous=True)
+        self.button_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4, homogeneous=False)
         self.mainbox.pack_start(self.button_box, True, True, 0)
 
         self.action = self.settings.get_string("hoverclick-action")
@@ -88,6 +89,21 @@ class HoverClickWindow(XApp.GtkWindow):
         self.right_click_button = make_button(_("Secondary Click"), "cinnamon-hc-right-click", "secondary")
         self.button_box.pack_start(self.right_click_button, True, True, 0)
 
+        self.lock_separator = Gtk.Separator()
+        self.button_box.pack_start(self.lock_separator, False, False, 0)
+
+        self.lock_button = Gtk.ToggleButton(image=Gtk.Image(icon_name="changes-prevent-symbolic",
+                                                            no_show_all=True,
+                                                            icon_size=Gtk.IconSize.MENU),
+                                            relief=Gtk.ReliefStyle.NONE,
+                                            always_show_image=True)
+        self.lock_button.connect("button-press-event", self.on_button_press_event)
+        self.button_box.pack_start(self.lock_button, True, True, 0)
+
+        self.a11y_mouse_settings.bind("dwell-click-mode-lock",
+                                      self.lock_button, "active",
+                                      Gio.SettingsBindFlags.DEFAULT)
+
         if self.start_button is not None:
             self.start_button.set_active(True)
 
@@ -99,8 +115,12 @@ class HoverClickWindow(XApp.GtkWindow):
 
         self.show_all()
         self.settings.connect("changed::hoverclick-layout", self.update_layout)
+        self.settings.connect("changed::hoverclick-action", self.on_action_changed)
         self.connect("delete-event", self.exit)
-        GLib.unix_signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit)
+        try:
+            GLibUnix.signal_add(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit)
+        except AttributeError:
+            GLibUnix.signal_add_full(GLib.PRIORITY_DEFAULT, signal.SIGTERM, self.exit, None)
 
     def action_changed(self, button, action):
         if self.doing_setup:
@@ -110,6 +130,24 @@ class HoverClickWindow(XApp.GtkWindow):
             return
 
         self.settings.set_string("hoverclick-action", action)
+
+    def on_action_changed(self, settings, key):
+        if self.doing_setup:
+            return
+
+        action = settings.get_string("hoverclick-action")
+        button_map = {
+            "single": self.single_click_button,
+            "double": self.double_click_button,
+            "drag": self.drag_button,
+            "secondary": self.right_click_button
+        }
+
+        button = button_map.get(action)
+        if button and not button.get_active():
+            self.doing_setup = True
+            button.set_active(True)
+            self.doing_setup = False
 
     def on_button_press_event(self, button, event):
         had_button, button = event.get_button()
@@ -130,8 +168,10 @@ class HoverClickWindow(XApp.GtkWindow):
         if orientation != self.orientation:
             if orientation == "vertical":
                 self.button_box.set_orientation(Gtk.Orientation.VERTICAL)
+                self.lock_separator.set_orientation(Gtk.Orientation.HORIZONTAL)
             elif orientation == "horizontal":
                 self.button_box.set_orientation(Gtk.Orientation.HORIZONTAL)
+                self.lock_separator.set_orientation(Gtk.Orientation.VERTICAL)
             self.orientation = orientation
             # snap size
             self.resize(1, 1)

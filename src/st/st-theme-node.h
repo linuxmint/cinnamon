@@ -260,6 +260,7 @@ void st_theme_node_paint (StThemeNode            *node,
                           CoglFramebuffer        *framebuffer,
                           const ClutterActorBox  *box,
                           guint8                  paint_opacity,
+                          gfloat                  resource_scale,
                           StBackgroundBlurEffect    *background_blur_effect,
                           StBackgroundBumpmapEffect *background_bumpmap_effect);
 

@@ -2,10 +2,10 @@
 
 from gi.repository import Gio
 from xapp.SettingsWidgets import *
-from SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding
+from bin.SettingsWidgets import SoundFileChooser, DateChooser, TimeChooser, Keybinding
 from xapp.GSettingsWidgets import CAN_BACKEND as px_can_backend
-from SettingsWidgets import CAN_BACKEND as c_can_backend
-from TreeListWidgets import List
+from bin.SettingsWidgets import CAN_BACKEND as c_can_backend
+from bin.TreeListWidgets import List
 import os
 import collections
 import json
@@ -196,6 +196,8 @@ class JSONSettingsHandler(object):
                 self.do_key_update(key)
 
         self.save_settings()
+        if self.notify_callback:
+            self.notify_callback(self, "", "")
 
     def do_key_update(self, key):
         if key in self.bindings:
@@ -224,6 +226,8 @@ class JSONSettingsHandler(object):
             else:
                 print(f"Skipping key {key}: the key does not exist in {filepath} or has no value")
         self.save_settings()
+        if self.notify_callback:
+            self.notify_callback(self, "", "")
 
     def save_to_file(self, filepath):
         if os.path.exists(filepath):

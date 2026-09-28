@@ -6,11 +6,14 @@ const Signals = imports.signals;
 
 const KeyboardManager = imports.ui.keyboardManager;
 const IBusManager = imports.misc.ibusManager;
+const IMFramework = imports.misc.imFramework;
 const BoxPointer = imports.ui.boxpointer;
 const Layout = imports.ui.layout;
 const Main = imports.ui.main;
 const PageIndicators = imports.ui.pageIndicators;
 const PopupMenu = imports.ui.popupMenu;
+
+let _popupContainer = null;
 
 var KEYBOARD_REST_TIME = 50;
 var KEY_LONG_PRESS_TIME = 250;
@@ -29,7 +32,7 @@ const KEYBOARD_POSITION_KEY = 'keyboard-position';
 const KEY_SIZE = 2;
 
 const escape_key = { keyval: Clutter.KEY_Escape, label: "Esc",                               extraClassName: 'escape-key' };
-const tab_key =    { keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
+const tab_key =    { width: 1.5, keyval: Clutter.KEY_Tab,    label: '⇥',                                 extraClassName: 'non-alpha-key' };
 const _123_key =   { width: 1.5, level: 2,       label: '?123',                              extraClassName: 'non-alpha-key' };
 const abc_key =    { width: 1.5, level: 0,       label: 'ABC',                               extraClassName: 'non-alpha-key' };
 const backsp_key = { width: 1.5, keyval: Clutter.KEY_BackSpace, icon: 'xsi-edit-clear-symbolic', extraClassName: 'non-alpha-key' };
@@ -40,12 +43,14 @@ const dir_keys =  [{ keyval: Clutter.KEY_Left,   label: '←',                  
                    { keyval: Clutter.KEY_Down,   label: '↓',                                 extraClassName: 'non-alpha-key'},
                    { keyval: Clutter.KEY_Right,  label: '→',                                 extraClassName: 'non-alpha-key' }];
 const layout_key = { action: 'next-layout',      icon: 'xsi-input-keyboard-symbolic' };
+const ctrl_key =   { keyval: Clutter.KEY_Control_L, label: 'Ctrl', width: 1.5, modifier: 'ctrl', extraClassName: 'modifier-key' };
+const alt_key =    { keyval: Clutter.KEY_Alt_L,     label: 'Alt',  width: 1.5, modifier: 'alt',  extraClassName: 'modifier-key' };
 
 const defaultKeysPre = [
-    [[escape_key], [tab_key], [{ width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
-    [[escape_key], [tab_key], [{ width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [layout_key, _123_key]],
-    [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [abc_key]],
-    [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [abc_key]],
+    [[escape_key], [tab_key], [layout_key, { width: 1.5, level: 1, extraClassName: 'shift-key-lowercase', icon: 'keyboard-shift-filled-symbolic' }], [ctrl_key, _123_key, alt_key]],
+    [[escape_key], [tab_key], [layout_key, { width: 1.5, level: 0, extraClassName: 'shift-key-uppercase', icon: 'keyboard-shift-filled-symbolic' }], [ctrl_key, _123_key, alt_key]],
+    [[escape_key], [tab_key], [{ label: '=/<', width: 1.5, level: 3, extraClassName: 'non-alpha-key' }], [ctrl_key, abc_key, alt_key]],
+    [[escape_key], [tab_key], [{ label: '?123', width: 1.5, level: 2, extraClassName: 'non-alpha-key' }], [ctrl_key, abc_key, alt_key]],
 ];
 
 const defaultKeysPost = [
@@ -97,7 +102,7 @@ class AspectContainer extends St.Widget {
         return [min, nat];
     }
 
-    vfunc_allocate(box, flags) {
+    vfunc_allocate(box) {
         if (box.get_width() > 0 && box.get_height() > 0) {
             let sizeRatio = box.get_width() / box.get_height();
 
@@ -115,7 +120,7 @@ class AspectContainer extends St.Widget {
             }
         }
 
-        super.vfunc_allocate(box, flags);
+        super.vfunc_allocate(box);
     }
 });
 
@@ -137,6 +142,8 @@ class KeyContainer extends St.Widget {
 
         this._currentRow = null;
         this._rows = [];
+        this.shiftKeys = [];
+        this.modifierKeys = {};
     }
 
     appendRow() {
@@ -226,7 +233,7 @@ var Key = GObject.registerClass({
     Signals: {
         'activated': {},
         'long-press': {},
-        'pressed': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING] },
+        'pressed': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING, GObject.TYPE_BOOLEAN] },
         'released': { param_types: [GObject.TYPE_UINT, GObject.TYPE_STRING] },
     },
 }, class Key extends St.BoxLayout {
@@ -276,7 +283,11 @@ var Key = GObject.registerClass({
 
         this._boxPointer = new BoxPointer.BoxPointer(St.Side.BOTTOM);
         this._boxPointer.hide();
-        Main.layoutManager.addChrome(this._boxPointer);
+        if (_popupContainer) {
+            _popupContainer.add_child(this._boxPointer);
+        } else {
+            Main.layoutManager.addChrome(this._boxPointer);
+        }
         this._boxPointer.setPosition(this.keyButton, 0.5);
 
         // Adds style to existing keyboard style to avoid repetition
@@ -294,7 +305,7 @@ var Key = GObject.registerClass({
         this.emit('activated');
 
         if (this._extendedKeys.length === 0)
-            this.emit('pressed', this._getKeyval(key), key);
+            this.emit('pressed', this._getKeyval(key), key, false);
 
         if (key == this.key) {
             this._pressTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT,
@@ -323,8 +334,12 @@ var Key = GObject.registerClass({
             this._pressTimeoutId = 0;
         }
 
-        if (this._extendedKeys.length > 0)
-            this.emit('pressed', this._getKeyval(key), key);
+        if (this._extendedKeys.length > 0) {
+            // A released key that isn't the base key is an extended (long-press
+            // accent) subkey: a literal character with no keycode in the layout.
+            // Flag it so it's committed as text rather than synthesized as a keyval.
+            this.emit('pressed', this._getKeyval(key), key, key !== this.key);
+        }
 
         this.emit('released', this._getKeyval(key), key);
         this._hideSubkeys();
@@ -469,16 +484,21 @@ var Key = GObject.registerClass({
         this.keyButton.keyWidth = width;
     }
 
-    setLatched(latched) {
-        if (!this._icon)
+    setLatched(latched, modifierType = 'shift') {
+        const is_shift = modifierType === 'shift';
+        if (!this._icon && is_shift)
             return;
 
         if (latched) {
             this.keyButton.add_style_pseudo_class('latched');
-            this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
+            if (is_shift && this._icon) {
+                this._icon.icon_name = 'keyboard-caps-lock-filled-symbolic';
+            }
         } else {
             this.keyButton.remove_style_pseudo_class('latched');
-            this._icon.icon_name = 'keyboard-shift-filled-symbolic';
+            if (is_shift && this._icon) {
+                this._icon.icon_name = 'keyboard-shift-filled-symbolic';
+            }
         }
     }
 });
@@ -503,6 +523,144 @@ var ActiveGroupKey = GObject.registerClass({}, class ActiveGroupKey extends Key 
         if (this._groupChangedId > 0) {
             this._controller.disconnect(this._groupChangedId);
             this._groupChangedId = 0;
+        }
+    }
+});
+
+// Drives fcitx via its session-bus Controller1 interface (org.fcitx.Fcitx5,
+// /controller). That is the daemon's control channel - independent of the input
+// frontend - so the same calls work whether apps reach fcitx over Wayland
+// text-input-v3 or the X11 dbusfrontend. Emits 'changed' when the active input
+// method may have changed (after our own Toggle, or an external group change).
+var FcitxController = class {
+    constructor() {
+        this._connection = null;
+        this._groupChangedId = 0;
+        this._cancellable = new Gio.Cancellable();
+        this._watchId = Gio.bus_watch_name(Gio.BusType.SESSION, 'org.fcitx.Fcitx5',
+                                           Gio.BusNameWatcherFlags.NONE,
+                                           this._onAppeared.bind(this),
+                                           this._onVanished.bind(this));
+    }
+
+    _onAppeared(connection) {
+        this._connection = connection;
+        this._groupChangedId = connection.signal_subscribe(
+            'org.fcitx.Fcitx5', 'org.fcitx.Fcitx.Controller1',
+            'InputMethodGroupsChanged', '/controller', null,
+            Gio.DBusSignalFlags.NONE, () => this.emit('changed'));
+        this.emit('changed');
+    }
+
+    _onVanished() {
+        // The bus connection itself survives fcitx going away; drop our
+        // subscription or a later _onAppeared would orphan it and double-fire.
+        if (this._connection && this._groupChangedId) {
+            this._connection.signal_unsubscribe(this._groupChangedId);
+            this._groupChangedId = 0;
+        }
+        this._connection = null;
+        this.emit('changed');
+    }
+
+    // Toggle the input method on/off (latin <-> active IME), like Ctrl+Space.
+    toggle() {
+        if (!this._connection)
+            return;
+        this._connection.call('org.fcitx.Fcitx5', '/controller',
+                              'org.fcitx.Fcitx.Controller1', 'Toggle', null, null,
+                              Gio.DBusCallFlags.NONE, -1, this._cancellable, (conn, res) => {
+            try {
+                conn.call_finish(res);
+            } catch (e) {
+                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+                // fcitx went away between the check and the call; ignore.
+            }
+            this.emit('changed');
+        });
+    }
+
+    // Current IM as {icon, label} via callback (either may be null). The icon is
+    // fcitx's own icon name - the same one its tray shows - so the OSK key can
+    // match it; the label (e.g. "en", "あ") is a text fallback for IMs with no
+    // icon. Null when fcitx is unavailable or has no answer.
+    getCurrentInfo(callback) {
+        if (!this._connection) {
+            callback(null);
+            return;
+        }
+        this._connection.call('org.fcitx.Fcitx5', '/controller',
+                              'org.fcitx.Fcitx.Controller1', 'CurrentInputMethodInfo',
+                              null, new GLib.VariantType('(sssssssbsa{sv})'),
+                              Gio.DBusCallFlags.NONE, -1, this._cancellable, (conn, res) => {
+            let info = null;
+            try {
+                // fields: uniqueName, name, nativeName, icon, label, ...
+                let r = conn.call_finish(res).deepUnpack();
+                info = { icon: r[3] || null, label: r[4] || r[1] || r[0] || null };
+            } catch (e) {
+                // Cancelled means we were destroyed - the callback would poke
+                // finalized actors, so don't deliver it at all.
+                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+                // No current IM / fcitx gone; leave info null.
+            }
+            callback(info);
+        });
+    }
+
+    destroy() {
+        this._cancellable.cancel();
+        if (this._connection && this._groupChangedId) {
+            this._connection.signal_unsubscribe(this._groupChangedId);
+            this._groupChangedId = 0;
+        }
+        if (this._watchId) {
+            Gio.bus_unwatch_name(this._watchId);
+            this._watchId = 0;
+        }
+        this._connection = null;
+    }
+};
+Signals.addSignalMethods(FcitxController.prototype);
+
+// The OSK's layout-switch key under fcitx: tapping it toggles the input method
+// (wired in _loadDefaultKeys), and the key shows fcitx's current IM label,
+// refreshed whenever the controller reports a change.
+var FcitxToggleKey = GObject.registerClass({}, class FcitxToggleKey extends Key {
+    _init(controller) {
+        this._fcitxController = controller;
+        this._destroyed = false;
+        super._init('', [], 'xsi-input-keyboard-symbolic');
+        this._changedId = this._fcitxController.connect('changed', this._refresh.bind(this));
+        this._refresh();
+        this.connect('destroy', this._onDestroy.bind(this));
+    }
+
+    _refresh() {
+        this._fcitxController.getCurrentInfo((info) => {
+            // Group changes rebuild the keys while the controller (and any
+            // in-flight reply) lives on in Keyboard - don't poke a dead key.
+            if (this._destroyed)
+                return;
+            // Prefer fcitx's own icon so the key matches the tray exactly; fall
+            // back to the text label, then to a generic keyboard icon.
+            if (info && info.icon)
+                this.updateKey('', info.icon);
+            else if (info && info.label)
+                this.updateKey(info.label, null);
+            else
+                this.updateKey('', 'xsi-input-keyboard-symbolic');
+            this.keyButton.add_style_class_name("non-alpha-key");
+        });
+    }
+
+    _onDestroy() {
+        this._destroyed = true;
+        if (this._changedId > 0) {
+            this._fcitxController.disconnect(this._changedId);
+            this._changedId = 0;
         }
     }
 });
@@ -565,8 +723,10 @@ var FocusTracker = class {
 
         this._ibusManager = IBusManager.getIBusManager();
         this._ibusManager.connect('set-cursor-location', (manager, rect) => {
-            /* Valid for X11 clients only */
-            if (Main.inputMethod.currentFocus)
+            /* Reported by clients using the client-side ibus modules (X11
+             * apps, and XWayland apps in a Wayland session); when the
+             * compositor input method has a focus, its rect wins. */
+            if (Main.inputMethod.get_focus())
                 return;
 
             this._setCurrentRect(rect);
@@ -678,6 +838,7 @@ var VirtualKeyboardManager = GObject.registerClass({
     constructor() {
         super();
         this._keyboard = null;
+        this._screensaverMode = false;
         this._a11yApplicationsSettings = new Gio.Settings({ schema_id: A11Y_APPLICATIONS_SCHEMA });
         this._a11yApplicationsSettings.connect('changed::screen-keyboard-enabled', this._keyboardEnabledChanged.bind(this));
 
@@ -712,7 +873,7 @@ var VirtualKeyboardManager = GObject.registerClass({
     }
 
     _keyboardSettingsChanged() {
-        this._destroyKeyboard();
+        this.destroyKeyboard();
         this._syncEnabled();
     }
 
@@ -723,6 +884,9 @@ var VirtualKeyboardManager = GObject.registerClass({
     }
 
     _syncEnabled() {
+        if (this._screensaverMode)
+            return;
+
         let enabled = this._shouldEnable();
         if (!enabled && !this._keyboard)
             return;
@@ -730,11 +894,14 @@ var VirtualKeyboardManager = GObject.registerClass({
         if (enabled && !this._keyboard) {
             this._keyboard = new Keyboard(this._keyboardSettings.get_string(ACTIVATION_MODE_KEY) === "on-demand");
         } else if (!enabled && this._keyboard) {
-            this._destroyKeyboard();
+            this.destroyKeyboard();
         }
     }
 
-    _destroyKeyboard() {
+    destroyKeyboard() {
+        if (this._screensaverMode)
+            return;
+
         if (this._keyboard == null) {
             return;
         }
@@ -801,6 +968,35 @@ var VirtualKeyboardManager = GObject.registerClass({
         return Main.layoutManager.keyboardBox.contains(actor) ||
                !!actor._extendedKeys || !!actor.extendedKey;
     }
+
+    ensureKeyboard() {
+        if (!this._keyboard)
+            this._keyboard = new Keyboard(true);
+        return this._keyboard;
+    }
+
+    openForScreensaver(keyboardContainer, popupContainer) {
+        this._screensaverMode = true;
+        let keyboard = this.ensureKeyboard();
+        Main.layoutManager.untrackChrome(keyboard);
+        global.reparentActor(keyboard, keyboardContainer);
+        keyboard.setScreensaverMode(true, popupContainer);
+    }
+
+    closeForScreensaver() {
+        if (!this._keyboard) {
+            this._screensaverMode = false;
+            return;
+        }
+
+        this._keyboard.setScreensaverMode(false);
+        global.reparentActor(this._keyboard, Main.layoutManager.keyboardBox);
+        Main.layoutManager.trackChrome(this._keyboard);
+        this._screensaverMode = false;
+
+        if (!this._shouldEnable())
+            this.destroyKeyboard();
+    }
 });
 
 var Keyboard = GObject.registerClass(
@@ -814,6 +1010,16 @@ class Keyboard extends St.BoxLayout {
         this._currentFocusWindow = null;
 
         this._latched = false; // current level is latched
+        this._currentLevel = 0; // track current level for modifier handling
+
+        this._latchedModifiers = {
+            ctrl: false,
+            alt: false
+        };
+        this._pressedModifierKeyvals = {
+            ctrl: 0,
+            alt: 0
+        };
 
         this._suggestions = null;
 
@@ -837,6 +1043,7 @@ class Keyboard extends St.BoxLayout {
             this._keyboardVisible = visible;
         });
         this._keyboardRequested = false;
+        this._screensaverMode = false;
         this._keyboardRestingId = 0;
 
         this._connectSignal(Main.layoutManager, 'monitors-changed', this._relayout.bind(this));
@@ -869,11 +1076,19 @@ class Keyboard extends St.BoxLayout {
         delete this._connectionsIDs;
 
         this._clearShowIdle();
+        this._releaseAllModifiers();
 
         this._keyboardController.destroy();
 
-        Main.layoutManager.untrackChrome(this);
-        Main.layoutManager.keyboardBox.remove_actor(this);
+        if (this._fcitxController) {
+            this._fcitxController.destroy();
+            this._fcitxController = null;
+        }
+
+        if (!this._screensaverMode) {
+            Main.layoutManager.untrackChrome(this);
+            Main.layoutManager.keyboardBox.remove_actor(this);
+        }
 
         if (this._languagePopup) {
             this._languagePopup.destroy();
@@ -934,6 +1149,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     _onKeyFocusChanged() {
+        if (this._screensaverMode)
+            return;
+
         let focus = global.stage.key_focus;
 
         // Showing an extended key popup and clicking a key from the extended keys
@@ -971,8 +1189,6 @@ class Keyboard extends St.BoxLayout {
             let level = i >= 1 && levels.length == 3 ? i + 1 : i;
 
             let layout = new KeyContainer();
-            layout.shiftKeys = [];
-
             this._loadRows(currentLevel, level, levels.length, layout);
             layers[level] = layout;
             this._aspectContainer.add_child(layout);
@@ -998,8 +1214,23 @@ class Keyboard extends St.BoxLayout {
             if (button.key == ' ')
                 button.setWidth(keys.length <= 3 ? 6 : 5);
 
-            button.connect('pressed', (actor, keyval, str) => {
-                if (!Main.inputMethod.currentFocus ||
+            button.connect('pressed', (actor, keyval, str, isText) => {
+                // Extended (accent) subkeys are literal characters with no keycode
+                // in the layout, so key synthesis only produces them when the
+                // current layout happens to contain them (and never on the native
+                // Wayland backend, which can't remap keycodes the way XTest can).
+                // Commit them as text whenever something is listening on the input
+                // method - a Cinnamon entry or a text-input client; this works for
+                // every IM implementation, including muffin's native fcitx one.
+                // With no input-method focus (an X11/XWayland window, or a Wayland
+                // client without text-input support) a commit would go nowhere, so
+                // fall through to key synthesis, which reaches those clients
+                // through the keyboard.
+                if (isText && Main.inputMethod.get_focus() != null) {
+                    this._keyboardController.commitString(str);
+                    return;
+                }
+                if (Main.inputMethod.get_focus() == null ||
                     !this._keyboardController.commitString(str, true)) {
                     if (keyval != 0) {
                         this._keyboardController.keyvalPress(keyval);
@@ -1013,6 +1244,8 @@ class Keyboard extends St.BoxLayout {
                         this._keyboardController.keyvalRelease(keyval);
                     button._keyvalPress = false;
                 }
+
+                this._releaseAllModifiers();
 
                 if (!this._latched)
                     this._setActiveLayer(0);
@@ -1030,19 +1263,24 @@ class Keyboard extends St.BoxLayout {
             let switchToLevel = key.level;
             let action = key.action;
             let icon = key.icon;
+            let modifier = key.modifier;
 
             if (action === 'next-layout') {
-                let groups = this._keyboardController.getGroups();
-                if (groups.length > 1) {
-                    extraButton = new ActiveGroupKey(this._keyboardController);
+                if (IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX) {
+                    if (!this._fcitxController)
+                        this._fcitxController = new FcitxController();
+                    extraButton = new FcitxToggleKey(this._fcitxController);
                 } else {
-                    continue;
+                    // Switches Cinnamon's input-source groups; omit with only one.
+                    let groups = this._keyboardController.getGroups();
+                    if (groups.length <= 1)
+                        continue;
+                    extraButton = new ActiveGroupKey(this._keyboardController);
                 }
             } else {
                 extraButton = new Key(key.label || '', [], icon);
             }
 
-            // extraButton.keyButton.add_style_class_name('default-key');
             if (key.extraClassName != null)
                 extraButton.keyButton.add_style_class_name(key.extraClassName);
             if (key.width != null)
@@ -1051,21 +1289,42 @@ class Keyboard extends St.BoxLayout {
             let actor = extraButton.keyButton;
 
             extraButton.connect('pressed', () => {
+                if (switchToLevel != null && (switchToLevel === 0 || switchToLevel === 1) &&
+                    (this._currentLevel === 0 || this._currentLevel === 1) &&
+                    (this._latchedModifiers.ctrl || this._latchedModifiers.alt)) {
+                    this._keyboardController.keyvalPress(Clutter.KEY_Shift_L);
+                    extraButton._shiftPressed = true;
+                    return;
+                }
+
                 if (switchToLevel != null) {
                     this._setActiveLayer(switchToLevel);
-                    // Shift only gets latched on long press
                     this._latched = switchToLevel != 1;
+                } else if (modifier != null) {
+                    this._toggleModifier(modifier, keyval, extraButton);
                 } else if (keyval != null) {
                     this._keyboardController.keyvalPress(keyval);
                 }
             });
             extraButton.connect('released', () => {
-                if (keyval != null)
+                if (extraButton._shiftPressed) {
+                    this._keyboardController.keyvalRelease(Clutter.KEY_Shift_L);
+                    this._releaseAllModifiers();
+                    extraButton._shiftPressed = false;
+                    return;
+                }
+
+                if (keyval != null && modifier == null) {
                     this._keyboardController.keyvalRelease(keyval);
-                else if (action == 'hide')
+                    this._releaseAllModifiers();
+                } else if (action == 'hide')
                     this.close();
-                else if (action == 'next-layout')
-                    this._keyboardController.activateNextGroup();
+                else if (action == 'next-layout') {
+                    if (this._fcitxController)
+                        this._fcitxController.toggle();
+                    else
+                        this._keyboardController.activateNextGroup();
+                }
             });
 
             if (switchToLevel == 0) {
@@ -1075,6 +1334,10 @@ class Keyboard extends St.BoxLayout {
                     this._latched = true;
                     this._setCurrentLevelLatched(this._currentPage, this._latched);
                 });
+            } else if (modifier != null) {
+                if (!layout.modifierKeys[modifier])
+                    layout.modifierKeys[modifier] = [];
+                layout.modifierKeys[modifier].push(extraButton);
             }
 
             /* Fixup default keys based on the number of levels/keys */
@@ -1104,6 +1367,58 @@ class Keyboard extends St.BoxLayout {
         for (let i = 0; i < layout.shiftKeys.length; i++) {
             let key = layout.shiftKeys[i];
             key.setLatched(latched);
+        }
+    }
+
+    _toggleModifier(modifier, keyval, keyButton) {
+        if (this._latchedModifiers[modifier]) {
+            this._releaseModifier(modifier);
+        } else {
+            this._latchedModifiers[modifier] = true;
+            this._pressedModifierKeyvals[modifier] = keyval;
+            this._keyboardController.keyvalPress(keyval);
+            this._setModifierLatchedAllLayers(modifier, true);
+        }
+    }
+
+    _setModifierLatched(layout, modifier, latched) {
+        if (!layout?.modifierKeys?.[modifier])
+            return;
+
+        for (let i = 0; i < layout.modifierKeys[modifier].length; i++) {
+            let key = layout.modifierKeys[modifier][i];
+            key.setLatched(latched, modifier);
+        }
+    }
+
+    _setModifierLatchedAllLayers(modifier, latched) {
+        let activeGroupName = this._keyboardController.getCurrentGroup();
+        let layers = this._groups[activeGroupName];
+
+        for (let level in layers) {
+            this._setModifierLatched(layers[level], modifier, latched);
+        }
+    }
+
+    _releaseModifier(modifier) {
+        if (!this._latchedModifiers[modifier])
+            return;
+
+        let keyval = this._pressedModifierKeyvals[modifier];
+        if (keyval != 0) {
+            this._keyboardController.keyvalRelease(keyval);
+        }
+
+        this._latchedModifiers[modifier] = false;
+        this._pressedModifierKeyvals[modifier] = 0;
+        this._setModifierLatchedAllLayers(modifier, false);
+    }
+
+    _releaseAllModifiers() {
+        for (let modifier in this._latchedModifiers) {
+            if (this._latchedModifiers[modifier]) {
+                this._releaseModifier(modifier);
+            }
         }
     }
 
@@ -1158,6 +1473,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     _relayout() {
+        if (this._screensaverMode)
+            return;
+
         this._suggestions.visible = this._keyboardController.getIbusInputActive();
 
         let monitor = Main.layoutManager.keyboardMonitor;
@@ -1219,6 +1537,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     _onKeyboardStateChanged(controller, state) {
+        if (this._screensaverMode)
+            return;
+
         let enabled;
         if (state == Clutter.InputPanelState.OFF)
             enabled = false;
@@ -1255,6 +1576,7 @@ class Keyboard extends St.BoxLayout {
             delete this._currentPage._destroyID;
         }
 
+        this._currentLevel = activeLevel;
         this._currentPage = currentPage;
         this._currentPage._destroyID = this._currentPage.connect('destroy', () => {
             this._currentPage = null;
@@ -1270,6 +1592,9 @@ class Keyboard extends St.BoxLayout {
     }
 
     open(monitor) {
+        if (this._screensaverMode)
+            return;
+
         this._clearShowIdle();
         this._keyboardRequested = true;
 
@@ -1302,6 +1627,11 @@ class Keyboard extends St.BoxLayout {
     }
 
     close() {
+        if (this._screensaverMode) {
+            Main.screensaverController.hideKeyboard();
+            return;
+        }
+
         this._clearShowIdle();
         this._keyboardRequested = false;
 
@@ -1322,6 +1652,7 @@ class Keyboard extends St.BoxLayout {
     _close() {
         if (this._keyboardRequested)
             return;
+        this._releaseAllModifiers();
         Main.layoutManager.hideKeyboard();
     }
 
@@ -1343,6 +1674,48 @@ class Keyboard extends St.BoxLayout {
             return;
         GLib.source_remove(this._showIdleId);
         this._showIdleId = 0;
+    }
+
+    setScreensaverMode(active, popupContainer = null) {
+        // Clear extended key popups before changing container so they
+        // are destroyed from their current parent context.
+        this._clearExtendedKeyPopups();
+
+        this._screensaverMode = active;
+        _popupContainer = active ? popupContainer : null;
+
+        if (active) {
+            this._keyboardVisible = true;
+            this._keyboardRequested = true;
+        } else {
+            this._keyboardVisible = false;
+            this._keyboardRequested = false;
+            this._relayout();
+        }
+    }
+
+    _clearExtendedKeyPopups() {
+        if (!this._groups)
+            return;
+
+        for (let groupName in this._groups) {
+            let layers = this._groups[groupName];
+            if (!layers)
+                continue;
+
+            for (let level in layers) {
+                let keyContainer = layers[level];
+                if (!keyContainer)
+                    continue;
+
+                for (let child of keyContainer.get_children()) {
+                    if (child._boxPointer) {
+                        child._boxPointer.destroy();
+                        child._boxPointer = null;
+                    }
+                }
+            }
+        }
     }
 });
 
@@ -1439,7 +1812,7 @@ var KeyboardController = class {
     getCurrentGroupLabelIcon() {
         let actor = null;
 
-        if (this._inputSourceManager.showFlags) {
+        if (this._currentSource.type === 'ibus' || this._inputSourceManager.showFlags) {
             actor = this._inputSourceManager.createFlagIcon(this._currentSource, null, 16);
         }
 
@@ -1452,8 +1825,14 @@ var KeyboardController = class {
     commitString(string, fromKey) {
         if (string == null)
             return false;
-        /* Let ibus methods fall through keyval emission */
-        if (fromKey && this._currentSource.type == KeyboardManager.INPUT_SOURCE_TYPE_IBUS)
+        /* Regular keys must reach ibus engines and fcitx as key events -
+         * composition happens there, and a direct commit of the literal
+         * character would bypass it. (Under fcitx the sources are plain xkb
+         * ones - fcitx owns the IM axis - so the source type alone can't
+         * tell us; check the framework too.) */
+        if (fromKey &&
+            (this._currentSource.type == KeyboardManager.INPUT_SOURCE_TYPE_IBUS ||
+             IMFramework.getFramework() === IMFramework.FRAMEWORK_FCITX))
             return false;
 
         Main.inputMethod.commit(string);
@@ -1461,12 +1840,27 @@ var KeyboardController = class {
     }
 
     keyvalPress(keyval) {
-        this._virtualDevice.notify_keyval(Clutter.get_current_event_time(),
+        // Symbols outside the current layout can't be synthesized through the
+        // virtual device on Wayland (static keymaps, unlike XTest's dynamic
+        // remapping on X11); muffin types those atomically through a KWin-style
+        // temporary keymap instead, which reaches XWayland clients too. It
+        // returns false for in-layout keysyms, which take the normal path.
+        if (Meta.is_wayland_compositor() && Meta.wayland_type_keysym(keyval)) {
+            this._offLayoutKeyval = keyval;
+            return;
+        }
+
+        this._virtualDevice.notify_keyval(GLib.get_monotonic_time(),
                                           keyval, Clutter.KeyState.PRESSED);
     }
 
     keyvalRelease(keyval) {
-        this._virtualDevice.notify_keyval(Clutter.get_current_event_time(),
+        // Off-layout keysyms were pressed and released atomically above.
+        if (this._offLayoutKeyval === keyval) {
+            this._offLayoutKeyval = null;
+            return;
+        }
+        this._virtualDevice.notify_keyval(GLib.get_monotonic_time(),
                                           keyval, Clutter.KeyState.RELEASED);
     }
 };

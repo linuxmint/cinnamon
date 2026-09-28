@@ -12,6 +12,8 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk, Gdk, Gio, GObject, GLib
 
+from bin import util
+
 gettext.install("cinnamon", "/usr/share/locale")
 
 # Keybindings page - check if we need to store custom
@@ -39,7 +41,7 @@ SETTINGS_DIR = Path.joinpath(Path.home(), ".config/cinnamon/spices/")
 """
 STATIC_KEYBINDINGS = \
 [
-  [_("General"), "general", None, "preferences-desktop-keyboard-shortcuts",
+  [_("General"), "general", None, "xsi-keyboard-shortcuts-symbolic",
     [
       [_("Pointer"), "pointer", "general", None, [],
         [
@@ -54,10 +56,11 @@ STATIC_KEYBINDINGS = \
       ]
     ],
     [
-      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-down"],
-      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-up"],
+      [_("Show the window selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-window-selection"],
+      [_("Show the workspace selection screen"), MUFFIN_KEYBINDINGS_SCHEMA, "toggle-workspace-selection"],
       [_("Show desktop"), MUFFIN_KEYBINDINGS_SCHEMA, "show-desktop"],
       [_("Show Desklets"), CINNAMON_SCHEMA, "show-desklets"],
+      [_("Show panels over a fullscreen window"), CINNAMON_SCHEMA, "show-panels"],
       [_("Cycle through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows"],
       [_("Cycle backwards through open windows"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-windows-backward"],
       [_("Cycle through windows from all workspaces"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-panels"],
@@ -67,7 +70,7 @@ STATIC_KEYBINDINGS = \
       [_("Run dialog"), MUFFIN_KEYBINDINGS_SCHEMA, "panel-run-dialog"]
     ]
   ],
-  [_("Keyboard"), "keyboard", None, "input-keyboard", [],
+  [_("Keyboard"), "keyboard", None, "xsi-input-keyboard-symbolic", [],
     [
       [_("Switch to next layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source"],
       [_("Switch to previous layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-backward"],
@@ -77,7 +80,7 @@ STATIC_KEYBINDINGS = \
       [_("Switch to fourth layout"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-input-source-3"]
     ]
   ],
-  [_("Windows"), "windows", None, "preferences-system-windows",
+  [_("Windows"), "windows", None, "xsi-focus-windows-symbolic",
     [
       [_("Positioning"), "win-position", "windows", None, [],
         [
@@ -107,8 +110,6 @@ STATIC_KEYBINDINGS = \
           [_("Move window to new workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-new"],
           [_("Move window to left workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-left"],
           [_("Move window to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-right"],
-          [_("Move window to workspace above"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-up"],
-          [_("Move window to workspace below"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-down"],
           [_("Move window to workspace 1"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-1"],
           [_("Move window to workspace 2"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-2"],
           [_("Move window to workspace 3"), MUFFIN_KEYBINDINGS_SCHEMA, "move-to-workspace-3"],
@@ -151,7 +152,7 @@ STATIC_KEYBINDINGS = \
       [_("Toggle horizontal maximization"), MUFFIN_KEYBINDINGS_SCHEMA, "maximize-horizontally"]
     ]
   ],
-  [_("Workspaces"), "workspaces", None, "video-display",
+  [_("Workspaces"), "workspaces", None, "xsi-video-display-symbolic",
     [
       [_("Direct Navigation"), "ws-navi", "workspaces", None, [],
         [
@@ -175,7 +176,7 @@ STATIC_KEYBINDINGS = \
       [_("Switch to right workspace"), MUFFIN_KEYBINDINGS_SCHEMA, "switch-to-workspace-right"]
     ]
   ],
-  [_("System"), "system", None, "preferences-system",
+  [_("System"), "system", None, "xsi-emblem-system-symbolic",
     [
       [_("Hardware"), "sys-hw", "system", None, [],
         [
@@ -214,7 +215,7 @@ STATIC_KEYBINDINGS = \
       [_("Restart Cinnamon"), MEDIA_KEYS_SCHEMA, "restart-cinnamon"]
     ]
   ],
-  [_("Launchers"), "launchers", None, "applications-utilities", [],
+  [_("Launchers"), "launchers", None, "xsi-launch-symbolic", [],
     [
       [_("Launch terminal"), MEDIA_KEYS_SCHEMA, "terminal"],
       [_("Launch help browser"), MEDIA_KEYS_SCHEMA, "help"],
@@ -225,7 +226,7 @@ STATIC_KEYBINDINGS = \
       [_("Search"), MEDIA_KEYS_SCHEMA, "search"]
     ]
   ],
-  [_("Sound and Media"), "media", None, "applications-multimedia",
+  [_("Sound and Media"), "media", None, "xsi-multimedia-symbolic",
     [
       [_("Quiet Keys"), "media-quiet", "media", None, [],
         [
@@ -253,7 +254,7 @@ STATIC_KEYBINDINGS = \
       [_("Shuffle"), MEDIA_KEYS_SCHEMA, "audio-random"]
     ]
   ],
-  [_("Universal Access"), "accessibility", None, "preferences-desktop-accessibility", [],
+  [_("Universal Access"), "accessibility", None, "xsi-accessibility-symbolic", [],
     [
       [_("Zoom in"), CINNAMON_SCHEMA, "magnifier-zoom-in"],
       [_("Zoom out"), CINNAMON_SCHEMA, "magnifier-zoom-out"],
@@ -265,7 +266,7 @@ STATIC_KEYBINDINGS = \
       [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"]
     ]
   ],
-  [_("Spices"), "spices", None, "cinnamon", [], []]
+  [_("Spices"), "spices", None, "cinnamon-symbolic", [], []]
 ]
 
 # keybindings.js listens for changes to 'custom-list'. Any time we create a shortcut
@@ -279,6 +280,36 @@ def ensureCustomListChanges(custom_list):
         custom_list.remove(DUMMY_CUSTOM_ENTRY)
     else:
         custom_list.append(DUMMY_CUSTOM_ENTRY)
+
+def _load_xlet_metadata(uuid, _type):
+    local_path = Path.home() / ".local/share/cinnamon" / _type / uuid / "metadata.json"
+    system_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
+
+    for metadata_path, is_local in ((local_path, True), (system_path, False)):
+        if metadata_path.exists():
+            try:
+                with open(metadata_path, encoding="utf-8") as metadata_file:
+                    return json.load(metadata_file), is_local
+            except (OSError, json.JSONDecodeError):
+                pass
+
+    return None, False
+
+# Matches the _get_is_multi_instance_xlet implementations in js/ui/settings.js
+def _xlet_is_multi_instance(metadata, _type):
+    if metadata is None:
+        return False
+
+    try:
+        max_instances = int(metadata.get("max-instances", 1))
+    except (TypeError, ValueError):
+        return False
+
+    if _type == "applets":
+        return max_instances != 1
+    if _type == "desklets":
+        return max_instances > 1
+    return False
 
 class KeyBindingCategory:
     def __init__(self, label, int_name, parent, icon, dbus_info={}):
@@ -402,6 +433,15 @@ class KeyBinding(GObject.Object):
                 config_file.flush()
             self.resume_json_monitor()
         self.emit_changed()
+
+    def get_defaults(self):
+        if "/" not in self.schema:
+            return self.settings.get_default_value(self.key).unpack()
+
+        with open(self.schema, encoding="utf-8") as config_file:
+            config = json.load(config_file)
+
+        return config[self.key]["default"].split("::")
 
     def resetDefaults(self):
         if "/" not in self.schema:
@@ -593,6 +633,10 @@ class KeybindingTable(GObject.Object):
                 category.add(kb)
 
         for category in STATIC_KEYBINDINGS:
+            # The "Keyboard" category is just the layout-switch shortcuts; under
+            # fcitx, switching is owned by fcitx, so hide the whole category.
+            if category[1] == "keyboard" and util.using_fcitx():
+                continue
             _load_category(category)
 
     def _on_enabled_spices_changed(self, settings, key, data=None):
@@ -629,39 +673,58 @@ class KeybindingTable(GObject.Object):
             enabled_extensions.add(extension)
             enabled_spices.add((extension, 'extensions', None))
 
+        # Enabled instance IDs per uuid, to decide whether a multi-instance
+        # xlet needs per-instance subcategories.
+        enabled_ids = {}
+        for uuid, _type, instance_id in enabled_spices:
+            enabled_ids.setdefault(uuid, set())
+            if instance_id is not None:
+                enabled_ids[uuid].add(instance_id)
+
         keyboard_spices = sorted(enabled_spices)
         spice_keybinds = {}
         spice_properties = {}
 
         for uuid, _type, instance_id in keyboard_spices:
-            for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
-                config_path = Path.joinpath(settings_dir, uuid)
-                if Path.exists(config_path):
-                    configs = [x for x in os.listdir(config_path) if x.endswith(".json")]
-                    # If we encounted numbered and non-numbered, config files, filter out the uuid-named one 
-                    if not all(x.split(".json")[0].isdigit() for x in configs) and any(x.split(".json")[0].isdigit() for x in configs):
-                        for index, value in enumerate(configs):
-                            if not value.split(".json")[0].isdigit():
-                                configs.pop(index)
-                    for config in configs:
-                        config_json = Path.joinpath(config_path, config)
-                        _id = config.split(".json")[0]
-                        key_name = f"{uuid}_{_id}" if _id.isdigit() else uuid
-                        with open(config_json, encoding="utf-8") as config_file:
-                            _config = json.load(config_file)
+            metadata, metadata_is_local = _load_xlet_metadata(uuid, _type)
+            multi_instance = instance_id is not None and _xlet_is_multi_instance(metadata, _type)
 
-                            for key, val in _config.items():
-                                if isinstance(val, dict) and val.get("type") == "keybinding":
-                                    spice_properties.setdefault(key_name, {})
-                                    spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
-                                    spice_properties[key_name]["path"] = str(config_json)
-                                    spice_properties[key_name]["type"] = _type
-                                    spice_properties[key_name]["uuid"] = uuid
-                                    spice_properties[key_name]["instance_id"] = instance_id
-                                    spice_properties[key_name]["config_id"] = _id
-                                    spice_keybinds.setdefault(key_name, {})
-                                    spice_keybinds[key_name].setdefault(key, {})
-                                    spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
+            # Mirror js/ui/settings.js: multi-instance xlets store their config
+            # as <instance_id>.json, single-instance ones as <uuid>.json. Only
+            # look for the expected file, so stale configs are ignored.
+            if multi_instance:
+                config_name = f"{instance_id}.json"
+                key_name = f"{uuid}_{instance_id}"
+            else:
+                config_name = f"{uuid}.json"
+                key_name = uuid
+
+            for settings_dir in (OLD_SETTINGS_DIR, SETTINGS_DIR):
+                config_json = Path.joinpath(settings_dir, uuid, config_name)
+                if not Path.exists(config_json):
+                    continue
+
+                try:
+                    with open(config_json, encoding="utf-8") as config_file:
+                        _config = json.load(config_file)
+                except (OSError, json.JSONDecodeError) as e:
+                    print(f"KeybindingTable could not read {config_json}: {e}")
+                    continue
+
+                for key, val in _config.items():
+                    if isinstance(val, dict) and val.get("type") == "keybinding":
+                        spice_properties.setdefault(key_name, {})
+                        spice_properties[key_name]["highlight"] = uuid not in enabled_extensions
+                        spice_properties[key_name]["path"] = str(config_json)
+                        spice_properties[key_name]["type"] = _type
+                        spice_properties[key_name]["uuid"] = uuid
+                        spice_properties[key_name]["instance_id"] = instance_id
+                        spice_properties[key_name]["config_id"] = config_name[:-len(".json")]
+                        spice_properties[key_name]["multi_instance"] = multi_instance
+                        spice_properties[key_name]["metadata"] = metadata
+                        spice_properties[key_name]["metadata_is_local"] = metadata_is_local
+                        spice_keybinds.setdefault(key_name, {})
+                        spice_keybinds[key_name][key] = {val.get("description"): val.get("value").split("::")}
 
         self._spice_categories = {}
         self._spice_store = []
@@ -670,30 +733,24 @@ class KeybindingTable(GObject.Object):
         new_keybindings = []
 
         for spice, bindings in spice_keybinds.items():
-            uuid, *_id = spice.split("_")
-
             spice_props = spice_properties[spice]
-            _type = spice_props["type"]
-            local_metadata_path = Path.home() / '.local/share/cinnamon' / _type / uuid / 'metadata.json'
-            if local_metadata_path.exists():
-                gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
-                gettext.textdomain(uuid)
-                with open(local_metadata_path, encoding="utf-8") as metadata:
-                    json_data = json.load(metadata)
-                    category_label = _(json_data["name"])
-            else:
-                system_metadata_path = Path("/usr/share/cinnamon") / _type / uuid / "metadata.json"
-                if system_metadata_path.exists():
-                    with open(system_metadata_path, encoding="utf-8") as metadata:
-                        json_data = json.load(metadata)
-                        category_label = _(json_data["name"])
-            if not _id:
-                cat_label = category_label if category_label else uuid
-                new_categories.append([cat_label, uuid, "spices", None, spice_props])
+            uuid = spice_props["uuid"]
+            multi_instance = spice_props["multi_instance"]
+
+            category_label = None
+            if spice_props["metadata"] is not None:
+                if spice_props["metadata_is_local"]:
+                    gettext.bindtextdomain(uuid, str(Path.home() / '.local/share/locale'))
+                    gettext.textdomain(uuid)
+                category_label = _(spice_props["metadata"]["name"])
+            if not category_label:
+                category_label = uuid
+
+            if not multi_instance or len(enabled_ids.get(uuid, set())) <= 1:
+                new_categories.append([category_label, uuid, "spices", None, spice_props])
                 instance_num = 1
             elif len(new_categories) == 0 or uuid != new_categories[-1][2]:
-                cat_label = category_label if category_label else uuid
-                new_categories.append([cat_label, uuid, "spices", None, {}])
+                new_categories.append([category_label, uuid, "spices", None, {}])
                 instance_num = 1
                 label = _("Instance") + f" {instance_num}"
                 new_categories.append([label, f"{uuid}_{instance_num}", uuid, None, spice_props])
@@ -716,8 +773,8 @@ class KeybindingTable(GObject.Object):
                     gettext.bindtextdomain(uuid, f"{home}/.local/share/locale")
                     gettext.textdomain(uuid)
                     binding_label = gettext.gettext(list(binding_values.keys())[0])
-                binding_schema = spice_properties[spice]["path"]
-                binding_category = f"{uuid}_{instance_num - 1}" if _id else uuid
+                binding_schema = spice_props["path"]
+                binding_category = f"{uuid}_{instance_num - 1}" if multi_instance and len(enabled_ids.get(uuid, set())) > 1 else uuid
                 new_keybindings.append([binding_label, binding_schema, binding_key, binding_category, dbus_info])
                 self._spice_categories[binding_category] = category_label
 
@@ -736,6 +793,7 @@ class KeybindingTable(GObject.Object):
 
                     self._add_to_collision_table(kb)
                     category.add(kb)
+                    break
 
     def _load_custom_store(self):
         settings = self._get_settings_for_schema(CUSTOM_KEYS_PARENT_SCHEMA)
@@ -744,7 +802,7 @@ class KeybindingTable(GObject.Object):
         self._custom_store = []
         self._custom_categories = {}
 
-        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "cinnamon-panel-launcher")
+        cat = KeyBindingCategory(_("Custom Shortcuts"), "custom", None, "xsi-tag-symbolic")
         self._custom_store.append(cat)
 
         for entry in custom_list:
@@ -829,32 +887,65 @@ class KeybindingTable(GObject.Object):
         keybinding.setDetails(new_name, new_command)
         self.emit("customs-changed")
 
-    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
-        new_accel = Gtk.accelerator_parse_with_keycode(accel_string)
+    def _accel_label(self, accel_string):
+        key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
+        if key == 0 and len(codes) == 0:
+            return "Keyboard" if accel_string == "XF86Keyboard" else accel_string
+
+        return Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+
+    def _accels_match(self, accel_string, entry):
+        parsed = Gtk.accelerator_parse_with_keycode(accel_string)
+        # Unparseable accelerators (Above_Tab, XF86Keyboard) all parse to the same empty result.
+        if parsed.accelerator_key == 0 and len(parsed.accelerator_codes) == 0:
+            return accel_string == entry
+
+        return parsed == Gtk.accelerator_parse_with_keycode(entry)
+
+    def _find_conflicts(self, accel_strings, current_keybinding):
+        conflicts = []
 
         for cat in self.main_store:
             for keybinding in cat.keybindings:
-                for entry in keybinding.entries:
-                    if new_accel == Gtk.accelerator_parse_with_keycode(entry):
-                        if keybinding.label != current_keybinding.label:
-                            dialog = Gtk.MessageDialog(None,
-                                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                                       Gtk.MessageType.QUESTION,
-                                                       Gtk.ButtonsType.YES_NO,
-                                                       None)
-                            dialog.set_default_size(400, 125)
-                            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
-                            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
-                            msg += _("Do you want to continue with this operation?")
-                            dialog.set_markup(msg % {'combination': escape(accel_label), 'old': escape(keybinding.label), 'new': escape(current_keybinding.label)})
-                            dialog.show_all()
-                            response = dialog.run()
-                            dialog.destroy()
-                            if response == Gtk.ResponseType.YES:
-                                keybinding.setBinding(keybinding.entries.index(entry), None)
-                                self._proxy_send_kb_changed(keybinding)
-                            else:
-                                return False
+                if keybinding.label == current_keybinding.label:
+                    continue
+                for index, entry in enumerate(keybinding.entries):
+                    if not entry:
+                        continue
+                    for accel_string in accel_strings:
+                        if accel_string and self._accels_match(accel_string, entry):
+                            conflicts.append((keybinding, index, accel_string))
+
+        return conflicts
+
+    def _confirm_and_clear_conflicts(self, conflicts, new_keybinding):
+        for keybinding, index, accel_string in conflicts:
+            dialog = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                       Gtk.MessageType.QUESTION,
+                                       Gtk.ButtonsType.YES_NO,
+                                       None)
+            dialog.set_default_size(400, 125)
+            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
+            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
+            msg += _("Do you want to continue with this operation?")
+            dialog.set_markup(msg % {'combination': escape(self._accel_label(accel_string)), 'old': escape(keybinding.label), 'new': escape(new_keybinding.label)})
+            dialog.show_all()
+            response = dialog.run()
+            dialog.destroy()
+            if response != Gtk.ResponseType.YES:
+                return False
+
+        for keybinding, index, __ in conflicts:
+            keybinding.setBinding(index, None)
+            self._proxy_send_kb_changed(keybinding)
+
+        return True
+
+    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
+        if not self._confirm_and_clear_conflicts(self._find_conflicts([accel_string], current_keybinding), current_keybinding):
+            return False
+
         current_keybinding.setBinding(int(position), accel_string)
         self._proxy_send_kb_changed(current_keybinding)
         return True
@@ -891,14 +982,7 @@ class KeybindingTable(GObject.Object):
             if len(bindings) < 2:
                 continue
 
-            key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
-            if (key == 0 and len(codes) == 0):
-                if accel_string == "XF86Keyboard":
-                    label = "Keyboard"
-                else:
-                    label = accel_string
-            else:
-                label = Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+            label = self._accel_label(accel_string)
 
             dialog = Gtk.MessageDialog(None,
                                        Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -935,8 +1019,12 @@ class KeybindingTable(GObject.Object):
         self._proxy_send_kb_changed(keybinding)
 
     def reset_bindings(self, keybinding):
+        if not self._confirm_and_clear_conflicts(self._find_conflicts(keybinding.get_defaults(), keybinding), keybinding):
+            return False
+
         keybinding.resetDefaults()
         self._proxy_send_kb_changed(keybinding)
+        return True
 
     def lookup_gsettings_keybinding(self, schema_id, key):
         for cat in self._static_store + self._custom_store:

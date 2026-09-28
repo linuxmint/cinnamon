@@ -1,9 +1,7 @@
 data/wayland_sessions/cinnamon-wayland.desktop.in
 data/xsessions/cinnamon.desktop.in
-data/xsessions/cinnamon2d.desktop.in
 data/cinnamon-wayland.desktop.in.in
 data/cinnamon.desktop.in.in
-data/cinnamon2d.desktop.in.in
 
 # data/search_providers/google.xml
 # data/search_providers/wikipedia.xml
@@ -274,8 +272,6 @@ files/usr/share/cinnamon/desklets/photoframe@cinnamon.org/desklet.js
 
 generate_additional_files.py
 files/usr/share/cinnamon/applets/grouped-window-list@cinnamon.org/utils.py
-files/usr/share/cinnamon/applets/printers@cinnamon.org/lpstat-a.py
-files/usr/share/cinnamon/applets/printers@cinnamon.org/cancel-print-dialog.py
 files/usr/share/cinnamon/applets/settings-example@cinnamon.org/CustomWidget.py
 files/usr/share/cinnamon/cinnamon-desktop-editor/cinnamon-desktop-editor.py
 files/usr/share/cinnamon/cinnamon-looking-glass/pageutils.py
@@ -294,7 +290,6 @@ files/usr/share/cinnamon/cinnamon-menu-editor/cme/util.py
 files/usr/share/cinnamon/cinnamon-screensaver-lock-dialog/cinnamon-screensaver-lock-dialog.py
 files/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py
 files/usr/share/cinnamon/cinnamon-settings/bin/__init__.py
-files/usr/share/cinnamon/cinnamon-settings/bin/proxygsettings.py
 files/usr/share/cinnamon/cinnamon-settings/bin/AddKeyboardLayout.py
 files/usr/share/cinnamon/cinnamon-settings/bin/ChooserButtonWidgets.py
 files/usr/share/cinnamon/cinnamon-settings/bin/CinnamonGtkSettings.py
@@ -345,4 +340,7 @@ files/usr/share/cinnamon/cinnamon-settings/cinnamon-settings.py
 files/usr/share/cinnamon/cinnamon-settings/config.py
 files/usr/share/cinnamon/cinnamon-settings/xlet-settings.py
 files/usr/share/cinnamon/cinnamon-slideshow/cinnamon-slideshow.py
+files/usr/share/cinnamon/cinnamon-screenshot/application.py
+files/usr/share/cinnamon/cinnamon-screenshot/main_window.py
+files/usr/share/cinnamon/cinnamon-screenshot/prefs.py
 files/usr/share/cinnamon/desklets/launcher@cinnamon.org/editorDialog.py

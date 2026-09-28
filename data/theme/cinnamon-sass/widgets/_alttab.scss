@@ -6,7 +6,7 @@
 .switcher-list {
   background-color: $panel_bg;
   border: 1px solid $borders_color;
-  border-radius: $base_border_radius * 2;
+  border-radius: $larger_border_radius;
   box-shadow: 0 0 6px 0 $shadow_color;
   padding: $base_padding * 3;
 
@@ -52,7 +52,7 @@
     background-gradient-direction: horizontal;
     background-gradient-start: transparentize($panel_bg, 0.0);
     background-gradient-end: transparentize($panel_bg, 1.0);
-    border-radius: $base_border_radius * 2;
+    border-radius: $larger_border_radius;
     border-radius-topright: 0px;
     border-radius-bottomright: 0px;
     width: 60px;
@@ -62,7 +62,7 @@
     background-gradient-direction: horizontal;
     background-gradient-start: transparentize($panel_bg, 1.0);
     background-gradient-end: transparentize($panel_bg, 0.0);
-    border-radius: $base_border_radius * 2;
+    border-radius: $larger_border_radius;
     border-radius-topleft: 0px;
     border-radius-bottomleft: 0px;
     width: 60px;

@@ -1,0 +1,5 @@
+#!/usr/bin/python3
+import sys
+sys.path.insert(0, '/usr/share/cinnamon/cinnamon-screenshot')
+import application
+sys.exit(application.main())

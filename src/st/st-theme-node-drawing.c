@@ -479,8 +479,8 @@ get_background_position (StThemeNode             *self,
   gdouble scale_w, scale_h;
 
   /* get the background image size */
-  background_image_width = cogl_texture_get_width (self->background_texture);
-  background_image_height = cogl_texture_get_height (self->background_texture);
+  background_image_width = cogl_texture_get_width (self->background_texture) / self->resource_scale;
+  background_image_height = cogl_texture_get_height (self->background_texture) / self->resource_scale;
 
   /* get the painting area size */
   painting_area_width = allocation->x2 - allocation->x1;
@@ -596,6 +596,7 @@ create_cairo_pattern_of_background_gradient (StThemeNode *node)
 
 static cairo_pattern_t *
 create_cairo_pattern_of_background_image (StThemeNode *node,
+                                          float        resource_scale,
                                           gboolean    *needs_background_fill)
 {
   cairo_surface_t *surface;
@@ -605,6 +606,7 @@ create_cairo_pattern_of_background_image (StThemeNode *node,
   const char *file;
 
   StTextureCache *texture_cache;
+  GFile *gfile;
 
   gdouble background_image_width, background_image_height;
   gdouble x, y;
@@ -614,7 +616,12 @@ create_cairo_pattern_of_background_image (StThemeNode *node,
 
   texture_cache = st_texture_cache_get_default ();
 
-  surface = st_texture_cache_load_file_to_cairo_surface (texture_cache, file);
+  gfile = g_file_new_for_path (file);
+  surface = st_texture_cache_load_gfile_to_cairo_surface (texture_cache,
+                                                          gfile,
+                                                          st_theme_context_get_scale_for_stage (),
+                                                          resource_scale);
+  g_object_unref (gfile);
 
   if (surface == NULL)
     return NULL;
@@ -624,8 +631,8 @@ create_cairo_pattern_of_background_image (StThemeNode *node,
   content = cairo_surface_get_content (surface);
   pattern = cairo_pattern_create_for_surface (surface);
 
-  background_image_width = cairo_image_surface_get_width (surface);
-  background_image_height = cairo_image_surface_get_height (surface);
+  background_image_width = cairo_image_surface_get_width (surface) / resource_scale;
+  background_image_height = cairo_image_surface_get_height (surface) / resource_scale;
 
   *needs_background_fill = TRUE;
 
@@ -941,7 +948,8 @@ paint_inset_box_shadow_to_cairo_context (StThemeNode     *node,
  * cases (gradients, background images, etc).
  */
 static CoglHandle
-st_theme_node_prerender_background (StThemeNode *node)
+st_theme_node_prerender_background (StThemeNode *node,
+                                    float        resource_scale)
 {
   StBorderImage *border_image;
   CoglHandle texture;
@@ -965,6 +973,7 @@ st_theme_node_prerender_background (StThemeNode *node)
   ClutterActorBox actor_box;
   ClutterActorBox paint_box;
   cairo_path_t *interior_path = NULL;
+  int texture_width, texture_height;
 
   border_image = st_theme_node_get_border_image (node);
 
@@ -994,9 +1003,12 @@ st_theme_node_prerender_background (StThemeNode *node)
   paint_box.y2 += - paint_box.y1;
   paint_box.y1 += - paint_box.y1;
 
+  texture_width = ceilf ((paint_box.x2 - paint_box.x1) * resource_scale);
+  texture_height = ceilf ((paint_box.y2 - paint_box.y1) * resource_scale);
+
   rowstride = cairo_format_stride_for_width (CAIRO_FORMAT_ARGB32,
-                                             paint_box.x2 - paint_box.x1);
-  data = g_new0 (guchar, (paint_box.y2 - paint_box.y1) * rowstride);
+                                             texture_width);
+  data = g_new0 (guchar, texture_height * rowstride);
 
   /* We zero initialize the destination memory, so it's fully transparent
    * by default.
@@ -1005,9 +1017,10 @@ st_theme_node_prerender_background (StThemeNode *node)
 
   surface = cairo_image_surface_create_for_data (data,
                                                  CAIRO_FORMAT_ARGB32,
-                                                 paint_box.x2 - paint_box.x1,
-                                                 paint_box.y2 - paint_box.y1,
+                                                 texture_width,
+                                                 texture_height,
                                                  rowstride);
+  cairo_surface_set_device_scale (surface, resource_scale, resource_scale);
   cr = cairo_create (surface);
 
   /* TODO - support non-uniform border colors */
@@ -1046,6 +1059,7 @@ st_theme_node_prerender_background (StThemeNode *node)
       if (background_image != NULL)
         {
           pattern = create_cairo_pattern_of_background_image (node,
+                                                              resource_scale,
                                                               &draw_solid_background);
           if (shadow_spec && pattern != NULL)
             draw_background_image_shadow = TRUE;
@@ -1262,8 +1276,8 @@ st_theme_node_prerender_background (StThemeNode *node)
   if (interior_path != NULL)
     cairo_path_destroy (interior_path);
 
-  texture = cogl_texture_new_from_data (paint_box.x2 - paint_box.x1,
-                                        paint_box.y2 - paint_box.y1,
+  texture = cogl_texture_new_from_data (texture_width,
+                                        texture_height,
                                         COGL_TEXTURE_NONE,
                                         CLUTTER_CAIRO_FORMAT_ARGB32,
                                         COGL_PIXEL_FORMAT_ANY,
@@ -1335,7 +1349,8 @@ static void st_theme_node_paint_borders (StThemeNode           *node,
 static void
 st_theme_node_render_resources (StThemeNode   *node,
                                 float          width,
-                                float          height)
+                                float          height,
+                                float          resource_scale)
 {
   StTextureCache *texture_cache;
   StBorderImage *border_image;
@@ -1346,6 +1361,7 @@ st_theme_node_render_resources (StThemeNode   *node,
   StShadow *box_shadow_spec;
   StShadow *background_image_shadow_spec;
   const char *background_image;
+  GFile *image_file;
 
   g_return_if_fail (width > 0 && height > 0);
 
@@ -1359,6 +1375,7 @@ st_theme_node_render_resources (StThemeNode   *node,
 
   node->alloc_width = width;
   node->alloc_height = height;
+  node->resource_scale = resource_scale;
 
   _st_theme_node_ensure_background (node);
   _st_theme_node_ensure_geometry (node);
@@ -1413,7 +1430,13 @@ st_theme_node_render_resources (StThemeNode   *node,
 
       filename = st_border_image_get_filename (border_image);
 
-      node->border_slices_texture = st_texture_cache_load_file_to_cogl_texture (texture_cache, filename);
+      image_file = g_file_new_for_path (filename);
+      node->border_slices_texture =
+        st_texture_cache_load_gfile_to_cogl_texture (texture_cache,
+                                                     image_file,
+                                                     st_theme_context_get_scale_for_stage (),
+                                                     resource_scale);
+      g_object_unref (image_file);
     }
 
   if (node->border_slices_texture)
@@ -1443,7 +1466,8 @@ st_theme_node_render_resources (StThemeNode   *node,
       || (has_inset_box_shadow && (has_border || node->background_color.alpha > 0))
       || (background_image && (has_border || has_border_radius))
       || has_large_corners)
-    node->prerendered_texture = st_theme_node_prerender_background (node);
+    node->prerendered_texture = st_theme_node_prerender_background (node,
+                                                                    resource_scale);
 
   if (node->prerendered_texture)
     node->prerendered_material = _st_create_texture_pipeline (node->prerendered_texture);
@@ -1505,7 +1529,13 @@ st_theme_node_render_resources (StThemeNode   *node,
   background_image_shadow_spec = st_theme_node_get_background_image_shadow (node);
   if (background_image != NULL && !has_border && !has_border_radius)
     {
-      node->background_texture = st_texture_cache_load_file_to_cogl_texture (texture_cache, background_image);
+      image_file = g_file_new_for_path (background_image);
+      node->background_texture =
+        st_texture_cache_load_gfile_to_cogl_texture (texture_cache,
+                                                     image_file,
+                                                     st_theme_context_get_scale_for_stage (),
+                                                     resource_scale);
+      g_object_unref (image_file);
       node->background_material = _st_create_texture_pipeline (node->background_texture);
 
       if (node->background_repeat)
@@ -1860,10 +1890,10 @@ st_theme_node_paint_sliced_border_image (StThemeNode           *node,
   img_width = cogl_texture_get_width (node->border_slices_texture);
   img_height = cogl_texture_get_height (node->border_slices_texture);
 
-  tx1 = border_left / img_width;
-  tx2 = (img_width - border_right) / img_width;
-  ty1 = border_top / img_height;
-  ty2 = (img_height - border_bottom) / img_height;
+  tx1 = (border_left * node->resource_scale) / img_width;
+  tx2 = (img_width - (border_right * node->resource_scale)) / img_width;
+  ty1 = (border_top * node->resource_scale) / img_height;
+  ty2 = (img_height - (border_bottom * node->resource_scale)) / img_height;
 
   ex = node->alloc_width - border_right;
   if (ex < 0)
@@ -2000,6 +2030,7 @@ st_theme_node_paint (StThemeNode           *node,
                      CoglFramebuffer       *fb,
                      const ClutterActorBox *box,
                      guint8                 paint_opacity,
+                     gfloat                 resource_scale,
                      StBackgroundBlurEffect    *background_blur_effect,
                      StBackgroundBumpmapEffect *background_bumpmap_effect)
 {
@@ -2017,8 +2048,13 @@ st_theme_node_paint (StThemeNode           *node,
   allocation.x2 = width;
   allocation.y2 = height;
 
-  if (node->alloc_width != width || node->alloc_height != height)
-    st_theme_node_render_resources (node, width, height);
+  if (resource_scale <= 0.0)
+    resource_scale = 1.0;
+
+  if (node->alloc_width != width ||
+      node->alloc_height != height ||
+      node->resource_scale != resource_scale)
+    st_theme_node_render_resources (node, width, height, resource_scale);
 
   /* Rough notes about the relationship of borders and backgrounds in CSS3;
    * see http://www.w3.org/TR/css3-background/ for more accurate details.
@@ -2169,6 +2205,7 @@ st_theme_node_copy_cached_paint_state (StThemeNode *node,
 
   node->alloc_width = other->alloc_width;
   node->alloc_height = other->alloc_height;
+  node->resource_scale = other->resource_scale;
 
   if (other->background_shadow_material)
     node->background_shadow_material = cogl_object_ref (other->background_shadow_material);

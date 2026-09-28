@@ -22,7 +22,7 @@ class CinnamonXrandrApplet extends Applet.IconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this.set_applet_icon_symbolic_name("preferences-desktop-display");
+        this.set_applet_icon_symbolic_name("xsi-display");
         this.set_applet_tooltip(_("Display"));
 
         this.menuManager = new PopupMenu.PopupMenuManager(this);

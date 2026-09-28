@@ -13,9 +13,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street - Suite 500, Boston, MA
- * 02110-1335, USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  * Author: Cosimo Cecchi <cosimoc@redhat.com>
  *
@@ -29,30 +27,9 @@
 
 G_BEGIN_DECLS
 
-#define CINNAMON_TYPE_MIME_SNIFFER            (cinnamon_mime_sniffer_get_type ())
-#define CINNAMON_MIME_SNIFFER(obj)            (G_TYPE_CHECK_INSTANCE_CAST ((obj), CINNAMON_TYPE_MIME_SNIFFER, CinnamonMimeSniffer))
-#define CINNAMON_IS_MIME_SNIFFER(obj)         (G_TYPE_CHECK_INSTANCE_TYPE ((obj), CINNAMON_TYPE_MIME_SNIFFER))
-#define CINNAMON_MIME_SNIFFER_CLASS(klass)    (G_TYPE_CHECK_CLASS_CAST ((klass),  CINNAMON_TYPE_MIME_SNIFFER, CinnamonMimeSnifferClass))
-#define CINNAMON_IS_MIME_SNIFFER_CLASS(klass) (G_TYPE_CHECK_CLASS_TYPE ((klass),  CINNAMON_TYPE_MIME_SNIFFER))
-#define CINNAMON_MIME_SNIFFER_GET_CLASS(obj)  (G_TYPE_INSTANCE_GET_CLASS ((obj),  CINNAMON_TYPE_MIME_SNIFFER, CinnamonMimeSnifferClass))
-
-typedef struct _CinnamonMimeSniffer          CinnamonMimeSniffer;
-typedef struct _CinnamonMimeSnifferPrivate   CinnamonMimeSnifferPrivate;
-typedef struct _CinnamonMimeSnifferClass     CinnamonMimeSnifferClass;
-
-struct _CinnamonMimeSniffer
-{
-  GObject parent_instance;
-
-  CinnamonMimeSnifferPrivate *priv;
-};
-
-struct _CinnamonMimeSnifferClass
-{
-  GObjectClass parent_class;
-};
-
-GType    cinnamon_mime_sniffer_get_type     (void) G_GNUC_CONST;
+#define CINNAMON_TYPE_MIME_SNIFFER (cinnamon_mime_sniffer_get_type ())
+G_DECLARE_FINAL_TYPE (CinnamonMimeSniffer, cinnamon_mime_sniffer,
+                      CINNAMON, MIME_SNIFFER, GObject)
 
 CinnamonMimeSniffer *cinnamon_mime_sniffer_new (GFile *file);
 

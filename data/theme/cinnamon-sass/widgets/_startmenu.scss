@@ -23,7 +23,6 @@
 $appmenu_small_padding: 5px;
 $appmenu_padding: 10px;
 $appmenu_large_padding: 15px;
-$appmenu_radius: $base_border_radius * 1.25;
 
 %appmenu_button {
   padding: $base_padding;
@@ -73,7 +72,7 @@ $appmenu_radius: $base_border_radius * 1.25;
   &-sidebar {
     padding: $appmenu_padding 0px;
     background-color: $base_color;
-    border-radius: $appmenu_radius 0 0 $appmenu_radius;
+    border-radius: $larger_border_radius 0 0 $larger_border_radius;
     border-right-width: 1px;
     border-color: $borders_color;
 

@@ -344,13 +344,6 @@ cinnamon_plugin_create_close_dialog (MetaPlugin *plugin,
   return _cinnamon_wm_create_close_dialog (get_cinnamon_wm (), window);
 }
 
-static MetaInhibitShortcutsDialog *
-cinnamon_plugin_create_inhibit_shortcuts_dialog (MetaPlugin *plugin,
-                                                    MetaWindow *window)
-{
-  return _cinnamon_wm_create_inhibit_shortcuts_dialog (get_cinnamon_wm (), window);
-}
-
 static void
 cinnamon_plugin_locate_pointer (MetaPlugin *plugin)
 {
@@ -390,7 +383,6 @@ cinnamon_plugin_class_init (CinnamonPluginClass *klass)
   plugin_class->plugin_info       = cinnamon_plugin_plugin_info;
 
   plugin_class->create_close_dialog = cinnamon_plugin_create_close_dialog;
-  plugin_class->create_inhibit_shortcuts_dialog = cinnamon_plugin_create_inhibit_shortcuts_dialog;
 
   plugin_class->locate_pointer = cinnamon_plugin_locate_pointer;
 }

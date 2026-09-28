@@ -9,7 +9,7 @@ import gi
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gio, Gtk, Gdk, GdkPixbuf, GLib, Pango
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 try:
@@ -899,6 +899,8 @@ class AppDialog(Gtk.Dialog):
 
         if response == Gtk.ResponseType.ACCEPT:
             name = chooser.get_filename()
+            if " " in name:
+                name = '"' + name + '"'
             self.command_entry.set_text(name)
 
         chooser.destroy()

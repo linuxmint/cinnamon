@@ -73,6 +73,9 @@ StWidget    *st_button_new_with_label  (const gchar  *text);
 const gchar *st_button_get_label       (StButton     *button);
 void         st_button_set_label       (StButton     *button,
                                         const gchar  *text);
+const char  *st_button_get_icon_name   (StButton     *button);
+void         st_button_set_icon_name   (StButton     *button,
+                                        const char   *icon_name);
 void         st_button_set_toggle_mode (StButton     *button,
                                         gboolean      toggle);
 gboolean     st_button_get_toggle_mode (StButton     *button);

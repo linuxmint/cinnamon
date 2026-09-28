@@ -30,6 +30,11 @@ var LONGER_HIDE_TIMEOUT = 0.6;
 const NOTIFICATION_IMAGE_SIZE = 125;
 const NOTIFICATION_IMAGE_OPACITY = 230; // 0 - 255
 
+// Applets wishing to receive the "notify-applet-update" signal should increment and decrement this value when
+// added and removed from the panel respectfully as when this value is zero, the signal will not be emitted and
+// notifications will be automatically destroyed after being shown.
+var extensionsHandlingNotifications = 0;
+
 var State =  Object.freeze({
     HIDDEN: 0,
     SHOWING: 1,
@@ -144,7 +149,7 @@ URLHighlighter.prototype = {
 
             let urlId = this._findUrlAtPos(event);
             if (urlId != -1 && !this._cursorChanged) {
-                global.set_cursor(Cinnamon.Cursor.POINTING_HAND);
+                global.set_cursor(Cinnamon.Cursor.POINTER);
                 this._cursorChanged = true;
             } else if (urlId == -1) {
                 global.unset_cursor();
@@ -634,7 +639,7 @@ function Source(title) {
 
 Source.prototype = {
     ICON_SIZE: 24,
-    MAX_NOTIFICATIONS: 10,
+    MAX_NOTIFICATIONS: 20,
 
     _init: function (title) {
         this.title = title;
@@ -760,6 +765,7 @@ MessageTray.prototype = {
         this._notificationTimeoutId = 0;
         this._notificationExpandedId = 0;
         this._notificationRemoved = false;
+        this._appSettingsCache = {};
 
         this._sources = [];
         Main.layoutManager.addChrome(this._notificationBin);
@@ -789,6 +795,10 @@ MessageTray.prototype = {
         Main.overview.connect('hiding', updateLockState);
         Main.expo.connect('showing', updateLockState);
         Main.expo.connect('hiding', updateLockState);
+    },
+
+    getResourceScale: function () {
+        return this._notificationBin.get_resource_scale();
     },
 
     contains: function (source) {
@@ -854,7 +864,38 @@ MessageTray.prototype = {
         this._updateState();
     },
 
+    _isAppEnabled: function(source) {
+        if (!source.app) return true;
+
+        let appId = source.app.get_id();
+        if (appId.endsWith(":flatpak")) appId = appId.slice(0, -8);
+        if (appId.endsWith(".desktop")) appId = appId.slice(0, -8);
+        // Sanitise ID for GSettings path. (this should remain the same as in cs_notifications.py) 
+        // 1. Convert to lower case.
+        // 2. Replace any one or more consecutive characters that is not a lowercase letter or a digit with a hyphen.
+        // 3. Trim any leading or trailing hyphens.
+        appId = appId.toLowerCase();
+        const settingsId = appId.replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+        
+        if (!this._appSettingsCache[settingsId]) {
+            const path = `/org/cinnamon/desktop/notifications/application/${settingsId}/`;
+            
+            this._appSettingsCache[settingsId] = new Gio.Settings({ 
+                schema_id: "org.cinnamon.desktop.notifications.application",
+                path: path 
+            });
+        }
+    
+        // The default for "enabled" key is true so this returns true if the path doesn't exist.
+        return this._appSettingsCache[settingsId].get_boolean("enabled");
+    },
+
     _onNotify: function (source, notification) {
+        if (!this._notificationsEnabled || !this._isAppEnabled(source)) {
+            notification.destroy(NotificationDestroyedReason.DISMISSED);
+            return;
+        }
+
         if (this._notification == notification) {
             // If a notification that is being shown is updated, we update
             // how it is shown and extend the time until it auto-hides.
@@ -895,28 +936,15 @@ MessageTray.prototype = {
     // _updateState() figures out what (if anything) needs to be done
     // at the present time.
     _updateState: function () {
-        // Notifications
-        let notificationUrgent = this._notificationQueue.length > 0 && this._notificationQueue[0].urgency == Urgency.CRITICAL;
-        let notificationsPending = this._notificationQueue.length > 0 && (!this._busy || notificationUrgent);
-
-        let notificationExpired = (this._notificationTimeoutId == 0 &&
-            !(this._notification && this._notification.urgency == Urgency.CRITICAL) &&
-            !this._locked
-        ) || this._notificationRemoved;
-        let canShowNotification = notificationsPending && this._notificationsEnabled;
-
-        if (this._notificationState == State.HIDDEN) {
-            if (canShowNotification) {
+        if (this._notificationState === State.HIDDEN && this._notificationQueue.length > 0) {
+            if (!this._busy || this._notificationQueue[0].urgency === Urgency.CRITICAL) {
                 this._showNotification();
             }
-            else if (!this._notificationsEnabled) {
-                if (notificationsPending) {
-                    this._notification = this._notificationQueue.shift();
-                    this._notification.destroy(NotificationDestroyedReason.DISMISSED);
-                    this._notification = null;
-                }
-            }
-        } else if (this._notificationState == State.SHOWN) {
+        } else if (this._notificationState === State.SHOWN) {
+            const isCritical = this._notification && this._notification.urgency === Urgency.CRITICAL;
+            const notificationExpired = (this._notificationTimeoutId === 0 &&
+                !isCritical && !this._locked) || this._notificationRemoved;
+
             if (notificationExpired)
                 this._hideNotification();
         }
@@ -1017,7 +1045,7 @@ MessageTray.prototype = {
 
         if (this._notification.urgency != Urgency.CRITICAL) {
             this._updateNotificationTimeout(this.notificationDuration * 1000);
-        } else if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS)) {
+        } else if (extensionsHandlingNotifications > 0) {
             this._updateNotificationTimeout(NOTIFICATION_CRITICAL_TIMEOUT_WITH_APPLET * 1000);
         }
     },
@@ -1067,7 +1095,10 @@ MessageTray.prototype = {
             opacity: 0,
             duration: ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => this._hideNotificationCompleted()
+            onComplete: () => {
+                this._hideNotificationCompleted();
+                this._updateState();
+            }
         });
     },
 
@@ -1076,7 +1107,7 @@ MessageTray.prototype = {
         this._notificationBin.hide();
         this._notificationBin.child = null;
         let notification = this._notification;
-        if (AppletManager.get_role_provider_exists(AppletManager.Roles.NOTIFICATIONS) && !this._notificationRemoved) {
+        if (extensionsHandlingNotifications > 0 && !this._notificationRemoved) {
             this.emit('notify-applet-update', notification);
         } else {
             if (notification.isTransient)

@@ -7,7 +7,7 @@ const GObject = imports.gi.GObject;
 const St = imports.gi.St;
 
 const Dialog = imports.ui.dialog;
-const ModalDialog = imports.ui.modalDialog;
+const PopupDialog = imports.ui.popupDialog;
 
 const SessionDialogInterface =
     "<node> \
@@ -50,7 +50,7 @@ const ResponseCode = {
 }
 
 var EndSessionDialog = GObject.registerClass(
-class EndSessionDialog extends ModalDialog.ModalDialog {
+class EndSessionDialog extends PopupDialog.PopupDialog {
     _init(mode) {
         super._init({
             styleClass: 'end-session-dialog',
@@ -155,17 +155,14 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
                 if (canSuspend) {
                     this.addButton({
                         label: _("Suspend"),
-                        action: () => {
-                            this._dialogProxy.SuspendRemote();
-                            this.close();
-                        },
+                        action: this._dialogProxy.SuspendRemote.bind(this._dialogProxy),
                     });
                 }
 
                 if (canHibernate) {
                     this.addButton({
                         label: _("Hibernate"),
-                        action: this._dialogProxy.HibernateRemote.bind(this._dialogProxy)
+                        action: this._dialogProxy.HibernateRemote.bind(this._dialogProxy),
                     });
                 }
 
@@ -275,6 +272,7 @@ class EndSessionDialog extends ModalDialog.ModalDialog {
     _presentInhibitorInfo(inhibitorInfos) {
         this._removeDelayTimer();
         this.clearButtons();
+        this._applicationsSection.list.destroy_all_children();
         this._messageDialogContent.description = null;
 
         const infos = inhibitorInfos;

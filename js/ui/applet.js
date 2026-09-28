@@ -606,7 +606,7 @@ var Applet = class Applet {
         if (!this._meta["hide-configuration"] && GLib.file_test(this._meta["path"] + "/settings-schema.json", GLib.FileTest.EXISTS)) {
             if (this.context_menu_item_configure == null) {
                 this.context_menu_item_configure = new PopupMenu.PopupIconMenuItem(_("Configure..."),
-                        "xsi-run",
+                        "xsi-preferences",
                         St.IconType.SYMBOLIC);
                 this.context_menu_item_configure.connect('activate', () => this.configureApplet());
             }
@@ -647,11 +647,16 @@ var Applet = class Applet {
     }
 
     configureApplet(tab=0) {
+        if (typeof tab !== "number") {
+            global.logWarning("configureApplet: tab argument is not a number");
+            tab = 0;
+        }
+
         Util.spawnCommandLine("xlet-settings applet " + this._uuid + " -i " + this.instance_id + " -t " + tab);
     }
 
     get _panelHeight() {
-        return this.panel.height;
+        return this.panel.heightForZones;
     }
 
     get _scaleMode() {
@@ -1137,7 +1142,7 @@ var PopupResizeHandler = class PopupResizeHandler {
 
     _collect_work_area_edges() {
         const monitor = Main.layoutManager.findMonitorForActor(this.actor);
-        const ws = global.screen.get_active_workspace();
+        const ws = global.workspace_manager.get_active_workspace();
         const area = ws.get_work_area_for_monitor(monitor.index);
 
         this._edges.top = area.y;

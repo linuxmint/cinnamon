@@ -4,7 +4,7 @@ import gi
 gi.require_version('UPowerGlib', '1.0')
 from gi.repository import UPowerGlib
 
-from SettingsWidgets import SidePage
+from bin.SettingsWidgets import SidePage
 from xapp.GSettingsWidgets import *
 
 POWER_BUTTON_OPTIONS = [
@@ -148,7 +148,7 @@ class Module:
 
         section = power_page.add_section(_("Power options"))
 
-        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options(self.up_client)
+        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options()
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -266,6 +266,13 @@ class Module:
 
             section = page.add_section(_("Screen brightness"))
             section.add_row(BrightnessSlider(section, proxy, _("Screen brightness")))
+
+            try:
+                ambient_supported = proxy.get_cached_property("AmbientLightSupported")
+                if ambient_supported is not None and ambient_supported.unpack():
+                    section.add_row(GSettingsSwitch(_("Adjust automatically"), CSD_SCHEMA, "ambient-enabled"))
+            except Exception as e:
+                print(f"Power module ambient light check failed: {e}")
 
             section.add_row(GSettingsSwitch(_("On battery, dim screen when inactive"), CSD_SCHEMA, "idle-dim-battery"))
 
@@ -577,44 +584,23 @@ class Module:
         self.settings.set_strv("device-aliases", aliases)
 
 
-def get_available_options(up_client):
+def get_available_options():
     can_suspend = False
     can_hibernate = False
     can_hybrid_sleep = False
 
-    # Try logind first
+    # There's no reason this should ever fail as a normal user
     try:
-        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-        proxy = Gio.DBusProxy.new_sync(
-            connection,
-            Gio.DBusProxyFlags.NONE,
-            None,
-            "org.freedesktop.login1",
-            "/org/freedesktop/login1",
-            "org.freedesktop.login1.Manager",
-            None)
+        proxy = Gio.DBusProxy.new_for_bus_sync(
+                    Gio.BusType.SESSION,
+                    Gio.DBusProxyFlags.NONE,
+                    None,
+                    "org.gnome.SessionManager",
+                    "/org/gnome/SessionManager",
+                    "org.cinnamon.SessionManager.EndSessionDialog",
+                    None)
 
-        can_suspend = proxy.CanSuspend() == "yes"
-        can_hibernate = proxy.CanHibernate() == "yes"
-        can_hybrid_sleep = proxy.CanHybridSleep() == "yes"
-    except:
-        pass
-
-    # Next try ConsoleKit
-    try:
-        connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
-        proxy = Gio.DBusProxy.new_sync(
-            connection,
-            Gio.DBusProxyFlags.NONE,
-            None,
-            "org.freedesktop.ConsoleKit",
-            "/org/freedesktop/ConsoleKit/Manager",
-            "org.freedesktop.ConsoleKit.Manager",
-            None)
-
-        can_suspend = can_suspend or (proxy.CanSuspend() == "yes")
-        can_hibernate = can_hibernate or (proxy.CanHybridSleep() == "yes")
-        can_hybrid_sleep = can_hybrid_sleep or (proxy.CanHybridSleep() == "yes")
+        __, __, __, can_hybrid_sleep, can_suspend, can_hibernate, __ = proxy.GetCapabilities()
     except:
         pass
 

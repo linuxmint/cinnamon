@@ -12,7 +12,6 @@ class InputMethod extends Clutter.InputMethod {
         super._init();
         this._hints = 0;
         this._purpose = 0;
-        this._currentFocus = null;
         this._preeditStr = '';
         this._preeditPos = 0;
         this._preeditVisible = false;
@@ -23,17 +22,11 @@ class InputMethod extends Clutter.InputMethod {
         this.connect('notify::can-show-preedit', this._updateCapabilities.bind(this));
 
         this._inputSourceManager = KeyboardManager.getInputSourceManager();
-        this._inputSourceManager.reload();
         this._sourceChangedId = this._inputSourceManager.connect('current-source-changed',
                                                                  this._onSourceChanged.bind(this));
         this._currentSource = this._inputSourceManager.currentSource;
-        this._currentSource.activate(true);
         if (this._ibus.is_connected())
             this._onConnected();
-    }
-
-    get currentFocus() {
-        return this._currentFocus;
     }
 
     _updateCapabilities() {
@@ -76,6 +69,16 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     _clear() {
+        // ibus died possibly mid-composition. The preedit still painted on
+        // the focused actor is display-only (not buffer text), so nothing
+        // else can ever remove it - and the engine state is gone, but the
+        // text the user saw is not: commit it rather than discard those
+        // keystrokes. The commit also clears the preedit rendering.
+        if (this._preeditVisible && this._preeditStr)
+            this.commit(this._preeditStr);
+        else if (this._preeditVisible)
+            this.set_preedit_text(null, 0);
+
         if (this._cancellable) {
             this._cancellable.cancel();
             this._cancellable = null;
@@ -148,7 +151,6 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     vfunc_focus_in(focus) {
-        this._currentFocus = focus;
         if (this._context) {
             this._context.focus_in();
             this._emitRequestSurrounding();
@@ -161,7 +163,16 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     vfunc_focus_out() {
-        this._currentFocus = null;
+        // Clear any non-default content-type (e.g. a password purpose) while the
+        // context is still focused, so the daemon reports the change and the IME
+        // isn't left disabled after the field goes away without another taking
+        // focus (notably the unlock dialog / polkit prompt closing).
+        if (this._context && (this._purpose != 0 || this._hints != 0)) {
+            this._purpose = 0;
+            this._hints = 0;
+            this._context.set_content_type(this._purpose, this._hints);
+        }
+
         if (this._context)
             this._context.focus_out();
 
@@ -200,7 +211,10 @@ class InputMethod extends Clutter.InputMethod {
     }
 
     vfunc_set_surrounding(text, cursor, anchor) {
-        if (!this._context || !text)
+        // An empty string is a real update (the field is empty) and must be
+        // relayed, or the engine keeps acting on the previous field's text;
+        // only null/undefined means "no surrounding available".
+        if (!this._context || (!text && text !== ''))
             return;
 
         let ibusText = IBus.Text.new_from_string(text);

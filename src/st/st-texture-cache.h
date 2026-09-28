@@ -112,6 +112,14 @@ ClutterActor *st_texture_cache_load_icon_name (StTextureCache    *cache,
                                                StIconType         icon_type,
                                                gint               size);
 
+ClutterActor *st_texture_cache_load_icon_name_with_scale (StTextureCache    *cache,
+                                                          StThemeNode       *theme_node,
+                                                          const char        *name,
+                                                          StIconType         icon_type,
+                                                          gint               size,
+                                                          gint               paint_scale,
+                                                          gfloat             resource_scale);
+
 ClutterActor *st_texture_cache_load_file_async (StTextureCache    *cache,
                                                 GFile             *file,
                                                 int                available_width,

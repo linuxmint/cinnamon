@@ -13,9 +13,7 @@
  * General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street - Suite 500, Boston, MA
- * 02110-1335, USA.
+ * along with this program; if not, see <http://www.gnu.org/licenses/>.
  *
  * Authors: David Zeuthen <davidz@redhat.com>
  *          Cosimo Cecchi <cosimoc@redhat.com>
@@ -62,11 +60,7 @@ ensure_autoquit_off (void)
   if (g_getenv ("HOTPLUG_SNIFFER_PERSIST") != NULL)
     return;
 
-  if (autoquit_id != 0)
-    {
-      g_source_remove (autoquit_id);
-      autoquit_id = 0;
-    }
+  g_clear_handle_id (&autoquit_id, g_source_remove);
 }
 
 static void
@@ -78,6 +72,7 @@ ensure_autoquit_on (void)
   autoquit_id = 
     g_timeout_add_seconds (AUTOQUIT_TIMEOUT,
                            autoquit_timeout_cb, NULL);
+  g_source_set_name_by_id (autoquit_id, "[cinnamon] autoquit_timeout_cb");
 }
 
 typedef struct {
@@ -91,7 +86,7 @@ invocation_data_new (GVariant *params,
 {
   InvocationData *ret;
 
-  ret = g_slice_new0 (InvocationData);
+  ret = g_new0 (InvocationData, 1);
   ret->parameters = g_variant_ref (params);
   ret->invocation = g_object_ref (invocation);
 
@@ -104,7 +99,7 @@ invocation_data_free (InvocationData *data)
   g_variant_unref (data->parameters);
   g_clear_object (&data->invocation);
 
-  g_slice_free (InvocationData, data);
+  g_free (data);
 }
 
 static void
@@ -128,9 +123,9 @@ sniff_async_ready_cb (GObject *source,
 
   g_dbus_method_invocation_return_value (data->invocation,
                                          g_variant_new ("(^as)", types));
+  g_strfreev (types);
 
  out:
-  g_strfreev (types);
   invocation_data_free (data);
   ensure_autoquit_on ();
 }
@@ -267,7 +262,7 @@ main (int    argc,
 
 /* ---------------------------------------------------------------------------------------------------- */
 
-static void
+static void __attribute__((format(printf, 1, 0)))
 print_debug (const gchar *format, ...)
 {
   g_autofree char *s = NULL;

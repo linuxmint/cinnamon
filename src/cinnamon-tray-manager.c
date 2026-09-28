@@ -4,7 +4,6 @@
 
 #include <clutter/clutter.h>
 #include <clutter/x11/clutter-x11.h>
-#include <girepository.h>
 #include <gtk/gtk.h>
 #include <meta/display.h>
 #include <meta/util.h>
@@ -384,6 +383,9 @@ void
 cinnamon_tray_manager_set_orientation (CinnamonTrayManager *manager,
                                        ClutterOrientation   orientation)
 {
+  if (manager->priv->na_manager == NULL)
+    return;
+
   if (orientation == CLUTTER_ORIENTATION_HORIZONTAL)
     {
       na_tray_manager_set_orientation (manager->priv->na_manager, GTK_ORIENTATION_HORIZONTAL);
@@ -401,8 +403,14 @@ cinnamon_tray_manager_child_redisplay (gpointer socket_pointer, gpointer child_p
 
   g_return_if_fail(child != NULL);
 
-  if (child->actor && CLUTTER_IS_ACTOR(child->actor)) {
+  /* No actor means the plug never arrived. Leave the child alone so the
+   * pending plug-added handler can still create its icon. */
+  if (child->actor == NULL)
+    return;
+
+  if (CLUTTER_IS_ACTOR(child->actor)) {
     clutter_actor_destroy(child->actor);
+    g_clear_object (&child->actor);
   }
 
   on_plug_added(socket_pointer, child->manager);
@@ -410,5 +418,8 @@ cinnamon_tray_manager_child_redisplay (gpointer socket_pointer, gpointer child_p
 
 void cinnamon_tray_manager_redisplay (CinnamonTrayManager *manager)
 {
+  if (manager->priv->icons == NULL)
+    return;
+
   g_hash_table_foreach(manager->priv->icons, cinnamon_tray_manager_child_redisplay, manager);
 }

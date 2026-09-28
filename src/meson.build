@@ -9,6 +9,15 @@ calendar_generated = gnome.gdbus_codegen('cinnamon-calendar',
   namespace: 'Cinnamon'
 )
 
+# The background daemon's readiness interface. One codegen for both sides: the
+# shell links the proxy (to gate the startup animation on the wallpaper being on
+# screen) and src/background/daemon links the skeleton.
+background_generated = gnome.gdbus_codegen('cinnamon-background',
+  sources: 'org.Cinnamon.Background.xml',
+  interface_prefix: 'org.Cinnamon.',
+  namespace: 'Cinnamon',
+)
+
 cinnamon_headers = [
     'cinnamon-action-mode.h',
     'cinnamon-app.h',
@@ -19,6 +28,7 @@ cinnamon_headers = [
     'cinnamon-glsl-effect.h',
     'cinnamon-gtk-embed.h',
     'cinnamon-global.h',
+    'cinnamon-mount-operation.h',
     'cinnamon-perf-log.h',
     'cinnamon-screen.h',
     'cinnamon-screenshot.h',
@@ -53,6 +63,7 @@ cinnamon_sources = [
     'cinnamon-global.c',
     'cinnamon-keyring-prompt.c',
     'cinnamon-keyring-prompt.h',
+    'cinnamon-mount-operation.c',
     'cinnamon-perf-log.c',
     'cinnamon-polkit-authentication-agent.c',
     'cinnamon-polkit-authentication-agent.h',
@@ -69,7 +80,8 @@ cinnamon_sources = [
     'cinnamon-window-tracker.c',
     'cinnamon-wm.c',
     cinnamon_headers,
-    calendar_generated
+    calendar_generated,
+    background_generated
 ]
 
 cinnamon_enum_types = gnome.mkenums_simple(
@@ -92,6 +104,7 @@ tray_sources = [
 
 libcinnamon_deps = [
     atk,
+    atspi,
     cjs,
     clutter,
     cmenu,
@@ -110,6 +123,7 @@ libcinnamon_deps = [
     polkit,
     st_dep,
     xapp,
+    xdo,
     xml,
 ]
 
@@ -197,6 +211,9 @@ executable(
     dependencies: cinnamon_dep,
     install: true,
 )
+
+subdir('screensaver')
+subdir('background')
 
 cinnamon_gir_includes = [
     'Clutter-0',

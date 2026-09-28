@@ -265,28 +265,38 @@ function addBorderPaintHook(actor) {
     return signalId;
 }
 
-class Inspector {
-    constructor() {
-        let container = new Cinnamon.GenericContainer({ width: 0,
-                                                        height: 0 });
-        container.connect('allocate', (...args) => { this._allocate(...args) });
-        Main.uiGroup.add_actor(container);
+var Inspector = GObject.registerClass({
+    Signals: {
+        'closed': {},
+        'target': { param_types: [Clutter.Actor.$gtype, GObject.TYPE_DOUBLE, GObject.TYPE_DOUBLE]},
+    },
+}, class Inspector extends Clutter.Actor {
+    _init() {
+        super._init({
+            width: 0,
+            height: 0,
+        });
 
-        let eventHandler = new St.BoxLayout({ name: 'LookingGlassDialog',
-                                              vertical: true,
-                                              reactive: true });
+        Main.uiGroup.add_actor(this);
+
+        let eventHandler = new St.BoxLayout({
+            name: 'LookingGlassDialog',
+            vertical: true,
+            reactive: true,
+        });
         this._eventHandler = eventHandler;
-        Main.pushModal(this._eventHandler);
-        container.add_actor(eventHandler);
-        this._displayText = new St.Label({style: 'text-align: center;'});
+        Main.pushModal(this._eventHandler, undefined, undefined, Cinnamon.ActionMode.LOOKING_GLASS,
+                       () => this._close());
+        this.add_child(eventHandler);
+        this._displayText = new St.Label({ style: 'text-align: center;' });
         eventHandler.add(this._displayText, { expand: true });
-        this._passThroughText = new St.Label({style: 'text-align: center;'});
+        this._passThroughText = new St.Label({ style: 'text-align: center;' });
         eventHandler.add(this._passThroughText, { expand: true });
 
         this._borderPaintTarget = null;
         this._borderPaintId = null;
         eventHandler.connect('destroy', () => { this._onDestroy() });
-        this._capturedEventId = global.stage.connect('captured-event', (...args) => { this._onCapturedEvent(...args) });
+        this._capturedEventId = global.stage.connect('captured-event', (...args) => this._onCapturedEvent(...args));
 
         // this._target is the actor currently shown by the inspector.
         // this._pointerTarget is the actor directly under the pointer.
@@ -295,6 +305,7 @@ class Inspector {
         // out, or move the pointer outside of _pointerTarget.
         this._target = null;
         this._pointerTarget = null;
+        this._selectionMade = false;
         this.passThroughEvents = false;
         this._updatePassthroughText();
     }
@@ -312,29 +323,40 @@ class Inspector {
                                                             event.get_key_symbol() === Clutter.KEY_Pause)) {
             this.passThroughEvents = !this.passThroughEvents;
             this._updatePassthroughText();
-            return true;
+            return Clutter.EVENT_STOP;
         }
 
         if (this.passThroughEvents)
-            return false;
+            return Clutter.EVENT_PROPAGATE;
 
         switch (event.type()) {
             case Clutter.EventType.KEY_PRESS:
                 return this._onKeyPressEvent(actor, event);
             case Clutter.EventType.BUTTON_PRESS:
                 return this._onButtonPressEvent(actor, event);
+            case Clutter.EventType.BUTTON_RELEASE:
+                // _selectionMade is set on BUTTON_PRESS, but defer closure until
+                // release so that it doesn't hit the same actor we just chose - some
+                // actors, like window-list items, are activated on release, not press.
+                if (this._selectionMade) {
+                    this._close();
+                }
+                return Clutter.EVENT_STOP;
             case Clutter.EventType.SCROLL:
                 return this._onScrollEvent(actor, event);
             case Clutter.EventType.MOTION:
                 return this._onMotionEvent(actor, event);
+
             default:
-                return true;
+                return Clutter.EVENT_STOP;
         }
     }
 
-    _allocate(actor, box, flags) {
+    vfunc_allocate(box) {
         if (!this._eventHandler)
             return;
+
+        this.set_allocation(box);
 
         let primary = Main.layoutManager.primaryMonitor;
 
@@ -346,7 +368,7 @@ class Inspector {
         childBox.x2 = childBox.x1 + natWidth;
         childBox.y1 = primary.y + Math.floor((primary.height - natHeight) / 2);
         childBox.y2 = childBox.y1 + natHeight;
-        this._eventHandler.allocate(childBox, flags);
+        this._eventHandler.allocate(childBox);
     }
 
     _close() {
@@ -366,7 +388,7 @@ class Inspector {
     _onKeyPressEvent(actor, event) {
         if (event.get_key_symbol() === Clutter.KEY_Escape)
             this._close();
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     _onButtonPressEvent(actor, event) {
@@ -374,8 +396,8 @@ class Inspector {
             let [stageX, stageY] = event.get_coords();
             this.emit('target', this._target, stageX, stageY);
         }
-        this._close();
-        return true;
+        this._selectionMade = true;
+        return Clutter.EVENT_STOP;
     }
 
     _onScrollEvent(actor, event) {
@@ -409,12 +431,12 @@ class Inspector {
             default:
                 break;
         }
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     _onMotionEvent(actor, event) {
         this._update(event);
-        return true;
+        return Clutter.EVENT_STOP;
     }
 
     _update(event) {
@@ -438,9 +460,7 @@ class Inspector {
             this._borderPaintId = addBorderPaintHook(this._target);
         }
     }
-};
-Signals.addSignalMethods(Inspector.prototype);
-
+});
 
 const melangeIFace =
     '<node> \

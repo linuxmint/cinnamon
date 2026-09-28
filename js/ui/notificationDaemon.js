@@ -13,10 +13,6 @@ const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
 const Mainloop = imports.mainloop;
 
-// don't automatically clear these apps' notifications on window focus
-// lowercase only
-const AUTOCLEAR_BLACKLIST = ['chromium', 'firefox', 'google chrome'];
-
 let nextNotificationId = 1;
 
 // Should really be defined in Gio.js
@@ -132,7 +128,17 @@ NotificationDaemon.prototype = {
             Lang.bind(this, this._onFocusAppChanged));
     },
 
-   // Create an icon for a notification from icon string/path.
+    // load_uri_async() has no resource scale awareness, so load file images
+    // explicitly at the scale of the monitor notifications are shown on.
+    _loadImageFile: function(uri, size) {
+        let resourceScale = Main.messageTray.getResourceScale();
+
+        return St.TextureCache.get_default().load_file_async(Gio.File.new_for_uri(uri),
+                                                             size, size,
+                                                             global.ui_scale, resourceScale);
+    },
+
+    // Create an icon for a notification from icon string/path.
     _iconForNotificationData: function(appIcon, hints, size) {
         let textureCache = St.TextureCache.get_default();
         // If an icon is not specified, we use 'image-data' or 'image-path' hint for an icon
@@ -145,7 +151,7 @@ NotificationDaemon.prototype = {
         // a large image.
         if (appIcon) {
             if (appIcon.startsWith("file://")) {
-                return textureCache.load_uri_async(appIcon, size, size);
+                return this._loadImageFile(appIcon, size);
             } else {
                 // Cinnamon prefers symbolic icons due to theming. If an icon
                 // name is specified, try to load it in symbolic. If that fails,
@@ -161,7 +167,7 @@ NotificationDaemon.prototype = {
         } else if (hints['image-path']) {
             let uri_or_icon_name = hints['image-path'];
             if (uri_or_icon_name.startsWith("file://")) {
-                return textureCache.load_uri_async(uri_or_icon_name, size, size);
+                return this._loadImageFile(uri_or_icon_name, size);
             } else {
                 return new St.Icon({ icon_name: uri_or_icon_name,
                                      icon_type: St.IconType.FULLCOLOR,
@@ -231,7 +237,8 @@ NotificationDaemon.prototype = {
             }
         }
 
-        let source = new Source(title, pid, sender, trayIcon);
+        const desktopEntryHint = ndata && ndata.hints['desktop-entry'];
+        let source = new Source(title, pid, sender, desktopEntryHint, trayIcon);
         source.setTransient(isForTransientNotification);
 
         if (!isForTransientNotification) {
@@ -317,6 +324,14 @@ NotificationDaemon.prototype = {
         }
         if (hints['image-path'] && GLib.path_is_absolute(hints['image-path'])) {
             hints['image-path'] = GLib.filename_to_uri(hints['image-path'], null);
+        }
+
+        // libnotify 0.8.8 sends the icon given to notify_notification_new() in the
+        // 'image-path' hint and leaves app_icon empty for servers reporting spec 1.1
+        // or later. Treat it as the app icon so 'image-data' remains the large image.
+        if (!appIcon && hints['image-path']) {
+            appIcon = hints['image-path'];
+            delete hints['image-path'];
         }
 
         hints['suppress-sound'] = hints.maybeGet('suppress-sound') == true;
@@ -405,7 +420,7 @@ NotificationDaemon.prototype = {
             }
 
             let [pid] = result;
-            source = this._getSource(appName, pid, ndata, sender);
+            source = this._getSource(appName, pid, ndata, sender, null);
 
             // We only store sender-pid entries for persistent sources.
             // Removing the entries once the source is destroyed
@@ -496,9 +511,7 @@ NotificationDaemon.prototype = {
                 let uri_or_icon_name = hints['image-path'];
 
                 if (uri_or_icon_name.startsWith("file://")) {
-                    image = St.TextureCache.get_default().load_uri_async(uri_or_icon_name,
-                                                                         notification.IMAGE_SIZE,
-                                                                         notification.IMAGE_SIZE);
+                    image = this._loadImageFile(uri_or_icon_name, notification.IMAGE_SIZE);
                 } else {
                     image = new St.Icon({ icon_name: uri_or_icon_name,
                                           icon_type: St.IconType.FULLCOLOR,
@@ -586,8 +599,6 @@ NotificationDaemon.prototype = {
             return;
 
         let name = tracker.focus_app.get_name();
-        if (name && AUTOCLEAR_BLACKLIST.includes(name.toLowerCase()))
-            return;
 
         for (let i = 0; i < this._sources.length; i++) {
             let source = this._sources[i];
@@ -616,20 +627,31 @@ NotificationDaemon.prototype = {
         let source = this._lookupSource(null, icon.pid, true);
         if (source)
             source.destroy();
+    },
+
+    getNotificationCountForApp(app) {
+        const foundSource = this._sources.find(source => source.app === app);
+
+        if (foundSource) {
+            return foundSource.notifications.length;
+        } else {
+            return 0;
+        }
     }
 };
 
-function Source(title, pid, sender, trayIcon) {
-    this._init(title, pid, sender, trayIcon);
+function Source(title, pid, sender, desktopEntryHint, trayIcon) {
+    this._init(title, pid, sender, desktopEntryHint, trayIcon);
 }
 
 Source.prototype = {
     __proto__:  MessageTray.Source.prototype,
 
-    _init: function(title, pid, sender, trayIcon) {
+    _init: function(title, pid, sender, desktopEntryHint, trayIcon) {
         MessageTray.Source.prototype._init.call(this, title);
 
         this.initialTitle = title;
+        this.desktopEntryHint = desktopEntryHint;
 
         this.pid = pid;
         if (sender)
@@ -676,8 +698,25 @@ Source.prototype = {
         let app;
 
         app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
-        if (app != null)
-            return app;
+
+        // With flatpak apps, the notification's pid is that of the portal so use the desktop-entry hint instead.
+        if (!app && this.desktopEntryHint) {
+            const exceptions = {
+                    "vivaldi-stable": "com.vivaldi.Vivaldi",
+                    "brave-browser": "com.brave.Browser",
+                    "google-chrome": "com.google.Chrome",
+                    "microsoft-edge": "com.microsoft.Edge",
+                    "opera": "com.opera.Opera"
+                };
+            const exception = exceptions[this.desktopEntryHint];
+            app = Cinnamon.AppSystem.get_default().lookup_flatpak_app_id(exception ? exception : this.desktopEntryHint);
+            if (!app) {
+                app = this._findUniqueAppByName(this.initialTitle);
+            }
+            if (!app) log('Failed to find flatpak app for notification with desktop-entry hint:', this.desktopEntryHint);
+        }
+
+        if (app) return app;
 
         if (this.trayIcon) {
             app = Cinnamon.AppSystem.get_default().lookup_wmclass(this.trayIcon.wmclass);
@@ -686,6 +725,24 @@ Source.prototype = {
         }
 
         return null;
+    },
+
+    _findUniqueAppByName(appName) {
+        const appSystem = Cinnamon.AppSystem.get_default();
+        const runningApps = appSystem.get_running();
+        const matches = [];
+
+        for (const app of runningApps) {
+            if (app.get_name() === appName) {
+                matches.push(app);
+            }
+        }
+
+        if (matches.length === 1) {
+            return matches[0];
+        } else {
+            return null;
+        }
     },
 
     _setApp: function() {

@@ -63,10 +63,6 @@ struct _StTheme
 {
   GObject parent;
 
-  char *application_stylesheet;
-  char *default_stylesheet;
-  char *theme_stylesheet;
-
   char *fallback_stylesheet;
 
   GSList *custom_stylesheets;
@@ -74,7 +70,6 @@ struct _StTheme
   GHashTable *stylesheets_by_filename;
   GHashTable *filenames_by_stylesheet;
 
-  CRCascade *cascade;
   CRStyleSheet *fallback_cr_stylesheet;
 };
 
@@ -86,9 +81,6 @@ struct _StThemeClass
 enum
 {
   PROP_0,
-  PROP_APPLICATION_STYLESHEET,
-  PROP_THEME_STYLESHEET,
-  PROP_DEFAULT_STYLESHEET,
   PROP_FALLBACK_STYLESHEET
 };
 
@@ -111,7 +103,8 @@ st_theme_init (StTheme *theme)
 {
   theme->stylesheets_by_filename = g_hash_table_new_full (g_str_hash, g_str_equal,
                                                           (GDestroyNotify)g_free, (GDestroyNotify)cr_stylesheet_unref);
-  theme->filenames_by_stylesheet = g_hash_table_new (g_direct_hash, g_direct_equal);
+  theme->filenames_by_stylesheet = g_hash_table_new_full (g_direct_hash, g_direct_equal,
+                                                          NULL, (GDestroyNotify)g_free);
 }
 
 static void
@@ -123,48 +116,6 @@ st_theme_class_init (StThemeClass *klass)
   object_class->finalize = st_theme_finalize;
   object_class->set_property = st_theme_set_property;
   object_class->get_property = st_theme_get_property;
-
-  /**
-   * StTheme:application-stylesheet:
-   *
-   * The highest priority stylesheet, representing application-specific
-   * styling; this is associated with the CSS "author" stylesheet.
-   */
-  g_object_class_install_property (object_class,
-                                   PROP_APPLICATION_STYLESHEET,
-                                   g_param_spec_string ("application-stylesheet",
-                                                        "Application Stylesheet",
-                                                        "Stylesheet with application-specific styling",
-                                                        NULL,
-                                                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-  /**
-   * StTheme:theme-stylesheet:
-   *
-   * The second priority stylesheet, representing theme-specific styling;
-   * this is associated with the CSS "user" stylesheet.
-   */
-  g_object_class_install_property (object_class,
-                                   PROP_THEME_STYLESHEET,
-                                   g_param_spec_string ("theme-stylesheet",
-                                                        "Theme Stylesheet",
-                                                        "Stylesheet with theme-specific styling",
-                                                        NULL,
-                                                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
-
-  /**
-   * StTheme:default-stylesheet:
-   *
-   * The lowest priority stylesheet, representing global default
-   * styling; this is associated with the CSS "user agent" stylesheet.
-   */
-  g_object_class_install_property (object_class,
-                                   PROP_DEFAULT_STYLESHEET,
-                                   g_param_spec_string ("default-stylesheet",
-                                                        "Default Stylesheet",
-                                                        "Stylesheet with global default styling",
-                                                        NULL,
-                                                        G_PARAM_READABLE | G_PARAM_WRITABLE | G_PARAM_CONSTRUCT_ONLY));
 
   /**
    * StTheme:fallback-stylesheet:
@@ -242,14 +193,17 @@ insert_stylesheet (StTheme      *theme,
 {
   char *filename_copy;
 
-  if (stylesheet == NULL)
+  if (stylesheet == NULL || filename == NULL)
     return;
 
-  filename_copy = g_strdup(filename);
-  cr_stylesheet_ref (stylesheet);
+  if (!g_hash_table_contains (theme->stylesheets_by_filename, filename))
+    {
+      filename_copy = g_strdup(filename);
+      cr_stylesheet_ref (stylesheet);
+      g_hash_table_insert (theme->stylesheets_by_filename, filename_copy, stylesheet);
+    }
 
-  g_hash_table_insert (theme->stylesheets_by_filename, filename_copy, stylesheet);
-  g_hash_table_insert (theme->filenames_by_stylesheet, stylesheet, filename_copy);
+  g_hash_table_insert (theme->filenames_by_stylesheet, stylesheet, g_strdup (filename));
 }
 
 gboolean
@@ -322,31 +276,14 @@ st_theme_constructor (GType                  type,
 {
   GObject *object;
   StTheme *theme;
-  CRStyleSheet *application_stylesheet;
-  CRStyleSheet *theme_stylesheet;
-  CRStyleSheet *default_stylesheet;
 
   object = (*G_OBJECT_CLASS (st_theme_parent_class)->constructor) (type,
                                                                       n_construct_properties,
                                                                       construct_properties);
   theme = ST_THEME (object);
 
-  application_stylesheet = parse_stylesheet_nofail (theme->application_stylesheet);
-  theme_stylesheet = parse_stylesheet_nofail (theme->theme_stylesheet);
-  default_stylesheet = parse_stylesheet_nofail (theme->default_stylesheet);
-
   theme->fallback_cr_stylesheet = parse_stylesheet_nofail (theme->fallback_stylesheet);
-
-  theme->cascade = cr_cascade_new (application_stylesheet,
-                                   theme_stylesheet,
-                                   default_stylesheet);
-
-  if (theme->cascade == NULL)
-    g_error ("Out of memory when creating cascade object");
-
-  insert_stylesheet (theme, theme->application_stylesheet, application_stylesheet);
-  insert_stylesheet (theme, theme->theme_stylesheet, theme_stylesheet);
-  insert_stylesheet (theme, theme->default_stylesheet, default_stylesheet);
+  insert_stylesheet (theme, theme->fallback_stylesheet, theme->fallback_cr_stylesheet);
 
   return object;
 }
@@ -363,16 +300,7 @@ st_theme_finalize (GObject * object)
   g_hash_table_destroy (theme->stylesheets_by_filename);
   g_hash_table_destroy (theme->filenames_by_stylesheet);
 
-  g_free (theme->application_stylesheet);
-  g_free (theme->theme_stylesheet);
-  g_free (theme->default_stylesheet);
   g_free (theme->fallback_stylesheet);
-
-  if (theme->cascade)
-    {
-      cr_cascade_unref (theme->cascade);
-      theme->cascade = NULL;
-    }
 
   G_OBJECT_CLASS (st_theme_parent_class)->finalize (object);
 }
@@ -387,42 +315,6 @@ st_theme_set_property (GObject      *object,
 
   switch (prop_id)
     {
-    case PROP_APPLICATION_STYLESHEET:
-      {
-        const char *path = g_value_get_string (value);
-
-        if (path != theme->application_stylesheet)
-          {
-            g_free (theme->application_stylesheet);
-            theme->application_stylesheet = g_strdup (path);
-          }
-
-        break;
-      }
-    case PROP_THEME_STYLESHEET:
-      {
-        const char *path = g_value_get_string (value);
-
-        if (path != theme->theme_stylesheet)
-          {
-            g_free (theme->theme_stylesheet);
-            theme->theme_stylesheet = g_strdup (path);
-          }
-
-        break;
-      }
-    case PROP_DEFAULT_STYLESHEET:
-      {
-        const char *path = g_value_get_string (value);
-
-        if (path != theme->default_stylesheet)
-          {
-            g_free (theme->default_stylesheet);
-            theme->default_stylesheet = g_strdup (path);
-          }
-
-        break;
-      }
     case PROP_FALLBACK_STYLESHEET:
       {
         const char *path = g_value_get_string (value);
@@ -451,15 +343,6 @@ st_theme_get_property (GObject    *object,
 
   switch (prop_id)
     {
-    case PROP_APPLICATION_STYLESHEET:
-      g_value_set_string (value, theme->application_stylesheet);
-      break;
-    case PROP_THEME_STYLESHEET:
-      g_value_set_string (value, theme->theme_stylesheet);
-      break;
-    case PROP_DEFAULT_STYLESHEET:
-      g_value_set_string (value, theme->default_stylesheet);
-      break;
     case PROP_FALLBACK_STYLESHEET:
       g_value_set_string (value, theme->fallback_stylesheet);
       break;
@@ -469,30 +352,6 @@ st_theme_get_property (GObject    *object,
     }
 }
 
-/**
- * st_theme_new:
- * @application_stylesheet: The highest priority stylesheet, representing application-specific
- *   styling; this is associated with the CSS "author" stylesheet, may be %NULL
- * @theme_stylesheet: The second priority stylesheet, representing theme-specific styling ;
- *   this is associated with the CSS "user" stylesheet, may be %NULL
- * @default_stylesheet: The lowest priority stylesheet, representing global default styling;
- *   this is associated with the CSS "user agent" stylesheet, may be %NULL
- *
- * Return value: the newly created theme object
- **/
-StTheme *
-st_theme_new (const char       *application_stylesheet,
-              const char       *theme_stylesheet,
-              const char       *default_stylesheet)
-{
-  StTheme *theme = g_object_new (ST_TYPE_THEME,
-                                    "application-stylesheet", application_stylesheet,
-                                    "theme-stylesheet", theme_stylesheet,
-                                    "default-stylesheet", default_stylesheet,
-                                    NULL);
-
-  return theme;
-}
 
 static gboolean
 string_in_list (GString    *stryng,
@@ -1031,8 +890,6 @@ GPtrArray *
 _st_theme_get_matched_properties (StTheme        *theme,
                                   StThemeNode    *node)
 {
-  enum CRStyleOrigin origin = 0;
-  CRStyleSheet *sheet = NULL;
   GSList *iter;
   GPtrArray *props;
 
@@ -1040,15 +897,6 @@ _st_theme_get_matched_properties (StTheme        *theme,
   g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
 
   props = g_ptr_array_new ();
-
-  for (origin = ORIGIN_UA; origin < NB_ORIGINS; origin++)
-    {
-      sheet = cr_cascade_get_sheet (theme->cascade, origin);
-      if (!sheet)
-        continue;
-
-      add_matched_properties (theme, sheet, node, props);
-    }
 
   for (iter = theme->custom_stylesheets; iter; iter = iter->next)
     add_matched_properties (theme, iter->data, node, props);

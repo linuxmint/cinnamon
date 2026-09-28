@@ -31,6 +31,17 @@ from gi.repository import Gtk, GdkPixbuf, CMenu, GLib, Gdk
 DESKTOP_GROUP = GLib.KEY_FILE_DESKTOP_GROUP
 KEY_FILE_FLAGS = GLib.KeyFileFlags.KEEP_COMMENTS | GLib.KeyFileFlags.KEEP_TRANSLATIONS
 
+# from cs_startup.py
+def get_locale():
+    current_locale = None
+    locales = GLib.get_language_names()
+    for locale in locales:
+        if locale.find(".") == -1:
+            current_locale = locale
+            break
+
+    return current_locale
+
 def fillKeyFile(keyfile, items) -> None:
     for key, item in items.items():
         if item is None:
@@ -40,8 +51,10 @@ def fillKeyFile(keyfile, items) -> None:
             keyfile.set_boolean(DESKTOP_GROUP, key, item)
         elif isinstance(item, str):
             keyfile.set_string(DESKTOP_GROUP, key, item)
+            keyfile.set_locale_string(DESKTOP_GROUP, key, get_locale(), item)
         elif isinstance(item, Sequence):
             keyfile.set_string_list(DESKTOP_GROUP, key, item)
+            keyfile.set_locale_string_list(DESKTOP_GROUP, key, get_locale(), item)
 
 def getNameFromKeyFile(keyfile):
     return keyfile.get_string(DESKTOP_GROUP, "Name")

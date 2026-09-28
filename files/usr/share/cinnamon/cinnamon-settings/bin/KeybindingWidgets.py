@@ -1,8 +1,11 @@
 #!/usr/bin/python3
 
 from gi.repository import Gtk, Gdk, GObject
+from bin import util
 
-FORBIDDEN_KEYVALS = [
+print("KeybindingWidgets session type: %s" % util.get_session_type())
+
+FORBIDDEN_UNMODDED_KEYVALS = [
     Gdk.KEY_Home,
     Gdk.KEY_Left,
     Gdk.KEY_Up,
@@ -42,6 +45,15 @@ FORBIDDEN_KEYVALS = [
     Gdk.KEY_KP_Divide,
     Gdk.KEY_KP_Enter,
     Gdk.KEY_Num_Lock
+]
+
+# Keys that can never be used in a shortcut at all (regardless of modifiers),
+# paired with the reason shown to the user. (keyval, explanation)
+FORBIDDEN_KEYVALS = [
+    (Gdk.KEY_Caps_Lock,
+     _("Caps Lock cannot be used in a keyboard shortcut - pressing it always "
+       "toggles the Caps Lock state. You can configure this key to switch "
+       "keyboard layouts in the XKB Options tab.")),
 ]
 
 class ButtonKeybinding(Gtk.TreeView):
@@ -143,9 +155,17 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                          GObject.ParamFlags.READWRITE)
     }
 
-    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to set a new accelerator key."),
+    # l10n constants - get them translated here so they use Cinnamon's gettext context
+    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to assign or modify an accelerator key."),
                                    _("Press Escape or click again to cancel the operation."),
                                    _("Press Backspace to clear the existing keybinding."))
+    UNASSIGNED = _("unassigned")
+    PICK_AN_ACCELERATOR = _("Pick an accelerator")
+    MSG = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
+    MSG += _("Please try again using a modifier key such as Control, Alt or Super (Windows key).\n\n")
+    MSG += _("Continue only if you are certain this is what you want, otherwise press cancel.\n")
+    CANCEL = _("Cancel")
+    CONTINUE = _("Continue")
 
     def __init__(self, a_widget, accel_string=None):
         super(CellRendererKeybinding, self).__init__()
@@ -162,6 +182,8 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         self.teaching = False
         self.default_value = True
         self.text_string = ""
+        self.seat = None
+        self.keyboard = None
 
         self.update_label()
 
@@ -180,7 +202,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
             raise AttributeError(f'unknown property {prop.name}')
 
     def update_label(self):
-        text = _("unassigned") if self.default_value else self.text_string
+        text = CellRendererKeybinding.UNASSIGNED if self.default_value else self.text_string
         if self.accel_string:
             restore_atab = False
             restore_keyboard = False
@@ -214,17 +236,36 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     def editing_started(self, renderer, editable, path):
         if not self.teaching:
             self.path = path
-            device = Gtk.get_current_event_device()
-            if device.get_source() == Gdk.InputSource.KEYBOARD:
-                self.keyboard = device
+
+            if util.get_session_type() == "x11":
+                device = Gtk.get_current_event_device()
+                if device.get_source() == Gdk.InputSource.KEYBOARD:
+                    self.keyboard = device
+                else:
+                    self.keyboard = device.get_associated_device()
+
+                self.keyboard.grab(self.a_widget.get_window(), Gdk.GrabOwnership.WINDOW, False,
+                                   Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
+                                   None, Gdk.CURRENT_TIME)
             else:
-                self.keyboard = device.get_associated_device()
+                display = self.a_widget.get_display()
+                self.seat = display.get_default_seat()
 
-            self.keyboard.grab(self.a_widget.get_window(), Gdk.GrabOwnership.WINDOW, False,
-                               Gdk.EventMask.KEY_PRESS_MASK | Gdk.EventMask.KEY_RELEASE_MASK,
-                               None, Gdk.CURRENT_TIME)
+                # GTK only requests a compositor shortcut inhibit for keyboard-only grabs,
+                # without it Cinnamon's own bindings (like Super for the menu) still fire.
+                grab_status = self.seat.grab(
+                    self.a_widget.get_window(),
+                    Gdk.SeatCapabilities.KEYBOARD,
+                    False,
+                    None,
+                    None,
+                    None
+                )
 
-            editable.set_text(_("Pick an accelerator"))
+                if grab_status != Gdk.GrabStatus.SUCCESS:
+                    print(f"Warning: Keyboard grab failed with status: {grab_status}")
+
+            editable.set_text(CellRendererKeybinding.PICK_AN_ACCELERATOR)
             self.accel_editable = editable
 
             self.release_event_id = self.accel_editable.connect( "key-release-event", self.on_key_release )
@@ -290,6 +331,27 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
         accel_mods &= Gtk.accelerator_get_default_mod_mask()
 
+        # Some keys can never serve as a shortcut no matter the modifiers (e.g.
+        # Caps Lock always toggles its own lock state). Reject them outright and
+        # tell the user why.
+        forbidden_msg = next((msg for kv, msg in FORBIDDEN_KEYVALS if kv == keyval), None)
+        if forbidden_msg is not None:
+            dialog = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                       Gtk.MessageType.WARNING,
+                                       Gtk.ButtonsType.CLOSE,
+                                       None)
+            dialog.set_markup(forbidden_msg)
+            dialog.show_all()
+            dialog.run()
+            dialog.destroy()
+
+            self.update_label()
+            self.teaching = False
+            self.path = None
+            self.press_event = None
+            return True
+
         if accel_mods == 0:
             if accel_key == Gdk.KEY_Escape:
                 self.update_label()
@@ -322,21 +384,18 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 or  (keyval >= Gdk.KEY_Thai_kokai           and keyval <= Gdk.KEY_Thai_lekkao)
                 or  (keyval >= Gdk.KEY_Hangul               and keyval <= Gdk.KEY_Hangul_Special)
                 or  (keyval >= Gdk.KEY_Hangul_Kiyeog        and keyval <= Gdk.KEY_Hangul_J_YeorinHieuh)
-                    or  keyval in FORBIDDEN_KEYVALS):
+                    or  keyval in FORBIDDEN_UNMODDED_KEYVALS):
                 dialog = Gtk.MessageDialog(None,
                                            Gtk.DialogFlags.DESTROY_WITH_PARENT,
                                            Gtk.MessageType.WARNING,
                                            Gtk.ButtonsType.NONE,
                                            None)
-                button = dialog.add_button(_("Cancel"), Gtk.ResponseType.CANCEL)
-                button = dialog.add_button(_("Continue"), Gtk.ResponseType.OK)
+                button = dialog.add_button(CellRendererKeybinding.CANCEL, Gtk.ResponseType.CANCEL)
+                button = dialog.add_button(CellRendererKeybinding.CONTINUE, Gtk.ResponseType.OK)
                 dialog.set_default_response(Gtk.ResponseType.CANCEL)
                 button.get_style_context().add_class(Gtk.STYLE_CLASS_DESTRUCTIVE_ACTION)
                 dialog.set_default_size(400, 200)
-                msg = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
-                msg += _("Please try again using a modifier key such as Control, Alt or Super (Windows key).\n\n")
-                msg += _("Continue only if you are certain this is what you want, otherwise press cancel.\n")
-                dialog.set_markup(msg % accel_label)
+                dialog.set_markup(CellRendererKeybinding.MSG % accel_label)
                 dialog.show_all()
                 response = dialog.run()
                 dialog.destroy()
@@ -351,7 +410,14 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         return True
 
     def ungrab(self):
-        self.keyboard.ungrab(Gdk.CURRENT_TIME)
+        if util.get_session_type() == "x11":
+            if self.keyboard is not None:
+                self.keyboard.ungrab(Gdk.CURRENT_TIME)
+                self.keyboard = None
+        else:
+            if self.seat is not None:
+                self.seat.ungrab()
+                self.seat = None
         if self.release_event_id > 0:
             self.accel_editable.disconnect(self.release_event_id)
             self.release_event_id = 0

@@ -18,8 +18,8 @@ import importlib.util
 import traceback
 from pathlib import Path
 
-from JsonSettingsWidgets import *
-from ExtensionCore import find_extension_subdir
+from bin.JsonSettingsWidgets import *
+from bin.ExtensionCore import find_extension_subdir
 from gi.repository import Gtk, Gio, XApp, GLib
 
 # i18n
@@ -95,7 +95,7 @@ class MainWindow(object):
         self.type = args.type
         self.uuid = args.uuid
         self.tab = 0
-        self.instance_id = str(args.id)
+        self.instance_id = str(args.id) if args.id is not None else None
         if args.tab is not None:
             self.tab = int(args.tab)
 
@@ -112,6 +112,8 @@ class MainWindow(object):
                 if info["id"] == self.instance_id:
                     self.set_instance(info)
                     break
+            else:
+                self.set_instance(self.instance_info[0])
         else:
             self.set_instance(self.instance_info[0])
         try:
@@ -274,9 +276,15 @@ class MainWindow(object):
                 instance_exists = False
                 enabled = self.gsettings.get_strv(f'enabled-{self.type}s')
                 for definition in enabled:
-                    if self.uuid in definition and instance_id in definition.split(':'):
-                        instance_exists = True
-                        break
+                    parts = definition.split(':')
+                    if self.type == "applet" and len(parts) >= 5:
+                        if parts[3] == self.uuid and parts[4] == instance_id:
+                            instance_exists = True
+                            break
+                    elif self.type == "desklet" and len(parts) >= 2:
+                        if parts[0] == self.uuid and parts[1] == instance_id:
+                            instance_exists = True
+                            break
 
                 if not instance_exists:
                     continue
