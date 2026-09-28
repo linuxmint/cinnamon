@@ -1111,7 +1111,7 @@ class PanelDummy extends St.Widget {
         this.monitor = global.display.get_monitor_geometry(monitorIndex);
         const defaultheight = 40 * global.ui_scale;
 
-        Main.layoutManager.addChrome(this, { addToWindowgroup: false });
+        Main.layoutManager.addChrome(this, { addToWindowgroup: false, visibleInFullscreen: true });
 
         // layouts set to be full width horizontal panels,
         // and vertical panels set to use as much available space as is left
