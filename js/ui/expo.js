@@ -1,6 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
+const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
 const Meta = imports.gi.Meta;
 const St = imports.gi.St;
@@ -9,6 +10,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const DND = imports.ui.dnd;
 const Main = imports.ui.main;
 const ExpoThumbnail = imports.ui.expoThumbnail;
+
 
 // ***************
 // This shows all of the workspaces
@@ -273,6 +275,32 @@ var Expo = GObject.registerClass({
         if (this.visible || this.animationInProgress)
             return;
 
+        this._prepareVisible();
+
+        if (!Main.animations_enabled) {
+            this._showDone();
+            return;
+        }
+
+        this._expo.get_allocation_box();
+
+        let items = Main.layoutManager.monitors.map(monitor => {
+            let clone = new Clutter.Clone({source: this._expo.lastActiveWorkspace});
+            Main.switcherGroup.add_actor(clone);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+            return { cleanupActor: clone, clone };
+        });
+
+        this._activeAnim = { items, direction: 'show' };
+        this._runAnimation(true);
+    }
+
+    /**
+     * _prepareVisible: puts everything Expo needs on screen with no
+     * animation, so both _animateVisible() and gestureBegin() can start
+     * from here.
+     */
+    _prepareVisible() {
         this.visible = true;
         this.animationInProgress = true;
 
@@ -297,7 +325,6 @@ var Expo = GObject.registerClass({
             'drag-end', this._hideCloseArea.bind(this), this);
 
         let activeWorkspace = this._expo.lastActiveWorkspace;
-        let monitorSetting = global.settings.get_boolean('workspace-expo-primary-monitor') ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
 
         this._gradient.show();
         Main.panelManager.disablePanels();
@@ -306,24 +333,189 @@ var Expo = GObject.registerClass({
 
         this._coverPane.raise_top();
         this._coverPane.show();
-        this.emit('showing');
 
-        if (!Main.animations_enabled) {
+
+        this.emit('showing');
+    }
+
+    /**
+     * moveSelection: moves the workspace highlight by @offset, for a
+     * horizontal swipe. Expo shows every workspace already.
+     */
+    moveSelection(offset) {
+        if (this._expo)
+            this._expo.selectWorkspaceByOffset(offset);
+    }
+
+    // --- gestures that follow the fingers ---------------------------------
+    //
+    // Opening Expo shrinks a full-screen copy into its own thumbnail. The
+    // caller is TrackedViewAction in ui/gestures/actions.js: begin, any
+    // number of update, then one end. Only pixels move, so an end at 0
+    // leaves no trace of the swipe.
+
+    get gestureInProgress() {
+        return this._gestureAdjustment != null;
+    }
+
+    /**
+     * _createGestureClones: one copy per monitor, clipped by a wrapping
+     * group rather than the copy itself, which would shrink the clip along
+     * with the gesture.
+     *
+     * Returns: an array of { cleanupActor, clone }
+     */
+    _createGestureClones() {
+        const activeWorkspace = this._expo.lastActiveWorkspace;
+
+        return Main.layoutManager.monitors.map(monitor => {
+            const cover = new Clutter.Group();
+            Main.switcherGroup.add_actor(cover);
+            cover.set_position(0, 0);
+            cover.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+
+            const clone = new Clutter.Clone({ source: activeWorkspace });
+            cover.add_actor(clone);
+            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
+
+            return { cleanupActor: cover, clone };
+        });
+    }
+
+    _destroyGestureClones() {
+        if (!this._gestureItems)
+            return;
+
+        this._gestureItems.forEach(({ cleanupActor }) => {
+            if (cleanupActor.get_parent() !== null) {
+                Main.switcherGroup.remove_actor(cleanupActor);
+                cleanupActor.destroy();
+            }
+        });
+
+        this._gestureItems = null;
+    }
+
+    /**
+     * _setGestureProgress: holds the transition at @progress, 0 (copy
+     * covers the monitor) to 1 (copy sits on its own thumbnail, so the
+     * final swap to the real one is invisible).
+     */
+    _setGestureProgress(progress) {
+        const activeWorkspace = this._expo.lastActiveWorkspace;
+        const monitorSetting = global.settings.get_boolean('workspace-expo-primary-monitor')
+            ? Main.layoutManager.primaryMonitor : Main.layoutManager.currentMonitor;
+
+        // Read the target every frame. The thumbnail box can still be
+        // settling into its allocation while the fingers move.
+        const targetX = monitorSetting.x + activeWorkspace.allocation.x1;
+        const targetY = monitorSetting.y + activeWorkspace.allocation.y1;
+        const [targetScaleX, targetScaleY] = activeWorkspace.get_scale();
+
+        this._gestureItems.forEach(({ clone }) => {
+            clone.set_position(targetX * progress, targetY * progress);
+            clone.set_scale(1 + (targetScaleX - 1) * progress,
+                            1 + (targetScaleY - 1) * progress);
+        });
+
+        this._expo.setShadeProgress(progress);
+    }
+
+    /**
+     * gestureBegin: starts a swipe, opening a closed Expo or closing an
+     * open one. Opening takes the grab first.
+     *
+     * Returns: false if the swipe cannot start, in which case do not call
+     * gestureUpdate() or gestureEnd().
+     */
+    gestureBegin() {
+        if (this.animationInProgress || this.gestureInProgress || !Main.animations_enabled)
+            return false;
+
+        const showing = !this._shown;
+
+        this._gestureAdjustment = new St.Adjustment({
+            value: showing ? 0 : 1, lower: 0, upper: 1,
+        });
+
+        if (showing) {
+            this.beforeShow();
+
+            if (!Main.pushModal(this._group, undefined, undefined, Cinnamon.ActionMode.EXPO,
+                                () => this._dismissGrab())) {
+                this._gestureAdjustment = null;
+                return false;
+            }
+
+            this._modal = true;
+            this._shown = true;
+            this._prepareVisible();
+            this._expo.get_allocation_box();
+        }
+
+        this._gestureItems = this._createGestureClones();
+
+        this._gestureAdjustment.connect('notify::value',
+            () => this._setGestureProgress(this._gestureAdjustment.value));
+
+        this._setGestureProgress(showing ? 0 : 1);
+        this.animationInProgress = true;
+
+        return true;
+    }
+
+    /**
+     * gestureUpdate: clamps @progress (0 closed to 1 open) so Expo cannot
+     * overshoot either end.
+     */
+    gestureUpdate(progress) {
+        if (!this.gestureInProgress)
+            return;
+
+        this._gestureAdjustment.value = Math.min(1, Math.max(0, progress));
+    }
+
+    /**
+     * gestureEnd: animates to @target over @duration ms and commits. Uses
+     * ::stopped rather than a completion handler, so an interrupted settle
+     * still cleans up.
+     */
+    gestureEnd(target, duration) {
+        if (!this.gestureInProgress)
+            return;
+
+        this._gestureAdjustment.ease(target, {
+            duration,
+            mode: Clutter.AnimationMode.EASE_OUT_CUBIC,
+            onStopped: () => this._gestureDone(target),
+        });
+    }
+
+    /**
+     * _gestureDone: commits @target. 1 is the tail of a normal show; 0
+     * undoes what gestureBegin() prepared, the same work a finished hide
+     * does.
+     */
+    _gestureDone(target) {
+        this._gestureAdjustment = null;
+        this._destroyGestureClones();
+
+        if (target >= 0.5) {
             this._showDone();
             return;
         }
 
-        this._expo.get_allocation_box();
+        // Only pixels moved while the fingers were down, so undo the rest
+        // here.
+        const activeWorkspace = this._expo.lastActiveWorkspace;
 
-        let items = Main.layoutManager.monitors.map(monitor => {
-            let clone = new Clutter.Clone({source: activeWorkspace});
-            Main.switcherGroup.add_actor(clone);
-            clone.set_clip(monitor.x, monitor.y, monitor.width, monitor.height);
-            return { cleanupActor: clone, clone };
-        });
+        this._shown = false;
+        Main.panelManager.enablePanels();
+        activeWorkspace.overviewModeOff(true, true);
 
-        this._activeAnim = { items, direction: 'show' };
-        this._runAnimation(true);
+        this.emit('hiding');
+        this._group.hide();
+        this._hideDone();
     }
 
     // Return a 0..1 progress value for the currently-running transition on

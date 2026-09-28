@@ -29,6 +29,13 @@ const WINDOWOVERLAY_ICON_SIZE = 16;
 
 var menuShowing = null;
 var menuClone = null;
+/**
+ * lerp: the value @progress of the way from @start to @end.
+ */
+function lerp(start, end, progress) {
+    return start + (end - start) * progress;
+}
+
 function closeContextMenu(requestor) {
     let requestorShowingMenu = menuClone && menuClone === requestor;
     if (menuShowing) {
@@ -931,8 +938,67 @@ class WorkspaceMonitor extends Clutter.Actor {
         return false;
     }
 
+    /**
+     * prepareOverviewGesture: lays out the overview once and keeps it, for
+     * setOverviewProgress() to move towards, so slots stay still and
+     * nothing recomputes per frame.
+     */
+    prepareOverviewGesture() {
+        const slots = this._computeAllWindowSlots(this._windows.length);
+
+        this._gestureLayout = this._windows.map((clone, i) => {
+            const [x, y, scale] = this._computeWindowLayout(clone.metaWindow, slots[i]);
+            return { clone, x, y, scale };
+        });
+    }
+
+    /**
+     * setOverviewProgress: holds every window at @progress (0 real
+     * position, 1 overview layout) between the two positionWindows()
+     * animates between; overlays stay hidden until endOverviewGesture().
+     */
+    setOverviewProgress(progress) {
+        if (!this._gestureLayout)
+            return;
+
+        for (const { clone, x, y, scale } of this._gestureLayout) {
+            if (clone.overlay)
+                clone.overlay.hide();
+
+            if (clone.metaWindow.showing_on_its_workspace()) {
+                clone.set_position(lerp(clone.origX, x, progress),
+                                   lerp(clone.origY, y, progress));
+                clone.set_scale(lerp(1, scale, progress), lerp(1, scale, progress));
+                clone.opacity = 255;
+            } else {
+                // A hidden window has no start position, so it grows from
+                // the middle and fades in, as positionWindows() does.
+                clone.set_position(lerp(this._width / 2, x, progress),
+                                   lerp(this._height / 2, y, progress));
+                clone.set_scale(scale * progress, scale * progress);
+                clone.opacity = Math.round(255 * progress);
+            }
+        }
+
+        if (this._emptyPlaceHolder && this._emptyPlaceHolder.visible)
+            this._emptyPlaceHolder.opacity = Math.round(255 * progress);
+    }
+
+    /**
+     * endOverviewGesture: drops the kept layout. If @shown, snaps the
+     * windows to the real layout, restoring the overlays too.
+     */
+    endOverviewGesture(shown) {
+        this._gestureLayout = null;
+
+        // The real layout also restores the window titles and close
+        // buttons, which the gesture hid.
+        if (shown)
+            this.positionWindows(0);
+    }
+
     zoomToOverview() {
-        let animate = Main.animations_enabled;
+        let animate = Main.animations_enabled && !Main.overview.gestureInProgress;
 
         if (Main.overview.animationInProgress && animate)
             this.positionWindows(WindowPositionFlags.ANIMATE | WindowPositionFlags.INITIAL);
@@ -1376,6 +1442,21 @@ var Workspace = GObject.registerClass({
 
     zoomToOverview() {
         this._monitors.forEach(monitor => monitor.zoomToOverview());
+    }
+
+    // Delegates to the per-monitor parts, as the animated methods above
+    // do: a workspace covers every monitor, but the layout is per-monitor.
+
+    prepareOverviewGesture() {
+        this._monitors.forEach(monitor => monitor.prepareOverviewGesture());
+    }
+
+    setOverviewProgress(progress) {
+        this._monitors.forEach(monitor => monitor.setOverviewProgress(progress));
+    }
+
+    endOverviewGesture(shown) {
+        this._monitors.forEach(monitor => monitor.endOverviewGesture(shown));
     }
 
     hasMaximizedWindows() {

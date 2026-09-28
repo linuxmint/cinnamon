@@ -17,6 +17,7 @@ const WindowUtils = imports.misc.windowUtils;
 
 // easing durations (ms)
 const POPUP_SCROLL_TIME = 100;
+const SELECTION_SLIDE_TIME = 100;
 const POPUP_FADE_OUT_TIME = 100;
 const THUMBNAIL_FADE_TIME = 100;
 const PREVIEW_SWITCHER_FADEOUT_TIME = 50;
@@ -142,7 +143,7 @@ ClassicSwitcher.prototype = {
         
         this.actor.opacity = 255;
         this._initialDelayTimeoutId = 0;
-        this._next();
+        this._selectInitial();
     },
     
     _hide: function() {
@@ -223,6 +224,12 @@ ClassicSwitcher.prototype = {
     
     _setCurrentWindow: function(window) {
         this._appList.highlight(this._currentIndex, false);
+
+        // Cloning and resizing is too slow to do for every window a gesture
+        // passes; a gesture commits on lift, so these are never seen anyway.
+        if (this.isGestureDriven())
+            return;
+
         this._doWindowPreview();
         this._destroyThumbnails();
         
@@ -509,6 +516,14 @@ SwitcherList.prototype = {
         this.actor.add_actor(this._leftArrow);
         this.actor.add_actor(this._rightArrow);
 
+        // Travels between items on its own actor, styled like a selected
+        // item; visible only while moving, the landing item takes over.
+        this._selection = new St.Widget({ style_class: 'item-box',
+                                          pseudo_class: 'selected',
+                                          visible: false });
+        this._list.add_actor(this._selection);
+        this._list.set_child_below_sibling(this._selection, null);
+
         this._items = [];
         this._highlighted = -1;
         this._squareItems = squareItems;
@@ -590,9 +605,11 @@ SwitcherList.prototype = {
     },
 
     highlight: function(index, justOutline) {
-        if (this._highlighted != -1) {
-            this._items[this._highlighted].remove_style_pseudo_class('outlined');
-            this._items[this._highlighted].remove_style_pseudo_class('selected');
+        let previous = this._highlighted;
+
+        if (previous != -1) {
+            this._items[previous].remove_style_pseudo_class('outlined');
+            this._items[previous].remove_style_pseudo_class('selected');
         }
 
         this._highlighted = index;
@@ -600,7 +617,7 @@ SwitcherList.prototype = {
         if (this._highlighted != -1) {
             if (justOutline)
                 this._items[this._highlighted].add_style_pseudo_class('outlined');
-            else
+            else if (!this._slideSelection(previous, this._highlighted))
                 this._items[this._highlighted].add_style_pseudo_class('selected');
         }
 
@@ -612,6 +629,46 @@ SwitcherList.prototype = {
         else if (posX < 0)
             this._scrollToLeft();
 
+    },
+
+    /**
+     * _slideSelection: slides the highlight from @from to @to by
+     * translation, so a relayout mid-slide moves the destination instead
+     * of interrupting it. Returns false if there is nothing to slide.
+     */
+    _slideSelection : function(from, to) {
+        if (!Main.animations_enabled || from == -1 || from == to)
+            return false;
+
+        let fromBox = this._items[from].allocation;
+        let toBox = this._items[to].allocation;
+        if (fromBox.x2 - fromBox.x1 <= 0 || toBox.x2 - toBox.x1 <= 0)
+            return false;
+
+        // Where the highlight is now; fast fingers can move it through
+        // several items faster than one slide takes, so continue from there.
+        let startX = fromBox.x1;
+        if (this._selection.visible)
+            startX = this._selection.allocation.x1 + this._selection.translation_x;
+
+        this._selection.remove_all_transitions();
+        this._selection.translation_x = startX - toBox.x1;
+        this._selection.show();
+        this._list.queue_relayout();
+
+        this._selection.ease({
+            translation_x: 0,
+            duration: SELECTION_SLIDE_TIME,
+            mode: Clutter.AnimationMode.EASE_OUT_QUAD,
+            onComplete: () => {
+                this._selection.hide();
+                // The selection can move again during the slide.
+                if (this._highlighted == to)
+                    this._items[to].add_style_pseudo_class('selected');
+            }
+        });
+
+        return true;
     },
 
     _scrollToLeft : function() {
@@ -717,10 +774,14 @@ SwitcherList.prototype = {
             if (this._squareItems)
                 childWidth = childHeight;
             else {
-                let [childMin, childNat] = children[0].get_preferred_width(childHeight);
+                // The items, not children[0]: the selection is a child
+                // too, and it does not set the item width.
+                let [childMin, childNat] = this._items[0].get_preferred_width(childHeight);
                 childWidth = childMin;
             }
         }
+
+        let selectionBox = null;
 
         for (let i = 0; i < children.length; i++) {
             if (this._items.indexOf(children[i]) != -1) {
@@ -730,12 +791,25 @@ SwitcherList.prototype = {
                 childBox.y2 = childHeight;
                 children[i].allocate(childBox);
 
+                if (children[i] == this._items[this._highlighted]) {
+                    selectionBox = new Clutter.ActorBox();
+                    selectionBox.x1 = childBox.x1;
+                    selectionBox.y1 = childBox.y1;
+                    selectionBox.x2 = childBox.x2;
+                    selectionBox.y2 = childBox.y2;
+                }
+
                 x += this._list.spacing + childWidth;
             } else {
-                // Something else, eg, AppList's arrows;
-                // we don't allocate it.
+                // Something else, eg, AppList's arrows, or the selection
+                // below; we don't allocate it here.
             }
         }
+
+        // The selection is allocated at the selected item and moves by
+        // translation, so it needs an allocation while hidden.
+        if (selectionBox)
+            this._selection.allocate(selectionBox);
 
         let leftPadding = this.actor.get_theme_node().get_padding(St.Side.LEFT);
         let rightPadding = this.actor.get_theme_node().get_padding(St.Side.RIGHT);

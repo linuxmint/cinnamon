@@ -50,7 +50,10 @@ subdir('xsessions')
 subdir('services')
 
 install_data(
-    ['org.cinnamon.gschema.xml', 'org.cinnamon.gestures.gschema.xml'],
+    [
+        'org.cinnamon.gschema.xml',
+        'org.cinnamon.gestures.gschema.xml',
+    ],
     install_dir: schemadir,
 )
 

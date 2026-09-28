@@ -149,6 +149,12 @@ AppSwitcher.prototype = {
             this.actor.connect('scroll-event', Lang.bind(this, this._scrollEvent));
             this.actor.connect('button-press-event', Lang.bind(this, this.destroy));
 
+            // No modifier to release, so no race check or delay. Not
+            // shown here either: a subclass is still building itself, so
+            // the caller shows it via showNow() once done.
+            if (this._modifierMask === 0)
+                return this._haveModal;
+
             // There's a race condition; if the user released Alt before
             // we got the grab, then we won't be notified. (See
             // https://bugzilla.gnome.org/show_bug.cgi?id=596695 for
@@ -252,6 +258,81 @@ AppSwitcher.prototype = {
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
 
+    /**
+     * _selectInitial: a keybinding moves to the next window, since the key
+     * that opened the switcher steps through it. A gesture has no such
+     * press, so it opens on the current window instead.
+     */
+    _selectInitial: function () {
+        if (this._modifierMask === 0)
+            this._select(this._currentIndex);
+        else
+            this._next();
+    },
+
+    /**
+     * isGestureDriven: true if there is no modifier to release.
+     */
+    isGestureDriven: function () {
+        return this._modifierMask === 0;
+    },
+
+    /**
+     * showNow: shows immediately, for gestures with no modifier to wait
+     * for. Call only after the constructor has returned; parts built
+     * after the modal grab do not exist while it is being taken.
+     */
+    showNow: function () {
+        if (this._destroyed || this._initialDelayTimeoutId === 0)
+            return;
+
+        // A switcher that fails to show still holds its modal grab, which
+        // takes all input with nothing on screen. Remove it instead.
+        try {
+            this._show();
+        } catch (e) {
+            global.logError("Could not show the window switcher", e);
+            this.destroy();
+        }
+    },
+
+    /**
+     * getWindowCount: the number of windows in the switcher.
+     */
+    getWindowCount: function () {
+        return this._windows ? this._windows.length : 0;
+    },
+
+    /**
+     * selectByOffset: moves the selection by @offset windows, one at a
+     * time as repeated key presses do, so each style animates normally.
+     */
+    selectByOffset: function (offset) {
+        if (!this._windows || this._windows.length < 2)
+            return;
+
+        for (let i = 0; i < Math.abs(offset); i++) {
+            if (offset > 0)
+                this._next();
+            else
+                this._previous();
+        }
+    },
+
+    /**
+     * finish: ends a gesture-driven switch, activating the selection if
+     * @activate. Safe on an already-destroyed switcher (e.g. via Escape).
+     */
+    finish: function (activate) {
+        if (this._destroyed || !this._windows)
+            return;
+
+        if (activate)
+            this._activateSelected();
+        else
+            this.destroy();
+    },
+
     _updateActiveMonitor: function () {
         this._activeMonitor = null;
         if (!this._enforcePrimaryMonitor)
@@ -338,6 +419,11 @@ AppSwitcher.prototype = {
 
     _keyReleaseEvent: function (actor, event) {
         let [x, y, mods] = global.get_pointer();
+        // Nothing was held down to begin with, so a key coming up is not a
+        // signal to commit; Enter, Escape or a click are.
+        if (this._modifierMask === 0)
+            return true;
+
         let state = mods & this._modifierMask;
 
         if (state == 0) {

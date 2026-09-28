@@ -78,7 +78,7 @@ AppSwitcher3D.prototype = {
 
         this._initialDelayTimeoutId = 0;
 
-        this._next();
+        this._selectInitial();
     },
     
     _hidePreviews: function(endOpacity) {

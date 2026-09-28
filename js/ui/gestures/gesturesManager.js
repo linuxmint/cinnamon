@@ -1,23 +1,30 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
-const { Gio, GObject, Cinnamon, Meta } = imports.gi;
-const Util = imports.misc.util;
+const { Gio, Meta } = imports.gi;
 const SignalManager = imports.misc.signalManager;
-const ScreenSaver = imports.misc.screenSaver;
+const Main = imports.ui.main;
 
 const actions = imports.ui.gestures.actions;
-const { 
+const {
     GestureType,
     GestureDirection,
-    DeviceType,
     GestureTypeString,
     GestureDirectionString,
-    GesturePhaseString,
     DeviceTypeString
-} = imports.ui.gestures.ToucheggTypes;
+} = imports.ui.gestures.gestureTypes;
+const { NativeGestureSource } = imports.ui.gestures.nativeGestureSource;
+const { ToucheggGestureSource } = imports.ui.gestures.toucheggGestureSource;
 
 const SCHEMA = "org.cinnamon.gestures";
-const TOUCHPAD_SCHEMA = "org.cinnamon.desktop.peripherals.touchpad"
+const TOUCHPAD_SCHEMA = "org.cinnamon.desktop.peripherals.touchpad";
+
+// A swipe and the swipe back.
+const OPPOSITE_DIRECTION = {
+    [GestureDirection.UP]: GestureDirection.DOWN,
+    [GestureDirection.DOWN]: GestureDirection.UP,
+    [GestureDirection.LEFT]: GestureDirection.RIGHT,
+    [GestureDirection.RIGHT]: GestureDirection.LEFT,
+};
 
 const NON_GESTURE_KEYS = [
     "enabled",
@@ -86,20 +93,26 @@ var GestureDefinition = class {
 
 var GesturesManager = class {
     constructor(wm) {
-        if (Meta.is_wayland_compositor()) {
-            global.log("Gestures disabled on Wayland");
-            return;
-        }
-
         this.signalManager = new SignalManager.SignalManager(null);
         this.settings = new Gio.Settings({ schema_id: SCHEMA })
+        this.touchpad_settings = new Gio.Settings({ schema_id: TOUCHPAD_SCHEMA })
+        this.current_gesture = null;
+        this.live_actions = new Map();
+
+        if (Meta.is_wayland_compositor()) {
+            this.gestureSource = new NativeGestureSource();
+        } else {
+            this.gestureSource = new ToucheggGestureSource();
+        }
 
         this.migrate_settings();
 
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
-        this.screenSaverProxy = new ScreenSaver.ScreenSaverProxy();
-        this.client = null;
-        this.current_gesture = null;
+        this.signalManager.connect(this.touchpad_settings, "changed::send-events", this.settings_or_devices_changed, this);
+
+        this.gestureSource.connect('gesture-begin', this.gesture_begin.bind(this));
+        this.gestureSource.connect('gesture-update', this.gesture_update.bind(this));
+        this.gestureSource.connect('gesture-end', this.gesture_end.bind(this));
 
         this.settings_or_devices_changed()
     }
@@ -115,6 +128,18 @@ var GesturesManager = class {
             }
 
             const val = this.settings.get_string(key);
+
+            // Nothing matches an empty phase, so an action stored with one
+            // never runs. Older settings pages wrote them that way.
+            const parts = val.split("::");
+            if (parts.length > 1 && parts[parts.length - 1] === "") {
+                const custom = parts.length === 3 ? parts[1] : "";
+                this.settings.set_string(key, custom === ""
+                    ? `${parts[0]}::end`
+                    : `${parts[0]}::${custom}::end`);
+                continue;
+            }
+
             if (val === '' || val.includes("::")) {
                 continue;
             }
@@ -142,41 +167,22 @@ var GesturesManager = class {
         }
     }
 
-    setup_client() {
-        if (this.client == null) {
-            global.log('Set up Touchegg client');
-            actions.init_mixer();
-            actions.init_mpris_controller();
-
-            this.client = new Cinnamon.ToucheggClient();
-
-            this.signalManager.connect(this.client, "gesture-begin", this.gesture_begin, this);
-            this.signalManager.connect(this.client, "gesture-update", this.gesture_update, this);
-            this.signalManager.connect(this.client, "gesture-end", this.gesture_end, this);
-        }
-    }
-
-    shutdown_client() {
-        if (this.client == null) {
-            return;
-        }
-
-        global.log('Shutdown Touchegg client');
-        this.signalManager.disconnect("gesture-begin");
-        this.signalManager.disconnect("gesture-update");
-        this.signalManager.disconnect("gesture-end");
-        this.client = null;
-
-        actions.cleanup();
+    // On X11, touchegg reads the touchpad through its own libinput handle,
+    // so muffin telling libinput to stop the device never reaches it: it
+    // keeps recognizing gestures even with the touchpad off. Rather than
+    // rely on that, gate on the setting directly, here, ourselves.
+    touchpad_enabled() {
+        return this.touchpad_settings.get_string("send-events") !== "disabled";
     }
 
     settings_or_devices_changed(settings, key) {
-        if (this.settings.get_boolean("enabled")) {
+        if (this.settings.get_boolean("enabled") && this.touchpad_enabled()) {
             this.setup_actions();
             return;
         }
 
-        this.shutdown_client();
+        this.gestureSource.shutdown();
+        actions.cleanup();
     }
 
     gesture_active() {
@@ -184,8 +190,12 @@ var GesturesManager = class {
     }
 
     setup_actions() {
-        // Make sure the client is setup
-        this.setup_client();
+        // Make sure gesture source is set up
+        if (!this.gestureSource.isActive()) {
+            actions.init_mixer();
+            actions.init_mpris_controller();
+            this.gestureSource.setup();
+        }
 
         this.live_actions = new Map();
 
@@ -238,6 +248,41 @@ var GesturesManager = class {
         }
     }
 
+    /**
+     * definition_for:
+     *
+     * What this gesture does: the action set on it, or a way out of a view.
+     */
+    definition_for(type, direction, fingers) {
+        const definition = this.lookup_definition(type, direction, fingers);
+        if (definition != null) {
+            return definition;
+        }
+
+        return this.lookup_way_back(type, direction, fingers);
+    }
+
+    /**
+     * lookup_way_back: a swipe with nothing set takes the opposite
+     * direction's action if it opens a view that is open, so a view is
+     * always closable even when only its opener is bound.
+     */
+    lookup_way_back(type, direction, fingers) {
+        const opposite = OPPOSITE_DIRECTION[direction];
+        if (opposite === undefined) {
+            return null;
+        }
+
+        const definition = this.lookup_definition(type, opposite, fingers);
+        if (definition == null) {
+            return null;
+        }
+
+        const view = actions.view_for_action(definition.action);
+
+        return view != null && view.visible ? definition : null;
+    }
+
     lookup_definition(type, direction, fingers) {
         const key = this.construct_map_key(type, direction, fingers);
         const definition = this.live_actions.get(key);
@@ -250,18 +295,18 @@ var GesturesManager = class {
         return definition;
     }
 
-    gesture_begin(client, type, direction, percentage, fingers, device, elapsed_time) {
+    gesture_begin(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture != null) {
             global.logWarning("New gesture started before another was completed. Clearing the old one");
             this.current_gesture = null;
         }
 
-        if (this.screenSaverProxy.screenSaverActive) {
+        if (Main.screensaverController?.locked) {
             debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
             return;
         }
 
-        const definition_match = this.lookup_definition(type, direction, fingers);
+        const definition_match = this.definition_for(type, direction, fingers);
 
         if (definition_match == null) {
             debug_gesture(`No definition for (${DeviceTypeString[device]}) ${GestureTypeString[type]}, ${GestureDirectionString[direction]}, fingers: ${fingers}`);
@@ -277,13 +322,13 @@ var GesturesManager = class {
         this.current_gesture.begin(direction, percentage, elapsed_time);
     }
 
-    gesture_update(client, type, direction, percentage, fingers, device, elapsed_time) {
+    gesture_update(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture == null) {
             debug_gesture("Gesture update but there's no current one.");
             return;
         }
 
-        const def  = this.lookup_definition(type, direction, fingers);
+        const def  = this.definition_for(type, direction, fingers);
         if (def == null || def !== this.current_gesture.definition) {
             this.current_gesture = null;
             global.logWarning("Invalid gesture update received, clearing current gesture");
@@ -294,13 +339,13 @@ var GesturesManager = class {
         this.current_gesture.update(direction, percentage, elapsed_time);
     }
 
-    gesture_end(client, type, direction, percentage, fingers, device, elapsed_time) {
+    gesture_end(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture == null) {
             debug_gesture("Gesture end but there's no current one.");
             return;
         }
 
-        const def  = this.lookup_definition(type, direction, fingers);
+        const def  = this.definition_for(type, direction, fingers);
         if (def == null || def !== this.current_gesture.definition) {
             this.current_gesture = null;
             global.logWarning("Invalid gesture end received, clearing current gesture");
