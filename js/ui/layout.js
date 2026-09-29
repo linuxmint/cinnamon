@@ -23,6 +23,7 @@ var KEYBOARD_FADE_TIME = 150;
 
 // Draws the X11 stage input region on screen. Toggle from Looking Glass:
 // imports.ui.layout.DEBUG_X11_INPUT_REGION = true
+// Has no effect on Wayland, where there is no input region.
 var DEBUG_X11_INPUT_REGION = false;
 
 function isPopupMetaWindow(actor) {
@@ -1034,7 +1035,7 @@ var Chrome = class {
     }
 
     _updateInputRegionOverlay(rects) {
-        if (!DEBUG_X11_INPUT_REGION) {
+        if (!DEBUG_X11_INPUT_REGION || Meta.is_wayland_compositor()) {
             if (this._inputRegionOverlay) {
                 this._inputRegionOverlay.destroy();
                 this._inputRegionOverlay = null;
@@ -1066,7 +1067,9 @@ var Chrome = class {
             this._updateRegionIdle = 0;
         }
 
-        let wantsInputRegion = !this._isPopupWindowVisible;
+        // Wayland routes stage input by actor picking and has no input
+        // region, so only struts are calculated there.
+        let wantsInputRegion = !Meta.is_wayland_compositor() && !this._isPopupWindowVisible;
 
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
@@ -1167,8 +1170,10 @@ var Chrome = class {
             }
         }
 
-        this._updateInputRegionOverlay(rects);
-        global.set_stage_input_region(rects);
+        if (!Meta.is_wayland_compositor()) {
+            this._updateInputRegionOverlay(rects);
+            global.set_stage_input_region(rects);
+        }
 
         let ws_manager = global.workspace_manager;
         for (let w = 0; w < ws_manager.n_workspaces; w++) {
