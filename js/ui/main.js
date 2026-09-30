@@ -1390,14 +1390,21 @@ function _isModifierKeyval(symbol) {
            symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
 }
 
+const _BINDING_MODIFIER_MASK = Clutter.ModifierType.SHIFT_MASK |
+                               Clutter.ModifierType.CONTROL_MASK |
+                               Clutter.ModifierType.MOD1_MASK |
+                               Clutter.ModifierType.MOD3_MASK |
+                               Clutter.ModifierType.MOD4_MASK |
+                               Clutter.ModifierType.MOD5_MASK;
+
 // Invoke a keybinding action from the modal handler, collapsing a fullscreen
 // panel raise only if the shortcut closed the last modal stacked on it - a
 // menu, expo, ... (captured before the invoke, so a shortcut that merely
 // raised a bare panel isn't collapsed).
-function _invokeKeybindingAction(action) {
+function _invokeKeybindingAction(action, modifierState) {
     let hadStackedModal = chromeRaiseManager.hasStackedModal();
     try {
-        keybindingManager.invoke_keybinding_action_by_id(action);
+        keybindingManager.invoke_keybinding_action_by_id(action, modifierState & _BINDING_MODIFIER_MASK);
     } catch (e) {
         global.logError(`Exception in keybinding action: ${e}`);
     }
@@ -1455,7 +1462,7 @@ function _stageEventHandler(actor, event) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
                 _shortcutInvokedSinceModifier = true;
-                _invokeKeybindingAction(action);
+                _invokeKeybindingAction(action, modifierState);
                 return Clutter.EVENT_STOP;
             }
         }
@@ -1469,7 +1476,7 @@ function _stageEventHandler(actor, event) {
         if (_modifierOnlyAction > 0) {
             let action = _modifierOnlyAction;
             _modifierOnlyAction = 0;
-            _invokeKeybindingAction(action);
+            _invokeKeybindingAction(action, modifierState);
             return Clutter.EVENT_STOP;
         }
 
