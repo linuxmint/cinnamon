@@ -7,6 +7,7 @@
 const Clutter = imports.gi.Clutter;
 const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
+const Meta = imports.gi.Meta;
 const Main = imports.ui.main;
 const SignalManager = imports.misc.signalManager;
 
@@ -17,6 +18,7 @@ var ChromeRaiseManager = class ChromeRaiseManager {
     constructor() {
         this._raisedMonitor = -1;
         this._escapePressed = false;
+        this._focusTakenFrom = null;
 
         this._signals = new SignalManager.SignalManager(null);
 
@@ -108,10 +110,8 @@ var ChromeRaiseManager = class ChromeRaiseManager {
         // NORMAL mode: the raised chrome is ordinary interaction floating over
         // a fullscreen window, so a second Super tap (and other bindings) keep
         // working - the menu opens on top of the still-revealed panels.
-        if (!Main.pushModal(this._grabActor, global.get_current_time(), 0,
-                            Cinnamon.ActionMode.NORMAL, () => this.dismiss())) {
+        if (!this._pushModal())
             return;
-        }
 
         this._raisedMonitor = monitorIndex;
 
@@ -139,11 +139,39 @@ var ChromeRaiseManager = class ChromeRaiseManager {
         this._reveal();
     }
 
+    _pushModal() {
+        const onDismiss = () => this.dismiss();
+
+        if (Main.pushModal(this._grabActor, global.get_current_time(), 0,
+                           Cinnamon.ActionMode.NORMAL, onDismiss))
+            return true;
+
+        if (Meta.is_wayland_compositor())
+            return false;
+
+        if (!Main.pushModal(this._grabActor, global.get_current_time(),
+                            Meta.ModalOptions.POINTER_ALREADY_GRABBED,
+                            Cinnamon.ActionMode.NORMAL, onDismiss))
+            return false;
+
+        let focus = global.display.get_focus_window();
+        if (focus) {
+            this._focusTakenFrom = focus;
+            this._signals.connect(focus, "unmanaged", () => this._focusTakenFrom = null);
+        }
+
+        Meta.focus_stage_window(global.display, global.get_current_time());
+        return true;
+    }
+
     dismiss() {
         if (this._raisedMonitor < 0)
             return;
 
         this._signals.disconnectAllSignals();
+
+        let focusTakenFrom = this._focusTakenFrom;
+        this._focusTakenFrom = null;
 
         // Capture our panels before clearing _raisedMonitor: the visibility
         // recalculations below must see isPanelRaised() as false, or auto-hide
@@ -162,6 +190,10 @@ var ChromeRaiseManager = class ChromeRaiseManager {
         Main.layoutManager.updateChrome(true);
 
         panels.forEach(panel => panel._updatePanelVisibility());
+
+        if (focusTakenFrom && !global.display.get_focus_window() &&
+            focusTakenFrom.showing_on_its_workspace())
+            focusTakenFrom.activate(global.get_current_time());
     }
 
     // Show our panels: enable() clears a leftover overview/expo
