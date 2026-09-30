@@ -142,11 +142,14 @@ var ChromeRaiseManager = class ChromeRaiseManager {
     _pushModal() {
         const onDismiss = () => this.dismiss();
 
-        if (Main.pushModal(this._grabActor, global.get_current_time(), 0,
-                           Cinnamon.ActionMode.NORMAL, onDismiss))
+        const wayland = Meta.is_wayland_compositor();
+        const push = wayland ? Main.pushModal : Main.tryPushModal;
+
+        if (push(this._grabActor, global.get_current_time(), 0,
+                 Cinnamon.ActionMode.NORMAL, onDismiss))
             return true;
 
-        if (Meta.is_wayland_compositor())
+        if (wayland)
             return false;
 
         if (!Main.pushModal(this._grabActor, global.get_current_time(),
