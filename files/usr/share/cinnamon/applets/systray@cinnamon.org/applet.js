@@ -201,10 +201,10 @@ class CinnamonSystrayApplet extends Applet.Applet {
             return GLib.SOURCE_REMOVE;
         }
 
-        if (etype === Clutter.EventType.BUTTON_PRESS) {
-            global.begin_modal(Meta.ModalOptions.POINTER_ALREADY_GRABBED, event.time);
-        }
-        else
+        // Release the press's pointer grab so the tray app's menu can take it.
+        let dropGrab = etype === Clutter.EventType.BUTTON_PRESS &&
+                       global.begin_modal(global.get_current_time(), 0);
+
         if (etype === Clutter.EventType.ENTER) {
             button.add_style_pseudo_class("hover");
         }
@@ -215,9 +215,8 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
         let ret = icon.handle_event(etype, event);
 
-        if (etype === Clutter.EventType.BUTTON_PRESS) {
-            global.end_modal(event.time);
-        }
+        if (dropGrab)
+            global.end_modal(Meta.CURRENT_TIME);
 
         return ret;
     }
