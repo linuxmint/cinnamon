@@ -477,7 +477,11 @@ KeybindingManager.prototype = {
     invoke_keybinding_action_by_id: function(id, mask=0) {
         const entry = this.bindings.get(id);
         if (entry !== undefined) {
-            entry.callback(global.display, global.display.get_focus_window(), { get_name: () => entry.name, get_mask: () => mask });
+            entry.callback(global.display, global.display.get_focus_window(), {
+                get_name: () => entry.name,
+                get_mask: () => mask,
+                is_reversed: () => entry.name.endsWith('-backward')
+            });
         }
     }
 };
