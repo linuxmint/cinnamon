@@ -35,6 +35,24 @@ const NMAccessPointSecurity = {
     WPA2_ENT: 6
 };
 
+// The kind shown next to a VPN connection's name, keyed by the last part of
+// its plugin's service type (org.freedesktop.NetworkManager.<key>); other
+// plugins show the key itself. Plugin names are product and protocol names
+// and are left untranslated, so the table adds no strings.
+const VPN_KIND_NAMES = {
+    fortisslvpn: 'Fortinet SSL VPN',
+    l2tp: 'L2TP',
+    libreswan: 'IPsec',
+    openconnect: 'OpenConnect',
+    openswan: 'IPsec',
+    openvpn: 'OpenVPN',
+    pptp: 'PPTP',
+    ssh: 'SSH',
+    sstp: 'SSTP',
+    strongswan: 'IPsec/IKEv2',
+    vpnc: 'Cisco VPN'
+};
+
 // small optimization, to avoid using [] all the time
 const NM80211Mode = NM['80211Mode'];
 const NM80211ApFlags = NM['80211ApFlags'];
@@ -986,6 +1004,19 @@ NMDeviceVPN.prototype = {
                connection._type == NM.SETTING_WIREGUARD_SETTING_NAME;
     },
 
+    _kindLabel: function(connection) {
+        if (connection._type == NM.SETTING_WIREGUARD_SETTING_NAME)
+            return _("WireGuard");
+
+        let vpn = connection.get_setting_vpn();
+        let service = vpn ? vpn.get_service_type() : null;
+        if (!service)
+            return null;
+
+        let plugin = service.split('.').pop();
+        return VPN_KIND_NAMES.hasOwnProperty(plugin) ? VPN_KIND_NAMES[plugin] : plugin;
+    },
+
     get empty() {
         return this._connections.length == 0;
     },
@@ -1028,6 +1059,7 @@ NMDeviceVPN.prototype = {
 
     _updateConnectionItemView: function(item, connection, active) {
         item.label.text = connection._name  || _("Connected (private)");
+        item.setStatus(this._kindLabel(connection));
         item.setToggleState(active);
     },
 
