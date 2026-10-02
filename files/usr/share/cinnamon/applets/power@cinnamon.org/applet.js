@@ -267,6 +267,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.metadata = metadata;
 
+        // Cancels in-flight UPower calls when the applet goes away, so their
+        // callbacks don't run against a destroyed applet.
+        this._cancellable = new Gio.Cancellable();
+
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
 
         Main.systrayManager.registerTrayIconReplacement("power", metadata.uuid);
@@ -287,7 +291,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0, () => {
             this._updateAmbientVisibility();
-            this.brightness.proxy.connect("g-properties-changed", () => this._updateAmbientVisibility());
+            this._brightnessPropsId = this.brightness.proxy.connect("g-properties-changed",
+                () => this._updateAmbientVisibility());
         });
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
@@ -301,7 +306,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._ambientItem.connect("toggled", (item) => {
             this._csdSettings.set_boolean("ambient-enabled", item.state);
         });
-        this._csdSettings.connect("changed::ambient-enabled", () => {
+        this._ambientSettingId = this._csdSettings.connect("changed::ambient-enabled", () => {
             this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
         });
 
@@ -361,7 +366,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this._proxy = null;
 
-        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+        this._panelEditModeId = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY,
+            () => this._onPanelEditModeChanged());
 
         this.csd_power_watch_id = Gio.bus_watch_name(Gio.BusType.SESSION, "org.cinnamon.SettingsDaemon.Power", 0, (c, name) => {
             Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function (proxy, error) {
@@ -375,8 +381,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
                 this._proxy = proxy;
 
-                this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
-                global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
+                this._proxyPropsId = this._proxy.connect("g-properties-changed",
+                    () => this._devicesChanged());
+                this._deviceAliasesId = global.settings.connect('changed::device-aliases',
+                    () => this._on_device_aliases_changed());
                 this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
                 this.settings.bind("showmulti", "showmulti", this._devicesChanged);
 
@@ -385,7 +393,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         }, null);
 
         this._loginManager = LoginManager.getLoginManager();
-        this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
+        this._sleepId = this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
             if (!aboutToSuspend)
                 this._devicesChanged();
         });
@@ -588,7 +596,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             return;
 
         // Identify the primary battery device
-        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function (device, error) {
+        this._proxy.GetPrimaryDeviceRemote(this._cancellable, (device, error) => {
+            if (error?.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+
             if (error) {
                 this._primaryDeviceId = null;
             }
@@ -602,7 +613,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
 
             // Scan battery devices
-            this._proxy.GetDevicesRemote(Lang.bind(this, function (result, error) {
+            this._proxy.GetDevicesRemote(this._cancellable, (result, error) => {
+                if (error?.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+
                 this._deviceItems.forEach(function (i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
@@ -752,18 +766,63 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         }
                     }
                 }
-            }));
-        }));
+            });
+        });
     }
 
     on_applet_removed_from_panel() {
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
 
-        if (!this._profilesProxy)
-            return;
+        // Stop UPower replies from landing on a destroyed applet.
+        this._cancellable.cancel();
 
-        if (this._proxyId)
+        // Drop the labelinfo/showmulti bindings, which would otherwise keep
+        // calling _devicesChanged() on the removed instance.
+        this.settings.finalize();
+
+        if (this.csd_power_watch_id) {
+            Gio.bus_unwatch_name(this.csd_power_watch_id);
+            this.csd_power_watch_id = 0;
+        }
+
+        // Signals on objects that outlive the applet (global.settings, the
+        // LoginManager singleton and the csd-power proxies) keep the applet
+        // alive and fire again after a reload, so every handler added in the
+        // constructor has to go.
+        if (this._panelEditModeId) {
+            global.settings.disconnect(this._panelEditModeId);
+            this._panelEditModeId = 0;
+        }
+
+        if (this._deviceAliasesId) {
+            global.settings.disconnect(this._deviceAliasesId);
+            this._deviceAliasesId = 0;
+        }
+
+        if (this._sleepId) {
+            this._loginManager.disconnect(this._sleepId);
+            this._sleepId = 0;
+        }
+
+        if (this._ambientSettingId) {
+            this._csdSettings.disconnect(this._ambientSettingId);
+            this._ambientSettingId = 0;
+        }
+
+        if (this._proxyPropsId) {
+            this._proxy.disconnect(this._proxyPropsId);
+            this._proxyPropsId = 0;
+        }
+
+        if (this._brightnessPropsId) {
+            this.brightness.proxy.disconnect(this._brightnessPropsId);
+            this._brightnessPropsId = 0;
+        }
+
+        if (this._profilesProxy && this._proxyId) {
             this._profilesProxy.disconnect(this._proxyId);
+            this._proxyId = 0;
+        }
     }
 }
 
