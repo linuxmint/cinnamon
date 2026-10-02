@@ -305,10 +305,8 @@ def _xlet_is_multi_instance(metadata, _type):
     except (TypeError, ValueError):
         return False
 
-    if _type == "applets":
+    if _type in ("applets", "desklets"):
         return max_instances != 1
-    if _type == "desklets":
-        return max_instances > 1
     return False
 
 class KeyBindingCategory:
