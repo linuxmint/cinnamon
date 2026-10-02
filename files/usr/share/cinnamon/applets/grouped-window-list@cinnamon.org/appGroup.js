@@ -2,6 +2,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const Meta = imports.gi.Meta;
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const St = imports.gi.St;
 const Main = imports.ui.main;
@@ -296,7 +297,8 @@ var AppGroup = class AppGroup {
             }
         } else {
             icon = new St.Icon({
-                icon_name: 'application-default-icon',
+                gicon: Gio.ThemedIcon.new_from_names(['application-default-icon',
+                                                      'application-x-executable']),
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.iconSize
             });
