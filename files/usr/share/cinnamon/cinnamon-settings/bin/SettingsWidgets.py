@@ -19,6 +19,43 @@ settings_objects = {}
 
 CAN_BACKEND = ["SoundFileChooser", "DateChooser", "TimeChooser", "Keybinding"]
 
+# Prefer pkexec, fall back to run0.
+def get_privilege_escalation_command():
+    for cmd in ("pkexec", "run0"):
+        if GLib.find_program_in_path(cmd) is not None:
+            return cmd
+    return None
+
+def _build_run0_argv(command_argv):
+    # Unlike pkexec, run0 does not inherit the caller's environment, so
+    # explicitly forward the few variables a GUI tool needs. Mirrors the
+    # approach used by gparted.
+    argv = ["run0"]
+    # --setenv=VAR (no value) tells run0 to forward the value from the caller.
+    if GLib.getenv("XAUTHORITY") is not None:
+        argv.append("--setenv=XAUTHORITY")
+    if GLib.getenv("DISPLAY") is not None:
+        argv.append("--setenv=DISPLAY")
+    # WAYLAND_DISPLAY must be turned into an absolute path because run0
+    # changes XDG_RUNTIME_DIR to that of the target user.
+    wayland = GLib.getenv("WAYLAND_DISPLAY")
+    runtime_dir = GLib.getenv("XDG_RUNTIME_DIR")
+    if wayland and runtime_dir and os.path.isdir(runtime_dir):
+        socket_path = wayland if os.path.isabs(wayland) else os.path.join(runtime_dir, wayland)
+        if os.path.exists(socket_path):
+            argv.append(f"--setenv=WAYLAND_DISPLAY={socket_path}")
+    argv.append("--")
+    argv.extend(command_argv)
+    return argv
+
+def build_privileged_argv(command_argv):
+    escalation = get_privilege_escalation_command()
+    if escalation is None:
+        return None
+    if escalation == "run0":
+        return _build_run0_argv(command_argv)
+    return [escalation, *command_argv]
+
 class BinFileMonitor(GObject.GObject):
     __gsignals__ = {
         'changed': (GObject.SignalFlags.RUN_LAST, None, ()),
@@ -218,7 +255,12 @@ class SidePage(object):
             self.module.loaded = True
 
         if self.is_standalone:
-            subprocess.Popen(self.exec_name.split())
+            argv = self.exec_name.split()
+            if argv and argv[0] == "pkexec":
+                privileged = build_privileged_argv(argv[1:])
+                if privileged is not None:
+                    argv = privileged
+            subprocess.Popen(argv)
             return
 
         # Add our own widgets
@@ -297,7 +339,12 @@ class SAModule:
         self.category = category
 
     def process (self):
-        name = self.name.replace("pkexec ", "")
+        name = self.name
+        if name.startswith("pkexec "):
+            # Require some privilege-escalation tool to exist (pkexec or run0).
+            if get_privilege_escalation_command() is None:
+                return False
+            name = name[len("pkexec "):]
         name = name.split()[0]
 
         return GLib.find_program_in_path(name) is not None
