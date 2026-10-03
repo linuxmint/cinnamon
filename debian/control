@@ -117,7 +117,7 @@ Depends:
  ${shlibs:Depends},
 Recommends:
  clockenstein-daemon,
- gnome-terminal | x-terminal-emulator,
+ velocitty | gnome-terminal | x-terminal-emulator,
  gnome-themes-extra,
  touchegg,
  ibus,
