@@ -239,7 +239,14 @@ class XAppStatusIcon {
                 this.icon_loader_handle = null;
                 this._imageResourceScale = null;
 
-                icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
+                if (iconName.includes("/")) {
+                    // A symbolic file outside any theme (e.g. from an SNI IconThemePath). A GFileIcon
+                    // still goes through the symbolic recoloring path, a bare path as icon-name does not.
+                    const gicon = new Gio.FileIcon({ file: Gio.File.new_for_path(iconName) });
+                    icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "gicon": gicon });
+                } else {
+                    icon = new St.Icon( { "icon-type": type, "icon-size": this.iconSize, "icon-name": iconName });
+                }
                 this.icon_holder.show();
                 this.icon_holder.child = icon;
             }
