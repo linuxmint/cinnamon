@@ -88,7 +88,15 @@ class CinnamonBarApplet extends Applet.Applet {
             return;
         }
 
-        this.show_desktop();
+        // handleDragOver fires on every pointer motion during a drag, so it
+        // must not toggle - only ever show the desktop (idempotent).
+        global.workspace_manager.show_desktop(global.get_current_time());
+        this.show_all_windows(0);
+        if (this._peek_timeout_id > 0) {
+            Mainloop.source_remove(this._peek_timeout_id);
+            this._peek_timeout_id = 0;
+        }
+        this._did_peek = false;
     }
 
     on_panel_height_changed() {
