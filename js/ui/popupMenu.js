@@ -2796,8 +2796,8 @@ var PopupMenuManager = class PopupMenuManager {
     _pushModal() {
         const onDismiss = () => this._closeMenu();
 
-        if (Main.pushModal(this._owner.actor, undefined, undefined,
-                           Cinnamon.ActionMode.POPUP, onDismiss)) {
+        if (Main.tryPushModal(this._owner.actor, undefined, undefined,
+                              Cinnamon.ActionMode.POPUP, onDismiss)) {
             return true;
         }
 

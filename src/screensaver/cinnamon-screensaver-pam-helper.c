@@ -27,6 +27,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <signal.h>
+#include <locale.h>
 
 #include <glib-unix.h>
 #include <glib/gprintf.h>
@@ -522,6 +523,10 @@ main (int    argc,
     GOptionContext *context;
     GError *error = NULL;
     char   *nolock_reason = NULL;
+
+    /* PAM modules (e.g. pam_fprintd) translate their messages using the
+     * process locale. */
+    setlocale (LC_ALL, "");
 
     g_unix_signal_add (SIGTERM, (GSourceFunc) handle_sigterm, NULL);
 

@@ -1367,7 +1367,7 @@ var WindowManager = class WindowManager {
     }
 
     _shiftWindowToWorkspace(window, direction) {
-        if (window.window_type === Meta.WindowType.DESKTOP) {
+        if (!window || window.window_type === Meta.WindowType.DESKTOP) {
             return;
         }
         this._movingWindow = window;

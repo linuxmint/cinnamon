@@ -434,6 +434,15 @@ class KeyBinding(GObject.Object):
             self.resume_json_monitor()
         self.emit_changed()
 
+    def get_defaults(self):
+        if "/" not in self.schema:
+            return self.settings.get_default_value(self.key).unpack()
+
+        with open(self.schema, encoding="utf-8") as config_file:
+            config = json.load(config_file)
+
+        return config[self.key]["default"].split("::")
+
     def resetDefaults(self):
         if "/" not in self.schema:
             self.settings.reset(self.key)
@@ -878,32 +887,65 @@ class KeybindingTable(GObject.Object):
         keybinding.setDetails(new_name, new_command)
         self.emit("customs-changed")
 
-    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
-        new_accel = Gtk.accelerator_parse_with_keycode(accel_string)
+    def _accel_label(self, accel_string):
+        key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
+        if key == 0 and len(codes) == 0:
+            return "Keyboard" if accel_string == "XF86Keyboard" else accel_string
+
+        return Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+
+    def _accels_match(self, accel_string, entry):
+        parsed = Gtk.accelerator_parse_with_keycode(accel_string)
+        # Unparseable accelerators (Above_Tab, XF86Keyboard) all parse to the same empty result.
+        if parsed.accelerator_key == 0 and len(parsed.accelerator_codes) == 0:
+            return accel_string == entry
+
+        return parsed == Gtk.accelerator_parse_with_keycode(entry)
+
+    def _find_conflicts(self, accel_strings, current_keybinding):
+        conflicts = []
 
         for cat in self.main_store:
             for keybinding in cat.keybindings:
-                for entry in keybinding.entries:
-                    if new_accel == Gtk.accelerator_parse_with_keycode(entry):
-                        if keybinding.label != current_keybinding.label:
-                            dialog = Gtk.MessageDialog(None,
-                                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                                       Gtk.MessageType.QUESTION,
-                                                       Gtk.ButtonsType.YES_NO,
-                                                       None)
-                            dialog.set_default_size(400, 125)
-                            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
-                            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
-                            msg += _("Do you want to continue with this operation?")
-                            dialog.set_markup(msg % {'combination': escape(accel_label), 'old': escape(keybinding.label), 'new': escape(current_keybinding.label)})
-                            dialog.show_all()
-                            response = dialog.run()
-                            dialog.destroy()
-                            if response == Gtk.ResponseType.YES:
-                                keybinding.setBinding(keybinding.entries.index(entry), None)
-                                self._proxy_send_kb_changed(keybinding)
-                            else:
-                                return False
+                if keybinding.label == current_keybinding.label:
+                    continue
+                for index, entry in enumerate(keybinding.entries):
+                    if not entry:
+                        continue
+                    for accel_string in accel_strings:
+                        if accel_string and self._accels_match(accel_string, entry):
+                            conflicts.append((keybinding, index, accel_string))
+
+        return conflicts
+
+    def _confirm_and_clear_conflicts(self, conflicts, new_keybinding):
+        for keybinding, index, accel_string in conflicts:
+            dialog = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                       Gtk.MessageType.QUESTION,
+                                       Gtk.ButtonsType.YES_NO,
+                                       None)
+            dialog.set_default_size(400, 125)
+            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
+            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
+            msg += _("Do you want to continue with this operation?")
+            dialog.set_markup(msg % {'combination': escape(self._accel_label(accel_string)), 'old': escape(keybinding.label), 'new': escape(new_keybinding.label)})
+            dialog.show_all()
+            response = dialog.run()
+            dialog.destroy()
+            if response != Gtk.ResponseType.YES:
+                return False
+
+        for keybinding, index, __ in conflicts:
+            keybinding.setBinding(index, None)
+            self._proxy_send_kb_changed(keybinding)
+
+        return True
+
+    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
+        if not self._confirm_and_clear_conflicts(self._find_conflicts([accel_string], current_keybinding), current_keybinding):
+            return False
+
         current_keybinding.setBinding(int(position), accel_string)
         self._proxy_send_kb_changed(current_keybinding)
         return True
@@ -940,14 +982,7 @@ class KeybindingTable(GObject.Object):
             if len(bindings) < 2:
                 continue
 
-            key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
-            if (key == 0 and len(codes) == 0):
-                if accel_string == "XF86Keyboard":
-                    label = "Keyboard"
-                else:
-                    label = accel_string
-            else:
-                label = Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+            label = self._accel_label(accel_string)
 
             dialog = Gtk.MessageDialog(None,
                                        Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -984,8 +1019,12 @@ class KeybindingTable(GObject.Object):
         self._proxy_send_kb_changed(keybinding)
 
     def reset_bindings(self, keybinding):
+        if not self._confirm_and_clear_conflicts(self._find_conflicts(keybinding.get_defaults(), keybinding), keybinding):
+            return False
+
         keybinding.resetDefaults()
         self._proxy_send_kb_changed(keybinding)
+        return True
 
     def lookup_gsettings_keybinding(self, schema_id, key):
         for cat in self._static_store + self._custom_store:

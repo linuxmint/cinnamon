@@ -382,10 +382,12 @@ class Spice_Harvester(GObject.Object):
 
     def enable_extension(self, uuid, panel=1, box='right', position=0):
         if self.collection_type == 'desklet':
-            screen = Gdk.Screen.get_default()
-            primary = screen.get_primary_monitor()
-            primary_rect = screen.get_monitor_geometry(primary)
-            self._h.enable(uuid, desklet_x=primary_rect.x + 100, desklet_y=primary_rect.y + 100)
+            display = Gdk.Display.get_default()
+            monitor = display.get_primary_monitor() or display.get_monitor(0)
+            rect = monitor.get_geometry()
+
+            scale = 1 if GLib.getenv("XDG_SESSION_TYPE") == "wayland" else monitor.get_scale_factor()
+            self._h.enable(uuid, desklet_x=(rect.x + 100) * scale, desklet_y=(rect.y + 100) * scale)
         else:
             self._h.enable(uuid, panel=panel, box=box, position=position)
 

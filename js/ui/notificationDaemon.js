@@ -128,7 +128,17 @@ NotificationDaemon.prototype = {
             Lang.bind(this, this._onFocusAppChanged));
     },
 
-   // Create an icon for a notification from icon string/path.
+    // load_uri_async() has no resource scale awareness, so load file images
+    // explicitly at the scale of the monitor notifications are shown on.
+    _loadImageFile: function(uri, size) {
+        let resourceScale = Main.messageTray.getResourceScale();
+
+        return St.TextureCache.get_default().load_file_async(Gio.File.new_for_uri(uri),
+                                                             size, size,
+                                                             global.ui_scale, resourceScale);
+    },
+
+    // Create an icon for a notification from icon string/path.
     _iconForNotificationData: function(appIcon, hints, size) {
         let textureCache = St.TextureCache.get_default();
         // If an icon is not specified, we use 'image-data' or 'image-path' hint for an icon
@@ -141,7 +151,7 @@ NotificationDaemon.prototype = {
         // a large image.
         if (appIcon) {
             if (appIcon.startsWith("file://")) {
-                return textureCache.load_uri_async(appIcon, size, size);
+                return this._loadImageFile(appIcon, size);
             } else {
                 // Cinnamon prefers symbolic icons due to theming. If an icon
                 // name is specified, try to load it in symbolic. If that fails,
@@ -157,7 +167,7 @@ NotificationDaemon.prototype = {
         } else if (hints['image-path']) {
             let uri_or_icon_name = hints['image-path'];
             if (uri_or_icon_name.startsWith("file://")) {
-                return textureCache.load_uri_async(uri_or_icon_name, size, size);
+                return this._loadImageFile(uri_or_icon_name, size);
             } else {
                 return new St.Icon({ icon_name: uri_or_icon_name,
                                      icon_type: St.IconType.FULLCOLOR,
@@ -314,6 +324,14 @@ NotificationDaemon.prototype = {
         }
         if (hints['image-path'] && GLib.path_is_absolute(hints['image-path'])) {
             hints['image-path'] = GLib.filename_to_uri(hints['image-path'], null);
+        }
+
+        // libnotify 0.8.8 sends the icon given to notify_notification_new() in the
+        // 'image-path' hint and leaves app_icon empty for servers reporting spec 1.1
+        // or later. Treat it as the app icon so 'image-data' remains the large image.
+        if (!appIcon && hints['image-path']) {
+            appIcon = hints['image-path'];
+            delete hints['image-path'];
         }
 
         hints['suppress-sound'] = hints.maybeGet('suppress-sound') == true;
@@ -493,9 +511,7 @@ NotificationDaemon.prototype = {
                 let uri_or_icon_name = hints['image-path'];
 
                 if (uri_or_icon_name.startsWith("file://")) {
-                    image = St.TextureCache.get_default().load_uri_async(uri_or_icon_name,
-                                                                         notification.IMAGE_SIZE,
-                                                                         notification.IMAGE_SIZE);
+                    image = this._loadImageFile(uri_or_icon_name, notification.IMAGE_SIZE);
                 } else {
                     image = new St.Icon({ icon_name: uri_or_icon_name,
                                           icon_type: St.IconType.FULLCOLOR,

@@ -156,7 +156,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     }
 
     # l10n constants - get them translated here so they use Cinnamon's gettext context
-    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to set a new accelerator key."),
+    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to assign or modify an accelerator key."),
                                    _("Press Escape or click again to cancel the operation."),
                                    _("Press Backspace to clear the existing keybinding."))
     UNASSIGNED = _("unassigned")
@@ -251,10 +251,11 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 display = self.a_widget.get_display()
                 self.seat = display.get_default_seat()
 
-                # Grab both keyboard and pointer to prevent mouse events from canceling the operation
+                # GTK only requests a compositor shortcut inhibit for keyboard-only grabs,
+                # without it Cinnamon's own bindings (like Super for the menu) still fire.
                 grab_status = self.seat.grab(
                     self.a_widget.get_window(),
-                    Gdk.SeatCapabilities.KEYBOARD | Gdk.SeatCapabilities.POINTER,
+                    Gdk.SeatCapabilities.KEYBOARD,
                     False,
                     None,
                     None,

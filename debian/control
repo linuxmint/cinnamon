@@ -90,7 +90,8 @@ Depends:
  mesa-utils,
  metacity,
  nemo,
- network-manager-gnome [linux-any],
+ network-manager-applet,
+ nm-connection-editor,
  policykit-1-gnome | mate-polkit,
  python3,
  python3-babel,
@@ -116,7 +117,7 @@ Depends:
  ${shlibs:Depends},
 Recommends:
  clockenstein-daemon,
- gnome-terminal | x-terminal-emulator,
+ velocitty | gnome-terminal | x-terminal-emulator,
  gnome-themes-extra,
  touchegg,
  ibus,

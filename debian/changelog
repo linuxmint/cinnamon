@@ -1,3 +1,17 @@
+cinnamon (6.7.8) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-calendar-server.py: Keep the same lifecycle for both backends
+  * lookingGlass.js: Fix captured-event signal connection.
+  * calendar applet: Fix allocation warning caused by grow-only label.
+  * debian/control: Replace transitional network-manager-gnome package
+
+  [ Clement Lefebvre ]
+  * menu: Sort search results to show apps and favorites before recent docs
+  * test: Remove excluded files
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 22 Sep 2026 10:12:24 +0100
+
 cinnamon (6.7.7) adrien; urgency=medium
 
   [ Michael Webster ]

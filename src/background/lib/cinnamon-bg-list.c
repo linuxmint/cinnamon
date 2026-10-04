@@ -112,12 +112,22 @@ load_single (CinnamonBgList *self)
         return;
 
     /* Migration only: an empty list means a pre-list config, so seed the single
-       item from the legacy keys. Retires itself on the first save. */
+       item from the legacy keys, and write it out so this happens once rather
+       than on every login for as long as the user changes nothing. */
     GVariantBuilder b;
 
     g_variant_builder_init (&b, G_VARIANT_TYPE ("a{sv}"));
 
     g_autofree char *uri = g_settings_get_string (self->settings, "picture-uri");
+
+    /* backgroundManager.js empties the key once it has carried a request, so
+       if both keys end up empty, reset the legacy one and re-seed the list. */
+    if (uri[0] == '\0') {
+        g_settings_reset (self->settings, "picture-uri");
+        g_free (uri);
+        uri = g_settings_get_string (self->settings, "picture-uri");
+    }
+
     g_autofree char *pc = g_settings_get_string (self->settings, "primary-color");
     g_autofree char *sc = g_settings_get_string (self->settings, "secondary-color");
     g_autoptr(GVariant) po = g_settings_get_value (self->settings, "picture-options");
@@ -162,8 +172,31 @@ load_single (CinnamonBgList *self)
     }
 
     g_autoptr(GVariant) v = g_variant_ref_sink (g_variant_builder_end (&b));
+    CinnamonBgItem *item = cinnamon_bg_item_new_from_variant (v);
 
-    g_ptr_array_add (self->stored, cinnamon_bg_item_new_from_variant (v));
+    g_ptr_array_add (self->stored, item);
+
+    /* The guard is "the key has never been set", like the mode above: an empty
+       list the user arrived at deliberately is a configuration, not a pre-list
+       desktop, and must not be seeded over. */
+    g_autoptr(GVariant) stored_list = g_settings_get_user_value (self->settings,
+                                                                "picture-uri-list");
+
+    if (!stored_list) {
+        GVariantBuilder out;
+
+        g_variant_builder_init (&out, G_VARIANT_TYPE ("aa{sv}"));
+        g_variant_builder_add_value (&out, cinnamon_bg_item_to_variant (item));
+
+        if (self->changed_id)
+            g_signal_handler_block (self->settings, self->changed_id);
+
+        g_settings_set_value (self->settings, "picture-uri-list",
+                              g_variant_builder_end (&out));
+
+        if (self->changed_id)
+            g_signal_handler_unblock (self->settings, self->changed_id);
+    }
 }
 
 /* Reloads from GSettings, discarding unsaved changes. Called by constructed()
@@ -200,10 +233,14 @@ cinnamon_bg_list_load (CinnamonBgList *self)
  * cinnamon_bg_list_set_single_uri:
  * @uri: the picture URI to show on every monitor
  *
- * Replaces the entire configuration with one zoomed picture on every monitor.
- * The "set as wallpaper" path an external app reaches through the legacy
+ * Replaces the entire configuration with one picture on every monitor. The
+ * "set as wallpaper" path an external app reaches through the legacy
  * `picture-uri` key: it discards any per-monitor layout and resets the mode to
- * %CINNAMON_BG_MODE_MIRROR.
+ * %CINNAMON_BG_MODE_MIRROR, or to %CINNAMON_BG_MODE_SPANNED if that is what the
+ * legacy placement asked for.
+ *
+ * The aspect and colors come from the other legacy keys, since an app setting a
+ * wallpaper may set those with it.
  *
  * Writes the keys and nothing else, so a caller that only ever sets a wallpaper
  * needs no #CinnamonBgList of its own.
@@ -214,9 +251,25 @@ cinnamon_bg_list_set_single_uri (const char *uri)
     g_autoptr(GSettings) settings = g_settings_new ("org.cinnamon.desktop.background");
     g_autoptr(CinnamonBgItem) item = cinnamon_bg_item_new ();
 
+    g_autofree char *placement = g_settings_get_string (settings, "picture-options");
+    g_autofree char *shading = g_settings_get_string (settings, "color-shading-type");
+    g_autofree char *primary = g_settings_get_string (settings, "primary-color");
+    g_autofree char *secondary = g_settings_get_string (settings, "secondary-color");
+
+    // Spanning was a placement and is a mode now
+    gboolean spanned = g_strcmp0 (placement, "spanned") == 0;
+
+    if (spanned || g_strcmp0 (placement, "none") == 0) {
+        g_free (placement);
+        placement = g_strdup ("zoom");
+    }
+
     g_object_set (item,
                   "picture-uri", uri,
-                  "picture-options", "zoom",
+                  "picture-options", placement,
+                  "color-shading-type", shading,
+                  "primary-color", primary,
+                  "secondary-color", secondary,
                   NULL);
 
     GVariantBuilder b;
@@ -226,7 +279,8 @@ cinnamon_bg_list_set_single_uri (const char *uri)
 
     g_settings_delay (settings);
     g_settings_set_value (settings, "picture-uri-list", g_variant_builder_end (&b));
-    g_settings_set_enum (settings, "background-mode", CINNAMON_BG_MODE_MIRROR);
+    g_settings_set_enum (settings, "background-mode",
+                         spanned ? CINNAMON_BG_MODE_SPANNED : CINNAMON_BG_MODE_MIRROR);
     g_settings_apply (settings);
 }
 

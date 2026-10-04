@@ -324,6 +324,6 @@
 
   "pinned-apps": {
     "type": "generic",
-    "default": ["nemo.desktop", "firefox.desktop", "org.gnome.Terminal.desktop"]
+    "default": ["nemo.desktop", "firefox.desktop", "org.x.velocitty.desktop"]
   }
 }

@@ -86,6 +86,20 @@ create_invisible_actor (void)
                        NULL);
 }
 
+// Returns the max resource scale across all monitors (always 1 for x11)
+static gfloat
+get_stage_resource_scale (void)
+{
+  ClutterStage *stage;
+
+  stage = clutter_stage_manager_get_default_stage (clutter_stage_manager_get_default ());
+
+  if (stage == NULL)
+    return 1.0;
+
+  return clutter_actor_get_resource_scale (CLUTTER_ACTOR (stage));
+}
+
 /* Reverse the opacity we added while loading */
 static void
 set_content_from_image (ClutterActor   *actor,
@@ -1107,6 +1121,10 @@ st_texture_cache_load_gicon_with_scale (StTextureCache    *cache,
  * icon isn't loaded already, the texture will be filled
  * asynchronously.
  *
+ * Assumes the maximum resource scale across all monitors. In mixed-scale monitor layouts
+ * this will result in downscaling if displayed on unscaled monitors. If you need better
+ * results use load_gicon_with_scale() and provide your own.
+ *
  * Return Value: (transfer none): A new #ClutterActor for the icon, or an empty ClutterActor
  * if none was found.
  */
@@ -1118,7 +1136,7 @@ st_texture_cache_load_gicon (StTextureCache    *cache,
 {
     return st_texture_cache_load_gicon_with_scale (cache, theme_node, icon, size,
                                                    st_theme_context_get_scale_for_stage (),
-                                                   1.0);
+                                                   get_stage_resource_scale ());
 }
 
 
@@ -1481,6 +1499,10 @@ st_texture_cache_load_sliced_image_file (StTextureCache *cache,
  * note that the dimensions of the image loaded from @path
  * should be a multiple of the specified grid dimensions.
  *
+ * Assumes the maximum resource scale across all monitors. In mixed-scale monitor layouts
+ * this will result in downscaling if displayed on unscaled monitors. If you need better
+ * results use load_sliced_image_file() and provide your own.
+ *
  * Returns: (transfer none): A new #ClutterActor
  */
 ClutterActor *
@@ -1498,7 +1520,7 @@ st_texture_cache_load_sliced_image (StTextureCache *cache,
                                                      grid_height,
                                                      grid_height,
                                                      st_theme_context_get_scale_for_stage (),
-                                                     1.0,
+                                                     get_stage_resource_scale (),
                                                      load_callback, user_data);
 
     g_object_unref (file);
@@ -1826,12 +1848,14 @@ symbolic_name_for_icon (const char *name)
 }
 
 /**
- * st_texture_cache_load_icon_name:
+ * st_texture_cache_load_icon_name_with_scale:
  * @cache: The texture cache instance
  * @theme_node: (allow-none): a #StThemeNode
  * @name: Name of a themed icon
  * @icon_type: the type of icon to load
  * @size: Size of themed
+ * @paint_scale: The paint scale (usually global->ui_scale, always 1 in wayland)
+ * @resource_scale: The resource scale (monitor scale - always 1 in x11)
  *
  * Load a themed icon into a texture. See the #StIconType documentation
  * for an explanation of how @icon_type affects the returned icon. The
@@ -1915,6 +1939,24 @@ st_texture_cache_load_icon_name_with_scale (StTextureCache    *cache,
     }
 }
 
+/**
+ * st_texture_cache_load_icon_name:
+ * @cache: The texture cache instance
+ * @theme_node: (allow-none): a #StThemeNode
+ * @name: Name of a themed icon
+ * @icon_type: the type of icon to load
+ * @size: Size of themed
+ *
+ * Load a themed icon into a texture. See the #StIconType documentation
+ * for an explanation of how @icon_type affects the returned icon. The
+ * colors used for symbolic icons are derived from @theme_node.
+ *
+ * Assumes the maximum resource scale across all monitors. In mixed-scale monitor layouts
+ * this will result in downscaling if displayed on unscaled monitors. If you need better
+ * results use load_icon_name() and provide your own.
+ *
+ * Return Value: (transfer none): A new #ClutterTexture for the icon
+ */
 ClutterActor *
 st_texture_cache_load_icon_name (StTextureCache    *cache,
                                  StThemeNode       *theme_node,
@@ -1925,7 +1967,7 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
   return st_texture_cache_load_icon_name_with_scale (cache, theme_node, name,
                                                     icon_type, size,
                                                     st_theme_context_get_scale_for_stage (),
-                                                    1.0);
+                                                    get_stage_resource_scale ());
 }
 
 /**
@@ -1938,6 +1980,10 @@ st_texture_cache_load_icon_name (StTextureCache    *cache,
  * Asynchronously load an image.   Initially, the returned texture will have a natural
  * size of zero.  At some later point, either the image will be loaded successfully
  * and at that point size will be negotiated, or upon an error, no image will be set.
+ *
+ * Assumes the maximum resource scale across all monitors. In mixed-scale monitor layouts
+ * this will result in downscaling if displayed on unscaled monitors. If you need better
+ * results use load_file_async() directly and provide your own.
  *
  * Return value: (transfer none): A new #ClutterActor with no image loaded initially.
  */
@@ -1953,7 +1999,7 @@ st_texture_cache_load_uri_async (StTextureCache *cache,
     actor = st_texture_cache_load_file_async (cache, file,
                                               available_width, available_height,
                                               st_theme_context_get_scale_for_stage (),
-                                              1.0);
+                                              get_stage_resource_scale ());
 
     g_object_unref (file);
     return actor;
@@ -2106,6 +2152,10 @@ st_texture_cache_load_gfile_to_cogl_texture (StTextureCache *cache,
  * into a COGL texture.  On error, a warning is emitted
  * and %NULL is returned.
  *
+ * Assumes the maximum resource scale across all monitors. In mixed-scale monitor layouts
+ * this will result in downscaling if displayed on unscaled monitors. If you need better
+ * results use load_gfile_to_cogl_texture() directly and provide your own.
+ *
  * Returns: (transfer full): a new #CoglTexture
  */
 CoglTexture *
@@ -2117,7 +2167,7 @@ st_texture_cache_load_file_to_cogl_texture (StTextureCache *cache,
 
     texture = st_texture_cache_load_gfile_to_cogl_texture (cache, file,
                                                            st_theme_context_get_scale_for_stage (),
-                                                           1.0);
+                                                           get_stage_resource_scale ());
     g_object_unref (file);
 
     return texture;
@@ -2169,6 +2219,10 @@ st_texture_cache_load_gfile_to_cairo_surface (StTextureCache *cache,
  * into a cairo surface.  On error, a warning is emitted
  * and %NULL is returned.
  *
+ * Assumes the maximum resource scale across all monitors. In mixed-scale monitor layouts
+ * this will result in downscaling if displayed on unscaled monitors. If you need better
+ * results use load_gfile_to_cairo_surface() directly and provide your own.
+ *
  * Returns: (transfer full): a new #cairo_surface_t
  */
 cairo_surface_t *
@@ -2179,7 +2233,7 @@ st_texture_cache_load_file_to_cairo_surface (StTextureCache *cache,
 
     cairo_surface_t *surface = st_texture_cache_load_gfile_to_cairo_surface (cache, file,
                                                                              st_theme_context_get_scale_for_stage (),
-                                                                             1.0);
+                                                                             get_stage_resource_scale ());
     g_object_unref (file);
 
     return surface;

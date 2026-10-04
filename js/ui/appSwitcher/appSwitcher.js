@@ -132,7 +132,7 @@ AppSwitcher.prototype = {
     },
 
     _setupModal: function () {
-        this._haveModal = Main.pushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL);
+        this._haveModal = Main.tryPushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL);
         if (!this._haveModal) {
             // Probably someone else has a pointer grab, try again with keyboard only
             this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED, Cinnamon.ActionMode.SYSTEM_MODAL);
@@ -341,8 +341,13 @@ AppSwitcher.prototype = {
         let state = mods & this._modifierMask;
 
         if (state == 0) {
-            if (this._initialDelayTimeoutId !== 0)
-                this._currentIndex = (this._currentIndex + 1) % this._windows.length;
+            if (this._initialDelayTimeoutId !== 0) {
+                let backward = this._binding.is_reversed();
+                if (backward)
+                    this._currentIndex = (this._currentIndex - 1 + this._windows.length) % this._windows.length;
+                else
+                    this._currentIndex = (this._currentIndex + 1) % this._windows.length;
+            }
             this._activateSelected();
         }
 

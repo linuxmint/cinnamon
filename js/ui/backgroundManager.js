@@ -21,6 +21,13 @@ const READY_FALLBACK_MS = 4000;
 const RESTART_LIMIT = 1;
 const RESTART_WINDOW_US = 60 * GLib.USEC_PER_SEC;
 
+// gsettings cannot be trusted at session start
+const LISTENER_DELAY_SECONDS = 10;
+
+// The rest of a "set as wallpaper" request, alongside the picture itself.
+const REQUEST_KEYS = ["picture-options", "color-shading-type",
+                      "primary-color", "secondary-color"];
+
 var BackgroundManager = class {
     constructor() {
         this._daemonProxy = null;
@@ -28,6 +35,7 @@ var BackgroundManager = class {
         this._onDaemonReady = null;
         this._daemonHadOwner = false;
         this._daemonExitTimes = [];
+        this._gnomeSettings = null;
 
         this._startDaemon();
         Gio.bus_watch_name(Gio.BusType.SESSION, DAEMON_NAME,
@@ -37,17 +45,14 @@ var BackgroundManager = class {
 
         this._cinnamonSettings = new Gio.Settings({ schema_id: "org.cinnamon.desktop.background" });
 
-        this._cinnamonPictureUri = this._cinnamonSettings.get_string("picture-uri");
-        this._cinnamonSettings.connect("changed::picture-uri",
-                                       this._onCinnamonPictureURIChanged.bind(this));
-
         let schema = Gio.SettingsSchemaSource.get_default();
-        if (!schema.lookup("org.gnome.desktop.background", true))
-            return;
+        if (schema.lookup("org.gnome.desktop.background", true))
+            this._gnomeSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.background" });
 
-        this._gnomeSettings = new Gio.Settings({ schema_id: "org.gnome.desktop.background" });
-        this._pictureUri = this._gnomeSettings.get_string("picture-uri");
-        this._gnomeSettings.connect("changed::picture-uri", this._onPictureURIChanged.bind(this));
+        GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT, LISTENER_DELAY_SECONDS, () => {
+            this._listenForExternalUris();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     showBackground() {
@@ -152,25 +157,83 @@ var BackgroundManager = class {
         this._startDaemon();
     }
 
-    _applyExternalUri(uri, source) {
+    _listenForExternalUris() {
+        this._cinnamonSettings.connect("change-event", (settings, keys) => {
+            if (this._pictureUriWritten(keys))
+                this._onCinnamonPictureUriChanged();
+            return false;
+        });
+
+        if (!this._gnomeSettings)
+            return;
+
+        this._gnomeSettings.connect("change-event", (settings, keys) => {
+            if (this._pictureUriWritten(keys))
+                this._onGnomePictureUriChanged();
+            return false;
+        });
+    }
+
+    _pictureUriWritten(keys) {
+        return keys.some(quark => GLib.quark_to_string(quark) == "picture-uri");
+    }
+
+    _onCinnamonPictureUriChanged() {
+        const uri = this._cinnamonSettings.get_string("picture-uri");
+
+        // Our own clearing, in _applyRequest().
         if (uri == "")
             return;
-        // set_single_uri() replaces the list with one zoomed entry, discarding
-        // any per-monitor layout.
-        if (LOGGING) {
-            global.log("BackgroundManager: %s picture-uri -> single background (%s)".format(source, uri));
+
+        this._cinnamonSettings.set_string("picture-options", "zoom");
+        this._applyRequest(uri, "Cinnamon");
+    }
+
+    // An app may set other gnome keys along with the picture-uri -
+    // Firefox writes picture-options and primary-color with every "Set as
+    // wallpaper" - so copy those into our own legacy keys first: set_single_uri()
+    // seeds the new entry from them.
+    _onGnomePictureUriChanged() {
+        const uri = this._gnomeSettings.get_string("picture-uri");
+
+        if (uri == "")
+            return;
+
+        for (let key of REQUEST_KEYS) {
+            let value = this._gnomeSettings.get_string(key);
+
+            if (!this._cinnamonSettings.set_string(key, value)) {
+                global.logWarning("BackgroundManager: could not mirror GNOME %s (%s)".format(
+                    key, value));
+            }
         }
+
+        this._applyRequest(uri, "GNOME");
+    }
+
+    _applyRequest(uri, source) {
+        if (LOGGING) {
+            global.log("BackgroundManager: %s picture-uri -> single background (%s)".format(
+                source, uri));
+        }
+
         CinnamonBg.List.set_single_uri(uri);
-    }
 
-    _onCinnamonPictureURIChanged(settings, key) {
-        this._cinnamonPictureUri = this._cinnamonSettings.get_string(key);
-        this._applyExternalUri(this._cinnamonPictureUri, "Cinnamon");
-    }
+        // Clear these keys once we forward them. This guarantees the next time the
+        // user performs a 'set as wallpaper' in another application, there will *definitely*
+        // be a change notification here.
+        //
+        // Otherwise,
+        //
+        // 1) I set a wallpaper from firefox - it always uses the same name ~/Firefox_wallpaper.png
+        // 2) I later go into cinnamon-settings and choose another wallpaper
+        // 3) I find a new wallpaper I like in Firefox, and attempt to set it from there - nothing
+        //    happens because it's the same filename that was already set here in picture-uri, so
+        //    no real change occurred.
+        this._cinnamonSettings.set_string("picture-uri", "");
 
-    _onPictureURIChanged(settings, key) {
-        this._pictureUri = this._gnomeSettings.get_string(key);
-        this._applyExternalUri(this._pictureUri, "GNOME");
+        if (this._gnomeSettings)
+            this._gnomeSettings.set_string("picture-uri", "");
     }
 
     _basename(uri) {

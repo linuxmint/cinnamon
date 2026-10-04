@@ -1,17 +1,19 @@
 /* -*- mode: C; c-file-style: "gnu"; indent-tabs-mode: nil; -*- */
 
+#include <math.h>
+
 #include <clutter/clutter.h>
 #include <cogl/cogl.h>
 #include <meta/display.h>
 #include <meta/util.h>
 #include <meta/meta-plugin.h>
-#include <meta/meta-shaped-texture.h>
 #include <meta/meta-cursor-tracker.h>
 #include <meta/meta-shadow-factory.h>
 #include <meta/meta-window-shape.h>
 
 #include "cinnamon-global.h"
 #include "cinnamon-screenshot.h"
+#include "cinnamon-util.h"
 #include "st.h"
 
 struct _CinnamonScreenshotClass
@@ -146,46 +148,50 @@ do_grab_screenshot (_screenshot_data *screenshot_data,
   cairo_rectangle_int_t rect = { .x = x, .y = y, .width = width, .height = height };
   ClutterCapture *captures = NULL;
   int n_captures = 0;
+  int image_width = width;
+  int image_height = height;
+  float scale = 1.0;
   cairo_t *cr;
   int i;
 
-  screenshot_data->image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
-                                                       width, height);
+  /* Stage views are captured at their own (physical) resolution, so size
+   * the result for the highest scale the rect touches instead of the logical
+   * rect size. Coordinates stay logical through the device scale. */
+  clutter_stage_get_capture_final_size (CLUTTER_STAGE (stage), &rect,
+                                        &image_width, &image_height, &scale);
 
-  cr = cairo_create (screenshot_data->image);
-
-  /* Opaque black background so any gap not covered by a monitor (irregular
-   * multi-monitor layouts) ends up black rather than transparent. */
-  cairo_set_source_rgb (cr, 0, 0, 0);
-  cairo_paint (cr);
-
-  /* Capture every stage view that intersects the requested rect and
-   * composite each one at its position. On the Wayland native backend
-   * each monitor is a separate view with its own framebuffer, so reading
-   * a single framebuffer (as we used to) only ever captured one monitor. */
+  /* On the Wayland native backend each monitor is a separate view with its
+   * own framebuffer, so composite every view that intersects the rect. */
   if (clutter_stage_capture (CLUTTER_STAGE (stage), FALSE, &rect,
                              &captures, &n_captures))
     {
-      for (i = 0; i < n_captures; i++)
-        {
-          cairo_save (cr);
-          cairo_translate (cr,
-                           captures[i].rect.x - x,
-                           captures[i].rect.y - y);
-          cairo_rectangle (cr, 0, 0,
-                           captures[i].rect.width, captures[i].rect.height);
-          cairo_clip (cr);
-          cairo_set_source_surface (cr, captures[i].image, 0, 0);
-          cairo_paint (cr);
-          cairo_restore (cr);
+      screenshot_data->image = cinnamon_util_composite_capture_images (captures,
+                                                                       n_captures,
+                                                                       x, y,
+                                                                       image_width,
+                                                                       image_height,
+                                                                       scale);
 
-          cairo_surface_destroy (captures[i].image);
-        }
+      for (i = 0; i < n_captures; i++)
+        cairo_surface_destroy (captures[i].image);
 
       g_free (captures);
     }
+  else
+    {
+      screenshot_data->image = cairo_image_surface_create (CAIRO_FORMAT_ARGB32,
+                                                           image_width, image_height);
+      cairo_surface_set_device_scale (screenshot_data->image, scale, scale);
+    }
 
+  /* Opaque black behind the captures so any gap not covered by a monitor
+   * (irregular multi-monitor layouts) ends up black rather than transparent. */
+  cr = cairo_create (screenshot_data->image);
+  cairo_set_source_rgb (cr, 0, 0, 0);
+  cairo_set_operator (cr, CAIRO_OPERATOR_DEST_OVER);
+  cairo_paint (cr);
   cairo_destroy (cr);
+
   cairo_surface_mark_dirty (screenshot_data->image);
 }
 
@@ -204,7 +210,7 @@ _draw_cursor_image (cairo_surface_t       *surface,
   cairo_t *cr;
   int x, y;
   int xhot, yhot;
-  double xscale, yscale;
+  float cursor_scale;
   graphene_point_t point;
 
   display = cinnamon_global_get_display (cinnamon_global_get ());
@@ -226,6 +232,7 @@ _draw_cursor_image (cairo_surface_t       *surface,
     }
 
   meta_cursor_tracker_get_hot (tracker, &xhot, &yhot);
+  cursor_scale = meta_cursor_tracker_get_scale (tracker);
   width = cogl_texture_get_width (texture);
   height = cogl_texture_get_height (texture);
   stride = 4 * width;
@@ -238,27 +245,15 @@ _draw_cursor_image (cairo_surface_t       *surface,
                                                         width, height,
                                                         stride);
 
-  cairo_surface_get_device_scale (surface, &xscale, &yscale);
-
-  if (xscale != 1.0 || yscale != 1.0)
-    {
-      int monitor;
-      float monitor_scale;
-      MetaRectangle cursor_rect = {
-        .x = x, .y = y, .width = width, .height = height
-      };
-
-      monitor = meta_display_get_monitor_index_for_rect (display, &cursor_rect);
-      monitor_scale = meta_display_get_monitor_scale (display, monitor);
-
-      cairo_surface_set_device_scale (cursor_surface, monitor_scale, monitor_scale);
-    }
+  /* The sprite texture and hotspot are in texture pixels; the tracker's
+   * scale maps those to stage coordinates (0.5 for a sprite loaded at 2x). */
+  cairo_surface_set_device_scale (cursor_surface, 1.0 / cursor_scale, 1.0 / cursor_scale);
 
   cr = cairo_create (surface);
   cairo_set_source_surface (cr,
                             cursor_surface,
-                            x - xhot - area.x,
-                            y - yhot - area.y);
+                            x - xhot * cursor_scale - area.x,
+                            y - yhot * cursor_scale - area.y);
   cairo_paint (cr);
 
   cairo_destroy (cr);
@@ -330,8 +325,12 @@ zero_corner_semitransparent_pixels (cairo_surface_t *surface)
   int stride   = cairo_image_surface_get_stride (surface);
   guchar *data = cairo_image_surface_get_data (surface);
 
-  int corner_size  = MIN (10, MIN (width, height));
+  double xscale, yscale;
   guint8 threshold = 160;
+  int corner_size;
+
+  cairo_surface_get_device_scale (surface, &xscale, &yscale);
+  corner_size = MIN ((int) ceil (10 * xscale), MIN (width, height));
 
   cairo_surface_flush (surface);
 
@@ -383,6 +382,32 @@ window_should_get_compositor_shadow (MetaWindow *window)
   return TRUE;
 }
 
+static cairo_surface_t *
+get_window_image (ClutterActor  *window_actor,
+                  MetaRectangle *clip,
+                  double        *out_scale)
+{
+  cairo_surface_t *image;
+  double xscale, yscale;
+
+  image = meta_window_actor_get_image (META_WINDOW_ACTOR (window_actor), clip);
+
+  if (!image)
+    return NULL;
+
+  /* The image comes back at the surface's own resolution (its buffer scale,
+   * or the monitor's resource scale when it had to be painted offscreen), so
+   * mark it with whatever maps it back onto the logical clip. */
+  xscale = (double) cairo_image_surface_get_width (image) / clip->width;
+  yscale = (double) cairo_image_surface_get_height (image) / clip->height;
+  cairo_surface_set_device_scale (image, xscale, yscale);
+
+  if (out_scale)
+    *out_scale = xscale;
+
+  return image;
+}
+
 static void
 grab_window_screenshot (ClutterActor *stage,
                         ClutterPaintContext *paint_context,
@@ -392,9 +417,8 @@ grab_window_screenshot (ClutterActor *stage,
   GSimpleAsyncResult *result;
   ClutterActor *window_actor;
   gfloat actor_x, actor_y;
-  MetaShapedTexture *stex;
   MetaRectangle rect;
-  cairo_rectangle_int_t clip;
+  MetaRectangle clip;
 
   g_return_if_fail (META_IS_WINDOW (screenshot_data->window));
 
@@ -451,19 +475,22 @@ grab_window_screenshot (ClutterActor *stage,
       int win_y_in_buf = params.y_offset - shadow_bounds.y;
 
       // Capture the window frame texture
-      cairo_rectangle_int_t win_clip;
+      MetaRectangle win_clip;
+      double scale = 1.0;
       win_clip.x      = rect.x - (gint) actor_x;
       win_clip.y      = rect.y - (gint) actor_y;
       win_clip.width  = rect.width;
       win_clip.height = rect.height;
 
-      stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
-      cairo_surface_t *win_image = meta_shaped_texture_get_image (stex, &win_clip);
+      cairo_surface_t *win_image = get_window_image (window_actor, &win_clip, &scale);
 
-      // Create offscreen buffer to render shadow into
+      // Create offscreen buffer to render shadow into, at the same scale as
+      // the window image; the orthographic projection keeps it in logical units
+      int buf_w = (int) ceil (total_w * scale);
+      int buf_h = (int) ceil (total_h * scale);
       ClutterBackend *backend = clutter_get_default_backend ();
       CoglContext *cogl_ctx = clutter_backend_get_cogl_context (backend);
-      CoglTexture2D *tex2d = cogl_texture_2d_new_with_size (cogl_ctx, total_w, total_h);
+      CoglTexture2D *tex2d = cogl_texture_2d_new_with_size (cogl_ctx, buf_w, buf_h);
       CoglOffscreen *offscreen = cogl_offscreen_new_with_texture (COGL_TEXTURE (tex2d));
       CoglFramebuffer *shadow_fb = COGL_FRAMEBUFFER (offscreen);
       cogl_object_unref (tex2d);
@@ -481,11 +508,14 @@ grab_window_screenshot (ClutterActor *stage,
                              rect.width, rect.height,
                              params.opacity, NULL, FALSE);
 
-          cairo_surface_t *result = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, total_w, total_h);
-          cogl_framebuffer_read_pixels (shadow_fb, 0, 0, total_w, total_h,
+          cairo_surface_t *result = cairo_image_surface_create (CAIRO_FORMAT_ARGB32, buf_w, buf_h);
+          cogl_framebuffer_read_pixels (shadow_fb, 0, 0, buf_w, buf_h,
                                         CLUTTER_CAIRO_FORMAT_ARGB32,
                                         cairo_image_surface_get_data (result));
           cairo_surface_mark_dirty (result);
+          cairo_surface_set_device_scale (result,
+                                          (double) buf_w / total_w,
+                                          (double) buf_h / total_h);
 
           cairo_t *cr = cairo_create (result);
           cairo_set_source_surface (cr, win_image, win_x_in_buf, win_y_in_buf);
@@ -560,8 +590,7 @@ grab_window_screenshot (ClutterActor *stage,
       clip.width = screenshot_data->screenshot_area.width = rect.width;
       clip.height = screenshot_data->screenshot_area.height = rect.height;
 
-      stex = META_SHAPED_TEXTURE (meta_window_actor_get_texture (META_WINDOW_ACTOR (window_actor)));
-      screenshot_data->image = meta_shaped_texture_get_image (stex, &clip);
+      screenshot_data->image = get_window_image (window_actor, &clip, NULL);
 
       if (screenshot_data->image && !screenshot_data->include_shadow)
         zero_corner_semitransparent_pixels (screenshot_data->image);
