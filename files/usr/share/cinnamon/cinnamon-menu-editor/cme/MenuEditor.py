@@ -251,15 +251,12 @@ class MenuEditor(object):
         copy_buffer.load_from_file(file_path, util.KEY_FILE_FLAGS)
         return copy_buffer, None
 
-    def cutItem(self, item):
-        copy_buffer, file_id = self.copyItem(item)
-        file_id = self.deleteItem(item)
-        return copy_buffer, file_id
-
     def pasteItem(self, cut_copy_buffer, menu, file_id = None):
         try:
             path = self.getPath(menu)
-            util.fillKeyFile(cut_copy_buffer, dict(Hidden=False, NoDisplay=False))
+            # Paste item only into target category
+            kwargs = dict(Hidden=False, NoDisplay=False, Categories=";".join(path)+";")
+            util.fillKeyFile(cut_copy_buffer, kwargs)
             name = util.getNameFromKeyFile(cut_copy_buffer)
             if file_id is None:
                 file_id = util.getUniqueFileId(name.replace(os.sep, '-'), '.desktop')
