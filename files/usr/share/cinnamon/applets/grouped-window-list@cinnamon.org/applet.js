@@ -648,9 +648,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         if (!app) {
           app = tracker.get_app_from_pid(metaWindow.get_pid());
         }
-        if (!app) {
-          app = tracker.get_app_from_pid(metaWindow.get_client_pid());
-        }
         return app;
     }
 

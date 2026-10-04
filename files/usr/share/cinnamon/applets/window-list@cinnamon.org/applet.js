@@ -556,9 +556,6 @@ class AppMenuButton {
         if (!app) {
           app = tracker.get_app_from_pid(this.metaWindow.get_pid());
         }
-        if (!app) {
-          app = tracker.get_app_from_pid(this.metaWindow.get_client_pid());
-        }
         return app;
     }
 
