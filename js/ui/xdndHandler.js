@@ -35,6 +35,11 @@ XdndHandler.prototype = {
         });
 
         this._windowGroupVisibilityHandlerId = 0;
+        this._dragging = false;
+    },
+
+    isDragging: function() {
+        return this._dragging;
     },
 
     // Called when the user cancels the drag (i.e release the button)
@@ -48,6 +53,7 @@ XdndHandler.prototype = {
             this._cursorWindowClone = null;
         }
 
+        this._dragging = false;
         this.emit('drag-end');
     },
 
@@ -56,6 +62,7 @@ XdndHandler.prototype = {
                 global.window_group.connect('notify::visible',
                     Lang.bind(this, this._onWindowGroupVisibilityChanged));
 
+        this._dragging = true;
         this.emit('drag-begin', global.get_current_time());
     },
 

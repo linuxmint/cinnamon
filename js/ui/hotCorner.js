@@ -220,6 +220,11 @@ class HotCorner extends Clutter.Actor {
     }
 
     shouldRunAction(timestamp, click) {
+        /* On X11 the drag source holds the pointer grab, so a hot corner
+           never sees a file drag; keep Wayland the same. */
+        if (Main.xdndHandler.isDragging())
+            return false;
+
         /* Expo and scale disable hot corners except theirs */
         if ((Main.expo.visible && this.action != 'expo') ||
             (Main.overview.visible && this.action != 'scale'))
