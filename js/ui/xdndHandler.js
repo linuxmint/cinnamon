@@ -27,6 +27,13 @@ XdndHandler.prototype = {
         dnd.connect('dnd-position-change', Lang.bind(this, this._onPositionChanged));
         dnd.connect('dnd-leave', Lang.bind(this, this._onLeave));
 
+        // The drag icon follows the pointer, and at the screen edges it ends
+        // up under it, so it would be picked as the drop target.
+        global.display.connect('window-created', (display, window) => {
+            if (window.get_window_type() == Meta.WindowType.DND)
+                Cinnamon.util_set_hidden_from_pick(window.get_compositor_private(), true);
+        });
+
         this._windowGroupVisibilityHandlerId = 0;
     },
 
@@ -82,7 +89,7 @@ XdndHandler.prototype = {
     },
 
     _onPositionChanged: function(obj, x, y) {
-        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.NONE, x, y);
+        let pickedActor = global.stage.get_actor_at_pos(Clutter.PickMode.REACTIVE, x, y);
 
         // Make sure that the cursor window is on top
         if (this._cursorWindowClone)
