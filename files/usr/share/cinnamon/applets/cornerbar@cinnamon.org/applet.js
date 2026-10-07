@@ -11,6 +11,7 @@ const SignalManager = imports.misc.signalManager;
 const Mainloop = imports.mainloop;
 const Cinnamon = imports.gi.Cinnamon;
 const Gio = imports.gi.Gio;
+const DND = imports.ui.dnd;
 
 const SCROLL_DELAY = 200;
 
@@ -46,6 +47,23 @@ class CinnamonBarApplet extends Applet.Applet {
 
         this._last_scroll_time = 0;
         this._last_scroll_direction = 0;
+
+        // A drag hovering over the applet toggles the desktop once, then
+        // re-arms when the drag leaves the applet or ends.
+        this._drag_hovering = false;
+        this._drag_monitor = {
+            dragMotion: (dragEvent) => {
+                if (!(dragEvent.targetActor && this.actor.contains(dragEvent.targetActor)))
+                    this._set_drag_hovering(false);
+                return DND.DragMotionResult.CONTINUE;
+            },
+            dragDrop: () => {
+                this._set_drag_hovering(false);
+                return DND.DragDropResult.CONTINUE;
+            },
+        };
+        DND.addDragMonitor(this._drag_monitor);
+        this.signals.connect(Main.xdndHandler, 'drag-end', () => this._set_drag_hovering(false));
 
         this.actor.style_class = 'applet-cornerbar-box';
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
@@ -84,11 +102,27 @@ class CinnamonBarApplet extends Applet.Applet {
     }
 
     handleDragOver(source, actor, x, y, time){
-        if (global.settings.get_boolean("panel-edit-mode")) {
+        if (global.settings.get_boolean("panel-edit-mode") || this._drag_hovering) {
             return;
         }
 
+        this._set_drag_hovering(true);
         this.show_desktop();
+    }
+
+    _set_drag_hovering(hovering) {
+        if (this._drag_hovering == hovering)
+            return;
+
+        this._drag_hovering = hovering;
+        this._applet_tooltip.preventShow = hovering;
+        if (hovering)
+            this._applet_tooltip.hide();
+    }
+
+    on_applet_removed_from_panel() {
+        DND.removeDragMonitor(this._drag_monitor);
+        this.signals.disconnectAllSignals();
     }
 
     on_panel_height_changed() {
