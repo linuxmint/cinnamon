@@ -861,6 +861,7 @@ var PanelManager = GObject.registerClass({
 
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
+        let panelsToLoad = [];
         let panelProperties = getPanelsEnabledList();
 
         for (let i = 0; i < panelProperties.length; i ++) {
@@ -897,7 +898,7 @@ var PanelManager = GObject.registerClass({
                                             newPanels,
                                             newMeta);
                 if (panel)
-                     AppletManager.loadAppletsOnPanel(panel);
+                    panelsToLoad.push(panel);
             }
         }
 
@@ -921,7 +922,11 @@ var PanelManager = GObject.registerClass({
         // removed, or if space made for panel dummys has to be reflected.
         this._adjustVerticalPanelHeights();
 
+        // Applet constructors use both the panel registry and Main.panel.
+        // Publish the complete panel state before loading applets on new panels.
         this._setMainPanel();
+        for (let panel of panelsToLoad)
+            AppletManager.loadAppletsOnPanel(panel);
         this._checkCanAddPanel();
         this._updateAllPointerBarriers();
 
