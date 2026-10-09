@@ -1254,9 +1254,11 @@ var PanelContextMenu = class PanelContextMenu extends PopupMenu.PopupMenu {
         menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
         menu.troubleshootItem = new PopupMenu.PopupSubMenuMenuItem(_("Troubleshoot"));
-        menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), (event) => {
-            Main.restartCinnamon(true);
-        });
+        if (!Meta.is_wayland_compositor()) {
+            menu.troubleshootItem.menu.addAction(_("Restart Cinnamon"), (event) => {
+                Main.restartCinnamon(true);
+            });
+        }
 
         menu.troubleshootItem.menu.addAction(_("Looking Glass"), (event) => {
             Main.createLookingGlass().open();

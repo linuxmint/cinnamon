@@ -47,6 +47,8 @@ const DEVEL_COMMANDS = { 'lg': x => Main.createLookingGlass().open(),
                          'debugexit': x => Meta.quit(Meta.ExitCode.ERROR),
                          'rt': x => Main.themeManager._changeTheme() };
 
+const X11_ONLY_COMMANDS = ['r', 'restart'];
+
 /**
  * completeCommand:
  * @text (string): initial string to complete.
@@ -400,6 +402,11 @@ class RunDialog extends ModalDialog.ModalDialog {
         this._history.addItem(input);
         this._commandError = false;
         if (this._enableInternalCommands && input in DEVEL_COMMANDS) {
+            if (Meta.is_wayland_compositor() && X11_ONLY_COMMANDS.includes(input)) {
+                this._showError(_("Restart not currently supported in Wayland sessions."));
+                return;
+            }
+
             /* Delay 10ms past the modalDialog's openAndCloseTime to ensure the dialog
             * is closed before doing something disruptive like restarting cinnamon */
             Mainloop.timeout_add(this.openAndCloseTime + 10, ()=>DEVEL_COMMANDS[input]());

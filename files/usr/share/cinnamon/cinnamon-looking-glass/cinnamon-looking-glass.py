@@ -555,8 +555,10 @@ class MelangeApp(Gtk.Application):
         menu = Gtk.Menu()
         menu.append(self.create_menu_item('Add File Watcher', self.on_add_file_watcher))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('Restart Cinnamon', restart_func))
-        menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
+        # Cinnamon is the compositor in Wayland - it can't be restarted, and a crash ends the session.
+        if os.environ.get("XDG_SESSION_TYPE") != "wayland":
+            menu.append(self.create_menu_item('Restart Cinnamon', restart_func))
+            menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
         menu.append(self.create_menu_item('Reset Cinnamon Settings', self.on_reset_clicked))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.create_menu_item('Quit', self.on_quit))
