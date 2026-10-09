@@ -13,14 +13,7 @@ from cme import MainWindow
 
 
 def main():
-    try:
-        from MenuEditor import config
-        datadir = config.pkgdatadir
-        version = config.VERSION
-    except Exception:
-        datadir = '.'
-        version = '0.9'
-    app = MainWindow.MainWindow(datadir, version)
+    app = MainWindow.MainWindow()
     app.run()
 
 
