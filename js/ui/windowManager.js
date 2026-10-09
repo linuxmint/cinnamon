@@ -13,7 +13,6 @@ const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
-const WmGtkDialogs = imports.ui.wmGtkDialogs;
 const CloseDialog = imports.ui.closeDialog;
 const WorkspaceOsd = imports.ui.workspaceOsd;
 

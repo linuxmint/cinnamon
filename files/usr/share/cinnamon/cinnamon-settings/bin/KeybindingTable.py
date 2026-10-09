@@ -261,6 +261,7 @@ STATIC_KEYBINDINGS = \
       [_("Reset zoom"), CINNAMON_SCHEMA, "magnifier-zoom-reset"],
       [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader"],
       [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard"],
+      [_("Turn hover click on or off"), CINNAMON_SCHEMA, "hoverclick-toggle"],
       [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size"],
       [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size"],
       [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"]
