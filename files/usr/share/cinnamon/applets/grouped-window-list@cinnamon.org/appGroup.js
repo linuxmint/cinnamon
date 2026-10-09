@@ -1095,9 +1095,13 @@ var AppGroup = class AppGroup {
                 this.showLabel(animate);
             // If a skip-taskbar window is focused from this group, do nothing.
             // Show the last trackable window's label because the application is focused.
-            } else if (global.display.focus_window
-                && this.groupState.appId.indexOf(global.display.focus_window.wm_class.toLowerCase()) === -1) {
-                this.hideLabel();
+            } else {
+                // Wayland clients that never set an app id have no wm_class.
+                let focusWindow = global.display.focus_window;
+                let wmClass = focusWindow ? focusWindow.wm_class : null;
+
+                if (focusWindow && (!wmClass || this.groupState.appId.indexOf(wmClass.toLowerCase()) === -1))
+                    this.hideLabel();
             }
         }
     }

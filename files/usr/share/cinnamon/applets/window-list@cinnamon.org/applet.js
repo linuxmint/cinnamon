@@ -273,7 +273,9 @@ class AppMenuButton {
         this.drawLabel = false;
         this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
-        this.xid = metaWindow.get_xwindow();
+        // XIDs survive a Cinnamon restart in X11; native Wayland windows have none.
+        let xid = metaWindow.get_xwindow();
+        this.orderKey = xid ? String(xid) : `w${metaWindow.get_stable_sequence()}`;
         this._flashTimer = null;
 
         if (this._applet.orientation == St.Side.TOP)
@@ -1448,8 +1450,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
             this._monitorWatchList.indexOf(metaWindow.get_monitor()) != -1;
     }
 
-    /* Store by Windows (XIDs), a simple list
-       xid::xid::xid::xid::xid
+    /* Store by window order key (see AppMenuButton), a simple list
+       key::key::key::key::key
     */
 
     _applySavedOrder() {
@@ -1458,13 +1460,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         order.reverse();
 
         for (let i = 0; i < order.length; i++) {
-            let xid = parseInt(order[i]);
-
-            if (xid === NaN) {
-                continue;
-            }
-
-            let found = this._windows.find(win => (win.xid == xid));
+            let found = this._windows.find(win => win.orderKey === order[i]);
 
             if (found) {
                 this.manager_container.set_child_at_index(found.actor, 0);
@@ -1483,7 +1479,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         let actors = this.manager_container.get_children();
 
         for (let i = 0; i < actors.length; i++) {
-            new_order.push(actors[i]._delegate.xid);
+            new_order.push(actors[i]._delegate.orderKey);
         }
 
         if (new_order.length === 0) {

@@ -76,7 +76,7 @@ class CinnamonXrandrApplet extends Applet.IconApplet {
 
             item.connect('activate', (item, event) => {
                 if (!this.monitor_manager.apply_temporary_rotation(rotval)) {
-                    global.logError('Unable to rotate the laptop display', e);
+                    global.logError('Unable to rotate the laptop display');
                 }
             });
 
