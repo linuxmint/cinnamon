@@ -30,8 +30,7 @@ var ScreensaverController = class {
         }
 
         // A custom screensaver command preempts both internal and cinnamon-screensaver modes.
-        let customCommand = this.#settings.get_string('custom-screensaver-command').trim();
-        if (customCommand) {
+        if (this.#customCommand) {
             global.log(`Screensaver: custom command.`);
             return;
         }
@@ -93,6 +92,18 @@ var ScreensaverController = class {
         return this.#locked;
     }
 
+    // Muffin would need ext-session-lock-v1 for wayland support.
+    get #customCommand() {
+        let command = this.#settings.get_string('custom-screensaver-command').trim();
+
+        if (command && Meta.is_wayland_compositor()) {
+            global.logWarning(`Screensaver: ignoring custom-screensaver-command '${command}', external lockers aren't supported in Wayland sessions.`);
+            return '';
+        }
+
+        return command;
+    }
+
     get allowKeyboardShortcuts() {
         return this.#settings.get_boolean('allow-keyboard-shortcuts');
     }
@@ -104,8 +115,7 @@ var ScreensaverController = class {
             return;
         }
 
-        let customCommand = this.#settings.get_string('custom-screensaver-command').trim();
-        if (customCommand) {
+        if (this.#customCommand) {
             Util.spawn(['cinnamon-screensaver-command', '-l']);
             if (callback)
                 callback(true);

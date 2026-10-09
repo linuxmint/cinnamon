@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from gi.repository import GLib, Gio
+import os
 import sys
 import signal
 import shlex
@@ -84,6 +85,9 @@ class ScreensaverCommand:
 
         ss_settings = Gio.Settings.new("org.cinnamon.desktop.screensaver")
         custom_saver = ss_settings.get_string("custom-screensaver-command").strip()
+        if custom_saver and os.environ.get("XDG_SESSION_TYPE") == "wayland":
+            print("Ignoring custom-screensaver-command, external lockers aren't supported in Wayland sessions.")
+            custom_saver = ""
         internal_enabled = Gio.Settings.new("org.cinnamon").get_boolean("internal-screensaver-enabled")
 
         # Cinnamon dismisses its own modals inside the internal shield path.
