@@ -332,7 +332,7 @@ function start() {
     let backend = Meta.get_backend();
 
     // Only cinnamon2d launcher will set CINNAMON_2D - this is deliberate by the user.
-    let cinnamon_2d = GLib.getenv("CINNAMON_2D") === true;
+    let cinnamon_2d = GLib.getenv("CINNAMON_2D") !== null;
     let live = false;
 
     if (!backend.is_rendering_hardware_accelerated() || cinnamon_2d) {

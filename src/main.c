@@ -318,11 +318,13 @@ center_pointer_on_screen ()
   Screen *screen;
 
   dpy = XOpenDisplay(0);
+  if (dpy == NULL)
+    return;
+
   root_window = XRootWindow(dpy, 0);
-  XSelectInput(dpy, root_window, KeyReleaseMask);
   screen = DefaultScreenOfDisplay(dpy);
   XWarpPointer(dpy, None, root_window, 0, 0, 0, 0, WidthOfScreen(screen)/2, HeightOfScreen(screen)/2);
-  XFlush(dpy);
+  XCloseDisplay(dpy);
 }
 
 int
