@@ -15,6 +15,7 @@ const Gtk = imports.gi.Gtk;
 const GObject = imports.gi.GObject;
 const Gir = imports.gi.GIRepository;
 const Clutter = imports.gi.Clutter;
+const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
@@ -150,7 +151,7 @@ function spawnCommandLine(command_line) {
 /**
  * trySpawn:
  * @argv: an argv array
- * @doNotReap: whether to set the DO_NOT_REAP_CHILD flag
+ * @doNotReap: whether the caller adds its own child watch for @pid
  *
  * Runs @argv in the background. If launching @argv fails,
  * this will throw an error.
@@ -159,13 +160,19 @@ function trySpawn(argv, doNotReap)
 {
     let spawn_flags = GLib.SpawnFlags.SEARCH_PATH
                       | GLib.SpawnFlags.STDOUT_TO_DEV_NULL
-                      | GLib.SpawnFlags.STDERR_TO_DEV_NULL;
-
-    if (doNotReap) {
-        spawn_flags |= GLib.SpawnFlags.DO_NOT_REAP_CHILD;
-    }
+                      | GLib.SpawnFlags.STDERR_TO_DEV_NULL
+                      | GLib.SpawnFlags.DO_NOT_REAP_CHILD;
 
     let [success, pid] = GLib.spawn_async(null, argv, null, spawn_flags, null);
+
+    CinnamonDesktop.start_systemd_scope(GLib.path_get_basename(argv[0]), pid, null, null, null, null);
+
+    if (!doNotReap) {
+        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, (pid, status) => {
+            GLib.spawn_close_pid(pid);
+        });
+    }
+
     return pid;
 }
 
