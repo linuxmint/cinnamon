@@ -160,18 +160,15 @@ function trySpawn(argv, doNotReap)
 {
     let spawn_flags = GLib.SpawnFlags.SEARCH_PATH
                       | GLib.SpawnFlags.STDOUT_TO_DEV_NULL
-                      | GLib.SpawnFlags.STDERR_TO_DEV_NULL
-                      | GLib.SpawnFlags.DO_NOT_REAP_CHILD;
+                      | GLib.SpawnFlags.STDERR_TO_DEV_NULL;
+
+    if (doNotReap) {
+        spawn_flags |= GLib.SpawnFlags.DO_NOT_REAP_CHILD;
+    }
 
     let [success, pid] = GLib.spawn_async(null, argv, null, spawn_flags, null);
 
     CinnamonDesktop.start_systemd_scope(GLib.path_get_basename(argv[0]), pid, null, null, null, null);
-
-    if (!doNotReap) {
-        GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, (pid, status) => {
-            GLib.spawn_close_pid(pid);
-        });
-    }
 
     return pid;
 }
