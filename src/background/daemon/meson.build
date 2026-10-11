@@ -42,3 +42,10 @@ configure_file(
     configuration: background_service_conf,
     install_dir: servicedir,
 )
+
+configure_file(
+    input: 'cinnamon-background-daemon.service.in',
+    output: 'cinnamon-background-daemon.service',
+    configuration: background_service_conf,
+    install_dir: systemduserunitdir,
+)

@@ -41,6 +41,7 @@ Build-Depends:
  meson,
  pysassc,
  python3:any,
+ systemd-dev (>= 253-2~) [linux-any] | systemd (<< 253-2~) [linux-any],
 Standards-Version: 3.9.5
 Homepage: https://github.com/linuxmint/cinnamon
 

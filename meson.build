@@ -23,6 +23,12 @@ po_dir = join_paths(meson.project_source_root(), 'po')
 
 dbus = dependency('dbus-1')
 servicedir = dbus.get_variable(pkgconfig: 'session_bus_services_dir', pkgconfig_define: ['datadir', datadir])
+systemd = dependency('systemd', required: false)
+if systemd.found()
+    systemduserunitdir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
+else
+    systemduserunitdir = join_paths(prefix, 'lib', 'systemd', 'user')
+endif
 
 # dependencies
 cjs = dependency('cjs-1.0', version: '>= 115.0')
