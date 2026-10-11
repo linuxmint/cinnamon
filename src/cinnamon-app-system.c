@@ -11,7 +11,6 @@
 #include <gmenu-desktopappinfo.h>
 
 #include "cinnamon-app-private.h"
-#include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-system-private.h"
 #include "cinnamon-global.h"
 #include "cinnamon-util.h"

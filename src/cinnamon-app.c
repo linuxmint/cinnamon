@@ -20,7 +20,6 @@
 #include "cinnamon-global-private.h"
 #include "cinnamon-util.h"
 #include "cinnamon-app-system-private.h"
-#include "cinnamon-window-tracker-private.h"
 #include "st.h"
 
 /* This is mainly a memory usage optimization - the user is going to
@@ -1122,21 +1121,11 @@ cinnamon_app_request_quit (CinnamonApp   *app)
 }
 
 static void
-_gather_pid_callback (GDesktopAppInfo   *gapp,
-                      GPid               pid,
-                      gpointer           data)
+wait_pid (GDesktopAppInfo *appinfo,
+          GPid             pid,
+          gpointer         user_data)
 {
-  CinnamonApp *app;
-  CinnamonWindowTracker *tracker;
-
-  g_return_if_fail (data != NULL);
-
-  app = CINNAMON_APP (data);
-  tracker = cinnamon_window_tracker_get_default ();
-
-  _cinnamon_window_tracker_add_child_process_app (tracker,
-                                               pid,
-                                               app);
+  g_child_watch_add (pid, (GChildWatchFunc) g_spawn_close_pid, NULL);
 }
 
 static void
@@ -1239,7 +1228,7 @@ real_app_launch (CinnamonApp   *app,
                                                    G_APP_LAUNCH_CONTEXT (context),
                                                    G_SPAWN_SEARCH_PATH | G_SPAWN_DO_NOT_REAP_CHILD | G_SPAWN_STDOUT_TO_DEV_NULL  | G_SPAWN_STDERR_TO_DEV_NULL,
                                                    NULL, NULL,
-                                                   _gather_pid_callback, app,
+                                                   wait_pid, NULL,
                                                    error);
   g_object_unref (context);
   g_clear_object (&offload_appinfo);
