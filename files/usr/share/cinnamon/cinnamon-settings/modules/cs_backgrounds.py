@@ -6,7 +6,6 @@ import _thread as thread
 import locale
 import time
 import hashlib
-import mimetypes
 from functools import cache
 import pickle
 from io import BytesIO
@@ -1064,9 +1063,8 @@ def _gdk_pixbuf_mime_types():
 @cache
 def decodable_mime_types():
     # An image one of the two loaders can actually open. Both halves matter:
-    # mimetypes.guess_type() calls a GIMP .xcf image/x-xcf, which neither loader
-    # can decode, and PIL registers a few types (postscript, mpeg) that are not
-    # images at all.
+    # a GIMP .xcf is image/x-xcf, which neither loader can decode, and PIL
+    # registers a few types (postscript, mpeg) that are not images at all.
     return {mime for mime in _gdk_pixbuf_mime_types() | _pil_mime_types()
             if mime.startswith("image/")}
 
@@ -1079,6 +1077,18 @@ def gdk_pixbuf_only_mime_types():
     return _gdk_pixbuf_mime_types() - _pil_mime_types()
 
 
+def get_mime_type(filename):
+    # Sniffs the contents when the name doesn't settle it, like the extensionless
+    # ~/.config/background copy the wallpaper portal stores.
+    try:
+        info = Gio.File.new_for_path(filename).query_info(Gio.FILE_ATTRIBUTE_STANDARD_CONTENT_TYPE,
+                                                          Gio.FileQueryInfoFlags.NONE, None)
+    except GLib.Error:
+        return None
+
+    return Gio.content_type_get_mime_type(info.get_content_type())
+
+
 class PixCache(object):
 
     def __init__(self):
@@ -1087,7 +1097,7 @@ class PixCache(object):
     def get_pix(self, filename, size=None):
         if filename is None:
             return None
-        mimetype = mimetypes.guess_type(filename)[0]
+        mimetype = get_mime_type(filename)
         if mimetype not in decodable_mime_types():
             return None
 
