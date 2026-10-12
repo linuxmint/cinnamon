@@ -178,14 +178,16 @@ get_pixbuf_for_uri (CinnamonBackgroundDaemon *daemon, const char *uri)
         return ci->pixbuf;
 
     g_autoptr(GError) err = NULL;
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file (path, &err);
+    g_autoptr(GdkPixbuf) stored = gdk_pixbuf_new_from_file (path, &err);
 
-    if (!pixbuf) {
+    if (!stored) {
         g_warning ("Failed to load background pixbuf from %s: %s",
                    path, err ? err->message : "unknown error");
         g_hash_table_remove (daemon->pixbuf_cache, uri);
         return NULL;
     }
+
+    GdkPixbuf *pixbuf = gdk_pixbuf_apply_embedded_orientation (stored);
 
     g_debug ("    Loaded background image %s (%dx%d)", path,
              gdk_pixbuf_get_width (pixbuf), gdk_pixbuf_get_height (pixbuf));
@@ -518,7 +520,7 @@ cinnamon_background_daemon_build_render_inputs (CinnamonBackgroundDaemon *daemon
  * cinnamon_background_daemon_release_render_inputs:
  *
  * Called at the end of every draw pass, by whoever ran it. Both holders have to
- * go: the cache owns the reference from gdk_pixbuf_new_from_file() and @resolved
+ * go: the cache owns a reference to the decoded image and @resolved
  * its own, so releasing one alone frees nothing.
  *
  * Pairs with cinnamon_background_daemon_build_render_inputs(), which every
