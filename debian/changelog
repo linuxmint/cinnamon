@@ -1,3 +1,93 @@
+cinnamon (6.7.9) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * cinnamon-background-daemon.c: Monitor image files for changes.
+  * cinnamon-bg-list.c: Commit the outcome of load_single() to gsettings
+  * backgroundManager.js: Delay picture-uri listeners at startup, and react only to actual value changes.
+  * cs_backgrounds.py: Allow the current background selection to be shown, even if it's not in one of the configured folders.
+  * backgroundManager.js: Clear picture-uri values after applying them
+  * cinnamon-screenshot: Don't warn on a cancelled area pick.
+  * cinnamon-plugin/wm: Remove unused inhibit-shortcut dialog wiring.
+  * KeybindingTable.py: Confirm when resetting a keybinding that conflicts
+  * KeybindingWidgets.py (wayland): Only grab the keyboard when teaching
+  * cs_keyboard.py: Use an infobar instead of tooltip for instructions
+  * xapp-status: Account for resource scale in the file-icon load path
+  * screensaver/sound applet: Create album art the same way, fix scaling
+  * notificationDaemon: Handle libnotify 0.8.8 icons and load file images at the monitor's resource scale.
+  * Spices.py: Fix new desklet placement in x11 hidpi
+  * misc: Fix some minor image scaling issues
+  * photoframe@cinnamon.org: Account for resource scale when loading images
+  * st-texture-cache.c (wayland): Don't hardcode resource-scale for convenience functions.
+  * layout.js (x11): Exclude obscured desklet areas from input region calculations.
+  * cinnamon-screenshot.c: Capture at physical resolution on scaled Wayland monitors.
+  * layout.js: Skip input-rect computation and debug-overlay in Wayland
+  * st-scroll-bar.c: Respect disabled animations
+  * chromeRaise.js (x11): Release a fullscreen window's pointer grab when raising.
+  * keybindings: Give the modal handler's binding object a get_mask()
+  * main.js: add tryPushModal and turn pushModal into a wrapper.
+  * systray applet: Fix pushModal/endModal calls.
+  * keybindings.js: Add is_reversed() to modal synthetic binding.
+  * dnd.js: Don't leave the drag grab held when the drag actor is destroyed
+  * grouped-window-list/window-list: Drop client-pid fallback lookups.
+  * cinnamon-window-tracker.c: Use meta_window_get_sandboxed_app_id()
+  * xapp-status applet: Render absolute-path symbolic icons via a GFileIcon.
+  * xdndHandler: Pick the actor under the drag position reliably
+  * hotCorner (Wayland): Ignore hot corners during file drags
+  * cornerbar applet: Toggle the desktop once per drag entry
+  * popupDialog.js: Apply the drag offset to the position when a drag ends.
+  * accessibility: Replace the hover-click helper with a native palette.
+  * screensaver: Disable custom screensaver in Wayland sessions.
+  * launch: Fix some session argument and environment handling, don't leak an X connection.
+  * wayland: Hide some unsupported commands/menu options.
+  * cs_mouse.py: Fix edge-scrolling disable callback
+  * applets: Small fixes for Wayland sessions
+  * util.js: Put spawned processes in their own systemd scope
+  * window-tracker/cinnamon-app: Remove the unused launched-pid table
+  * util.js: Let GLib double-fork trySpawn children again
+  * cinnamon-background-daemon: Run as a systemd user service when active
+  * cs_backgrounds.py: Fix extensionless file type detection
+  * cinnamon-background-daemon.c: Apply embedded orientation
+
+  [ Ilya Valyaev ]
+  * screenshot: preserve selections and ignore input after cancellation (#13948)
+  * power applet: disconnect signals and cancel pending calls on removal (#13949)
+
+  [ Fabio Fantoni ]
+  * printers@cinnamon.org: Update the applet when the printer list is empty or unavailable, and check for system-config-printer (#13936)
+  * global: Don't create a scope for D-Bus activated applications (#13926)
+
+  [ Josh Ellithorpe ]
+  * xapp-status applet: harden against misbehaving clients and fix icon lifecycle issues (#13965)
+  * systray: fix icon loss on redisplay, timeout races, and teardown errors in the applet and tray manager (#13966)
+
+  [ fredcw ]
+  * Make dummy panel visible on fullscreened monitors (#13215)
+  * Make InfoOSD visible on fullscreened monitors (#13216)
+
+  [ Emel Öztürk ]
+  * Round schedule time to nearest minute (#13988)
+  * cs_nightlight: update schedule spinners when settings change externally (#13987)
+
+  [ rwxrxx ]
+  * screensaver/pam-helper: Call setlocale() so PAM messages are translated. (#14020)
+
+  [ Ivan The Geek ]
+  * network applet: six correctness fixes, incl. multiple active WireGuard connections (#13911)
+
+  [ Arqam ]
+  * appswitcher: Fix Alt+Shift+Tab (13717) (#13743)
+
+  [ Clement Lefebvre ]
+  * Switch terminal to velocitty
+
+  [ Rico ]
+  * Fix desklet settings for desklets with max instance of -1 (#13594)
+
+  [ KAMI ]
+  * Fix several bugs: regex flags, implicit globals, crashes, ngettext, undefined icon (#13643)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 13 Oct 2026 13:29:13 +0100
+
 cinnamon (6.7.8) adrien; urgency=medium
 
   [ Michael Webster ]
