@@ -1111,22 +1111,15 @@ var PopupImageMenuItem = class PopupImageMenuItem extends PopupBaseMenuItem {
  * a radio button or empty.
  */
 
-var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuItem {
+var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupMenuItem {
     _init(text, params) {
-        super._init.call(this, params);
-        this.actor._delegate = this;
-        this._displayIcon = false;
+        super._init.call(this, text, params);
 
-        this.label = new St.Label({ text: text });
-        this.actor.label_actor = this.label;
+        // PopupMenuItem puts the ornament after the label
+        this.removeActor(this._ornament);
+        this.addActor(this._ornament, { span: 0, position: 0 });
+
         this._accel = new St.Label({ x_align: St.Align.END });
-        this._ornament = new St.Bin();
-        this._icon = new St.Icon({ style_class: 'popup-menu-icon', icon_type: St.IconType.FULLCOLOR });
-
-        this._ornament.child = this._icon;
-        this._ornament.child._delegate = this._ornament;
-        this.addActor(this._ornament, {span: 0});
-        this.addActor(this.label);
         this.addActor(this._accel, { align: St.Align.END });
     }
 
@@ -1148,44 +1141,9 @@ var PopupIndicatorMenuItem = class PopupIndicatorMenuItem extends PopupBaseMenuI
             this._icon.gicon = gicon;
     }
 
-    setOrnament(ornamentType, state) {
-        switch (ornamentType) {
-        case OrnamentType.CHECK:
-            if ((this._ornament.child)&&(!(this._ornament.child._delegate instanceof CheckBox.CheckBox))) {
-                this._ornament.child.destroy();
-                this._ornament.child = null;
-            }
-            if (!this._ornament.child) {
-                let switchOrn = new CheckBox.CheckBox();
-                switchOrn.reactive = false;
-                switchOrn.set_checked(state);
-                this._ornament.child = switchOrn;
-            } else {
-                this._ornament.child.set_checked(state);
-            }
-            this._icon = null;
-            break;
-        case OrnamentType.DOT:
-            if ((this._ornament.child) && (!(this._ornam. ent.child._delegate instanceof RadioButton.RadioButton))) {
-                this._ornament.child.destroy();
-                this._ornament.child = null;
-            }
-            if (!this._ornament.child) {
-                let radioOrn = new RadioButton.RadioButton();
-                radioOrn.reactive = false;
-                radioOrn.set_checked(state);
-                this._ornament.child = radioOrn;
-            } else {
-                this._ornament.child.set_checked(state);
-            }
-            this._icon = null;
-            break;
-        }
-    }
-
     destroy() {
         if (this.actor) {
-            PopupMenuItem.prototype.destroy.call(this);
+            super.destroy();
             this.actor = null;
         }
     }
