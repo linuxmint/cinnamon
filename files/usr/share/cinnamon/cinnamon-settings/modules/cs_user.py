@@ -214,8 +214,8 @@ class Module:
 
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 255, -1)
             pixbuf.savev(face_path, "png")
-            self.accountService.set_icon_file(path)
-            self.face_button.set_picture_from_file(path)
+            self.accountService.set_icon_file(face_path)
+            self.face_button.set_picture_from_file(face_path)
 
         dialog.destroy()
 
