@@ -110,7 +110,13 @@ class EventData {
             this.end = this.start;
         }
         this.start_date = date_only(this.start);
-        this.end_date = date_only(this.end);
+        if (!this.all_day && this.end.compare(this.start) == 1) {
+            // A timed event ending at 00:00 doesn't occupy the day it ends on, but
+            // keeps its real end time for display.
+            this.end_date = date_only(this.end.add_seconds(-1));
+        } else {
+            this.end_date = date_only(this.end);
+        }
         this.multi_day = !dt_equals(this.start_date, this.end_date);
         if (this.multi_day) {
             this.span = this.end_date.difference(this.start_date) / GLib.TIME_SPAN_DAY;
