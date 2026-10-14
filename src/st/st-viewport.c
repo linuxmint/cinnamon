@@ -78,7 +78,7 @@ adjustment_value_notify_cb (StAdjustment *adjustment,
                             GParamSpec   *pspec,
                             StViewport   *viewport)
 {
-  clutter_actor_queue_relayout (CLUTTER_ACTOR (viewport));
+  clutter_actor_queue_redraw (CLUTTER_ACTOR (viewport));
 }
 
 static void
@@ -272,32 +272,30 @@ st_viewport_allocate (ClutterActor           *actor,
     {
       double prev_value;
 
-      g_object_set (G_OBJECT (priv->vadjustment),
-                    "lower", 0.0,
-                    "upper", MAX (min_height, avail_height),
-                    "page-size", avail_height,
-                    "step-increment", avail_height / 6,
-                    "page-increment", avail_height - avail_height / 6,
-                    NULL);
-
       prev_value = st_adjustment_get_value (priv->vadjustment);
-      st_adjustment_set_value (priv->vadjustment, prev_value);
+
+      st_adjustment_set_values (priv->vadjustment,
+                                prev_value,
+                                0.0,
+                                MAX (min_height, avail_height),
+                                avail_height / 6,
+                                avail_height - avail_height / 6,
+                                avail_height);
     }
 
   if (priv->hadjustment)
     {
       double prev_value;
 
-      g_object_set (G_OBJECT (priv->hadjustment),
-                    "lower", 0.0,
-                    "upper", MAX (min_width, avail_width),
-                    "page-size", avail_width,
-                    "step-increment", avail_width / 6,
-                    "page-increment", avail_width - avail_width / 6,
-                    NULL);
-
       prev_value = st_adjustment_get_value (priv->hadjustment);
-      st_adjustment_set_value (priv->hadjustment, prev_value);
+
+      st_adjustment_set_values (priv->hadjustment,
+                                prev_value,
+                                0.0,
+                                MAX (min_width, avail_width),
+                                avail_width / 6,
+                                avail_width - avail_width / 6,
+                                avail_width);
     }
 }
 
