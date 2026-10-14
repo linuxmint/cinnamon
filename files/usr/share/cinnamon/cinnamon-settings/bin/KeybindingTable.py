@@ -710,6 +710,10 @@ class KeybindingTable(GObject.Object):
                     print(f"KeybindingTable could not read {config_json}: {e}")
                     continue
 
+                if not isinstance(_config, dict):
+                    print(f"KeybindingTable could not read {config_json}: expected a JSON object")
+                    continue
+
                 for key, val in _config.items():
                     if isinstance(val, dict) and val.get("type") == "keybinding":
                         spice_properties.setdefault(key_name, {})
