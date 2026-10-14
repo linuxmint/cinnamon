@@ -302,13 +302,16 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._ambientItem.actor.hide();
         this.menu.addMenuItem(this._ambientItem);
         this._csdSettings = new Gio.Settings({ schema_id: CSD_SCHEMA });
-        this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
-        this._ambientItem.connect("toggled", (item) => {
-            this._csdSettings.set_boolean("ambient-enabled", item.state);
-        });
-        this._ambientSettingId = this._csdSettings.connect("changed::ambient-enabled", () => {
+        this._ambientSettingId = 0;
+        if (this._csdSettings.settings_schema && this._csdSettings.settings_schema.has_key("ambient-enabled")) {
             this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
-        });
+            this._ambientItem.connect("toggled", (item) => {
+                this._csdSettings.set_boolean("ambient-enabled", item.state);
+            });
+            this._ambientSettingId = this._csdSettings.connect("changed::ambient-enabled", () => {
+                this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
+            });
+        }
 
         try {
             // Hadess interface
@@ -402,7 +405,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
     }
 
     _updateAmbientVisibility() {
-        if (this.brightness.proxy && this.brightness.proxy.AmbientLightSupported) {
+        if (this.brightness.proxy && this.brightness.proxy.AmbientLightSupported &&
+            this._csdSettings.settings_schema && this._csdSettings.settings_schema.has_key("ambient-enabled")) {
             this._ambientItem.actor.show();
         } else {
             this._ambientItem.actor.hide();
