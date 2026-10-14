@@ -192,7 +192,7 @@ st_button_button_release (ClutterActor       *actor,
     {
       gboolean is_click;
 
-      is_click = button->priv->grabbed && st_widget_get_hover (ST_WIDGET (button));
+      is_click = button->priv->grabbed && clutter_actor_contains (actor, event->source);
       st_button_release (button, mask, is_click ? event->button : 0);
 
       button->priv->grabbed &= ~mask;
