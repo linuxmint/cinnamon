@@ -24,7 +24,7 @@ po_dir = join_paths(meson.project_source_root(), 'po')
 dbus = dependency('dbus-1')
 servicedir = dbus.get_variable(pkgconfig: 'session_bus_services_dir', pkgconfig_define: ['datadir', datadir])
 systemd = dependency('systemd', required: false)
-if systemd.found()
+if systemd.found() and prefix == '/usr'
     systemduserunitdir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
 else
     systemduserunitdir = join_paths(prefix, 'lib', 'systemd', 'user')
@@ -268,9 +268,10 @@ if get_option('exclude_users_settings')
     excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_user.py']
 endif
 
+files_install_dir = get_option('prefix') == '/usr' ? '/' : get_option('prefix')
 install_subdir(
     'files',
-    install_dir: '/',
+    install_dir: files_install_dir,
     strip_directory: true,
     exclude_files : excluded_files
 )
