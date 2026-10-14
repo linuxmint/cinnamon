@@ -1331,6 +1331,10 @@ _st_theme_node_init_drawing_state (StThemeNode *node)
   node->background_material = NULL;
   node->background_shadow_material = NULL;
   node->box_shadow_material = NULL;
+  node->box_shadow_silhouette_width = 0;
+  node->box_shadow_silhouette_height = 0;
+  node->box_shadow_slice_x = 0;
+  node->box_shadow_slice_y = 0;
   node->border_slices_texture = NULL;
   node->border_slices_material = NULL;
   node->prerendered_texture = NULL;
@@ -1345,6 +1349,41 @@ static void st_theme_node_paint_borders (StThemeNode           *node,
                                          CoglFramebuffer       *framebuffer,
                                          const ClutterActorBox *box,
                                          guint8                 paint_opacity);
+
+/* Smallest box whose blurred silhouette has the same corners as the
+ * allocation's, and the row and column in its middle that are far enough
+ * from the corners to be stretched. */
+static void
+st_theme_node_get_box_shadow_silhouette (StThemeNode *node,
+                                         StShadow    *shadow_spec,
+                                         int         *width,
+                                         int         *height,
+                                         int         *slice_x,
+                                         int         *slice_y)
+{
+  int top, right, bottom, left, half_middle;
+
+  top = MAX (MAX (node->border_radius[ST_CORNER_TOPLEFT],
+                  node->border_radius[ST_CORNER_TOPRIGHT]),
+             node->border_width[ST_SIDE_TOP]);
+  right = MAX (MAX (node->border_radius[ST_CORNER_TOPRIGHT],
+                    node->border_radius[ST_CORNER_BOTTOMRIGHT]),
+               node->border_width[ST_SIDE_RIGHT]);
+  bottom = MAX (MAX (node->border_radius[ST_CORNER_BOTTOMLEFT],
+                     node->border_radius[ST_CORNER_BOTTOMRIGHT]),
+                node->border_width[ST_SIDE_BOTTOM]);
+  left = MAX (MAX (node->border_radius[ST_CORNER_TOPLEFT],
+                   node->border_radius[ST_CORNER_BOTTOMLEFT]),
+              node->border_width[ST_SIDE_LEFT]);
+
+  /* blur_pixels() reads up to 1.25 * blur pixels away */
+  half_middle = ceil (1.5 * shadow_spec->blur);
+
+  *width = left + 2 * half_middle + 1 + right;
+  *height = top + 2 * half_middle + 1 + bottom;
+  *slice_x = left + half_middle;
+  *slice_y = top + half_middle;
+}
 
 static void
 st_theme_node_render_resources (StThemeNode   *node,
@@ -1488,6 +1527,22 @@ st_theme_node_render_resources (StThemeNode   *node,
           GError *error = NULL;
           int texture_width = ceil (width);
           int texture_height = ceil (height);
+          int silhouette_width, silhouette_height, slice_x, slice_y;
+          gboolean sliced;
+
+          /* Away from the corners the shadow is the same all along each edge,
+           * so blur a silhouette that only just holds the corners and stretch
+           * its middle when painting. Blurring the whole allocation takes
+           * seconds of CPU for a tall menu. */
+          st_theme_node_get_box_shadow_silhouette (node, box_shadow_spec,
+                                                   &silhouette_width, &silhouette_height,
+                                                   &slice_x, &slice_y);
+          sliced = width > silhouette_width && height > silhouette_height;
+          if (sliced)
+            {
+              texture_width = silhouette_width;
+              texture_height = silhouette_height;
+            }
 
           buffer = cogl_texture_new_with_size (texture_width,
                                                texture_height,
@@ -1503,9 +1558,16 @@ st_theme_node_render_resources (StThemeNode   *node,
           if (cogl_framebuffer_allocate (COGL_FRAMEBUFFER (offscreen), &error))
             {
               ClutterActorBox box = { 0, 0, width, height };
+
+              if (sliced)
+                {
+                  box.x2 = texture_width;
+                  box.y2 = texture_height;
+                }
+
               cogl_framebuffer_orthographic (offscreen, 0, 0,
-                                     width,
-                                     height, 0, 1.0);
+                                     box.x2,
+                                     box.y2, 0, 1.0);
               cogl_framebuffer_clear4f (offscreen, COGL_BUFFER_BIT_COLOR, 0, 0, 0, 0);
 
               st_theme_node_paint_borders (node, offscreen, &box, 0xFF);
@@ -1513,6 +1575,25 @@ st_theme_node_render_resources (StThemeNode   *node,
 
               node->box_shadow_material = _st_create_shadow_pipeline (box_shadow_spec,
                                                                       buffer);
+
+              if (sliced && node->box_shadow_material != NULL)
+                {
+                  CoglTexture *shadow_texture =
+                    cogl_pipeline_get_layer_texture (node->box_shadow_material, 0);
+
+                  if (shadow_texture != NULL)
+                    {
+                      /* blur_pixels() pads the silhouette equally on each side;
+                       * sample the middle of the texel. */
+                      float x_padding = (cogl_texture_get_width (shadow_texture) - texture_width) / 2.0;
+                      float y_padding = (cogl_texture_get_height (shadow_texture) - texture_height) / 2.0;
+
+                      node->box_shadow_silhouette_width = texture_width;
+                      node->box_shadow_silhouette_height = texture_height;
+                      node->box_shadow_slice_x = x_padding + slice_x + 0.5;
+                      node->box_shadow_slice_y = y_padding + slice_y + 0.5;
+                    }
+                }
             }
           else
             {
@@ -2025,6 +2106,88 @@ st_theme_node_paint_outline (StThemeNode           *node,
   cogl_framebuffer_draw_rectangles (fb, node->color_pipeline, rects, 4);
 }
 
+/* Paints a box-shadow blurred from a silhouette smaller than @box. It lands
+ * where _st_paint_shadow_with_opacity() would put one blurred from the whole
+ * allocation; the silhouette's middle row and column fill the difference. */
+static void
+st_theme_node_paint_sliced_shadow (StThemeNode           *node,
+                                   CoglFramebuffer       *fb,
+                                   const ClutterActorBox *box,
+                                   guint8                 paint_opacity)
+{
+  StShadow *shadow_spec = node->box_shadow;
+  CoglPipeline *pipeline = node->box_shadow_material;
+  CoglTexture *texture;
+  ClutterActorBox shadow_box;
+  CoglColor color;
+  float texture_width, texture_height, x_scale, y_scale;
+  float x1, x2, y1, y2, s, t;
+
+  texture = cogl_pipeline_get_layer_texture (pipeline, 0);
+  texture_width = cogl_texture_get_width (texture);
+  texture_height = cogl_texture_get_height (texture);
+
+  st_shadow_get_box (shadow_spec, box, &shadow_box);
+
+  /* The unsliced texture is wider by the difference between the allocation
+   * and the silhouette, and is stretched over shadow_box. */
+  x_scale = (shadow_box.x2 - shadow_box.x1) /
+            (texture_width + ceilf (box->x2 - box->x1) - node->box_shadow_silhouette_width);
+  y_scale = (shadow_box.y2 - shadow_box.y1) /
+            (texture_height + ceilf (box->y2 - box->y1) - node->box_shadow_silhouette_height);
+
+  x1 = shadow_box.x1 + node->box_shadow_slice_x * x_scale;
+  x2 = shadow_box.x2 - (texture_width - node->box_shadow_slice_x) * x_scale;
+  y1 = shadow_box.y1 + node->box_shadow_slice_y * y_scale;
+  y2 = shadow_box.y2 - (texture_height - node->box_shadow_slice_y) * y_scale;
+  s = node->box_shadow_slice_x / texture_width;
+  t = node->box_shadow_slice_y / texture_height;
+
+  cogl_color_init_from_4ub (&color,
+                            shadow_spec->color.red   * paint_opacity / 255,
+                            shadow_spec->color.green * paint_opacity / 255,
+                            shadow_spec->color.blue  * paint_opacity / 255,
+                            shadow_spec->color.alpha * paint_opacity / 255);
+  cogl_color_premultiply (&color);
+  cogl_pipeline_set_layer_combine_constant (pipeline, 0, &color);
+
+  {
+    float rectangles[] = {
+      /* top left, top, top right */
+      shadow_box.x1, shadow_box.y1, x1, y1,
+      0.0, 0.0, s, t,
+
+      x1, shadow_box.y1, x2, y1,
+      s, 0.0, s, t,
+
+      x2, shadow_box.y1, shadow_box.x2, y1,
+      s, 0.0, 1.0, t,
+
+      /* left, middle, right */
+      shadow_box.x1, y1, x1, y2,
+      0.0, t, s, t,
+
+      x1, y1, x2, y2,
+      s, t, s, t,
+
+      x2, y1, shadow_box.x2, y2,
+      s, t, 1.0, t,
+
+      /* bottom left, bottom, bottom right */
+      shadow_box.x1, y2, x1, shadow_box.y2,
+      0.0, t, s, 1.0,
+
+      x1, y2, x2, shadow_box.y2,
+      s, t, s, 1.0,
+
+      x2, y2, shadow_box.x2, shadow_box.y2,
+      s, t, 1.0, 1.0
+    };
+
+    cogl_framebuffer_draw_textured_rectangles (fb, pipeline, rectangles, 9);
+  }
+}
+
 void
 st_theme_node_paint (StThemeNode           *node,
                      CoglFramebuffer       *fb,
@@ -2093,7 +2256,9 @@ st_theme_node_paint (StThemeNode           *node,
   if (background_bumpmap_effect)
       st_paint_background_bumpmap_effect (background_bumpmap_effect, fb, box);
 
-  if (node->box_shadow_material)
+  if (node->box_shadow_material && node->box_shadow_silhouette_width > 0)
+    st_theme_node_paint_sliced_shadow (node, fb, &allocation, paint_opacity);
+  else if (node->box_shadow_material)
     _st_paint_shadow_with_opacity (node->box_shadow,
                                    node->box_shadow_material,
                                    fb,
@@ -2211,6 +2376,10 @@ st_theme_node_copy_cached_paint_state (StThemeNode *node,
     node->background_shadow_material = cogl_object_ref (other->background_shadow_material);
   if (other->box_shadow_material)
     node->box_shadow_material = cogl_object_ref (other->box_shadow_material);
+  node->box_shadow_silhouette_width = other->box_shadow_silhouette_width;
+  node->box_shadow_silhouette_height = other->box_shadow_silhouette_height;
+  node->box_shadow_slice_x = other->box_shadow_slice_x;
+  node->box_shadow_slice_y = other->box_shadow_slice_y;
   if (other->background_texture)
     node->background_texture = cogl_object_ref (other->background_texture);
   if (other->background_material)
