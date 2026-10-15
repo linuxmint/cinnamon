@@ -912,8 +912,16 @@ NMDeviceModem.prototype = {
     _createAutomaticConnection: function() {
         // Mobile wizard is too complex for Cinnamon UI and
         // is handled by the network panel
-        Util.spawn(['cinnamon-settings', 'network',
-                    'connect-3g', this.device.get_path()]);
+        let path = this.device.get_path();
+        if (path) {
+            Util.spawn(['cinnamon-settings', 'network', 'connect-3g', path]);
+        } else {
+            // Some modems (e.g. MBIM/eSIM devices) do not expose a device
+            // path, so get_path() returns null. Passing null to Util.spawn()
+            // throws "array element (type filename) may not be null", so fall
+            // back to just opening the network panel.
+            Util.spawn(['cinnamon-settings', 'network']);
+        }
         return null;
     }
 };
