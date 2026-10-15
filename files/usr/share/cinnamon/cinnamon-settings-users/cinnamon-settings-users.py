@@ -7,6 +7,8 @@ import gettext
 import shutil
 import re
 import subprocess
+import tempfile
+import stat
 from random import randint
 from setproctitle import setproctitle
 
@@ -50,6 +52,171 @@ priv_helper = PrivHelper()
 
 (INDEX_USER_OBJECT, INDEX_USER_PICTURE, INDEX_USER_DESCRIPTION) = range(3)
 (INDEX_GID, INDEX_GROUPNAME) = range(2)
+
+def get_private_group(username):
+    passwd_entry = pwd.getpwnam(username)
+    primary_group = grp.getgrgid(passwd_entry.pw_gid)
+    is_private = primary_group.gr_name == username
+
+    return primary_group, is_private
+
+
+def user_has_running_processes(username):
+    return subprocess.run(
+        ["pgrep", "-u", username],
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL
+    ).returncode == 0
+
+
+def user_has_open_session(username):
+    try:
+        sessions = subprocess.check_output(
+            ["loginctl", "list-sessions", "--no-legend", "--no-pager"],
+            text=True
+        )
+    except (subprocess.CalledProcessError, FileNotFoundError):
+        return False
+
+    for session in sessions.splitlines():
+        fields = session.split()
+        if len(fields) >= 3 and fields[2] == username:
+            return True
+
+    return False
+
+
+def read_user_crontab(username):
+    try:
+        result = subprocess.run(
+            ["crontab", "-u", username, "-l"],
+            capture_output=True,
+            text=True
+        )
+    except FileNotFoundError:
+        return None
+
+    if result.returncode == 0:
+        return result.stdout
+
+    return None
+
+
+def install_user_crontab(username, contents):
+    if contents is None:
+        return
+
+    subprocess.run(
+        ["crontab", "-u", username, "-"],
+        input=contents,
+        text=True,
+        check=True
+    )
+
+
+def rename_subid_entry(path, old_username, new_username):
+    if not os.path.exists(path):
+        return
+
+    with open(path) as source:
+        lines = source.readlines()
+
+    prefix = old_username + ":"
+    replacement = new_username + ":"
+    updated_lines = [
+        replacement + line[len(prefix):]
+        if line.startswith(prefix) else line
+        for line in lines
+    ]
+
+    if updated_lines == lines:
+        return
+
+    file_mode = stat.S_IMODE(os.stat(path).st_mode)
+    file_directory = os.path.dirname(path) or "."
+    descriptor, temporary_path = tempfile.mkstemp(dir=file_directory)
+
+    try:
+        with os.fdopen(descriptor, "w") as destination:
+            destination.writelines(updated_lines)
+        os.chmod(temporary_path, file_mode)
+        os.replace(temporary_path, path)
+    except Exception:
+        try:
+            os.unlink(temporary_path)
+        except FileNotFoundError:
+            pass
+        raise
+
+
+class RenameUserDialog(Gtk.Dialog):
+    def __init__(self, old_username, parent=None):
+        super(RenameUserDialog, self).__init__(
+            title=_("Rename User"),
+            transient_for=parent,
+            flags=Gtk.DialogFlags.MODAL
+        )
+
+        self.old_username = old_username
+
+        grid = Gtk.Grid()
+        grid.set_row_spacing(8)
+        grid.set_column_spacing(12)
+        grid.set_border_width(12)
+
+        grid.attach(Gtk.Label(_("New username:")), 0, 0, 1, 1)
+
+        self.username_entry = Gtk.Entry()
+        self.username_entry.set_text(old_username)
+        self.username_entry.connect("changed", self._validate_username)
+        grid.attach(self.username_entry, 1, 0, 1, 1)
+
+        self.get_content_area().add(grid)
+
+        self.add_buttons(
+            _("Cancel"), Gtk.ResponseType.CANCEL,
+            _("Rename"), Gtk.ResponseType.OK
+        )
+
+        self.set_response_sensitive(Gtk.ResponseType.OK, False)
+        self.show_all()
+
+    def _validate_username(self, entry):
+        username = entry.get_text()
+
+        valid_format = re.match(
+            r"^[a-z_][a-z0-9_-]*$",
+            username
+        )
+
+        already_exists = False
+        try:
+            pwd.getpwnam(username)
+            already_exists = username != self.old_username
+        except KeyError:
+            pass
+
+        valid = (
+            bool(username) and
+            bool(valid_format) and
+            not already_exists and
+            username != self.old_username
+        )
+
+        if valid:
+            entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY, None
+            )
+        else:
+            entry.set_icon_from_icon_name(
+                Gtk.EntryIconPosition.SECONDARY,
+                "dialog-warning-symbolic"
+            )
+
+        self.set_response_sensitive(Gtk.ResponseType.OK, valid)
+
+    def get_username(self):
+        return self.username_entry.get_text()
 
 class GroupDialog (Gtk.Dialog):
     def __init__ (self, label, value, parent = None):
@@ -478,6 +645,7 @@ class Module:
             self.builder.get_object("button_add_group").connect("clicked", self.on_group_addition)
             self.builder.get_object("button_edit_group").connect("clicked", self.on_group_edition)
             self.builder.get_object("button_delete_group").connect("clicked", self.on_group_deletion)
+            self.builder.get_object("button_edit_user").connect("clicked",self.on_user_edition)
 
             self.users = Gtk.TreeStore(object, GdkPixbuf.Pixbuf, str)
             self.users.set_sort_column_id(2, Gtk.SortType.ASCENDING)
@@ -516,6 +684,7 @@ class Module:
             self.builder.get_object("button_delete_user").set_sensitive(False)
             self.builder.get_object("button_edit_group").set_sensitive(False)
             self.builder.get_object("button_delete_group").set_sensitive(False)
+            self.builder.get_object("button_edit_user").set_sensitive(False)
 
             self.face_button = Gtk.Button()
             self.face_image = Gtk.Image()
@@ -798,6 +967,7 @@ class Module:
         if treeiter is not None:
             user = model[treeiter][INDEX_USER_OBJECT]
             self.builder.get_object("button_delete_user").set_sensitive(True)
+            self.builder.get_object("button_edit_user").set_sensitive(True)
             self.realname_entry.set_text(user.get_real_name())
 
             if user.get_password_mode() == AccountsService.UserPasswordMode.REGULAR:
@@ -861,6 +1031,7 @@ class Module:
 
         else:
             self.builder.get_object("button_delete_user").set_sensitive(False)
+            self.builder.get_object("button_edit_user").set_sensitive(False)
             self.builder.get_object("box_users").hide()
 
     def on_user_deletion(self, event):
@@ -908,8 +1079,95 @@ class Module:
 
     def on_user_edition(self, event):
         model, treeiter = self.users_treeview.get_selection().get_selected()
-        if treeiter is not None:
-            print("Editing user %s" % model[treeiter][INDEX_USER_OBJECT].get_user_name())
+
+        if treeiter is None:
+            return
+
+        user = model[treeiter][INDEX_USER_OBJECT]
+        old_username = user.get_user_name()
+
+        dialog = RenameUserDialog(old_username, self.window)
+        response = dialog.run()
+
+        if response == Gtk.ResponseType.OK:
+            new_username = dialog.get_username()
+
+            has_processes = user_has_running_processes(old_username)
+            has_session = user_has_open_session(old_username)
+
+            if has_processes or has_session:
+                warning = _(
+                    "This user has running processes or an open session. "
+                    "Renaming the account may fail or leave applications "
+                    "in an inconsistent state. Continue?"
+                )
+                warning_dialog = Gtk.MessageDialog(
+                    self.window,
+                    Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                    Gtk.MessageType.WARNING,
+                    Gtk.ButtonsType.OK_CANCEL,
+                    warning
+                )
+                warning_dialog.set_title(_("Active User Session"))
+                warning_response = warning_dialog.run()
+                warning_dialog.destroy()
+
+                if warning_response != Gtk.ResponseType.OK:
+                    dialog.destroy()
+                    return
+
+            primary_group, is_private = get_private_group(old_username)
+            old_home = user.get_home_dir()
+            new_home = os.path.join(
+                os.path.dirname(old_home),
+                new_username
+            )
+            user_crontab = read_user_crontab(old_username)
+
+            try:
+                subprocess.run(
+                    [
+                        "usermod",
+                        "-l", new_username,
+                        "-d", new_home,
+                        "-m",
+                        old_username
+                    ],
+                    check=True
+                )
+
+                if is_private:
+                    subprocess.run(
+                        ["groupmod", "-n", new_username, primary_group.gr_name],
+                        check=True
+                    )
+
+                rename_subid_entry("/etc/subuid", old_username, new_username)
+                rename_subid_entry("/etc/subgid", old_username, new_username)
+
+                install_user_crontab(new_username, user_crontab)
+                if user_crontab is not None:
+                    subprocess.run(
+                        ["crontab", "-u", old_username, "-r"],
+                        check=False
+                    )
+
+                self.load_users()
+                self.load_groups()
+
+            except (subprocess.CalledProcessError, OSError) as error:
+                error_dialog = Gtk.MessageDialog(
+                    self.window,
+                    Gtk.DialogFlags.MODAL | Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                    Gtk.MessageType.ERROR,
+                    Gtk.ButtonsType.OK,
+                    _("The user could not be renamed.")
+                )
+                error_dialog.format_secondary_text(str(error))
+                error_dialog.run()
+                error_dialog.destroy()
+
+        dialog.destroy()
 
 # GROUPS CALLBACKS
 
