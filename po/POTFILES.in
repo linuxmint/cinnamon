@@ -142,6 +142,7 @@ js/ui/appSwitcher/appSwitcher.js
 js/ui/appSwitcher/appSwitcher3D.js
 js/ui/appSwitcher/classicSwitcher.js
 js/ui/appSwitcher/coverflowSwitcher.js
+js/ui/automountManager.js
 js/ui/locatePointer.js
 js/ui/lookingGlass.js
 js/ui/magnifier.js
