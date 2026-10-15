@@ -394,6 +394,10 @@ KeybindingManager.prototype = {
 
             let custom_path = CUSTOM_KEYS_BASENAME + "/" + list[i] + "/";
             let schema = Gio.Settings.new_with_path(CUSTOM_KEYS_SCHEMA, custom_path);
+            if (!schema) {
+                global.logWarning(`Ignoring invalid custom keybinding entry '${list[i]}'`);
+                continue;
+            }
             let command = schema.get_string("command");
             let binding = schema.get_strv("binding");
             let name = list[i];
