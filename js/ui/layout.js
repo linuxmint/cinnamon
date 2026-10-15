@@ -236,6 +236,14 @@ class UiActor extends St.Widget {
     }
 
     vfunc_paint(context) {
+        // uiGroup has dozens of children, nearly all of them hidden tooltips and menus. Calling
+        // child.paint() from JS marshals the paint context for each one on every frame; when
+        // nothing is skipped, chain up and let ClutterActor walk the children natively.
+        if (this.skip_paint_actors.size === 0) {
+            super.vfunc_paint(context);
+            return;
+        }
+
         for (let child = this.get_first_child(); child != null; child = child.get_next_sibling()) {
             if (this.skip_paint_actors.has(child))
                 continue;
