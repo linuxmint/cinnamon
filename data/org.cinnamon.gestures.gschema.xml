@@ -3,7 +3,7 @@
           gettext-domain="@GETTEXT_PACKAGE@">
     <key name="enabled" type="b">
       <default>false</default>
-      <summary>Enables gesture support using Touchegg.</summary>
+      <summary>Enables gesture support.</summary>
     </key>
     <key name="swipe-percent-threshold" type="u">
       <default>60</default>
