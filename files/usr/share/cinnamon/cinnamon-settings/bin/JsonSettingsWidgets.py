@@ -10,6 +10,7 @@ import os
 import collections
 import json
 import operator
+import re
 
 can_backend = px_can_backend + c_can_backend
 can_backend.append('List')
@@ -237,27 +238,75 @@ class JSONSettingsHandler(object):
         new_file.write(raw_data)
         new_file.close()
 
+def get_constant(settings, string):
+    try:
+        value = float(string)  # Try converting to a float
+    except ValueError:
+        if string.lower() == 'true':
+            value = True
+        elif string.lower() == "false":
+            value = False
+        else:
+            value = string
+    return value
+
 class JSONSettingsRevealer(Gtk.Revealer):
     def __init__(self, settings, key):
         super(JSONSettingsRevealer, self).__init__()
         self.settings = settings
 
-        self.key = None
-        self.op = None
-        self.value = None
-        for op in OPERATIONS:
-            if op in key:
-                self.op = op
-                self.key, self.value = key.split(op)
-                break
+        # Split the dependencies into a list of keys, operations and constants
+        expression = re.split(r'(!=|<=|>=|[<>=&| ])', key)
+        # Remove any blank entries and any whitespace within entries
+        self.expression = [item.strip() for item in expression if item.strip()]
 
-        if self.key is None:
-            if key[:1] == '!':
-                self.invert = True
-                self.key = key[1:]
-            else:
-                self.invert = False
-                self.key = key
+        # Listen to any keys found in the expression,
+        # expand all compares, decode constants,
+        # decode compare operators and check for errors
+        key = None
+        idx = 0
+        count = len(self.expression)
+        listening = []
+        #print( f"Preparing dependency: {self.expression}" )
+        while idx < count:
+            element = self.expression[idx]
+            if element == '&' or element == '|':
+                pass
+            elif element in OPERATIONS:  # ... key op constant ...
+                self.expression[idx] = OPERATIONS_MAP[element]
+                key = self.expression[idx-1]
+                if idx+1 < count and self.expression[idx+1] != '&' and self.expression[idx+1] != '|':
+                    self.expression[idx+1] = get_constant(self.settings, self.expression[idx+1])
+                else:  # No constant provided, so we assume a zero length string
+                    self.expression.insert(idx+1, "")
+                    count += 1
+                idx += 1
+            elif element[0] == '!':      # ... !key ...
+                key = element[1:]
+                self.expression[idx] = key
+                self.expression.insert(idx+1, False)
+                self.expression.insert(idx+1, operator.eq)
+                idx += 2
+                count += 2
+            elif idx == count-1 or self.expression[idx+1] == '&' or self.expression[idx+1] == '|':   # standalone key
+                key = element
+                self.expression.insert(idx+1, True)
+                self.expression.insert(idx+1, operator.eq)
+                idx += 2
+                count += 2
+            if key:
+                if self.settings.has_key(key):
+                    if key not in listening:
+                        self.settings.listen(key, self.key_changed)
+                        listening.append(key)
+                else:
+                    print( f"Error in json dependency: \"{key}\" is not a valid key" )
+                if idx+1 < count and self.expression[idx+1] != '&' and self.expression[idx+1] != '|':
+                    print( f"Error in json dependency: Unexpected expression \"{self.expression[idx+1]}\"" )
+                    self.expression = self.expression[:idx+1]  # remove the remaining elements since something is wrong with the syntax
+                    break
+                key = None
+            idx += 1
 
         self.box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=15)
         Gtk.Revealer.add(self, self.box)
@@ -265,20 +314,49 @@ class JSONSettingsRevealer(Gtk.Revealer):
         self.set_transition_type(Gtk.RevealerTransitionType.SLIDE_DOWN)
         self.set_transition_duration(150)
 
-        self.settings.listen(self.key, self.key_changed)
-        self.key_changed(self.key, self.settings.get_value(self.key))
+       #  Set reveal state
+        self.key_changed(None, None)
 
     def add(self, widget):
         self.box.pack_start(widget, False, True, 0)
 
     def key_changed(self, key, value):
-        if self.op is not None:
-            val_type = type(value)
-            self.set_reveal_child(OPERATIONS_MAP[self.op](value, val_type(self.value)))
-        elif value != self.invert:
-            self.set_reveal_child(True)
-        else:
-            self.set_reveal_child(False)
+        evaluate = []
+        count = len(self.expression)
+        #print( f"Evaluating expression: {self.expression}" )
+
+        # Go through the expression to evaluate all the compares
+        # The init ensures that the list has this format: key op const [ <&/|> key op const ]...
+        idx = 0
+        while idx < count:
+            lhs = self.settings.get_value(self.expression[idx])
+            op  = self.expression[idx+1]
+            rhs = self.expression[idx+2]
+            evaluate.append( op(lhs, rhs) )
+            idx += 3
+            if idx < count:
+                evaluate.append( self.expression[idx] )
+                idx += 1
+        #print( f"Post compare evaluation: {evaluate}" )
+
+        # Handle all the "and" operations first in accordance with the logical order of operations
+        while "&" in evaluate:
+            idx = evaluate.index("&")
+            result = (evaluate[idx-1] and evaluate[idx+1])
+            evaluate[idx-1:idx+2] = [] ## remove 3 elements: idx-1 through idx+1
+            evaluate.insert(idx-1, result);
+        #print( f"After evaluating the ands: {evaluate}" )
+
+        # Handle all the "or" operations (there should be nothing but "or" operations at this point)
+        while "|" in evaluate:
+            idx = evaluate.index("|")
+            result = (evaluate[idx-1] or evaluate[idx+1])
+            evaluate[idx-1:idx+2] = [] ## remove 3 elements: idx-1 through idx+1
+            evaluate.insert(idx-1, result);
+        #print( f"After evaluating ors: {evaluate}" )
+
+        # At this point we should only have one entry in the list, the final result
+        self.set_reveal_child(evaluate[0])
 
 class JSONSettingsBackend(object):
     def attach(self):
