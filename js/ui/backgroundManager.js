@@ -35,6 +35,7 @@ var BackgroundManager = class {
         this._onDaemonReady = null;
         this._daemonHadOwner = false;
         this._daemonExitTimes = [];
+        this._restartEnabled = true;
         this._gnomeSettings = null;
 
         this._startDaemon();
@@ -141,8 +142,12 @@ var BackgroundManager = class {
         });
     }
 
+    disableRestart() {
+        this._restartEnabled = false;
+    }
+
     _onDaemonVanished() {
-        if (!this._daemonHadOwner)
+        if (!this._daemonHadOwner || !this._restartEnabled)
             return;
 
         const now = GLib.get_monotonic_time();

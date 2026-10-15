@@ -293,6 +293,7 @@ function do_shutdown_sequence() {
 function onSessionOver() {
     global.log("Session is ending");
     soundManager.disable();
+    backgroundManager.disableRestart();
 }
 
 function _reparentActor(actor, newParent) {
