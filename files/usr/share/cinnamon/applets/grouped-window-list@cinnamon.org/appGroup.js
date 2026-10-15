@@ -278,11 +278,13 @@ var AppGroup = class AppGroup {
         const appletActor = this.state.appletActor;
         const direction = this.state.isHorizontal ? 'right' : 'bottom';
         const existingStyle = this.actor.style ? this.actor.style : '';
-        let spacing = parseInt(appletActor.get_theme_node().get_length('spacing'));
-        if (!spacing) {
-            spacing = 6;
+        let spacing = appletActor.get_theme_node().lookup_length('spacing', false));
+        let spacingExists = spacing[0];
+        let spacingLength = spacing[1];
+        if (!spacingExists) {
+            spacingLength = 6;
         }
-        this.actor.style = existingStyle + 'margin-' + direction + ':' + spacing + 'px;';
+        this.actor.style = existingStyle + 'margin-' + direction + ':' + spacingLength + 'px;';
     }
 
     setIcon(metaWindow) {
