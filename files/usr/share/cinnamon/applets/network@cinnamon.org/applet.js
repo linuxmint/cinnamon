@@ -107,11 +107,6 @@ NMNetworkMenuItem.prototype = {
         accessPoints = sortAccessPoints(accessPoints);
         this.bestAP = accessPoints[0];
 
-        if (!title) {
-            let ssid = this.bestAP.get_ssid();
-            title = ssidToLabel(ssid);
-        }
-
         this._label = new St.Label({ text: title });
         this.addActor(this._label);
         let strStrengh = String(this.bestAP.strength);
@@ -1565,7 +1560,7 @@ NMDeviceWireless.prototype = {
     },
 
     _createAPItem: function(connection, accessPointObj, useConnectionName) {
-        let item = new NMNetworkMenuItem(accessPointObj.accessPoints, useConnectionName ? connection._name : undefined);
+        let item = new NMNetworkMenuItem(accessPointObj.accessPoints, useConnectionName ? connection._name : accessPointObj.ssidText);
         item._connection = connection;
         item.connect('activate', Lang.bind(this, function() {
             let accessPoints = sortAccessPoints(accessPointObj.accessPoints);
@@ -1692,13 +1687,13 @@ NMDeviceWireless.prototype = {
             }
 
             if (this._activeNetwork)
-                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined, { reactive: false });
+                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, this._activeNetwork.ssidText, { reactive: false });
             else
                 this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(this._activeConnection.connection._name, 'xsi-network-wireless-connected', { reactive: false });
         } else {
             // We cannot read the connection (due to ACL, or API incompatibility), but we still show signal if we have it
             if (this._activeNetwork)
-                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, undefined,
+                this._activeConnectionItem = new NMNetworkMenuItem(this._activeNetwork.accessPoints, this._activeNetwork.ssidText,
                                                                    { reactive: false });
             else
                 this._activeConnectionItem = new PopupMenu.PopupImageMenuItem(_("Connected (private)"),
@@ -1761,7 +1756,7 @@ NMDeviceWireless.prototype = {
                     apObj.item.menu.addMenuItem(this._createAPItem(apObj.connections[i], apObj, true));
             }
         } else {
-            apObj.item = new NMNetworkMenuItem(apObj.accessPoints);
+            apObj.item = new NMNetworkMenuItem(apObj.accessPoints, apObj.ssidText);
             apObj.item.connect('activate', Lang.bind(this, function() {
                 let accessPoints = sortAccessPoints(apObj.accessPoints);
                 if ((accessPoints[0]._secType == NMAccessPointSecurity.WPA2_ENT) ||
