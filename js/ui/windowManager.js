@@ -425,7 +425,8 @@ var WindowManager = class WindowManager {
                 return;
             }
 
-            if (metaWindow.get_workspace().index() !== global.workspace_manager.get_active_workspace_index()) {
+            const workspace = metaWindow.get_workspace();
+            if (workspace === null || workspace.index() !== global.workspace_manager.get_active_workspace_index()) {
                 return;
             }
 
