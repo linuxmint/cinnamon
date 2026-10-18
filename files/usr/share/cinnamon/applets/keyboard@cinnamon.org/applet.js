@@ -216,23 +216,12 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this._selectedLayout = item;
         this.set_applet_tooltip(selected.displayName);
 
-        let actor = null;
         const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
+        const actor = this._inputSourcesManager.createIndicator(selected, APPLET_ICON_STYLE_CLASS, "applet-label", iconSize);
 
-        // IBus engines always show their own icon (flags are an xkb concept); xkb
-        // layouts show a flag only when the user opted into flags.
-        if (selected.type === 'ibus' || this._inputSourcesManager.showFlags) {
-            actor = this._inputSourcesManager.createFlagIcon(selected, APPLET_ICON_STYLE_CLASS, iconSize);
-        }
-
-        if (actor == null) {
-            actor = new St.Label({
-                text: selected.shortName,
-                style_class: "applet-label"
-            });
-            // Enforce a constant width and center the text
+        // Enforce a constant width and center the text
+        if (actor instanceof St.Label)
             actor.set_style("min-width: 2.5em; text-align: center;");
-        }
 
         this._panel_icon_box.set_child(actor);
 
@@ -243,18 +232,6 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this.showLayoutAction.setSensitive(selected.type === 'xkb');
 
         this._updatePropertySection(selected.properties);
-    }
-
-    _setPanelIBusLabel(label) {
-        let actor = new St.Label({
-            text: label,
-            style_class: "applet-label"
-        });
-
-        // Enforce a constant width and center the text
-        actor.set_style("min-width: 2.5em; text-align: center;");
-
-        this._panel_icon_box.set_child(actor);
     }
 
     _updatePropertySection(properties) {
@@ -278,20 +255,6 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
             if (!prop.get_visible())
                 continue;
-
-            if (prop.get_key() == 'InputMode') {
-                let text;
-                if (prop.get_symbol)
-                    text = prop.get_symbol().get_text();
-                else
-                    text = prop.get_label().get_text();
-                let currentSource = this._inputSourcesManager.currentSource;
-                if (currentSource) {
-                    let indicatorLabel = this._layoutItems.get(currentSource);
-                    if (text && text.length > 0 && text.length < 3)
-                        this._setPanelIBusLabel(text)
-                }
-            }
 
             let item;
             let type = prop.get_prop_type();

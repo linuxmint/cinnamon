@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /* exported CandidatePopup */
 
-const { Clutter, GObject, IBus, St } = imports.gi;
+const { Clutter, GLib, GObject, IBus, St } = imports.gi;
 
 const BoxPointer = imports.ui.boxpointer;
 const Main = imports.ui.main;
@@ -10,6 +10,13 @@ var MAX_CANDIDATES_PER_PAGE = 16;
 
 var DEFAULT_INDEX_LABELS = ['1', '2', '3', '4', '5', '6', '7', '8',
                             '9', '0', 'a', 'b', 'c', 'd', 'e', 'f'];
+
+var INPUT_SOURCE_POPUP_TIME = 1000; // ms
+var INPUT_SOURCE_ICON_SIZE = 22;
+
+// On X11 the shortcut's key grab focuses the client out, and that can reach us
+// before the keybinding handler runs.
+var TEXT_FOCUS_GRACE_TIME = 500; // ms
 
 var CandidateArea = GObject.registerClass({
     Signals: {
@@ -139,6 +146,77 @@ var CandidateArea = GObject.registerClass({
     }
 });
 
+var InputSourcePopup = GObject.registerClass(
+class InputSourcePopup extends BoxPointer.BoxPointer {
+    _init() {
+        super._init(St.Side.TOP);
+        this.visible = false;
+        this.style_class = 'candidate-popup-boxpointer';
+        this.important = true;
+        Main.layoutManager.addChrome(this, { doNotAdd: true });
+        global.overlay_group.add_actor(this);
+
+        this._box = new St.BoxLayout({ style_class: 'candidate-popup-content' });
+        this.bin.set_child(this._box);
+
+        // Sized to fit a flag (all 4:3), so switching between flags, icons
+        // and labels doesn't resize the popup.
+        let width = Math.ceil(INPUT_SOURCE_ICON_SIZE * 4 / 3);
+        this._slot = new St.Bin({
+            style: `min-width: ${width}px; min-height: ${INPUT_SOURCE_ICON_SIZE}px;`,
+        });
+        this._box.add_child(this._slot);
+
+        this._createIndicator = null;
+        this._hideId = 0;
+    }
+
+    _setIndicator() {
+        this._slot.child?.destroy();
+        this._slot.set_child(this._createIndicator(INPUT_SOURCE_ICON_SIZE));
+    }
+
+    reposition(cursor) {
+        let node = this.get_theme_node();
+        let radius = node.get_length('-arrow-border-radius');
+        let halfBase = Math.floor(node.get_length('-arrow-base') / 2);
+
+        this.bin.min_width = 2 * (radius + halfBase) + 1;
+        this.setPosition(cursor, 0.5);
+    }
+
+    popup(createIndicator, cursor) {
+        this._createIndicator = createIndicator;
+        this._setIndicator();
+        this.reposition(cursor);
+        this.open(BoxPointer.PopupAnimation.NONE);
+        this.get_parent().set_child_above_sibling(this, null);
+
+        if (this._hideId)
+            GLib.source_remove(this._hideId);
+
+        this._hideId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, INPUT_SOURCE_POPUP_TIME, () => {
+            this._hideId = 0;
+            this.close(BoxPointer.PopupAnimation.NONE);
+            return GLib.SOURCE_REMOVE;
+        });
+    }
+
+    refresh() {
+        if (this.visible)
+            this._setIndicator();
+    }
+
+    dismiss() {
+        if (this._hideId) {
+            GLib.source_remove(this._hideId);
+            this._hideId = 0;
+        }
+
+        this.close(BoxPointer.PopupAnimation.NONE);
+    }
+});
+
 var CandidatePopup = GObject.registerClass(
 class IbusCandidatePopup extends BoxPointer.BoxPointer {
     _init() {
@@ -186,13 +264,29 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
             this._panelService.candidate_clicked(index, button, state);
         });
 
+        this._inputSourcePopup = new InputSourcePopup();
+        this._textFocused = false;
+        this._textFocusLostTime = 0;
+
         this._panelService = null;
     }
 
     setPanelService(panelService) {
         this._panelService = panelService;
-        if (!panelService)
+        this._textFocused = false;
+        if (!panelService) {
+            this._inputSourcePopup.dismiss();
             return;
+        }
+
+        panelService.connect('focus-in', (ps, path) => {
+            // InputContext_1 is ibus-daemon's own fake context, focused
+            // whenever no client is.
+            if (GLib.str_has_suffix(path, '/InputContext_1'))
+                this._loseTextFocus();
+            else
+                this._textFocused = true;
+        });
 
         panelService.connect('set-cursor-location', (ps, x, y, w, h) => {
             this._setDummyCursorGeometry(x, y, w, h);
@@ -288,9 +382,31 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
             this._updateVisibility();
         });
         panelService.connect('focus-out', () => {
+            this._loseTextFocus();
             this.close(BoxPointer.PopupAnimation.NONE);
             Main.virtualKeyboardManager.resetSuggestions();
         });
+    }
+
+    _loseTextFocus() {
+        this._textFocused = false;
+        this._textFocusLostTime = GLib.get_monotonic_time();
+    }
+
+    _hasTextFocus() {
+        return this._textFocused ||
+               GLib.get_monotonic_time() - this._textFocusLostTime < TEXT_FOCUS_GRACE_TIME * 1000;
+    }
+
+    showInputSourceInfo(createIndicator) {
+        if (!this._inputSourcePopup.visible && !this._hasTextFocus())
+            return;
+
+        this._inputSourcePopup.popup(createIndicator, this._dummyCursor);
+    }
+
+    refreshInputSourceInfo() {
+        this._inputSourcePopup.refresh();
     }
 
     _setDummyCursorGeometry(x, y, w, h) {
@@ -299,6 +415,8 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
 
         if (this.visible)
             this.setPosition(this._dummyCursor, 0);
+        if (this._inputSourcePopup.visible)
+            this._inputSourcePopup.reposition(this._dummyCursor);
     }
 
     _updateVisibility() {

@@ -208,6 +208,14 @@ var IBusManager = class {
         this.emit('set-content-type', purpose, hints);
     }
 
+    showInputSourceInfo(createIndicator) {
+        this._candidatePopup.showInputSourceInfo(createIndicator);
+    }
+
+    refreshInputSourceInfo() {
+        this._candidatePopup.refreshInputSourceInfo();
+    }
+
     activateProperty(key, state) {
         if (!this._panelService)
             return;

@@ -18,6 +18,7 @@ var DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
 var KEY_INPUT_SOURCES = 'sources';
 var KEY_KEYBOARD_OPTIONS = 'xkb-options';
 var KEY_PER_WINDOW = 'per-window';
+var KEY_SHOW_SWITCH_POPUP = 'show-source-switch-popup';
 var KEY_SOURCE_LAYOUTS = 'source-layouts';
 
 var INPUT_SOURCE_TYPE_XKB = 'xkb';
@@ -524,6 +525,10 @@ var InputSourceSettings = class {
         return this._settings.get_boolean(KEY_PER_WINDOW);
     }
 
+    get showSwitchPopup() {
+        return this._settings.get_boolean(KEY_SHOW_SWITCH_POPUP);
+    }
+
     get sourceLayouts() {
         return this._settings.get_value(KEY_SOURCE_LAYOUTS).deep_unpack();
     }
@@ -564,6 +569,7 @@ var InputSourceManager = class {
         this._ibusManager.connect('set-content-type', this._ibusSetContentType.bind(this));
 
         global.display.connect('modifiers-accelerator-activated', () => this._modifiersSwitcher(false));
+        this.connect('current-source-changed', () => this._ibusManager.refreshInputSourceInfo());
 
         // The keyboard device can re-initialize across suspend and drop our
         // xkb group/options, so re-apply them on resume.
@@ -637,7 +643,11 @@ var InputSourceManager = class {
             kb = this._kb_settings.get_strv(name);
             Main.keybindingManager.addHotKeyArray(
                 name, kb,
-                () => this.activateInputSourceIndex(i),
+                () => {
+                    this.activateInputSourceIndex(i);
+                    if (this._inputSources[i])
+                        this._showInputSourceInfo(this._inputSources[i]);
+                },
                 undefined,
                 Cinnamon.ActionMode.ALL
             );
@@ -676,7 +686,17 @@ var InputSourceManager = class {
 
         is = this._inputSources[nextIndex];
         is.activate();
+        this._showInputSourceInfo(is);
         return true;
+    }
+
+    // Shortcut switches only: briefly show the panel indicator at the text cursor.
+    _showInputSourceInfo(is) {
+        if (!this._settings.showSwitchPopup)
+            return;
+
+        this._ibusManager.showInputSourceInfo(
+            size => this.createIndicator(is, null, 'candidate-popup-text', size));
     }
 
     _keyboardOptionsChanged() {
@@ -1177,6 +1197,32 @@ var InputSourceManager = class {
         }
 
         return null;
+    }
+
+    // An ibus engine's input-mode symbol (e.g. anthy's "あ"), shown in place
+    // of its icon.
+    _getInputModeLabel(source) {
+        let prop = this._findProperty(source.properties, 'InputMode');
+        if (!prop || !prop.get_visible())
+            return null;
+
+        let text = prop.get_symbol ? prop.get_symbol().get_text() : prop.get_label().get_text();
+        return text && text.length < 3 ? text : null;
+    }
+
+    // The panel indicator for a source. IBus engines always show their own
+    // icon (flags are an xkb concept); xkb layouts show a flag only when the
+    // user opted into flags. Otherwise it's a label using labelClass.
+    createIndicator(source, iconClass, labelClass, size) {
+        let text = this._getInputModeLabel(source);
+
+        if (!text && (source.type == INPUT_SOURCE_TYPE_IBUS || this.showFlags)) {
+            let icon = this.createFlagIcon(source, iconClass, size);
+            if (icon)
+                return icon;
+        }
+
+        return new St.Label({ text: text || source.shortName, style_class: labelClass });
     }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);
