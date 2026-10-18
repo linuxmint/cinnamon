@@ -238,10 +238,13 @@ var InputSource = class {
         if (!engineDesc)
             return this.id;
 
-        if (engineDesc.variant && engineDesc.variant.length > 0)
-            return '%s+%s'.format(engineDesc.layout, engineDesc.variant);
+        let layout = engineDesc.get_layout();
+        let variant = engineDesc.get_layout_variant();
+
+        if (variant)
+            return '%s+%s'.format(layout, variant);
         else
-            return engineDesc.layout;
+            return layout;
     }
 };
 Signals.addSignalMethods(InputSource.prototype);
