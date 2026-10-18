@@ -54,14 +54,45 @@ var IBusManager = class {
             return;
         }
 
+        let args = Meta.is_wayland_compositor() ? [] : ['--xim'];
+
+        // At login, take over any daemon started elsewhere (e.g. im-config's
+        // Xsession hook) - it runs ibus' own panel, which competes with ours and
+        // rewrites the keymap. A Cinnamon restart keeps the daemon it already has.
+        if (global.session_running) {
+            this._spawn(args);
+            this._connectBus();
+        } else {
+            this._replaceDaemon(args);
+        }
+    }
+
+    _connectBus() {
         this._ibus = IBus.Bus.new_async();
         this._ibus.connect('connected', this._onConnected.bind(this));
         this._ibus.connect('disconnected', this._clear.bind(this));
         // Need to set this to get 'global-engine-changed' emitions
         this._ibus.set_watch_ibus_signal(true);
         this._ibus.connect('global-engine-changed', this._engineChanged.bind(this));
+    }
 
-        this._spawn(Meta.is_wayland_compositor() ? [] : ['--xim']);
+    // On restart wait for the new owner to take over the name.
+    _replaceDaemon(args) {
+        let oldOwner;
+        let update = owner => {
+            if (oldOwner === undefined) {
+                oldOwner = owner;
+                this.restartDaemon(args);
+            } else if (owner && owner !== oldOwner) {
+                Gio.bus_unwatch_name(watchId);
+                this._connectBus();
+            }
+        };
+
+        let watchId = Gio.bus_watch_name(Gio.BusType.SESSION, IBus.SERVICE_IBUS,
+            Gio.BusNameWatcherFlags.NONE,
+            (connection, name, owner) => update(owner),
+            () => update(null));
     }
 
     _spawn(extraArgs = []) {
