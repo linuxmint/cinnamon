@@ -1361,20 +1361,19 @@ st_theme_node_get_box_shadow_silhouette (StThemeNode *node,
                                          int         *slice_x,
                                          int         *slice_y)
 {
-  int top, right, bottom, left, half_middle;
+  int top, right, bottom, left, half_middle, radius;
 
-  top = MAX (MAX (node->border_radius[ST_CORNER_TOPLEFT],
-                  node->border_radius[ST_CORNER_TOPRIGHT]),
-             node->border_width[ST_SIDE_TOP]);
-  right = MAX (MAX (node->border_radius[ST_CORNER_TOPRIGHT],
-                    node->border_radius[ST_CORNER_BOTTOMRIGHT]),
-               node->border_width[ST_SIDE_RIGHT]);
-  bottom = MAX (MAX (node->border_radius[ST_CORNER_BOTTOMLEFT],
-                     node->border_radius[ST_CORNER_BOTTOMRIGHT]),
-                node->border_width[ST_SIDE_BOTTOM]);
-  left = MAX (MAX (node->border_radius[ST_CORNER_TOPLEFT],
-                   node->border_radius[ST_CORNER_BOTTOMLEFT]),
-              node->border_width[ST_SIDE_LEFT]);
+  /* st_theme_node_paint_borders() pads every corner to the largest radius.
+   * Leave room for that padding even on sides with smaller corners, or
+   * the padded areas overlap and change the silhouette's alpha. */
+  radius = MAX (MAX (node->border_radius[ST_CORNER_TOPLEFT],
+                     node->border_radius[ST_CORNER_TOPRIGHT]),
+                MAX (node->border_radius[ST_CORNER_BOTTOMLEFT],
+                     node->border_radius[ST_CORNER_BOTTOMRIGHT]));
+  top = MAX (radius, node->border_width[ST_SIDE_TOP]);
+  right = MAX (radius, node->border_width[ST_SIDE_RIGHT]);
+  bottom = MAX (radius, node->border_width[ST_SIDE_BOTTOM]);
+  left = MAX (radius, node->border_width[ST_SIDE_LEFT]);
 
   /* blur_pixels() reads up to 1.25 * blur pixels away */
   half_middle = ceil (1.5 * shadow_spec->blur);
@@ -1537,7 +1536,10 @@ st_theme_node_render_resources (StThemeNode   *node,
           st_theme_node_get_box_shadow_silhouette (node, box_shadow_spec,
                                                    &silhouette_width, &silhouette_height,
                                                    &slice_x, &slice_y);
-          sliced = width > silhouette_width && height > silhouette_height;
+          /* Fractional allocations scale the original silhouette to its
+           * rounded-up texture size; keep that rasterization unchanged. */
+          sliced = width == texture_width && height == texture_height &&
+                   width > silhouette_width && height > silhouette_height;
           if (sliced)
             {
               texture_width = silhouette_width;
