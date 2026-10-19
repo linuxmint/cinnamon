@@ -23,6 +23,9 @@ jobs:
     uses: linuxmint/github-actions/.github/workflows/do-builds.yml@master
     with:
       commit_id: master
+      # Mint 22 can compile the X11 backend, but lacks newer runtime packages
+      # (python3-xkbcommon and the split NetworkManager applet/editor packages).
+      mint22_install_packages: false
       ############################## Comma separated list - like 'linuxmint/xapp, linuxmint/cinnamon-desktop'
       dependencies: >
         linuxmint/cinnamon-control-center,
