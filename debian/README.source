@@ -11,3 +11,5 @@ pkg.cinnamon.nowayland build profile:
 
 Use the same profile when installing build dependencies. This omits
 GTK4 Layer Shell and disables the Wayland backend and session files.
+
+CI selects this profile for Mint 22 through debian/build-profiles.mint22.
