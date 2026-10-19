@@ -294,8 +294,9 @@ var createStore = function(state = {}, listeners = [], connections = 0) {
                 disconnectByKey(key[i]);
             }
         } else if (typeof key === 'number') {
-            let len = listeners.slice().length;
-            for (let i = 0; i < len; i++) {
+            // Iterate backwards: splice() shifts the next listener with the same id
+            // into index i, so a forward loop skipped the second key of connect({a, b}).
+            for (let i = listeners.length - 1; i >= 0; i--) {
                 if (!listeners[i] || listeners[i].id !== key) {
                     continue;
                 }
