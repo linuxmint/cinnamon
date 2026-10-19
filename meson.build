@@ -92,7 +92,9 @@ endif
 message('Building recorder: @0@'.format(get_option('build_recorder')))
 
 # Background daemon
-gtk4 = dependency('gtk4', version: '>= 4.18')   # gtk_disable_portals()
+# Wayland needs gtk_disable_portals(); X11 can use the GTK 4.14 in Mint 22.
+gtk4_min_version = get_option('wayland') ? '4.18' : '4.14'
+gtk4 = dependency('gtk4', version: '>= ' + gtk4_min_version)
 # Layer shell is how the daemon paints on Wayland and is no use without it, so
 # it follows the option rather than being required by an X11-only build.
 gtk4_layer_shell = dependency('gtk4-layer-shell-0', version: '>= 1.0.0',

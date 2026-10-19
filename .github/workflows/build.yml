@@ -23,6 +23,7 @@ jobs:
     uses: linuxmint/github-actions/.github/workflows/do-builds.yml@master
     with:
       commit_id: master
+      mint22_build_profiles: pkg.cinnamon.nowayland
       ############################## Comma separated list - like 'linuxmint/xapp, linuxmint/cinnamon-desktop'
       dependencies: >
         linuxmint/cinnamon-control-center,

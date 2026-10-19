@@ -1,0 +1,13 @@
+Cinnamon build profiles
+=======================
+
+The default build includes Wayland support and requires GTK >= 4.18 and
+GTK4 Layer Shell >= 1.0.0.
+
+For X11-only builds on Linux Mint 22 (GTK 4.14), enable the
+pkg.cinnamon.nowayland build profile:
+
+    DEB_BUILD_PROFILES=pkg.cinnamon.nowayland dpkg-buildpackage -us -uc
+
+Use the same profile when installing build dependencies. This omits
+GTK4 Layer Shell and disables the Wayland backend and session files.

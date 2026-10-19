@@ -10,6 +10,10 @@ export LC_ALL=C.UTF-8
 export DEB_LDFLAGS_MAINT_APPEND=-Wl,--as-needed
 export DEB_BUILD_MAINT_OPTIONS = hardening=+all
 
+ifneq (,$(filter pkg.cinnamon.nowayland,$(DEB_BUILD_PROFILES)))
+wayland_option = -D wayland=false
+endif
+
 %:
 	dh $@
 
@@ -21,7 +25,8 @@ override_dh_auto_configure:
 		-D exclude_info_settings=true \
 		-D exclude_users_settings=true \
 		-D py3modules_dir=/usr/lib/python3/dist-packages \
-		-D use_debian_pam=true
+		-D use_debian_pam=true \
+		$(wayland_option)
 
 # workaround for fix lmde4 build
 override_dh_dwz:

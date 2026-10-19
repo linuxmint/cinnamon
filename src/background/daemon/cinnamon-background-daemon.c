@@ -1039,7 +1039,9 @@ main (int argc, char **argv)
      * happen). Nothing we're doing here relies on anything the portal can give us.
      * Our own xdg-desktop-portal-xapp handles the Background portal but sets us via
      * gsettings (org.cinnamon.desktop.background picture-uri). */
+#if GTK_CHECK_VERSION(4, 18, 0)
     gtk_disable_portals ();
+#endif
 
     if (!gtk_init_check ()) {
         g_critical ("cinnamon-background-daemon: could not initialize GTK");
