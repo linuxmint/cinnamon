@@ -4,6 +4,7 @@ Priority: optional
 Maintainer: Linux Mint <root@linuxmint.com>
 Build-Depends:
  debhelper-compat (= 12),
+ dh-exec,
  dh-sequence-gir,
  dh-sequence-python3,
  gobject-introspection (>= 1.29.15),
