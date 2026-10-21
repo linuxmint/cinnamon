@@ -236,10 +236,17 @@ class UiActor extends St.Widget {
     }
 
     vfunc_paint(context) {
-        // uiGroup has dozens of children, nearly all of them hidden tooltips and menus. Calling
-        // child.paint() from JS marshals the paint context for each one on every frame; when
-        // nothing is skipped, chain up and let ClutterActor walk the children natively.
-        if (this.skip_paint_actors.size === 0) {
+        // Calling child.paint() from JS marshals the paint context for every child.
+        // Unmapped actors are not painted by Clutter, so only mapped skipped actors
+        // require the JS traversal; otherwise, let Clutter walk the children natively.
+        let hasMappedSkippedActor = false;
+        for (const child of this.skip_paint_actors) {
+            if (child.is_mapped()) {
+                hasMappedSkippedActor = true;
+                break;
+            }
+        }
+        if (!hasMappedSkippedActor) {
             super.vfunc_paint(context);
             return;
         }
@@ -854,6 +861,7 @@ var Chrome = class {
         if (i == -1)
             return;
 
+        Main.uiGroup.set_skip_paint(actor, false);
         this._trackedActors.splice(i, 1);
         actor.disconnectObject(this);
 
