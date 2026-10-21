@@ -15,6 +15,7 @@ from bin.Spices import Spice_Harvester
 
 from pathlib import Path
 import config
+from icon_theme_cache import read_icon_cache
 
 ICON_SIZE = 48
 
@@ -718,13 +719,7 @@ class Module:
             else:
                 read_path = '/usr/share/cinnamon/cinnamon-settings/icons'
 
-            icon_paths = {}
-            with open(read_path, 'r') as cache_file:
-                for line in cache_file:
-                    theme_name, icon_path = line.strip().split(':')
-                    icon_paths[theme_name] = icon_path
-
-            dump = False
+            icon_paths, dump = read_icon_cache(read_path)
             
             # Collect all themes with their categories and variants
             categorized_themes = []
