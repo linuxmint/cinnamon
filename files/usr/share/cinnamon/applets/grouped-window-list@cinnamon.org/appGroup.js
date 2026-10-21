@@ -74,7 +74,6 @@ var AppGroup = class AppGroup {
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
-            autoStartIndex: this.state.autoStartApps.findIndex( app => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
             // Not to be confused with the vertical thumbnail setting, this is for overriding horizontal

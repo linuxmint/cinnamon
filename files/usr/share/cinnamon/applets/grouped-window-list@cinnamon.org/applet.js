@@ -1,5 +1,4 @@
 const Clutter = imports.gi.Clutter;
-const Gio = imports.gi.Gio;
 const Gtk = imports.gi.Gtk;
 const GLib = imports.gi.GLib;
 const Meta = imports.gi.Meta;
@@ -12,7 +11,7 @@ const DND = imports.ui.dnd;
 const MessageTray = imports.ui.messageTray;
 const {AppletSettings} = imports.ui.settings;
 const {SignalManager} = imports.misc.signalManager;
-const {throttle, unref, trySpawnCommandLine} = imports.misc.util;
+const {throttle, unref} = imports.misc.util;
 
 const Me = imports.ui.extension.getCurrentExtension();
 const {createStore} = Me.imports.state;
@@ -20,8 +19,7 @@ const {AppGroup} = Me.imports.appGroup;
 const {Workspace} = Me.imports.workspace;
 const {
     RESERVE_KEYS,
-    TitleDisplay,
-    autoStartStrDir
+    TitleDisplay
 } = Me.imports.constants;
 
 class PinnedFavs {
@@ -179,7 +177,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             panel_height,
             instance_id,
             monitorWatchList: [],
-            autoStartApps: [],
             currentWs: global.workspace_manager.get_active_workspace_index(),
             panelEditMode: global.settings.get_boolean('panel-edit-mode'),
             menuOpen: false,
@@ -242,7 +239,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             refreshAllWorkspaces: () => this.refreshAllWorkspaces(),
             getCurrentWorkspace: () => this.getCurrentWorkspace(),
             moveLauncher: (source) => this.moveLauncher(source),
-            getAutoStartApps: () => this.getAutoStartApps(),
             getRecentItems: () =>
                 Gtk.RecentManager.get_default()
                 .get_items()
@@ -280,7 +276,6 @@ class GroupedWindowListApplet extends Applet.Applet {
         this.state.set({appletActor: this.actor});
         this.on_orientation_changed(orientation);
 
-        this.getAutoStartApps();
         this.onSwitchWorkspace = throttle(this.onSwitchWorkspace, 35, false); //Note: causes a 35ms delay in execution
         this.signals.connect(this.actor, 'scroll-event', (c, e) => this.handleScroll(e));
         this.signals.connect(global, 'scale-changed', (...args) => this.onUIScaleChange(...args));
@@ -334,7 +329,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             {key: 'hover-peek-time-out', value: 'peekTimeOut', cb: null},
             {key: 'hover-peek-opacity', value: 'peekOpacity', cb: null},
             {key: 'show-recent', value: 'showRecent', cb: null},
-            {key: 'autostart-menu-item', value: 'autoStart', cb: null},
             {key: 'monitor-move-all-windows', value: 'monitorMoveAllWindows', cb: null},
             {key: 'pinned-apps', value: 'pinnedApps', cb: null}
         ];
@@ -666,35 +660,6 @@ class GroupedWindowListApplet extends Applet.Applet {
             return this.workspaces[0];
         } else {
             return null;
-        }
-    }
-
-    getAutoStartApps() {
-        let info, autoStartDir;
-
-        const getChildren = () => {
-            const children = autoStartDir.enumerate_children(
-                'standard::name,standard::type,time::modified',
-                Gio.FileQueryInfoFlags.NONE,
-                null
-            );
-            while ((info = children.next_file(null)) !== null) {
-                if (info.get_file_type() === Gio.FileType.REGULAR) {
-                    const name = info.get_name();
-                    const file = Gio.file_new_for_path(autoStartStrDir + '/' + name);
-                    this.state.autoStartApps.push({id: name, file: file});
-                }
-            }
-            this.state.set({autoStartApps: this.state.autoStartApps});
-        };
-
-        autoStartDir = Gio.file_new_for_path(autoStartStrDir);
-
-        if (autoStartDir.query_exists(null)) {
-            getChildren();
-        } else {
-            trySpawnCommandLine(`bash -c "mkdir ${autoStartStrDir}"`);
-            setTimeout(() => getChildren(), 2000);
         }
     }
 

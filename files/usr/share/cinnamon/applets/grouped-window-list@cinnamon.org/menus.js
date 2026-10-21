@@ -9,15 +9,14 @@ const SignalManager = imports.misc.signalManager;
 const WindowUtils = imports.misc.windowUtils;
 const Mainloop = imports.mainloop;
 
-const {tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
+const {tryFn, unref, spawn_async, getDesktopActionIcon} = imports.misc.util;
 const Me = imports.ui.extension.getCurrentExtension();
 const {
     CLOSE_BTN_SIZE,
     CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    FavType,
-    autoStartStrDir
+    FavType
 } = Me.imports.constants;
 
 const convertRange = function(value, r1, r2) {
@@ -261,12 +260,6 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
             this.pinToggleItem = createMenuItem({label, icon});
             this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
             this.addMenuItem(this.pinToggleItem);
-            if (this.state.settings.autoStart) {
-                const label = this.groupState.autoStartIndex !== -1 ? _('Remove from Autostart') : _('Add to Autostart');
-                item = createMenuItem({label: label, icon: 'xsi-insert-object'});
-                this.signals.connect(item, 'activate', (...args) => this.toggleAutostart(...args));
-                this.addMenuItem(item);
-            }
         } else {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             item = createMenuItem({label: _('Create Shortcut'), icon: 'xsi-list-add'});
@@ -360,22 +353,6 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
         }
 
         Applet.AppletPopupMenu.prototype.toggle.call(this);
-    }
-
-    toggleAutostart() {
-        if (this.groupState.autoStartIndex !== -1) {
-            this.state.autoStartApps[this.groupState.autoStartIndex].file.delete(null);
-            this.state.autoStartApps[this.groupState.autoStartIndex] = undefined;
-            this.state.autoStartApps.splice(this.groupState.autoStartIndex, 1);
-            this.groupState.set({autoStartIndex: -1});
-        } else {
-            const filePath = this.groupState.appInfo.get_filename();
-            trySpawnCommandLine('bash -c "cp ' + filePath + ' ' + autoStartStrDir + '"');
-            setTimeout(() => {
-                this.state.trigger('getAutoStartApps');
-                this.groupState.set({autoStartIndex: this.state.autoStartApps.length - 1});
-            }, 500);
-        }
     }
 
     toggleFavorite() {

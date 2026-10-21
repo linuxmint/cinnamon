@@ -21,4 +21,3 @@ var FavType = {
     pinnedApps: 1,
     none: 2
 };
-var autoStartStrDir = './.config/autostart';
