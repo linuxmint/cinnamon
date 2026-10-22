@@ -310,53 +310,13 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
         });
 
-        try {
-            // Hadess interface
-            let PowerProfilesInterface = `<node>
-              <interface name="net.hadess.PowerProfiles">
-                <property name="ActiveProfile" type="s" access="readwrite" />
-                <property name="PerformanceDegraded" type="s" access="read" />
-                <property name="Profiles" type="aa{sv}" access="read" />
-                <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
-              </interface>
-            </node>`;
-            let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
-            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "net.hadess.PowerProfiles", "/net/hadess/PowerProfiles");
-            // Upower if hadess doesn't work..
-            if (!this._profilesProxy.Profiles) {
-                // UPower interface
-                let PowerProfilesInterface = `<node>
-                  <interface name="org.freedesktop.UPower.PowerProfiles">
-                    <property name="ActiveProfile" type="s" access="readwrite" />
-                    <property name="PerformanceDegraded" type="s" access="read" />
-                    <property name="Profiles" type="aa{sv}" access="read" />
-                    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
-                  </interface>
-                </node>`;
-                let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
-                this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "org.freedesktop.UPower.PowerProfiles", "/org/freedesktop/UPower/PowerProfiles");
-            }
-        } catch {
-           this._profilesProxy = null;
-        }
-        
-        if (this._profilesProxy && this._profilesProxy.Profiles) {
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.contentSection = new PopupMenu.PopupMenuSection();
-
-            this.ActiveProfile = this._profilesProxy.ActiveProfile;
-            this.Profiles = this._profilesProxy.Profiles;
-
-            this._proxyId = this._profilesProxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
-                for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
-                    if (["ActiveProfile", "Profiles"].includes(changedProperty))
-                        this[changedProperty] = changedValue.deepUnpack();
-                    this._updateProfile();
-                }
-            });
-
-            this._updateProfile();
-        }
+        this._profilesProxy = null;
+        this._profilesSeparator = new PopupMenu.PopupSeparatorMenuItem();
+        this._profilesSeparator.actor.hide();
+        this.menu.addMenuItem(this._profilesSeparator);
+        this.contentSection = new PopupMenu.PopupMenuSection();
+        this.menu.addMenuItem(this.contentSection);
+        this._connectPowerProfiles();
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -558,6 +518,56 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._applet_icon.set_style_class_name('system-status-icon');
     }
 
+    _connectPowerProfiles() {
+        const candidates = [
+            ["net.hadess.PowerProfiles", "/net/hadess/PowerProfiles"],
+            ["org.freedesktop.UPower.PowerProfiles", "/org/freedesktop/UPower/PowerProfiles"]
+        ];
+
+        const tryNext = () => {
+            const candidate = candidates.shift();
+            if (!candidate)
+                return;
+
+            const [name, path] = candidate;
+            const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(`<node>
+              <interface name="${name}">
+                <property name="ActiveProfile" type="s" access="readwrite" />
+                <property name="PerformanceDegraded" type="s" access="read" />
+                <property name="Profiles" type="aa{sv}" access="read" />
+                <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+              </interface>
+            </node>`);
+
+            new PowerProfilesProxy(Gio.DBus.system, name, path, (proxy, error) => {
+                if (this._cancellable.is_cancelled())
+                    return;
+
+                if (error || !proxy.Profiles) {
+                    tryNext();
+                    return;
+                }
+
+                this._profilesProxy = proxy;
+                this.ActiveProfile = proxy.ActiveProfile;
+                this.Profiles = proxy.Profiles;
+
+                this._proxyId = proxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
+                    for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
+                        if (["ActiveProfile", "Profiles"].includes(changedProperty))
+                            this[changedProperty] = changedValue.deepUnpack();
+                        this._updateProfile();
+                    }
+                });
+
+                this._profilesSeparator.actor.show();
+                this._updateProfile();
+            }, this._cancellable);
+        };
+
+        tryNext();
+    }
+
     _updateProfile() {
         this.contentSection.removeAll();
 
@@ -577,8 +587,6 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
             this.contentSection.addMenuItem(item);
         }
-
-        this.menu.addMenuItem(this.contentSection);
     }
 
     _changeProfile(newProfile) {
