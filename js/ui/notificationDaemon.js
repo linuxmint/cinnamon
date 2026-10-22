@@ -173,24 +173,25 @@ NotificationDaemon.prototype = {
                                      icon_type: St.IconType.FULLCOLOR,
                                      icon_size: size });
             }
-        } else {
-            let stockIcon;
-            switch (hints.urgency) {
-                case Urgency.LOW:
-                case Urgency.NORMAL:
-                    stockIcon = 'xsi-dialog-information-symbolic';
-                    break;
-                case Urgency.CRITICAL:
-                    stockIcon = 'xsi-dialog-error-symbolic';
-                    break;
-                default:
-                    stockIcon = 'xsi-dialog-information-symbolic';
-                    break;
-            }
-            return new St.Icon({ icon_name: stockIcon,
-                                 icon_type: St.IconType.SYMBOLIC,
-                                 icon_size: size });
         }
+
+        return null;
+    },
+
+    _stockIconForUrgency: function(urgency, size) {
+        let stockIcon = urgency == Urgency.CRITICAL ? 'xsi-dialog-error-symbolic'
+                                                    : 'xsi-dialog-information-symbolic';
+        return new St.Icon({ icon_name: stockIcon,
+                             icon_type: St.IconType.SYMBOLIC,
+                             icon_size: size });
+    },
+
+    // Prefer what the notification itself carries, then the identified app's
+    // icon, and only then a generic one.
+    _notificationIcon: function(source, appIcon, hints) {
+        return this._iconForNotificationData(appIcon, hints, source.ICON_SIZE) ||
+               source.createAppIcon() ||
+               this._stockIconForUrgency(hints.urgency, source.ICON_SIZE);
     },
 
     _lookupSource: function(title, pid, trayIcon) {
@@ -455,7 +456,7 @@ NotificationDaemon.prototype = {
             [ndata.id, ndata.appIcon, ndata.summary, ndata.body,
              ndata.actions, ndata.hints, ndata.notification, ndata.timeout, ndata.expires];
 
-        let iconActor = this._iconForNotificationData(appIcon, hints, source.ICON_SIZE);
+        let iconActor = this._notificationIcon(source, appIcon, hints);
 
         if (notification == null) {    // Create a new notification!
             notification = new MessageTray.Notification(source, summary, body,
@@ -556,7 +557,7 @@ NotificationDaemon.prototype = {
         // of the 'transient' hint with hints['transient'] rather than hints.transient
         notification.setTransient(hints.maybeGet('transient') == true);
 
-        let sourceIconActor = source.useNotificationIcon ? this._iconForNotificationData(appIcon, hints, source.ICON_SIZE) : null;
+        let sourceIconActor = source.useNotificationIcon ? this._notificationIcon(source, appIcon, hints) : null;
         source.processNotification(notification, sourceIconActor);
     },
 
@@ -760,16 +761,19 @@ Source.prototype = {
         // notification-based icons (ie, not a trayicon) or if it was unset before
         if (!this.trayIcon) {
             this.useNotificationIcon = false;
-            let icon = null;
-            if (this.app.get_app_info() != null && this.app.get_app_info().get_icon() != null) {
-                icon = new St.Icon({gicon: this.app.get_app_info().get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            }
-            if (icon == null) {
-                icon = new St.Icon({icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR});
-            }
-
-            this._setSummaryIcon(icon);
+            this._setSummaryIcon(this.createAppIcon());
         }
+    },
+
+    createAppIcon: function() {
+        if (!this.app)
+            return null;
+
+        let appInfo = this.app.get_app_info();
+        if (appInfo != null && appInfo.get_icon() != null)
+            return new St.Icon({ gicon: appInfo.get_icon(), icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
+
+        return new St.Icon({ icon_name: "application-x-executable", icon_size: this.ICON_SIZE, icon_type: St.IconType.FULLCOLOR });
     },
 
     open: function(notification) {
