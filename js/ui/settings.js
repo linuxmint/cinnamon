@@ -7,6 +7,7 @@
 
 const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
+const ByteArray = imports.byteArray;
 const Lang = imports.lang;
 const Cinnamon = imports.gi.Cinnamon;
 const Main = imports.ui.main;
@@ -30,6 +31,8 @@ const Extension = imports.ui.extension;
  * Deprecated since 3.2: Binding direction is no longer meaningful. Please do not
  * use in new code.
  */
+const SAVE_DELAY = 250;
+
 var BindingDirection = {
     IN : 1,
     OUT : 2,
@@ -276,6 +279,7 @@ XletSettingsBase.prototype = {
         if (this._get_is_multi_instance_xlet(this.uuid)) this.instanceId = instanceId;
         else this.instanceId = this.uuid;
         this.bindings = {};
+        this._saveTimeoutId = 0;
 
         if (!this._ensureSettingsFiles()) return;
 
@@ -607,29 +611,9 @@ XletSettingsBase.prototype = {
             let valueType = this.settingsData[key].type;
 
             if (!this._hasSettingChanged(value, valueType, oldValue)) continue;
-            
+
             changed = true;
-
-            if (key in this.bindings) {
-                for (let info of this.bindings[key]) {
-                    // if the property had a save function, it is gone now and we need to re-add it
-                    if (info.isObject && !this.settingsData[key].value.save) {
-                        this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
-                    }
-
-                    if (info.callback) info.callback(value);
-                }
-            }
-
-            /**
-             * SIGNAL: changed::'key'
-             * @key (string): The settings key who's value changed
-             * @oldValue: The value of the key before the setting changed
-             * @newValue: The value of the key after the setting changed
-             *
-             * Emitted when the value of the setting changes
-             */
-            this.emit("changed::" + key, key, oldValue, value);
+            this._notifyChange(key, oldValue, value);
         }
 
         /**
@@ -640,6 +624,29 @@ XletSettingsBase.prototype = {
         if (changed) {
             this.emit("settings-changed");
         }
+    },
+
+    _notifyChange: function(key, oldValue, value) {
+        if (key in this.bindings) {
+            for (let info of this.bindings[key]) {
+                // if the property had a save function, it is gone now and we need to re-add it
+                if (info.isObject && !this.settingsData[key].value.save) {
+                    this.settingsData[key].value.save = Lang.bind(this, this._saveToFile);
+                }
+
+                if (info.callback) info.callback(value);
+            }
+        }
+
+        /**
+         * SIGNAL: changed::'key'
+         * @key (string): The settings key who's value changed
+         * @oldValue: The value of the key before the setting changed
+         * @newValue: The value of the key after the setting changed
+         *
+         * Emitted when the value of the setting changes
+         */
+        this.emit("changed::" + key, key, oldValue, value);
     },
 
     /**
@@ -890,17 +897,54 @@ XletSettingsBase.prototype = {
     },
 
     _saveToFile: function() {
-        let rawData = JSON.stringify(this.settingsData, null, 4);
-        let raw = this.file.replace(null, false, Gio.FileCreateFlags.NONE, null);
-        let out_file = Gio.BufferedOutputStream.new_sized(raw, 4096);
-        Cinnamon.write_string_to_stream(out_file, rawData);
-        out_file.close(null);
+        if (this._saveTimeoutId > 0)
+            return;
+
+        this._saveTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, SAVE_DELAY, () => {
+            this._saveTimeoutId = 0;
+            this._writeFile();
+            return GLib.SOURCE_REMOVE;
+        });
     },
 
-    // Called by cinnamonDBus.js when a setting is changed remotely in order to trigger
-    // setting callbacks.
+    _writeFile: function() {
+        const rawData = JSON.stringify(this.settingsData, null, 4);
+        this.file.replace_contents_async(GLib.Bytes.new(ByteArray.fromString(rawData)), null, false,
+                                         Gio.FileCreateFlags.NONE, null, (file, res) => {
+            try {
+                file.replace_contents_finish(res);
+            } catch (e) {
+                global.logError(`Failed to save settings for ${this.uuid}: ${e.message}`);
+            }
+        });
+    },
+
+    // Called by cinnamonDBus.js when a setting is changed remotely. The payload is
+    // the new value as JSON and has already been written to the file by the sender.
+    // Reset-to-defaults and import send an empty key, in which case the whole file
+    // is reloaded.
     remoteUpdate: function(key, payload) {
-        this._checkSettings();
+        const setting = this.settingsData[key];
+        if (!setting || setting.value === undefined) {
+            this._checkSettings();
+            return;
+        }
+
+        let value;
+        try {
+            value = JSON.parse(payload);
+        } catch (e) {
+            global.logError(`Bad settings payload for ${this.uuid}, key ${key}: ${e.message}`);
+            return;
+        }
+
+        const oldValue = setting.value;
+        if (!this._hasSettingChanged(value, setting.type, oldValue))
+            return;
+
+        setting.value = value;
+        this._notifyChange(key, oldValue, value);
+        this.emit("settings-changed");
     },
 
     /**
@@ -910,6 +954,12 @@ XletSettingsBase.prototype = {
      * to deleting the object.
      */
     finalize: function() {
+        if (this._saveTimeoutId > 0) {
+            GLib.source_remove(this._saveTimeoutId);
+            this._saveTimeoutId = 0;
+            this._writeFile();
+        }
+
         Main.settingsManager.unregister(this.uuid, this.instanceId);
         for (let key in this.bindings) {
             this.unbindAll(key);

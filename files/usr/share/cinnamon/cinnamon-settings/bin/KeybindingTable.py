@@ -569,7 +569,7 @@ class KeybindingTable(GObject.Object):
             keybinding.dbus_info["uuid"],
             keybinding.dbus_info["config_id"],
             keybinding.key,
-            json.dumps(keybinding.entries)
+            json.dumps("::".join(e for e in keybinding.entries if e) or "::")
         )
 
     def _add_to_collision_table(self, keybinding):
