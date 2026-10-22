@@ -942,6 +942,9 @@ var AppGroup = class AppGroup {
     windowAdded(metaWindow) {
         const {metaWindows, trigger, set} = this.groupState;
         const refWindow = metaWindows.indexOf(metaWindow);
+        if (metaWindow && refWindow !== -1) {
+            return;
+        }
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
@@ -987,6 +990,9 @@ var AppGroup = class AppGroup {
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
+        this.signals.disconnect('notify::icon', metaWindow);
+        this.signals.disconnect('notify::icon-name', metaWindow);
+        this.signals.disconnect('notify::progress', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
