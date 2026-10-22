@@ -2329,7 +2329,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         if (!this.recentButton) {
-            this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
+            this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'),
+                                                   Gio.ThemedIcon.new_from_names(['folder-recent', 'document-open-recent']));
             this._categoryButtons.push(this.recentButton);
             this.categoriesBox.add_actor(this.recentButton.actor);
         }
