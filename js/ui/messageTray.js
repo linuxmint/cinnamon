@@ -260,6 +260,10 @@ var Notification = class Notification {
         this._titleDirection = St.TextDirection.NONE;
         this._scrollArea = null;
         this._actionArea = null;
+        this._replyArea = null;
+        this._replyEntry = null;
+        this.hasInlineReply = false;
+        this.inlineReplyAction = null;
         this._imageBin = null;
         this._timestamp = new Date();
         this._inNotificationBin = false;
@@ -464,7 +468,7 @@ var Notification = class Notification {
     }
 
     _updateLayout() {
-        if (this._imageBin || this._scrollArea || this._actionArea) {
+        if (this._imageBin || this._scrollArea || this._actionArea || this._replyArea) {
             this._table.add_style_class_name('multi-line-notification');
         } else {
             this._table.remove_style_class_name('multi-line-notification');
@@ -483,6 +487,11 @@ var Notification = class Notification {
             });
         if (this._actionArea)
             this._table.child_set(this._actionArea, {
+                col: this._imageBin ? 2 : 1,
+                col_span: this._imageBin ? 2 : 3
+            });
+        if (this._replyArea)
+            this._table.child_set(this._replyArea, {
                 col: this._imageBin ? 2 : 1,
                 col_span: this._imageBin ? 2 : 3
             });
@@ -565,6 +574,37 @@ var Notification = class Notification {
         this._updateLayout();
     }
 
+    addReplyButton(id, label) {
+        if (!this._actionArea) {
+            this._actionArea = new St.BoxLayout({ name: 'notification-actions' });
+            this._table.add(this._actionArea, {
+                row: 2,
+                col: 1,
+                col_span: 3,
+                x_expand: true,
+                y_expand: false,
+                x_fill: true,
+                y_fill: false,
+                x_align: St.Align.START
+            });
+        }
+
+        let button = new St.Button({ can_focus: true, style_class: 'notification-button', label: label });
+
+        if (this._actionArea.get_n_children() > 0)
+            this._buttonFocusManager.remove_group(this._actionArea);
+
+        this._actionArea.add(button);
+        this._buttonFocusManager.add_group(this._actionArea);
+
+        button.connect('clicked', () => {
+            this._ensureReplyArea();
+            button.destroy();
+        });
+
+        this._updateLayout();
+    }
+
     /**
      * clearButtons:
      *
@@ -575,6 +615,122 @@ var Notification = class Notification {
             return;
         this._actionArea.destroy();
         this._actionArea = null;
+        this._updateLayout();
+    }
+
+    setInlineReply(hasInlineReply, actionId, expandImmediately = false) {
+        this.hasInlineReply = hasInlineReply;
+        this.inlineReplyAction = actionId;
+        if (hasInlineReply && expandImmediately) {
+            this._ensureReplyArea();
+        } else if (!hasInlineReply && this._replyArea) {
+            this._replyArea.destroy();
+            this._replyArea = null;
+            this._replyEntry = null;
+            this._updateLayout();
+        }
+    }
+
+    _ensureReplyArea() {
+        if (this._replyArea)
+            return;
+
+        this._replyArea = new St.BoxLayout({
+            name: 'notification-reply-box',
+            style_class: 'notification-reply-box',
+            x_expand: true,
+            y_expand: false,
+            reactive: true
+        });
+
+        this._table.add(this._replyArea, {
+            row: 3,
+            col: 1,
+            col_span: 3,
+            x_expand: true,
+            y_expand: false,
+            x_fill: true,
+            y_fill: false,
+            x_align: St.Align.START
+        });
+
+        this._replyEntry = new St.Entry({
+            can_focus: true,
+            hint_text: _("Type a reply..."),
+            style_class: 'notification-entry',
+            x_expand: true,
+            reactive: true
+        });
+
+        let sendButton = new St.Button({
+            label: _("Send"),
+            can_focus: true,
+            style_class: 'notification-button',
+            reactive: true
+        });
+
+        let isModal = false;
+
+        let releaseModal = () => {
+            if (isModal) {
+                Main.popModal(this._replyEntry.clutter_text);
+                isModal = false;
+            }
+        };
+
+        let grabFocus = () => {
+            if (!isModal) {
+                isModal = Main.pushModal(this._replyEntry.clutter_text);
+            }
+            if (isModal) {
+                this._replyEntry.clutter_text.grab_key_focus();
+                global.stage.set_key_focus(this._replyEntry.clutter_text);
+            }
+            return true;
+        };
+
+        let onSend = () => {
+            let text = this._replyEntry.get_text();
+            if (text && text.trim().length > 0) {
+                releaseModal();
+                this.emit('reply', text);
+                if (this.inlineReplyAction && typeof this.inlineReplyAction === 'string') {
+                    this.emit('action-invoked', this.inlineReplyAction);
+                }
+                if (!this.resident) {
+                    this.emit('done-displaying');
+                    this.destroy();
+                }
+            }
+        };
+
+        sendButton.connect('clicked', onSend);
+
+        this._replyEntry.clutter_text.connect('activate', onSend);
+
+        this._replyEntry.connect('button-press-event', grabFocus);
+        this._replyEntry.clutter_text.connect('button-press-event', grabFocus);
+        this._replyArea.connect('button-press-event', grabFocus);
+
+        this.connect('destroy', () => {
+            releaseModal();
+        });
+
+        this._replyArea.add(this._replyEntry, { expand: true });
+        this._replyArea.add(sendButton, { expand: false });
+
+        if (this._buttonFocusManager) {
+            this._buttonFocusManager.add_group(this._replyArea);
+        }
+
+        // Auto focus the entry when reply area is created
+        Mainloop.idle_add(() => {
+            if (this._replyEntry && this._replyEntry.clutter_text && this._replyEntry.get_stage()) {
+                grabFocus();
+            }
+            return false;
+        });
+
         this._updateLayout();
     }
 
