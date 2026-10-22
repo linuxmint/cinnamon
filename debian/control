@@ -37,7 +37,6 @@ Build-Depends:
  libxcomposite-dev (>= 1:0.4),
  libxdo-dev,
  libxext-dev,
- libxml2-dev,
  meson,
  pysassc,
  python3:any,

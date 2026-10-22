@@ -12,7 +12,6 @@ const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
-const Search = imports.ui.search;
 const Util = imports.misc.util;
 
 const DEBUG = false;
@@ -34,26 +33,8 @@ PlaceInfo.prototype = {
         this.id = id;
         this.idDecoded = decodeURIComponent(this.id);
         this.name = name;
-        this._lowerName = name.toLowerCase();
         this.iconFactory = iconFactory;
         this.launch = launch;
-    },
-
-    matchTerms: function(terms) {
-        let mtype = Search.MatchType.NONE;
-        for (let i = 0; i < terms.length; i++) {
-            let term = terms[i];
-            let idx = this._lowerName.indexOf(term);
-            if (idx == 0) {
-                mtype = Search.MatchType.PREFIX;
-            } else if (idx > 0) {
-                if (mtype == Search.MatchType.NONE)
-                    mtype = Search.MatchType.SUBSTRING;
-            } else {
-                return Search.MatchType.NONE;
-            }
-        }
-        return mtype;
     },
 
     isRemovable: function() {
@@ -86,7 +67,6 @@ PlaceDeviceInfo.prototype = {
     _init: function(mount) {
         this._mount = mount;
         this.name = mount.get_name();
-        this._lowerName = this.name.toLowerCase();
         this.id = 'mount:' + mount.get_root().get_uri();
         this.idDecoded = decodeURIComponent(this.id);
 
@@ -466,75 +446,3 @@ PlacesManager.prototype = {
 };
 Signals.addSignalMethods(PlacesManager.prototype);
 
-
-function PlaceSearchProvider() {
-    this._init();
-}
-
-PlaceSearchProvider.prototype = {
-    __proto__: Search.SearchProvider.prototype,
-
-    _init: function() {
-        Search.SearchProvider.prototype._init.call(this, "PLACES & DEVICES");
-    },
-
-    getResultMeta: function(resultId) {
-        let placeInfo = Main.placesManager.lookupPlaceById(resultId);
-        if (!placeInfo)
-            return null;
-        return { 'id': resultId,
-                 'name': placeInfo.name,
-                 'createIcon': function(size) {
-                                   return placeInfo.iconFactory(size);
-                               }
-               };
-    },
-
-    activateResult: function(id, params) {
-        let placeInfo = Main.placesManager.lookupPlaceById(id);
-        placeInfo.launch(params);
-    },
-
-    _compareResultMeta: function (idA, idB) {
-        let infoA = Main.placesManager.lookupPlaceById(idA);
-        let infoB = Main.placesManager.lookupPlaceById(idB);
-        return infoA.name.localeCompare(infoB.name);
-    },
-
-    _searchPlaces: function(places, terms) {
-        let multiplePrefixResults = [];
-        let prefixResults = [];
-        let multipleSubstringResults = [];
-        let substringResults = [];
-
-        terms = terms.map(String.toLowerCase);
-
-        for (let i = 0; i < places.length; i++) {
-            let place = places[i];
-            let mtype = place.matchTerms(terms);
-            if (mtype == Search.MatchType.MULTIPLE_PREFIX)
-                multiplePrefixResults.push(place.id);
-            else if (mtype == Search.MatchType.PREFIX)
-                prefixResults.push(place.id);
-            else if (mtype == Search.MatchType.MULTIPLE_SUBSTRING)
-                multipleSubstringResults.push(place.id);
-            else if (mtype == Search.MatchType.SUBSTRING)
-                substringResults.push(place.id);
-        }
-        multiplePrefixResults.sort(this._compareResultMeta);
-        prefixResults.sort(this._compareResultMeta);
-        multipleSubstringResults.sort(this._compareResultMeta);
-        substringResults.sort(this._compareResultMeta);
-        return [...multiplePrefixResults, ...prefixResults, ...multipleSubstringResults, ...substringResults];
-    },
-
-    getInitialResultSet: function(terms) {
-        let places = Main.placesManager.getAllPlaces();
-        return this._searchPlaces(places, terms);
-    },
-
-    getSubsearchResultSet: function(previousResults, terms) {
-        let places = previousResults.map(function (id) { return Main.placesManager.lookupPlaceById(id); });
-        return this._searchPlaces(places, terms);
-    }
-};
