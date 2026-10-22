@@ -21,7 +21,7 @@ const SessionDialogInterface =
         <method name='Cancel'/> \
         <method name='IgnoreInhibitors'/> \
         <method name='GetCapabilities'> \
-          <arg type='(bbbbbbb)' name='capabilities' direction='out'/> \
+          <arg type='(bbbbbbbb)' name='capabilities' direction='out'/> \
         </method> \
         <signal name='InhibitorsChanged'> \
           <arg type='a(ssss)' name='capabilities'/> \
@@ -122,7 +122,7 @@ class EndSessionDialog extends PopupDialog.PopupDialog {
             return;
         }
 
-        var [canSwitchUser, canStop, canRestart, canHybridSleep, canSuspend, canHibernate, canLogout] = result[0];
+        var [canSwitchUser, canStop, canRestart, canHybridSleep, canSuspendThenHibernate, canSuspend, canHibernate, canLogout] = result[0];
         var content = null;
         let button;
 
