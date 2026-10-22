@@ -148,7 +148,7 @@ class Module:
 
         section = power_page.add_section(_("Power options"))
 
-        lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate = get_available_options()
+        lid_options, button_power_options, critical_options, can_suspend, can_hibernate, can_hybrid_sleep, can_suspend_then_hibernate = get_available_options()
 
         size_group = Gtk.SizeGroup(mode=Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -192,17 +192,24 @@ class Module:
         if self.has_battery and UPowerGlib.MAJOR_VERSION == 0 and UPowerGlib.MINOR_VERSION <= 99:
             section.add_row(GSettingsComboBox(_("When the battery is critically low"), CSD_SCHEMA, "critical-battery-action", critical_options, size_group=size_group))
 
-        if can_suspend and can_hybrid_sleep:
-            self.hybrid_switch = GSettingsSwitch(_("Enable Hybrid Sleep"), CSM_SCHEMA, "prefer-hybrid-sleep")
-            self.hybrid_switch.set_tooltip_text(_("Replaces Suspend with Hybrid Sleep"))
-            self.hybrid_switch.content_widget.connect("notify::active", self.on_hybrid_toggled)
-            section.add_row(self.hybrid_switch)
+        if can_suspend:
+            current_action = Gio.Settings(schema_id=CSM_SCHEMA).get_string("suspend-action")
 
-        if can_suspend and can_hibernate:
-            self.sth_switch = GSettingsSwitch(_("Enable Hibernate after suspend"), CSM_SCHEMA, "suspend-then-hibernate")
-            self.sth_switch.set_tooltip_text(_("First suspend the machine and hibernate it after a certain amount of time."))
-            self.sth_switch.content_widget.connect("notify::active", self.on_sth_toggled)
-            section.add_row(self.sth_switch)
+            suspend_actions = []
+            for value, label, available in (
+                    ("suspend", _("Suspend"), True),
+                    ("suspend-then-hibernate", _("Suspend then hibernate"), can_suspend_then_hibernate),
+                    ("hybrid-sleep", _("Hybrid sleep"), can_hybrid_sleep)):
+                if available:
+                    suspend_actions.append((value, label))
+                elif value == current_action:
+                    # Keep showing the current choice, it falls back to Suspend when it is used
+                    suspend_actions.append((value, _("%s (not available)") % label))
+
+            if len(suspend_actions) > 1:
+                suspend_action = GSettingsComboBox(_("Suspend action"), CSM_SCHEMA, "suspend-action", suspend_actions, size_group=size_group)
+                suspend_action.set_tooltip_text(_("What happens when the computer is suspended. Suspend then hibernate first suspends the computer and hibernates it after a certain amount of time. Hybrid sleep saves the session to disk before suspending."))
+                section.add_row(suspend_action)
 
         # Power mode
         connection = Gio.bus_get_sync(Gio.BusType.SYSTEM, None)
@@ -295,16 +302,6 @@ class Module:
             else:
                 section = page.add_section(_("Keyboard backlight"))
                 section.add_row(BrightnessSlider(section, proxy, _("Backlight brightness")))
-
-    def on_sth_toggled(self, widget, gparam):
-        active = widget.get_active()
-        if active and hasattr(self, "hybrid_switch"):
-            self.hybrid_switch.set_value(False)
-
-    def on_hybrid_toggled(self, widget, gparam):
-        active = widget.get_active()
-        if active and hasattr(self, "sth_switch"):
-            self.sth_switch.set_value(False)
 
     def build_battery_page(self, *args):
 
@@ -588,6 +585,7 @@ def get_available_options():
     can_suspend = False
     can_hibernate = False
     can_hybrid_sleep = False
+    can_suspend_then_hibernate = False
 
     # There's no reason this should ever fail as a normal user
     try:
@@ -600,7 +598,7 @@ def get_available_options():
                     "org.cinnamon.SessionManager.EndSessionDialog",
                     None)
 
-        __, __, __, can_hybrid_sleep, can_suspend, can_hibernate, __ = proxy.GetCapabilities()
+        __, __, __, can_hybrid_sleep, can_suspend_then_hibernate, can_suspend, can_hibernate, __ = proxy.GetCapabilities()
     except:
         pass
 
@@ -642,7 +640,7 @@ def get_available_options():
         for options in lid_options, button_power_options, critical_options:
             remove(options, "hibernate")
 
-    return lid_options, button_power_options, critical_options, can_suspend, can_hybrid_sleep, can_hibernate
+    return lid_options, button_power_options, critical_options, can_suspend, can_hibernate, can_hybrid_sleep, can_suspend_then_hibernate
 
 class BrightnessSlider(SettingsWidget):
     step = 5
