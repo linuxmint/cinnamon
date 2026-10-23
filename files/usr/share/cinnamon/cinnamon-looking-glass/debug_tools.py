@@ -25,7 +25,7 @@ TOPIC_LABELS = {
 }
 
 GROUPS = [
-    ("Wayland", {"INPUT", "LAYER_SHELL"}),
+    ("Wayland", {"INPUT", "KMS", "LAYER_SHELL"}),
     ("X11", {"GROUPS", "SHAPES", "SM", "SYNC"}),
     ("General", None)
 ]
