@@ -3,6 +3,7 @@ const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const Gio = imports.gi.Gio;
 const Main = imports.ui.main;
+const DND = imports.ui.dnd;
 const PopupMenu = imports.ui.popupMenu;
 const Applet = imports.ui.applet;
 const SignalManager = imports.misc.signalManager;
@@ -431,6 +432,23 @@ var HoverMenuController = class HoverMenuController extends PopupMenu.PopupMenuM
     }
 }
 
+class WindowThumbnailDraggable extends DND._Draggable {
+    constructor(actor, menu) {
+        super(actor, {manualMode: true}, menu.box);
+        this.menu = menu;
+    }
+
+    _setDragActorPosition() {
+        const [x, y] = this.menu.box.get_transformed_position();
+        const [width, height] = this.menu.box.get_transformed_size();
+        const [dragWidth, dragHeight] = this._dragActor.get_transformed_size();
+        this._dragActor.set_position(
+            Math.max(x, Math.min(this._dragX + this._dragOffsetX, x + width - dragWidth)),
+            Math.max(y, Math.min(this._dragY + this._dragOffsetY, y + height - dragHeight))
+        );
+    }
+}
+
 class WindowThumbnail {
     constructor(params) {
         this.state = params.state;
@@ -455,6 +473,7 @@ class WindowThumbnail {
             windowCount: () => this.refreshThumbnail()
         });
 
+        this.menu = params.menu;
         this.metaWindow = params.metaWindow;
         this.index = params.index;
 
@@ -479,7 +498,7 @@ class WindowThumbnail {
             can_focus: true,
             style: 'border-width:2px;padding:' + 3 * global.ui_scale + 'px;'
         });
-        this.actor._delegate = null;
+        this.actor._delegate = this;
         // Override with own theme.
         this.thumbnailActor = new St.Bin({
             style_class: 'thumbnail',
@@ -518,6 +537,19 @@ class WindowThumbnail {
         this.actor.add_actor(this.bin);
         this.actor.add_actor(this.thumbnailActor);
 
+        // Use the normal drag threshold and Escape cancellation, but only arm
+        // the drag when Ctrl is held. Keep the original thumbnail in the menu.
+        this._draggable = new WindowThumbnailDraggable(this.actor, this.menu);
+        this.signals.connect(this.actor, 'button-press-event', (actor, event) => {
+            if (event.get_button() !== 1 || !(event.get_state() & Clutter.ModifierType.CONTROL_MASK)
+                || this.button.contains(event.get_source()) || this.state.panelEditMode) {
+                return false;
+            }
+            return this._draggable._onButtonPress(actor, event);
+        });
+        this.signals.connect(this._draggable, 'drag-begin', () => this.menu.beginThumbnailDrag(this));
+        this.signals.connect(this._draggable, 'drag-end', () => this.menu.endThumbnailDrag());
+
         this.signals.connect(this.actor, 'enter-event', (...args) => this.onEnter(...args));
         this.signals.connect(this.actor, 'leave-event', (...args) => this.onLeave(...args));
         this.signals.connect(this.button, 'button-release-event', (...args) => this.onCloseButtonRelease(...args));
@@ -527,6 +559,14 @@ class WindowThumbnail {
         this.handleFavorite();
         // Update focused style
         this.onFocusWindowChange();
+    }
+
+    getDragActor() {
+        return new Clutter.Clone({source: this.actor, width: this.actor.width, height: this.actor.height});
+    }
+
+    getDragActorSource() {
+        return this.actor;
     }
 
     onEnter(a, e) {
@@ -542,7 +582,7 @@ class WindowThumbnail {
         }
 
         this.destroyOverlayPreview();
-        this.hoverPeek(this.state.settings.peekOpacity);
+        if (!this.menu.draggedThumbnail) this.hoverPeek(this.state.settings.peekOpacity);
     }
 
     onLeave() {
@@ -828,6 +868,7 @@ class WindowThumbnail {
     destroy() {
         this.willUnmount = true;
         if (!this.groupState) return;
+        if (this.menu.draggedThumbnail === this) this.menu.endThumbnailDrag();
 
         if (this.get_thumb_id > 0) {
             Mainloop.source_remove(this.get_thumb_id);
@@ -923,9 +964,106 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             }
         });
 
+        this.box._delegate = this;
+        this.draggedThumbnail = null;
+        this.dropMarker = null;
         this.appThumbnails = [];
         this.queuedWindows = [];
         this.fullyRefreshThumbnails();
+    }
+
+    beginThumbnailDrag(thumbnail) {
+        this.draggedThumbnail = thumbnail;
+        this.shouldClose = false;
+        for (const item of this.appThumbnails) item.destroyOverlayPreview();
+        this.dropMarker = new St.Widget({
+            style: `background-color: ${thumbnail.actor.get_theme_node().get_foreground_color().to_string()};`,
+            reactive: false
+        });
+        Main.uiGroup.add_actor(this.dropMarker);
+        this.dropMarker.hide();
+    }
+
+    endThumbnailDrag() {
+        this.draggedThumbnail = null;
+        if (this.dropMarker) {
+            this.dropMarker.destroy();
+            this.dropMarker = null;
+        }
+        if (this.willUnmount) return;
+        const [x, y] = global.get_pointer();
+        const actor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
+        if (actor && this.actor.contains(actor)) {
+            this.onMenuEnter(this.actor);
+        } else {
+            this.onMenuLeave(this.actor);
+        }
+    }
+
+    // Return an insertion slot in the current visual order. For horizontal
+    // menus, logical order runs right-to-left when the UI is RTL.
+    getDropPosition(source, x, y) {
+        if (source !== this.draggedThumbnail || !this.appThumbnails.includes(source)
+            || x < 0 || y < 0 || x > this.box.width || y > this.box.height) {
+            return null;
+        }
+        const vertical = this.box.vertical;
+        const rtl = !vertical && this.box.get_text_direction() === St.TextDirection.RTL;
+        for (let i = 0; i < this.appThumbnails.length; i++) {
+            const actor = this.appThumbnails[i].actor;
+            const midpoint = vertical ? actor.y + actor.height / 2 : actor.x + actor.width / 2;
+            if (vertical ? y < midpoint : (rtl ? x > midpoint : x < midpoint)) {
+                return i;
+            }
+        }
+        return this.appThumbnails.length;
+    }
+
+    handleDragOver(source, actor, x, y, time) {
+        const position = this.getDropPosition(source, x, y);
+        if (position === null) {
+            if (this.dropMarker) this.dropMarker.hide();
+            return DND.DragMotionResult.NO_DROP;
+        }
+        const last = position === this.appThumbnails.length;
+        const target = this.appThumbnails[last ? position - 1 : position].actor;
+        const [targetX, targetY] = target.get_transformed_position();
+        const [width, height] = target.get_transformed_size();
+        const thickness = 2 * global.ui_scale;
+        if (this.box.vertical) {
+            this.dropMarker.set_position(targetX, targetY + (last ? height : 0) - thickness / 2);
+            this.dropMarker.set_size(width, thickness);
+        } else {
+            const rtl = this.box.get_text_direction() === St.TextDirection.RTL;
+            this.dropMarker.set_position(targetX + (last !== rtl ? width : 0) - thickness / 2, targetY);
+            this.dropMarker.set_size(thickness, height);
+        }
+        this.dropMarker.show();
+        return DND.DragMotionResult.MOVE_DROP;
+    }
+
+    cancelDrag() {
+        // DND calls this on the fixed target after Escape. The order is only
+        // changed by acceptDrop, so cancellation has nothing to undo.
+    }
+
+    acceptDrop(source, actor, x, y, time) {
+        let position = this.getDropPosition(source, x, y);
+        if (position === null) return false;
+        const oldPosition = this.appThumbnails.indexOf(source);
+        if (position > oldPosition) position--;
+        if (position === oldPosition) return true;
+        this.appThumbnails.splice(oldPosition, 1);
+        this.appThumbnails.splice(position, 0, source);
+        // Remember manual order for this group, including across thumbnail
+        // rebuilds. Windows which have not been displayed yet stay at the end.
+        const windows = this.appThumbnails.map(thumbnail => thumbnail.metaWindow);
+        this.groupState.set({
+            manualWindowOrder: true,
+            metaWindows: windows.concat(this.groupState.metaWindows.filter(win => !windows.includes(win)))
+        });
+        this.updateThumbnails();
+        return true;
     }
 
     addQueuedThumbnails() {
@@ -935,6 +1073,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     onButtonPress() {
+        if (this.draggedThumbnail) return;
         if (this.state.settings.onClickThumbs && this.box.get_children().length > 1) {
             return;
         }
@@ -968,6 +1107,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     onMenuLeave(actor) {
+        if (this.draggedThumbnail) return false;
         if (this.state.menuOpen || this.state.panelEditMode) {
             return false;
         }
@@ -1008,6 +1148,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     close (force) {
+        if (this.draggedThumbnail && !this.willUnmount) return;
         if (!force && (!this.shouldClose
             || (!this.shouldClose && this.state.settings.onClickThumbs))
             || !this.groupState
@@ -1117,6 +1258,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     updateThumbnails(exceptIndex) {
         for (let i = 0; i < this.appThumbnails.length; i++) {
+            this.appThumbnails[i].index = i;
             if (i !== exceptIndex) {
                 this.appThumbnails[i].refreshThumbnail();
                 this.box.set_child_at_index(this.appThumbnails[i].actor, i);
@@ -1125,7 +1267,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     addThumbnail(metaWindow) {
-        if (this.state.settings.sortThumbs) {
+        if (this.state.settings.sortThumbs && !this.groupState.manualWindowOrder && !this.draggedThumbnail) {
             this.appThumbnails.sort(function(a, b) {
                 if (!a.metaWindow || !b.metaWindow) {
                     return -1;
@@ -1136,6 +1278,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         const refThumb = this.appThumbnails.findIndex( thumbnail => thumbnail.metaWindow === metaWindow );
         if (!this.appThumbnails[refThumb] && refThumb === -1) {
             const thumbnail = new WindowThumbnail({
+                menu: this,
                 state: this.state,
                 groupState: this.groupState,
                 metaWindow: metaWindow,
@@ -1192,6 +1335,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     destroy() {
         this.willUnmount = true;
         if (!this.box) return;
+        this.endThumbnailDrag();
 
         if (this.isOpen) this.close(true);
 
