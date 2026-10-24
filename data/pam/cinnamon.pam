@@ -4,6 +4,7 @@
 -auth      sufficient   pam_selinux_permit.so
 auth       include      system-auth
 -auth       optional     pam_gnome_keyring.so
+-auth       optional     pam_oo7.so
 account    include      system-auth
 password   include      system-auth
 session    include      system-auth
