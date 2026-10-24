@@ -1664,6 +1664,13 @@ var Panel = GObject.registerClass({
      *  Adds a context menu to the panel
      */
     addContextMenuToPanel(panelPosition) {
+        // updatePosition() calls this on every monitors-changed; without this the
+        // previous menu stays in the ui group and the menu manager forever.
+        if (this._context_menu) {
+            this._context_menu.close();
+            this._context_menu.destroy();
+        }
+
         switch (panelPosition)
         {
             case PanelLoc.top:
