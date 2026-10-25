@@ -1426,6 +1426,16 @@ NMDeviceWireless.prototype = {
         return -1;
     },
 
+    _updateItemAccessPoints: function(apObj) {
+        // with 2+ saved connections the item is a submenu, one row per connection
+        if (apObj.item instanceof PopupMenu.PopupSubMenuMenuItem) {
+            for (let item of apObj.item.menu._getMenuItems())
+                item.updateAccessPoints(apObj.accessPoints);
+        } else {
+            apObj.item.updateAccessPoints(apObj.accessPoints);
+        }
+    },
+
     _accessPointAdded: function(device, accessPoint) {
         if (accessPoint.get_ssid() == null) {
             // This access point is not visible yet
@@ -1447,7 +1457,7 @@ NMDeviceWireless.prototype = {
 
             apObj.accessPoints.push(accessPoint);
             if (apObj.item)
-                apObj.item.updateAccessPoints(apObj.accessPoints);
+                this._updateItemAccessPoints(apObj);
         } else {
             apObj = { ssid: accessPoint.get_ssid(),
                       mode: accessPoint.mode,
@@ -1561,7 +1571,7 @@ NMDeviceWireless.prototype = {
             this._networks.splice(res.network, 1);
 
         } else if (apObj.item)
-            apObj.item.updateAccessPoints(apObj.accessPoints);
+            this._updateItemAccessPoints(apObj);
     },
 
     _createAPItem: function(connection, accessPointObj, useConnectionName) {
