@@ -1473,10 +1473,13 @@ NMDeviceWireless.prototype = {
         }
 
         if (needsupdate) {
-            this._accessPointRemoved(device, accessPoint);
-
-            if (pos != -1)
-                this._networks.splice(pos, 1);
+            if (pos != -1) {
+                // rebuild, as addConnection() does
+                this._networks.sort(this._networkSortFunction);
+                this._clearSection();
+                this._createSection();
+                return;
+            }
 
             if (this._networks.length == 0) {
                 // only network in the list
