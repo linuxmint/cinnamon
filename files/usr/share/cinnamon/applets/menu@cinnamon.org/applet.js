@@ -1251,6 +1251,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     constructor(orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
+        this.orientation = orientation;
         this.setAllowedLayout(Applet.AllowedLayout.BOTH);
 
         this.set_applet_tooltip(_("Menu"));
@@ -1515,6 +1516,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
     }
 
     on_orientation_changed (orientation) {
+        this.orientation = orientation;
         this._updateIconAndLabel();
         this._size_dirty = true;
     }
@@ -1558,6 +1560,20 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
                 this._applicationsButtons[i].actor.show();
             }
             this._allAppsCategoryButton.actor.style_class = "appmenu-category-button-selected";
+
+            // Center menu on panel if applet in center zone of panel.
+            const appletDefinition = Main.AppletManager.getAppletDefinition({applet_id: this.instance_id});
+            if (appletDefinition.location_label === 'center') {
+                let monitor = Main.layoutManager.findMonitorForActor(this.actor);
+                monitor = Main.layoutManager.findMonitorForActor(this.actor);
+                if (this.orientation === St.Side.BOTTOM || this.orientation === St.Side.TOP) {
+                    this.menu.shiftToPosition(Math.floor(monitor.width / 2) + monitor.x);
+                } else { //Side panel
+                    this.menu.shiftToPosition(Math.floor(monitor.height / 2) + monitor.y);
+                }
+            } else {
+                this.menu.shiftToPosition(-1); // Undo any previous shift
+            }
 
             Mainloop.idle_add(() => {
                 if(this.lastSelectedCategory !== null) //if a category is already selected

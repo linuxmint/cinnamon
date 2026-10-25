@@ -2052,8 +2052,9 @@ var PopupMenu = class PopupMenu extends PopupMenuBase {
                 break;
             case St.Side.LEFT:
             case St.Side.RIGHT:
-                // align the top of the menu with the top of the source
-                yPos = (this._slidePosition == -1) ? sourceBox.y1 : this._slidePosition;
+                // get center position of the actor and calculate the position needed to center the menu on the actor
+                let yCenter = (this._slidePosition == -1) ? sourceBox.y1 + (sourceBox.y2 - sourceBox.y1) / 2 : this._slidePosition;
+                yPos = yCenter - (natHeight / 2);
 
                 // we don't want to go off the screen so we adjust if needed
                 if (yPos < y1) yPos = y1;
