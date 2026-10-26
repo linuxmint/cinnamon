@@ -267,6 +267,7 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
         this._inputSourcePopup = new InputSourcePopup();
         this._textFocused = false;
         this._textFocusLostTime = 0;
+        this._cursorKnown = false;
 
         this._panelService = null;
     }
@@ -274,6 +275,7 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
     setPanelService(panelService) {
         this._panelService = panelService;
         this._textFocused = false;
+        this._cursorKnown = false;
         if (!panelService) {
             this._inputSourcePopup.dismiss();
             return;
@@ -282,10 +284,12 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
         panelService.connect('focus-in', (ps, path) => {
             // InputContext_1 is ibus-daemon's own fake context, focused
             // whenever no client is.
-            if (GLib.str_has_suffix(path, '/InputContext_1'))
+            if (GLib.str_has_suffix(path, '/InputContext_1')) {
                 this._loseTextFocus();
-            else
+            } else {
                 this._textFocused = true;
+                this._cursorKnown = false;
+            }
         });
 
         panelService.connect('set-cursor-location', (ps, x, y, w, h) => {
@@ -399,7 +403,7 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
     }
 
     showInputSourceInfo(createIndicator) {
-        if (!this._inputSourcePopup.visible && !this._hasTextFocus())
+        if (!this._inputSourcePopup.visible && (!this._cursorKnown || !this._hasTextFocus()))
             return;
 
         this._inputSourcePopup.popup(createIndicator, this._dummyCursor);
@@ -413,10 +417,20 @@ class IbusCandidatePopup extends BoxPointer.BoxPointer {
         this._dummyCursor.set_position(x, y);
         this._dummyCursor.set_size(w, h);
 
+        // A context focused without a caret (non-editable content in browsers,
+        // etc.) reports ibus' unset 0x0 rect, translated to the window origin.
+        this._cursorKnown = h > 0;
+
         if (this.visible)
             this.setPosition(this._dummyCursor, 0);
-        if (this._inputSourcePopup.visible)
+
+        if (!this._inputSourcePopup.visible)
+            return;
+
+        if (this._cursorKnown)
             this._inputSourcePopup.reposition(this._dummyCursor);
+        else
+            this._inputSourcePopup.dismiss();
     }
 
     _updateVisibility() {
