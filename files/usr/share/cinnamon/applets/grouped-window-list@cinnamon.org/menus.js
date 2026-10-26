@@ -683,13 +683,6 @@ class WindowThumbnail {
         this.signals.disconnect("notify::minimized", this.metaWindow);
     }
 
-    calcThumbsFullSize(singleThumbSize) {
-        const padding = this.thumbnailActor.style_length('padding');
-        const margin = this.thumbnailActor.style_length('margin');
-        const size = (singleThumbSize + this.thumbnailPadding) * global.ui_scale;
-        return (size + padding + margin) * this.groupState.windowCount;
-    }
-
     refreshThumbnail() {
         if (this.willUnmount
             || !this.groupState
@@ -715,39 +708,6 @@ class WindowThumbnail {
 
         let thumbnailWidth = Math.floor((monitor.width / divider) * thumbSize);
         let thumbnailHeight = Math.floor((monitor.height / divider) * thumbSize);
-
-        let monitorSize, thumbnailSize;
-        if (!this.state.isHorizontal) {
-            monitorSize = monitor.height;
-            thumbnailSize = thumbnailHeight;
-        } else {
-            monitorSize = monitor.width;
-            thumbnailSize = thumbnailWidth;
-        }
-
-
-        let i = 0;
-        while (this.calcThumbsFullSize(thumbnailSize) > monitorSize &&
-               thumbnailWidth > 64 && thumbnailHeight > 64) {
-            // ---
-            thumbnailWidth -= 1;
-            thumbnailHeight -= 1;
-            thumbnailSize -= 1;
-
-            i++;
-            // Bail after 200 iterations
-            if (i > 200) {
-                break;
-            }
-        }
-
-        // If we can't fit all the thumbnails, revert to a vertical menu orientation
-        // with no thumbnails, which can hold more window selections.
-        const verticalThumbs = this.calcThumbsFullSize(thumbnailSize) > monitorSize;
-        const currentVerticalThumbsState = this.groupState.verticalThumbs;
-        this.groupState.set({verticalThumbs});
-
-        if (verticalThumbs !== currentVerticalThumbsState) return;
 
         this.thumbnailActor.width = thumbnailWidth * global.ui_scale;
         this.container.style = `width: ${Math.floor(thumbnailWidth - 16)}px;`;
@@ -923,9 +883,63 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             }
         });
 
+        this.thumbnailBox = new St.BoxLayout({vertical: true});
+        this.scrollView = new St.ScrollView({reactive: true});
+        this.scrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.scrollView.set_mouse_scrolling(false);
+        this.scrollView.set_clip_to_allocation(true);
+        this.scrollView.add_actor(this.thumbnailBox);
+        this.box.add_actor(this.scrollView);
+        this._signals.connect(this.scrollView, 'scroll-event',
+            (actor, event) => this.onScroll(event));
+
         this.appThumbnails = [];
         this.queuedWindows = [];
         this.fullyRefreshThumbnails();
+    }
+
+    onScroll(event) {
+        const bar = this.thumbnailBox.vertical
+            ? this.scrollView.get_vscroll_bar() : this.scrollView.get_hscroll_bar();
+        const adjustment = bar.get_adjustment();
+        const maximum = Math.max(adjustment.lower, adjustment.upper - adjustment.page_size);
+        if (maximum <= adjustment.lower) return Clutter.EVENT_PROPAGATE;
+
+        let delta;
+        switch (event.get_scroll_direction()) {
+            case Clutter.ScrollDirection.UP:
+            case Clutter.ScrollDirection.LEFT:
+                delta = -1;
+                break;
+            case Clutter.ScrollDirection.DOWN:
+            case Clutter.ScrollDirection.RIGHT:
+                delta = 1;
+                break;
+            case Clutter.ScrollDirection.SMOOTH: {
+                const [dx, dy] = event.get_scroll_delta();
+                delta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+                break;
+            }
+            default:
+                return Clutter.EVENT_PROPAGATE;
+        }
+        for (const thumbnail of this.appThumbnails) thumbnail.destroyOverlayPreview();
+        adjustment.value = Math.max(adjustment.lower,
+            Math.min(maximum, adjustment.value + delta * 48 * global.ui_scale));
+        return Clutter.EVENT_STOP;
+    }
+
+    ensureThumbnailVisible(thumbnail) {
+        const vertical = this.thumbnailBox.vertical;
+        const bar = vertical ? this.scrollView.get_vscroll_bar() : this.scrollView.get_hscroll_bar();
+        const adjustment = bar.get_adjustment();
+        const start = vertical ? thumbnail.actor.y : thumbnail.actor.x;
+        const end = start + (vertical ? thumbnail.actor.height : thumbnail.actor.width);
+        let value = adjustment.value;
+        if (start < value) value = start;
+        else if (end > value + adjustment.page_size) value = end - adjustment.page_size;
+        adjustment.value = Math.max(adjustment.lower,
+            Math.min(value, Math.max(adjustment.lower, adjustment.upper - adjustment.page_size)));
     }
 
     addQueuedThumbnails() {
@@ -935,7 +949,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     onButtonPress() {
-        if (this.state.settings.onClickThumbs && this.box.get_children().length > 1) {
+        if (this.state.settings.onClickThumbs && this.thumbnailBox.get_children().length > 1) {
             return;
         }
         this.shouldClose = true;
@@ -1034,7 +1048,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     onKeyPress(actor, e) {
         const {orientation} = this.state;
-        const {vertical} = this.box;
+        const {vertical} = this.thumbnailBox;
 
         const symbol = e.get_key_symbol();
         let i = this.appThumbnails.findIndex( item => item.entered === true );
@@ -1092,6 +1106,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
         if (this.appThumbnails[index] !== undefined) {
             this.appThumbnails[i].onLeave();
+            this.ensureThumbnailVisible(this.appThumbnails[index]);
             this.appThumbnails[index].onEnter();
             if (this.appThumbnails[i].isFocused) {
                 this.appThumbnails[i].onFocusWindowChange();
@@ -1107,7 +1122,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     destroyThumbnails() {
-        this.box.destroy_children();
+        this.thumbnailBox.destroy_children();
         for (let i = 0; i < this.appThumbnails.length; i++) {
             this.appThumbnails[i].destroy();
             this.appThumbnails[i] = undefined;
@@ -1119,7 +1134,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         for (let i = 0; i < this.appThumbnails.length; i++) {
             if (i !== exceptIndex) {
                 this.appThumbnails[i].refreshThumbnail();
-                this.box.set_child_at_index(this.appThumbnails[i].actor, i);
+                this.thumbnailBox.set_child_at_index(this.appThumbnails[i].actor, i);
             }
         }
     }
@@ -1142,21 +1157,19 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
                 index: this.appThumbnails.length // correct index before actual push
             });
             this.appThumbnails.push(thumbnail);
-            this.box.insert_actor(thumbnail.actor, -1);
-            // TBD: Update the thumbnail scaling for the other thumbnails belonging to this group.
-            // Since the total window count determines the scaling used, this needs to be done
-            // each time a window is added.
+            this.thumbnailBox.insert_actor(thumbnail.actor, -1);
+            // Refresh thumbnail indices and visual order after adding a window.
             this.updateThumbnails(thumbnail.index);
         } else if (this.appThumbnails[refThumb]) {
             this.appThumbnails[refThumb].index = refThumb;
             this.appThumbnails[refThumb].metaWindow = metaWindow;
             this.appThumbnails[refThumb].refreshThumbnail();
-            this.box.set_child_at_index(this.appThumbnails[refThumb].actor, refThumb);
+            this.thumbnailBox.set_child_at_index(this.appThumbnails[refThumb].actor, refThumb);
         }
     }
 
     addWindowThumbnails() {
-        if (this.willUnmount || !this.box || !this.appThumbnails || !this.groupState || !this.groupState.metaWindows) {
+        if (this.willUnmount || !this.thumbnailBox || !this.appThumbnails || !this.groupState || !this.groupState.metaWindows) {
             return;
         }
 
@@ -1167,10 +1180,14 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     setVerticalSetting() {
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            this.box.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
+            this.thumbnailBox.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
         } else {
-            this.box.vertical = true;
+            this.thumbnailBox.vertical = true;
         }
+
+        this.scrollView.set_policy(
+            this.thumbnailBox.vertical ? St.PolicyType.NEVER : St.PolicyType.AUTOMATIC,
+            this.thumbnailBox.vertical ? St.PolicyType.AUTOMATIC : St.PolicyType.NEVER);
 
         // Do a full refresh if thumbnails don't exist - this happens when the thumbnail menu
         // initializes vertically from lack of calculated space, or thumbnails are disabled.
@@ -1191,7 +1208,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     destroy() {
         this.willUnmount = true;
-        if (!this.box) return;
+        if (!this.thumbnailBox) return;
 
         if (this.isOpen) this.close(true);
 
