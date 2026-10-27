@@ -919,8 +919,12 @@ var ScreenShield = GObject.registerClass({
 
             try {
                 let widgetClass = _widgetRegistry[widgetIndex];
-                let widget = new widgetClass(this._awayMessage);
-                this._addScreenShieldWidget(widget);
+                if (widgetClass !== AlbumArtWidget.AlbumArtWidget ||
+                    this._settings.get_boolean('show-album-art') ||
+                    this._settings.get_boolean('allow-media-control')) {
+                    let widget = new widgetClass(this._awayMessage);
+                    this._addScreenShieldWidget(widget);
+                }
             } catch (e) {
                 global.logError(`ScreenShield: Failed to load widget ${widgetIndex}: ${e.message}`);
             }
