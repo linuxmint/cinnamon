@@ -602,23 +602,25 @@ var ScreenShield = GObject.registerClass({
             duration: FADE_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
             onComplete: () => {
-                Main.popModal(this);
-                this.hide();
-                this._screenShieldGroup.hide();
-                this._destroyAllWidgets();
-                this._destroyBackgrounds();
-                global.stage.show_cursor();
+                try {
+                    Main.popModal(this);
+                    this.hide();
+                    this._screenShieldGroup.hide();
+                    this._destroyAllWidgets();
+                    this._destroyBackgrounds();
 
-                if (Main.deskletContainer)
-                    Main.deskletContainer.actor.show();
+                    if (Main.deskletContainer)
+                        Main.deskletContainer.actor.show();
+                } finally {
+                    global.stage.show_cursor();
+                    this._activationTime = 0;
+                    this._setState(State.HIDDEN);
+                    this._deactivating = false;
+                    Main.magnifier.enableForScreensaver();
 
-                this._activationTime = 0;
-                this._setState(State.HIDDEN);
-                this._deactivating = false;
-                Main.magnifier.enableForScreensaver();
-
-                if (emitUnlocked)
-                    this.emit('unlocked');
+                    if (emitUnlocked)
+                        this.emit('unlocked');
+                }
             }
         });
     }
@@ -1007,7 +1009,11 @@ var ScreenShield = GObject.registerClass({
         this._stopFloatTimer();
         this._destroyInfoPanel();
         for (let widget of this._widgets) {
-            widget.onScreensaverDeactivated();
+            try {
+                widget.onScreensaverDeactivated();
+            } catch (e) {
+                global.logError(`ScreenShield: Failed to deactivate widget: ${e.message}`);
+            }
             widget.destroy();
         }
 
