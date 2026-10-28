@@ -21,6 +21,7 @@
  */
 
 const Signals = imports.signals;
+const Gettext = imports.gettext;
 const Cinnamon = imports.gi.Cinnamon;
 const AccountsService = imports.gi.AccountsService;
 const Clutter = imports.gi.Clutter;
@@ -45,6 +46,12 @@ const Util = imports.misc.util;
 
 const DIALOG_ICON_SIZE = 64;
 const DELAYED_RESET_TIMEOUT = 200;
+
+// Some polkit PAM helpers leave the process locale at C. Use the existing
+// module catalogs for untranslated messages, keeping other text unchanged.
+function translatePamMessage(text) {
+    return Gettext.dgettext('Linux-PAM', Gettext.dgettext('fprintd', text));
+}
 
 var RootUser = class {
     constructor(name) {
@@ -431,6 +438,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionRequest(session, request, echoOn) {
+        request = translatePamMessage(request);
         if (this._sessionRequestTimeoutId) {
             GLib.source_remove(this._sessionRequestTimeoutId);
             this._sessionRequestTimeoutId = 0;
@@ -453,6 +461,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionShowError(session, text) {
+        text = translatePamMessage(text);
         this._passwordEntry.end_busy();
         this._passwordEntry.set_text('');
         this._errorMessageLabel.set_text(text);
@@ -463,6 +472,7 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionShowInfo(session, text) {
+        text = translatePamMessage(text);
         this._passwordEntry.end_busy();
         this._passwordEntry.set_text('');
         this._infoMessageLabel.set_text(text);
