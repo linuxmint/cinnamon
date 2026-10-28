@@ -770,7 +770,12 @@ class Module:
         users = self.accountService.list_users()
         for user in users:
             if os.path.exists(user.get_icon_file()):
-                pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(user.get_icon_file(), 48, 48)
+                try:
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(user.get_icon_file(), 48, 48)
+                except Exception:
+                # Locked fscrypt home (ENOKEY) or unreadable/corrupt .face:
+                # fall back to the generic avatar.
+                    pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
             else:
                 pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size("/usr/share/cinnamon/faces/user-generic.png", 48, 48)
 
