@@ -193,6 +193,15 @@ var Workspace = class Workspace {
     }
 
     refreshList() {
+        const previousOrder = new Map();
+        if (!this.state.settings.groupApps) {
+            this.appGroups.forEach(appGroup => {
+                appGroup.groupState.metaWindows.forEach(window => {
+                    previousOrder.set(window, previousOrder.size);
+                });
+            });
+        }
+
         this.appGroups.forEach( appGroup => {
             appGroup.destroy();
             appGroup = null;
@@ -200,7 +209,40 @@ var Workspace = class Workspace {
         this.appGroups = [];
         this.loadFavorites();
         this.refreshApps();
+        if (!this.state.settings.groupApps) {
+            this.restoreWindowOrder(previousOrder);
+        }
         this.scrollToLastFocusedApp();
+    }
+
+    restoreWindowOrder(previousOrder) {
+        // Keep each app's slots so favorite changes still determine app order.
+        const slotsByApp = new Map();
+        this.appGroups.forEach((appGroup, slot) => {
+            if (appGroup.groupState.metaWindows.length === 0) return;
+            const appId = appGroup.groupState.appId;
+            if (!slotsByApp.has(appId)) slotsByApp.set(appId, []);
+            slotsByApp.get(appId).push(slot);
+        });
+
+        slotsByApp.forEach(slots => {
+            const groups = slots.map(slot => this.appGroups[slot]);
+            groups.sort((a, b) => {
+                const aWindow = a.groupState.metaWindows[0];
+                const bWindow = b.groupState.metaWindows[0];
+                const aKnown = previousOrder.has(aWindow);
+                const bKnown = previousOrder.has(bWindow);
+                if (aKnown && bKnown) return previousOrder.get(aWindow) - previousOrder.get(bWindow);
+                if (aKnown !== bKnown) return aKnown ? -1 : 1;
+                return aWindow.get_stable_sequence() - bWindow.get_stable_sequence();
+            });
+            slots.forEach((slot, index) => {
+                this.appGroups[slot] = groups[index];
+            });
+        });
+        this.appGroups.forEach((appGroup, slot) => {
+            this.container.set_child_at_index(appGroup.actor, slot);
+        });
     }
 
     loadFavorites() {
