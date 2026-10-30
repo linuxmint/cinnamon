@@ -437,7 +437,7 @@ var LayoutManager = GObject.registerClass({
         let kb_height = this.keyboardMonitor.height / size;
 
         let kb_x = this.keyboardMonitor.x;
-        let kb_y = top ? 0 : this.keyboardMonitor.y + this.keyboardMonitor.height - kb_height;
+        let kb_y = top ? this.keyboardMonitor.y : this.keyboardMonitor.y + this.keyboardMonitor.height - kb_height;
         let kb_width = this.keyboardMonitor.width;
         for (let panel of panels) {
             if (panel.isHideable()) {
