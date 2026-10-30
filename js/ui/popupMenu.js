@@ -1199,6 +1199,9 @@ var PopupMenuBase = class PopupMenuBase {
 
         this._activeMenuItem = null;
         this._childMenus = [];
+
+        this._signals.connect(this, 'open-state-changed',
+            (self, open) => this._updateItemStates(open, this.animating));
     }
 
     /**
@@ -1374,19 +1377,29 @@ var PopupMenuBase = class PopupMenuBase {
                 this.close(true);
             }
         });
-        this._signals.connect(menuItem, 'destroy', (emitter) => {
-            this._signals.disconnect('activate', menuItem);
-            this._signals.disconnect('active-changed', menuItem);
-            this._signals.disconnect('sensitive-changed', menuItem);
-            if (menuItem.menu) {
-                this._signals.disconnect('activate', menuItem.menu);
-                this._signals.disconnect('active-changed', menuItem.menu);
-                this._signals.disconnect('open-state-changed', this);
-            }
+        this._signals.connect(menuItem, 'destroy', () => {
             if (menuItem == this._activeMenuItem)
                 this._activeMenuItem = null;
             this.length--;
+            this._signals.disconnect(null, menuItem);
+            if (menuItem.menu)
+                this._signals.disconnect(null, menuItem.menu);
         });
+    }
+
+    _updateItemStates(open, animating) {
+        for (let menuItem of this._getMenuItems()) {
+            if (menuItem instanceof PopupMenuSection) {
+                menuItem._updateItemStates(open, animating);
+            } else if (menuItem instanceof PopupSeparatorMenuItem) {
+                this._updateSeparatorVisibility(menuItem);
+            } else if (!open && menuItem instanceof PopupSubMenuMenuItem && menuItem.menu.isOpen) {
+                if (animating)
+                    menuItem.menu.closeAfterUnmap();
+                else
+                    menuItem.menu.close(false);
+            }
+        }
     }
 
     _updateSeparatorVisibility(menuItem) {
@@ -1456,10 +1469,8 @@ var PopupMenuBase = class PopupMenuBase {
         if (menuItem instanceof PopupMenuSection) {
             this._connectSubMenuSignals(menuItem, menuItem);
             this._signals.connect(menuItem, 'destroy', () => {
-                this._signals.disconnect('activate', menuItem);
-                this._signals.disconnect('active-changed', menuItem);
-
                 this.length--;
+                this._signals.disconnect(null, menuItem);
             });
         } else if (menuItem instanceof PopupSubMenuMenuItem) {
             if (before_item == null)
@@ -1468,24 +1479,8 @@ var PopupMenuBase = class PopupMenuBase {
                 this.box.insert_child_below(menuItem.menu.actor, before_item);
             this._connectSubMenuSignals(menuItem, menuItem.menu);
             this._connectItemSignals(menuItem);
-            this._signals.connect(this, 'open-state-changed', function(self, open) {
-                if (!open && menuItem.menu.isOpen) {
-                    if (this.animating) {
-                        menuItem.menu.closeAfterUnmap();
-                    } else {
-                        menuItem.menu.close(false);
-                    }
-                }
-            }, this);
         } else if (menuItem instanceof PopupSeparatorMenuItem) {
             this._connectItemSignals(menuItem);
-
-            // updateSeparatorVisibility needs to get called any time the
-            // separator's adjacent siblings change visibility or position.
-            // open-state-changed isn't exactly that, but doing it in more
-            // precise ways would require a lot more bookkeeping.
-            let updateSeparatorVisibility = this._updateSeparatorVisibility.bind(this, menuItem);
-            this._signals.connect(this, 'open-state-changed', updateSeparatorVisibility);
         } else if (menuItem instanceof PopupBaseMenuItem)
             this._connectItemSignals(menuItem);
         else
