@@ -2694,6 +2694,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.searchEntryText.connect('text-changed', this._onSearchTextChanged.bind(this));
         this.searchEntryText.connect('key-press-event', this._onMenuKeyPress.bind(this));
         this._previousSearchPattern = "";
+        this._searchId = 0;
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
 
@@ -3121,7 +3122,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._buttonEnterEvent(this._activeActor._delegate);
         }
 
+        let searchId = ++this._searchId;
         SearchProviderManager.launch_all(lowerPattern, (provider, results) => {
+            // Search providers may send results asynchronously. Drop them if
+            // the search has been replaced or cleared (e.g. the menu closed)
+            // in the meantime, or they would end up in the regular app list.
+            if (searchId !== this._searchId || !this.searchActive)
+                return;
+
             try {
                 for (let result of results) {
                     if (result.type != 'software') {
