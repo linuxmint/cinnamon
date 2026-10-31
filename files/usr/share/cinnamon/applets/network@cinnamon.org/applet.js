@@ -33,7 +33,9 @@ const NMAccessPointSecurity = {
     WPA_PSK: 3,
     WPA2_PSK: 4,
     WPA_ENT: 5,
-    WPA2_ENT: 6
+    WPA2_ENT: 6,
+    SAE: 7,
+    OWE: 8
 };
 
 // small optimization, to avoid using [] all the time
@@ -1347,6 +1349,11 @@ NMDeviceWireless.prototype = {
                 type = NMAccessPointSecurity.WPA2_ENT;
             else if (rsn_flags & NM80211ApSecurityFlags.KEY_MGMT_PSK)
                 type = NMAccessPointSecurity.WPA2_PSK;
+            else if (rsn_flags & NM80211ApSecurityFlags.KEY_MGMT_SAE)
+                type = NMAccessPointSecurity.SAE;
+            else if (rsn_flags & (NM80211ApSecurityFlags.KEY_MGMT_OWE |
+                                  NM80211ApSecurityFlags.KEY_MGMT_OWE_TM))
+                type = NMAccessPointSecurity.OWE;
         } else if (wpa_flags != NM80211ApSecurityFlags.NONE) {
             if (wpa_flags & NM80211ApSecurityFlags.KEY_MGMT_802_1X)
                 type = NMAccessPointSecurity.WPA_ENT;
@@ -1729,7 +1736,8 @@ NMDeviceWireless.prototype = {
         if (default_to_private_connections(this._client)) {
             setting_conn.add_permission('user', GLib.get_user_name(), null);
             if (apObj.security == NMAccessPointSecurity.WPA2_PSK ||
-                apObj.security == NMAccessPointSecurity.WPA_PSK) {
+                apObj.security == NMAccessPointSecurity.WPA_PSK ||
+                apObj.security == NMAccessPointSecurity.SAE) {
                 connection.add_setting(new NM.SettingWirelessSecurity({
                     psk_flags: NM.SettingSecretFlags.AGENT_OWNED
                 }));
