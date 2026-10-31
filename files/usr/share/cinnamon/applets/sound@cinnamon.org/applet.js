@@ -650,10 +650,11 @@ class Player extends PopupMenu.PopupMenuSection {
                 this._name = props.Identity.unpack();
                 this._applet._updatePlayerMenuItems();
             }
-            if (props.CanRaise) {
+            // The properties are GVariants, so check the unpacked value.
+            if (props.CanRaise && props.CanRaise.unpack()) {
                 this._showCanRaise();
             }
-            if (props.CanQuit) {
+            if (props.CanQuit && props.CanQuit.unpack()) {
                 this._showCanQuit();
             }
             if (props.DesktopEntry) {
@@ -670,7 +671,11 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _showCanRaise() {
-        let btn = new ControlButton("xsi-go-up", _("Open Player"), () => {
+        // PropertiesChanged can carry CanRaise many times; add the button only once.
+        if (this._raiseButton)
+            return;
+
+        this._raiseButton = new ControlButton("xsi-go-up", _("Open Player"), () => {
             if (this._name.toLowerCase() === "spotify") {
                 // Spotify isn't able to raise via Dbus once its main UI is closed
                 Util.spawn(['spotify']);
@@ -680,15 +685,18 @@ class Player extends PopupMenu.PopupMenuSection {
             }
             this._applet.menu.close();
         }, true);
-        this._playerBox.add_actor(btn.actor);
+        this._playerBox.add_actor(this._raiseButton.actor);
     }
 
     _showCanQuit() {
-        let btn = new ControlButton("xsi-window-close", _("Quit Player"), () => {
+        if (this._quitButton)
+            return;
+
+        this._quitButton = new ControlButton("xsi-window-close", _("Quit Player"), () => {
             this._mediaServer.QuitRemote();
             this._applet.menu.close();
         }, true);
-        this._playerBox.add_actor(btn.actor);
+        this._playerBox.add_actor(this._quitButton.actor);
     }
 
     _setName(status) {
