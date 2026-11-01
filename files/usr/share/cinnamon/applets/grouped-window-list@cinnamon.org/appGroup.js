@@ -511,9 +511,7 @@ var AppGroup = class AppGroup {
     showLabel(animate = false) {
         if (this.labelVisiblePref
             || !this.label
-            || !this.state.isHorizontal
-            || this.label.is_finalized()
-            || !this.label.realized) {
+            || !this.state.isHorizontal) {
             return;
         }
 
@@ -543,7 +541,7 @@ var AppGroup = class AppGroup {
     }
 
     hideLabel() {
-        if (!this.label || this.label.is_finalized() || !this.label.realized) return;
+        if (!this.label) return;
 
         this.label.set_text('');
         this.labelVisiblePref = false;
