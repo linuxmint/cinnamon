@@ -22,8 +22,7 @@ const NMConnectionCategory = {
     WIRED: 'wired',
     WIRELESS: 'wireless',
     WWAN: 'wwan',
-    VPN: 'vpn',
-    WIREGUARD: 'wireguard'
+    VPN: 'vpn'
 };
 
 const NMAccessPointSecurity = {
@@ -34,6 +33,24 @@ const NMAccessPointSecurity = {
     WPA2_PSK: 4,
     WPA_ENT: 5,
     WPA2_ENT: 6
+};
+
+// The kind shown next to a VPN connection's name, keyed by the last part of
+// its plugin's service type (org.freedesktop.NetworkManager.<key>); other
+// plugins show the key itself. Plugin names are product and protocol names
+// and are left untranslated, so the table adds no strings.
+const VPN_KIND_NAMES = {
+    fortisslvpn: 'Fortinet SSL VPN',
+    l2tp: 'L2TP',
+    libreswan: 'IPsec',
+    openconnect: 'OpenConnect',
+    openswan: 'IPsec',
+    openvpn: 'OpenVPN',
+    pptp: 'PPTP',
+    ssh: 'SSH',
+    sstp: 'SSTP',
+    strongswan: 'IPsec/IKEv2',
+    vpnc: 'Cisco VPN'
 };
 
 // small optimization, to avoid using [] all the time
@@ -983,7 +1000,21 @@ NMDeviceVPN.prototype = {
     },
 
     connectionValid: function(connection) {
-        return connection._type == NM.SETTING_VPN_SETTING_NAME;
+        return connection._type == NM.SETTING_VPN_SETTING_NAME ||
+               connection._type == NM.SETTING_WIREGUARD_SETTING_NAME;
+    },
+
+    _kindLabel: function(connection) {
+        if (connection._type == NM.SETTING_WIREGUARD_SETTING_NAME)
+            return _("WireGuard");
+
+        let vpn = connection.get_setting_vpn();
+        let service = vpn ? vpn.get_service_type() : null;
+        if (!service)
+            return null;
+
+        let plugin = service.split('.').pop();
+        return VPN_KIND_NAMES.hasOwnProperty(plugin) ? VPN_KIND_NAMES[plugin] : plugin;
     },
 
     get empty() {
@@ -1028,113 +1059,19 @@ NMDeviceVPN.prototype = {
 
     _updateConnectionItemView: function(item, connection, active) {
         item.label.text = connection._name  || _("Connected (private)");
-        if (active) {
-            item.setShowDot(true);
-            item.actor.add_style_class_name('popup-device-menu-item');
-        } else {
-            item.setShowDot(false);
-            item.actor.remove_style_class_name('popup-device-menu-item');
-        }
+        item.setStatus(this._kindLabel(connection));
+        item.setToggleState(active);
     },
 
-    _createSection: function() {
-        for (let obj of this._connections) {
-            if (!obj.item) {
-                obj.item = new PopupMenu.PopupMenuItem(obj.name);
-                this._updateConnectionItemView(obj.item, obj.connection,
-                                               this._activeConnections.some(ac => ac.connection == obj.connection));
-                obj.item.connect('activate', Lang.bind(this, function() {
-                    let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
-                    if (activeConnection) {
-                        this._client.deactivate_connection(activeConnection, null);
-                    } else {
-                        this._client.activate_connection_async(obj.connection, this.device, null, null, null);
-                    }
-                }));
-                this.section.addMenuItem(obj.item);
-            } else {
-                this._updateConnectionItemView(obj.item, obj.connection, this._activeConnections.some(ac => ac.connection == obj.connection));
-            }
-        }
-    },
-};
-
-function NMDeviceWIREGUARD() {
-    this._init.apply(this, arguments);
-}
-
-NMDeviceWIREGUARD.prototype = {
-    __proto__: NMDevice.prototype,
-
-    _init: function(client, device, connections) {
-        // Disable autoconnections
-        this._autoConnectionName = null;
-        this._client = client;
-        this.category = NMConnectionCategory.WIREGUARD;
-        this._type = NM.SETTING_WIREGUARD_SETTING_NAME;
-
-        this._activeConnections = [];
-
-        NMDevice.prototype._init.call(this, client, null, [ ]);
-
-        // Tests:
-        this.category = NMConnectionCategory.WIREGUARD;
-        this._type = NM.SETTING_WIREGUARD_SETTING_NAME;
-    },
-
-    connectionValid: function(connection) {
-        return connection._type == NM.SETTING_WIREGUARD_SETTING_NAME;
-    },
-
-    get empty() {
-        return this._connections.length == 0;
-    },
-
-    get connected() {
-        return this._activeConnections.length > 0;
-    },
-
-    setActiveConnections: function(activeConnections) {
-        this._activeConnections = activeConnections || [];
-
-        this._createSection();
-        this.emit('active-connections-changed');
-    },
-
-    _shouldShowConnectionList: function() {
-        return true;
-    },
-
-    deactivate: function() {
-        for (let ac of this._activeConnections)
-            this._client.deactivate_connection(ac, null);
-
-        this._activeConnections = [];
-    },
-
-    _clearSection: function() {
-        if (this.section && this.section.removeAll)
-            this.section.removeAll();
-
-        this._autoConnectionItem = null;
-        this._overflowItem = null;
-
-        for (let i = 0; i < this._connections.length; i++) {
-            if (this._connections[i].item && this._connections[i].item.destroy)
-                this._connections[i].item.destroy();
-
-            this._connections[i].item = null;
-        }
-    },
-
-    /* A switch per tunnel: WireGuard connections are independent of one another,
-       so they are not a pick-one list. */
+    /* A switch per tunnel: VPN and WireGuard connections are independent of
+       one another, so they are not a pick-one list. */
     _createSection: function() {
         for (let obj of this._connections) {
             let active = this._activeConnections.some(ac => ac.connection == obj.connection);
 
             if (!obj.item) {
                 obj.item = new PopupMenu.PopupSwitchMenuItem(obj.name, active);
+                this._updateConnectionItemView(obj.item, obj.connection, active);
                 obj.item.connect('toggled', (item, state) => {
                     let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
 
@@ -1145,13 +1082,10 @@ NMDeviceWIREGUARD.prototype = {
                 });
                 this.section.addMenuItem(obj.item);
             } else {
-                obj.item.setToggleState(active);
+                this._updateConnectionItemView(obj.item, obj.connection, active);
             }
         }
     },
-
-    statusLabel: null,
-    controllable: true
 };
 
 
@@ -1940,21 +1874,6 @@ CinnamonNetworkApplet.prototype = {
             this.menu.addMenuItem(this._devices.vpn.section);
             this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
-            this._devices.wireguard = {
-                section: new PopupMenu.PopupMenuSection(),
-                device: new NMDeviceWIREGUARD(this._client),
-                item: new NMWiredSectionTitleMenuItem(_("WIREGUARD Connections"))
-            };
-            this._devices.wireguard.device.connect('active-connections-changed', () => {
-                this._devices.wireguard.item.updateForDevice(this._devices.wireguard.device);
-            });
-            this._devices.wireguard.item.updateForDevice(this._devices.wireguard.device);
-            this._devices.wireguard.section.addMenuItem(this._devices.wireguard.item);
-            this._devices.wireguard.section.addMenuItem(this._devices.wireguard.device.section);
-            this._devices.wireguard.section.actor.hide();
-            this.menu.addMenuItem(this._devices.wireguard.section);
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-
             this.menu.addSettingsAction(_("Network Settings"), 'network');
             this.menu.addAction(_("Network Connections"), Lang.bind(this, function() {
                 Util.spawnCommandLine("nm-connection-editor");
@@ -1989,7 +1908,7 @@ CinnamonNetworkApplet.prototype = {
             this._ctypes[NM.SETTING_CDMA_SETTING_NAME] = NMConnectionCategory.WWAN;
             this._ctypes[NM.SETTING_GSM_SETTING_NAME] = NMConnectionCategory.WWAN;
             this._ctypes[NM.SETTING_VPN_SETTING_NAME] = NMConnectionCategory.VPN;
-            this._ctypes[NM.SETTING_WIREGUARD_SETTING_NAME] = NMConnectionCategory.WIREGUARD;
+            this._ctypes[NM.SETTING_WIREGUARD_SETTING_NAME] = NMConnectionCategory.VPN;
 
             this._readConnections();
             this._readDevices();
@@ -2185,10 +2104,8 @@ CinnamonNetworkApplet.prototype = {
 
         for (let active of closedConnections) {
             if (active._primaryDevice) {
-                if (active._type == NM.SETTING_VPN_SETTING_NAME)
+                if (active._section == NMConnectionCategory.VPN)
                     this._devices.vpn.device.setActiveConnections([]);
-                else if (active._type == NM.SETTING_WIREGUARD_SETTING_NAME)
-                    this._devices.wireguard.device.setActiveConnections([]);
                 else
                     active._primaryDevice.setActiveConnection(null);
 
@@ -2210,7 +2127,6 @@ CinnamonNetworkApplet.prototype = {
         let default_ip6 = null;
 
         let vpnConnections = [];
-        let wireguardConnections = [];
 
         for (let a of this._activeConnections) {
             if (!a._inited) {
@@ -2260,7 +2176,7 @@ CinnamonNetworkApplet.prototype = {
             }
 
             if (!a._primaryDevice) {
-                if (a._type != NM.SETTING_VPN_SETTING_NAME && a._type != NM.SETTING_WIREGUARD_SETTING_NAME) {
+                if (a._section != NMConnectionCategory.VPN) {
                     // find a good device to be considered primary
                     a._primaryDevice = null;
                     let devices = a.get_devices() || [ ];
@@ -2272,11 +2188,7 @@ CinnamonNetworkApplet.prototype = {
                         }
                     }
                 } else {
-                    if (a._type == NM.SETTING_VPN_SETTING_NAME)
-                        a._primaryDevice = this._devices.vpn.device;
-                    else {
-                        a._primaryDevice = this._devices.wireguard.device;
-                    }
+                    a._primaryDevice = this._devices.vpn.device;
                 }
 
                 if (a.state == NM.ActiveConnectionState.ACTIVATED &&
@@ -2287,10 +2199,8 @@ CinnamonNetworkApplet.prototype = {
             }
 
             if (a._primaryDevice) {
-                if (a._type == NM.SETTING_VPN_SETTING_NAME)
+                if (a._section == NMConnectionCategory.VPN)
                     vpnConnections.push(a);
-                else if (a._type == NM.SETTING_WIREGUARD_SETTING_NAME)
-                    wireguardConnections.push(a);
                 else
                     a._primaryDevice.setActiveConnection(a);
             }
@@ -2298,9 +2208,6 @@ CinnamonNetworkApplet.prototype = {
 
         if (this._devices.vpn && this._devices.vpn.device)
             this._devices.vpn.device.setActiveConnections(vpnConnections);
-
-        if (this._devices.wireguard && this._devices.wireguard.device)
-            this._devices.wireguard.device.setActiveConnections(wireguardConnections);
 
         this._mainConnection = activated || activating || default_ip4 || default_ip6 || null;
     },
@@ -2355,10 +2262,6 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn.device.removeConnection(connection);
             if (this._devices.vpn.device.empty)
                 this._devices.vpn.section.actor.hide();
-        } else if (section == NMConnectionCategory.WIREGUARD) {
-            this._devices.wireguard.device.removeConnection(connection);
-            if (this._devices.wireguard.device.empty)
-                this._devices.wireguard.section.actor.hide();
         } else if (section != NMConnectionCategory.INVALID) {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++)
@@ -2385,9 +2288,6 @@ CinnamonNetworkApplet.prototype = {
         if (section == NMConnectionCategory.VPN) {
             this._devices.vpn.device.checkConnection(connection);
             this._devices.vpn.section.actor.show();
-        } else if (section == NMConnectionCategory.WIREGUARD) {
-            this._devices.wireguard.device.checkConnection(connection);
-            this._devices.wireguard.section.actor.show();
         } else {
             let devices = this._devices[section].devices;
             for (let i = 0; i < devices.length; i++) {
@@ -2416,8 +2316,6 @@ CinnamonNetworkApplet.prototype = {
 
         if (!this._devices.vpn.device.empty)
             this._devices.vpn.section.actor.show();
-        if (!this._devices.wireguard.device.empty)
-            this._devices.wireguard.section.actor.show();
     },
 
     _syncNMState: function() {
@@ -2469,10 +2367,6 @@ CinnamonNetworkApplet.prototype = {
                 case NMConnectionCategory.VPN:
                     this._setIcon('xsi-network-vpn-acquiring');
                     this.set_applet_tooltip(_("Connecting to the VPN..."));
-                    break;
-                case NMConnectionCategory.WIREGUARD:
-                    this._setIcon('xsi-network-vpn-acquiring');
-                    this.set_applet_tooltip(_("Connecting to WIREGUARD..."));
                     break;
                 default:
                     // fallback to a generic connected icon
@@ -2549,12 +2443,6 @@ CinnamonNetworkApplet.prototype = {
                     this._setIcon('xsi-network-vpn');
                     this.set_applet_tooltip(_("Connected to the VPN"));
                     break;
-                case NMConnectionCategory.WIREGUARD:
-                    // Should we indicate limited connectivity for WIREGUARDs like we do above? What if the connection is to
-                    // a local machine? Need to test.
-                    this._setIcon('xsi-network-vpn');
-                    this.set_applet_tooltip(_("Connected to WIREGUARD"));
-                    break;
                 default:
                     // fallback to a generic connected icon
                     // (it could be a private connection of some other user)
@@ -2562,10 +2450,6 @@ CinnamonNetworkApplet.prototype = {
                     this.set_applet_tooltip(_("Connected to the network"));
                     break;
                 }
-            }
-            if (this._devices.wireguard.item && this._devices.wireguard.item._switch.state) {
-                this._setIcon('xsi-network-vpn');
-                this.set_applet_tooltip(_("Connected to WIREGUARD"));
             }
             for (let i = 0; i < this._activeConnections.length; i++) {
                 const a = this._activeConnections[i];
