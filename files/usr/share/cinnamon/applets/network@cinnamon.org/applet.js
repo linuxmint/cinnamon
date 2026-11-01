@@ -625,15 +625,7 @@ NMDevice.prototype = {
                     continue;
                 }
                 obj.item = this._createConnectionItem(obj);
-
-                if (j + activeOffset >= NUM_VISIBLE_NETWORKS) {
-                    if (!this._overflowItem) {
-                        this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
-                        this.section.addMenuItem(this._overflowItem);
-                    }
-                    this._overflowItem.menu.addMenuItem(obj.item);
-                } else
-                    this.section.addMenuItem(obj.item);
+                this._addConnectionItem(obj.item, j + activeOffset);
             }
         } else if (this._autoConnectionName) {
             this._autoConnectionItem = new PopupMenu.PopupMenuItem(this._autoConnectionName);
@@ -644,6 +636,19 @@ NMDevice.prototype = {
             }));
             this.section.addMenuItem(this._autoConnectionItem);
         }
+    },
+
+    _addConnectionItem: function(item, position) {
+        if (position < NUM_VISIBLE_NETWORKS) {
+            this.section.addMenuItem(item);
+            return;
+        }
+
+        if (!this._overflowItem) {
+            this._overflowItem = new PopupMenu.PopupSubMenuMenuItem(_("More"));
+            this.section.addMenuItem(this._overflowItem);
+        }
+        this._overflowItem.menu.addMenuItem(item);
     },
 
     _createConnectionItem: function(obj) {
@@ -1021,26 +1026,10 @@ NMDeviceVPN.prototype = {
         return this._connections.length == 0;
     },
 
-    get connected() {
-        return this._activeConnections.length > 0;
-    },
-
     setActiveConnections: function(activeConnections) {
         this._activeConnections = activeConnections || [];
-
         this._createSection();
-        this.emit('active-connections-changed');
     },
-
-    deactivate: function() {
-        for (let ac of this._activeConnections)
-            this._client.deactivate_connection(ac, null);
-
-        this._activeConnections = []
-    },
-
-    statusLabel: null,
-    controllable: true,
 
     _clearSection: function() {
         if (this.section && this.section.removeAll)
@@ -1049,12 +1038,8 @@ NMDeviceVPN.prototype = {
         this._autoConnectionItem = null;
         this._overflowItem = null;
 
-        for (let i = 0; i < this._connections.length; i++) {
-            if (this._connections[i].item && this._connections[i].item.destroy)
-                this._connections[i].item.destroy();
-
+        for (let i = 0; i < this._connections.length; i++)
             this._connections[i].item = null;
-        }
     },
 
     _updateConnectionItemView: function(item, connection, active) {
@@ -1063,28 +1048,59 @@ NMDeviceVPN.prototype = {
         item.setToggleState(active);
     },
 
+    removeConnection: function(connection) {
+        let pos = this._findConnection(connection._uuid);
+        if (pos == -1)
+            return;
+
+        this._clearSection();
+        this._connections.splice(pos, 1);
+        this._createSection();
+    },
+
     /* A switch per tunnel: VPN and WireGuard connections are independent of
        one another, so they are not a pick-one list. */
+    _createConnectionItem: function(obj) {
+        let item = new PopupMenu.PopupSwitchMenuItem(obj.name, false);
+        item.connect('toggled', (item, state) => {
+            let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
+
+            if (!state && activeConnection)
+                this._client.deactivate_connection(activeConnection, null);
+            else if (state && !activeConnection)
+                this._client.activate_connection_async(obj.connection, this.device, null, null, null);
+        });
+        return item;
+    },
+
     _createSection: function() {
+        let active = [];
+        let inactive = [];
         for (let obj of this._connections) {
-            let active = this._activeConnections.some(ac => ac.connection == obj.connection);
-
-            if (!obj.item) {
-                obj.item = new PopupMenu.PopupSwitchMenuItem(obj.name, active);
-                this._updateConnectionItemView(obj.item, obj.connection, active);
-                obj.item.connect('toggled', (item, state) => {
-                    let activeConnection = this._activeConnections.find(ac => ac.connection === obj.connection);
-
-                    if (!state && activeConnection)
-                        this._client.deactivate_connection(activeConnection, null);
-                    else if (state && !activeConnection)
-                        this._client.activate_connection_async(obj.connection, this.device, null, null, null);
-                });
-                this.section.addMenuItem(obj.item);
-            } else {
-                this._updateConnectionItemView(obj.item, obj.connection, active);
-            }
+            if (this._activeConnections.some(ac => ac.connection == obj.connection))
+                active.push(obj);
+            else
+                inactive.push(obj);
         }
+        let ordered = active.concat(inactive);
+
+        let shown = this._shownConnections;
+        let layoutChanged = !shown || shown.length != ordered.length ||
+                            ordered.some((obj, i) => obj !== shown[i] || !obj.item);
+
+        if (layoutChanged) {
+            this._clearSection();
+
+            for (let i = 0; i < ordered.length; i++) {
+                ordered[i].item = this._createConnectionItem(ordered[i]);
+                this._addConnectionItem(ordered[i].item, i);
+            }
+
+            this._shownConnections = ordered;
+        }
+
+        for (let i = 0; i < ordered.length; i++)
+            this._updateConnectionItemView(ordered[i].item, ordered[i].connection, i < active.length);
     },
 };
 
@@ -1862,12 +1878,8 @@ CinnamonNetworkApplet.prototype = {
             this._devices.vpn = {
                 section: new PopupMenu.PopupMenuSection(),
                 device: new NMDeviceVPN(this._client),
-                item: new NMWiredSectionTitleMenuItem(_("VPN Connections"))
+                item: new PopupMenu.PopupMenuItem(_("VPN Connections"), { reactive: false, style_class: 'popup-subtitle-menu-item' })
             };
-            this._devices.vpn.device.connect('active-connections-changed', Lang.bind(this, function() {
-                this._devices.vpn.item.updateForDevice(this._devices.vpn.device);
-            }));
-            this._devices.vpn.item.updateForDevice(this._devices.vpn.device);
             this._devices.vpn.section.addMenuItem(this._devices.vpn.item);
             this._devices.vpn.section.addMenuItem(this._devices.vpn.device.section);
             this._devices.vpn.section.actor.hide();
