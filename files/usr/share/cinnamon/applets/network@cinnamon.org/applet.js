@@ -934,8 +934,7 @@ NMDeviceModem.prototype = {
     _createAutomaticConnection: function() {
         // Mobile wizard is too complex for Cinnamon UI and
         // is handled by the network panel
-        Util.spawn(['cinnamon-settings', 'network',
-                    'connect-3g', this.device.get_path()]);
+        Util.spawn(['cinnamon-settings', 'network']);
         return null;
     }
 };
@@ -1718,8 +1717,7 @@ NMDeviceWireless.prototype = {
                     (accessPoints[0]._secType == NMAccessPointSecurity.WPA_ENT)) {
                     // 802.1x-enabled APs require further configuration, so they're
                     // handled in cinnamon-settings
-                    Util.spawn(['cinnamon-settings', 'network', 'connect-8021x-wifi',
-                                this.device.get_path(), accessPoints[0].path]);
+                    Util.spawn(['cinnamon-settings', 'network']);
                 } else {
                     let connection = this._createAutomaticConnection(apObj);
                     this._client.add_and_activate_connection_async(connection, this.device, accessPoints[0].path, null, null);
