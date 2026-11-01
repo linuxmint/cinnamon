@@ -491,6 +491,8 @@ var AppGroup = class AppGroup {
                     this.label.set_style('text-align: right;');
 
             this.label.allocate(childBox);
+        } else {
+            this.label.allocate(new Clutter.ActorBox());
         }
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation

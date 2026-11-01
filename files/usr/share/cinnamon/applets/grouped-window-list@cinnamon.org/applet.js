@@ -619,6 +619,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         if (titleDisplay === TitleDisplay.None
             || this.state.lastTitleDisplay === TitleDisplay.None) {
             this.refreshCurrentWorkspace();
+            this.refreshAllWorkspaces({exceptCurrentOne: true});
         }
 
         this.workspaces.forEach( workspace => {
@@ -674,8 +675,6 @@ class GroupedWindowListApplet extends Applet.Applet {
                         && e && !sourceFromAppGroup)  || 
             (this.state.settings.leftClickAction === 3 && this.state.settings.scrollBehavior === 3)) {
 
-            this.state.set({scrollActive: true});
-
             const currentWorkspace = this.getCurrentWorkspace();
 
             let isAppScroll = this.state.settings.scrollBehavior === 2;
@@ -703,7 +702,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 z = direction === 0 ? focusedIndex - 1 : focusedIndex + 1;
                 count = currentWorkspace.appGroups.length - 1;
             } else {
-                if (!source.groupState || source.groupState.metaWindows.length < 1) {
+                if (!source?.groupState || source.groupState.metaWindows.length < 1) {
                     return;
                 }
                 const focusedIndex = source.groupState.metaWindows.findIndex(
@@ -742,8 +741,9 @@ class GroupedWindowListApplet extends Applet.Applet {
             const _window = isAppScroll ?
             currentWorkspace.appGroups[z].groupState.lastFocused
                 : source.groupState.metaWindows[z];
+            this.state.set({scrollActive: true});
             Main.activateWindow(_window, global.get_current_time());
-            setTimeout(() => this.state.set({scrollActive: false}, 4000));
+            this.state.set({scrollActive: false});
         }
     }
 

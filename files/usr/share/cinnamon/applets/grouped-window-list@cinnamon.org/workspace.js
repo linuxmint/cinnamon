@@ -475,6 +475,7 @@ var Workspace = class Workspace {
             GLib.source_remove(this.scrollToAppDebounceTimeoutId);
             this.scrollToAppDebounceTimeoutId = 0;
         }
+        this.state.disconnect(this.stateConnectId);
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
         this.scrollBox.destroy();
