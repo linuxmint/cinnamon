@@ -719,12 +719,16 @@ class Module:
                 read_path = '/usr/share/cinnamon/cinnamon-settings/icons'
 
             icon_paths = {}
-            with open(read_path, 'r') as cache_file:
-                for line in cache_file:
-                    theme_name, icon_path = line.strip().split(':')
-                    icon_paths[theme_name] = icon_path
-
             dump = False
+            try:
+                with open(read_path, 'r') as cache_file:
+                    for line in cache_file:
+                        theme_name, icon_path = line.strip().split(':', 1)
+                        icon_paths[theme_name] = icon_path
+            except ValueError:
+                # Unreadable or malformed cache, rebuild it
+                icon_paths = {}
+                dump = True
             
             # Collect all themes with their categories and variants
             categorized_themes = []
@@ -838,9 +842,8 @@ class Module:
                 if not os.path.exists(cache_folder):
                     os.mkdir(cache_folder)
 
-                with open(icon_cache_path, 'w') as cache_file:
-                    for theme_name, icon_path_val in icon_paths.items(): # Renamed icon_path to avoid conflict
-                        cache_file.write(f'{theme_name}:{icon_path_val}\n')
+                contents = ''.join(f'{name}:{path}\n' for name, path in icon_paths.items())
+                GLib.file_set_contents(icon_cache_path, contents.encode())
 
         else:
             if path_suffix == "cinnamon":
