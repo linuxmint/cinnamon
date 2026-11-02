@@ -1554,7 +1554,7 @@ NMDeviceWireless.prototype = {
             for (let k = 0; k < connections.length; k++) {
                 if (connections[k]._uuid == connection._uuid) {
                     // remove the connection from the access point group
-                    connections.splice(k);
+                    connections.splice(k, 1);
                     anyauto = connections.length == 0;
 
                     if (anyauto) {
@@ -1564,7 +1564,7 @@ NMDeviceWireless.prototype = {
                     }
                     if (apObj.item) {
                         if (apObj.item instanceof PopupMenu.PopupSubMenuMenuItem) {
-                            let items = apObj.item.menu.getMenuItems();
+                            let items = apObj.item.menu._getMenuItems();
                             if (items.length == 2) {
                                 // we need to update the connection list to convert this to a normal item
                                 forceupdate = true;
