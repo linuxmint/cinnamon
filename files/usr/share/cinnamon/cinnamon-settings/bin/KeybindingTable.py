@@ -903,10 +903,15 @@ class KeybindingTable(GObject.Object):
 
     def _find_conflicts(self, accel_strings, current_keybinding):
         conflicts = []
+        uuid = current_keybinding.dbus_info.get("uuid")
 
         for cat in self.main_store:
             for keybinding in cat.keybindings:
-                if keybinding.label == current_keybinding.label:
+                if keybinding is current_keybinding:
+                    continue
+                # Instances of the same applet can share a shortcut for the same action.
+                if (uuid is not None and keybinding.dbus_info.get("uuid") == uuid
+                        and keybinding.key == current_keybinding.key):
                     continue
                 for index, entry in enumerate(keybinding.entries):
                     if not entry:
