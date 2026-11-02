@@ -1047,10 +1047,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         else
             this.setAppletTextIcon();
 
-        if (this.alwaysShowMuteInput)
-            this.mute_in_switch.actor.show();
-        else if (this._recordingAppsNum === 0)
-            this.mute_in_switch.actor.hide();
+        this._updateInputSectionVisibility();
 
         this._changeActivePlayer(this._activePlayer);
     }
@@ -1559,6 +1556,16 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         }
     }
 
+    _updateInputSectionVisibility() {
+        let recording = this._recordingAppsNum > 0;
+        let canSwitchInput = this._selectInputDeviceItem.menu.numMenuItems > 1;
+
+        // The input section is useful while an app records, or whenever there is
+        // more than one input device to choose from.
+        this._inputSection.actor.visible = recording || canSwitchInput;
+        this.mute_in_switch.actor.visible = recording || this.alwaysShowMuteInput;
+    }
+
     _onDeviceAdded(control, id, type) {
         let device = this._control["lookup_" + type + "_id"](id);
 
@@ -1573,17 +1580,13 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
         selectItem.menu.addMenuItem(item);
         //show the menu if we have more than two devices
-        if(selectItem.menu.numMenuItems > 1) {
+        if(selectItem.menu.numMenuItems > 1)
             selectItem.actor.show();
-            // show input section so user can switch devices even without an active recording app
-            if (type === "input") {
-                this._inputSection.actor.show();
-                if (this.alwaysShowMuteInput)
-                    this.mute_in_switch.actor.show();
-            }
-        }
 
         this._devices.push({id: id, type: type, item: item});
+
+        if (type === "input")
+            this._updateInputSectionVisibility();
     }
 
     _onDeviceRemoved(control, id, type) {
@@ -1595,17 +1598,13 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
 
                 //hide submenu if showing them is unnecessary
                 let selectItem = this["_select" + type[0].toUpperCase() + type.slice(1) + "DeviceItem"];
-                if (selectItem.menu.numMenuItems <= 1) {
+                if (selectItem.menu.numMenuItems <= 1)
                     selectItem.actor.hide();
-                    // hide input section when back to one device and nothing is recording
-                    if (type === "input" && this._recordingAppsNum === 0) {
-                        this._inputSection.actor.hide();
-                        if (!this.alwaysShowMuteInput)
-                            this.mute_in_switch.actor.hide();
-                    }
-                }
 
                 this._devices.splice(i, 1);
+
+                if (type === "input")
+                    this._updateInputSectionVisibility();
                 break;
             }
         }
@@ -1638,10 +1637,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if (this._recordingAppsNum++ === 0) {
-                this._inputSection.actor.show();
-                this.mute_in_switch.actor.show();
-            }
+            this._recordingAppsNum++;
+            this._updateInputSectionVisibility();
         }
     }
 
@@ -1657,12 +1654,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     if (this._outputApplicationsMenu.menu.numMenuItems === 0)
                         this._outputApplicationsMenu.actor.hide();
                 } else if (stream.type === "SourceOutput") {
-                    if(--this._recordingAppsNum === 0) {
-                        this._inputSection.actor.hide();
-                        this.mute_in_switch.actor.hide();
-                    }
-                    if (this.alwaysShowMuteInput)
-                        this.mute_in_switch.actor.show();
+                    this._recordingAppsNum--;
+                    this._updateInputSectionVisibility();
                 }
                 this._streams.splice(i, 1);
                 break;
