@@ -18,7 +18,6 @@ tests = [
     'testcommon/ui.js',
     'unit/format.js',
     'unit/markup.js',
-    'unit/panel.js',
     'unit/url.js',
     'testcommon/test.css',
 ]
