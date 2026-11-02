@@ -87,6 +87,7 @@ struct _CinnamonBackgroundDaemon
 
     /* coalesces the redraw signals that arrive together */
     guint        redraw_id;
+    gboolean     monitors_dirty;
 
     /* transition preference */
     GSettings   *muffin_settings;
@@ -609,17 +610,25 @@ redraw_cb (gpointer data)
     CinnamonBackgroundDaemon *daemon = data;
 
     daemon->redraw_id = 0;
+
+#ifdef BG_WITH_WAYLAND
+    if (daemon->monitors_dirty && daemon->wayland)
+        bg_wayland_backend_setup_monitors (daemon->wayland);
+#endif
+    daemon->monitors_dirty = FALSE;
+
     draw_background (daemon);
 
     return G_SOURCE_REMOVE;
 }
 
-/* Never paint straight out of a signal handler. GDK appends a monitor to its
-   list before it sets that monitor's geometry, so a draw running inside
-   items-changed reads a half-built layout - which produced a zero-sized root
-   pixmap and a BadPixmap on the root window. Deferring also collapses the
-   config-changed and items-changed that a hotplug delivers together into one
-   draw, and rendering is the expensive half of this daemon. */
+/* Never paint or rebuild straight out of a signal handler. GDK appends a
+   monitor to its list before it sets that monitor's geometry, so a draw
+   running inside items-changed reads a half-built layout - which produced
+   a zero-sized root pixmap and a BadPixmap on the root window. Deferring
+   also collapses the config-changed and items-changed that a hotplug
+   delivers together into one draw, and rendering is the expensive half of
+   this daemon. */
 static void
 queue_draw_background (CinnamonBackgroundDaemon *daemon)
 {
@@ -638,11 +647,7 @@ on_monitors_changed (GListModel               *model,
 {
     g_debug ("Monitors changed, rebuilding backgrounds");
 
-#ifdef BG_WITH_WAYLAND
-    if (daemon->wayland)
-        bg_wayland_backend_setup_monitors (daemon->wayland);
-#endif
-
+    daemon->monitors_dirty = TRUE;
     queue_draw_background (daemon);
 }
 

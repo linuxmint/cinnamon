@@ -114,9 +114,18 @@ function KeybindingManager() {
 
 KeybindingManager.prototype = {
     _init: function() {
-        this._proxy = new proxy(Gio.DBus.session,
-                                'org.cinnamon.SettingsDaemon.KeybindingHandler',
-                                '/org/cinnamon/SettingsDaemon/KeybindingHandler');
+        this._proxy = null;
+        new proxy(Gio.DBus.session,
+                  'org.cinnamon.SettingsDaemon.KeybindingHandler',
+                  '/org/cinnamon/SettingsDaemon/KeybindingHandler',
+                  (obj, error) => {
+                      if (error) {
+                          global.logError("KeybindingManager: could not reach the csd keybinding handler: " +
+                                          error.message);
+                          return;
+                      }
+                      this._proxy = obj;
+                  });
 
         /* Keep track of bindings so we can a) check if they've change (and avoid the work
          * if the haven't), b) handle the callbacks when the keystrokes are captured by
@@ -446,6 +455,11 @@ KeybindingManager.prototype = {
                 Main.screensaverController.lockScreen(false);
                 return GLib.SOURCE_REMOVE;
             });
+            return;
+        }
+
+        if (!this._proxy) {
+            global.logWarning("KeybindingManager: csd keybinding handler not available yet, dropping media key " + action);
             return;
         }
 

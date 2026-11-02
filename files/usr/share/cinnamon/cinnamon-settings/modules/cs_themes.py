@@ -95,7 +95,7 @@ class Module:
     category = "appear"
 
     def __init__(self, content_box):
-        self.keywords = _("themes, style")
+        self.keywords = _("themes, style, appearance")
         self.icon = "cs-themes"
         self.window = None
         sidePage = SidePage(_("Themes"), self.icon, self.keywords, content_box, module=self)
@@ -196,7 +196,7 @@ class Module:
             self.icon_chooser = self.create_button_chooser(self.settings, 'icon-theme', 'icons', 'icons', button_picture_width=ICON_SIZE, menu_picture_width=ICON_SIZE, num_cols=4, frame=False)
             self.cursor_chooser = self.create_button_chooser(self.settings, 'cursor-theme', 'icons', 'cursors', button_picture_width=32, menu_picture_width=32, num_cols=4, frame=False)
             self.theme_chooser = self.create_button_chooser(self.settings, 'gtk-theme', 'themes', 'gtk-3.0', button_picture_width=125, menu_picture_width=125, num_cols=4, frame=True)
-            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_width=125, menu_picture_width=125*self.scale, num_cols=4, frame=True)
+            self.cinnamon_chooser = self.create_button_chooser(self.cinnamon_settings, 'name', 'themes', 'cinnamon', button_picture_width=125, menu_picture_width=125, num_cols=4, frame=True)
 
             selected_meta_theme = None
 
@@ -719,12 +719,16 @@ class Module:
                 read_path = '/usr/share/cinnamon/cinnamon-settings/icons'
 
             icon_paths = {}
-            with open(read_path, 'r') as cache_file:
-                for line in cache_file:
-                    theme_name, icon_path = line.strip().split(':')
-                    icon_paths[theme_name] = icon_path
-
             dump = False
+            try:
+                with open(read_path, 'r') as cache_file:
+                    for line in cache_file:
+                        theme_name, icon_path = line.strip().split(':', 1)
+                        icon_paths[theme_name] = icon_path
+            except ValueError:
+                # Unreadable or malformed cache, rebuild it
+                icon_paths = {}
+                dump = True
             
             # Collect all themes with their categories and variants
             categorized_themes = []
@@ -838,9 +842,8 @@ class Module:
                 if not os.path.exists(cache_folder):
                     os.mkdir(cache_folder)
 
-                with open(icon_cache_path, 'w') as cache_file:
-                    for theme_name, icon_path_val in icon_paths.items(): # Renamed icon_path to avoid conflict
-                        cache_file.write(f'{theme_name}:{icon_path_val}\n')
+                contents = ''.join(f'{name}:{path}\n' for name, path in icon_paths.items())
+                GLib.file_set_contents(icon_cache_path, contents.encode())
 
         else:
             if path_suffix == "cinnamon":

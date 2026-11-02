@@ -381,11 +381,6 @@
       </description>
     </key>
 
-    <key name="disabled-open-search-providers" type="as">
-      <default>[]</default>
-      <summary>disabled OpenSearch providers</summary>
-    </key>
-
     <key name="command-history" type="as">
       <default>[]</default>
       <summary>History for command (Alt-F2) dialog</summary>

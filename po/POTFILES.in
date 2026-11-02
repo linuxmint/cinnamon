@@ -3,8 +3,6 @@ data/xsessions/cinnamon.desktop.in
 data/cinnamon-wayland.desktop.in.in
 data/cinnamon.desktop.in.in
 
-# data/search_providers/google.xml
-# data/search_providers/wikipedia.xml
 # data/cinnamon-osk-layouts.gresource.xml
 # data/cldr2json/test/data/fr-t-k0-android.xml
 # data/org.cinnamon.gestures.gschema.xml
@@ -162,7 +160,6 @@ js/ui/virtualKeyboard.js
 js/ui/windowMenu.js
 js/ui/wmGtkDialogs.js
 js/ui/magnifierDBus.js
-js/ui/search.js
 js/ui/slider.js
 js/ui/statusIconDispatcher.js
 js/ui/userWidget.js

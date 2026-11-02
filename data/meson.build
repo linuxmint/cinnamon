@@ -1,10 +1,5 @@
 subdir('icons')
 
-install_subdir(
-    'search_providers',
-    install_dir: pkgdatadir,
-)
-
 subdir('theme')
 
 install_subdir(

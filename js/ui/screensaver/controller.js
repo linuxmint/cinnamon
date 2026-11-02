@@ -6,6 +6,7 @@ const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
+const LoginManager = imports.misc.loginManager;
 const Main = imports.ui.main;
 const ScreenShield = imports.ui.screensaver.screenShield;
 const ScreenSaver = imports.misc.screenSaver;
@@ -32,6 +33,7 @@ var ScreensaverController = class {
         // A custom screensaver command preempts both internal and cinnamon-screensaver modes.
         if (this.#customCommand) {
             global.log(`Screensaver: custom command.`);
+            this.#watchSessionLock();
             return;
         }
 
@@ -66,6 +68,7 @@ var ScreensaverController = class {
             });
         } else {
             global.log('Screensaver: cinnamon-screensaver');
+            this.#watchSessionLock();
             this.#screenSaverProxy.connectSignal('ActiveChanged', (proxy, senderName, [isActive]) => {
                 this.#locked = isActive;
                 this.emit('locked-changed', isActive);
@@ -86,6 +89,12 @@ var ScreensaverController = class {
                 }
             });
         }
+    }
+
+    // ScreenShield answers logind's Lock itself. External lockers probably aren't running
+    // by default.
+    #watchSessionLock() {
+        LoginManager.getLoginManager().connect('lock', () => this.lockScreen(false));
     }
 
     get locked() {

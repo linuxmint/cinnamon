@@ -10,15 +10,14 @@ const SignalManager = imports.misc.signalManager;
 const WindowUtils = imports.misc.windowUtils;
 const Mainloop = imports.mainloop;
 
-const {tryFn, unref, trySpawnCommandLine, spawn_async, getDesktopActionIcon} = imports.misc.util;
+const {tryFn, unref, spawn_async, getDesktopActionIcon} = imports.misc.util;
 const Me = imports.ui.extension.getCurrentExtension();
 const {
     CLOSE_BTN_SIZE,
     CLOSED_BUTTON_STYLE,
     OPACITY_OPAQUE,
     RESERVE_KEYS,
-    FavType,
-    autoStartStrDir
+    FavType
 } = Me.imports.constants;
 
 const convertRange = function(value, r1, r2) {
@@ -262,12 +261,6 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
             this.pinToggleItem = createMenuItem({label, icon});
             this.signals.connect(this.pinToggleItem, 'activate', (...args) => this.toggleFavorite(...args));
             this.addMenuItem(this.pinToggleItem);
-            if (this.state.settings.autoStart) {
-                const label = this.groupState.autoStartIndex !== -1 ? _('Remove from Autostart') : _('Add to Autostart');
-                item = createMenuItem({label: label, icon: 'xsi-insert-object'});
-                this.signals.connect(item, 'activate', (...args) => this.toggleAutostart(...args));
-                this.addMenuItem(item);
-            }
         } else {
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
             item = createMenuItem({label: _('Create Shortcut'), icon: 'xsi-list-add'});
@@ -361,22 +354,6 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
         }
 
         Applet.AppletPopupMenu.prototype.toggle.call(this);
-    }
-
-    toggleAutostart() {
-        if (this.groupState.autoStartIndex !== -1) {
-            this.state.autoStartApps[this.groupState.autoStartIndex].file.delete(null);
-            this.state.autoStartApps[this.groupState.autoStartIndex] = undefined;
-            this.state.autoStartApps.splice(this.groupState.autoStartIndex, 1);
-            this.groupState.set({autoStartIndex: -1});
-        } else {
-            const filePath = this.groupState.appInfo.get_filename();
-            trySpawnCommandLine('bash -c "cp ' + filePath + ' ' + autoStartStrDir + '"');
-            setTimeout(() => {
-                this.state.trigger('getAutoStartApps');
-                this.groupState.set({autoStartIndex: this.state.autoStartApps.length - 1});
-            }, 500);
-        }
     }
 
     toggleFavorite() {
@@ -915,6 +892,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         this.groupState = groupState;
         this.shouldClose = true;
         this.isOpen = false;
+        this._timeouts = new Set();
         this.setCustomStyleClass("grouped-window-list-thumbnail-menu");
 
         this.connectId = this.groupState.connect({
@@ -928,10 +906,10 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
                 // outside the menu bounds, and no leave event will be able to correct this situation where the menu is
                 // dangling open and only closable upon hovering over it again. This checks if the cursor is hovering
                 // over the menu and closes it if not.
-                setTimeout(() => {
+                this._queueTimeout(() => {
                     let [x, y, mask] = global.get_pointer();
                     const draggedOverActor = global.stage.get_actor_at_pos(Clutter.PickMode.ALL, x, y);
-                    const parent = draggedOverActor.get_parent();
+                    const parent = draggedOverActor ? draggedOverActor.get_parent() : null;
                     if (!(parent instanceof St.Widget)) {
                         this.close(true);
                     }
@@ -1089,6 +1067,14 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         return true;
     }
 
+    _queueTimeout(callback, delay) {
+        const id = setTimeout(() => {
+            this._timeouts.delete(id);
+            if (!this.willUnmount) callback();
+        }, delay);
+        this._timeouts.add(id);
+    }
+
     addQueuedThumbnails() {
         if (this.queuedWindows.length === 0) return;
         this.queuedWindows.forEach( win => this.addThumbnail(win));
@@ -1101,7 +1087,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             return;
         }
         this.shouldClose = true;
-        setTimeout(() => this.close(), this.state.settings.thumbTimeout);
+        this._queueTimeout(() => this.close(), this.state.settings.thumbTimeout);
     }
 
     onMenuEnter(actor) {
@@ -1126,7 +1112,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             this.groupState.set({thumbnailMenuEntered: this.isOpen});
         }
 
-        setTimeout(() => this.open(), timeout);
+        this._queueTimeout(() => this.open(), timeout);
     }
 
     onMenuLeave(actor) {
@@ -1141,7 +1127,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             this.groupState.set({thumbnailMenuEntered: false});
         }
 
-        setTimeout(() => this.close(), 50);
+        this._queueTimeout(() => this.close(), 50);
     }
 
     onKeyRelease(actor, event) {
@@ -1271,10 +1257,8 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     }
 
     destroyThumbnails() {
-        this.box.destroy_children();
-        for (let i = 0; i < this.appThumbnails.length; i++) {
-            this.appThumbnails[i].destroy();
-            this.appThumbnails[i] = undefined;
+        for (const thumbnail of this.appThumbnails) {
+            thumbnail.destroy();
         }
         this.appThumbnails = [];
     }
@@ -1362,16 +1346,13 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
         if (this.isOpen) this.close(true);
 
-        for (let w = 0, len = this.appThumbnails.length; w < len; w++) {
-            if (this.appThumbnails[w] !== undefined) {
-                if (this.appThumbnails[w].entered) {
-                    this.appThumbnails[w].onLeave();
-                }
-                this.appThumbnails[w].destroy(true);
-                this.appThumbnails[w] = null;
-                this.appThumbnails.splice(w, 1);
-            }
+        for (const id of this._timeouts) clearTimeout(id);
+        this._timeouts.clear();
+        if (this.interval) {
+            clearInterval(this.interval);
+            this.interval = 0;
         }
+        this.destroyThumbnails();
         this.removeAll();
         super.destroy();
         this.groupState.disconnect(this.connectId);

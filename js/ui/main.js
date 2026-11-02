@@ -293,6 +293,7 @@ function do_shutdown_sequence() {
 function onSessionOver() {
     global.log("Session is ending");
     soundManager.disable();
+    backgroundManager.disableRestart();
 }
 
 function _reparentActor(actor, newParent) {
@@ -471,8 +472,27 @@ function start() {
     }
 
     let pointerTracker = new PointerTracker.PointerTracker();
-    pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
-        layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
+    let centerPointerOnPrimary = () => {
+        let primary = layoutManager.primaryMonitor;
+        let x = Math.round(primary.x + primary.width / 2);
+        let y = Math.round(primary.y + primary.height / 2);
+
+        pointerTracker.setPosition(x, y);
+        return [x, y];
+    };
+
+    // The startup monitor configuration can be replaced moments later - a
+    // closed lid is only known once UPower answers, and dock outputs can come
+    // up late - so keep following the primary until the pointer is moved.
+    let [pointerTargetX, pointerTargetY] = centerPointerOnPrimary();
+    let pointerFollowId = layoutManager.connect('monitors-changed', () => {
+        let [x, y] = global.get_pointer();
+
+        if (x === pointerTargetX && y === pointerTargetY)
+            [pointerTargetX, pointerTargetY] = centerPointerOnPrimary();
+        else
+            layoutManager.disconnect(pointerFollowId);
+    });
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
     monitorLabeler = new MonitorLabeler();

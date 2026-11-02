@@ -123,7 +123,6 @@ libcinnamon_deps = [
     st_dep,
     xapp,
     xdo,
-    xml,
 ]
 
 libcinnamon_deps += nm_deps

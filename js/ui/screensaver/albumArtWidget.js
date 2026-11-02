@@ -36,11 +36,6 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
         this._showAlbumArt = this._settings.get_boolean('show-album-art');
         this._allowMediaControl = this._settings.get_boolean('allow-media-control');
 
-        if (!this._showAlbumArt) {
-            this.hide();
-            return;
-        }
-
         this._artSize = ALBUM_ART_SIZE_BASE * global.ui_scale;
         this._controlIconSize = CONTROL_ICON_SIZE_BASE;
 
@@ -152,13 +147,15 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
     }
 
     _buildUI() {
-        this._artBin = new St.Bin({
-            style_class: 'albumart-cover-bin',
-            width: this._artSize,
-            height: this._artSize
-        });
-        this.box.add_child(this._artBin);
-        this._showDefaultArt();
+        if (this._showAlbumArt) {
+            this._artBin = new St.Bin({
+                style_class: 'albumart-cover-bin',
+                width: this._artSize,
+                height: this._artSize
+            });
+            this.box.add_child(this._artBin);
+            this._showDefaultArt();
+        }
 
         this._trackInfoBox = new St.BoxLayout({
             style_class: 'albumart-track-info-box',
@@ -353,7 +350,7 @@ class AlbumArtWidget extends ScreensaverWidget.ScreensaverWidget {
 
         let artUrl = this._currentPlayer.getProcessedArtUrl();
 
-        if (artUrl !== this._currentArtUrl) {
+        if (this._showAlbumArt && artUrl !== this._currentArtUrl) {
             this._currentArtUrl = artUrl;
             this._loadAlbumArt(artUrl);
         }

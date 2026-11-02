@@ -62,7 +62,6 @@ xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
 xcomposite = dependency('xcomposite')
 xext = dependency('xext')
-xml = dependency('libxml-2.0')
 
 nm_deps = []
 internal_nm_agent = false
