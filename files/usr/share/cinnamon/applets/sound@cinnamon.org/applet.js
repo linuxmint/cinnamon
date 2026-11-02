@@ -650,10 +650,11 @@ class Player extends PopupMenu.PopupMenuSection {
                 this._name = props.Identity.unpack();
                 this._applet._updatePlayerMenuItems();
             }
-            if (props.CanRaise) {
+            // The properties are GVariants, so check the unpacked value.
+            if (props.CanRaise && props.CanRaise.unpack()) {
                 this._showCanRaise();
             }
-            if (props.CanQuit) {
+            if (props.CanQuit && props.CanQuit.unpack()) {
                 this._showCanQuit();
             }
             if (props.DesktopEntry) {
@@ -670,7 +671,11 @@ class Player extends PopupMenu.PopupMenuSection {
     }
 
     _showCanRaise() {
-        let btn = new ControlButton("xsi-go-up", _("Open Player"), () => {
+        // PropertiesChanged can carry CanRaise many times; add the button only once.
+        if (this._raiseButton)
+            return;
+
+        this._raiseButton = new ControlButton("xsi-go-up", _("Open Player"), () => {
             if (this._name.toLowerCase() === "spotify") {
                 // Spotify isn't able to raise via Dbus once its main UI is closed
                 Util.spawn(['spotify']);
@@ -680,15 +685,18 @@ class Player extends PopupMenu.PopupMenuSection {
             }
             this._applet.menu.close();
         }, true);
-        this._playerBox.add_actor(btn.actor);
+        this._playerBox.add_actor(this._raiseButton.actor);
     }
 
     _showCanQuit() {
-        let btn = new ControlButton("xsi-window-close", _("Quit Player"), () => {
+        if (this._quitButton)
+            return;
+
+        this._quitButton = new ControlButton("xsi-window-close", _("Quit Player"), () => {
             this._mediaServer.QuitRemote();
             this._applet.menu.close();
         }, true);
-        this._playerBox.add_actor(btn.actor);
+        this._playerBox.add_actor(this._quitButton.actor);
     }
 
     _setName(status) {
@@ -1039,10 +1047,7 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         else
             this.setAppletTextIcon();
 
-        if (this.alwaysShowMuteInput)
-            this.mute_in_switch.actor.show();
-        else if (this._recordingAppsNum === 0)
-            this.mute_in_switch.actor.hide();
+        this._updateInputSectionVisibility();
 
         this._changeActivePlayer(this._activePlayer);
     }
@@ -1551,6 +1556,16 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         }
     }
 
+    _updateInputSectionVisibility() {
+        let recording = this._recordingAppsNum > 0;
+        let canSwitchInput = this._selectInputDeviceItem.menu.numMenuItems > 1;
+
+        // The input section is useful while an app records, or whenever there is
+        // more than one input device to choose from.
+        this._inputSection.actor.visible = recording || canSwitchInput;
+        this.mute_in_switch.actor.visible = recording || this.alwaysShowMuteInput;
+    }
+
     _onDeviceAdded(control, id, type) {
         let device = this._control["lookup_" + type + "_id"](id);
 
@@ -1569,6 +1584,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
             selectItem.actor.show();
 
         this._devices.push({id: id, type: type, item: item});
+
+        if (type === "input")
+            this._updateInputSectionVisibility();
     }
 
     _onDeviceRemoved(control, id, type) {
@@ -1584,6 +1602,9 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     selectItem.actor.hide();
 
                 this._devices.splice(i, 1);
+
+                if (type === "input")
+                    this._updateInputSectionVisibility();
                 break;
             }
         }
@@ -1616,10 +1637,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         } else if (stream instanceof Cvc.MixerSourceOutput) {
             //for source outputs, only show the input section
             this._streams.push({id: id, type: "SourceOutput"});
-            if (this._recordingAppsNum++ === 0) {
-                this._inputSection.actor.show();
-                this.mute_in_switch.actor.show();
-            }
+            this._recordingAppsNum++;
+            this._updateInputSectionVisibility();
         }
     }
 
@@ -1635,12 +1654,8 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
                     if (this._outputApplicationsMenu.menu.numMenuItems === 0)
                         this._outputApplicationsMenu.actor.hide();
                 } else if (stream.type === "SourceOutput") {
-                    if(--this._recordingAppsNum === 0) {
-                        this._inputSection.actor.hide();
-                        this.mute_in_switch.actor.hide();
-                    }
-                    if (this.alwaysShowMuteInput)
-                        this.mute_in_switch.actor.show();
+                    this._recordingAppsNum--;
+                    this._updateInputSectionVisibility();
                 }
                 this._streams.splice(i, 1);
                 break;

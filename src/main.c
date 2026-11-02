@@ -310,23 +310,6 @@ GOptionEntry gnome_cinnamon_options[] = {
   { NULL }
 };
 
-static void
-center_pointer_on_screen ()
-{
-  Display *dpy;
-  Window root_window;
-  Screen *screen;
-
-  dpy = XOpenDisplay(0);
-  if (dpy == NULL)
-    return;
-
-  root_window = XRootWindow(dpy, 0);
-  screen = DefaultScreenOfDisplay(dpy);
-  XWarpPointer(dpy, None, root_window, 0, 0, 0, 0, WidthOfScreen(screen)/2, HeightOfScreen(screen)/2);
-  XCloseDisplay(dpy);
-}
-
 int
 main (int argc, char **argv)
 {
@@ -362,11 +345,6 @@ main (int argc, char **argv)
   g_setenv ("GJS_DEBUG_TOPICS", "JS ERROR;JS LOG", TRUE);
 
   g_setenv ("CINNAMON_VERSION", VERSION, TRUE);
-
-  if (!meta_is_wayland_compositor ())
-    {
-      center_pointer_on_screen ();
-    }
 
   cinnamon_dbus_init (meta_get_replace_current_wm (),
                       &session_running);

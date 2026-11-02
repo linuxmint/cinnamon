@@ -13,7 +13,7 @@ const {RESERVE_KEYS} = Me.imports.constants;
 var Workspace = class Workspace {
     constructor(params) {
         this.state = params.state;
-        this.state.connect({
+        this.stateConnectId = this.state.connect({
             orientation: (state) => {
                 this.on_orientation_changed(state.orientation);
             },
@@ -475,6 +475,7 @@ var Workspace = class Workspace {
             GLib.source_remove(this.scrollToAppDebounceTimeoutId);
             this.scrollToAppDebounceTimeoutId = 0;
         }
+        this.state.disconnect(this.stateConnectId);
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
         this.scrollBox.destroy();

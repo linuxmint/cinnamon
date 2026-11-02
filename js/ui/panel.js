@@ -861,6 +861,7 @@ var PanelManager = GObject.registerClass({
 
         let newPanels = new Array(this.panels.length);
         let newMeta = new Array(this.panels.length);
+        let panelsToLoad = [];
         let panelProperties = getPanelsEnabledList();
 
         for (let i = 0; i < panelProperties.length; i ++) {
@@ -897,7 +898,7 @@ var PanelManager = GObject.registerClass({
                                             newPanels,
                                             newMeta);
                 if (panel)
-                     AppletManager.loadAppletsOnPanel(panel);
+                    panelsToLoad.push(panel);
             }
         }
 
@@ -921,7 +922,11 @@ var PanelManager = GObject.registerClass({
         // removed, or if space made for panel dummys has to be reflected.
         this._adjustVerticalPanelHeights();
 
+        // Applet constructors use both the panel registry and Main.panel.
+        // Publish the complete panel state before loading applets on new panels.
         this._setMainPanel();
+        for (let panel of panelsToLoad)
+            AppletManager.loadAppletsOnPanel(panel);
         this._checkCanAddPanel();
         this._updateAllPointerBarriers();
 
@@ -1664,6 +1669,13 @@ var Panel = GObject.registerClass({
      *  Adds a context menu to the panel
      */
     addContextMenuToPanel(panelPosition) {
+        // updatePosition() calls this on every monitors-changed; without this the
+        // previous menu stays in the ui group and the menu manager forever.
+        if (this._context_menu) {
+            this._context_menu.close();
+            this._context_menu.destroy();
+        }
+
         switch (panelPosition)
         {
             case PanelLoc.top:

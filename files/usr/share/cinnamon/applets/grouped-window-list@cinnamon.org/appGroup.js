@@ -491,6 +491,8 @@ var AppGroup = class AppGroup {
                     this.label.set_style('text-align: right;');
 
             this.label.allocate(childBox);
+        } else {
+            this.label.allocate(new Clutter.ActorBox());
         }
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
@@ -511,9 +513,7 @@ var AppGroup = class AppGroup {
     showLabel(animate = false) {
         if (this.labelVisiblePref
             || !this.label
-            || !this.state.isHorizontal
-            || this.label.is_finalized()
-            || !this.label.realized) {
+            || !this.state.isHorizontal) {
             return;
         }
 
@@ -543,7 +543,7 @@ var AppGroup = class AppGroup {
     }
 
     hideLabel() {
-        if (!this.label || this.label.is_finalized() || !this.label.realized) return;
+        if (!this.label) return;
 
         this.label.set_text('');
         this.labelVisiblePref = false;
@@ -942,6 +942,9 @@ var AppGroup = class AppGroup {
     windowAdded(metaWindow) {
         const {metaWindows, trigger, set} = this.groupState;
         const refWindow = metaWindows.indexOf(metaWindow);
+        if (metaWindow && refWindow !== -1) {
+            return;
+        }
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
@@ -987,6 +990,9 @@ var AppGroup = class AppGroup {
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
+        this.signals.disconnect('notify::icon', metaWindow);
+        this.signals.disconnect('notify::icon-name', metaWindow);
+        this.signals.disconnect('notify::progress', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
@@ -1204,6 +1210,10 @@ var AppGroup = class AppGroup {
         if (this.flashTimer > 0) {
             Mainloop.source_remove(this.flashTimer);
             this.flashTimer = 0;
+        }
+        if (this.appKeyTimeout) {
+            clearTimeout(this.appKeyTimeout);
+            this.appKeyTimeout = 0;
         }
 
         if (this.rightClickMenu) {
