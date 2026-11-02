@@ -703,6 +703,14 @@ Source.prototype = {
 
         app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
 
+        // Native apps without a tracked window can still identify themselves
+        // using the notification's desktop-entry hint.
+        if (!app && this.desktopEntryHint) {
+            let appId = this.desktopEntryHint.endsWith('.desktop')
+                ? this.desktopEntryHint : this.desktopEntryHint + '.desktop';
+            app = Cinnamon.AppSystem.get_default().lookup_app(appId);
+        }
+
         // With flatpak apps, the notification's pid is that of the portal so use the desktop-entry hint instead.
         if (!app && this.desktopEntryHint) {
             const exceptions = {
