@@ -40,6 +40,7 @@ const COVER_SIZE = 300;
 
 const CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound";
 const OVERAMPLIFICATION_KEY = "allow-amplified-volume";
+const OVERAMPLIFICATION_MIC_KEY = "allow-amplified-mic";
 
 class ControlButton {
     constructor(icon, tooltip, callback, small = false) {
@@ -85,6 +86,10 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
     constructor(applet, stream, tooltip, app_icon) {
         super(0);
         this.applet = applet;
+
+        // Highest volume this slider can reach. Raised above _volumeNorm by
+        // the overamplification settings (main output and microphone only).
+        this.maxVolume = applet._volumeNorm;
 
         if(tooltip)
             this.tooltipText = tooltip + ": ";
@@ -149,8 +154,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         if (!this.stream) return;
 
         let muted;
-        // Use the scaled volume max only for the main output
-        let volume = this._value * (this.isOutputSink ? this.applet._volumeMax : this.applet._volumeNorm);
+        let volume = this._value * this.maxVolume;
 
         if(this._value < 0.005) {
             volume = 0;
@@ -181,10 +185,10 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
         let direction = event.get_scroll_direction();
 
         if (direction == Clutter.ScrollDirection.DOWN) {
-            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+            this._value = Math.max(0, this._value - VOLUME_ADJUSTMENT_STEP/this.maxVolume*this.applet._volumeNorm);
         }
         else if (direction == Clutter.ScrollDirection.UP) {
-            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.applet._volumeMax*this.applet._volumeNorm);
+            this._value = Math.min(1, this._value + VOLUME_ADJUSTMENT_STEP/this.maxVolume*this.applet._volumeNorm);
         }
 
         this._slider.queue_repaint();
@@ -199,7 +203,7 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
             if (St.Widget.get_default_direction() === St.TextDirection.RTL)
                 delta = -delta;
 
-            this._value = Math.max(0, Math.min(this._value + delta/this.applet._volumeMax*this.applet._volumeNorm, 1));
+            this._value = Math.max(0, Math.min(this._value + delta/this.maxVolume*this.applet._volumeNorm, 1));
             this._slider.queue_repaint();
             this.emit('value-changed', this._value);
             return true;
@@ -209,24 +213,21 @@ class VolumeSlider extends PopupMenu.PopupSliderMenuItem {
 
 
     _update() {
-        // value: percentage of volume_max (set as value in the widget)
+        // value: percentage of maxVolume (set as value in the widget)
         // visible_value: percentage of volume_norm (shown to the user)
-        // these only differ for the output, and only when the user changes the maximum volume
+        // these only differ when overamplification is enabled for this slider
         let volume = (!this.stream || this.stream.is_muted) ? 0 : this.stream.volume;
-        let value, visible_value, delta = VOLUME_ADJUSTMENT_STEP * this.applet._volumeMax / this.applet._volumeNorm;
+        let value = volume / this.maxVolume;
+        let visible_value = volume / this.applet._volumeNorm;
 
-        if (this.isOutputSink) {
-            value = volume / this.applet._volumeMax;
-            visible_value = volume / this.applet._volumeNorm;
-            if (visible_value != 1 && visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
+        if (this.isOutputSink || this.maxVolume > this.applet._volumeNorm) {
+            let delta = VOLUME_ADJUSTMENT_STEP * this.maxVolume / this.applet._volumeNorm;
+            if (this.stream && visible_value != 1 && visible_value > 1 - delta/2 && visible_value < 1 + delta/2) {
                 visible_value = 1; // 100% is magnetic
-                value = this.applet._volumeNorm / this.applet._volumeMax;
-                this.applet._output.volume = this.applet._volumeNorm;
-                this.applet._output.push_volume();
+                value = this.applet._volumeNorm / this.maxVolume;
+                this.stream.volume = this.applet._volumeNorm;
+                this.stream.push_volume();
             }
-        } else {
-            visible_value = volume / this.applet._volumeNorm;
-            value = visible_value
         }
 
         let percentage = Math.round(visible_value * 100) + "%";
@@ -1016,29 +1017,39 @@ class CinnamonSoundApplet extends Applet.TextIconApplet {
         let appsys = Cinnamon.AppSystem.get_default();
         appsys.connect("installed-changed", () => this._updateLaunchPlayer());
 
-        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_KEY, () => this._on_overamplification_change());
-        this._on_overamplification_change();
+        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_KEY, () => this._on_overamplification_change(true));
+        this._sound_settings.connect("changed::" + OVERAMPLIFICATION_MIC_KEY, () => this._on_mic_overamplification_change(true));
+        this._on_overamplification_change(false);
+        this._on_mic_overamplification_change(false);
     }
 
     _setKeybinding() {
         Main.keybindingManager.addXletHotKey(this, "sound-open", this.keyOpen, Lang.bind(this, this._openMenu));
     }
 
-    _on_overamplification_change () {
-        if (this._sound_settings.get_boolean(OVERAMPLIFICATION_KEY)) {
-            this._volumeMax = 1.5 * this._volumeNorm;
-            this._outputVolumeSection.set_mark(1/1.5);
-        }
-        else {
-            this._volumeMax = this._volumeNorm;
-            this._outputVolumeSection.set_mark(0);
+    _on_overamplification_change (clampVolume) {
+        this._volumeMax = this._applyOverAmplification(OVERAMPLIFICATION_KEY, this._outputVolumeSection, this._output, clampVolume);
+    }
 
-            if (this._output && this._output.volume > this._volumeMax) {
-                this._output.volume = this._volumeMax;
-                this._output.push_volume();
-            }
+    _on_mic_overamplification_change (clampVolume) {
+        this._applyOverAmplification(OVERAMPLIFICATION_MIC_KEY, this._inputVolumeSection, this._input, clampVolume);
+    }
+
+    // Sets the slider's range from the given overamplification key and returns the new maximum.
+    // clampVolume: when the setting is turned off, bring a volume above 100% back down to 100%.
+    _applyOverAmplification (key, slider, stream, clampVolume) {
+        let maxVolume = this._sound_settings.get_boolean(key) ? 1.5 * this._volumeNorm : this._volumeNorm;
+
+        slider.maxVolume = maxVolume;
+        slider.set_mark(maxVolume > this._volumeNorm ? this._volumeNorm / maxVolume : 0);
+
+        if (clampVolume && stream && stream.volume > maxVolume) {
+            stream.volume = maxVolume;
+            stream.push_volume();
         }
-        this._outputVolumeSection._update();
+
+        slider._update();
+        return maxVolume;
     }
 
     on_settings_changed () {
