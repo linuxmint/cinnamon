@@ -3,6 +3,7 @@
 import sys
 import datetime
 import os
+import subprocess
 
 home = os.path.expanduser("~")
 
@@ -38,7 +39,7 @@ end
 run %s
 """ % (logfile, runargs)
 print(gdb_script)
-os.system("echo '%s' | gdb %s" % (gdb_script, pname))
+subprocess.run(["gdb", pname], input=gdb_script, text=True)
 
 quit()
 
