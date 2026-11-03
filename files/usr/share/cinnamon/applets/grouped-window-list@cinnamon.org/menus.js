@@ -909,9 +909,27 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         this._signals.connect(this.scrollView, 'scroll-event',
             (actor, event) => this.onScroll(event));
 
+        for (const bar of [this.scrollView.get_hscroll_bar(), this.scrollView.get_vscroll_bar()]) {
+            const adjustment = bar.get_adjustment();
+            this._signals.connect(adjustment, 'notify::upper', () => this.updateScrollPolicy());
+            this._signals.connect(adjustment, 'notify::page-size', () => this.updateScrollPolicy());
+        }
+
         this.appThumbnails = [];
         this.queuedWindows = [];
         this.fullyRefreshThumbnails();
+    }
+
+    // St reserves room for an AUTOMATIC scrollbar even when it is hidden, which leaves an
+    // empty strip next to the thumbnails. Only ask for the scrollbar once they overflow.
+    updateScrollPolicy() {
+        const vertical = this.thumbnailBox.vertical;
+        const adjustment = (vertical ? this.scrollView.get_vscroll_bar()
+            : this.scrollView.get_hscroll_bar()).get_adjustment();
+        const overflow = adjustment.upper > adjustment.page_size + 1 ? St.PolicyType.ALWAYS
+            : St.PolicyType.EXTERNAL;
+        this.scrollView.set_policy(vertical ? St.PolicyType.NEVER : overflow,
+            vertical ? overflow : St.PolicyType.NEVER);
     }
 
     onScroll(event) {
@@ -1207,9 +1225,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             this.thumbnailBox.vertical = true;
         }
 
-        this.scrollView.set_policy(
-            this.thumbnailBox.vertical ? St.PolicyType.NEVER : St.PolicyType.AUTOMATIC,
-            this.thumbnailBox.vertical ? St.PolicyType.AUTOMATIC : St.PolicyType.NEVER);
+        this.updateScrollPolicy();
 
         // Do a full refresh if thumbnails don't exist - this happens when the thumbnail menu
         // initializes vertically from lack of calculated space, or thumbnails are disabled.
