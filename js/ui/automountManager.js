@@ -1,7 +1,7 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 /* exported Component */
 
-const { Gio, GLib } = imports.gi;
+const { Gio, GLib, St } = imports.gi;
 const Params = imports.misc.params;
 
 const LoginManager = imports.misc.loginManager;
@@ -14,11 +14,56 @@ const SETTING_ENABLE_AUTOMOUNT = 'automount';
 
 var AUTORUN_EXPIRE_TIMEOUT_SECS = 10;
 
+// A device with a failing connector can produce repeated connect/disconnect
+// cycles, so warn at most once per device within this window.
+var UNSAFE_REMOVAL_WARNING_TIMEOUT_SECS = 60;
+
+// Reports a device that was unplugged while still mounted. This is delivered as
+// a notification rather than a modal dialog: the user did not ask for it, so it
+// belongs with the unmount progress notifications (CinnamonUnmountNotifier)
+// rather than with the dialogs used for password or busy-device prompts.
+function notifyUnsafeRemoval(driveName) {
+    let body;
+    if (driveName) {
+        body = _("“%s” was unplugged before it was safely removed.").format(driveName);
+    } else {
+        body = _("A device was unplugged before it was safely removed.");
+    }
+
+    body += '\n\n';
+    // Not just files being written at that moment: the kernel can hold changes
+    // in the page cache long after a copy appears to be finished, and
+    // interrupted metadata updates can damage the whole filesystem.
+    body += _("The data on it may be lost or damaged. Even when no file seems to be in use, the system can still have changes waiting to be written to the device.");
+
+    body += '\n\n';
+    // Safe removal and eject both act on the drive, so gvfs notifies
+    // "... can be safely unplugged" once either one completes. Safe removal is
+    // named first because it powers the device off (what the drives applet does
+    // through PlaceDeviceItem._tryRemove), while eject leaves it powered and the
+    // kernel re-enumerates it, which looks to the user as if nothing happened.
+    body += _("Next time, use “Safely Remove Drive” (or “Eject”) from the device menu, and unplug the device only once you are told that it can be removed.");
+
+    let icon = new St.Icon({
+        icon_name: 'xsi-media-removable',
+        icon_type: St.IconType.SYMBOLIC,
+        icon_size: 24,
+    });
+
+    // Not transient: the device is already gone, so the warning is only useful
+    // if it waits in the tray for the user to actually read it.
+    Main.criticalNotify(_("Device removed unsafely"), body, icon);
+}
+
 var AutomountManager = class {
     constructor() {
         this._settings = new Gio.Settings({ schema_id: SETTINGS_SCHEMA });
         this._activeOperations = new Map();
         this._volumeQueue = [];
+        // mount root path -> drive key, for mounts that are still live
+        this._mountedDrives = new Map();
+        // driveKey -> timeout id, suppressing repeated warnings
+        this._unsafeRemovalWarnings = new Map();
 
         this._loginManager = LoginManager.getLoginManager();
         this._loginManager.connect('active-changed', (lm, active) => {
@@ -39,6 +84,8 @@ var AutomountManager = class {
         this._volumeMonitor.connectObject(
             'volume-added', this._onVolumeAdded.bind(this),
             'volume-removed', this._onVolumeRemoved.bind(this),
+            'mount-added', this._onMountAdded.bind(this),
+            'mount-removed', this._onMountRemoved.bind(this),
             'drive-connected', this._onDriveConnected.bind(this),
             'drive-disconnected', this._onDriveDisconnected.bind(this),
             'drive-eject-button', this._onDriveEjectButton.bind(this), this);
@@ -54,6 +101,10 @@ var AutomountManager = class {
             GLib.source_remove(this._mountAllId);
             this._mountAllId = 0;
         }
+
+        this._unsafeRemovalWarnings.forEach(id => GLib.source_remove(id));
+        this._unsafeRemovalWarnings.clear();
+        this._mountedDrives.clear();
     }
 
     _drainVolumeQueue() {
@@ -66,6 +117,12 @@ var AutomountManager = class {
     }
 
     _startupMountAll() {
+        // Mounts that already existed when we started (e.g. after a Cinnamon
+        // restart) never emit mount-added, so seed the cache with them.
+        this._volumeMonitor.get_mounts().forEach(mount => {
+            this._trackMount(mount);
+        });
+
         let volumes = this._volumeMonitor.get_volumes();
         volumes.forEach(volume => {
             this._checkAndMountVolume(volume, {
@@ -89,7 +146,7 @@ var AutomountManager = class {
                                null);
     }
 
-    _onDriveDisconnected() {
+    _onDriveDisconnected(monitor, drive) {
         if (!this._loginManager.sessionIsActive)
             return;
 
@@ -97,6 +154,93 @@ var AutomountManager = class {
         player.play_from_theme('device-removed-media',
                                _("External drive disconnected"),
                                null);
+
+        this._checkUnsafeRemoval(drive);
+    }
+
+    // A GMount has no volume left by the time mount-removed is emitted, so the
+    // cache is keyed on the mount point instead.
+    _mountKey(mount) {
+        const root = mount.get_root();
+        if (!root)
+            return null;
+
+        return root.get_path() ?? root.get_uri();
+    }
+
+    // The device node can be reassigned across a reconnect (sda -> sdb) and the
+    // GObject instance is always a new one, so identify a drive by its name.
+    _driveKey(drive) {
+        return drive.get_name() ??
+               drive.get_identifier(Gio.DRIVE_IDENTIFIER_KIND_UNIX_DEVICE);
+    }
+
+    _trackMount(mount) {
+        const drive = mount.get_drive();
+
+        // Only hotpluggable devices can be pulled out from under us.
+        if (!drive || !drive.is_removable())
+            return;
+
+        const key = this._mountKey(mount);
+        if (key === null)
+            return;
+
+        this._mountedDrives.set(key, this._driveKey(drive));
+    }
+
+    _onMountAdded(monitor, mount) {
+        this._trackMount(mount);
+    }
+
+    _onMountRemoved(monitor, mount) {
+        const key = this._mountKey(mount);
+        if (key !== null)
+            this._mountedDrives.delete(key);
+    }
+
+    // Detects a device that was physically unplugged while still mounted.
+    //
+    // This relies on the order in which GVfs emits its removal signals: in
+    // gvfsudisks2volumemonitor.c, update_all() emits drive-disconnected before
+    // volume-removed and mount-removed for everything that vanished in the same
+    // update. So when a device is pulled out, its mounts are still in the cache
+    // at this point, while a device that was unmounted or ejected first had its
+    // mount-removed delivered by an earlier update and left the cache empty.
+    //
+    // Verified by tracing GVolumeMonitor against a USB stick on GVfs 1.54:
+    // unplugging while mounted leaves the mounts in the cache here, whereas
+    // eject, safe removal and a plain unmount all leave it empty.
+    _checkUnsafeRemoval(drive) {
+        if (!drive)
+            return;
+
+        const driveKey = this._driveKey(drive);
+        let removedMounts = 0;
+
+        for (let [mountKey, key] of this._mountedDrives) {
+            if (key !== driveKey)
+                continue;
+
+            this._mountedDrives.delete(mountKey);
+            removedMounts++;
+        }
+
+        if (removedMounts === 0)
+            return;
+
+        if (this._unsafeRemovalWarnings.has(driveKey))
+            return;
+
+        const id = GLib.timeout_add_seconds(GLib.PRIORITY_DEFAULT,
+            UNSAFE_REMOVAL_WARNING_TIMEOUT_SECS, () => {
+                this._unsafeRemovalWarnings.delete(driveKey);
+                return GLib.SOURCE_REMOVE;
+            });
+        this._unsafeRemovalWarnings.set(driveKey, id);
+        GLib.Source.set_name_by_id(id, '[cinnamon] unsafe removal warning');
+
+        notifyUnsafeRemoval(drive.get_name());
     }
 
     _onDriveEjectButton(monitor, drive) {
