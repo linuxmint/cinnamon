@@ -295,7 +295,7 @@ var AppGroup = class AppGroup {
             }
         } else {
             icon = new St.Icon({
-                icon_name: 'application-default-icon',
+                icon_name: 'application-x-executable',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.iconSize
             });
