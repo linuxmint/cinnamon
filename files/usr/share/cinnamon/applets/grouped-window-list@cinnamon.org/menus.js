@@ -537,11 +537,11 @@ class WindowThumbnail {
         this.actor.add_actor(this.bin);
         this.actor.add_actor(this.thumbnailActor);
 
-        // Use the normal drag threshold and Escape cancellation, but only arm
-        // the drag when Ctrl is held. Keep the original thumbnail in the menu.
+        // Use the normal drag threshold and Escape cancellation.
+        // Keep the original thumbnail in the menu.
         this._draggable = new WindowThumbnailDraggable(this.actor, this.menu);
         this.signals.connect(this.actor, 'button-press-event', (actor, event) => {
-            if (event.get_button() !== 1 || !(event.get_state() & Clutter.ModifierType.CONTROL_MASK)
+            if (event.get_button() !== 1
                 || this.button.contains(event.get_source()) || this.state.panelEditMode) {
                 return false;
             }

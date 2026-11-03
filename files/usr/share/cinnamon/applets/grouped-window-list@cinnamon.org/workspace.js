@@ -10,6 +10,13 @@ const {AppGroup} = Me.imports.appGroup;
 const {ScrollBox} = Me.imports.scrollBox;
 const {RESERVE_KEYS} = Me.imports.constants;
 
+function compareWindows(a, b) {
+    // X11 window IDs survive Cinnamon restarts; stable sequences do not.
+    const aId = a.get_xwindow() || a.get_stable_sequence();
+    const bId = b.get_xwindow() || b.get_stable_sequence();
+    return aId - bId || a.get_stable_sequence() - b.get_stable_sequence();
+}
+
 var Workspace = class Workspace {
     constructor(params) {
         this.state = params.state;
@@ -185,7 +192,7 @@ var Workspace = class Workspace {
     }
 
     reloadList() {
-        const windows = this.metaWorkspace.list_windows();
+        const windows = this.metaWorkspace.list_windows().sort(compareWindows);
 
         for (let i = 0, len = windows.length; i < len; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
@@ -212,7 +219,7 @@ var Workspace = class Workspace {
 
             const appWindows = app.get_windows().filter(
                 metaWindow => this.shouldWindowBeAdded(metaWindow)
-            );
+            ).sort(compareWindows);
 
             if (appWindows.length === 0) {
                 this.windowAdded(this.metaWorkspace, null, app, true);
@@ -232,6 +239,8 @@ var Workspace = class Workspace {
         } else {
             windows = this.metaWorkspace.list_windows();
         }
+
+        windows.sort(compareWindows);
 
         for (let i = 0, len = windows.length; i < len; i++) {
             this.windowAdded(this.metaWorkspace, windows[i]);
