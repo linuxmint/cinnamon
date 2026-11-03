@@ -768,7 +768,7 @@ st_scroll_view_allocate (ClutterActor          *actor,
           vscrollbar_visible = priv->vscrollbar_policy == ST_POLICY_ALWAYS;
 
           if (priv->hscrollbar_policy == ST_POLICY_AUTOMATIC)
-            hscrollbar_visible = child_min_width > avail_height - (vscrollbar_visible ? 0 : sb_width);
+            hscrollbar_visible = child_min_width > avail_width - (vscrollbar_visible ? sb_width : 0);
           else
             hscrollbar_visible = priv->hscrollbar_policy == ST_POLICY_ALWAYS;
         }
