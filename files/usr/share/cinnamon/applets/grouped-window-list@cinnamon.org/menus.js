@@ -88,6 +88,21 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
         // user needs to switch workspaces just to switch the window back. This should behave this way
         // when showAllWorkspaces is disabled as well since its a UX problem.
         if (hasWindows) {
+            // Always on top
+            if (this.groupState.lastFocused && this.groupState.lastFocused.is_above()) {
+                item = createMenuItem({label: _('Do not stay on top')});
+                this.signals.connect(item, 'activate', () => {
+                    this.groupState.lastFocused.unmake_above();
+                });
+                this.addMenuItem(item);
+            } else {
+                item = createMenuItem({label: _('Always on top')});
+                this.signals.connect(item, 'activate', () => {
+                    this.groupState.lastFocused.make_above();
+                });
+                this.addMenuItem(item);
+            }
+
             // Monitors
             if (Main.layoutManager.monitors.length > 1) {
                 const connectMonitorEvent = (item, i) => {
@@ -434,13 +449,13 @@ var HoverMenuController = class HoverMenuController extends PopupMenu.PopupMenuM
 
 class WindowThumbnailDraggable extends DND._Draggable {
     constructor(actor, menu) {
-        super(actor, {manualMode: true}, menu.box);
+        super(actor, {manualMode: true}, menu.scrollView);
         this.menu = menu;
     }
 
     _setDragActorPosition() {
-        const [x, y] = this.menu.box.get_transformed_position();
-        const [width, height] = this.menu.box.get_transformed_size();
+        const [x, y] = this.menu.scrollView.get_transformed_position();
+        const [width, height] = this.menu.scrollView.get_transformed_size();
         const [dragWidth, dragHeight] = this._dragActor.get_transformed_size();
         this._dragActor.set_position(
             Math.max(x, Math.min(this._dragX + this._dragOffsetX, x + width - dragWidth)),
@@ -723,13 +738,6 @@ class WindowThumbnail {
         this.signals.disconnect("notify::minimized", this.metaWindow);
     }
 
-    calcThumbsFullSize(singleThumbSize) {
-        const padding = this.thumbnailActor.style_length('padding');
-        const margin = this.thumbnailActor.style_length('margin');
-        const size = (singleThumbSize + this.thumbnailPadding) * global.ui_scale;
-        return (size + padding + margin) * this.groupState.windowCount;
-    }
-
     refreshThumbnail() {
         if (this.willUnmount
             || !this.groupState
@@ -755,39 +763,6 @@ class WindowThumbnail {
 
         let thumbnailWidth = Math.floor((monitor.width / divider) * thumbSize);
         let thumbnailHeight = Math.floor((monitor.height / divider) * thumbSize);
-
-        let monitorSize, thumbnailSize;
-        if (!this.state.isHorizontal) {
-            monitorSize = monitor.height;
-            thumbnailSize = thumbnailHeight;
-        } else {
-            monitorSize = monitor.width;
-            thumbnailSize = thumbnailWidth;
-        }
-
-
-        let i = 0;
-        while (this.calcThumbsFullSize(thumbnailSize) > monitorSize &&
-               thumbnailWidth > 64 && thumbnailHeight > 64) {
-            // ---
-            thumbnailWidth -= 1;
-            thumbnailHeight -= 1;
-            thumbnailSize -= 1;
-
-            i++;
-            // Bail after 200 iterations
-            if (i > 200) {
-                break;
-            }
-        }
-
-        // If we can't fit all the thumbnails, revert to a vertical menu orientation
-        // with no thumbnails, which can hold more window selections.
-        const verticalThumbs = this.calcThumbsFullSize(thumbnailSize) > monitorSize;
-        const currentVerticalThumbsState = this.groupState.verticalThumbs;
-        this.groupState.set({verticalThumbs});
-
-        if (verticalThumbs !== currentVerticalThumbsState) return;
 
         this.thumbnailActor.width = thumbnailWidth * global.ui_scale;
         this.container.style = `width: ${Math.floor(thumbnailWidth - 16)}px;`;
@@ -965,7 +940,23 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             }
         });
 
-        this.box._delegate = this;
+        this.thumbnailBox = new St.BoxLayout({vertical: true});
+        this.scrollView = new St.ScrollView({reactive: true});
+        this.scrollView.set_policy(St.PolicyType.NEVER, St.PolicyType.AUTOMATIC);
+        this.scrollView.set_mouse_scrolling(false);
+        this.scrollView.set_clip_to_allocation(true);
+        this.scrollView.add_actor(this.thumbnailBox);
+        this.box.add_actor(this.scrollView);
+        this._signals.connect(this.scrollView, 'scroll-event',
+            (actor, event) => this.onScroll(event));
+
+        for (const bar of [this.scrollView.get_hscroll_bar(), this.scrollView.get_vscroll_bar()]) {
+            const adjustment = bar.get_adjustment();
+            this._signals.connect(adjustment, 'notify::upper', () => this.updateScrollPolicy());
+            this._signals.connect(adjustment, 'notify::page-size', () => this.updateScrollPolicy());
+        }
+
+        this.scrollView._delegate = this;
         this.draggedThumbnail = null;
         this.dropMarker = null;
         this.appThumbnails = [];
@@ -1005,14 +996,19 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
     // menus, logical order runs right-to-left when the UI is RTL.
     getDropPosition(source, x, y) {
         if (source !== this.draggedThumbnail || !this.appThumbnails.includes(source)
-            || x < 0 || y < 0 || x > this.box.width || y > this.box.height) {
+            || x < 0 || y < 0 || x > this.scrollView.width || y > this.scrollView.height) {
             return null;
         }
-        const vertical = this.box.vertical;
-        const rtl = !vertical && this.box.get_text_direction() === St.TextDirection.RTL;
+        const vertical = this.thumbnailBox.vertical;
+        const rtl = !vertical && this.thumbnailBox.get_text_direction() === St.TextDirection.RTL;
         for (let i = 0; i < this.appThumbnails.length; i++) {
             const actor = this.appThumbnails[i].actor;
-            const midpoint = vertical ? actor.y + actor.height / 2 : actor.x + actor.width / 2;
+            const [stageX, stageY] = actor.get_transformed_position();
+            const [width, height] = actor.get_transformed_size();
+            const [ok, midpointX, midpointY] = this.scrollView.transform_stage_point(
+                stageX + width / 2, stageY + height / 2);
+            if (!ok) return null;
+            const midpoint = vertical ? midpointY : midpointX;
             if (vertical ? y < midpoint : (rtl ? x > midpoint : x < midpoint)) {
                 return i;
             }
@@ -1031,13 +1027,20 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         const [targetX, targetY] = target.get_transformed_position();
         const [width, height] = target.get_transformed_size();
         const thickness = 2 * global.ui_scale;
-        if (this.box.vertical) {
-            this.dropMarker.set_position(targetX, targetY + (last ? height : 0) - thickness / 2);
-            this.dropMarker.set_size(width, thickness);
+        const [viewX, viewY] = this.scrollView.get_transformed_position();
+        const [viewWidth, viewHeight] = this.scrollView.get_transformed_size();
+        const clamp = (value, start, size) => Math.max(start, Math.min(value, start + size - thickness));
+        if (this.thumbnailBox.vertical) {
+            const left = Math.max(targetX, viewX);
+            this.dropMarker.set_position(left,
+                clamp(targetY + (last ? height : 0) - thickness / 2, viewY, viewHeight));
+            this.dropMarker.set_size(Math.max(0, Math.min(targetX + width, viewX + viewWidth) - left), thickness);
         } else {
-            const rtl = this.box.get_text_direction() === St.TextDirection.RTL;
-            this.dropMarker.set_position(targetX + (last !== rtl ? width : 0) - thickness / 2, targetY);
-            this.dropMarker.set_size(thickness, height);
+            const rtl = this.thumbnailBox.get_text_direction() === St.TextDirection.RTL;
+            const top = Math.max(targetY, viewY);
+            this.dropMarker.set_position(
+                clamp(targetX + (last !== rtl ? width : 0) - thickness / 2, viewX, viewWidth), top);
+            this.dropMarker.set_size(thickness, Math.max(0, Math.min(targetY + height, viewY + viewHeight) - top));
         }
         this.dropMarker.show();
         return DND.DragMotionResult.MOVE_DROP;
@@ -1067,6 +1070,62 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
         return true;
     }
 
+    // St reserves room for an AUTOMATIC scrollbar even when it is hidden, which leaves an
+    // empty strip next to the thumbnails. Only ask for the scrollbar once they overflow.
+    updateScrollPolicy() {
+        const vertical = this.thumbnailBox.vertical;
+        const adjustment = (vertical ? this.scrollView.get_vscroll_bar()
+            : this.scrollView.get_hscroll_bar()).get_adjustment();
+        const overflow = adjustment.upper > adjustment.page_size + 1 ? St.PolicyType.ALWAYS
+            : St.PolicyType.EXTERNAL;
+        this.scrollView.set_policy(vertical ? St.PolicyType.NEVER : overflow,
+            vertical ? overflow : St.PolicyType.NEVER);
+    }
+
+    onScroll(event) {
+        const bar = this.thumbnailBox.vertical
+            ? this.scrollView.get_vscroll_bar() : this.scrollView.get_hscroll_bar();
+        const adjustment = bar.get_adjustment();
+        const maximum = Math.max(adjustment.lower, adjustment.upper - adjustment.page_size);
+        if (maximum <= adjustment.lower) return Clutter.EVENT_PROPAGATE;
+
+        let delta;
+        switch (event.get_scroll_direction()) {
+            case Clutter.ScrollDirection.UP:
+            case Clutter.ScrollDirection.LEFT:
+                delta = -1;
+                break;
+            case Clutter.ScrollDirection.DOWN:
+            case Clutter.ScrollDirection.RIGHT:
+                delta = 1;
+                break;
+            case Clutter.ScrollDirection.SMOOTH: {
+                const [dx, dy] = event.get_scroll_delta();
+                delta = Math.abs(dy) >= Math.abs(dx) ? dy : dx;
+                break;
+            }
+            default:
+                return Clutter.EVENT_PROPAGATE;
+        }
+        for (const thumbnail of this.appThumbnails) thumbnail.destroyOverlayPreview();
+        adjustment.value = Math.max(adjustment.lower,
+            Math.min(maximum, adjustment.value + delta * 48 * global.ui_scale));
+        return Clutter.EVENT_STOP;
+    }
+
+    ensureThumbnailVisible(thumbnail) {
+        const vertical = this.thumbnailBox.vertical;
+        const bar = vertical ? this.scrollView.get_vscroll_bar() : this.scrollView.get_hscroll_bar();
+        const adjustment = bar.get_adjustment();
+        const start = vertical ? thumbnail.actor.y : thumbnail.actor.x;
+        const end = start + (vertical ? thumbnail.actor.height : thumbnail.actor.width);
+        let value = adjustment.value;
+        if (start < value) value = start;
+        else if (end > value + adjustment.page_size) value = end - adjustment.page_size;
+        adjustment.value = Math.max(adjustment.lower,
+            Math.min(value, Math.max(adjustment.lower, adjustment.upper - adjustment.page_size)));
+    }
+
     _queueTimeout(callback, delay) {
         const id = setTimeout(() => {
             this._timeouts.delete(id);
@@ -1083,7 +1142,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     onButtonPress() {
         if (this.draggedThumbnail) return;
-        if (this.state.settings.onClickThumbs && this.box.get_children().length > 1) {
+        if (this.state.settings.onClickThumbs && this.thumbnailBox.get_children().length > 1) {
             return;
         }
         this.shouldClose = true;
@@ -1184,7 +1243,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     onKeyPress(actor, e) {
         const {orientation} = this.state;
-        const {vertical} = this.box;
+        const {vertical} = this.thumbnailBox;
 
         const symbol = e.get_key_symbol();
         let i = this.appThumbnails.findIndex( item => item.entered === true );
@@ -1242,6 +1301,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
         if (this.appThumbnails[index] !== undefined) {
             this.appThumbnails[i].onLeave();
+            this.ensureThumbnailVisible(this.appThumbnails[index]);
             this.appThumbnails[index].onEnter();
             if (this.appThumbnails[i].isFocused) {
                 this.appThumbnails[i].onFocusWindowChange();
@@ -1268,7 +1328,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
             this.appThumbnails[i].index = i;
             if (i !== exceptIndex) {
                 this.appThumbnails[i].refreshThumbnail();
-                this.box.set_child_at_index(this.appThumbnails[i].actor, i);
+                this.thumbnailBox.set_child_at_index(this.appThumbnails[i].actor, i);
             }
         }
     }
@@ -1292,21 +1352,19 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
                 index: this.appThumbnails.length // correct index before actual push
             });
             this.appThumbnails.push(thumbnail);
-            this.box.insert_actor(thumbnail.actor, -1);
-            // TBD: Update the thumbnail scaling for the other thumbnails belonging to this group.
-            // Since the total window count determines the scaling used, this needs to be done
-            // each time a window is added.
+            this.thumbnailBox.insert_actor(thumbnail.actor, -1);
+            // Refresh thumbnail indices and visual order after adding a window.
             this.updateThumbnails(thumbnail.index);
         } else if (this.appThumbnails[refThumb]) {
             this.appThumbnails[refThumb].index = refThumb;
             this.appThumbnails[refThumb].metaWindow = metaWindow;
             this.appThumbnails[refThumb].refreshThumbnail();
-            this.box.set_child_at_index(this.appThumbnails[refThumb].actor, refThumb);
+            this.thumbnailBox.set_child_at_index(this.appThumbnails[refThumb].actor, refThumb);
         }
     }
 
     addWindowThumbnails() {
-        if (this.willUnmount || !this.box || !this.appThumbnails || !this.groupState || !this.groupState.metaWindows) {
+        if (this.willUnmount || !this.thumbnailBox || !this.appThumbnails || !this.groupState || !this.groupState.metaWindows) {
             return;
         }
 
@@ -1317,10 +1375,12 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     setVerticalSetting() {
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            this.box.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
+            this.thumbnailBox.vertical = this.groupState.verticalThumbs || this.state.settings.verticalThumbs;
         } else {
-            this.box.vertical = true;
+            this.thumbnailBox.vertical = true;
         }
+
+        this.updateScrollPolicy();
 
         // Do a full refresh if thumbnails don't exist - this happens when the thumbnail menu
         // initializes vertically from lack of calculated space, or thumbnails are disabled.
@@ -1341,7 +1401,7 @@ var AppThumbnailHoverMenu = class AppThumbnailHoverMenu extends PopupMenu.PopupM
 
     destroy() {
         this.willUnmount = true;
-        if (!this.box) return;
+        if (!this.thumbnailBox) return;
         this.endThumbnailDrag();
 
         if (this.isOpen) this.close(true);

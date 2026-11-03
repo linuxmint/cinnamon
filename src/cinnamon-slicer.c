@@ -119,7 +119,16 @@ cinnamon_slicer_paint_pick_child (CinnamonSlicer  *self,
 
   cogl_framebuffer_push_matrix (fb);
 
-  cogl_framebuffer_push_rectangle_clip (fb, 0, 0, width, height);
+  if (pick)
+    {
+      ClutterActorBox clip = { 0, 0, width, height };
+      clutter_pick_context_push_clip ((ClutterPickContext *) ctx, &clip);
+    }
+  else
+    {
+      cogl_framebuffer_push_rectangle_clip (fb, 0, 0, width, height);
+    }
+
   cogl_framebuffer_translate (fb, (int)(0.5 + x_align_factor * (width - child_width)),
                   (int)(0.5 + y_align_factor * (height - child_height)),
                   0);
@@ -127,13 +136,13 @@ cinnamon_slicer_paint_pick_child (CinnamonSlicer  *self,
   if (pick)
     {
       clutter_actor_pick (child, (ClutterPickContext *) ctx);
+      clutter_pick_context_pop_clip ((ClutterPickContext *) ctx);
     }
   else
     {
       clutter_actor_paint (child, (ClutterPaintContext *) ctx);
+      cogl_framebuffer_pop_clip (fb);
     }
-
-  cogl_framebuffer_pop_clip (fb);
 
   cogl_framebuffer_pop_matrix (fb);
 }

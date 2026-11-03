@@ -78,6 +78,8 @@ adjustment_value_notify_cb (StAdjustment *adjustment,
                             GParamSpec   *pspec,
                             StViewport   *viewport)
 {
+  clutter_actor_invalidate_transform (CLUTTER_ACTOR (viewport));
+  clutter_actor_invalidate_paint_volume (CLUTTER_ACTOR (viewport));
   clutter_actor_queue_redraw (CLUTTER_ACTOR (viewport));
 }
 
@@ -439,13 +441,7 @@ st_viewport_pick (ClutterActor       *actor,
   content_box.y2 += y;
 
   if (priv->hadjustment || priv->vadjustment)
-    {
-      cogl_framebuffer_push_rectangle_clip (fb,
-                                            (int)content_box.x1,
-                                            (int)content_box.y1,
-                                            (int)content_box.x2,
-                                            (int)content_box.y2);
-    }
+    clutter_pick_context_push_clip (pick_context, &content_box);
 
   for (child = clutter_actor_get_first_child (actor);
        child != NULL;
@@ -453,7 +449,7 @@ st_viewport_pick (ClutterActor       *actor,
     clutter_actor_pick (child, pick_context);
 
   if (priv->hadjustment || priv->vadjustment)
-    cogl_framebuffer_pop_clip (fb);
+    clutter_pick_context_pop_clip (pick_context);
 }
 
 static gboolean

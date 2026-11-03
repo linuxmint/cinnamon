@@ -821,7 +821,7 @@ class AppMenuButton {
         // window-backed and app-backed windows without special-casing.
         let icon = this.app ?
             this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon',
+            new St.Icon({ icon_name: 'application-x-executable',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
 
@@ -895,6 +895,21 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let mw = this.metaWindow;
         let item;
         let length;
+
+        // Always on top
+        if (mw.is_above()) {
+            item = new PopupMenu.PopupMenuItem(_("Do not stay on top"));
+            this._signals.connect(item, 'activate', function() {
+                mw.unmake_above();
+            });
+            this.addMenuItem(item);
+        } else {
+            item = new PopupMenu.PopupMenuItem(_("Always on top"));
+            this._signals.connect(item, 'activate', function() {
+                mw.make_above();
+            });
+            this.addMenuItem(item);
+        }
 
         // Move to monitor
         if ((length = Main.layoutManager.monitors.length) == 2) {

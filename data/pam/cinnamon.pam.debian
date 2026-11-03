@@ -1,2 +1,3 @@
 @include common-auth
-auth optional pam_gnome_keyring.so
+-auth optional pam_gnome_keyring.so
+-auth optional pam_oo7.so
