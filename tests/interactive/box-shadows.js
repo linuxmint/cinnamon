@@ -53,6 +53,15 @@ addTestCase (true, -3, -4, 4, 0);
 addTestCase (true, 0, 0, 0, 4);
 addTestCase (true, 0, 0, 4, 0);
 
+// The shadow must stay uniform when the corner padding is asymmetric.
+box.add(new St.Label({ width: 320,
+                      height: 240,
+                      text: 'Unequal corner radii, translucent background',
+                      style: 'border-radius: 100px 0 0 0;'
+                             + 'background-color: rgba(100,140,200,0.6);'
+                             + 'box-shadow: 3px -2px 4px 4px rgba(0,0,0,0.7);' }),
+        { x_fill: false, y_fill: false });
+
 stage.show();
 Clutter.main();
 stage.destroy();

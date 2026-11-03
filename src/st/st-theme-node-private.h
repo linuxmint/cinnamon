@@ -111,6 +111,13 @@ struct _StThemeNode {
 
   CoglPipeline *background_shadow_material;
   CoglPipeline *box_shadow_material;
+  /* When box_shadow_material was blurred from a silhouette smaller than the
+   * allocation: its size, and the texel row and column that get stretched
+   * across the middle. Zero when the shadow texture covers the allocation. */
+  int box_shadow_silhouette_width;
+  int box_shadow_silhouette_height;
+  float box_shadow_slice_x;
+  float box_shadow_slice_y;
   CoglPipeline *background_texture;
   CoglPipeline *background_material;
   CoglPipeline *border_slices_texture;
