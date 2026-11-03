@@ -204,7 +204,7 @@ var WindowOverlay = GObject.registerClass({
             icon = app.create_icon_texture_for_window(WINDOWOVERLAY_ICON_SIZE, metaWindow);
         }
         if (!icon) {
-            icon = new St.Icon({ icon_name: 'application-default-icon',
+            icon = new St.Icon({ icon_name: 'application-x-executable',
                                  icon_type: St.IconType.FULLCOLOR,
                                  icon_size: WINDOWOVERLAY_ICON_SIZE });
         }

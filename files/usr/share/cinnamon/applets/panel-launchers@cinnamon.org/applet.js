@@ -206,7 +206,7 @@ class PanelAppLauncher extends DND.LauncherDraggable {
         if (this.isCustom()) {
             let icon = this.appinfo.get_icon();
             if (icon == null)
-                icon = new Gio.ThemedIcon({name: "gnome-panel-launcher"});
+                icon = new Gio.ThemedIcon({name: "cinnamon-panel-launcher"});
             return new St.Icon({gicon: icon, icon_size: this.icon_size, icon_type: St.IconType.FULLCOLOR});
         } else {
             return this.app.create_icon_texture(this.icon_size);
