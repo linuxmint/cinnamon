@@ -368,6 +368,12 @@ class XAppStatusIcon {
 
         let [x, y, o] = this.getEventPositionInfo(actor);
 
+        // Whatever this click triggers lives in another process, so nothing on
+        // the stage takes key focus for it. Drop focus ourselves, as any other
+        // focus change would, so an open Cinnamon menu closes before the click is
+        // forwarded.
+        global.stage.set_key_focus(null);
+
         this.proxy.call_button_press(x, y, event.get_button(), event.get_time(), o, null, null);
 
         return Clutter.EVENT_STOP;
