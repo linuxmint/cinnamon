@@ -87,19 +87,68 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
         // user needs to switch workspaces just to switch the window back. This should behave this way
         // when showAllWorkspaces is disabled as well since its a UX problem.
         if (hasWindows) {
+            const windowMenu = new PopupMenu.PopupSubMenuMenuItem(_('Window management'));
+            this.addMenuItem(windowMenu);
+
             // Always on top
-            if (this.groupState.lastFocused && this.groupState.lastFocused.is_above()) {
-                item = createMenuItem({label: _('Do not stay on top')});
-                this.signals.connect(item, 'activate', () => {
-                    this.groupState.lastFocused.unmake_above();
-                });
-                this.addMenuItem(item);
-            } else {
-                item = createMenuItem({label: _('Always on top')});
-                this.signals.connect(item, 'activate', () => {
+            const lastFocused = this.groupState.lastFocused;
+            item = new PopupMenu.PopupSwitchMenuItem(_('Always on top'), !!lastFocused && lastFocused.is_above());
+            this.signals.connect(item, 'toggled', (item, state) => {
+                if (state) {
                     this.groupState.lastFocused.make_above();
+                } else {
+                    this.groupState.lastFocused.unmake_above();
+                }
+                this.close();
+            });
+            windowMenu.menu.addMenuItem(item);
+
+            // Visible on all workspaces
+            length = global.workspace_manager.n_workspaces;
+            const onAllWorkspaces = !!lastFocused && lastFocused.is_on_all_workspaces();
+            if (length > 1) {
+                item = new PopupMenu.PopupSwitchMenuItem(_('Visible on all workspaces'), onAllWorkspaces);
+                this.signals.connect(item, 'toggled', (item, state) => {
+                    if (state) {
+                        this.groupState.lastFocused.stick();
+                        this.state.trigger('addWindowToAllWorkspaces', this.groupState.lastFocused);
+                    } else {
+                        this.groupState.lastFocused.unstick();
+                        // Always index windows from all workspaces while showAllWorkspaces is enabled
+                        if (!this.state.settings.showAllWorkspaces) {
+                            this.state.removingWindowFromWorkspaces = true;
+                            this.state.trigger('removeWindowFromOtherWorkspaces', this.groupState.lastFocused);
+                        }
+                    }
+                    this.close();
                 });
-                this.addMenuItem(item);
+                windowMenu.menu.addMenuItem(item);
+            }
+
+            // Move to another workspace
+            if (length > 1 && !onAllWorkspaces) {
+                item = new PopupMenu.PopupSubMenuMenuItem(_('Move to another workspace'));
+                windowMenu.menu.addMenuItem(item);
+
+                const connectWorkspaceEvent = (ws, j) => {
+                    this.signals.connect(ws, 'activate', () => {
+                        this.groupState.lastFocused.change_workspace(global.workspace_manager.get_workspace_by_index(j));
+                    });
+                };
+                for (let i = 0; i < length; i++) {
+                    // Make the index a local variable to pass to function
+                    const j = i;
+                    const name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
+                    const menuItem = createMenuItem({label: _(name)});
+                    const ws = this.groupState.lastFocused.get_workspace();
+
+                    if (ws && i === ws.index()) {
+                        menuItem.setSensitive(false);
+                    }
+
+                    connectWorkspaceEvent(menuItem, j);
+                    item.menu.addMenuItem(menuItem);
+                }
             }
 
             // Monitors
@@ -117,51 +166,7 @@ var AppMenuButtonRightClickMenu = class AppMenuButtonRightClickMenu extends Appl
                             : _('Move to monitor ') + (i + 1)
                     });
                     connectMonitorEvent(item, i);
-                    this.addMenuItem(item);
-                }
-            }
-            // Workspace
-            if ((length = global.workspace_manager.n_workspaces) > 1) {
-                if (this.groupState.lastFocused && this.groupState.lastFocused.is_on_all_workspaces()) {
-                    item = createMenuItem({label: _('Only on this workspace')});
-                    this.signals.connect(item, 'activate', () => {
-                        this.groupState.lastFocused.unstick();
-                        // Always index windows from all workspaces while showAllWorkspaces is enabled
-                        if (this.state.settings.showAllWorkspaces) return;
-                        this.state.removingWindowFromWorkspaces = true;
-                        this.state.trigger('removeWindowFromOtherWorkspaces', this.groupState.lastFocused);
-                    });
-                    this.addMenuItem(item);
-                } else {
-                    item = createMenuItem({label: _('Visible on all workspaces')});
-                    this.signals.connect(item, 'activate', () => {
-                        this.groupState.lastFocused.stick();
-                        this.state.trigger('addWindowToAllWorkspaces', this.groupState.lastFocused);
-                    });
-                    this.addMenuItem(item);
-
-                    item = new PopupMenu.PopupSubMenuMenuItem(_('Move to another workspace'));
-                    this.addMenuItem(item);
-
-                    const connectWorkspaceEvent = (ws, j) => {
-                        this.signals.connect(ws, 'activate', () => {
-                            this.groupState.lastFocused.change_workspace(global.workspace_manager.get_workspace_by_index(j));
-                        });
-                    };
-                    for (let i = 0; i < length; i++) {
-                        // Make the index a local variable to pass to function
-                        const j = i;
-                        const name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
-                        const menuItem = createMenuItem({label: _(name)});
-                        const ws = this.groupState.lastFocused.get_workspace();
-
-                        if (ws && i === ws.index()) {
-                            menuItem.setSensitive(false);
-                        }
-
-                        connectWorkspaceEvent(menuItem, j);
-                        item.menu.addMenuItem(menuItem);
-                    }
+                    windowMenu.menu.addMenuItem(item);
                 }
             }
             this.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
