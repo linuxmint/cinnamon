@@ -242,8 +242,21 @@ var Overview = GObject.registerClass({
         this._shown = true;
         this._animateVisible();
 
+        this._connectButtonPress();
+    }
+
+    _connectButtonPress() {
+        if (this._buttonPressId > 0)
+            return;
+
         this._buttonPressId = this._group.connect('button-press-event',
             this._onButtonPress.bind(this));
+    }
+
+    _disconnectButtonPress() {
+        if (this._buttonPressId > 0)
+            this._group.disconnect(this._buttonPressId);
+        this._buttonPressId = 0;
     }
 
     _animateVisible() {
@@ -346,6 +359,7 @@ var Overview = GObject.registerClass({
 
             this._modal = true;
             this._shown = true;
+            this._connectButtonPress();
             this._gestureAdjustment = new St.Adjustment({ value: 0, lower: 0, upper: 1 });
             this._prepareVisible();
         } else {
@@ -411,6 +425,7 @@ var Overview = GObject.registerClass({
 
         // Only pixels moved during the swipe, so undo the rest here.
         this._shown = false;
+        this._disconnectButtonPress();
         Main.panelManager.enablePanels();
 
         if (this.workspacesView) {
@@ -431,9 +446,7 @@ var Overview = GObject.registerClass({
 
         this._syncInputMode();
 
-        if (this._buttonPressId > 0)
-            this._group.disconnect(this._buttonPressId);
-        this._buttonPressId = 0;
+        this._disconnectButtonPress();
     }
 
     // onDismiss handler for Main.dismissInternalModals().

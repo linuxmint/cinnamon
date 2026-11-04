@@ -307,6 +307,8 @@ class WorkspacesView extends St.Widget {
         if (this._workspaces.length < 2)
             return null;
 
+        this._scrollAdjustment.remove_transition('value');
+
         // Same flag a mouse swipe-scroll sets: without it,
         // _activeWorkspaceChanged() reacts to each boundary crossing with
         // its own ease, fighting the per-frame value this gesture writes.

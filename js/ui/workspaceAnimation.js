@@ -334,6 +334,7 @@ var WorkspaceAnimationController = class {
         switchData.monitors = [];
         switchData.animatedMonitors = [];
         switchData.gestureActivated = false;
+        switchData.startWorkspace = global.workspace_manager.get_active_workspace();
 
         const onlyOnPrimary = Meta.prefs_get_workspaces_only_on_primary();
 
@@ -467,7 +468,8 @@ var WorkspaceAnimationController = class {
         lastGroup.ease_property('progress', lastGroup.getWorkspaceProgress(newWs), {
             ...params,
             onComplete: () => {
-                if (!newWs.active)
+                if (!newWs.active &&
+                    global.workspace_manager.get_active_workspace() === switchData.startWorkspace)
                     newWs.activate(endTime);
                 this._finishWorkspaceSwitch(switchData);
             },
