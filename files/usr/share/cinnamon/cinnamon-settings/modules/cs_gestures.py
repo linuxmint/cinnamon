@@ -2,7 +2,6 @@
 
 import glob
 import os
-import subprocess
 from functools import cmp_to_key
 import gi
 gi.require_version('Gtk', '3.0')
@@ -372,14 +371,6 @@ class Module:
             widget.add_mark(40, Gtk.PositionType.TOP, None)
             section.add_row(widget)
 
-            settings = page.add_section(_("Looking for something else?"))
-
-            box = SettingsWidget()
-            button = Gtk.Button(label=_("Mouse and Touchpad Settings"), halign=Gtk.Align.CENTER)
-            button.connect("clicked", self.on_mouse_settings_button_clicked)
-            box.pack_start(button, True, False, 0)
-            settings.add_row(box)
-
             page = SettingsPage()
             self.sidePage.stack.add_titled(page, "swipe", _("Swipe"))
             page.set_margin_top(5)
@@ -504,9 +495,6 @@ class Module:
             page = "swipe"
 
         GLib.idle_add(self.set_initial_page, page)
-
-    def on_mouse_settings_button_clicked(self, button):
-        subprocess.Popen(["cinnamon-settings", "mouse"])
 
     def build_gesture_templates(self):
         """A row of buttons, one per GESTURE_TEMPLATES entry, each applying
