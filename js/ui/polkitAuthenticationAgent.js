@@ -438,7 +438,6 @@ var AuthenticationDialog = GObject.registerClass({
     }
 
     _onSessionRequest(session, request, echoOn) {
-        request = translatePamMessage(request);
         if (this._sessionRequestTimeoutId) {
             GLib.source_remove(this._sessionRequestTimeoutId);
             this._sessionRequestTimeoutId = 0;
@@ -448,7 +447,7 @@ var AuthenticationDialog = GObject.registerClass({
         if (request === 'Password:' || request === 'Password: ')
             this._passwordEntry.hint_text = _("Password");
         else
-            this._passwordEntry.hint_text = request;
+            this._passwordEntry.hint_text = translatePamMessage(request);
 
         this._passwordEntry.password_visible = echoOn;
 
