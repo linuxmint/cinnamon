@@ -1,3 +1,151 @@
+cinnamon (6.8.0) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * windowMenu.js: Fix ornament type checks.
+  * popupMenu.js: Make PopupIndicatorMenuItem a PopupMenuItem subclass.
+  * st-icon.c: Size to the pending texture while it loads
+  * calendar@cinnamon.org/eventView.js: Don't give events that end at 00:00 another day.
+  * st-viewport.c: Update the scroll adjustment atomically during allocation
+  * grouped-window-list: Don't toggle scroll buttons from inside layout
+  * cinnamon-looking-glass.py: Simplify session-type check.
+  * backgroundManager.js: Don't attempt to restart after SessionOver
+  * screensaver/controller.js: Watch logind for lock if the native screensaver is not used.
+  * ibus: Display the new layout at the text cursor when switching
+  * ibusManager: Replace an existing ibus-daemon at login
+  * keyboardManager: Apply the ibus engine's layout variant
+  * grouped-window-list: Remove 'toggle autostart' option
+  * Remove OpenSearch provider
+  * power@cinnamon.org: Lookup power profile provider asynchronously
+  * keybindings.js: Create csd-media-keys proxy asynchronously
+  * settings.js: Write the settings file asynchronously.
+  * placesManager.js: Load bookmarks asynchronously.
+  * notificationDaemon.js: Fall back to the app icon before using a generic urgency-based one.
+  * cinnamon-looking-glass: Route the KMS debug flag to Wayland
+  * ibusCandidatePopup.js: Show layout popup only when an entry has focus
+  * screenShield.js: Don't allow internal teardown errors to block state update.
+  * screensaver: Skip the album-art widget if both album-art and media-controls are disabled.
+  * layout.js: Fix on-screen-keyboard positioning
+  * grouped-window-list: Fix button labels after a workspace switch
+  * network applet: Restore the VPN "More" overflow and drop the heading switch
+  * network applet: Don't pass panel arguments to cinnamon-settings
+  * grouped-window-list: Fix stale labels, scroll flag and workspace cleanup
+  * cs_themes: Rebuild the icon theme cache if it can't be parsed
+  * ChooserButtonWidgets.py: Fix thumbnail sizing in hidpi
+  * background daemon: Don't rebuild layer-shell windows in items-changed
+  * main.js: Keep the startup pointer on the primary monitor
+  * main.c: Remove center_pointer_on_screen()
+  * xapp-status@cinnamon.org: Drop stage key focus before forwarding a press
+  * st-viewport, cinnamon-slicer: Fix pick clipping and stale paint volumes
+
+  [ Clement Lefebvre ]
+  * Implement suspend action
+  * sound applet: keep the input device selector visible after a recording ends
+  * pam: Also add pam_007 to Mint/Debian
+  * Add oo7-portal to Secret portal
+  * sound applet: Expand the output devices by default
+  * st-scroll-view: Fix automatic horizontal scrollbar visibility
+  * grouped-window-list: Only reserve space for scrollbar when needed
+  * polkit: Keep the plain "Password" placeholder when translating PAM prompts
+  * settings: Remove the "Looking for something else?" section
+  * gestures: Cancel a gesture that is dropped before it ends
+  * gestures: Fix a second swipe, mouse drag in the overview and a keybinding switch
+  * gestures: Fix Expo, overview and window switcher edge cases
+  * window lists: Clean up context menu options
+  * l10n: Update POT
+
+  [ Ilya Valyaev ]
+  * layout.js: paint uiGroup natively when no mapped actor is skipped (#14044)
+  * st: Stop box-shadows from freezing Cinnamon (blur a corner-sized silhouette) (#14046)
+  * polkit: Translate PAM messages using module catalogs (#14064)
+
+  [ Ivan The Geek ]
+  * network applet: merge the WireGuard and VPN sections, label each row's kind (#13913)
+  * network applet: fix removing one of several saved Wi-Fi profiles (#14073)
+  * network applet: classify WPA3 (SAE) and OWE access points (#14074)
+  * network applet: fix access point updates for multi-profile Wi-Fi (#14075)
+  * network applet: fix duplicate rows when a network gains a profile (#14076)
+
+  [ Arqam ]
+  * cs: add keywords (#13775)
+
+  [ Erick ]
+  * grouped-window-list: clean up subscriptions and thumbnail callbacks
+  * grouped-window-list: scroll overflowing thumbnail popups (#14080)
+
+  [ H234598 ]
+  * popupMenu: release destroyed item signals (#13958)
+
+  [ Grzegorz Szwarc ]
+  * panel: publish panel state before loading new applets (#14036)
+
+  [ Ross Brunton ]
+  * sound@cinnamon.org: Support multiple instances (#14083)
+
+  [ Michał Fox ]
+  * windowManager.js: Skip windows without a workspace in handleSeen (#14054)
+  * st-button.c: Don't rely on hover state to accept clicks (#14048)
+  * cs_user: Use the scaled face image when choosing a picture from file (#14043)
+  * network@cinnamon.org: Label network items with the stored SSID (#14045)
+
+  [ ixuberant ]
+  * cinnamon-settings-users: don´t crash on unreadable user avatar (#14077)
+
+  [ ChrisB85 ]
+  * messageTray: Don't arm the timeout for a notification removed while showing (#14079)
+  * grouped-window-list: keep a gap between the label and the button edge
+  * grouped-window-list: show the title when a pinned app opens a window
+  * grouped-window-list: equal width for buttons without a label
+
+  [ Jaron Kramer ]
+  * notificationDaemon: resolve native desktop-entry hints without a PID match (#14090)
+  * grouped-window-list: preserve ungrouped window order on rebuild (#14089)
+
+  [ Marc Urben ]
+  * menu: Ignore search provider results for outdated searches (#14071)
+
+  [ somedev7 ]
+  * sound@cinnamon.org: fixed duplicate open/quit player buttons (#14060)
+  * panel.js: fixed context menu leak on monitor changes (#14059)
+
+  [ jsharpe1 ]
+  * notifications@cinnamon.org - Avoid redundant update_list calls during clear all. (#13704)
+
+  [ Parker Schuh ]
+  * grouped-window-list: Avoid duplicate window signal connections and clean up on removal (#14055)
+
+  [ Ava ]
+  * KeybindingTable: Check conflicts between actions with the same label (#14053)
+
+  [ Md. Mahmudul Hasan ]
+  * sound applet: show input device selector when multiple inputs are connected (#13977)
+
+  [ Anupam Mediratta ]
+  * fix: multi_agent.cwe-78 security vulnerability (#14084)
+
+  [ Fabio Fantoni ]
+  * network@cinnamon.org: don't show the offline icon when online through an unmanaged device (#13924)
+  * Stop relying on icon names only the Mint themes provide (#13995)
+  * Warn when a device is unplugged while still mounted (#13899)
+
+  [ Leigh Scott ]
+  * Add pam_oo7 to optional authentication modules (#14062)
+
+  [ Balló György ]
+  * window-list: Add menu option to keep window above (#13351)
+
+  [ ntwest ]
+  * notifications applet: Destroy the menu when the applet is removed.
+  * notifications applet: Cancel the critical blink timeout.
+  * notifications applet: Disconnect notification signals when the applet is removed.
+  * notifications applet: Do not touch the actor of a destroyed notification.
+  * notifications applet: Read the clock format once per update.
+  * notifications applet: Move notification actors instead of reparenting them.
+
+  [ corbin ]
+  * Add Modern One-to-One Trackpad Gestures on Wayland and Xorg (#13992)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Wed, 04 Nov 2026 16:39:04 +0000
+
 cinnamon (6.7.9) adrien; urgency=medium
 
   [ Michael Webster ]
