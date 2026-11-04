@@ -180,8 +180,24 @@ var GesturesManager = class {
             return;
         }
 
+        this.cancel_current_gesture();
         this.gestureSource.shutdown();
         actions.cleanup();
+    }
+
+    cancel_current_gesture() {
+        const gesture = this.current_gesture;
+        this.current_gesture = null;
+
+        if (gesture == null) {
+            return;
+        }
+
+        try {
+            gesture.cancel();
+        } catch (e) {
+            global.logError(`Failed to cancel gesture: ${e}`);
+        }
     }
 
     gesture_active() {
@@ -297,7 +313,7 @@ var GesturesManager = class {
     gesture_begin(source, type, direction, percentage, fingers, device, elapsed_time) {
         if (this.current_gesture != null) {
             global.logWarning("New gesture started before another was completed. Clearing the old one");
-            this.current_gesture = null;
+            this.cancel_current_gesture();
         }
 
         if (Main.screensaverController?.locked) {
@@ -329,7 +345,7 @@ var GesturesManager = class {
 
         const def  = this.definition_for(type, direction, fingers);
         if (def == null || def !== this.current_gesture.definition) {
-            this.current_gesture = null;
+            this.cancel_current_gesture();
             global.logWarning("Invalid gesture update received, clearing current gesture");
             return;
         }
@@ -346,7 +362,7 @@ var GesturesManager = class {
 
         const def  = this.definition_for(type, direction, fingers);
         if (def == null || def !== this.current_gesture.definition) {
-            this.current_gesture = null;
+            this.cancel_current_gesture();
             global.logWarning("Invalid gesture end received, clearing current gesture");
             return;
         }

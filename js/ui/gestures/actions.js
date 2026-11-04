@@ -150,6 +150,9 @@ var BaseAction = class {
 
         this.do_action(direction, percentage, time);
     }
+
+    cancel() {
+    }
 }
 
 /**
@@ -197,6 +200,17 @@ var TrackedAction = class extends BaseAction {
         this._swipe.update(this._progress(percentage), time);
 
         const [target, duration] = this._swipe.end(time);
+        this._swipe = null;
+
+        this._finish(target, duration);
+    }
+
+    cancel() {
+        if (this._swipe == null) {
+            return;
+        }
+
+        const [target, duration] = this._swipe.cancel();
         this._swipe = null;
 
         this._finish(target, duration);
