@@ -649,7 +649,7 @@ SwitcherList.prototype = {
         // continue from wherever the highlight currently is.
         let startX = fromBox.x1;
         if (this._selection.visible)
-            startX = this._selection.allocation.x1 + this._selection.translation_x;
+            startX = fromBox.x1 + this._selection.translation_x;
 
         this._selection.remove_all_transitions();
         this._selection.translation_x = startX - toBox.x1;

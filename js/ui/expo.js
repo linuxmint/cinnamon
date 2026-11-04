@@ -499,7 +499,7 @@ var Expo = GObject.registerClass({
         this._gestureAdjustment = null;
         this._destroyGestureClones();
 
-        if (target >= 0.5) {
+        if (target >= 0.5 && this._shown) {
             this._showDone();
             return;
         }

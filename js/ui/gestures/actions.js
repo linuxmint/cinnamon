@@ -284,7 +284,8 @@ var TrackedWorkspaceSwitchAction = class extends TrackedAction {
         }
 
         if (this._scroller) {
-            this._scroller.workspaceScrollUpdate(progress);
+            if (this._scroller === Main.overview.workspacesView)
+                this._scroller.workspaceScrollUpdate(progress);
             return;
         }
 
@@ -302,7 +303,8 @@ var TrackedWorkspaceSwitchAction = class extends TrackedAction {
         if (this._scroller) {
             const scroller = this._scroller;
             this._scroller = null;
-            scroller.workspaceScrollEnd(target, duration);
+            if (scroller === Main.overview.workspacesView)
+                scroller.workspaceScrollEnd(target, duration);
             return;
         }
 
@@ -378,6 +380,7 @@ var open_window_switcher = () => {
     const switcher = Main.wm._createAppSwitcher({
         get_name: () => "switch-windows",
         get_mask: () => 0,
+        gesture: true,
     });
 
     // No windows, or the grab failed. The switcher removes itself.

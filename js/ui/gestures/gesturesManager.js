@@ -10,6 +10,7 @@ const {
     GestureDirection,
     GestureTypeString,
     GestureDirectionString,
+    DeviceType,
     DeviceTypeString
 } = imports.ui.gestures.gestureTypes;
 const { NativeGestureSource } = imports.ui.gestures.nativeGestureSource;
@@ -108,7 +109,6 @@ var GesturesManager = class {
         this.migrate_settings();
 
         this.signalManager.connect(this.settings, "changed", this.settings_or_devices_changed, this);
-        this.signalManager.connect(this.touchpad_settings, "changed::send-events", this.settings_or_devices_changed, this);
 
         this.gestureSource.connect('gesture-begin', this.gesture_begin.bind(this));
         this.gestureSource.connect('gesture-update', this.gesture_update.bind(this));
@@ -175,7 +175,7 @@ var GesturesManager = class {
     }
 
     settings_or_devices_changed(settings, key) {
-        if (this.settings.get_boolean("enabled") && this.touchpad_enabled()) {
+        if (this.settings.get_boolean("enabled")) {
             this.setup_actions();
             return;
         }
@@ -318,6 +318,11 @@ var GesturesManager = class {
 
         if (Main.screensaverController?.locked) {
             debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
+            return;
+        }
+
+        if (device === DeviceType.TOUCHPAD && !this.touchpad_enabled()) {
+            debug_gesture(`Ignoring 'gesture-begin', touchpad is disabled`);
             return;
         }
 

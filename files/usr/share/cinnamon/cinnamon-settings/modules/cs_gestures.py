@@ -254,7 +254,7 @@ def setting_to_string(action="", command=None, phase=DEFAULT_PHASE):
     if not phase:
         phase = DEFAULT_PHASE
 
-    if command is not None:
+    if command is not None and command != "":
         return f"{action}::{command}::{phase}"
     else:
         return f"{action}::{phase}"

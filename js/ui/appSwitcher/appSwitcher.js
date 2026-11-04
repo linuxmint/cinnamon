@@ -120,6 +120,7 @@ AppSwitcher.prototype = {
             this._currentIndex = 0;
         }
         this._modifierMask = primaryModifier(binding.get_mask());
+        this._gestureDriven = binding.gesture === true;
 
         this._tracker = Cinnamon.WindowTracker.get_default();
         this._windowManager = global.window_manager;
@@ -152,7 +153,7 @@ AppSwitcher.prototype = {
             // Gesture-driven: no modifier to release, so no race check
             // or delay. The subclass is still building, so the caller
             // shows it via showNow() when done.
-            if (this._modifierMask === 0)
+            if (this._gestureDriven)
                 return this._haveModal;
 
             // There's a race condition; if the user released Alt before
@@ -263,7 +264,7 @@ AppSwitcher.prototype = {
      * window; a gesture has no key press, so it stays on the current one.
      */
     _selectInitial: function () {
-        if (this._modifierMask === 0)
+        if (this._gestureDriven)
             this._select(this._currentIndex);
         else if (this._binding.is_reversed())
             this._previous();
@@ -275,7 +276,7 @@ AppSwitcher.prototype = {
      * isGestureDriven: true if there is no modifier to release.
      */
     isGestureDriven: function () {
-        return this._modifierMask === 0;
+        return this._gestureDriven;
     },
 
     /**
@@ -422,7 +423,7 @@ AppSwitcher.prototype = {
         let [x, y, mods] = global.get_pointer();
         // Gesture-driven: no modifier was held, so a key coming up does
         // not commit. Enter, Escape or a click does.
-        if (this._modifierMask === 0)
+        if (this._gestureDriven)
             return true;
 
         let state = mods & this._modifierMask;
@@ -442,6 +443,11 @@ AppSwitcher.prototype = {
     },
 
     _failedGrabAction: function () {
+        if (this._gestureDriven) {
+            this.destroy();
+            return;
+        }
+
         if (!["coverflow", "timeline"].includes(global.settings.get_string('alttab-switcher-style'))) {
             this._keyReleaseEvent(null, null);
         }

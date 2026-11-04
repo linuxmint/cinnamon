@@ -962,6 +962,9 @@ class WorkspaceMonitor extends Clutter.Actor {
             return;
 
         for (const { clone, x, y, scale } of this._gestureLayout) {
+            if (!this._windows.includes(clone))
+                continue;
+
             if (clone.overlay)
                 clone.overlay.hide();
 
