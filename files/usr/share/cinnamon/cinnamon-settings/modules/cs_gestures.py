@@ -26,7 +26,7 @@ ACTIONS = [
     ["WORKSPACE_PREVIOUS", _("Switch to left workspace"), True, "none", "", True],
     # ["WORKSPACE_UP", _("Switch to the workspace above"), "none", ""],
     # ["WORKSPACE_DOWN", _("Switch to the workspace below"), "none", ""],
-    ["TOGGLE_EXPO", _("(Expo) Show the workspace selector "), True, "none", "", True],
+    ["TOGGLE_EXPO", _("(Expo) Show the workspace selector"), True, "none", "", True],
     ["TOGGLE_OVERVIEW", _("(Scale) Show the window selector"), True, "none", "", True],
     ["SWITCH_WINDOWS", _("Switch windows"), True, "none", "", True],
     ["MINIMIZE", _("Minimize window"), True, "none", "", True],
@@ -135,22 +135,6 @@ GESTURE_TEMPLATES = [
 
 GESTURE_TEMPLATE_MAX_COLUMNS = 4
 
-TEMPLATE_DIRECTIONS = {"up": _("up"), "down": _("down"), "left": _("left"),
-                      "right": _("right"), "in": _("in"), "out": _("out")}
-
-
-def _action_label(action_id):
-    return next((row[ACTION_LABEL_COL] for row in ACTIONS if row[ACTION_ID_COL] == action_id), action_id)
-
-
-def template_tooltip(bindings):
-    lines = []
-    for key in sorted(bindings, key=lambda k: (int(k.split("-")[2]), k.split("-")[1])):
-        _kind, direction, fingers = key.split("-")
-        action_id = bindings[key].split("::")[0]
-        lines.append(_("%s-finger swipe %s: %s") %
-                     (fingers, TEMPLATE_DIRECTIONS.get(direction, direction), _action_label(action_id)))
-    return "\n".join(lines)
 
 # Finger counts only a touchscreen reports: touchpads treat two fingers
 # as scrolling, and none report five.
@@ -403,7 +387,7 @@ class Module:
 
                 subtitle = _("Touchscreen only") if fingers in TOUCH_ONLY_FINGERS else None
                 section, expander = self.add_finger_section(
-                    page, _("Swipe with %d fingers") % fingers,
+                    page, ngettext("Swipe with %d finger", "Swipe with %d fingers", fingers) % fingers,
                     subtitle, fingers != lowest_swipe_fingers, picture=picture)
 
                 for key in keys:
@@ -422,7 +406,7 @@ class Module:
             label_size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
             for fingers in range(2, 5):
-                section, _expander = self.add_finger_section(page, _("Pinch with %d fingers") % fingers,
+                section, _expander = self.add_finger_section(page, ngettext("Pinch with %d finger", "Pinch with %d fingers", fingers) % fingers,
                                                           None, fingers != 2)
                 for key in keys:
                     label = self.get_key_label(key, "pinch", fingers)
@@ -434,7 +418,7 @@ class Module:
                                              size_group=size_group, label_size_group=label_size_group)
                     section.add_row(widget)
 
-            section, _expander = self.add_finger_section(page, _("Pinch with 5 fingers"), _("Touchscreen only"), True)
+            section, _expander = self.add_finger_section(page, ngettext("Pinch with %d finger", "Pinch with %d fingers", 5) % 5, _("Touchscreen only"), True)
 
             for key in keys:
                 label = self.get_key_label(key, "pinch", 5)
@@ -511,7 +495,7 @@ class Module:
 
         self.template_buttons = []
         for name, bindings in GESTURE_TEMPLATES:
-            button = Gtk.Button(label=name, tooltip_text=template_tooltip(bindings))
+            button = Gtk.Button(label=name)
             button.connect("clicked", self.on_template_clicked, bindings)
             flow.add(button)
             self.template_buttons.append((button, bindings))
@@ -639,7 +623,7 @@ class Module:
         if gtype == "tap":
             if int(parts[1]) != fingers:
                 return None
-            return _("Tap with %d fingers") % fingers
+            return ngettext("Tap with %d finger", "Tap with %d fingers", fingers) % fingers
 
         return None
 
@@ -731,7 +715,7 @@ class GestureComboBox(SettingsWidget):
 
         self.follow_button = Gtk.ToggleButton(
             image=Gtk.Image.new_from_icon_name(FOLLOW_ICON, Gtk.IconSize.BUTTON),
-            tooltip_text=_("Toggle modern gesture that smoothly follow your fingers"),
+            tooltip_text=_("Toggle modern gestures that smoothly follow your fingers"),
             no_show_all=True)
 
         follow_column = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL,

@@ -481,7 +481,7 @@
                       <object class="GtkLabel" id="delay_label">
                         <property name="visible">True</property>
                         <property name="can-focus">False</property>
-                        <property name="label" translatable="yes">2s</property>
+                        <property name="label"></property>
                       </object>
                       <packing>
                         <property name="expand">False</property>

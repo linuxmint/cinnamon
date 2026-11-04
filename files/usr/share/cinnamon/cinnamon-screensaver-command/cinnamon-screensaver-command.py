@@ -167,9 +167,9 @@ class ScreensaverCommand:
                 if result:
                     is_active = result.unpack()[0]
                     if is_active:
-                        print(_("The screensaver is active\n"))
+                        print(_("The screensaver is active") + "\n")
                     else:
-                        print(_("The screensaver is inactive\n"))
+                        print(_("The screensaver is inactive") + "\n")
 
             elif self.action_id == Action.TIME:
                 result = self.proxy.call_sync(
@@ -182,13 +182,13 @@ class ScreensaverCommand:
                 if result:
                     time = result.unpack()[0]
                     if time == 0:
-                        print(_("The screensaver is not currently active.\n"))
+                        print(_("The screensaver is not currently active.") + "\n")
                     else:
                         print(gettext.ngettext(
-                            "The screensaver has been active for %d second.\n",
-                            "The screensaver has been active for %d seconds.\n",
+                            "The screensaver has been active for %d second.",
+                            "The screensaver has been active for %d seconds.",
                             time
-                        ) % time)
+                        ) % time + "\n")
 
             elif self.action_id == Action.LOCK:
                 self.proxy.call_sync(

@@ -166,7 +166,7 @@ class AppNotificationRow(Gtk.ListBoxRow):
 
 class AppNotificationsWindow(Gtk.Dialog):
     def __init__(self, parent):
-        super().__init__(title=_("Application Notifications"), transient_for=parent)
+        super().__init__(title=_("Application notifications"), transient_for=parent)
         self.set_modal(True)
         self.set_destroy_with_parent(True)
         self.set_default_size(430, 480)
