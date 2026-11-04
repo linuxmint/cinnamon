@@ -1,5 +1,7 @@
 #!/usr/bin/python3
 
+import subprocess
+
 import gi
 gi.require_version("Gtk", "3.0")
 gi.require_version("CDesktopEnums", "3.0")
@@ -135,7 +137,18 @@ class Module:
             slider.content_widget.add_mark(0.0, Gtk.PositionType.TOP, None)
             settings.add_row(slider)
 
+            settings = page.add_section(_("Looking for something else?"))
+
+            box = SettingsWidget()
+            button = Gtk.Button(label=_("Touchpad and Touchscreen Gesture Settings"), halign=Gtk.Align.CENTER)
+            button.connect("clicked", self.on_gestures_button_clicked)
+            box.pack_start(button, True, False, 0)
+            settings.add_row(box)
+
             self.sidePage.stack.add_titled(page, "touchpad", _("Touchpad"))
+
+    def on_gestures_button_clicked(self, button):
+        subprocess.Popen(["cinnamon-settings", "gestures"])
 
     def test_button_clicked(self, widget, event):
         if event.type == Gdk.EventType._2BUTTON_PRESS:

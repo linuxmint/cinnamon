@@ -77,11 +77,7 @@ AppSwitcher3D.prototype = {
 
         this._initialDelayTimeoutId = 0;
 
-        let backward = this._binding.is_reversed();
-        if (backward)
-            this._previous();
-        else
-            this._next();
+        this._selectInitial();
     },
     
     _hidePreviews: function(endOpacity) {
