@@ -27,6 +27,7 @@
       "title" : "Behavior",
       "keys": [
         "group-apps",
+        "sort-apps",
         "list-scroll-behavior",
         "left-click-action",
         "middle-click-action",
@@ -95,6 +96,12 @@
     "type": "checkbox",
     "default": true,
     "description": "Group windows by application"
+  },
+  "sort-apps": {
+    "dependency": "!group-apps",
+    "type": "checkbox",
+    "default": true,
+    "description": "Sort windows by application"
   },
   "list-scroll-behavior": {
     "type": "combobox",
