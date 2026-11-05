@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Meta = imports.gi.Meta;
@@ -159,9 +158,6 @@ var OsdWindowManager = class {
         this._osdWindows = [];
 
         Main.layoutManager.connect('monitors-changed', this._layoutChanged.bind(this));
-        this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
-        this._osdSettings.connect("changed::show-media-keys-osd", this._layoutChanged.bind(this));
-
         this._layoutChanged();
     }
 
@@ -171,9 +167,6 @@ var OsdWindowManager = class {
         })
 
         this._osdWindows = [];
-
-        if (!this._osdSettings.get_boolean("show-media-keys-osd"))
-            return;
 
         for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
             if (this._osdWindows[i] === undefined)
