@@ -53,7 +53,7 @@ function app(id) {
     return { get_id: () => id, windows: [], get_windows() { return this.windows; } };
 }
 function window(app, sequence) {
-    return { app, sequence, get_stable_sequence: () => sequence, get_monitor: () => 0 };
+    return { app, sequence, get_xwindow: () => 0, get_stable_sequence: () => sequence, get_monitor: () => 0 };
 }
 function workspace(favorites, windows, grouped = false) {
     const ws = Object.create(Workspace.prototype);
@@ -143,5 +143,5 @@ grouped.restoreWindowOrder = () => { throw new Error('grouped mode must not rest
 grouped.refreshList();
 assert.equal(grouped.appGroups.length, 3);
 assert.deepEqual(Array.from(grouped.appGroups.find(group => group.groupState.appId === 'terminal')
-    .groupState.metaWindows), terminal.windows, 'grouped window order stays unchanged');
+    .groupState.metaWindows), [...terminal.windows].sort((a, b) => a.sequence - b.sequence), 'grouped windows use deterministic startup order');
 console.log('PASS: initial order, repeated rebuilds, pin changes, new/removed windows, unpinned apps, app slots, grouped mode');

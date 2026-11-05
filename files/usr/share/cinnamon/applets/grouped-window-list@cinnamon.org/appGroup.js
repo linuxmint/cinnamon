@@ -71,6 +71,7 @@ var AppGroup = class AppGroup {
             appName: params.app.get_name(),
             appInfo: params.app.get_app_info(),
             metaWindows: params.metaWindows || [],
+            manualWindowOrder: false,
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
