@@ -1,9 +1,59 @@
 #!/usr/bin/python3
 
-from gi.repository import Gtk, Gdk, GObject
+from gi.repository import Gtk, Gdk, Gio, GLib, GObject
 from bin import util
 
 print("KeybindingWidgets session type: %s" % util.get_session_type())
+
+TEACH_OSD_ICON = "xsi-keyboard-shortcuts-symbolic"
+TEACH_OSD_TIMEOUT_MS = 10000
+
+_cinnamon_proxy = None
+
+def _on_cinnamon_proxy_ready(obj, result, data=None):
+    global _cinnamon_proxy
+    try:
+        _cinnamon_proxy = Gio.DBusProxy.new_for_bus_finish(result)
+    except GLib.Error as e:
+        print(f"KeybindingWidgets could not establish proxy for org.Cinnamon: {e}")
+
+def _ensure_cinnamon_proxy():
+    if _cinnamon_proxy is not None:
+        return
+
+    Gio.DBusProxy.new_for_bus(Gio.BusType.SESSION,
+                              Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES | Gio.DBusProxyFlags.DO_NOT_CONNECT_SIGNALS,
+                              None, "org.Cinnamon", "/org/Cinnamon", "org.Cinnamon",
+                              None, _on_cinnamon_proxy_ready, None)
+
+def _call_cinnamon(method, args=None):
+    if _cinnamon_proxy is None or _cinnamon_proxy.get_name_owner() is None:
+        return
+
+    _cinnamon_proxy.call(method, args, Gio.DBusCallFlags.NO_AUTO_START, -1, None, None)
+
+# Clicking a second keybinding widget starts its teach (and OSD) before the
+# first one sees focus-out, so only the latest owner may hide the OSD and
+# restore tooltips.
+_teach_owner = None
+_suppressed_tooltips = []
+
+# On Wayland, GDK records the seat grab on the toplevel and any popup mapped
+# afterwards, including a tooltip, takes an xdg_popup grab that steals the
+# keyboard from the teach.
+def _suppress_tooltips(widget, data=None):
+    if widget.get_has_tooltip():
+        widget.set_has_tooltip(False)
+        _suppressed_tooltips.append(widget)
+
+    if isinstance(widget, Gtk.Container):
+        widget.forall(_suppress_tooltips)
+
+def _restore_tooltips():
+    for widget in _suppressed_tooltips:
+        widget.set_has_tooltip(True)
+
+    del _suppressed_tooltips[:]
 
 FORBIDDEN_UNMODDED_KEYVALS = [
     Gdk.KEY_Home,
@@ -156,9 +206,9 @@ class CellRendererKeybinding(Gtk.CellRendererText):
     }
 
     # l10n constants - get them translated here so they use Cinnamon's gettext context
-    TOOLTIP_TEXT = "%s\n%s\n%s" % (_("Click to assign or modify an accelerator key."),
-                                   _("Press Escape or click again to cancel the operation."),
-                                   _("Press Backspace to clear the existing keybinding."))
+    TOOLTIP_TEXT = _("Click to assign or modify an accelerator key.")
+    TEACH_TEXT = "%s\n%s" % (_("Press Escape or click again to cancel the operation."),
+                             _("Press Backspace to clear the existing keybinding."))
     UNASSIGNED = _("unassigned")
     PICK_AN_ACCELERATOR = _("Pick an accelerator")
     MSG = _("\nThis key combination, \'<b>%s</b>\' should not be used because it would become impossible to type using this key. ")
@@ -185,6 +235,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
         self.seat = None
         self.keyboard = None
 
+        _ensure_cinnamon_proxy()
         self.update_label()
 
     def do_get_property(self, prop):
@@ -265,6 +316,7 @@ class CellRendererKeybinding(Gtk.CellRendererText):
                 if grab_status != Gdk.GrabStatus.SUCCESS:
                     print(f"Warning: Keyboard grab failed with status: {grab_status}")
 
+            self.show_teach_osd()
             editable.set_text(CellRendererKeybinding.PICK_AN_ACCELERATOR)
             self.accel_editable = editable
 
@@ -409,7 +461,34 @@ class CellRendererKeybinding(Gtk.CellRendererText):
 
         return True
 
+    def show_teach_osd(self):
+        global _teach_owner
+
+        if _teach_owner is None:
+            _suppress_tooltips(self.a_widget.get_toplevel())
+        _teach_owner = self
+
+        params = {
+            "icon": GLib.Variant("s", TEACH_OSD_ICON),
+            "label": GLib.Variant("s", CellRendererKeybinding.TEACH_TEXT),
+            "timeout": GLib.Variant("i", TEACH_OSD_TIMEOUT_MS)
+        }
+
+        _call_cinnamon("ShowOSD", GLib.Variant("(a{sv})", (params,)))
+
+    def hide_teach_osd(self):
+        global _teach_owner
+
+        if _teach_owner is not self:
+            return
+
+        _teach_owner = None
+        _restore_tooltips()
+        _call_cinnamon("HideOSD")
+
     def ungrab(self):
+        self.hide_teach_osd()
+
         if util.get_session_type() == "x11":
             if self.keyboard is not None:
                 self.keyboard.ungrab(Gdk.CURRENT_TIME)

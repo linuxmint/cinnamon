@@ -23,6 +23,7 @@ const CinnamonIface =
             <method name="ShowOSD"> \
                 <arg type="a{sv}" direction="in" name="params"/> \
             </method> \
+            <method name="HideOSD"/> \
             <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
@@ -177,7 +178,11 @@ var CinnamonDBus = class {
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level']);
+        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], params['timeout']);
+    }
+
+    HideOSD() {
+        Main.osdWindowManager.hideAll();
     }
 
     get OverviewActive() {
