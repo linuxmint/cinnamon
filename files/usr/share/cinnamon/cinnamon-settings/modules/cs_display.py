@@ -48,9 +48,13 @@ class Module:
             self.sidePage.stack.add_titled(page, "settings", _("Settings"))
             settings = page.add_section(_("Settings"))
 
-            switch = GSettingsSwitch(_("Disable automatic screen rotation"), "org.cinnamon.settings-daemon.peripherals.touchscreen", "orientation-lock")
-            switch.set_tooltip_text(_("Select this option to disable automatic screen rotation on hardware equipped with supported accelerometers."))
-            settings.add_row(switch)
+            rotation_options = [["disabled",    _("Disabled")],
+                                ["enabled",     _("Enabled")],
+                                ["tablet-mode", _("Tablet mode only")]]
+
+            widget = GSettingsComboBox(_("Automatic screen rotation"), "org.cinnamon.muffin", "auto-rotate", rotation_options)
+            widget.set_tooltip_text(_("Rotate the screen automatically on hardware equipped with supported accelerometers. 'Tablet mode only' rotates only while the device is folded into tablet mode. It needs a tablet-mode switch, and acts like 'Enabled' where none can be read."))
+            settings.add_row(widget)
 
             if util.get_session_type() != "wayland":
                 switch = Switch(_("Enable fractional scaling controls (experimental)"))
