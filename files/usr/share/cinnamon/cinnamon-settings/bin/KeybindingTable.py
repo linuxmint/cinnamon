@@ -384,19 +384,26 @@ class KeyBinding(GObject.Object):
         self.emit_changed()
 
     def load_json_settings(self, *args):
-        del self.entries[:]
-        self.entries = self.getConfigSettings()
         self.json_timeout_id = 0
+        entries = self.getConfigSettings()
+        if entries == self.entries:
+            return
+
+        self.entries = entries
         self.emit_changed()
 
     def getConfigSettings(self):
         with open(self.schema, encoding="utf-8") as config_file:
             config = json.load(config_file)
-            keybinds = config[self.key]["value"].split("::")
-            if len(keybinds) < 2:
-                keybinds.append("")
 
-        return keybinds
+        return self.pad_json_entries(config[self.key]["value"].split("::"))
+
+    @staticmethod
+    def pad_json_entries(entries):
+        while len(entries) < 2:
+            entries.append("")
+
+        return entries
 
     def get_array(self, raw_array):
         result = []
@@ -431,6 +438,7 @@ class KeyBinding(GObject.Object):
                 config_file.write(json.dumps(config, indent=4))
                 config_file.flush()
             self.resume_json_monitor()
+            self.entries = self.pad_json_entries(array)
         self.emit_changed()
 
     def get_defaults(self):
@@ -457,7 +465,7 @@ class KeyBinding(GObject.Object):
                 config_file.write(json.dumps(config, indent=4))
                 config_file.flush()
             self.resume_json_monitor()
-            self.json_settings_changed()
+            self.entries = self.getConfigSettings()
         self.emit_changed()
 
 class CustomKeyBinding(GObject.Object):
@@ -940,7 +948,7 @@ class KeybindingTable(GObject.Object):
             if response != Gtk.ResponseType.YES:
                 return False
 
-        for keybinding, index, __ in conflicts:
+        for keybinding, index, __ in sorted(conflicts, key=lambda c: c[1], reverse=True):
             keybinding.setBinding(index, None)
             self._proxy_send_kb_changed(keybinding)
 
@@ -1010,7 +1018,7 @@ class KeybindingTable(GObject.Object):
                 keep_keybinding = bindings[response]
                 for keybinding in bindings:
                     if keybinding != keep_keybinding:
-                        for i in range(len(keybinding.entries)):
+                        for i in reversed(range(len(keybinding.entries))):
                             if keybinding.entries[i] == accel_string:
                                 keybinding.setBinding(i, "")
                                 self._proxy_send_kb_changed(keybinding)

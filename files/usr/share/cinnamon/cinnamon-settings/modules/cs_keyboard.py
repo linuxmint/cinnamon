@@ -287,6 +287,7 @@ class Module:
             self.entry_tree.append_column(entry_column)
 
             self.current_category = None
+            self.shown_keybinding = None
 
             self.kb_table = KeybindingTable.get_default()
             self.kb_table_check_done = False
@@ -508,6 +509,8 @@ class Module:
                 return keybinding.category == self.current_category.int_name
 
     def onKeyBindingChanged(self, tree):
+        entry_model, entry_iter = self.entry_tree.get_selection().get_selected()
+        selected_entry = entry_model.get_path(entry_iter) if entry_iter else None
         self.entry_store.clear()
 
         if tree.get_selection():
@@ -529,6 +532,13 @@ class Module:
                     if entry != "_invalid_":
                         self.entry_store.append((entry,))
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, KeybindingTable.CustomKeyBinding))
+
+                same_keybinding = keybinding is self.shown_keybinding
+                self.shown_keybinding = keybinding
+                if same_keybinding and selected_entry is not None and selected_entry.get_indices()[0] < len(self.entry_store):
+                    self.entry_tree.get_selection().select_path(selected_entry)
+            else:
+                self.shown_keybinding = None
 
             if self.search_choice == "bindings" and self.kb_search_binding.accel_string:
                 self.last_accel_string = self.kb_search_binding.accel_string
