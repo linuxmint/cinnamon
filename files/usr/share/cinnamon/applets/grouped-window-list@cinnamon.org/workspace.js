@@ -56,9 +56,18 @@ var Workspace = class Workspace {
         this.signals = new SignalManager(null);
         this.metaWorkspace = params.metaWorkspace;
 
-        this.scrollBox = new ScrollBox(this.state);
-        this.actor = this.scrollBox.actor;
-        this.container = this.scrollBox.container;
+        if (this.state.settings.enableOverflowScroll) {
+            this.scrollBox = new ScrollBox(this.state);
+            this.actor = this.scrollBox.actor;
+            this.container = this.scrollBox.container;
+        } else {
+            // No scrolling: app buttons shrink to fit the panel, as before the scrolling list was added.
+            this.scrollBox = null;
+            const managerOrientation = this.state.isHorizontal ? 'HORIZONTAL' : 'VERTICAL';
+            this.manager = new Clutter.BoxLayout({orientation: Clutter.Orientation[managerOrientation]});
+            this.actor = new Clutter.Actor({layout_manager: this.manager});
+            this.container = this.actor;
+        }
 
         this.appGroups = [];
         this.lastFocusedApp = null;
@@ -74,10 +83,19 @@ var Workspace = class Workspace {
     }
 
     on_orientation_changed(orientation) {
+        if (this.manager) {
+            if (!this.state.isHorizontal) {
+                this.manager.set_orientation(Clutter.Orientation.VERTICAL);
+                this.actor.set_x_align(Clutter.ActorAlign.CENTER);
+            } else {
+                this.manager.set_orientation(Clutter.Orientation.HORIZONTAL);
+            }
+        }
         this.refreshList();
     }
 
     scrollToAppGroup(appGroup) {
+        if (!this.scrollBox) return;
         if (this.scrollToAppDebounceTimeoutId > 0) GLib.source_remove(this.scrollToAppDebounceTimeoutId);
         this.scrollToAppDebounceTimeoutId = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 100, () => {
             this._scrollToAppGroup(appGroup);
@@ -520,7 +538,11 @@ var Workspace = class Workspace {
         this.state.disconnect(this.stateConnectId);
         this.signals.disconnectAllSignals();
         this.appGroups.forEach( appGroup => appGroup.destroy() );
-        this.scrollBox.destroy();
+        if (this.scrollBox) {
+            this.scrollBox.destroy();
+        } else {
+            this.actor.destroy();
+        }
         this.workspaceState.destroy();
         unref(this, RESERVE_KEYS);
     }
