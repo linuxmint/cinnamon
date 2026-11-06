@@ -394,7 +394,9 @@ var AppGroup = class AppGroup {
                 const iconWidth = this.iconSize ? this.iconSize * global.ui_scale : iconNaturalSize;
                 alloc.natural_size = iconWidth + 6 * global.ui_scale;
             }
-            alloc.min_size = alloc.natural_size;
+            // Without the scrolling list, buttons may shrink to fit the panel.
+            alloc.min_size = this.state.settings.enableOverflowScroll ?
+                alloc.natural_size : 1 * global.ui_scale;
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
             alloc.min_size = 1 * global.ui_scale;
