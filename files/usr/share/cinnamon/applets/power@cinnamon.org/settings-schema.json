@@ -15,5 +15,15 @@
         "default" : false,
         "description": "Always show all batteries",
         "tooltip": "Check this to always show multiple batteries in the panel, regardless of whether one of them is marked primary."
+    },
+    "chargelimit" : {
+        "type" : "spinbutton",
+        "default" : 100,
+        "min" : 50,
+        "max" : 100,
+        "step" : 1,
+        "units" : "%",
+        "description": "Charge limit set in firmware",
+        "tooltip": "If the firmware stops charging the battery below 100% (for example an 80% battery-protection setting in the BIOS), enter that limit here and the battery is shown relative to it, so the limit reads as 100%. 100 disables this."
     }
 }
