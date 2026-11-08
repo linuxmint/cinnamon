@@ -1,7 +1,6 @@
 // -*- mode: js; js-indent-level: 4; indent-tabs-mode: nil -*-
 
 const Clutter = imports.gi.Clutter;
-const Gio = imports.gi.Gio;
 const GLib = imports.gi.GLib;
 const GObject = imports.gi.GObject;
 const Meta = imports.gi.Meta;
@@ -90,7 +89,7 @@ class OsdWindow extends Clutter.Actor {
         this._level.maximum_value = maxLevel;
     }
 
-    show() {
+    show(timeout = HIDE_TIMEOUT) {
         if (!this._icon.gicon)
             return;
 
@@ -111,19 +110,25 @@ class OsdWindow extends Clutter.Actor {
             this.opacity = 255;
         }
 
-        if (this._hideTimeoutId)
-            GLib.source_remove(this._hideTimeoutId);
+        this._removeHideTimeout();
         this._hideTimeoutId = GLib.timeout_add(
-            GLib.PRIORITY_DEFAULT, HIDE_TIMEOUT, this._hide.bind(this));
+            GLib.PRIORITY_DEFAULT, timeout, this._hide.bind(this));
         GLib.Source.set_name_by_id(this._hideTimeoutId, '[cinnamon] this._hide');
     }
 
     cancel() {
+        this._removeHideTimeout();
+
+        if (this.visible)
+            this._hide();
+    }
+
+    _removeHideTimeout() {
         if (!this._hideTimeoutId)
             return;
 
         GLib.source_remove(this._hideTimeoutId);
-        this._hide();
+        this._hideTimeoutId = 0;
     }
 
     _hide() {
@@ -153,9 +158,6 @@ var OsdWindowManager = class {
         this._osdWindows = [];
 
         Main.layoutManager.connect('monitors-changed', this._layoutChanged.bind(this));
-        this._osdSettings = new Gio.Settings({ schema_id: "org.cinnamon" });
-        this._osdSettings.connect("changed::show-media-keys-osd", this._layoutChanged.bind(this));
-
         this._layoutChanged();
     }
 
@@ -166,37 +168,44 @@ var OsdWindowManager = class {
 
         this._osdWindows = [];
 
-        if (!this._osdSettings.get_boolean("show-media-keys-osd"))
-            return;
-
         for (let i = 0; i < Main.layoutManager.monitors.length; i++) {
             if (this._osdWindows[i] === undefined)
                 this._osdWindows[i] = new OsdWindow(i);
         }
     }
 
-    _showOsdWindow(monitorIndex, icon, label, level) {
+    _showOsdWindow(monitorIndex, icon, label, level, timeout) {
         this._osdWindows[monitorIndex].setIcon(icon);
         this._osdWindows[monitorIndex].setLabel(label);
         this._osdWindows[monitorIndex].setMaxLevel(1);
         this._osdWindows[monitorIndex].setLevel(level);
-        this._osdWindows[monitorIndex].show();
+        this._osdWindows[monitorIndex].show(timeout);
     }
 
-    show(monitorIndex, icon, label, level) {
+    /**
+     * show:
+     * @monitorIndex (int): monitor to show on, or -1 for all monitors
+     * @icon (Gio.Icon): icon to display, nothing is shown without one
+     * @label (string): text to display, or null
+     * @level (number): bar level as a percentage (0-100), or null
+     * @timeout (int): milliseconds before hiding (optional)
+     *
+     * Shows the OSD, replacing any OSD already visible.
+     */
+    show(monitorIndex, icon, label, level, timeout = HIDE_TIMEOUT) {
         if (this._osdWindows.length === 0)
             return;
 
         if (monitorIndex !== -1) {
             for (let i = 0; i < this._osdWindows.length; i++) {
                 if (i === monitorIndex)
-                    this._showOsdWindow(i, icon, label, level);
+                    this._showOsdWindow(i, icon, label, level, timeout);
                 else
                     this._osdWindows[i].cancel();
             }
         } else {
             for (let i = 0; i < this._osdWindows.length; i++)
-                this._showOsdWindow(i, icon, label, level);
+                this._showOsdWindow(i, icon, label, level, timeout);
         }
     }
 

@@ -96,6 +96,11 @@ class InputSourceSettingsPage(SettingsPage):
             "org.cinnamon.desktop.input-sources", "per-window"
         )
         section.add_row(widget)
+        widget = GSettingsSwitch(
+            _("Show the new layout at the text cursor when switching"),
+            "org.cinnamon.desktop.input-sources", "show-source-switch-popup"
+        )
+        section.add_row(widget)
 
         widget = GSettingsSwitch(
             _("Use a country flag, if available, to represent keyboard layouts"),

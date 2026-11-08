@@ -75,13 +75,6 @@ cairo_surface_t * cinnamon_util_composite_capture_images (ClutterCapture  *captu
 
 void     cinnamon_breakpoint                      (void);
 
-gboolean cinnamon_parse_search_provider           (const char       *data,
-                                                char            **name,
-                                                char            **url,
-                                                GList           **langs,
-                                                char            **icon_data_uri,
-                                                GError          **error);
-
 void cinnamon_shader_effect_set_double_uniform (ClutterShaderEffect *effect,
                                              const gchar         *name,
                                              gdouble             value);

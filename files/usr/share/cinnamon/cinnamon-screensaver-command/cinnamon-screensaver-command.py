@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 
 from gi.repository import GLib, Gio
+import os
 import sys
 import signal
 import shlex
@@ -84,6 +85,9 @@ class ScreensaverCommand:
 
         ss_settings = Gio.Settings.new("org.cinnamon.desktop.screensaver")
         custom_saver = ss_settings.get_string("custom-screensaver-command").strip()
+        if custom_saver and os.environ.get("XDG_SESSION_TYPE") == "wayland":
+            print("Ignoring custom-screensaver-command, external lockers aren't supported in Wayland sessions.")
+            custom_saver = ""
         internal_enabled = Gio.Settings.new("org.cinnamon").get_boolean("internal-screensaver-enabled")
 
         # Cinnamon dismisses its own modals inside the internal shield path.
@@ -163,9 +167,9 @@ class ScreensaverCommand:
                 if result:
                     is_active = result.unpack()[0]
                     if is_active:
-                        print(_("The screensaver is active\n"))
+                        print(_("The screensaver is active") + "\n")
                     else:
-                        print(_("The screensaver is inactive\n"))
+                        print(_("The screensaver is inactive") + "\n")
 
             elif self.action_id == Action.TIME:
                 result = self.proxy.call_sync(
@@ -178,13 +182,13 @@ class ScreensaverCommand:
                 if result:
                     time = result.unpack()[0]
                     if time == 0:
-                        print(_("The screensaver is not currently active.\n"))
+                        print(_("The screensaver is not currently active.") + "\n")
                     else:
                         print(gettext.ngettext(
-                            "The screensaver has been active for %d second.\n",
-                            "The screensaver has been active for %d seconds.\n",
+                            "The screensaver has been active for %d second.",
+                            "The screensaver has been active for %d seconds.",
                             time
-                        ) % time)
+                        ) % time + "\n")
 
             elif self.action_id == Action.LOCK:
                 self.proxy.call_sync(

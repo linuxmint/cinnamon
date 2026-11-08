@@ -167,11 +167,31 @@ class Module:
             kb_name_scroller = Gtk.ScrolledWindow.new(None, None)
             kb_name_scroller.set_shadow_type(Gtk.ShadowType.IN)
 
-            entry_scroller = Gtk.ScrolledWindow.new(None, None)
-            entry_scroller.set_shadow_type(Gtk.ShadowType.IN)
+            self.entry_scroller = Gtk.ScrolledWindow.new(None, None)
+
+            teach_label = Gtk.Label(label=CellRendererKeybinding.TOOLTIP_TEXT, hexpand=True)
+            teach_label.set_justify(Gtk.Justification.CENTER)
+            teach_label.set_line_wrap(True)
+            teach_infobar = Gtk.InfoBar(message_type=Gtk.MessageType.INFO)
+            teach_infobar.get_content_area().add(teach_label)
+
+            # The stack keeps the infobar's space reserved while it's hidden, so
+            # toggling it never resizes the section.
+            teach_placeholder = Gtk.Box()
+            teach_placeholder.get_style_context().add_class(Gtk.STYLE_CLASS_VIEW)
+            self.teach_stack = Gtk.Stack(transition_type=Gtk.StackTransitionType.SLIDE_UP_DOWN)
+            self.teach_stack.add_named(teach_placeholder, "hidden")
+            self.teach_stack.add_named(teach_infobar, "shown")
+
+            entry_box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, height_request=170)
+            entry_box.pack_start(self.entry_scroller, True, True, 0)
+            entry_box.pack_end(self.teach_stack, False, False, 0)
+            entry_frame = Gtk.Frame(shadow_type=Gtk.ShadowType.IN)
+            entry_frame.add(entry_box)
 
             right_vbox.pack_start(kb_name_scroller, True, True, 2)
-            right_vbox.pack_start(entry_scroller, True, True, 2)
+            right_vbox.pack_start(entry_frame, False, False, 2)
+
             kb_name_scroller.set_property('min-content-height', 150)
             self.cat_tree = Gtk.TreeView(enable_search=False, search_column=-1)
             self.kb_tree = Gtk.TreeView(enable_search=False, search_column=-1)
@@ -195,8 +215,8 @@ class Module:
             category_scroller.set_policy(Gtk.PolicyType.AUTOMATIC, Gtk.PolicyType.AUTOMATIC)
             kb_name_scroller.add(self.kb_tree)
             kb_name_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
-            entry_scroller.add(self.entry_tree)
-            entry_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.AUTOMATIC)
+            self.entry_scroller.add(self.entry_tree)
+            self.entry_scroller.set_policy(Gtk.PolicyType.NEVER, Gtk.PolicyType.NEVER)
 
             buttonbox = Gtk.ButtonBox.new(Gtk.Orientation.HORIZONTAL)
             self.add_custom_button = Gtk.Button.new_with_label(_("Add custom shortcut"))
@@ -253,20 +273,21 @@ class Module:
             kb_column.set_alignment(.5)
             self.kb_tree.append_column(kb_column)
             self.kb_tree.connect("cursor-changed", self.onKeyBindingChanged)
+            self.kb_tree.get_selection().connect("changed", self.onKeyBindingSelectionChanged)
 
-            entry_cell = CellRendererKeybinding(self.entry_tree)
-            entry_cell.set_alignment(.5, .5)
-            entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
-            entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
-            entry_cell.set_property('editable', True)
+            self.entry_cell = CellRendererKeybinding(self.entry_tree)
+            self.entry_cell.set_alignment(.5, .5)
+            self.entry_cell.connect('accel-edited', self.onEntryChanged, self.entry_store)
+            self.entry_cell.connect('accel-cleared', self.onEntryCleared, self.entry_store)
+            self.entry_cell.set_property('editable', True)
 
-            entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), entry_cell, accel_string=0)
+            entry_column = Gtk.TreeViewColumn(_("Keyboard bindings"), self.entry_cell, accel_string=0)
             entry_column.connect("clicked", self.bindingHighlightOnMap)
             entry_column.set_alignment(.5)
             self.entry_tree.append_column(entry_column)
 
-            self.entry_tree.set_tooltip_text(CellRendererKeybinding.TOOLTIP_TEXT)
             self.current_category = None
+            self.shown_keybinding = None
 
             self.kb_table = KeybindingTable.get_default()
             self.kb_table_check_done = False
@@ -488,6 +509,8 @@ class Module:
                 return keybinding.category == self.current_category.int_name
 
     def onKeyBindingChanged(self, tree):
+        entry_model, entry_iter = self.entry_tree.get_selection().get_selected()
+        selected_entry = entry_model.get_path(entry_iter) if entry_iter else None
         self.entry_store.clear()
 
         if tree.get_selection():
@@ -510,8 +533,18 @@ class Module:
                         self.entry_store.append((entry,))
                 self.remove_custom_button.set_property('sensitive', isinstance(keybinding, KeybindingTable.CustomKeyBinding))
 
+                same_keybinding = keybinding is self.shown_keybinding
+                self.shown_keybinding = keybinding
+                if same_keybinding and selected_entry is not None and selected_entry.get_indices()[0] < len(self.entry_store):
+                    self.entry_tree.get_selection().select_path(selected_entry)
+            else:
+                self.shown_keybinding = None
+
             if self.search_choice == "bindings" and self.kb_search_binding.accel_string:
                 self.last_accel_string = self.kb_search_binding.accel_string
+
+    def onKeyBindingSelectionChanged(self, selection):
+        self.teach_stack.set_visible_child_name("shown" if selection.count_selected_rows() > 0 else "hidden")
 
     def onEntryChanged(self, cell, path, accel_string, accel_label, entry_store):
         keybindings, kb_iter = self.kb_tree.get_selection().get_selected()

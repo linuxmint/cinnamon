@@ -15,7 +15,7 @@ class Module:
     category = "hardware"
 
     def __init__(self, content_box):
-        keywords = _("mouse, touchpad, synaptic, double-click")
+        keywords = _("mouse, touchpad, synaptic, double-click, pointer")
         sidePage = SidePage(_("Mouse and Touchpad"), "cs-mouse", keywords, content_box, module=self)
         self.sidePage = sidePage
 
@@ -181,13 +181,16 @@ class ScrollMethodCombo(ComboBox):
             self.touchpad_settings.set_boolean("two-finger-scrolling-enabled", False)
             self.touchpad_settings.set_boolean("edge-scrolling-enabled", True)
 
+    def disable_edge_scrolling(self):
+        self.touchpad_settings.set_boolean("edge-scrolling-enabled", False)
+        return GLib.SOURCE_REMOVE
+
     def on_setting_changed(self, schema, key):
             finger = self.touchpad_settings.get_boolean("two-finger-scrolling-enabled")
             edge = self.touchpad_settings.get_boolean("edge-scrolling-enabled")
 
             if finger and edge:
-                GLib.idle_add(self.touchpad_settings.set_boolean, ("edge-scrolling-enabled", False))
-                # self.touchpad_settings.set_boolean("edge-scrolling-enabled", False)
+                GLib.idle_add(self.disable_edge_scrolling)
                 return
             elif finger:
                 self.value = 1

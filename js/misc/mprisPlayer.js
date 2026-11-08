@@ -538,9 +538,25 @@ var MprisPlayerManager = class MprisPlayerManager {
         });
     }
 
+    _isInstance(busName) {
+        // MPRIS instances are in the form
+        //   org.mpris.MediaPlayer2.name.instanceXXXX
+        // ...except for VLC, which to this day uses
+        //   org.mpris.MediaPlayer2.name-XXXX
+        return busName.split('.').length > 4 ||
+            /^org\.mpris\.MediaPlayer2\.vlc-\d+$/.test(busName);
+    }
+
     _addPlayer(busName, owner) {
         if (this._players[owner]) {
-            return; // Already tracking this player
+            // If we already have a player for this owner, prefer the instance
+            // bus name over the base name - it's more specific and some players
+            // register both.
+            let existing = this._players[owner];
+            if (this._isInstance(busName) && !this._isInstance(existing.getBusName())) {
+                existing._busName = busName;
+            }
+            return;
         }
 
         let player = new MprisPlayer(busName, owner);

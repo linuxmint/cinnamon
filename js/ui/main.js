@@ -42,15 +42,16 @@
  * @backgroundManager (BackgroundManager.BackgroundManager): The background
  * manager.
  * \
- * This listens to changes in the GNOME background settings and mirrors them to
- * the Cinnamon settings, since many applications have a "Set background"
- * button that modifies the GNOME background settings.
+ * This starts and watches cinnamon-background-daemon, which paints the
+ * wallpaper, and holds the startup reveal until it reports one on screen. It
+ * also translates an application's "Set as wallpaper" -- a write of the flat
+ * picture-uri key, in Cinnamon's schema or GNOME's -- into the per-monitor list
+ * the daemon reads.
  *
  * @slideshowManager (SlideshowManager.SlideshowManager): The slideshow manager.
  * \
- * This is responsible for managing the background slideshow, since the
- * background "slideshow" is created by cinnamon changing the active background
- * gsetting every x minutes.
+ * This starts cinnamon-slideshow when any monitor is configured to rotate its
+ * wallpaper. The rotation happens in that daemon; nothing here drives it.
  *
  * @keybindingManager (KeybindingManager.KeybindingManager): The keybinding manager
  * @systrayManager (Systray.SystrayManager): The systray manager
@@ -292,6 +293,7 @@ function do_shutdown_sequence() {
 function onSessionOver() {
     global.log("Session is ending");
     soundManager.disable();
+    backgroundManager.disableRestart();
 }
 
 function _reparentActor(actor, newParent) {
@@ -331,7 +333,7 @@ function start() {
     let backend = Meta.get_backend();
 
     // Only cinnamon2d launcher will set CINNAMON_2D - this is deliberate by the user.
-    let cinnamon_2d = GLib.getenv("CINNAMON_2D") === true;
+    let cinnamon_2d = GLib.getenv("CINNAMON_2D") !== null;
     let live = false;
 
     if (!backend.is_rendering_hardware_accelerated() || cinnamon_2d) {
@@ -361,6 +363,11 @@ function start() {
     cinnamonDBusService = new CinnamonDBus.CinnamonDBus();
 
     setRunState(RunState.STARTUP);
+
+    // Constructed this early so it can kick off the wallpaper daemon, which
+    // preloads and paints before we reveal the desktop.
+    backgroundManager = new BackgroundManager.BackgroundManager();
+    backgroundManager.hideBackground();
 
     screenshotService = new Screenshot.ScreenshotService();
 
@@ -392,9 +399,6 @@ function start() {
     themeManager = new ThemeManager.ThemeManager();
 
     settingsManager = new Settings.SettingsManager();
-
-    backgroundManager = new BackgroundManager.BackgroundManager();
-    backgroundManager.hideBackground();
 
     slideshowManager = new SlideshowManager.SlideshowManager();
 
@@ -447,14 +451,48 @@ function start() {
                                 startupAnimationEnabled &&
                                 !software_rendering;
 
-    if (do_startup_animation) {
+    // On a fresh login we hold the desktop behind the startup cover until the
+    // wallpaper is on screen, whether or not we play the fade. (On a Cinnamon
+    // restart the wallpaper daemon is already up, so there's nothing to wait for.)
+    let first_login = !global.session_running;
+
+    // Comes down exactly once, from whichever path gets there first --
+    // _startupAnimationComplete() is not safe to run twice.
+    let revealed = false;
+    let revealDesktop = (animate) => {
+        if (revealed)
+            return;
+        revealed = true;
+        layoutManager._doStartupAnimation(animate);
+    };
+
+    if (first_login) {
         backgroundManager.showBackground();
         layoutManager._prepareStartupAnimation();
     }
 
     let pointerTracker = new PointerTracker.PointerTracker();
-    pointerTracker.setPosition(layoutManager.primaryMonitor.x + layoutManager.primaryMonitor.width/2,
-        layoutManager.primaryMonitor.y + layoutManager.primaryMonitor.height/2);
+    let centerPointerOnPrimary = () => {
+        let primary = layoutManager.primaryMonitor;
+        let x = Math.round(primary.x + primary.width / 2);
+        let y = Math.round(primary.y + primary.height / 2);
+
+        pointerTracker.setPosition(x, y);
+        return [x, y];
+    };
+
+    // The startup monitor configuration can be replaced moments later - a
+    // closed lid is only known once UPower answers, and dock outputs can come
+    // up late - so keep following the primary until the pointer is moved.
+    let [pointerTargetX, pointerTargetY] = centerPointerOnPrimary();
+    let pointerFollowId = layoutManager.connect('monitors-changed', () => {
+        let [x, y] = global.get_pointer();
+
+        if (x === pointerTargetX && y === pointerTargetY)
+            [pointerTargetX, pointerTargetY] = centerPointerOnPrimary();
+        else
+            layoutManager.disconnect(pointerFollowId);
+    });
 
     pointerSwitcher = new PointerTracker.PointerSwitcher();
     monitorLabeler = new MonitorLabeler();
@@ -612,18 +650,22 @@ function start() {
         // until the event loop is uncontended and idle.
         // This helps to prevent us from running the animation
         // when the system is bogged down
-        if (do_startup_animation) {
-            let id = GLib.idle_add(GLib.PRIORITY_LOW, () => {
-                layoutManager._doStartupAnimation();
-                return GLib.SOURCE_REMOVE;
+        if (first_login) {
+            backgroundManager.whenReady(() => {
+                // Play the login sound as we reveal, not at the start of the wait.
+                if (do_login_sound)
+                    soundManager.play('login');
+
+                GLib.idle_add(GLib.PRIORITY_LOW, () => {
+                    // Fade the cover away if the animation is enabled, otherwise drop it instantly.
+                    revealDesktop(do_startup_animation);
+                    return GLib.SOURCE_REMOVE;
+                });
             });
         } else {
             backgroundManager.showBackground();
             setRunState(RunState.RUNNING);
         }
-
-        if (do_login_sound && !global.session_running)
-		    soundManager.play('login');
 
         // Disable panel edit mode when Cinnamon starts
         if (global.settings.get_boolean("panel-edit-mode")) {
@@ -645,6 +687,10 @@ function start() {
         global.log('Cinnamon took %d ms to start'.format(new Date().getTime() - cinnamonStartTime));
     }).catch(error => {
         global.logError(`promise failed: ${error}`);
+        // The cover hides the cursor and swallows every event, so a failed
+        // init would otherwise look like a hung session.
+        if (first_login)
+            revealDesktop(false);
     });
 }
 
@@ -1364,14 +1410,21 @@ function _isModifierKeyval(symbol) {
            symbol === Clutter.KEY_Shift_L   || symbol === Clutter.KEY_Shift_R;
 }
 
+const _BINDING_MODIFIER_MASK = Clutter.ModifierType.SHIFT_MASK |
+                               Clutter.ModifierType.CONTROL_MASK |
+                               Clutter.ModifierType.MOD1_MASK |
+                               Clutter.ModifierType.MOD3_MASK |
+                               Clutter.ModifierType.MOD4_MASK |
+                               Clutter.ModifierType.MOD5_MASK;
+
 // Invoke a keybinding action from the modal handler, collapsing a fullscreen
 // panel raise only if the shortcut closed the last modal stacked on it - a
 // menu, expo, ... (captured before the invoke, so a shortcut that merely
 // raised a bare panel isn't collapsed).
-function _invokeKeybindingAction(action) {
+function _invokeKeybindingAction(action, modifierState) {
     let hadStackedModal = chromeRaiseManager.hasStackedModal();
     try {
-        keybindingManager.invoke_keybinding_action_by_id(action);
+        keybindingManager.invoke_keybinding_action_by_id(action, modifierState & _BINDING_MODIFIER_MASK);
     } catch (e) {
         global.logError(`Exception in keybinding action: ${e}`);
     }
@@ -1429,7 +1482,7 @@ function _stageEventHandler(actor, event) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
                 _shortcutInvokedSinceModifier = true;
-                _invokeKeybindingAction(action);
+                _invokeKeybindingAction(action, modifierState);
                 return Clutter.EVENT_STOP;
             }
         }
@@ -1443,7 +1496,7 @@ function _stageEventHandler(actor, event) {
         if (_modifierOnlyAction > 0) {
             let action = _modifierOnlyAction;
             _modifierOnlyAction = 0;
-            _invokeKeybindingAction(action);
+            _invokeKeybindingAction(action, modifierState);
             return Clutter.EVENT_STOP;
         }
 
@@ -1532,18 +1585,29 @@ function _completeModalSetup(actor, mode, onDismiss) {
  * Returns (boolean): true iff we successfully acquired a grab or already had one
  */
 function pushModal(actor, timestamp, options, mode, onDismiss) {
+    if (tryPushModal(actor, timestamp, options, mode, onDismiss))
+        return true;
+
+    log('pushModal: invocation of begin_modal failed');
+    return false;
+}
+
+/**
+ * tryPushModal:
+ *
+ * Like pushModal(), but doesn't log a failure. For a first attempt that
+ * falls back to a keyboard-only grab (Meta.ModalOptions.POINTER_ALREADY_GRABBED)
+ * when another client holds the pointer.
+ */
+function tryPushModal(actor, timestamp, options, mode, onDismiss) {
     if (timestamp == undefined)
         timestamp = global.get_current_time();
 
     if (mode == undefined)
         mode = Cinnamon.ActionMode.SYSTEM_MODAL;
 
-    if (modalCount == 0) {
-        if (!global.begin_modal(timestamp, options ? options : 0)) {
-            log('pushModal: invocation of begin_modal failed');
-            return false;
-        }
-    }
+    if (modalCount == 0 && !global.begin_modal(timestamp, options ? options : 0))
+        return false;
 
     _completeModalSetup(actor, mode, onDismiss);
     return true;

@@ -74,7 +74,6 @@ var AppGroup = class AppGroup {
             windowCount: params.metaWindows ? params.metaWindows.length : 0,
             lastFocused: params.metaWindow || null,
             isFavoriteApp: !params.metaWindow ? true : params.isFavoriteApp === true,
-            autoStartIndex: this.state.autoStartApps.findIndex( app => app.id === params.appId),
             willUnmount: false,
             tooltip: null,
             // Not to be confused with the vertical thumbnail setting, this is for overriding horizontal
@@ -296,7 +295,7 @@ var AppGroup = class AppGroup {
             }
         } else {
             icon = new St.Icon({
-                icon_name: 'application-default-icon',
+                icon_name: 'application-x-executable',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.iconSize
             });
@@ -382,12 +381,18 @@ var AppGroup = class AppGroup {
                             this.workspaceState.lastFocusedApp === appId);
 
         if (this.state.orientation === St.Side.TOP || this.state.orientation === St.Side.BOTTOM) {
-            if (allocateForLabel) {
-                const max = this.labelVisiblePref && this.groupState.metaWindows.length > 0 ?
-                    labelNaturalSize + iconNaturalSize + 6 : 0;
+            // With no open window there is nothing to label (allocate() draws the label only when
+            // metaWindows.length > 0), so the button is icon only. Counting labelNaturalSize in here
+            // gave pinned apps arbitrarily different widths: an empty label reports 1 px or 5 px
+            // depending on its state.
+            if (allocateForLabel && this.groupState.metaWindows.length > 0) {
+                const max = this.labelVisiblePref ? labelNaturalSize + iconNaturalSize + 6 : 0;
                 alloc.natural_size = Math.min(iconNaturalSize + Math.max(max, labelNaturalSize), MAX_BUTTON_WIDTH * global.ui_scale);
             } else {
-                alloc.natural_size = iconNaturalSize + 6 * global.ui_scale;
+                // Width from the panel icon size instead of the actor's natural width, so buttons with
+                // no label stay equal no matter what a particular image reports.
+                const iconWidth = this.iconSize ? this.iconSize * global.ui_scale : iconNaturalSize;
+                alloc.natural_size = iconWidth + 6 * global.ui_scale;
             }
             alloc.min_size = alloc.natural_size;
         } else {
@@ -472,11 +477,15 @@ var AppGroup = class AppGroup {
             childBox.y1 = box.y1 + labelYPadding;
             childBox.y2 = childBox.y1 + Math.min(labelNaturalHeight, allocHeight);
 
+            // The same 6 px getPreferredWidth adds to natural_size - without it the label ends flush
+            // with the button edge and the ellipsis touches the border.
+            const labelPadding = 6 * global.ui_scale;
+
             if (direction === Clutter.TextDirection.LTR) {
                 childBox.x1 = Math.min(this.iconBox.x + this.iconBox.width, box.x2);
-                childBox.x2 = box.x2;
+                childBox.x2 = Math.max(childBox.x1, box.x2 - labelPadding);
             } else {
-                childBox.x1 = box.x1;
+                childBox.x1 = Math.min(box.x1 + labelPadding, this.iconBox.x);
                 childBox.x2 = this.iconBox.x;
             }
 
@@ -492,6 +501,8 @@ var AppGroup = class AppGroup {
                     this.label.set_style('text-align: right;');
 
             this.label.allocate(childBox);
+        } else {
+            this.label.allocate(new Clutter.ActorBox());
         }
 
         // Call set_icon_geometry for support of Cinnamon's minimize animation
@@ -512,10 +523,15 @@ var AppGroup = class AppGroup {
     showLabel(animate = false) {
         if (this.labelVisiblePref
             || !this.label
-            || !this.state.isHorizontal
-            || this.label.is_finalized()
-            || !this.label.realized) {
+            || !this.state.isHorizontal) {
             return;
+        }
+
+        // hideLabel() hides the label, so unrealized is the normal state of a pinned app with no
+        // windows. Bailing out here left such a button titleless once a window was opened.
+        // An unrealized actor is shown right away instead of being animated.
+        if (!this.label.realized) {
+            animate = false;
         }
 
         const width = MAX_BUTTON_WIDTH * global.ui_scale;
@@ -544,7 +560,7 @@ var AppGroup = class AppGroup {
     }
 
     hideLabel() {
-        if (!this.label || this.label.is_finalized() || !this.label.realized) return;
+        if (!this.label) return;
 
         this.label.set_text('');
         this.labelVisiblePref = false;
@@ -943,6 +959,9 @@ var AppGroup = class AppGroup {
     windowAdded(metaWindow) {
         const {metaWindows, trigger, set} = this.groupState;
         const refWindow = metaWindows.indexOf(metaWindow);
+        if (metaWindow && refWindow !== -1) {
+            return;
+        }
         if (metaWindow) {
             this.signals.connect(metaWindow, 'notify::title', (...args) => this.onWindowTitleChanged(...args));
             this.signals.connect(metaWindow, 'notify::appears-focused', (...args) => this.onFocusWindowChange(...args));
@@ -988,6 +1007,9 @@ var AppGroup = class AppGroup {
 
         this.signals.disconnect('notify::title', metaWindow);
         this.signals.disconnect('notify::appears-focused', metaWindow);
+        this.signals.disconnect('notify::icon', metaWindow);
+        this.signals.disconnect('notify::icon-name', metaWindow);
+        this.signals.disconnect('notify::progress', metaWindow);
 
         this.groupState.metaWindows.splice(refWindow, 1);
 
@@ -1095,9 +1117,13 @@ var AppGroup = class AppGroup {
                 this.showLabel(animate);
             // If a skip-taskbar window is focused from this group, do nothing.
             // Show the last trackable window's label because the application is focused.
-            } else if (global.display.focus_window
-                && this.groupState.appId.indexOf(global.display.focus_window.wm_class.toLowerCase()) === -1) {
-                this.hideLabel();
+            } else {
+                // Wayland clients that never set an app id have no wm_class.
+                let focusWindow = global.display.focus_window;
+                let wmClass = focusWindow ? focusWindow.wm_class : null;
+
+                if (focusWindow && (!wmClass || this.groupState.appId.indexOf(wmClass.toLowerCase()) === -1))
+                    this.hideLabel();
             }
         }
     }
@@ -1201,6 +1227,10 @@ var AppGroup = class AppGroup {
         if (this.flashTimer > 0) {
             Mainloop.source_remove(this.flashTimer);
             this.flashTimer = 0;
+        }
+        if (this.appKeyTimeout) {
+            clearTimeout(this.appKeyTimeout);
+            this.appKeyTimeout = 0;
         }
 
         if (this.rightClickMenu) {

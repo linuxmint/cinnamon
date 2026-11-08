@@ -20,6 +20,8 @@ class PopupDialog extends BaseDialog.BaseDialog {
         params = Params.parse(params, {
             styleClass: null,
             destroyOnClose: true,
+            takesFocus: true,
+            chromeParams: {},
         });
 
         super._init({
@@ -34,6 +36,8 @@ class PopupDialog extends BaseDialog.BaseDialog {
             destroyOnClose: params.destroyOnClose,
         });
 
+        this._takesFocus = params.takesFocus;
+        this._chromeParams = params.chromeParams;
         this._windowFocusChangedId = 0;
         this._dragCaptureId = 0;
         this._dragGrabbed = false;
@@ -68,7 +72,9 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this._clearSavedKeyFocus();
 
         Main.layoutManager.untrackChrome(this);
-        global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+
+        if (this._takesFocus)
+            global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
     }
 
     open() {
@@ -79,16 +85,18 @@ class PopupDialog extends BaseDialog.BaseDialog {
             if (this.state == State.CLOSING)
                 this.remove_all_transitions();
             else
-                this._centerOnMonitor();
+                this._placeOnOpen();
 
-            Main.layoutManager.trackChrome(this, { affectsInputRegion: true });
+            Main.layoutManager.trackChrome(this, { affectsInputRegion: true, ...this._chromeParams });
 
-            this._focusStage();
-            this._grabInitialKeyFocus();
+            if (this._takesFocus) {
+                this._focusStage();
+                this._grabInitialKeyFocus();
 
-            this._windowFocusChangedId = global.display.connect(
-                'notify::focus-window', this._onWindowFocusChanged.bind(this)
-            );
+                this._windowFocusChangedId = global.display.connect(
+                    'notify::focus-window', this._onWindowFocusChanged.bind(this)
+                );
+            }
 
             this._animateOpen();
             return true;
@@ -113,6 +121,10 @@ class PopupDialog extends BaseDialog.BaseDialog {
 
         this._teardownOpenState();
         this._animateClose();
+    }
+
+    _placeOnOpen() {
+        this._centerOnMonitor();
     }
 
     _centerOnMonitor() {
@@ -192,7 +204,8 @@ class PopupDialog extends BaseDialog.BaseDialog {
 
             let source = event.get_source();
             if (this._isInteractiveActor(source)) {
-                this._restoreFocus();
+                if (this._takesFocus)
+                    this._restoreFocus();
                 return Clutter.EVENT_PROPAGATE;
             }
 
@@ -224,7 +237,8 @@ class PopupDialog extends BaseDialog.BaseDialog {
         this._dragOrigTransX = this.translation_x;
         this._dragOrigTransY = this.translation_y;
 
-        this._saveAndClearFocus();
+        if (this._takesFocus)
+            this._saveAndClearFocus();
 
         global.set_cursor(Cinnamon.Cursor.GRABBING);
 
@@ -268,7 +282,17 @@ class PopupDialog extends BaseDialog.BaseDialog {
             this._dragGrabbed = false;
         }
 
-        this._restoreFocus();
+        this.set_position(this.x + this.translation_x, this.y + this.translation_y);
+        this.translation_x = 0;
+        this.translation_y = 0;
+
+        if (this._takesFocus)
+            this._restoreFocus();
         Main.layoutManager.updateChrome();
+
+        this._onDragEnd();
+    }
+
+    _onDragEnd() {
     }
 });

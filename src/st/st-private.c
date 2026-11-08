@@ -299,7 +299,7 @@ blur_pixels (guchar  *pixels_in,
       gdouble *kernel;
       guchar  *line;
       gint     n_values, half;
-      gint     x_in, y_in, x_out, y_out, i;
+      gint     x, y_in, y_out, i;
 
       n_values = (gint) 5 * sigma;
       half = n_values / 2;
@@ -313,56 +313,51 @@ blur_pixels (guchar  *pixels_in,
 
       kernel = calculate_gaussian_kernel (sigma, n_values);
 
+      /* Both passes add up each pixel's taps in the same order as before,
+       * but run along a row in the inner loop, so neighbouring pixels are
+       * summed independently and memory is read in order. */
+
       /* vertical blur */
-      for (x_in = 0; x_in < width_in; x_in++)
-        for (y_out = 0; y_out < *height_out; y_out++)
-          {
-            guchar *pixel_in, *pixel_out;
-            gint i0, i1;
+      for (y_out = 0; y_out < *height_out; y_out++)
+        {
+          guchar *row_out = pixels_out + y_out * *rowstride_out + half;
+          gint i0, i1;
 
-            y_in = y_out - half;
+          y_in = y_out - half;
 
-            /* We read from the source at 'y = y_in + i - half'; clamp the
-             * full i range [0, n_values) so that y is in [0, height_in).
-             */
-            i0 = MAX (half - y_in, 0);
-            i1 = MIN (height_in + half - y_in, n_values);
+          /* We read from the source at 'y = y_in + i - half'; clamp the
+           * full i range [0, n_values) so that y is in [0, height_in).
+           */
+          i0 = MAX (half - y_in, 0);
+          i1 = MIN (height_in + half - y_in, n_values);
 
-            pixel_in  =  pixels_in + (y_in + i0 - half) * rowstride_in + x_in;
-            pixel_out =  pixels_out + y_out * *rowstride_out + (x_in + half);
+          for (i = i0; i < i1; i++)
+            {
+              guchar *row_in = pixels_in + (y_in + i - half) * rowstride_in;
 
-            for (i = i0; i < i1; i++)
-              {
-                *pixel_out += *pixel_in * kernel[i];
-                pixel_in += rowstride_in;
-              }
-          }
+              for (x = 0; x < width_in; x++)
+                row_out[x] += row_in[x] * kernel[i];
+            }
+        }
 
       /* horizontal blur */
       for (y_out = 0; y_out < *height_out; y_out++)
         {
-          memcpy (line, pixels_out + y_out * *rowstride_out, *rowstride_out);
+          guchar *row_out = pixels_out + y_out * *rowstride_out;
 
-          for (x_out = 0; x_out < *width_out; x_out++)
+          memcpy (line, row_out, *rowstride_out);
+          memset (row_out, 0, *width_out);
+
+          for (i = 0; i < n_values; i++)
             {
-              gint i0, i1;
-              guchar *pixel_out, *pixel_in;
-
-              /* We read from the source at 'x = x_out + i - half'; clamp the
-               * full i range [0, n_values) so that x is in [0, width_out).
+              /* We read from the source at 'x = x_out + i - half'; clamp
+               * x_out so that x is in [0, width_out).
                */
-              i0 = MAX (half - x_out, 0);
-              i1 = MIN (*width_out + half - x_out, n_values);
+              gint x0 = MAX (half - i, 0);
+              gint x1 = MIN (*width_out + half - i, *width_out);
 
-              pixel_in  = line + x_out + i0 - half;
-              pixel_out = pixels_out + *rowstride_out * y_out + x_out;
-
-              *pixel_out = 0;
-              for (i = i0; i < i1; i++)
-                {
-                  *pixel_out += *pixel_in * kernel[i];
-                  pixel_in++;
-                }
+              for (x = x0; x < x1; x++)
+                row_out[x] += line[x + i - half] * kernel[i];
             }
         }
       g_free (kernel);

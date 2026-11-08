@@ -1,4 +1,4 @@
-project('Cinnamon', 'c', version : '6.7.5', meson_version : '>=0.64.0')
+project('Cinnamon', 'c', version : '6.8.0', meson_version : '>=0.64.0')
 
 gnome = import('gnome')
 i18n = import('i18n')
@@ -23,6 +23,12 @@ po_dir = join_paths(meson.project_source_root(), 'po')
 
 dbus = dependency('dbus-1')
 servicedir = dbus.get_variable(pkgconfig: 'session_bus_services_dir', pkgconfig_define: ['datadir', datadir])
+systemd = dependency('systemd', required: false)
+if systemd.found()
+    systemduserunitdir = systemd.get_variable(pkgconfig: 'systemduserunitdir')
+else
+    systemduserunitdir = join_paths(prefix, 'lib', 'systemd', 'user')
+endif
 
 # dependencies
 cjs = dependency('cjs-1.0', version: '>= 115.0')
@@ -34,6 +40,7 @@ gcr = dependency('gcr-base-3', version: '>= 3.7.5')
 gdkx11 = dependency('gdk-x11-3.0')
 polkit = dependency('polkit-agent-1', version: '>= 0.100')
 atk = dependency('atk-bridge-2.0')
+atspi = dependency('atspi-2')
 gio = dependency('gio-2.0', version: '>= 2.36.0')
 gio_unix = dependency('gio-unix-2.0')
 
@@ -55,7 +62,6 @@ xapp = dependency('xapp', version: '>= 2.6.0')
 X11 = dependency('x11')
 xcomposite = dependency('xcomposite')
 xext = dependency('xext')
-xml = dependency('libxml-2.0')
 
 nm_deps = []
 internal_nm_agent = false
@@ -84,6 +90,13 @@ else
 endif
 message('Building recorder: @0@'.format(get_option('build_recorder')))
 
+# Background daemon
+gtk4 = dependency('gtk4', version: '>= 4.18')   # gtk_disable_portals()
+# Layer shell is how the daemon paints on Wayland and is no use without it, so
+# it follows the option rather than being required by an X11-only build.
+gtk4_layer_shell = dependency('gtk4-layer-shell-0', version: '>= 1.0.0',
+                              required: get_option('wayland'))
+cairo_xlib = dependency('cairo-xlib')
 
 # on some systems we need to find the math lib to make sure it builds
 cc = meson.get_compiler('c')
@@ -118,6 +131,7 @@ cinnamon_conf.set_quoted('VERSION', version)
 cinnamon_conf.set_quoted('GETTEXT_PACKAGE', meson.project_name().to_lower())
 cinnamon_conf.set('BUILT_NM_AGENT', internal_nm_agent)
 cinnamon_conf.set10('USE_GIR20', use_gir20)
+cinnamon_conf.set10('HAVE_WAYLAND', get_option('wayland'))
 
 have_mallinfo = cc.has_function('mallinfo', prefix: '#include <malloc.h>')
 if have_mallinfo
@@ -226,7 +240,19 @@ configure_file(
     install_dir: 'share/cinnamon/js/misc/'
 )
 
-excluded_files = []
+excluded_files = ['usr/share/cinnamon/cinnamon-settings/config.py.in']
+
+cs_config_conf = configuration_data()
+cs_config_conf.set('PKGLIBDIR', join_paths(prefix, pkglibdir))
+cs_config_conf.set('USE_GIR20', use_gir20 ? 'True' : 'False')
+
+configure_file(
+    input: 'files/usr/share/cinnamon/cinnamon-settings/config.py.in',
+    output: 'config.py',
+    configuration: cs_config_conf,
+    install_dir: 'share/cinnamon/cinnamon-settings/'
+)
+
 if get_option('exclude_info_settings')
     excluded_files += ['usr/share/applications/cinnamon-settings-info.desktop']
     excluded_files += ['usr/share/cinnamon/cinnamon-settings/modules/cs_info.py']

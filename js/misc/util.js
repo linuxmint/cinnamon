@@ -15,6 +15,7 @@ const Gtk = imports.gi.Gtk;
 const GObject = imports.gi.GObject;
 const Gir = imports.gi.GIRepository;
 const Clutter = imports.gi.Clutter;
+const CinnamonDesktop = imports.gi.CinnamonDesktop;
 const Mainloop = imports.mainloop;
 const Main = imports.ui.main;
 const Params = imports.misc.params;
@@ -150,7 +151,7 @@ function spawnCommandLine(command_line) {
 /**
  * trySpawn:
  * @argv: an argv array
- * @doNotReap: whether to set the DO_NOT_REAP_CHILD flag
+ * @doNotReap: whether the caller adds its own child watch for @pid
  *
  * Runs @argv in the background. If launching @argv fails,
  * this will throw an error.
@@ -166,6 +167,9 @@ function trySpawn(argv, doNotReap)
     }
 
     let [success, pid] = GLib.spawn_async(null, argv, null, spawn_flags, null);
+
+    CinnamonDesktop.start_systemd_scope(GLib.path_get_basename(argv[0]), pid, null, null, null, null);
+
     return pid;
 }
 
@@ -370,12 +374,12 @@ const _IGNORED_PHRASES = [
 ];
 
 function fixupPCIDescription(desc) {
-    desc = desc.replace(/[_,]/, ' ');
+    desc = desc.replace(/[_,]/g, ' ');
 
     /* Remove any parenthesized info longer than 2 chars (which
        may be disambiguating numbers if there are multiple identical
        cards present) */
-    desc = desc.replace(/\([\s\S][^\(\)]{2,}\)/, '');
+    desc = desc.replace(/\([\s\S][^\(\)]{2,}\)/g, '');
 
     /* Attempt to shorten ID by ignoring certain phrases */
     for (let i = 0; i < _IGNORED_PHRASES.length; i++) {

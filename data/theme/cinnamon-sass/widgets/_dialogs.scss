@@ -241,3 +241,70 @@
 // Modal dialogs use a lightbox to draw attention to themselves; popups don't,
 .popup-dialog {
 }
+
+// Hover click palette
+.hover-click-dialog {
+  padding: $base_padding;
+  border-radius: $base_border_radius * 1.5;
+
+  .dialog-content-box {
+    margin: 0;
+    spacing: 0;
+    max-width: auto;
+  }
+}
+
+.hover-click-header {
+  height: 20px;
+}
+
+.hover-click-box,
+.hover-click-actions {
+  spacing: $base_margin;
+}
+
+.hover-click-button {
+  @extend %flat_button;
+
+  background-color: transparent;
+  border-radius: $base_border_radius;
+  padding: $base_padding;
+
+  &:checked {
+    @include button(normal, $c: $accent_bg_color, $style: default);
+  }
+
+  &:checked:hover {
+    @include button(hover, $c: $accent_bg_color, $style: default);
+  }
+}
+
+.hover-click-button-box {
+  spacing: $base_margin;
+}
+
+.hover-click-button-label {
+  text-align: center;
+}
+
+.hover-click-separator {
+  background-color: $borders_color;
+}
+
+.hover-click-box.vertical .hover-click-separator {
+  height: 1px;
+  margin: $base_margin 0;
+}
+
+.hover-click-box.horizontal .hover-click-separator {
+  width: 1px;
+  margin: 0 $base_margin;
+}
+
+.hover-click-lock-button {
+  @extend %flat_button;
+
+  background-color: transparent;
+  border-radius: $base_border_radius;
+  padding: $base_padding;
+}

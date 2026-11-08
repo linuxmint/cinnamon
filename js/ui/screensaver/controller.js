@@ -6,6 +6,7 @@ const Meta = imports.gi.Meta;
 const Signals = imports.signals;
 const St = imports.gi.St;
 
+const LoginManager = imports.misc.loginManager;
 const Main = imports.ui.main;
 const ScreenShield = imports.ui.screensaver.screenShield;
 const ScreenSaver = imports.misc.screenSaver;
@@ -30,9 +31,9 @@ var ScreensaverController = class {
         }
 
         // A custom screensaver command preempts both internal and cinnamon-screensaver modes.
-        let customCommand = this.#settings.get_string('custom-screensaver-command').trim();
-        if (customCommand) {
+        if (this.#customCommand) {
             global.log(`Screensaver: custom command.`);
+            this.#watchSessionLock();
             return;
         }
 
@@ -67,6 +68,7 @@ var ScreensaverController = class {
             });
         } else {
             global.log('Screensaver: cinnamon-screensaver');
+            this.#watchSessionLock();
             this.#screenSaverProxy.connectSignal('ActiveChanged', (proxy, senderName, [isActive]) => {
                 this.#locked = isActive;
                 this.emit('locked-changed', isActive);
@@ -89,8 +91,26 @@ var ScreensaverController = class {
         }
     }
 
+    // ScreenShield answers logind's Lock itself. External lockers probably aren't running
+    // by default.
+    #watchSessionLock() {
+        LoginManager.getLoginManager().connect('lock', () => this.lockScreen(false));
+    }
+
     get locked() {
         return this.#locked;
+    }
+
+    // Muffin would need ext-session-lock-v1 for wayland support.
+    get #customCommand() {
+        let command = this.#settings.get_string('custom-screensaver-command').trim();
+
+        if (command && Meta.is_wayland_compositor()) {
+            global.logWarning(`Screensaver: ignoring custom-screensaver-command '${command}', external lockers aren't supported in Wayland sessions.`);
+            return '';
+        }
+
+        return command;
     }
 
     get allowKeyboardShortcuts() {
@@ -104,8 +124,7 @@ var ScreensaverController = class {
             return;
         }
 
-        let customCommand = this.#settings.get_string('custom-screensaver-command').trim();
-        if (customCommand) {
+        if (this.#customCommand) {
             Util.spawn(['cinnamon-screensaver-command', '-l']);
             if (callback)
                 callback(true);

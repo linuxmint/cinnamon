@@ -13,9 +13,9 @@ const GObject = imports.gi.GObject;
 const AppSwitcher = imports.ui.appSwitcher.appSwitcher;
 const Dialog = imports.ui.dialog;
 const ModalDialog = imports.ui.modalDialog;
-const WmGtkDialogs = imports.ui.wmGtkDialogs;
 const CloseDialog = imports.ui.closeDialog;
 const WorkspaceOsd = imports.ui.workspaceOsd;
+const WorkspaceAnimation = imports.ui.workspaceAnimation;
 
 const {CoverflowSwitcher} = imports.ui.appSwitcher.coverflowSwitcher;
 const {TimelineSwitcher} = imports.ui.appSwitcher.timelineSwitcher;
@@ -100,9 +100,9 @@ class DisplayChangeDialog extends ModalDialog.ModalDialog {
     }
 
     _formatCountDown() {
-        let fmt = ngettext("Reverting to previous display settings in %d second.",
-                           "Reverting to previous display settings in %d seconds.");
-        return fmt.format(this._countDown);
+        return ngettext("Reverting to previous display settings in %d second.",
+                        "Reverting to previous display settings in %d seconds.",
+                        this._countDown).format(this._countDown);
     }
 
     _tick() {
@@ -337,6 +337,10 @@ var WindowManager = class WindowManager {
         this._switchData = null;
         this._workspaceOsds = {};
 
+        // Public: ui/gestures actions drive it, and _switchWorkspace() must
+        // know when a swipe has already animated the switch.
+        this.workspaceAnimation = new WorkspaceAnimation.WorkspaceAnimationController();
+
         this._cinnamonwm.connect('kill-window-effects', (cinnamonwm, actor) => {
             this._unminimizeWindowDone(cinnamonwm, actor);
             this._minimizeWindowDone(cinnamonwm, actor);
@@ -426,7 +430,8 @@ var WindowManager = class WindowManager {
                 return;
             }
 
-            if (metaWindow.get_workspace().index() !== global.workspace_manager.get_active_workspace_index()) {
+            const workspace = metaWindow.get_workspace();
+            if (workspace === null || workspace.index() !== global.workspace_manager.get_active_workspace_index()) {
                 return;
             }
 
@@ -1146,6 +1151,20 @@ var WindowManager = class WindowManager {
     }
 
     _switchWorkspace(cinnamonwm, from, to, direction) {
+        if (this.workspaceAnimation) {
+            if (this.workspaceAnimation.gestureActive) {
+                // The swipe moved the workspaces already.
+                Main.soundManager.play('switch');
+                this.showWorkspaceOSD();
+                cinnamonwm.completed_switch_workspace();
+                return;
+            }
+
+            // Something else switched workspaces during a swipe. Drop the
+            // swipe, or the live windows stay hidden behind its clones.
+            this.workspaceAnimation.cancelSwitchAnimation();
+        }
+
         if (!Main.animations_enabled || Main.modalCount) {
             this.showWorkspaceOSD();
             cinnamonwm.completed_switch_workspace();
@@ -1347,18 +1366,20 @@ var WindowManager = class WindowManager {
         this._windowMenuManager.showWindowMenuForWindow(window, menu, rect);
     }
 
+    /**
+     * _createAppSwitcher: @binding may be a real keybinding or a gesture's
+     * stand-in. Returns the switcher, or null if there is nothing to switch.
+     */
     _createAppSwitcher(binding) {
-        if (AppSwitcher.getWindowsForBinding(binding).length === 0) return;
+        if (AppSwitcher.getWindowsForBinding(binding).length === 0) return null;
 
         switch (global.settings.get_string('alttab-switcher-style')) {
             case 'coverflow':
-                new CoverflowSwitcher(binding);
-                break;
+                return new CoverflowSwitcher(binding);
             case 'timeline':
-                new TimelineSwitcher(binding);
-                break;
+                return new TimelineSwitcher(binding);
             default:
-                new ClassicSwitcher(binding);
+                return new ClassicSwitcher(binding);
         }
     }
 
@@ -1367,7 +1388,7 @@ var WindowManager = class WindowManager {
     }
 
     _shiftWindowToWorkspace(window, direction) {
-        if (window.window_type === Meta.WindowType.DESKTOP) {
+        if (!window || window.window_type === Meta.WindowType.DESKTOP) {
             return;
         }
         this._movingWindow = window;

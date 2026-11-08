@@ -14,11 +14,12 @@ const PopupMenu = imports.ui.popupMenu;
 const Cairo = imports.cairo;
 const Util = imports.misc.util;
 
-DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
-KEY_INPUT_SOURCES = 'sources';
-KEY_KEYBOARD_OPTIONS = 'xkb-options';
-KEY_PER_WINDOW = 'per-window';
-KEY_SOURCE_LAYOUTS = 'source-layouts';
+var DESKTOP_INPUT_SOURCES_SCHEMA = 'org.cinnamon.desktop.input-sources';
+var KEY_INPUT_SOURCES = 'sources';
+var KEY_KEYBOARD_OPTIONS = 'xkb-options';
+var KEY_PER_WINDOW = 'per-window';
+var KEY_SHOW_SWITCH_POPUP = 'show-source-switch-popup';
+var KEY_SOURCE_LAYOUTS = 'source-layouts';
 
 var INPUT_SOURCE_TYPE_XKB = 'xkb';
 var INPUT_SOURCE_TYPE_IBUS = 'ibus';
@@ -237,10 +238,13 @@ var InputSource = class {
         if (!engineDesc)
             return this.id;
 
-        if (engineDesc.variant && engineDesc.variant.length > 0)
-            return '%s+%s'.format(engineDesc.layout, engineDesc.variant);
+        let layout = engineDesc.get_layout();
+        let variant = engineDesc.get_layout_variant();
+
+        if (variant)
+            return '%s+%s'.format(layout, variant);
         else
-            return engineDesc.layout;
+            return layout;
     }
 };
 Signals.addSignalMethods(InputSource.prototype);
@@ -254,7 +258,11 @@ var SubscriptableFlagIcon = GObject.registerClass({
         'file': GObject.ParamSpec.object(
             'file', 'file', 'file',
             GObject.ParamFlags.READWRITE,
-            Gio.File.$gtype)
+            Gio.File.$gtype),
+        'icon-size': GObject.ParamSpec.int(
+            'icon-size', 'icon-size', 'Unscaled icon height',
+            GObject.ParamFlags.READWRITE,
+            0, GLib.MAXINT32, 0)
     },
 }, class SubscriptableFlagIcon extends St.Widget {
     _init(params) {
@@ -262,6 +270,8 @@ var SubscriptableFlagIcon = GObject.registerClass({
         this._file = null;
         this._image = null;
         this._loadHandle = 0;
+        this._iconSize = 0;
+        this._scaledHeight = 0;
 
         super._init({
             style_class: 'input-source-switcher-flag-icon',
@@ -286,6 +296,7 @@ var SubscriptableFlagIcon = GObject.registerClass({
                 this._load_file();
             }
         });
+        this.connect('resource-scale-changed', () => this._load_file());
     }
 
     get subscript() {
@@ -305,20 +316,49 @@ var SubscriptableFlagIcon = GObject.registerClass({
         this._load_file();
     }
 
+    get icon_size() {
+        return this._iconSize;
+    }
+
+    set icon_size(size) {
+        this._iconSize = size;
+        this._updateSize();
+    }
+
+    _updateSize() {
+        const scale = St.ThemeContext.get_for_stage(global.stage).scale_factor;
+        const height = this._iconSize * scale;
+        if (height === this._scaledHeight) {
+            return;
+        }
+
+        this._scaledHeight = height;
+        this.set_height(height);
+        this._load_file();
+    }
+
+    vfunc_style_changed() {
+        super.vfunc_style_changed();
+        this._updateSize();
+    }
+
     _load_file() {
         if (this._file == null || this.get_parent() == null) {
             return;
         }
 
+        const scale = this.get_resource_scale();
+
         try {
             this._loadHandle = St.TextureCache.get_default().load_image_from_file_async(
                 this._file.get_path(),
-                -1, this.get_height(),
+                -1, this.get_height() * scale,
                 (cache, handle, actor) => {
                     if (handle !== this._loadHandle) {
                         return;
                     }
 
+                    actor.set_size(actor.width / scale, actor.height / scale);
                     this._image = actor;
                     this._imageBin.set_child(actor);
                     this._drawingArea.queue_repaint();
@@ -488,6 +528,10 @@ var InputSourceSettings = class {
         return this._settings.get_boolean(KEY_PER_WINDOW);
     }
 
+    get showSwitchPopup() {
+        return this._settings.get_boolean(KEY_SHOW_SWITCH_POPUP);
+    }
+
     get sourceLayouts() {
         return this._settings.get_value(KEY_SOURCE_LAYOUTS).deep_unpack();
     }
@@ -528,6 +572,7 @@ var InputSourceManager = class {
         this._ibusManager.connect('set-content-type', this._ibusSetContentType.bind(this));
 
         global.display.connect('modifiers-accelerator-activated', () => this._modifiersSwitcher(false));
+        this.connect('current-source-changed', () => this._ibusManager.refreshInputSourceInfo());
 
         // The keyboard device can re-initialize across suspend and drop our
         // xkb group/options, so re-apply them on resume.
@@ -601,7 +646,11 @@ var InputSourceManager = class {
             kb = this._kb_settings.get_strv(name);
             Main.keybindingManager.addHotKeyArray(
                 name, kb,
-                () => this.activateInputSourceIndex(i),
+                () => {
+                    this.activateInputSourceIndex(i);
+                    if (this._inputSources[i])
+                        this._showInputSourceInfo(this._inputSources[i]);
+                },
                 undefined,
                 Cinnamon.ActionMode.ALL
             );
@@ -640,7 +689,17 @@ var InputSourceManager = class {
 
         is = this._inputSources[nextIndex];
         is.activate();
+        this._showInputSourceInfo(is);
         return true;
+    }
+
+    // Shortcut switches only: briefly show the panel indicator at the text cursor.
+    _showInputSourceInfo(is) {
+        if (!this._settings.showSwitchPopup)
+            return;
+
+        this._ibusManager.showInputSourceInfo(
+            size => this.createIndicator(is, null, 'candidate-popup-text', size));
     }
 
     _keyboardOptionsChanged() {
@@ -1136,11 +1195,37 @@ var InputSourceManager = class {
                 style_class: actorClass,
                 file: file,
                 subscript: source.dupeId > 0 ? String(source.dupeId) : null,
-                height: size * global.ui_scale,
+                icon_size: size,
             });
         }
 
         return null;
+    }
+
+    // An ibus engine's input-mode symbol (e.g. anthy's "あ"), shown in place
+    // of its icon.
+    _getInputModeLabel(source) {
+        let prop = this._findProperty(source.properties, 'InputMode');
+        if (!prop || !prop.get_visible())
+            return null;
+
+        let text = prop.get_symbol ? prop.get_symbol().get_text() : prop.get_label().get_text();
+        return text && text.length < 3 ? text : null;
+    }
+
+    // The panel indicator for a source. IBus engines always show their own
+    // icon (flags are an xkb concept); xkb layouts show a flag only when the
+    // user opted into flags. Otherwise it's a label using labelClass.
+    createIndicator(source, iconClass, labelClass, size) {
+        let text = this._getInputModeLabel(source);
+
+        if (!text && (source.type == INPUT_SOURCE_TYPE_IBUS || this.showFlags)) {
+            let icon = this.createFlagIcon(source, iconClass, size);
+            if (icon)
+                return icon;
+        }
+
+        return new St.Label({ text: text || source.shortName, style_class: labelClass });
     }
 };
 Signals.addSignalMethods(InputSourceManager.prototype);

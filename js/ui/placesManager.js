@@ -2,6 +2,7 @@
 
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
+const ByteArray = imports.byteArray;
 const Cinnamon = imports.gi.Cinnamon;
 const Lang = imports.lang;
 const Mainloop = imports.mainloop;
@@ -12,7 +13,6 @@ const CinnamonMountOperation = imports.ui.cinnamonMountOperation;
 const Main = imports.ui.main;
 const MessageTray = imports.ui.messageTray;
 const Params = imports.misc.params;
-const Search = imports.ui.search;
 const Util = imports.misc.util;
 
 const DEBUG = false;
@@ -34,26 +34,8 @@ PlaceInfo.prototype = {
         this.id = id;
         this.idDecoded = decodeURIComponent(this.id);
         this.name = name;
-        this._lowerName = name.toLowerCase();
         this.iconFactory = iconFactory;
         this.launch = launch;
-    },
-
-    matchTerms: function(terms) {
-        let mtype = Search.MatchType.NONE;
-        for (let i = 0; i < terms.length; i++) {
-            let term = terms[i];
-            let idx = this._lowerName.indexOf(term);
-            if (idx == 0) {
-                mtype = Search.MatchType.PREFIX;
-            } else if (idx > 0) {
-                if (mtype == Search.MatchType.NONE)
-                    mtype = Search.MatchType.SUBSTRING;
-            } else {
-                return Search.MatchType.NONE;
-            }
-        }
-        return mtype;
     },
 
     isRemovable: function() {
@@ -86,7 +68,6 @@ PlaceDeviceInfo.prototype = {
     _init: function(mount) {
         this._mount = mount;
         this.name = mount.get_name();
-        this._lowerName = this.name.toLowerCase();
         this.id = 'mount:' + mount.get_root().get_uri();
         this.idDecoded = decodeURIComponent(this.id);
 
@@ -207,7 +188,7 @@ PlacesManager.prototype = {
         this._updateDevices();
 
         this._bookmarksFile = null;
-        this._bookmarksPath = null;
+        this._bookmarksCancellable = null;
 
         let bookmarksPath3 = GLib.build_filenamev([GLib.get_user_config_dir(), 'gtk-3.0', 'bookmarks']);
         let bookmarksFile3 = Gio.file_new_for_path(bookmarksPath3);
@@ -218,12 +199,10 @@ PlacesManager.prototype = {
 
             if (bookmarksFile2.query_exists(null)) {
                 this._bookmarksFile = bookmarksFile2;
-                this._bookmarksPath = bookmarksPath2;
             }
         }
 
         if (this._bookmarksFile === null) {
-            this._bookmarksPath = bookmarksPath3;
             this._bookmarksFile = bookmarksFile3;
         }
 
@@ -342,77 +321,116 @@ PlacesManager.prototype = {
     },
 
     _reloadBookmarks: function() {
-        let had_bookmarks = this._bookmarks.length > 0;
-        this._bookmarks = [];
+        if (this._bookmarksCancellable)
+            this._bookmarksCancellable.cancel();
 
-        if (!this._bookmarksFile.query_exists(null)) {
-            if (had_bookmarks) {
-                this.emit('bookmarks-updated');
-                this.emit('places-updated');
+        const cancellable = new Gio.Cancellable();
+        this._bookmarksCancellable = cancellable;
+
+        this._bookmarksFile.load_contents_async(cancellable, (file, res) => {
+            let content = '';
+            try {
+                const [, bytes] = file.load_contents_finish(res);
+                content = ByteArray.toString(bytes);
+            } catch (e) {
+                if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+                // A missing or unreadable file simply means no bookmarks.
             }
 
+            this._resolveBookmarks(this._parseBookmarks(content), cancellable);
+        });
+    },
+
+    _parseBookmarks: function(content) {
+        const seen = new Set();
+        const entries = [];
+
+        for (const line of content.split('\n')) {
+            const components = line.split(' ');
+            const uri = components[0];
+            if (uri === '' || seen.has(uri))
+                continue;
+
+            seen.add(uri);
+            entries.push({
+                uri,
+                label: components.length > 1 ? components.slice(1).join(' ') : null
+            });
+        }
+
+        return entries;
+    },
+
+    _resolveBookmarks: function(entries, cancellable) {
+        const items = new Array(entries.length).fill(null);
+        let remaining = entries.length;
+
+        const finish = () => {
+            this._bookmarks = items.filter(item => item !== null);
+
+            /* See comment in _updateDevices for explanation why there are two signals. */
+            this.emit('bookmarks-updated');
+            this.emit('places-updated');
+        };
+
+        if (remaining === 0) {
+            finish();
             return;
         }
 
-        let bookmarksContent = Cinnamon.get_file_contents_utf8_sync(this._bookmarksPath);
+        entries.forEach((entry, i) => {
+            const file = Gio.file_new_for_uri(entry.uri);
+            file.query_info_async('standard::display-name,standard::icon,metadata::custom-icon',
+                                  Gio.FileQueryInfoFlags.NONE, GLib.PRIORITY_DEFAULT, cancellable,
+                                  (file, res) => {
+                let info = null;
+                try {
+                    info = file.query_info_finish(res);
+                } catch (e) {
+                    if (e.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                        return;
+                }
 
-        let bookmarks = bookmarksContent.split('\n');
+                items[i] = this._makeBookmark(file, entry.uri, entry.label, info);
+                if (--remaining === 0)
+                    finish();
+            });
+        });
+    },
 
-        let bookmarksToLabel = {};
-        let bookmarksOrder = [];
-        for (let i = 0; i < bookmarks.length; i++) {
-            let bookmarkLine = bookmarks[i];
-            let components = bookmarkLine.split(' ');
-            let bookmark = components[0];
-            if (bookmark in bookmarksToLabel)
-                continue;
-            let label = null;
-            if (components.length > 1)
-                label = components.slice(1).join(' ');
-            bookmarksToLabel[bookmark] = label;
-            bookmarksOrder.push(bookmark);
+    _makeBookmark: function(file, uri, label, info) {
+        if (label === null) {
+            if (file.has_uri_scheme('file'))
+                label = Cinnamon.util_get_label_for_uri(uri);
+            else if (info)
+                label = info.get_display_name();
+            else
+                label = decodeURIComponent(uri.replace(/\/+$/, '').split('/').pop());
         }
 
-        for (let i = 0; i < bookmarksOrder.length; i++) {
-            let bookmark = bookmarksOrder[i];
-            let label = bookmarksToLabel[bookmark];
-            let file = Gio.file_new_for_uri(bookmark);
-            if (label == null)
-                label = Cinnamon.util_get_label_for_uri(bookmark);
-            if (label == null)
-                continue;
+        if (!label)
+            return null;
 
-            let item;
-            if (file.query_exists(null)) {
-                let icon = Cinnamon.util_get_icon_for_uri(bookmark);
-                item = new PlaceInfo('bookmark:' + bookmark, label,
-                        function(size) {
-                            return new St.Icon({ gicon: icon, icon_size: size });
-                        },
-                        function(params) {
-                            Gio.app_info_launch_default_for_uri(bookmark, _makeLaunchContext(params));
-                        });
-            } else {
-                // Assume the bookmark is an unmounted network location
-                // try to mount and open by the default file manager
-                let icon = Gio.ThemedIcon.new('network-workgroup');
-                item = new PlaceInfo('bookmark:' + bookmark, label,
-                        function(size) {
-                            return new St.Icon({ gicon: icon, icon_size: size });
-                        },
-                        function(params) {
-                            let fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
-                            if (fileapp) {
-                                fileapp.launch_uris([bookmark], _makeLaunchContext(params));
-                            }
-                        });
-            }
-            this._bookmarks.push(item);
+        let icon, launch;
+        if (info) {
+            const customIcon = info.get_attribute_string('metadata::custom-icon');
+            icon = customIcon ? Gio.icon_new_for_string(customIcon) : info.get_icon();
+            launch = (params) => Gio.app_info_launch_default_for_uri(uri, _makeLaunchContext(params));
+        } else {
+            // Assume the bookmark is an unmounted network location
+            // try to mount and open by the default file manager
+            icon = Gio.ThemedIcon.new('network-workgroup');
+            launch = (params) => {
+                const fileapp = Gio.app_info_get_default_for_type('inode/directory', true);
+                if (fileapp)
+                    fileapp.launch_uris([uri], _makeLaunchContext(params));
+            };
         }
 
-        /* See comment in _updateDevices for explanation why there are two signals. */
-        this.emit('bookmarks-updated');
-        this.emit('places-updated');
+        return new PlaceInfo('bookmark:' + uri, label,
+                             (size) => new St.Icon({ gicon: icon, icon_size: size }),
+                             launch);
     },
 
     _addMount: function(mount) {
@@ -466,75 +484,3 @@ PlacesManager.prototype = {
 };
 Signals.addSignalMethods(PlacesManager.prototype);
 
-
-function PlaceSearchProvider() {
-    this._init();
-}
-
-PlaceSearchProvider.prototype = {
-    __proto__: Search.SearchProvider.prototype,
-
-    _init: function() {
-        Search.SearchProvider.prototype._init.call(this, "PLACES & DEVICES");
-    },
-
-    getResultMeta: function(resultId) {
-        let placeInfo = Main.placesManager.lookupPlaceById(resultId);
-        if (!placeInfo)
-            return null;
-        return { 'id': resultId,
-                 'name': placeInfo.name,
-                 'createIcon': function(size) {
-                                   return placeInfo.iconFactory(size);
-                               }
-               };
-    },
-
-    activateResult: function(id, params) {
-        let placeInfo = Main.placesManager.lookupPlaceById(id);
-        placeInfo.launch(params);
-    },
-
-    _compareResultMeta: function (idA, idB) {
-        let infoA = Main.placesManager.lookupPlaceById(idA);
-        let infoB = Main.placesManager.lookupPlaceById(idB);
-        return infoA.name.localeCompare(infoB.name);
-    },
-
-    _searchPlaces: function(places, terms) {
-        let multiplePrefixResults = [];
-        let prefixResults = [];
-        let multipleSubstringResults = [];
-        let substringResults = [];
-
-        terms = terms.map(String.toLowerCase);
-
-        for (let i = 0; i < places.length; i++) {
-            let place = places[i];
-            let mtype = place.matchTerms(terms);
-            if (mtype == Search.MatchType.MULTIPLE_PREFIX)
-                multiplePrefixResults.push(place.id);
-            else if (mtype == Search.MatchType.PREFIX)
-                prefixResults.push(place.id);
-            else if (mtype == Search.MatchType.MULTIPLE_SUBSTRING)
-                multipleSubstringResults.push(place.id);
-            else if (mtype == Search.MatchType.SUBSTRING)
-                substringResults.push(place.id);
-        }
-        multiplePrefixResults.sort(this._compareResultMeta);
-        prefixResults.sort(this._compareResultMeta);
-        multipleSubstringResults.sort(this._compareResultMeta);
-        substringResults.sort(this._compareResultMeta);
-        return [...multiplePrefixResults, ...prefixResults, ...multipleSubstringResults, ...substringResults];
-    },
-
-    getInitialResultSet: function(terms) {
-        let places = Main.placesManager.getAllPlaces();
-        return this._searchPlaces(places, terms);
-    },
-
-    getSubsearchResultSet: function(previousResults, terms) {
-        let places = previousResults.map(function (id) { return Main.placesManager.lookupPlaceById(id); });
-        return this._searchPlaces(places, terms);
-    }
-};

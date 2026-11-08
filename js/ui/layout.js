@@ -21,6 +21,11 @@ const StartupAnimation = imports.ui.startupAnimation;
 
 var KEYBOARD_FADE_TIME = 150;
 
+// Draws the X11 stage input region on screen. Toggle from Looking Glass:
+// imports.ui.layout.DEBUG_X11_INPUT_REGION = true
+// Has no effect on Wayland, where there is no input region.
+var DEBUG_X11_INPUT_REGION = false;
+
 function isPopupMetaWindow(actor) {
     switch(actor.meta_window?.get_window_type()) {
     case Meta.WindowType.DROPDOWN_MENU:
@@ -231,6 +236,21 @@ class UiActor extends St.Widget {
     }
 
     vfunc_paint(context) {
+        // Calling child.paint() from JS marshals the paint context for every child.
+        // Unmapped actors are not painted by Clutter, so only mapped skipped actors
+        // require the JS traversal; otherwise, let Clutter walk the children natively.
+        let hasMappedSkippedActor = false;
+        for (const child of this.skip_paint_actors) {
+            if (child.is_mapped()) {
+                hasMappedSkippedActor = true;
+                break;
+            }
+        }
+        if (!hasMappedSkippedActor) {
+            super.vfunc_paint(context);
+            return;
+        }
+
         for (let child = this.get_first_child(); child != null; child = child.get_next_sibling()) {
             if (this.skip_paint_actors.has(child))
                 continue;
@@ -386,10 +406,10 @@ var LayoutManager = GObject.registerClass({
         this._chrome.updateRegions();
     }
 
-    _doStartupAnimation() {
+    _doStartupAnimation(animate) {
         // Don't animate the strut
         this._chrome.freezeUpdateRegions();
-        this.startupAnimation.run();
+        this.startupAnimation.run(animate);
     }
 
     _startupAnimationComplete() {
@@ -417,7 +437,7 @@ var LayoutManager = GObject.registerClass({
         let kb_height = this.keyboardMonitor.height / size;
 
         let kb_x = this.keyboardMonitor.x;
-        let kb_y = top ? 0 : this.keyboardMonitor.y + this.keyboardMonitor.height - kb_height;
+        let kb_y = top ? this.keyboardMonitor.y : this.keyboardMonitor.y + this.keyboardMonitor.height - kb_height;
         let kb_width = this.keyboardMonitor.width;
         for (let panel of panels) {
             if (panel.isHideable()) {
@@ -672,6 +692,36 @@ var LayoutManager = GObject.registerClass({
     }
 });
 
+function subtractRect(rect, other) {
+    let [overlaps, cut] = rect.intersect(other);
+    if (!overlaps)
+        return [rect];
+
+    let right = rect.x + rect.width;
+    let bottom = rect.y + rect.height;
+    let cutRight = cut.x + cut.width;
+    let cutBottom = cut.y + cut.height;
+    let pieces = [];
+
+    if (cut.y > rect.y)
+        pieces.push(new Meta.Rectangle({ x: rect.x, y: rect.y, width: rect.width, height: cut.y - rect.y }));
+    if (cutBottom < bottom)
+        pieces.push(new Meta.Rectangle({ x: rect.x, y: cutBottom, width: rect.width, height: bottom - cutBottom }));
+    if (cut.x > rect.x)
+        pieces.push(new Meta.Rectangle({ x: rect.x, y: cut.y, width: cut.x - rect.x, height: cut.height }));
+    if (cutRight < right)
+        pieces.push(new Meta.Rectangle({ x: cutRight, y: cut.y, width: right - cutRight, height: cut.height }));
+
+    return pieces;
+}
+
+function subtractRects(rect, others) {
+    let pieces = [rect];
+    for (let other of others)
+        pieces = pieces.flatMap(piece => subtractRect(piece, other));
+    return pieces;
+}
+
 // This manages Cinnamon "chrome"; the UI that's visible in the
 // normal mode (ie, outside the Overview), that surrounds the main
 // workspace content.
@@ -704,6 +754,13 @@ var Chrome = class {
 
         // Need to update struts on new workspaces when they are added
         global.workspace_manager.connect('notify::n-workspaces', this._queueUpdateRegions.bind(this));
+
+        if (!Meta.is_wayland_compositor()) {
+            global.display.connect('window-created', (display, window) => this._trackWindowGeometry(window));
+            global.display.connect('grab-op-end', this._queueDeskletRegionUpdate.bind(this));
+            for (let actor of Meta.get_window_actors(global.display))
+                this._trackWindowGeometry(actor.meta_window);
+        }
 
         this._relayout();
     }
@@ -804,6 +861,7 @@ var Chrome = class {
         if (i == -1)
             return;
 
+        Main.uiGroup.set_skip_paint(actor, false);
         this._trackedActors.splice(i, 1);
         actor.disconnectObject(this);
 
@@ -964,15 +1022,70 @@ var Chrome = class {
             this._queueUpdateRegions();
     }
 
+    _windowRectsAboveDesklets() {
+        if (Meta.is_wayland_compositor() || global.display.get_desklets_above())
+            return [];
+
+        return global.workspace_manager.get_active_workspace().list_windows()
+            .filter(w => w.window_type !== Meta.WindowType.DESKTOP && w.showing_on_its_workspace())
+            .map(w => w.get_buffer_rect());
+    }
+
+    _trackWindowGeometry(window) {
+        window.connect('position-changed', this._windowGeometryChanged.bind(this));
+        window.connect('size-changed', this._windowGeometryChanged.bind(this));
+    }
+
+    _windowGeometryChanged() {
+        // While muffin or a Cinnamon modal holds a grab, every pointer event
+        // goes to the grabber regardless of the input region, so wait for
+        // grab-op-end rather than updating on every motion of a window
+        // move or resize.
+        if (global.display.get_grab_op() === Meta.GrabOp.NONE)
+            this._queueDeskletRegionUpdate();
+    }
+
+    _queueDeskletRegionUpdate() {
+        if (global.desklet_container.get_n_children() > 0)
+            this._queueUpdateRegions();
+    }
+
+    _updateInputRegionOverlay(rects) {
+        if (!DEBUG_X11_INPUT_REGION || Meta.is_wayland_compositor()) {
+            if (this._inputRegionOverlay) {
+                this._inputRegionOverlay.destroy();
+                this._inputRegionOverlay = null;
+            }
+            return;
+        }
+
+        if (!this._inputRegionOverlay) {
+            this._inputRegionOverlay = new Clutter.Actor({ reactive: false });
+            Main.uiGroup.add_actor(this._inputRegionOverlay);
+        }
+
+        this._inputRegionOverlay.destroy_all_children();
+        for (let r of rects) {
+            this._inputRegionOverlay.add_child(new St.Widget({
+                style: 'background-color: rgba(255, 0, 0, 0.25); border: 1px solid red;',
+                reactive: false,
+                x: r.x, y: r.y, width: r.width, height: r.height
+            }));
+        }
+    }
+
     updateRegions() {
         let rects = [], struts = [], i;
+        let windowRects = null;
 
         if (this._updateRegionIdle) {
             Mainloop.source_remove(this._updateRegionIdle);
             this._updateRegionIdle = 0;
         }
 
-        let wantsInputRegion = !this._isPopupWindowVisible;
+        // Wayland routes stage input by actor picking and has no input
+        // region, so only struts are calculated there.
+        let wantsInputRegion = !Meta.is_wayland_compositor() && !this._isPopupWindowVisible;
 
         for (let i = 0; i < this._trackedActors.length; i++) {
             let actorData = this._trackedActors[i];
@@ -1012,7 +1125,13 @@ var Chrome = class {
                     }
                 }
 
-                rects.push(rect);
+                if (global.desklet_container.contains(actorData.actor)) {
+                    if (windowRects === null)
+                        windowRects = this._windowRectsAboveDesklets();
+                    rects.push(...subtractRects(rect, windowRects));
+                } else {
+                    rects.push(rect);
+                }
             }
 
             if (actorData.affectsStruts) {
@@ -1067,7 +1186,10 @@ var Chrome = class {
             }
         }
 
-        global.set_stage_input_region(rects);
+        if (!Meta.is_wayland_compositor()) {
+            this._updateInputRegionOverlay(rects);
+            global.set_stage_input_region(rects);
+        }
 
         let ws_manager = global.workspace_manager;
         for (let w = 0; w < ws_manager.n_workspaces; w++) {

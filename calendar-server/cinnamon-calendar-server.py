@@ -208,8 +208,8 @@ class CalendarServer(Gio.Application):
             print("couldn't connect to Clockenstein calendar service:", e.message)
             self.interface.set_property("status", STATUS_UNKNOWN)
 
-        # Stay alive to relay the daemon's Changed signal to CalendarServer
-        # clients. The EDS provider can sleep because clients query it again.
+        if not self._hold:
+            self.release()
 
     def clockenstein_signal(self, proxy, sender_name, signal_name, parameters):
         if signal_name == "Changed" and self.current_month_start != 0:
@@ -218,6 +218,8 @@ class CalendarServer(Gio.Application):
     def fetch_clockenstein_events(self):
         if self.clockenstein_proxy is None:
             return
+
+        self.hold()
 
         self.clockenstein_request += 1
         request = self.clockenstein_request
@@ -235,6 +237,8 @@ class CalendarServer(Gio.Application):
         )
 
     def clockenstein_events_ready(self, proxy, result, request):
+        self.release()
+
         if request != self.clockenstein_request:
             return
 
@@ -348,10 +352,15 @@ class CalendarServer(Gio.Application):
         self.hold()
         self.release()
 
-        if time_since == self.current_month_start and time_until == self.current_month_end:
-            if not force_reload:
-                self.interface.complete_set_time_range(inv)
-                return True
+        range_changed = (time_since != self.current_month_start or
+                         time_until != self.current_month_end)
+
+        if not range_changed and not force_reload:
+            self.interface.complete_set_time_range(inv)
+            return True
+
+        if range_changed:
+            self.clockenstein_event_uids = set()
 
         self.current_month_start = time_since
         self.current_month_end = time_until

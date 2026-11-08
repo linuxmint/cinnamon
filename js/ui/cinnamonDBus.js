@@ -23,6 +23,7 @@ const CinnamonIface =
             <method name="ShowOSD"> \
                 <arg type="a{sv}" direction="in" name="params"/> \
             </method> \
+            <method name="HideOSD"/> \
             <method name="highlightXlet"> \
                 <arg type="s" direction="in" /> \
                 <arg type="s" direction="in" /> \
@@ -177,7 +178,11 @@ var CinnamonDBus = class {
         if (params['icon'])
             icon = Gio.Icon.new_for_string(params['icon']);
 
-        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level']);
+        Main.osdWindowManager.show(monitorIndex, icon, params['label'], params['level'], params['timeout']);
+    }
+
+    HideOSD() {
+        Main.osdWindowManager.hideAll();
     }
 
     get OverviewActive() {
@@ -267,6 +272,10 @@ var CinnamonDBus = class {
 
     activateCallback(callback, uuid, instance_id) {
         let obj = this._getXletObject(uuid, instance_id);
+        if (!obj) {
+            global.logWarning(`[CinnamonDBus] activateCallback: xlet not found (uuid=${uuid}, instance_id=${instance_id})`);
+            return;
+        }
         let cb = obj[callback].bind(obj);
         cb();
     }
@@ -277,6 +286,10 @@ var CinnamonDBus = class {
                 `[CinnamonDBus] [${uuid}] Unable to find UUID from SettingsManager - ` +
                 'this is likely due to configuring settings from a removed xlet.'
             );
+            return;
+        }
+        if (!Main.settingsManager.uuids[uuid][instance_id]) {
+            global.logWarning(`[CinnamonDBus] [${uuid}] Unable to find instance '${instance_id}' from SettingsManager`);
             return;
         }
         Main.settingsManager.uuids[uuid][instance_id].remoteUpdate(key, payload);
@@ -442,7 +455,6 @@ var CinnamonDBus = class {
 
         for (let idx in sources) {
             const source = sources[idx];
-            // global.log(source.preferences);
             ret.push([
                 source.type,
                 source.id,

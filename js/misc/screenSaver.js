@@ -133,8 +133,8 @@ function ScreenSaverProxy() {
         g_interface_info: ScreenSaverInfo,
         g_name: 'org.cinnamon.ScreenSaver',
         g_object_path: '/org/cinnamon/ScreenSaver',
-        g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START |
-                 Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES)
+        g_flags: (Gio.DBusProxyFlags.DO_NOT_AUTO_START_AT_CONSTRUCTION |
+                  Gio.DBusProxyFlags.DO_NOT_LOAD_PROPERTIES)
     });
     self.init(null);
 

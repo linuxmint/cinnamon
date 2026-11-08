@@ -41,7 +41,7 @@ Animation.prototype = {
 
             Main.layoutManager.addChrome(this.shroud);
 
-            let icon_size = 128 * global.ui_scale;
+            let icon_size = 128;
             let x = this.primaryMonitorInfo.x + this.primaryMonitorInfo.width / 2.0;
             let y = this.primaryMonitorInfo.y + this.primaryMonitorInfo.height / 2.0;
 
@@ -64,9 +64,12 @@ Animation.prototype = {
                 }
 
                 if (gicon) {
+                    // The texture loads asynchronously, but St sizes the actor to
+                    // icon_size in stage units once it does.
+                    let logo_size = icon_size * global.ui_scale;
                     this.logo = St.TextureCache.get_default().load_gicon(null, gicon, icon_size);
-                    this.logo.x = x - (icon_size / 2);
-                    this.logo.y = y - (icon_size / 2);
+                    this.logo.x = x - (logo_size / 2);
+                    this.logo.y = y - (logo_size / 2);
                     Main.layoutManager.addChrome(this.logo);
                 } else {
                     global.logError("Startup logo could not be loaded");
@@ -79,8 +82,8 @@ Animation.prototype = {
         }
     },
 
-    run: function() {
-        if (this.failed) {
+    run: function(animate) {
+        if (this.failed || !animate) {
             this._finished();
             return;
         }

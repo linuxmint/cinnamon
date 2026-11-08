@@ -1,5 +1,6 @@
 const Clutter = imports.gi.Clutter;
 const GLib = imports.gi.GLib;
+const Meta = imports.gi.Meta;
 const St = imports.gi.St;
 const { SignalManager } = imports.misc.signalManager;
 
@@ -81,6 +82,7 @@ var ScrollBox = class ScrollBox {
         this.slideTimerSourceId = 0;
         this.slideDirection = 0;
         this.scrollActiveTimeoutId = 0;
+        this.scrollButtonUpdateId = 0;
 
         // Slider button signals
         this.signals.connect(this.startButton, 'enter-event', () => {
@@ -139,9 +141,6 @@ var ScrollBox = class ScrollBox {
         // Scroll view signals
         this.signals.connect(this.scrollView, 'scroll-event', (actor, event) => this._onScroll(actor, event));
 
-        // Track content size changes
-        this.signals.connect(this.container, 'notify::allocation', () => this.updateScrollButtonVisibility());
-
         this.stateConnectionID = this.state.connect({
             orientation: (state) => this.on_orientation_changed()
         });
@@ -153,6 +152,10 @@ var ScrollBox = class ScrollBox {
     destroy() {
         this._stopSlide();
         this._disconnectAdjustmentSignals();
+        if (this.scrollButtonUpdateId) {
+            Meta.later_remove(this.scrollButtonUpdateId);
+            this.scrollButtonUpdateId = 0;
+        }
         if (this.stateConnectionID) {
             this.state.disconnect(this.stateConnectionID);
         }
@@ -168,8 +171,8 @@ var ScrollBox = class ScrollBox {
         if (!adjustment) return;
 
         this._currentAdjustment = adjustment;
-        this._adjustmentValueSigId = adjustment.connect('notify::value', () => this.updateScrollButtonVisibility());
-        this._adjustmentChangedSigId = adjustment.connect('changed', () => this.updateScrollButtonVisibility());
+        this._adjustmentValueSigId = adjustment.connect('notify::value', () => this._queueScrollButtonUpdate());
+        this._adjustmentChangedSigId = adjustment.connect('changed', () => this._queueScrollButtonUpdate());
     }
 
     _disconnectAdjustmentSignals() {
@@ -277,6 +280,18 @@ var ScrollBox = class ScrollBox {
                 adjustment.value = Math.max(adjustment.lower, Math.min(newValue, adjustment.upper - page_size));
             }
         }
+    }
+
+    // The adjustment is rewritten from inside the container's allocation, so
+    // showing or hiding the buttons there would invalidate the layout mid-pass.
+    _queueScrollButtonUpdate() {
+        if (this.scrollButtonUpdateId) return;
+
+        this.scrollButtonUpdateId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
+            this.scrollButtonUpdateId = 0;
+            this.updateScrollButtonVisibility();
+            return GLib.SOURCE_REMOVE;
+        });
     }
 
     updateScrollButtonVisibility() {

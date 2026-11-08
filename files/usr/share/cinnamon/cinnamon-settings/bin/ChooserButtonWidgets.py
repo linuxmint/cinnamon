@@ -38,24 +38,32 @@ class PictureChooserButton(BaseChooserButton):
     def __init__ (self, num_cols=4, button_picture_width=24, menu_picture_width=24, has_button_label=False, keep_square=False, frame=False):
         super(PictureChooserButton, self).__init__(has_button_label, frame)
         self.num_cols = num_cols
-        self.scale = self.get_scale_factor()
         self.button_picture_width = button_picture_width
         self.menu_picture_width = menu_picture_width
         self.keep_square = keep_square
         self.row = 0
         self.col = 0
         self.progress = 0.0
+        self.button_picture_path = None
+        self.menu_images = []
 
         context = self.get_style_context()
         context.add_class("gtkstyle-fallback")
 
         self.button_image.set_valign(Gtk.Align.CENTER)
         if self.keep_square:
-            self.button_image.set_size_request(button_picture_width / self.scale, button_picture_width / self.scale)
+            self.button_image.set_size_request(button_picture_width, button_picture_width)
         else:
-            self.button_image.set_size_request(button_picture_width / self.scale, -1)
+            self.button_image.set_size_request(button_picture_width, -1)
 
         self.connect_after("draw", self.on_draw)
+        self.connect("notify::scale-factor", self._on_scale_factor_changed)
+
+    def _on_scale_factor_changed(self, widget, pspec):
+        if self.button_picture_path is not None:
+            self._set_image_from_file(self.button_image, self.button_picture_path, self.button_picture_width)
+        for image, path in self.menu_images:
+            self._set_image_from_file(image, path, self.menu_picture_width)
 
     def on_draw(self, widget, cr, data=None):
         if self.progress == 0:
@@ -90,24 +98,29 @@ class PictureChooserButton(BaseChooserButton):
         self.progress = 0.0
         self.queue_draw()
 
-    def create_scaled_surface(self, path):
-        w = self.button_picture_width * self.scale
-        h = -1 if not self.keep_square else self.button_picture_width * self.scale
+    def create_scaled_surface(self, path, width):
+        scale = self.get_scale_factor()
+        w = width * scale
+        h = w if self.keep_square else -1
 
         try:
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, w, h)
             if pixbuf:
-                return Gdk.cairo_surface_create_from_pixbuf(pixbuf, self.scale)
+                return Gdk.cairo_surface_create_from_pixbuf(pixbuf, scale)
         except GLib.Error as e:
             print(f"Could not load thumbnail file '{path}': {e.message}")
         return None
 
-    def set_picture_from_file (self, path):
-        surface = self.create_scaled_surface(path)
+    def _set_image_from_file(self, image, path, width):
+        surface = self.create_scaled_surface(path, width)
         if surface:
-            self.button_image.set_from_surface(surface)
+            image.set_from_surface(surface)
         else:
-            self.button_image.set_from_icon_name("user-generic", Gtk.IconSize.BUTTON)
+            image.set_from_icon_name("user-generic", Gtk.IconSize.BUTTON)
+
+    def set_picture_from_file (self, path):
+        self.button_picture_path = path
+        self._set_image_from_file(self.button_image, path, self.button_picture_width)
 
     def set_button_label(self, label):
         if self.has_button_label:
@@ -127,18 +140,14 @@ class PictureChooserButton(BaseChooserButton):
         self.menu = Gtk.Menu()
         self.row = 0
         self.col = 0
+        self.menu_images = []
         menu.destroy()
 
     def add_picture(self, path, callback, title=None, id=None):
         image = Gtk.Image()
-        image.set_size_request(self.menu_picture_width / self.scale, -1)
-
-        surface = self.create_scaled_surface(path)
-
-        if surface:
-            image.set_from_surface(surface)
-        else:
-            image.set_from_icon_name("user-generic", Gtk.IconSize.BUTTON)
+        image.set_size_request(self.menu_picture_width, -1)
+        self._set_image_from_file(image, path, self.menu_picture_width)
+        self.menu_images.append((image, path))
 
         if self.frame:
             frame = Gtk.Frame(halign=Gtk.Align.CENTER, valign=Gtk.Align.CENTER)

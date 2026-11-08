@@ -261,6 +261,7 @@ STATIC_KEYBINDINGS = \
       [_("Reset zoom"), CINNAMON_SCHEMA, "magnifier-zoom-reset"],
       [_("Turn screen reader on or off"), MEDIA_KEYS_SCHEMA, "screenreader"],
       [_("Turn on-screen keyboard on or off"), MEDIA_KEYS_SCHEMA, "on-screen-keyboard"],
+      [_("Turn hover click on or off"), CINNAMON_SCHEMA, "hoverclick-toggle"],
       [_("Increase text size"), MEDIA_KEYS_SCHEMA, "increase-text-size"],
       [_("Decrease text size"), MEDIA_KEYS_SCHEMA, "decrease-text-size"],
       [_("High contrast on or off"), MEDIA_KEYS_SCHEMA, "toggle-contrast"]
@@ -305,10 +306,8 @@ def _xlet_is_multi_instance(metadata, _type):
     except (TypeError, ValueError):
         return False
 
-    if _type == "applets":
+    if _type in ("applets", "desklets"):
         return max_instances != 1
-    if _type == "desklets":
-        return max_instances > 1
     return False
 
 class KeyBindingCategory:
@@ -385,19 +384,26 @@ class KeyBinding(GObject.Object):
         self.emit_changed()
 
     def load_json_settings(self, *args):
-        del self.entries[:]
-        self.entries = self.getConfigSettings()
         self.json_timeout_id = 0
+        entries = self.getConfigSettings()
+        if entries == self.entries:
+            return
+
+        self.entries = entries
         self.emit_changed()
 
     def getConfigSettings(self):
         with open(self.schema, encoding="utf-8") as config_file:
             config = json.load(config_file)
-            keybinds = config[self.key]["value"].split("::")
-            if len(keybinds) < 2:
-                keybinds.append("")
 
-        return keybinds
+        return self.pad_json_entries(config[self.key]["value"].split("::"))
+
+    @staticmethod
+    def pad_json_entries(entries):
+        while len(entries) < 2:
+            entries.append("")
+
+        return entries
 
     def get_array(self, raw_array):
         result = []
@@ -432,7 +438,17 @@ class KeyBinding(GObject.Object):
                 config_file.write(json.dumps(config, indent=4))
                 config_file.flush()
             self.resume_json_monitor()
+            self.entries = self.pad_json_entries(array)
         self.emit_changed()
+
+    def get_defaults(self):
+        if "/" not in self.schema:
+            return self.settings.get_default_value(self.key).unpack()
+
+        with open(self.schema, encoding="utf-8") as config_file:
+            config = json.load(config_file)
+
+        return config[self.key]["default"].split("::")
 
     def resetDefaults(self):
         if "/" not in self.schema:
@@ -449,7 +465,7 @@ class KeyBinding(GObject.Object):
                 config_file.write(json.dumps(config, indent=4))
                 config_file.flush()
             self.resume_json_monitor()
-            self.json_settings_changed()
+            self.entries = self.getConfigSettings()
         self.emit_changed()
 
 class CustomKeyBinding(GObject.Object):
@@ -561,7 +577,7 @@ class KeybindingTable(GObject.Object):
             keybinding.dbus_info["uuid"],
             keybinding.dbus_info["config_id"],
             keybinding.key,
-            json.dumps(keybinding.entries)
+            json.dumps("::".join(e for e in keybinding.entries if e) or "::")
         )
 
     def _add_to_collision_table(self, keybinding):
@@ -878,32 +894,70 @@ class KeybindingTable(GObject.Object):
         keybinding.setDetails(new_name, new_command)
         self.emit("customs-changed")
 
-    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
-        new_accel = Gtk.accelerator_parse_with_keycode(accel_string)
+    def _accel_label(self, accel_string):
+        key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
+        if key == 0 and len(codes) == 0:
+            return "Keyboard" if accel_string == "XF86Keyboard" else accel_string
+
+        return Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+
+    def _accels_match(self, accel_string, entry):
+        parsed = Gtk.accelerator_parse_with_keycode(accel_string)
+        # Unparseable accelerators (Above_Tab, XF86Keyboard) all parse to the same empty result.
+        if parsed.accelerator_key == 0 and len(parsed.accelerator_codes) == 0:
+            return accel_string == entry
+
+        return parsed == Gtk.accelerator_parse_with_keycode(entry)
+
+    def _find_conflicts(self, accel_strings, current_keybinding):
+        conflicts = []
+        uuid = current_keybinding.dbus_info.get("uuid")
 
         for cat in self.main_store:
             for keybinding in cat.keybindings:
-                for entry in keybinding.entries:
-                    if new_accel == Gtk.accelerator_parse_with_keycode(entry):
-                        if keybinding.label != current_keybinding.label:
-                            dialog = Gtk.MessageDialog(None,
-                                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
-                                                       Gtk.MessageType.QUESTION,
-                                                       Gtk.ButtonsType.YES_NO,
-                                                       None)
-                            dialog.set_default_size(400, 125)
-                            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
-                            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
-                            msg += _("Do you want to continue with this operation?")
-                            dialog.set_markup(msg % {'combination': escape(accel_label), 'old': escape(keybinding.label), 'new': escape(current_keybinding.label)})
-                            dialog.show_all()
-                            response = dialog.run()
-                            dialog.destroy()
-                            if response == Gtk.ResponseType.YES:
-                                keybinding.setBinding(keybinding.entries.index(entry), None)
-                                self._proxy_send_kb_changed(keybinding)
-                            else:
-                                return False
+                if keybinding is current_keybinding:
+                    continue
+                # Instances of the same applet can share a shortcut for the same action.
+                if (uuid is not None and keybinding.dbus_info.get("uuid") == uuid
+                        and keybinding.key == current_keybinding.key):
+                    continue
+                for index, entry in enumerate(keybinding.entries):
+                    if not entry:
+                        continue
+                    for accel_string in accel_strings:
+                        if accel_string and self._accels_match(accel_string, entry):
+                            conflicts.append((keybinding, index, accel_string))
+
+        return conflicts
+
+    def _confirm_and_clear_conflicts(self, conflicts, new_keybinding):
+        for keybinding, index, accel_string in conflicts:
+            dialog = Gtk.MessageDialog(None,
+                                       Gtk.DialogFlags.DESTROY_WITH_PARENT,
+                                       Gtk.MessageType.QUESTION,
+                                       Gtk.ButtonsType.YES_NO,
+                                       None)
+            dialog.set_default_size(400, 125)
+            msg = _("This key combination, <b>%(combination)s</b> is currently in use by <b>%(old)s</b>.  ")
+            msg += _("If you continue, the combination will be reassigned to <b>%(new)s</b>.\n\n")
+            msg += _("Do you want to continue with this operation?")
+            dialog.set_markup(msg % {'combination': escape(self._accel_label(accel_string)), 'old': escape(keybinding.label), 'new': escape(new_keybinding.label)})
+            dialog.show_all()
+            response = dialog.run()
+            dialog.destroy()
+            if response != Gtk.ResponseType.YES:
+                return False
+
+        for keybinding, index, __ in sorted(conflicts, key=lambda c: c[1], reverse=True):
+            keybinding.setBinding(index, None)
+            self._proxy_send_kb_changed(keybinding)
+
+        return True
+
+    def maybe_update_binding(self, current_keybinding, accel_string, accel_label, position):
+        if not self._confirm_and_clear_conflicts(self._find_conflicts([accel_string], current_keybinding), current_keybinding):
+            return False
+
         current_keybinding.setBinding(int(position), accel_string)
         self._proxy_send_kb_changed(current_keybinding)
         return True
@@ -940,14 +994,7 @@ class KeybindingTable(GObject.Object):
             if len(bindings) < 2:
                 continue
 
-            key, codes, mods = Gtk.accelerator_parse_with_keycode(accel_string)
-            if (key == 0 and len(codes) == 0):
-                if accel_string == "XF86Keyboard":
-                    label = "Keyboard"
-                else:
-                    label = accel_string
-            else:
-                label = Gtk.accelerator_get_label_with_keycode(Gdk.Display.get_default(), key, codes[0], mods)
+            label = self._accel_label(accel_string)
 
             dialog = Gtk.MessageDialog(None,
                                        Gtk.DialogFlags.DESTROY_WITH_PARENT,
@@ -971,7 +1018,7 @@ class KeybindingTable(GObject.Object):
                 keep_keybinding = bindings[response]
                 for keybinding in bindings:
                     if keybinding != keep_keybinding:
-                        for i in range(len(keybinding.entries)):
+                        for i in reversed(range(len(keybinding.entries))):
                             if keybinding.entries[i] == accel_string:
                                 keybinding.setBinding(i, "")
                                 self._proxy_send_kb_changed(keybinding)
@@ -984,8 +1031,12 @@ class KeybindingTable(GObject.Object):
         self._proxy_send_kb_changed(keybinding)
 
     def reset_bindings(self, keybinding):
+        if not self._confirm_and_clear_conflicts(self._find_conflicts(keybinding.get_defaults(), keybinding), keybinding):
+            return False
+
         keybinding.resetDefaults()
         self._proxy_send_kb_changed(keybinding)
+        return True
 
     def lookup_gsettings_keybinding(self, schema_id, key):
         for cat in self._static_store + self._custom_store:

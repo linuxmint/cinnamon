@@ -797,6 +797,10 @@ MessageTray.prototype = {
         Main.expo.connect('hiding', updateLockState);
     },
 
+    getResourceScale: function () {
+        return this._notificationBin.get_resource_scale();
+    },
+
     contains: function (source) {
         return this._getSourceIndex(source) >= 0;
     },
@@ -1037,6 +1041,13 @@ MessageTray.prototype = {
     _showNotificationCompleted: function () {
         this._notificationState = State.SHOWN;
         this._updateNotificationTimeout(0);
+
+        // The notification may have been destroyed while it was being shown
+        if (this._notificationRemoved) {
+            this._updateState();
+            return;
+        }
+
         this.notificationDuration = this.settings.get_int("notification-duration");
 
         if (this._notification.urgency != Urgency.CRITICAL) {

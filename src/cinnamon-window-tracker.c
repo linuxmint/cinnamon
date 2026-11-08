@@ -12,7 +12,6 @@
 #include <meta/meta-workspace-manager.h>
 #include <meta/meta-startup-notification.h>
 
-#include "cinnamon-window-tracker-private.h"
 #include "cinnamon-app-private.h"
 #include "cinnamon-global-private.h"
 #include "st.h"
@@ -44,9 +43,6 @@ struct _CinnamonWindowTracker
 
   /* <MetaWindow * window, CinnamonApp *app> */
   GHashTable *window_to_app;
-
-  /* <int, CinnamonApp *app> */
-  GHashTable *launched_pid_to_app;
 };
 
 G_DEFINE_TYPE (CinnamonWindowTracker, cinnamon_window_tracker, G_TYPE_OBJECT);
@@ -414,44 +410,46 @@ get_app_from_window_pid (CinnamonWindowTracker  *tracker,
                          MetaWindow          *window)
 {
   CinnamonApp *result;
-  int pid;
 
   if (meta_window_is_remote (window))
     return NULL;
 
-  pid = meta_window_get_pid (window);
-
-  if (pid < 1)
-    return NULL;
-
-  result = cinnamon_window_tracker_get_app_from_pid (tracker, pid);
+  result = cinnamon_window_tracker_get_app_from_pid (tracker, meta_window_get_pid (window));
   if (result != NULL)
     g_object_ref (result);
 
   return result;
 }
 
+static gboolean
+window_is_flatpak (MetaWindow *window)
+{
+  gchar *info_filename;
+  gboolean is_flatpak;
+
+  info_filename = g_strdup_printf ("/proc/%d/root/.flatpak-info", meta_window_get_pid (window));
+  is_flatpak = g_file_test (info_filename, G_FILE_TEST_EXISTS);
+  g_free (info_filename);
+
+  return is_flatpak;
+}
+
 static CinnamonApp *
-get_app_for_flatpak_window (MetaWindow *window)
+get_app_for_sandboxed_window (MetaWindow *window)
 {
   CinnamonAppSystem *appsys;
   CinnamonApp *app = NULL;
   CinnamonApp *result = NULL;
-  gchar *info_filename;
-  GFile *file;
-  int pid = meta_window_get_client_pid (window);
+  const char *sandboxed_app_id = meta_window_get_sandboxed_app_id (window);
 
-  g_return_val_if_fail (pid > 0, NULL);
+  if (sandboxed_app_id == NULL)
+    return NULL;
 
-  info_filename = g_strdup_printf ("/proc/%u/root/.flatpak-info", pid);
-  file = g_file_new_for_path (info_filename);
+  appsys = cinnamon_app_system_get_default ();
 
-  if (g_file_query_exists (file, NULL)) {
+  if (window_is_flatpak (window)) {
     gchar *wm_class;
     gchar *wm_instance;
-    GKeyFile *keyfile;
-
-    appsys = cinnamon_app_system_get_default ();
 
     wm_instance = g_strconcat(meta_window_get_wm_class_instance (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
     wm_class = g_strconcat(meta_window_get_wm_class (window), GMENU_DESKTOPAPPINFO_FLATPAK_SUFFIX, NULL);
@@ -489,24 +487,23 @@ get_app_for_flatpak_window (MetaWindow *window)
     g_free (wm_instance);
     g_free (wm_class);
 
-    // Finally, try to match it against the .flatpak-info entry "Application"
+    // Finally, try to match it against the sandbox's application id
     if (result == NULL) {
-      keyfile = g_key_file_new ();
-      if (g_key_file_load_from_file (keyfile, info_filename, G_KEY_FILE_NONE, NULL)) {
-        gchar *app_id;
-        app_id = g_key_file_get_string (keyfile, "Application", "name", NULL);
-        app = cinnamon_app_system_lookup_flatpak_app_id (appsys, app_id);
+      app = cinnamon_app_system_lookup_flatpak_app_id (appsys, sandboxed_app_id);
 
-        if (app != NULL) {
-          result = g_object_ref (app);
-        }
+      if (app != NULL) {
+        result = g_object_ref (app);
       }
-      g_key_file_unref (keyfile);
     }
-  }
+  } else {
+    gchar *desktop_id = g_strconcat (sandboxed_app_id, ".desktop", NULL);
 
-  g_free (info_filename);
-  g_object_unref(file);
+    app = cinnamon_app_system_lookup_app (appsys, desktop_id);
+    if (app != NULL) {
+      result = g_object_ref (app);
+    }
+    g_free (desktop_id);
+  }
 
   return result;
 }
@@ -544,8 +541,8 @@ get_app_for_window (CinnamonWindowTracker    *tracker,
   if (meta_window_is_remote (window))
     return _cinnamon_app_new_for_window (window);
 
-  /* Check if the window was launched from a sandboxed app, e.g. Flatpak */
-  result = get_app_for_flatpak_window (window);
+  /* Check if the window was launched from a sandboxed app, e.g. Flatpak or Snap */
+  result = get_app_for_sandboxed_window (window);
   if (result != NULL)
     return result;
 
@@ -878,8 +875,6 @@ cinnamon_window_tracker_init (CinnamonWindowTracker *self)
   self->window_to_app = g_hash_table_new_full (g_direct_hash, g_direct_equal,
                                                NULL, (GDestroyNotify) g_object_unref);
 
-  self->launched_pid_to_app = g_hash_table_new_full (NULL, NULL, NULL, (GDestroyNotify) g_object_unref);
-
   g_signal_connect (sn, "changed",
                     G_CALLBACK (on_startup_sequence_changed), self);
 
@@ -893,7 +888,6 @@ cinnamon_window_tracker_finalize (GObject *object)
   CinnamonWindowTracker *self = CINNAMON_WINDOW_TRACKER (object);
 
   g_hash_table_destroy (self->window_to_app);
-  g_hash_table_destroy (self->launched_pid_to_app);
 
   G_OBJECT_CLASS (cinnamon_window_tracker_parent_class)->finalize(object);
 }
@@ -941,9 +935,8 @@ cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self,
   GSList *iter;
   CinnamonApp *result = NULL;
 
-  /* An unknown pid (e.g. -1, common for not-yet-resolved Wayland windows) must
-   * never match: app pid lists can contain -1 too, so it would spuriously match
-   * an unrelated running app. */
+  /* An unknown pid (-1) must never match: app pid lists can contain -1 too,
+   * so it would spuriously match an unrelated running app. */
   if (pid < 1)
     return NULL;
 
@@ -973,40 +966,6 @@ cinnamon_window_tracker_get_app_from_pid (CinnamonWindowTracker *self,
   g_slist_free (running);
 
   return result;
-}
-
-static void
-on_child_exited (GPid      pid,
-                 gint      status,
-                 gpointer  unused_data)
-{
-  CinnamonWindowTracker *tracker;
-
-  tracker = cinnamon_window_tracker_get_default ();
-
-  g_hash_table_remove (tracker->launched_pid_to_app, GINT_TO_POINTER((gint)pid));
-}
-
-void
-_cinnamon_window_tracker_add_child_process_app (CinnamonWindowTracker *tracker,
-                                             GPid                pid,
-                                             CinnamonApp           *app)
-{
-  gpointer pid_ptr = GINT_TO_POINTER((int)pid);
-
-  if (g_hash_table_lookup (tracker->launched_pid_to_app,
-                           &pid_ptr))
-    return;
-
-  g_hash_table_insert (tracker->launched_pid_to_app,
-                       pid_ptr,
-                       g_object_ref (app));
-  g_child_watch_add (pid, on_child_exited, NULL);
-  /* TODO: rescan unassociated windows
-   * Unlikely in practice that the launched app gets ahead of us
-   * enough to map an X window before we get scheduled after the fork(),
-   * but adding this note for future reference.
-   */
 }
 
 static void

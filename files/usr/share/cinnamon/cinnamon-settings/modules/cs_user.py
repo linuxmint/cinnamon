@@ -51,9 +51,7 @@ class Module:
 
             settings = page.add_section(_("Account Details"))
 
-            self.scale = self.window.get_scale_factor()
-
-            self.face_button = PictureChooserButton(num_cols=4, button_picture_width=64, menu_picture_width=64*self.scale, keep_square=True)
+            self.face_button = PictureChooserButton(num_cols=4, button_picture_width=64, menu_picture_width=64, keep_square=True)
             self.face_button.set_alignment(0.0, 0.5)
             self.face_button.set_tooltip_text(_("Click to change your picture"))
 
@@ -214,8 +212,8 @@ class Module:
 
             pixbuf = GdkPixbuf.Pixbuf.new_from_file_at_size(path, 255, -1)
             pixbuf.savev(face_path, "png")
-            self.accountService.set_icon_file(path)
-            self.face_button.set_picture_from_file(path)
+            self.accountService.set_icon_file(face_path)
+            self.face_button.set_picture_from_file(face_path)
 
         dialog.destroy()
 

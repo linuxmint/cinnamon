@@ -675,6 +675,7 @@ trough_paging_cb (StScrollBar *self)
   gdouble value, new_value;
   gdouble page_increment;
   gdouble slow_down_factor;
+  gboolean animations_enabled;
   gboolean ret;
 
   gulong mode;
@@ -764,7 +765,16 @@ trough_paging_cb (StScrollBar *self)
   st_adjustment_remove_transition (priv->adjustment, "value");
 
   settings = st_settings_get ();
-  g_object_get (settings, "slow-down-factor", &slow_down_factor, NULL);
+  g_object_get (settings,
+                "slow-down-factor", &slow_down_factor,
+                "animations-enabled", &animations_enabled,
+                NULL);
+
+  if (!animations_enabled)
+    {
+      st_adjustment_set_value (priv->adjustment, new_value);
+      return ret;
+    }
 
   /* FIXME: Creating a new transition for each scroll is probably not the best
   * idea, but it's a lot less involved than extending the current animation */

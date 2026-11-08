@@ -45,7 +45,8 @@ class CinnamonBackend(Backend, GObject.Object):
             try:
                 result = proxy.call_finish(res).unpack()
             except GLib.Error as exc:
-                print(f'cinnamon-screenshot: DBus {method} failed: {exc.message}', file=sys.stderr)
+                if not exc.matches(Gio.io_error_quark(), Gio.IOErrorEnum.CANCELLED):
+                    print(f'cinnamon-screenshot: DBus {method} failed: {exc.message}', file=sys.stderr)
                 result = None
             on_result(result)
         self._proxy.call(method, params, Gio.DBusCallFlags.NONE, -1, None, cb)

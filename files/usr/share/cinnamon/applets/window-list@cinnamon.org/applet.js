@@ -273,7 +273,9 @@ class AppMenuButton {
         this.drawLabel = false;
         this.labelVisiblePref = false;
         this._signals = new SignalManager.SignalManager();
-        this.xid = metaWindow.get_xwindow();
+        // XIDs survive a Cinnamon restart in X11; native Wayland windows have none.
+        let xid = metaWindow.get_xwindow();
+        this.orderKey = xid ? String(xid) : `w${metaWindow.get_stable_sequence()}`;
         this._flashTimer = null;
 
         if (this._applet.orientation == St.Side.TOP)
@@ -556,9 +558,6 @@ class AppMenuButton {
         if (!app) {
           app = tracker.get_app_from_pid(this.metaWindow.get_pid());
         }
-        if (!app) {
-          app = tracker.get_app_from_pid(this.metaWindow.get_client_pid());
-        }
         return app;
     }
 
@@ -822,7 +821,7 @@ class AppMenuButton {
         // window-backed and app-backed windows without special-casing.
         let icon = this.app ?
             this.app.create_icon_texture_for_window(this.icon_size, this.metaWindow) :
-            new St.Icon({ icon_name: 'application-default-icon',
+            new St.Icon({ icon_name: 'application-x-executable',
                 icon_type: St.IconType.FULLCOLOR,
                 icon_size: this.icon_size });
 
@@ -897,6 +896,56 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
         let item;
         let length;
 
+        let windowMenu = new PopupMenu.PopupSubMenuMenuItem(_("Window management"));
+        this.addMenuItem(windowMenu);
+
+        // Always on top
+        item = new PopupMenu.PopupSwitchMenuItem(_("Always on top"), mw.is_above());
+        this._signals.connect(item, 'toggled', (item, state) => {
+            if (state)
+                mw.make_above();
+            else
+                mw.unmake_above();
+            this.close();
+        });
+        windowMenu.menu.addMenuItem(item);
+
+        // Visible on all workspaces
+        length = global.workspace_manager.n_workspaces;
+        if (length > 1) {
+            item = new PopupMenu.PopupSwitchMenuItem(_("Visible on all workspaces"), mw.is_on_all_workspaces());
+            this._signals.connect(item, 'toggled', (item, state) => {
+                if (state)
+                    mw.stick();
+                else
+                    mw.unstick();
+                this.close();
+            });
+            windowMenu.menu.addMenuItem(item);
+        }
+
+        // Move to another workspace
+        if ((length = global.workspace_manager.n_workspaces) > 1 && !mw.is_on_all_workspaces()) {
+            item = new PopupMenu.PopupSubMenuMenuItem(_("Move to another workspace"));
+            windowMenu.menu.addMenuItem(item);
+
+            let curr_index = mw.get_workspace().index();
+            for (let i = 0; i < length; i++) {
+                // Make the index a local variable to pass to function
+                let j = i;
+                let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
+                let ws = new PopupMenu.PopupMenuItem(name);
+
+                if (i == curr_index)
+                    ws.setSensitive(false);
+
+                this._signals.connect(ws, 'activate', function() {
+                    mw.change_workspace(global.workspace_manager.get_workspace_by_index(j));
+                });
+                item.menu.addMenuItem(ws);
+            }
+        }
+
         // Move to monitor
         if ((length = Main.layoutManager.monitors.length) == 2) {
             Main.layoutManager.monitors.forEach(function (monitor, index) {
@@ -905,7 +954,7 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 this._signals.connect(item, 'activate', function() {
                     mw.move_to_monitor(index);
                 });
-                this.addMenuItem(item);
+                windowMenu.menu.addMenuItem(item);
             }, this);
         }
         else if ((length = Main.layoutManager.monitors.length) > 2) {
@@ -915,45 +964,8 @@ class AppMenuButtonRightClickMenu extends Applet.AppletPopupMenu {
                 this._signals.connect(item, 'activate', function() {
                     mw.move_to_monitor(index);
                 });
-                this.addMenuItem(item);
+                windowMenu.menu.addMenuItem(item);
             }, this);
-        }
-
-        // Move to workspace
-        if ((length = global.workspace_manager.n_workspaces) > 1) {
-            if (mw.is_on_all_workspaces()) {
-                item = new PopupMenu.PopupMenuItem(_("Only on this workspace"));
-                this._signals.connect(item, 'activate', function() {
-                    mw.unstick();
-                });
-                this.addMenuItem(item);
-            } else {
-                item = new PopupMenu.PopupMenuItem(_("Visible on all workspaces"));
-                this._signals.connect(item, 'activate', function() {
-                    mw.stick();
-                });
-                this.addMenuItem(item);
-
-                item = new PopupMenu.PopupSubMenuMenuItem(_("Move to another workspace"));
-                this.addMenuItem(item);
-
-                let curr_index = mw.get_workspace().index();
-                for (let i = 0; i < length; i++) {
-                    // Make the index a local variable to pass to function
-                    let j = i;
-                    let name = Main.workspace_names[i] ? Main.workspace_names[i] : Main._makeDefaultWorkspaceName(i);
-                    let ws = new PopupMenu.PopupMenuItem(name);
-
-                    if (i == curr_index)
-                        ws.setSensitive(false);
-
-                    this._signals.connect(ws, 'activate', function() {
-                        mw.change_workspace(global.workspace_manager.get_workspace_by_index(j));
-                    });
-                    item.menu.addMenuItem(ws);
-                }
-
-            }
         }
 
         // Preferences
@@ -1451,8 +1463,8 @@ class CinnamonWindowListApplet extends Applet.Applet {
             this._monitorWatchList.indexOf(metaWindow.get_monitor()) != -1;
     }
 
-    /* Store by Windows (XIDs), a simple list
-       xid::xid::xid::xid::xid
+    /* Store by window order key (see AppMenuButton), a simple list
+       key::key::key::key::key
     */
 
     _applySavedOrder() {
@@ -1461,13 +1473,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         order.reverse();
 
         for (let i = 0; i < order.length; i++) {
-            let xid = parseInt(order[i]);
-
-            if (xid === NaN) {
-                continue;
-            }
-
-            let found = this._windows.find(win => (win.xid == xid));
+            let found = this._windows.find(win => win.orderKey === order[i]);
 
             if (found) {
                 this.manager_container.set_child_at_index(found.actor, 0);
@@ -1486,7 +1492,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
         let actors = this.manager_container.get_children();
 
         for (let i = 0; i < actors.length; i++) {
-            new_order.push(actors[i]._delegate.xid);
+            new_order.push(actors[i]._delegate.orderKey);
         }
 
         if (new_order.length === 0) {

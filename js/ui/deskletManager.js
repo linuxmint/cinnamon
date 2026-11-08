@@ -5,7 +5,6 @@ const GLib = imports.gi.GLib;
 const St = imports.gi.St;
 const Meta = imports.gi.Meta;
 const Cinnamon = imports.gi.Cinnamon;
-const Mainloop = imports.mainloop;
 const Lang = imports.lang;
 
 const Desklet = imports.ui.desklet;
@@ -28,8 +27,6 @@ var deskletsDragging = false;
 
 var userDeskletsDir;
 
-var mouseTrackEnabled = false;
-var mouseTrackTimoutId = 0;
 var promises = [];
 
 var deskletChangeKey = 0;
@@ -79,7 +76,6 @@ function init() {
         global.settings.connect('changed::' + DESKLET_SNAP_INTERVAL_KEY, _onDeskletSnapChanged);
 
         deskletsLoaded = true;
-        updateMouseTracking();
         global.log(`DeskletManager started in ${new Date().getTime() - startTime} ms`);
     });
 }
@@ -88,42 +84,10 @@ function getDeskletDefinition(definition) {
     return queryCollection(definitions, definition);
 }
 
-function updateMouseTracking() {
-    let enable = definitions.length > 0;
-    if (enable && !mouseTrackTimoutId) {
-        mouseTrackTimoutId = Mainloop.timeout_add(500, checkMouseTracking);
-    } else if (!enable && mouseTrackTimoutId) {
-        Mainloop.source_remove(mouseTrackTimoutId);
-        mouseTrackTimoutId = 0;
-
-        for (let i = 0; i < definitions.length; i++) {
-            if (definitions[i].desklet) {
-                definitions[i].desklet._untrackMouse();
-            }
-        }
-    }
-}
-
-function hasMouseWindow(){
-    let window = global.display.get_pointer_window(null);
-    return window && window.window_type !== Meta.WindowType.DESKTOP;
-}
-
+// Desklets are tracked as chrome for as long as they exist; the layout
+// manager keeps their input region clear of the windows above them.
+// This function is kept for desklets that still call it.
 function checkMouseTracking() {
-    let enable = !hasMouseWindow();
-    if (mouseTrackEnabled !== enable) {
-        mouseTrackEnabled = enable;
-        for (let i = 0; i < definitions.length; i++) {
-            if (!definitions[i].desklet) {
-                continue;
-            }
-            if (enable) {
-                definitions[i].desklet._trackMouse();
-            } else {
-                definitions[i].desklet._untrackMouse();
-            }
-        }
-    }
     return true;
 }
 
@@ -255,7 +219,7 @@ function _onEnabledDeskletsChanged() {
 
     // Make sure all desklet extensions are loaded.
     // Once loaded, the desklets will add themselves via finishExtensionLoad
-    initEnabledDesklets().then(updateMouseTracking);
+    initEnabledDesklets();
 }
 
 function _unloadDesklet(deskletDefinition, deleteConfig) {
@@ -310,6 +274,7 @@ function _loadDesklet(extension, deskletDefinition) {
 
         if (!Main.deskletContainer.contains(desklet.actor)) Main.deskletContainer.addDesklet(desklet.actor);
         desklet.actor.set_position(deskletDefinition.x, deskletDefinition.y);
+        desklet._trackMouse();
 
         desklet.on_desklet_added_to_desktop_internal(deskletsLoaded && !deskletsDragging);
 
@@ -470,6 +435,7 @@ DeskletContainer.prototype = {
     addDesklet: function(actor){
         this.actor.add_actor(actor);
         actor._delegate._draggable.inhibit = global.settings.get_boolean(LOCK_DESKLETS_KEY);
+        actor._delegate._trackMouse();
     },
 
     /**
@@ -550,9 +516,7 @@ DeskletContainer.prototype = {
     acceptDrop: function(source, actor, x, y, time) {
         if (!(source instanceof Desklet.Desklet)) return false;
         Main.uiGroup.remove_actor(actor);
-        this.actor.add_actor(actor);
-        mouseTrackEnabled = -1; // forces an update of all desklet mouse tracks
-        checkMouseTracking();
+        this.addDesklet(actor);
 
         // Update GSettings
         let enabledDesklets = global.settings.get_strv(ENABLED_DESKLETS_KEY);
@@ -587,9 +551,7 @@ DeskletContainer.prototype = {
     cancelDrag: function(source, actor) {
         if (!(source instanceof Desklet.Desklet)) return false;
         Main.uiGroup.remove_actor(actor);
-        this.actor.add_actor(actor);
-        mouseTrackEnabled = -1;
-        checkMouseTracking();
+        this.addDesklet(actor);
         this._dragPlaceholder.hide();
         this.last_x = -1;
         this.last_y = -1;

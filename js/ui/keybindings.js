@@ -114,9 +114,18 @@ function KeybindingManager() {
 
 KeybindingManager.prototype = {
     _init: function() {
-        this._proxy = new proxy(Gio.DBus.session,
-                                'org.cinnamon.SettingsDaemon.KeybindingHandler',
-                                '/org/cinnamon/SettingsDaemon/KeybindingHandler');
+        this._proxy = null;
+        new proxy(Gio.DBus.session,
+                  'org.cinnamon.SettingsDaemon.KeybindingHandler',
+                  '/org/cinnamon/SettingsDaemon/KeybindingHandler',
+                  (obj, error) => {
+                      if (error) {
+                          global.logError("KeybindingManager: could not reach the csd keybinding handler: " +
+                                          error.message);
+                          return;
+                      }
+                      this._proxy = obj;
+                  });
 
         /* Keep track of bindings so we can a) check if they've change (and avoid the work
          * if the haven't), b) handle the callbacks when the keystrokes are captured by
@@ -449,6 +458,11 @@ KeybindingManager.prototype = {
             return;
         }
 
+        if (!this._proxy) {
+            global.logWarning("KeybindingManager: csd keybinding handler not available yet, dropping media key " + action);
+            return;
+        }
+
         this._proxy.HandleKeybindingRemote(action);
     },
 
@@ -474,10 +488,14 @@ KeybindingManager.prototype = {
         });
     },
 
-    invoke_keybinding_action_by_id: function(id) {
+    invoke_keybinding_action_by_id: function(id, mask=0) {
         const entry = this.bindings.get(id);
         if (entry !== undefined) {
-            entry.callback(null, null, { get_name: () => entry.name });
+            entry.callback(global.display, global.display.get_focus_window(), {
+                get_name: () => entry.name,
+                get_mask: () => mask,
+                is_reversed: () => entry.name.endsWith('-backward')
+            });
         }
     }
 };

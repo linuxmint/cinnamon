@@ -1,0 +1,46 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN"
+ "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <!--
+    org.Cinnamon.Background:
+
+    Exported by cinnamon-background-daemon on the session bus, on the well-known name
+    org.Cinnamon.Background at object path
+    /org/Cinnamon/Background (alongside org.freedesktop.Application).
+
+    The service is D-Bus activatable, so a watcher can start it early and follow
+    State to know when the wallpaper is actually on screen.
+  -->
+  <interface name="org.Cinnamon.Background">
+    <!--
+      Start:
+
+      Does nothing on its own; calling it is the point. A method call on the
+      well-known name activates the service, so a client that already holds a
+      proxy can bring the daemon back after it has exited.
+    -->
+    <method name="Start"/>
+
+    <!--
+      State:
+
+      Readiness of the background daemon. Cinnamon gates its startup reveal on
+      this.
+
+        0 = INITIALIZING  (running, loading/painting; nothing shown yet)
+        1 = READY         (the wallpaper has been painted)
+    -->
+    <property name="State" type="u" access="read"/>
+
+    <!--
+      RenderedLayout:
+
+      How the background is arranged, and what each monitor is being painted
+      with in the monitors' left-to-right order:
+      (mode, [(connector, display-name, picture-uri, slideshow)]).
+
+      This is mainly for display purposes - backgroundManager.js accesses it.
+    -->
+    <property name="RenderedLayout" type="(sa(sssb))" access="read"/>
+  </interface>
+</node>

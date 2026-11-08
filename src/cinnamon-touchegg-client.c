@@ -59,7 +59,8 @@ emit_our_signal (CinnamonToucheggClient *client,
     g_debug ("CinnamonToucheggClient signal: %s: type %u, direction %u, progress %0.1f, fingers %d, device %u, elapsed_time %lu",
              our_signal, type, direction, percentage, fingers, device, elapsed_time);
 
-    g_signal_emit_by_name (client, our_signal, type, direction, percentage, fingers, device, g_get_monotonic_time ());
+    // Use milliseconds for consistency with Clutter event.get_time()
+    g_signal_emit_by_name (client, our_signal, type, direction, percentage, fingers, device, g_get_monotonic_time () / 1000);
 }
 
 static void

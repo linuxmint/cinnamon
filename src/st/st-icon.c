@@ -261,6 +261,58 @@ st_icon_resource_scale_changed (ClutterActor *actor,
   st_icon_update (icon);
 }
 
+/* While a new texture loads, the old one stays as our child - size to the
+ * pending one instead, so layout doesn't lag a frame behind style changes. */
+static void
+st_icon_get_preferred_width (ClutterActor *actor,
+                             gfloat        for_height,
+                             gfloat       *min_width_p,
+                             gfloat       *natural_width_p)
+{
+  StIconPrivate *priv = ST_ICON (actor)->priv;
+  StThemeNode *theme_node;
+
+  if (priv->pending_texture == NULL)
+    {
+      CLUTTER_ACTOR_CLASS (st_icon_parent_class)->get_preferred_width (actor, for_height,
+                                                                       min_width_p,
+                                                                       natural_width_p);
+      return;
+    }
+
+  theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+
+  st_theme_node_adjust_for_height (theme_node, &for_height);
+  clutter_actor_get_preferred_width (priv->pending_texture, for_height,
+                                     min_width_p, natural_width_p);
+  st_theme_node_adjust_preferred_width (theme_node, min_width_p, natural_width_p);
+}
+
+static void
+st_icon_get_preferred_height (ClutterActor *actor,
+                              gfloat        for_width,
+                              gfloat       *min_height_p,
+                              gfloat       *natural_height_p)
+{
+  StIconPrivate *priv = ST_ICON (actor)->priv;
+  StThemeNode *theme_node;
+
+  if (priv->pending_texture == NULL)
+    {
+      CLUTTER_ACTOR_CLASS (st_icon_parent_class)->get_preferred_height (actor, for_width,
+                                                                        min_height_p,
+                                                                        natural_height_p);
+      return;
+    }
+
+  theme_node = st_widget_get_theme_node (ST_WIDGET (actor));
+
+  st_theme_node_adjust_for_width (theme_node, &for_width);
+  clutter_actor_get_preferred_height (priv->pending_texture, for_width,
+                                      min_height_p, natural_height_p);
+  st_theme_node_adjust_preferred_height (theme_node, min_height_p, natural_height_p);
+}
+
 static void
 st_icon_class_init (StIconClass *klass)
 {
@@ -276,6 +328,8 @@ st_icon_class_init (StIconClass *klass)
   object_class->finalize = st_icon_finalize;
 
   actor_class->paint = st_icon_paint;
+  actor_class->get_preferred_width = st_icon_get_preferred_width;
+  actor_class->get_preferred_height = st_icon_get_preferred_height;
 
   widget_class->style_changed = st_icon_style_changed;
 
@@ -495,8 +549,17 @@ st_icon_update (StIcon *icon)
         }
       else
         {
+          gfloat old_width, old_height, new_width, new_height;
+
           /* Will be shown when fully loaded */
           priv->opacity_handler_id = g_signal_connect (priv->pending_texture, "notify::opacity", G_CALLBACK (opacity_changed_cb), icon);
+
+          /* We size to the pending texture from now on */
+          clutter_actor_get_preferred_size (priv->icon_texture, NULL, NULL, &old_width, &old_height);
+          clutter_actor_get_preferred_size (priv->pending_texture, NULL, NULL, &new_width, &new_height);
+
+          if (old_width != new_width || old_height != new_height)
+            clutter_actor_queue_relayout (CLUTTER_ACTOR (icon));
         }
     }
   else if (priv->icon_texture)

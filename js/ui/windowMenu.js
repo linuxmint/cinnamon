@@ -81,7 +81,7 @@ var MnemonicLeftOrnamentedMenuItem = class MnemonicLeftOrnamentedMenuItem extend
     setOrnament(ornamentType, state) {
         switch (ornamentType) {
         case PopupMenu.OrnamentType.CHECK:
-            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof CheckBox.CheckBox))) {
+            if ((this._ornament.child) && (!(this._ornament.child instanceof CheckBox.CheckBox))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }
@@ -96,7 +96,7 @@ var MnemonicLeftOrnamentedMenuItem = class MnemonicLeftOrnamentedMenuItem extend
             this._icon = null;
             break;
         case PopupMenu.OrnamentType.DOT:
-            if ((this._ornament.child) && (!(this._ornament.child._delegate instanceof RadioButton.RadioButton))) {
+            if ((this._ornament.child) && (!(this._ornament.child instanceof RadioButton.RadioButton))) {
                 this._ornament.child.destroy();
                 this._ornament.child = null;
             }

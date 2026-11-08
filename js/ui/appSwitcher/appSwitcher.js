@@ -120,6 +120,7 @@ AppSwitcher.prototype = {
             this._currentIndex = 0;
         }
         this._modifierMask = primaryModifier(binding.get_mask());
+        this._gestureDriven = binding.gesture === true;
 
         this._tracker = Cinnamon.WindowTracker.get_default();
         this._windowManager = global.window_manager;
@@ -132,7 +133,7 @@ AppSwitcher.prototype = {
     },
 
     _setupModal: function () {
-        this._haveModal = Main.pushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL);
+        this._haveModal = Main.tryPushModal(this.actor, undefined, undefined, Cinnamon.ActionMode.SYSTEM_MODAL);
         if (!this._haveModal) {
             // Probably someone else has a pointer grab, try again with keyboard only
             this._haveModal = Main.pushModal(this.actor, global.get_current_time(), Meta.ModalOptions.POINTER_ALREADY_GRABBED, Cinnamon.ActionMode.SYSTEM_MODAL);
@@ -148,6 +149,12 @@ AppSwitcher.prototype = {
             this.actor.connect('key-release-event', Lang.bind(this, this._keyReleaseEvent));
             this.actor.connect('scroll-event', Lang.bind(this, this._scrollEvent));
             this.actor.connect('button-press-event', Lang.bind(this, this.destroy));
+
+            // Gesture-driven: no modifier to release, so no race check
+            // or delay. The subclass is still building, so the caller
+            // shows it via showNow() when done.
+            if (this._gestureDriven)
+                return this._haveModal;
 
             // There's a race condition; if the user released Alt before
             // we got the grab, then we won't be notified. (See
@@ -252,6 +259,82 @@ AppSwitcher.prototype = {
         this._setCurrentWindow(this._windows[this._currentIndex]);
     },
 
+    /**
+     * _selectInitial: the first selection. A keybinding steps to the next
+     * window; a gesture has no key press, so it stays on the current one.
+     */
+    _selectInitial: function () {
+        if (this._gestureDriven)
+            this._select(this._currentIndex);
+        else if (this._binding.is_reversed())
+            this._previous();
+        else
+            this._next();
+    },
+
+    /**
+     * isGestureDriven: true if there is no modifier to release.
+     */
+    isGestureDriven: function () {
+        return this._gestureDriven;
+    },
+
+    /**
+     * showNow: shows immediately, for gestures with no modifier to wait
+     * for. Call only after the constructor returns; parts built after the
+     * modal grab do not exist while it is taken.
+     */
+    showNow: function () {
+        if (this._destroyed || this._initialDelayTimeoutId === 0)
+            return;
+
+        // A failed show leaves the modal grab in place, swallowing input
+        // with nothing on screen. Remove it instead.
+        try {
+            this._show();
+        } catch (e) {
+            global.logError("Could not show the window switcher", e);
+            this.destroy();
+        }
+    },
+
+    /**
+     * getWindowCount: the number of windows in the switcher.
+     */
+    getWindowCount: function () {
+        return this._windows ? this._windows.length : 0;
+    },
+
+    /**
+     * selectByOffset: moves the selection by @offset windows, one at a
+     * time as repeated key presses do, so each style animates normally.
+     */
+    selectByOffset: function (offset) {
+        if (!this._windows || this._windows.length < 2)
+            return;
+
+        for (let i = 0; i < Math.abs(offset); i++) {
+            if (offset > 0)
+                this._next();
+            else
+                this._previous();
+        }
+    },
+
+    /**
+     * finish: ends a gesture-driven switch, activating the selection if
+     * @activate. Safe on an already-destroyed switcher (e.g. via Escape).
+     */
+    finish: function (activate) {
+        if (this._destroyed || !this._windows)
+            return;
+
+        if (activate)
+            this._activateSelected();
+        else
+            this.destroy();
+    },
+
     _updateActiveMonitor: function () {
         this._activeMonitor = null;
         if (!this._enforcePrimaryMonitor)
@@ -338,11 +421,21 @@ AppSwitcher.prototype = {
 
     _keyReleaseEvent: function (actor, event) {
         let [x, y, mods] = global.get_pointer();
+        // Gesture-driven: no modifier was held, so a key coming up does
+        // not commit. Enter, Escape or a click does.
+        if (this._gestureDriven)
+            return true;
+
         let state = mods & this._modifierMask;
 
         if (state == 0) {
-            if (this._initialDelayTimeoutId !== 0)
-                this._currentIndex = (this._currentIndex + 1) % this._windows.length;
+            if (this._initialDelayTimeoutId !== 0) {
+                let backward = this._binding.is_reversed();
+                if (backward)
+                    this._currentIndex = (this._currentIndex - 1 + this._windows.length) % this._windows.length;
+                else
+                    this._currentIndex = (this._currentIndex + 1) % this._windows.length;
+            }
             this._activateSelected();
         }
 
@@ -350,6 +443,11 @@ AppSwitcher.prototype = {
     },
 
     _failedGrabAction: function () {
+        if (this._gestureDriven) {
+            this.destroy();
+            return;
+        }
+
         if (!["coverflow", "timeline"].includes(global.settings.get_string('alttab-switcher-style'))) {
             this._keyReleaseEvent(null, null);
         }

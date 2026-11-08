@@ -147,7 +147,8 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         this._photoFrame = new St.Bin({style_class: 'photoframe-box', x_align: St.Align.START});
 
         this._bin = new St.Bin();
-        this._bin.set_size(this.width, this.height);
+        this._bin.set_size(this.width * global.ui_scale, this.height * global.ui_scale);
+        this._bin.connect('resource-scale-changed', () => this._onResourceScaleChanged());
 
         this._images = [];
         this._photoFrame.set_child(this._bin);
@@ -170,8 +171,9 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
             this._bin.add_effect(desaturate_effect);
         }
 
-        this.updateInProgress = false;
         this.currentPicture = null;
+        this._loadHandle = 0;
+        this._imageResourceScale = 1;
 
         this._scan_picture_dir(this.dir_file);
     }
@@ -210,27 +212,39 @@ class CinnamonPhotoFrameDesklet extends Desklet.Desklet {
         }
 
         if (image_path) {
-            St.TextureCache.get_default().load_image_from_file_async(
-                image_path,
-                this.width, this.height,
-                // FIXME: image_path should be the user_data arg of load_image_from_file_async,
-                // not our callback binding, but we get a complaint about wrong number of args.
-                // This seems to work but it ends up putting image_path as the first argument of
-                // _nextImageLoaded instead of the last.
-                // We need to pass the path so we have something to open if the user middle-clicks
-                // the photo (to open it in a viewer).
-                this._nextImageLoaded.bind(this, image_path)
-            );
+            this._loadImage(image_path);
         }
 
         return GLib.SOURCE_CONTINUE;
     }
 
-    _nextImageLoaded(image_path, cache, handle, actor) {
-        if (actor == null) {
-            this.updateInProgress = false;
+    _loadImage(image_path) {
+        const resourceScale = this._bin.get_resource_scale();
+        const scale = global.ui_scale * resourceScale;
+
+        this._imageResourceScale = resourceScale;
+        // The path is bound as the first argument so the picture can be opened on middle-click.
+        this._loadHandle = St.TextureCache.get_default().load_image_from_file_async(
+            image_path,
+            Math.round(this.width * scale), Math.round(this.height * scale),
+            this._nextImageLoaded.bind(this, image_path, resourceScale)
+        );
+    }
+
+    _onResourceScaleChanged() {
+        if (this.currentPicture && this._bin.get_resource_scale() !== this._imageResourceScale) {
+            this._loadImage(this.currentPicture.path);
+        }
+    }
+
+    _nextImageLoaded(image_path, resourceScale, cache, handle, actor) {
+        if (handle !== this._loadHandle || actor.get_content() === null) {
+            actor.destroy();
             return;
         }
+
+        this._loadHandle = 0;
+        actor.set_size(actor.width / resourceScale, actor.height / resourceScale);
 
         let old_pic = this.currentPicture;
         this.currentPicture = actor;

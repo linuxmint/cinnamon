@@ -35,7 +35,6 @@ enum
   FILTER_KEYBINDING,
   CONFIRM_DISPLAY_CHANGE,
   CREATE_CLOSE_DIALOG,
-  CREATE_INHIBIT_SHORTCUTS_DIALOG,
 
   LAST_SIGNAL
 };
@@ -194,22 +193,6 @@ cinnamon_wm_class_init (CinnamonWMClass *klass)
                   0,
                   NULL, NULL, NULL,
                   META_TYPE_CLOSE_DIALOG, 1, META_TYPE_WINDOW);
-  /**
-   * CinnamonWM::create-inhibit-shortcuts-dialog:
-   * @wm: The WM
-   * @window: The window to create the dialog for
-   *
-   * Creates an inhibit shortcuts dialog for the given window.
-   *
-   * Returns: (transfer full): The inhibit shortcuts dialog instance.
-   */
-  cinnamon_wm_signals[CREATE_INHIBIT_SHORTCUTS_DIALOG] =
-    g_signal_new ("create-inhibit-shortcuts-dialog",
-                  G_TYPE_FROM_CLASS (klass),
-                  G_SIGNAL_RUN_LAST,
-                  0,
-                  NULL, NULL, NULL,
-                  META_TYPE_INHIBIT_SHORTCUTS_DIALOG, 1, META_TYPE_WINDOW);
 }
 
 void
@@ -460,16 +443,6 @@ _cinnamon_wm_create_close_dialog (CinnamonWM    *wm,
   return dialog;
 }
 
-MetaInhibitShortcutsDialog *
-_cinnamon_wm_create_inhibit_shortcuts_dialog (CinnamonWM    *wm,
-                                              MetaWindow *window)
-{
-  MetaInhibitShortcutsDialog *dialog;
-
-  g_signal_emit (wm, cinnamon_wm_signals[CREATE_INHIBIT_SHORTCUTS_DIALOG], 0, window, &dialog);
-
-  return dialog;
-}
 /**
  * cinnamon_wm_new:
  * @plugin: the #MetaPlugin

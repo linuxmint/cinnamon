@@ -1,0 +1,9 @@
+[Unit]
+Description=Cinnamon background daemon
+PartOf=graphical-session.target
+
+[Service]
+Type=dbus
+BusName=org.Cinnamon.Background
+ExecStart=@LIBEXECDIR@/cinnamon-background-daemon
+Slice=session.slice

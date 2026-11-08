@@ -5,7 +5,7 @@ import gi
 gi.require_version("Gtk", "3.0")
 
 from gi.repository import Gtk
-from bin.SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser
+from bin.SettingsWidgets import SidePage, GSettingsDependencySwitch, DependencyCheckInstallButton, GSettingsSoundFileChooser, GSettingsKeybinding
 from xapp.GSettingsWidgets import *
 
 DPI_FACTOR_LARGE         = 1.25
@@ -388,6 +388,12 @@ class Module:
                                      None)
 
             settings.add_row(switch)
+
+            widget = GSettingsKeybinding(_("Turn hover click on or off"),
+                                         "org.cinnamon.desktop.keybindings",
+                                         "hoverclick-toggle")
+
+            settings.add_row(widget)
 
             slider = GSettingsRange(_("Delay"),
                                     "org.cinnamon.desktop.a11y.mouse",

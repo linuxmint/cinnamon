@@ -432,6 +432,13 @@ class MelangeApp(Gtk.Application):
         self.debug_button = DebugButton(self.cinnamon_proxy)
         headerbar.pack_start(self.debug_button)
 
+        session_label = Gtk.Label()
+        session_label.set_markup("Session type: <b>%s</b>" %
+                                 ("Wayland" if os.environ.get("XDG_SESSION_TYPE") == "wayland" else "X11"))
+        session_label.get_style_context().add_class("dim-label")
+        session_label.set_margin_start(12)
+        headerbar.pack_start(session_label)
+
         self.window.set_titlebar(headerbar)
         self.window.set_icon_name("system-search")
         self.window.set_default_size(1000, 400)
@@ -535,8 +542,10 @@ class MelangeApp(Gtk.Application):
         menu = Gtk.Menu()
         menu.append(self.create_menu_item('Add File Watcher', self.on_add_file_watcher))
         menu.append(Gtk.SeparatorMenuItem())
-        menu.append(self.create_menu_item('Restart Cinnamon', restart_func))
-        menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
+        # Cinnamon is the compositor in Wayland - it can't be restarted, and a crash ends the session.
+        if os.environ.get("XDG_SESSION_TYPE") != "wayland":
+            menu.append(self.create_menu_item('Restart Cinnamon', restart_func))
+            menu.append(self.create_menu_item('Crash Cinnamon', crash_func))
         menu.append(self.create_menu_item('Reset Cinnamon Settings', self.on_reset_clicked))
         menu.append(Gtk.SeparatorMenuItem())
         menu.append(self.create_menu_item('Quit', self.on_quit))

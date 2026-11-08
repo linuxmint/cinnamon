@@ -24,6 +24,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
         // Settings
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
+        this._interfaceSettings = new Gio.Settings({schema_id: 'org.cinnamon.desktop.interface'});
         this.settings.bind("ignoreTransientNotifications", "ignoreTransientNotifications");
         this.settings.bind("showEmptyTray", "showEmptyTray", this._show_hide_tray);
         this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
@@ -49,6 +50,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         // States
         this._blinking = false;
         this._blink_toggle = false;
+        this._blinkTimeoutId = 0;
 
         this._display();
     }
@@ -58,7 +60,20 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
         Main.keybindingManager.addXletHotKey(this, "notification-clear", this.keyClear, Lang.bind(this, this._clear_all));
     }
 
+    // Idempotent: three call sites can each get here first.
+    _disconnectNotificationSignals(notification) {
+        if (notification._appletScrollId) {
+            notification.disconnect(notification._appletScrollId);
+            notification._appletScrollId = 0;
+        }
+        if (notification._appletDestroyId) {
+            notification.disconnect(notification._appletDestroyId);
+            notification._appletDestroyId = 0;
+        }
+    }
+
     on_applet_removed_from_panel () {
+        this._stop_blinking();
         Main.keybindingManager.removeXletHotKey(this, "notification-open");
         Main.keybindingManager.removeXletHotKey(this, "notification-clear");
 
@@ -67,10 +82,18 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this._clear_all();
         }
 
+        // Whatever is still listed keeps its handlers otherwise, and the applet with them.
+        for (let n of this.notifications)
+            this._disconnectNotificationSignals(n);
+
         this.signals.disconnectAllSignals();
         this.settings.finalize();
         this._crit_icon.destroy();
         this._alt_crit_icon.destroy();
+
+        // Otherwise every reload leaks another menu, still drawable above a dead applet.
+        this.menuManager.removeMenu(this.menu);
+        this.menu.destroy();
     }
 
     _openMenu() {
@@ -153,31 +176,45 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             return;
         }
 
+        // The tray hands a notification back after hiding its banner even if it was
+        // destroyed meanwhile, and the actor is gone by then.
+        if (notification._destroyed) {
+            let destroyed_index = this.notifications.indexOf(notification);
+            if (destroyed_index != -1) {
+                this.notifications.splice(destroyed_index, 1);
+                this.update_list();
+            }
+            return;
+        }
+
         notification.actor.unparent();
         let existing_index = this.notifications.indexOf(notification);
         if (existing_index != -1) { // This notification is already listed.
-            if (notification._destroyed) {
-                this.notifications.splice(existing_index, 1);
-            } else {
-                notification._inNotificationBin = true;
-                global.reparentActor(notification.actor, this._notificationbin);
-                notification._timeLabel.show();
-            }
+            notification._inNotificationBin = true;
+            global.reparentActor(notification.actor, this._notificationbin);
+            notification._timeLabel.show();
             this.update_list();
-            return;
-        } else if (notification._destroyed) {
             return;
         }
         // Add notification to list.
         notification._inNotificationBin = true;
         this.notifications.push(notification);
-        // Steal the notification panel.
-        this._notificationbin.add(notification.actor);
-        notification.actor._parent_container = this._notificationbin;
+        // Steal the notification panel. Style before parenting: St skips the restyle
+        // for an unmapped actor.
         notification.actor.add_style_class_name('notification-applet-padding');
+        // Insert where it belongs rather than appending and reordering after.
+        if (this.showNewestFirst)
+            this._notificationbin.insert_child_at_index(notification.actor, 0);
+        else
+            this._notificationbin.add(notification.actor);
+        notification.actor._parent_container = this._notificationbin;
         // Register for destruction.
-        notification.connect('scrolling-changed', (notif, scrolling) => { this.menu.passEvents = scrolling });
-        notification.connect('destroy', () => {
+        // Ids kept on the notification: one that outlives this applet would otherwise keep a
+        // closure holding the applet alive.
+        notification._appletScrollId = notification.connect('scrolling-changed',
+            (notif, scrolling) => { this.menu.passEvents = scrolling });
+        notification._appletDestroyId = notification.connect('destroy', () => {
+            this._disconnectNotificationSignals(notification);
             let i = this.notifications.indexOf(notification);
             if (i != -1)
                 this.notifications.splice(i, 1);
@@ -205,23 +242,23 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
                 }
                 switch (max_urgency) {
                     case Urgency.LOW:
-                        this._blinking = false;
+                        this._stop_blinking();
                         this.set_applet_icon_symbolic_name("low-notif");
                         break;
                     case Urgency.NORMAL:
                     case Urgency.HIGH:
-                        this._blinking = false;
+                        this._stop_blinking();
                         this.set_applet_icon_symbolic_name("normal-notif");
                         break;
                     case Urgency.CRITICAL:
-                        if (!this._blinking) {
+                        if (!this._blinking && this._blinkTimeoutId === 0) {
                             this._blinking = true;
                             this.critical_blink();
                         }
                         break;
                 }
             } else {    // There are no notifications.
-                this._blinking = false;
+                this._stop_blinking();
                 this.set_applet_label('');
                 this.set_applet_icon_symbolic_name("empty-notif");
                 this.clear_action.actor.hide();
@@ -243,34 +280,81 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
     }
 
     _clear_all() {
-        let count = this.notifications.length;
+        // Iterate a snapshot: destroy() splices this.notifications from its own handler.
+        let list = this.notifications;
+        let count = list.length;
+        this.notifications = [];
         if (count > 0) {
-            for (let i = count-1; i >=0; i--) {
-                this._notificationbin.remove_actor(this.notifications[i].actor);
-                this.notifications[i].destroy(NotificationDestroyedReason.DISMISSED);
+            // Coalesce the first-child/last-child churn; each one restyles a subtree.
+            this._notificationbin.freeze_notify();
+            try {
+                for (let i = count - 1; i >= 0; i--) {
+                    // Unmap before destroying: tearing down an unmapped subtree skips
+                    // the style work. Not ours while the tray shows it as a banner.
+                    if (list[i].actor.get_parent() === this._notificationbin)
+                        this._notificationbin.remove_actor(list[i].actor);
+                    list[i].destroy(NotificationDestroyedReason.DISMISSED);
+                }
+            } finally {
+                this._notificationbin.thaw_notify();
+                // If a destroy() threw, keep tracking whatever survived so a
+                // second clear can finish the job. Normally there are none.
+                let survivors = list.filter(n => !n._destroyed);
+                if (survivors.length > 0)
+                    this.notifications = survivors.concat(this.notifications);
             }
         }
-        this.notifications = [];
         this.update_list();
     }
 
     _reorderNotifications() {
-        let orderedNotifications = this.notifications.slice();
+        let bin = this._notificationbin;
+        let count = this.notifications.length;
+        let idx = this.showNewestFirst ? count - 1 : 0;
+        let step = this.showNewestFirst ? -1 : 1;
 
-        if (this.showNewestFirst) {
-            orderedNotifications.reverse();
+        // If everything is already in the wanted order, drop what we no longer track
+        // and skip the moves. That covers arrivals and dismissals, nearly every call.
+        let child = bin.get_first_child();
+        let extras = [];
+        let ordered = true;
+        for (let i = 0, j = idx; i < count; i++, j += step) {
+            let want = this.notifications[j].actor;
+            while (child !== null && child !== want) {
+                extras.push(child);
+                child = child.get_next_sibling();
+            }
+            if (child === null) {
+                ordered = false;
+                break;
+            }
+            child = child.get_next_sibling();
+        }
+        if (ordered) {
+            while (child !== null) {
+                extras.push(child);
+                child = child.get_next_sibling();
+            }
+            for (let i = 0; i < extras.length; i++)
+                bin.remove_child(extras[i]);
+            return;
         }
 
-        // Remove all children without destroying them.
-        let children = this._notificationbin.get_children();
-        for (let i = 0; i < children.length; i++) {
-            this._notificationbin.remove_child(children[i]);
+        // Moving never unparents, so St skips the subtree restyle a re-add would cost.
+        // Count what is placed: a notification the tray has taken has no actor here.
+        let placed = 0;
+        for (let i = 0; i < count; i++, idx += step) {
+            let actor = this.notifications[idx].actor;
+            let parent = actor.get_parent();
+            if (parent === bin)
+                bin.set_child_at_index(actor, placed++);
+            else if (parent === null)
+                bin.insert_child_at_index(actor, placed++);
         }
 
-        // Add them back in desired order.
-        for (let i = 0; i < orderedNotifications.length; i++) {
-            this._notificationbin.add_child(orderedNotifications[i].actor);
-        }
+        // Anything past what we placed is a child we no longer track.
+        for (let i = bin.get_n_children() - 1; i >= placed; i--)
+            bin.remove_child(bin.get_child_at_index(i));
     }
 
     _show_hide_tray() { // Show or hide the notification tray.
@@ -312,16 +396,31 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
 
     _update_timestamp() {
         let len = this.notifications.length;
-        if (len > 0) {
-            for (let i = 0; i < len; i++) {
-                let notification = this.notifications[i];
-                let orig_time = notification._timestamp;
-                notification._timeLabel.clutter_text.set_markup(timeify(orig_time));
-            }
+        if (len === 0)
+            return;
+
+        // Read the clock format and the time once, not once per notification.
+        let use_24h = this._interfaceSettings.get_boolean('clock-use-24h');
+        let now = new Date();
+
+        for (let i = 0; i < len; i++) {
+            let notification = this.notifications[i];
+            // set_text skips unchanged strings, which is most of them once the
+            // relative suffix stops changing after an hour.
+            notification._timeLabel.set_text(timeify(notification._timestamp, use_24h, now));
+        }
+    }
+
+    _stop_blinking () {
+        this._blinking = false;
+        if (this._blinkTimeoutId > 0) {
+            Mainloop.source_remove(this._blinkTimeoutId);
+            this._blinkTimeoutId = 0;
         }
     }
 
     critical_blink () {
+        this._blinkTimeoutId = 0;
         if (!this._blinking)
             return;
         if (this._blink_toggle) {
@@ -330,7 +429,7 @@ class CinnamonNotificationsApplet extends Applet.TextIconApplet {
             this._applet_icon_box.child = this._alt_crit_icon;
         }
         this._blink_toggle = !this._blink_toggle;
-        Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
+        this._blinkTimeoutId = Mainloop.timeout_add_seconds(1, Lang.bind(this, this.critical_blink));
     }
 }
 
@@ -346,10 +445,7 @@ function stringify(count) {
     }
 }
 
-function timeify(orig_time) {
-    let settings = new Gio.Settings({schema_id: 'org.cinnamon.desktop.interface'});
-    let use_24h = settings.get_boolean('clock-use-24h');
-    let now = new Date();
+function timeify(orig_time, use_24h, now) {
     let diff = Math.floor((now.getTime() - orig_time.getTime()) / 1000); // get diff in seconds
     let str;
     if (use_24h) {

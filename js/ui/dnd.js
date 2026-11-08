@@ -97,15 +97,13 @@ var _Draggable = class Draggable {
             this.target = target;
         }
 
-        this.buttonPressEventId = 0;
-        this.destroyEventId = 0;
-
         if (!params.manualMode)
-            this.buttonPressEventId = this.actor.connect('button-press-event',
-                                                    this._onButtonPress.bind(this));
+            this.actor.connect('button-press-event', this._onButtonPress.bind(this));
 
-        this.destroyEventId = this.actor.connect('destroy', () => {
+        this.actor.connect('destroy', () => {
             this._actorDestroyed = true;
+            if (this._dragActor === this.actor)
+                this._dragActorDestroyed = true;
 
             if (this._dragInProgress && this._dragCancellable)
                 this._cancelDrag(null);
@@ -264,6 +262,8 @@ var _Draggable = class Draggable {
     startDrag(stageX, stageY, event) {
         currentDraggable = this;
         this._dragInProgress = true;
+        this._dragCancellable = true;
+        this._dragActorDestroyed = false;
 
         // Special-case St.Button: the pointer grab messes with the internal
         // state, so force a reset to a reasonable state here
@@ -283,6 +283,11 @@ var _Draggable = class Draggable {
 
         if (this.actor._delegate && this.actor._delegate.getDragActor) {
             this._dragActor = this.actor._delegate.getDragActor();
+            this._dragActor.connectObject('destroy', () => {
+                this._dragActorDestroyed = true;
+                if (this._dragInProgress && this._dragCancellable)
+                    this._cancelDrag(null);
+            }, this);
             global.reparentActor(this._dragActor, Main.uiGroup);
             this._dragActor.raise_top();
             Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
@@ -335,6 +340,10 @@ var _Draggable = class Draggable {
             global.reparentActor(this._dragActor, Main.uiGroup);
             this._dragActor.raise_top();
             Cinnamon.util_set_hidden_from_pick(this._dragActor, true);
+
+            this._dragOrigParent.connectObject('destroy', () => {
+                this._dragOrigParent = null;
+            }, this);
         }
 
         this._dragOrigOpacity = this._dragActor.opacity;
@@ -533,7 +542,7 @@ var _Draggable = class Draggable {
                                                 event.get_time())) {
                     // If it accepted the drop without taking the actor,
                     // handle it ourselves.
-                    if (!this._dragActor.is_finalized() && this._dragActor.get_parent() === Main.uiGroup) {
+                    if (!this._dragActorDestroyed && this._dragActor.get_parent() === Main.uiGroup) {
                         if (this._restoreOnSuccess) {
                             this._restoreDragActor(event.get_time());
                             return true;
@@ -597,19 +606,13 @@ var _Draggable = class Draggable {
         }
         this.emit('drag-cancelled', eventTime);
         this._dragInProgress = false;
-        let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
 
-        if (this._actorDestroyed) {
-            global.unset_cursor();
-            if (!this._buttonDown)
-                this._dragComplete();
-            this.emit('drag-end', eventTime, false);
-            if (!this._dragOrigParent)
-                this._dragActor.destroy();
-
+        if (this._actorDestroyed || this._dragActorDestroyed) {
+            this._onAnimationComplete(this._dragActor, eventTime);
             return;
         }
 
+        let [snapBackX, snapBackY, snapBackScale] = this._getRestoreLocation();
         this._animationInProgress = true;
         // No target, so snap back
         this._dragActor.ease({
@@ -620,7 +623,7 @@ var _Draggable = class Draggable {
             animationRequired: true,
             duration: SNAP_BACK_ANIMATION_TIME,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
+            onStopped: () => {
                 this._onAnimationComplete(this._dragActor, eventTime);
             }
         });
@@ -641,19 +644,21 @@ var _Draggable = class Draggable {
             duration: REVERT_ANIMATION_TIME,
             animationRequired: true,
             mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-            onComplete: () => {
+            onStopped: () => {
                 this._onAnimationComplete(this._dragActor, eventTime);
             }
         });
     }
 
     _onAnimationComplete(dragActor, eventTime) {
-        if (this._dragOrigParent) {
-            global.reparentActor (dragActor, this._dragOrigParent);
-            dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
-            dragActor.set_position(this._dragOrigX, this._dragOrigY);
-        } else {
-            dragActor.destroy();
+        if (!this._dragActorDestroyed) {
+            if (this._dragOrigParent) {
+                global.reparentActor (dragActor, this._dragOrigParent);
+                dragActor.set_scale(this._dragOrigScale, this._dragOrigScale);
+                dragActor.set_position(this._dragOrigX, this._dragOrigY);
+            } else {
+                dragActor.destroy();
+            }
         }
         global.unset_cursor();
         this.emit('drag-end', eventTime, false);
@@ -664,8 +669,11 @@ var _Draggable = class Draggable {
     }
 
     _dragComplete() {
-        if (this._dragOrigParent)
+        if (this._dragOrigParent && !this._dragActorDestroyed)
             Cinnamon.util_set_hidden_from_pick(this._dragActor, false);
+
+        this._dragActor?.disconnectObject(this);
+        this._dragOrigParent?.disconnectObject(this);
 
         this._ungrabEvents();
         global.sync_pointer();

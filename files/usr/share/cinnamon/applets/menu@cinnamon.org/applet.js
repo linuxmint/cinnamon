@@ -55,12 +55,20 @@ const RefreshFlags = Object.freeze({
 const REFRESH_ALL_MASK = 0b111111;
 
 const NO_MATCH = 99999;
+/* The order in which search results are listed, by button type.
+ * Unknown types are listed last. */
+const SEARCH_TYPE_ORDER = ['app', 'favorite', 'recent'];
 const MATCH_ADDERS = [
     0, // name
     1000, // keywords
     2000, // desc
     3000 // id
 ];
+
+function searchTypeRank(type) {
+    let index = SEARCH_TYPE_ORDER.indexOf(type);
+    return index < 0 ? SEARCH_TYPE_ORDER.length : index;
+}
 
 function calc_angle(x, y) {
     if (x === 0) { x = .001 }
@@ -2321,7 +2329,8 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         }
 
         if (!this.recentButton) {
-            this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'), 'folder-recent');
+            this.recentButton = new CategoryButton(this, 'recent', _('Recent Files'),
+                                                   Gio.ThemedIcon.new_from_names(['folder-recent', 'document-open-recent']));
             this._categoryButtons.push(this.recentButton);
             this.categoriesBox.add_actor(this.recentButton.actor);
         }
@@ -2686,6 +2695,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         this.searchEntryText.connect('text-changed', this._onSearchTextChanged.bind(this));
         this.searchEntryText.connect('key-press-event', this._onMenuKeyPress.bind(this));
         this._previousSearchPattern = "";
+        this._searchId = 0;
 
         this.categoriesApplicationsBox = new CategoriesApplicationsBox();
 
@@ -2934,6 +2944,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             });
 
             buttons.sort((ba, bb) => {
+                /* Applications first, then favorite documents, then recent files. */
+                let rankA = searchTypeRank(ba.type);
+                let rankB = searchTypeRank(bb.type);
+
+                if (rankA !== rankB) {
+                    return rankA - rankB;
+                }
+
                 if (ba.matchIndex < bb.matchIndex) {
                     return -1;
                 } else
@@ -3105,7 +3123,14 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._buttonEnterEvent(this._activeActor._delegate);
         }
 
+        let searchId = ++this._searchId;
         SearchProviderManager.launch_all(lowerPattern, (provider, results) => {
+            // Search providers may send results asynchronously. Drop them if
+            // the search has been replaced or cleared (e.g. the menu closed)
+            // in the meantime, or they would end up in the regular app list.
+            if (searchId !== this._searchId || !this.searchActive)
+                return;
+
             try {
                 for (let result of results) {
                     if (result.type != 'software') {

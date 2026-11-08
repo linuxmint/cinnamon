@@ -5,7 +5,7 @@ const SignalManager = imports.misc.signalManager;
 const Gio = imports.gi.Gio;
 const CDesktopEnums = imports.gi.CDesktopEnums;
 const Clutter = imports.gi.Clutter;
-const Dialogs = imports.ui.wmGtkDialogs;
+const HoverClick = imports.ui.hoverClick;
 const Cairo = imports.cairo;
 const St = imports.gi.St;
 const GObject = imports.gi.GObject;
@@ -33,10 +33,11 @@ A11yHandler.prototype = {
         this.a11y_keyboard_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.a11y.keyboard" });
         this.a11y_mouse_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.a11y.mouse" });
         this.wm_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.wm.preferences" });
+        this.keybinding_settings = new Gio.Settings( { schema_id: "org.cinnamon.desktop.keybindings" });
 
         this._signalManager = new SignalManager.SignalManager(null);
 
-        this._hoverclick_helper = new Dialogs.HoverClickHelper();
+        this._hoverclick_palette = null;
         new PointerA11yTimeout();
 
         /* Feature toggles */
@@ -66,9 +67,15 @@ A11yHandler.prototype = {
         this._signalManager.connect(this.a11y_keyboard_settings, "changed", this.on_settings_changed, this);
         this._signalManager.connect(this.a11y_mouse_settings, "changed", this.on_settings_changed, this);
         this._signalManager.connect(global.settings, "changed::hoverclick-action", this.hoverkey_action_changed, this);
+        this._signalManager.connect(this.keybinding_settings, "changed::hoverclick-toggle", this._updateHoverclickKeybinding, this);
 
         this.on_settings_changed();
         this.hoverkey_action_changed();
+        this._updateHoverclickKeybinding();
+
+        this._hoverclick_enabled = this.a11y_mouse_settings.get_boolean("dwell-click-enabled");
+        if (this._hoverclick_enabled)
+            this._getHoverclickPalette().open();
 
         this.a11y_mouse_settings.set_boolean("dwell-click-mode-lock", false);
     },
@@ -89,7 +96,13 @@ A11yHandler.prototype = {
 
         if (key === "dwell-click-enabled") {
             this._hoverclick_enabled = this.a11y_mouse_settings.get_boolean("dwell-click-enabled");
-            this._hoverclick_helper.set_active(this._hoverclick_enabled);
+
+            if (this._hoverclick_enabled) {
+                this._getHoverclickPalette().open();
+            } else if (this._hoverclick_palette) {
+                this._hoverclick_palette.close();
+                this._hoverclick_palette = null;
+            }
         }
 
         if (this._toggle_keys_sound || this._toggle_keys_osd) {
@@ -97,6 +110,30 @@ A11yHandler.prototype = {
         } else {
             this._set_keymap_listener(false);
         }
+    },
+
+    _getHoverclickPalette: function() {
+        if (!this._hoverclick_palette) {
+            let palette = new HoverClick.HoverClickPalette();
+            palette.connect("destroy", () => {
+                if (this._hoverclick_palette === palette)
+                    this._hoverclick_palette = null;
+            });
+
+            this._hoverclick_palette = palette;
+        }
+
+        return this._hoverclick_palette;
+    },
+
+    _updateHoverclickKeybinding: function() {
+        Main.keybindingManager.addHotKeyArray("hoverclick-toggle",
+                                              this.keybinding_settings.get_strv("hoverclick-toggle"),
+                                              this._onHoverclickToggle.bind(this));
+    },
+
+    _onHoverclickToggle: function() {
+        this.a11y_mouse_settings.set_boolean("dwell-click-enabled", !this._hoverclick_enabled);
     },
 
     hoverkey_action_changed: function(settings, key) {

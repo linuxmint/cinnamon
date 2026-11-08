@@ -1,3 +1,4 @@
+const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
 const GnomeSession = imports.misc.gnomeSession;
 
@@ -254,6 +255,13 @@ const InhibitController = GObject.registerClass({
         super.vfunc_dispose();
     }
 
+    _logFetchError(method, objectPath, error) {
+        if (error.matches(Gio.DBusError, Gio.DBusError.UNKNOWN_METHOD))
+            return;
+
+        global.logWarning(`InhibitController: ${method} failed for ${objectPath}: ${error}`);
+    }
+
     _fetchInhibitor(objectPath, done) {
         GnomeSession.Inhibitor(objectPath, (inhibitorProxy, error) => {
             if (error) {
@@ -264,7 +272,7 @@ const InhibitController = GObject.registerClass({
 
             inhibitorProxy.GetFlagsRemote((result, error) => {
                 if (error) {
-                    global.logWarning(`InhibitController: GetFlags failed for ${objectPath}: ${error}`);
+                    this._logFetchError("GetFlags", objectPath, error);
                     done();
                     return;
                 }
@@ -278,7 +286,7 @@ const InhibitController = GObject.registerClass({
 
                 inhibitorProxy.GetAppIdRemote((result, error) => {
                     if (error) {
-                        global.logWarning(`InhibitController: GetAppId failed for ${objectPath}: ${error}`);
+                        this._logFetchError("GetAppId", objectPath, error);
                         done();
                         return;
                     }
@@ -298,7 +306,7 @@ const InhibitController = GObject.registerClass({
                             let reason = result[0];
                             this._externalInhibitors[appId].reasons.set(objectPath, reason);
                         } else {
-                            global.logWarning(`InhibitController: GetReason failed for ${objectPath}: ${error}`);
+                            this._logFetchError("GetReason", objectPath, error);
                         }
                         done();
                     });

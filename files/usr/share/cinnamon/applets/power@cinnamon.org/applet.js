@@ -267,6 +267,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.metadata = metadata;
 
+        // Cancels in-flight UPower calls when the applet goes away, so their
+        // callbacks don't run against a destroyed applet.
+        this._cancellable = new Gio.Cancellable();
+
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instanceId);
 
         Main.systrayManager.registerTrayIconReplacement("power", metadata.uuid);
@@ -287,7 +291,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this.brightness = new BrightnessSlider(this, _("Brightness"), "display-brightness", BrightnessBusName, 0, () => {
             this._updateAmbientVisibility();
-            this.brightness.proxy.connect("g-properties-changed", () => this._updateAmbientVisibility());
+            this._brightnessPropsId = this.brightness.proxy.connect("g-properties-changed",
+                () => this._updateAmbientVisibility());
         });
         this.keyboard = new BrightnessSlider(this, _("Keyboard backlight"), "keyboard-brightness", KeyboardBusName, 0);
         this.menu.addMenuItem(this.brightness);
@@ -301,57 +306,17 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._ambientItem.connect("toggled", (item) => {
             this._csdSettings.set_boolean("ambient-enabled", item.state);
         });
-        this._csdSettings.connect("changed::ambient-enabled", () => {
+        this._ambientSettingId = this._csdSettings.connect("changed::ambient-enabled", () => {
             this._ambientItem.setToggleState(this._csdSettings.get_boolean("ambient-enabled"));
         });
 
-        try {
-            // Hadess interface
-            let PowerProfilesInterface = `<node>
-              <interface name="net.hadess.PowerProfiles">
-                <property name="ActiveProfile" type="s" access="readwrite" />
-                <property name="PerformanceDegraded" type="s" access="read" />
-                <property name="Profiles" type="aa{sv}" access="read" />
-                <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
-              </interface>
-            </node>`;
-            let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
-            this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "net.hadess.PowerProfiles", "/net/hadess/PowerProfiles");
-            // Upower if hadess doesn't work..
-            if (!this._profilesProxy.Profiles) {
-                // UPower interface
-                let PowerProfilesInterface = `<node>
-                  <interface name="org.freedesktop.UPower.PowerProfiles">
-                    <property name="ActiveProfile" type="s" access="readwrite" />
-                    <property name="PerformanceDegraded" type="s" access="read" />
-                    <property name="Profiles" type="aa{sv}" access="read" />
-                    <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
-                  </interface>
-                </node>`;
-                let PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(PowerProfilesInterface);
-                this._profilesProxy = new PowerProfilesProxy(Gio.DBus.system, "org.freedesktop.UPower.PowerProfiles", "/org/freedesktop/UPower/PowerProfiles");
-            }
-        } catch {
-           this._profilesProxy = null;
-        }
-        
-        if (this._profilesProxy && this._profilesProxy.Profiles) {
-            this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
-            this.contentSection = new PopupMenu.PopupMenuSection();
-
-            this.ActiveProfile = this._profilesProxy.ActiveProfile;
-            this.Profiles = this._profilesProxy.Profiles;
-
-            this._proxyId = this._profilesProxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
-                for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
-                    if (["ActiveProfile", "Profiles"].includes(changedProperty))
-                        this[changedProperty] = changedValue.deepUnpack();
-                    this._updateProfile();
-                }
-            });
-
-            this._updateProfile();
-        }
+        this._profilesProxy = null;
+        this._profilesSeparator = new PopupMenu.PopupSeparatorMenuItem();
+        this._profilesSeparator.actor.hide();
+        this.menu.addMenuItem(this._profilesSeparator);
+        this.contentSection = new PopupMenu.PopupMenuSection();
+        this.menu.addMenuItem(this.contentSection);
+        this._connectPowerProfiles();
 
         this.menu.addMenuItem(new PopupMenu.PopupSeparatorMenuItem());
 
@@ -361,7 +326,8 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
         this._proxy = null;
 
-        global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._onPanelEditModeChanged));
+        this._panelEditModeId = global.settings.connect('changed::' + PANEL_EDIT_MODE_KEY,
+            () => this._onPanelEditModeChanged());
 
         this.csd_power_watch_id = Gio.bus_watch_name(Gio.BusType.SESSION, "org.cinnamon.SettingsDaemon.Power", 0, (c, name) => {
             Interfaces.getDBusProxyAsync("org.cinnamon.SettingsDaemon.Power", Lang.bind(this, function (proxy, error) {
@@ -375,8 +341,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
                 this._proxy = proxy;
 
-                this._proxy.connect("g-properties-changed", Lang.bind(this, this._devicesChanged));
-                global.settings.connect('changed::device-aliases', Lang.bind(this, this._on_device_aliases_changed));
+                this._proxyPropsId = this._proxy.connect("g-properties-changed",
+                    () => this._devicesChanged());
+                this._deviceAliasesId = global.settings.connect('changed::device-aliases',
+                    () => this._on_device_aliases_changed());
                 this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
                 this.settings.bind("showmulti", "showmulti", this._devicesChanged);
 
@@ -385,7 +353,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         }, null);
 
         this._loginManager = LoginManager.getLoginManager();
-        this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
+        this._sleepId = this._loginManager.connect('prepare-for-sleep', (aboutToSuspend) => {
             if (!aboutToSuspend)
                 this._devicesChanged();
         });
@@ -550,6 +518,56 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
         this._applet_icon.set_style_class_name('system-status-icon');
     }
 
+    _connectPowerProfiles() {
+        const candidates = [
+            ["net.hadess.PowerProfiles", "/net/hadess/PowerProfiles"],
+            ["org.freedesktop.UPower.PowerProfiles", "/org/freedesktop/UPower/PowerProfiles"]
+        ];
+
+        const tryNext = () => {
+            const candidate = candidates.shift();
+            if (!candidate)
+                return;
+
+            const [name, path] = candidate;
+            const PowerProfilesProxy = Gio.DBusProxy.makeProxyWrapper(`<node>
+              <interface name="${name}">
+                <property name="ActiveProfile" type="s" access="readwrite" />
+                <property name="PerformanceDegraded" type="s" access="read" />
+                <property name="Profiles" type="aa{sv}" access="read" />
+                <property name="ActiveProfileHolds" type="aa{sv}" access="read" />
+              </interface>
+            </node>`);
+
+            new PowerProfilesProxy(Gio.DBus.system, name, path, (proxy, error) => {
+                if (this._cancellable.is_cancelled())
+                    return;
+
+                if (error || !proxy.Profiles) {
+                    tryNext();
+                    return;
+                }
+
+                this._profilesProxy = proxy;
+                this.ActiveProfile = proxy.ActiveProfile;
+                this.Profiles = proxy.Profiles;
+
+                this._proxyId = proxy.connect("g-properties-changed", (proxy, changed, invalidated) => {
+                    for (let [changedProperty, changedValue] of Object.entries(changed.deepUnpack())) {
+                        if (["ActiveProfile", "Profiles"].includes(changedProperty))
+                            this[changedProperty] = changedValue.deepUnpack();
+                        this._updateProfile();
+                    }
+                });
+
+                this._profilesSeparator.actor.show();
+                this._updateProfile();
+            }, this._cancellable);
+        };
+
+        tryNext();
+    }
+
     _updateProfile() {
         this.contentSection.removeAll();
 
@@ -569,8 +587,6 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
             this.contentSection.addMenuItem(item);
         }
-
-        this.menu.addMenuItem(this.contentSection);
     }
 
     _changeProfile(newProfile) {
@@ -588,7 +604,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             return;
 
         // Identify the primary battery device
-        this._proxy.GetPrimaryDeviceRemote(Lang.bind(this, function (device, error) {
+        this._proxy.GetPrimaryDeviceRemote(this._cancellable, (device, error) => {
+            if (error?.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                return;
+
             if (error) {
                 this._primaryDeviceId = null;
             }
@@ -602,7 +621,10 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
             }
 
             // Scan battery devices
-            this._proxy.GetDevicesRemote(Lang.bind(this, function (result, error) {
+            this._proxy.GetDevicesRemote(this._cancellable, (result, error) => {
+                if (error?.matches(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                    return;
+
                 this._deviceItems.forEach(function (i) { i.destroy(); });
                 this._deviceItems = [];
                 let devices_stats = [];
@@ -752,18 +774,63 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                         }
                     }
                 }
-            }));
-        }));
+            });
+        });
     }
 
     on_applet_removed_from_panel() {
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
 
-        if (!this._profilesProxy)
-            return;
+        // Stop UPower replies from landing on a destroyed applet.
+        this._cancellable.cancel();
 
-        if (this._proxyId)
+        // Drop the labelinfo/showmulti bindings, which would otherwise keep
+        // calling _devicesChanged() on the removed instance.
+        this.settings.finalize();
+
+        if (this.csd_power_watch_id) {
+            Gio.bus_unwatch_name(this.csd_power_watch_id);
+            this.csd_power_watch_id = 0;
+        }
+
+        // Signals on objects that outlive the applet (global.settings, the
+        // LoginManager singleton and the csd-power proxies) keep the applet
+        // alive and fire again after a reload, so every handler added in the
+        // constructor has to go.
+        if (this._panelEditModeId) {
+            global.settings.disconnect(this._panelEditModeId);
+            this._panelEditModeId = 0;
+        }
+
+        if (this._deviceAliasesId) {
+            global.settings.disconnect(this._deviceAliasesId);
+            this._deviceAliasesId = 0;
+        }
+
+        if (this._sleepId) {
+            this._loginManager.disconnect(this._sleepId);
+            this._sleepId = 0;
+        }
+
+        if (this._ambientSettingId) {
+            this._csdSettings.disconnect(this._ambientSettingId);
+            this._ambientSettingId = 0;
+        }
+
+        if (this._proxyPropsId) {
+            this._proxy.disconnect(this._proxyPropsId);
+            this._proxyPropsId = 0;
+        }
+
+        if (this._brightnessPropsId) {
+            this.brightness.proxy.disconnect(this._brightnessPropsId);
+            this._brightnessPropsId = 0;
+        }
+
+        if (this._profilesProxy && this._proxyId) {
             this._profilesProxy.disconnect(this._proxyId);
+            this._proxyId = 0;
+        }
     }
 }
 

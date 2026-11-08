@@ -253,7 +253,7 @@ var CinnamonUnmountNotifier = class extends MessageTray.Source {
 
     createNotificationIcon () {
         return new St.Icon({
-            icon_name: 'xapp-media-removable',
+            icon_name: 'xsi-media-removable',
             icon_type: St.IconType.SYMBOLIC,
             icon_size: this.ICON_SIZE
         });
@@ -323,12 +323,15 @@ var CinnamonMountPasswordDialog = GObject.registerClass({
         let curGridRow = 0;
 
         if (flags & Gio.AskPasswordFlags.TCRYPT) {
+            /* Translators: VeraCrypt/TrueCrypt option; use the term VeraCrypt uses in your language */
             this._hiddenVolume = new CheckBox.CheckBox(_("Hidden Volume"));
             content.add_child(this._hiddenVolume);
 
+            /* Translators: VeraCrypt/TrueCrypt option; use the term VeraCrypt uses in your language */
             this._systemVolume = new CheckBox.CheckBox(_("Windows System Volume"));
             content.add_child(this._systemVolume);
 
+            /* Translators: VeraCrypt/TrueCrypt option; use the term VeraCrypt uses in your language */
             this._keyfilesCheckbox = new CheckBox.CheckBox(_("Uses Keyfiles"));
             this._keyfilesCheckbox.connect("clicked", this._onKeyfilesCheckboxClicked.bind(this));
             content.add_child(this._keyfilesCheckbox);

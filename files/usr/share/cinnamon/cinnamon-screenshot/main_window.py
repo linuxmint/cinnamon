@@ -178,7 +178,8 @@ class MainWindow:
 
     def _on_delay_toggled(self, radio):
         delay = self._selected_delay()
-        self.delay_label.set_label(f'{delay}s')
+        # Translators: screenshot capture delay in seconds (for instance: "5s")
+        self.delay_label.set_label(_('%ds') % delay)
         if radio is not None and radio.get_active():
             prefs.set_delay(delay)
 
