@@ -74,6 +74,11 @@ preferred_app_defs["system"] = (
 )
 
 mimetypes = {}
+mimetypes["x-scheme-handler/http"] = [
+    "text/html",
+    "application/xhtml+xml"
+]
+
 mimetypes["audio"]=[
     "audio/3gpp",
     "audio/aac",
