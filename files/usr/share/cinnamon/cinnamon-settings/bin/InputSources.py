@@ -117,6 +117,11 @@ class InputSourceSettingsPage(SettingsPage):
             "org.cinnamon.desktop.interface", "keyboard-layout-use-upper"
         )
         section.add_row(widget)
+        widget = GSettingsSwitch(
+            _("Always show the keyboard layout indicator in the panel, even with a single layout"),
+            "org.cinnamon.desktop.interface", "keyboard-layout-always-show"
+        )
+        section.add_row(widget)
 
         section = self.add_section(_("Shortcuts"))
         widget = GSettingsKeybinding(
