@@ -1469,7 +1469,9 @@ NMDeviceWireless.prototype = {
                         if (this._networks[pos] != this._activeNetwork)
                             menuPos++;
                     }
-                    let item = this._networks[pos].item;
+                    // pos is past the end when the active network has no row of its own
+                    // (no active connection): then no row was pushed out
+                    let item = pos < this._networks.length ? this._networks[pos].item : null;
                     if (item && item._apObj) {
                         item.destroy();
                         item._apObj.item = null;
