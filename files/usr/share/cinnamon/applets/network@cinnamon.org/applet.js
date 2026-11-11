@@ -2112,6 +2112,13 @@ CinnamonNetworkApplet.prototype = {
         let wrapper = device._delegate;
         wrapper.destroy();
 
+        // its active connection can outlive it (when NetworkManager stops, the
+        // devices go first): don't let _syncActiveConnections() use it later
+        for (let a of this._activeConnections) {
+            if (a._primaryDevice == wrapper)
+                a._primaryDevice = null;
+        }
+
         let devices = this._devices[wrapper.category].devices;
         let pos = devices.indexOf(wrapper);
         devices.splice(pos, 1);
