@@ -658,6 +658,7 @@ Source.prototype = {
         this.desktopEntryHint = desktopEntryHint;
 
         this.pid = pid;
+        this._senderIsApp = false;
         if (sender)
             this._nameWatcherId = Gio.DBus.session.watch_name(sender,
                                                               Gio.BusNameWatcherFlags.NONE,
@@ -680,12 +681,12 @@ Source.prototype = {
     },
 
     _onNameVanished: function() {
-        // Destroy the notification source when its sender is removed from DBus.
-        // Only do so if this.app is set to avoid removing "notify-send" sources, senders
-        // of which are removed from DBus immediately.
+        // Destroy the notification source when its sender is removed from DBus, but
+        // only if the sender is the app itself. The app may also be identified from the
+        // desktop-entry hint, which says nothing about the sender (notify-send, zenity).
         // Sender being removed from DBus would normally result in a tray icon being removed,
         // so allow the code path that handles the tray icon being removed to handle that case.
-        if (!this.trayIcon && this.app)
+        if (!this.trayIcon && this._senderIsApp)
             this.destroy();
     },
 
@@ -702,6 +703,7 @@ Source.prototype = {
         let app;
 
         app = Cinnamon.WindowTracker.get_default().get_app_from_pid(this.pid);
+        this._senderIsApp = app != null;
 
         // Native apps without a tracked window can still identify themselves
         // using the notification's desktop-entry hint.
