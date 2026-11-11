@@ -89,6 +89,8 @@ var extensions = [];
 var currentlyLoadingExtension = null;
 // UUIDs that have already been warned about using deprecated require()
 var requireWarned = new Set();
+// UUIDs that have already been warned about using deprecated __meta
+var metaWarned = new Set();
 
 // Stack-based module.exports compatibility for Node.js-style modules
 var moduleStack = [];
@@ -112,6 +114,24 @@ Object.defineProperty(globalThis, 'exports', {
             return moduleStack[moduleStack.length - 1].exports;
         }
         return undefined;
+    },
+    configurable: true
+});
+
+// 6.6 and earlier passed __meta to every xlet module
+Object.defineProperty(globalThis, '__meta', {
+    get: function() {
+        let extension = getCurrentExtension();
+        if (!extension) {
+            return undefined;
+        }
+
+        if (!metaWarned.has(extension.uuid)) {
+            metaWarned.add(extension.uuid);
+            global.logWarning(`${extension.uuid}: __meta is deprecated. Use the metadata passed to main() or init(), or Extension.getCurrentExtension().meta.`);
+        }
+
+        return extension.meta;
     },
     configurable: true
 });
@@ -153,6 +173,35 @@ function getCurrentExtension() {
     return currentlyLoadingExtension || getXletFromStack();
 }
 
+function _requireLocal(extension, path) {
+    let parts = path.replace(/^\.\//, '').replace(/\.js$/, '').split('/').filter(p => p !== '..');
+    let cacheKey = `${extension.meta.path}/${parts.join('/')}`;
+
+    if (cacheKey in moduleExportsCache) {
+        return moduleExportsCache[cacheKey];
+    }
+
+    let moduleObj = { exports: {} };
+    let originalExports = moduleObj.exports;
+    moduleStack.push(moduleObj);
+
+    let nativeModule;
+    try {
+        nativeModule = parts.reduce((importer, part) => importer[part], extension.imports);
+    } finally {
+        moduleStack.pop();
+    }
+
+    let usedExports = moduleObj.exports !== originalExports ||
+        Object.getOwnPropertyNames(originalExports).length > 0;
+
+    // let/const/class names are resolved by cjs on access (with a deprecation warning)
+    let result = usedExports ? moduleObj.exports : nativeModule;
+
+    moduleExportsCache[cacheKey] = result;
+    return result;
+}
+
 /**
  * xletRequire:
  * @path (string): The module path to require
@@ -168,87 +217,6 @@ function getCurrentExtension() {
  *
  * Returns: The required module
  */
-var _FunctionConstructor = (0).constructor.constructor;
-
-function _evalModule(extension, resolvedPath) {
-    let filePath = `${extension.meta.path}/${resolvedPath}.js`;
-    let file = Gio.File.new_for_path(filePath);
-    let [success, contents] = file.load_contents(null);
-    if (!success) {
-        throw new Error(`Failed to load ${filePath}`);
-    }
-
-    let source = ByteArray.toString(contents);
-    let exports = {};
-    let module = { exports: exports };
-
-    // Regex matches top level declarations and appends them to exports,
-    // mimicking how the native CJS importer handles var/function.
-    let re = /^(?:const|var|let|function|class)\s+([a-zA-Z_$][a-zA-Z0-9_$]*)/gm;
-    let match;
-    let exportLines = '';
-    while ((match = re.exec(source)) !== null) {
-        exportLines += `if(typeof ${match[1]}!=='undefined')exports.${match[1]}=${match[1]};`;
-    }
-
-    source = `'use strict';${source};${exportLines}return module.exports;//# sourceURL=${filePath}`;
-
-    _FunctionConstructor(
-        'require', 'exports', 'module', source
-    ).call(
-        exports,
-        function require(path) { return xletRequire(path); },
-        exports,
-        module
-    );
-
-    return module.exports;
-}
-
-function _requireLocal(extension, path) {
-    let parts = path.replace(/^\.\//, '').replace(/\.js$/, '').split('/');
-    let resolvedPath = parts.filter(p => p !== '..').join('/');
-    let cacheKey = `${extension.meta.path}/${resolvedPath}`;
-
-    if (cacheKey in moduleExportsCache) {
-        return moduleExportsCache[cacheKey];
-    }
-
-    let moduleObj = { exports: {} };
-    moduleObj._originalExports = moduleObj.exports;
-    moduleStack.push(moduleObj);
-
-    let nativeModule;
-    try {
-        nativeModule = extension.imports;
-        for (let part of parts) {
-            if (part === '..') continue;
-            nativeModule = nativeModule[part];
-        }
-    } finally {
-        moduleStack.pop();
-    }
-
-    let result;
-
-    let exportsReplaced = moduleObj.exports !== moduleObj._originalExports;
-    let exportsMutated = Object.getOwnPropertyNames(moduleObj._originalExports).length > 0;
-
-    if (exportsReplaced) {
-        result = moduleObj.exports;
-    } else if (exportsMutated) {
-        result = moduleObj._originalExports;
-    } else {
-        // CJS only exports var/function declarations as module properties.
-        // let/const/class values are inaccessible via the native module object.
-        // Fall back to evaluating the source with module/exports in scope.
-        result = _evalModule(extension, resolvedPath);
-    }
-
-    moduleExportsCache[cacheKey] = result;
-    return result;
-}
-
 function xletRequire(path) {
     let extension = currentlyLoadingExtension || getXletFromStack();
     if (!extension) {
@@ -341,7 +309,14 @@ function installXletImporter(extension) {
  * Clears all cached module properties from the xlet's sub-importer.
  */
 function clearXletImportCache(extension) {
-    if (!extension) return;
+    if (!extension?.meta) return;
+
+    let pathPrefix = extension.meta.path + '/';
+    for (let key in moduleExportsCache) {
+        if (key.startsWith(pathPrefix)) {
+            delete moduleExportsCache[key];
+        }
+    }
 
     // Clear all cached modules from the xlet's importer
     if (!extension.imports) return;
@@ -555,6 +530,7 @@ Extension.prototype = {
         }
 
         forgetExtension(uuid, type);
+        clearXletImportCache(this);
 
         if (!error._alreadyLogged) {
             logError(`Error importing ${this.lowerType}.js from ${uuid}`, uuid, error);
@@ -834,14 +810,6 @@ function unloadExtension(uuid, type, deleteConfig = true, reload = false) {
 function forgetExtension(extensionIndex, uuid, type, forgetMeta) {
     if (typeof extensions[extensionIndex] !== 'undefined') {
         let extension = extensions[extensionIndex];
-
-        // Clear module.exports cache entries for this extension
-        let pathPrefix = extension.meta.path + '/';
-        for (let key in moduleExportsCache) {
-            if (key.startsWith(pathPrefix)) {
-                delete moduleExportsCache[key];
-            }
-        }
 
         // Clear the import cache to allow reloading (must be done before nulling references)
         clearXletImportCache(extension);
