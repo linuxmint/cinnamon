@@ -88,7 +88,9 @@ class JSONSettingsHandler(object):
         self.bindings[key].append(binding_info)
 
         if direction & Gio.SettingsBindFlags.GET != 0:
-            self.set_object_value(binding_info, self.get_value(key))
+            # Always push the initial value, even if the widget's default already matches it,
+            # so widgets like Gtk.SpinButton render their text (e.g. a value of 0 isn't left blank).
+            self.set_object_value(binding_info, self.get_value(key), force=True)
         if direction & Gio.SettingsBindFlags.SET != 0:
             binding_info["oid"] = obj.connect("notify::"+prop, self.object_value_changed, key)
 
@@ -141,14 +143,14 @@ class JSONSettingsHandler(object):
             for callback in self.listeners[key]:
                 callback(key, value)
 
-    def set_object_value(self, info, value):
+    def set_object_value(self, info, value, force=False):
         if info["dir"] & Gio.SettingsBindFlags.GET == 0:
             return
 
         with info["obj"].freeze_notify():
             if "map_get" in info and info["map_get"] is not None:
                 value = info["map_get"](value)
-            if value != info["obj"].get_property(info["prop"]) and value is not None:
+            if value is not None and (force or value != info["obj"].get_property(info["prop"])):
                 info["obj"].set_property(info["prop"], value)
 
     def check_settings(self, *args):
