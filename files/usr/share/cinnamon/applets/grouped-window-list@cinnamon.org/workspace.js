@@ -61,6 +61,7 @@ var Workspace = class Workspace {
         this.container = this.scrollBox.container;
 
         this.appGroups = [];
+        this.sortedByApp = true;
         this.lastFocusedApp = null;
         this.scrollToAppDebounceTimeoutId = 0;
 
@@ -193,8 +194,10 @@ var Workspace = class Workspace {
     }
 
     refreshList() {
+        // An order sorted by application doesn't apply to windows in opening order and vice versa.
+        const sortedByApp = this.state.settings.groupApps || this.state.settings.sortApps;
         const previousOrder = new Map();
-        if (!this.state.settings.groupApps) {
+        if (!this.state.settings.groupApps && sortedByApp === this.sortedByApp) {
             this.appGroups.forEach(appGroup => {
                 appGroup.groupState.metaWindows.forEach(window => {
                     previousOrder.set(window, previousOrder.size);
@@ -207,6 +210,7 @@ var Workspace = class Workspace {
             appGroup = null;
         });
         this.appGroups = [];
+        this.sortedByApp = sortedByApp;
         this.loadFavorites();
         this.refreshApps();
         if (!this.state.settings.groupApps) {
@@ -217,12 +221,14 @@ var Workspace = class Workspace {
 
     restoreWindowOrder(previousOrder) {
         // Keep each app's slots so favorite changes still determine app order.
+        // Without sorting, unpinned windows share their slots to keep opening order.
         const slotsByApp = new Map();
         this.appGroups.forEach((appGroup, slot) => {
             if (appGroup.groupState.metaWindows.length === 0) return;
-            const appId = appGroup.groupState.appId;
-            if (!slotsByApp.has(appId)) slotsByApp.set(appId, []);
-            slotsByApp.get(appId).push(slot);
+            const {appId, isFavoriteApp} = appGroup.groupState;
+            const key = this.state.settings.sortApps || isFavoriteApp ? appId : null;
+            if (!slotsByApp.has(key)) slotsByApp.set(key, []);
+            slotsByApp.get(key).push(slot);
         });
 
         slotsByApp.forEach(slots => {
@@ -412,7 +418,8 @@ var Workspace = class Workspace {
             } else if (transientFavorite && this.appGroups[refApp].groupState.metaWindows.length === 0) {
                 this.appGroups[refApp].windowAdded(metaWindow);
             } else if (refWindow === -1) {
-                initApp(refApp+1);
+                // Without sorting, only windows of pinned apps stay next to each other.
+                initApp(this.state.settings.sortApps || isFavoriteApp ? refApp+1 : -1);
             }
         }
     }
