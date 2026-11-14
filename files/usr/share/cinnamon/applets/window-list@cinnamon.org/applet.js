@@ -488,15 +488,23 @@ class AppMenuButton {
 
         this._tooltip.hide();
         this._tooltip.preventShow = true;
+
+        /* The button is hidden while it is dragged, and a hidden actor loses
+         * its allocation, so the drag clone would draw it at its preferred
+         * size, squeezed into the clone. Keep it at the size it is shown at. */
+        let [width, height] = this.actor.get_size();
+        this.actor.set_size(width, height);
     }
 
     _onDragEnd() {
+        this.actor.set_size(-1, -1);
         this.actor.show();
         this._applet.clearDragPlaceholder();
         this._tooltip.preventShow = false;
     }
 
     _onDragCancelled() {
+        this.actor.set_size(-1, -1);
         this.actor.show();
         this._applet.clearDragPlaceholder();
         this._tooltip.preventShow = false;
@@ -1532,11 +1540,17 @@ class CinnamonWindowListApplet extends Applet.Applet {
             }
         }
 
-        source.actor.hide();
         if (this._dragPlaceholder == undefined) {
+            /* Take the size the button is shown at before hiding it: a hidden
+             * actor has no allocation, so its size would be its preferred one
+             * instead, which is the panel height and the full title width. */
+            let [width, height] = source.actor.get_size();
+
             this._dragPlaceholder = new DND.GenericDragPlaceholderItem();
-            this._dragPlaceholder.set_width (source.actor.width);
-            this._dragPlaceholder.set_height (source.actor.height);
+            this._dragPlaceholder.set_width (width);
+            /* Only a natural height: a fixed one is also a minimum, which
+             * could make the window list taller than the panel. */
+            this._dragPlaceholder.natural_height = height;
 
             this.manager_container.insert_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
@@ -1544,6 +1558,7 @@ class CinnamonWindowListApplet extends Applet.Applet {
             this.manager_container.set_child_at_index(this._dragPlaceholder,
                                                          this._dragPlaceholderPos);
         }
+        source.actor.hide();
 
         return DND.DragMotionResult.MOVE_DROP;
     }
