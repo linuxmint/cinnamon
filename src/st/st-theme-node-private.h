@@ -42,6 +42,11 @@ struct _StThemeNode {
   /* If gradient is set, then background_color is the gradient start */
   StGradientType background_gradient_type;
   ClutterColor background_gradient_end;
+  /* Optional color stops either side of background_gradient_middle_position;
+   * the same offset twice gives a hard step. Only used if has_middle is set. */
+  ClutterColor background_gradient_middle_start;
+  ClutterColor background_gradient_middle_end;
+  double background_gradient_middle_position;
 
   int background_position_x;
   int background_position_y;
@@ -93,6 +98,7 @@ struct _StThemeNode {
 
   guint background_position_set : 1;
   guint background_repeat : 1;
+  guint background_gradient_has_middle : 1;
 
   guint properties_computed : 1;
   guint geometry_computed : 1;

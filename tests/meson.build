@@ -1,6 +1,7 @@
 tests = [
     'interactive/borders.js',
     'interactive/border-radius.js',
+    'interactive/background-gradient.js',
     'interactive/border-width.js',
     'interactive/box-layout.js',
     'interactive/box-shadows.js',

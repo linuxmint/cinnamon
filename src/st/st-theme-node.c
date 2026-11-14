@@ -1857,6 +1857,7 @@ get_background_color_from_term (StThemeNode  *node,
 void
 _st_theme_node_ensure_background (StThemeNode *node)
 {
+  gboolean has_middle_start = FALSE, has_middle_end = FALSE;
   int i;
 
   if (node->background_computed)
@@ -1866,6 +1867,8 @@ _st_theme_node_ensure_background (StThemeNode *node)
   node->background_computed = TRUE;
   node->background_color = TRANSPARENT_COLOR;
   node->background_gradient_type = ST_GRADIENT_NONE;
+  node->background_gradient_has_middle = FALSE;
+  node->background_gradient_middle_position = 0.5;
   node->background_position_set = FALSE;
   node->background_size = ST_BACKGROUND_SIZE_AUTO;
   node->background_blur = 0;
@@ -2129,11 +2132,47 @@ _st_theme_node_ensure_background (StThemeNode *node)
         {
           get_color_from_term (node, decl->value, &node->background_gradient_end);
         }
+      else if (strcmp (property_name, "-gradient-middle-start") == 0)
+        {
+          if (get_color_from_term (node, decl->value,
+                                   &node->background_gradient_middle_start) == VALUE_FOUND)
+            has_middle_start = TRUE;
+        }
+      else if (strcmp (property_name, "-gradient-middle-end") == 0)
+        {
+          if (get_color_from_term (node, decl->value,
+                                   &node->background_gradient_middle_end) == VALUE_FOUND)
+            has_middle_end = TRUE;
+        }
+      else if (strcmp (property_name, "-gradient-middle-position") == 0)
+        {
+          CRTerm *term = decl->value;
+
+          if (term->type == TERM_NUMBER &&
+              term->content.num->type == NUM_PERCENTAGE)
+            {
+              node->background_gradient_middle_position =
+                CLAMP (term->content.num->val / 100., 0., 1.);
+            }
+          else
+            {
+              g_warning ("background-gradient-middle-position must be a percentage");
+            }
+        }
       else if (strcmp (property_name, "-blur") == 0)
         {
           get_length_from_term_int (node, decl->value, FALSE, &node->background_blur);
         }
     }
+
+  /* With only one middle color, use it on both sides: a three-stop
+   * gradient with no step. */
+  if (has_middle_start && !has_middle_end)
+    node->background_gradient_middle_end = node->background_gradient_middle_start;
+  else if (has_middle_end && !has_middle_start)
+    node->background_gradient_middle_start = node->background_gradient_middle_end;
+
+  node->background_gradient_has_middle = has_middle_start || has_middle_end;
 }
 
 /**
@@ -4042,6 +4081,20 @@ st_theme_node_paint_equal (StThemeNode *node,
   if (node->background_gradient_type != ST_GRADIENT_NONE &&
       !clutter_color_equal (&node->background_gradient_end, &other->background_gradient_end))
     return FALSE;
+
+  if (node->background_gradient_type != ST_GRADIENT_NONE)
+    {
+      if (node->background_gradient_has_middle != other->background_gradient_has_middle)
+        return FALSE;
+
+      if (node->background_gradient_has_middle &&
+          (node->background_gradient_middle_position != other->background_gradient_middle_position ||
+           !clutter_color_equal (&node->background_gradient_middle_start,
+                                 &other->background_gradient_middle_start) ||
+           !clutter_color_equal (&node->background_gradient_middle_end,
+                                 &other->background_gradient_middle_end)))
+        return FALSE;
+    }
 
   if (g_strcmp0 (node->background_image, other->background_image) != 0)
     return FALSE;

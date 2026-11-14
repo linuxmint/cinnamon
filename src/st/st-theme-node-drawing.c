@@ -545,6 +545,11 @@ st_theme_node_has_visible_outline (StThemeNode *node)
   if (node->background_gradient_end.alpha > 0)
     return TRUE;
 
+  if (node->background_gradient_has_middle &&
+      (node->background_gradient_middle_start.alpha > 0 ||
+       node->background_gradient_middle_end.alpha > 0))
+    return TRUE;
+
   if (node->border_radius[ST_CORNER_TOPLEFT] > 0 ||
       node->border_radius[ST_CORNER_TOPRIGHT] > 0 ||
       node->border_radius[ST_CORNER_BOTTOMLEFT] > 0 ||
@@ -586,6 +591,22 @@ create_cairo_pattern_of_background_gradient (StThemeNode *node)
                                      node->background_color.green / 255.,
                                      node->background_color.blue / 255.,
                                      node->background_color.alpha / 255.);
+  if (node->background_gradient_has_middle)
+    {
+      /* Two stops at the same offset give a hard step */
+      double position = node->background_gradient_middle_position;
+
+      cairo_pattern_add_color_stop_rgba (pattern, position,
+                                         node->background_gradient_middle_start.red / 255.,
+                                         node->background_gradient_middle_start.green / 255.,
+                                         node->background_gradient_middle_start.blue / 255.,
+                                         node->background_gradient_middle_start.alpha / 255.);
+      cairo_pattern_add_color_stop_rgba (pattern, position,
+                                         node->background_gradient_middle_end.red / 255.,
+                                         node->background_gradient_middle_end.green / 255.,
+                                         node->background_gradient_middle_end.blue / 255.,
+                                         node->background_gradient_middle_end.alpha / 255.);
+    }
   cairo_pattern_add_color_stop_rgba (pattern, 1,
                                      node->background_gradient_end.red / 255.,
                                      node->background_gradient_end.green / 255.,
@@ -1045,7 +1066,10 @@ st_theme_node_prerender_background (StThemeNode *node,
        * left over from filling the border, etc.
        */
       if (node->background_color.alpha < 255 ||
-          node->background_gradient_end.alpha < 255)
+          node->background_gradient_end.alpha < 255 ||
+          (node->background_gradient_has_middle &&
+           (node->background_gradient_middle_start.alpha < 255 ||
+            node->background_gradient_middle_end.alpha < 255)))
         background_is_translucent = TRUE;
       else
         background_is_translucent = FALSE;
