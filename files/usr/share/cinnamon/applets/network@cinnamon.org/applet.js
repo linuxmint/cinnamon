@@ -1,4 +1,5 @@
 const Applet = imports.ui.applet;
+const Cinnamon = imports.gi.Cinnamon;
 const GLib = imports.gi.GLib;
 const Gio = imports.gi.Gio;
 const GObject = imports.gi.GObject;
@@ -16,6 +17,7 @@ const Settings = imports.ui.settings;
 
 const DEFAULT_PERIODIC_UPDATE_FREQUENCY_SECONDS = 10;
 const FAST_PERIODIC_UPDATE_FREQUENCY_SECONDS = 2;
+const CONNECTED_NOTIFICATION_GRACE_SECONDS = 10;
 
 const NMConnectionCategory = {
     INVALID: 'invalid',
@@ -446,6 +448,8 @@ NMDevice.prototype = {
         }
 
         this._activeConnection = activeConnection;
+        if (activeConnection)
+            this._lastConnectionId = activeConnection.get_id();
 
         this._clearSection();
         this._createSection();
@@ -680,10 +684,8 @@ NMDevice.prototype = {
         }
 
         if (oldstate == NM.DeviceState.ACTIVATED) {
-            this.emit('network-lost');
-        }
-
-        if (newstate == NM.DeviceState.FAILED) {
+            this.emit('network-lost', reason);
+        } else if (newstate == NM.DeviceState.FAILED) {
             this.emit('activation-failed', reason);
         }
 
@@ -1795,6 +1797,9 @@ NMMessageTraySource.prototype = {
                                  icon_size: this.ICON_SIZE
                                });
         this._setSummaryIcon(icon);
+
+        // Lets these be switched off under "Network" in the notification settings.
+        this.app = Cinnamon.AppSystem.get_default().lookup_app('cinnamon-network-panel.desktop');
     }
 };
 
@@ -1938,11 +1943,16 @@ CinnamonNetworkApplet.prototype = {
             this._ctypes[NM.SETTING_VPN_SETTING_NAME] = NMConnectionCategory.VPN;
             this._ctypes[NM.SETTING_WIREGUARD_SETTING_NAME] = NMConnectionCategory.VPN;
 
+            this._startTime = GLib.get_monotonic_time();
+
             this._readConnections();
             this._readDevices();
             this._syncNMState();
 
-            this._client.connect('notify::nm-running', Lang.bind(this, this._syncNMState));
+            this._client.connect('notify::nm-running', () => {
+                this._startTime = GLib.get_monotonic_time();
+                this._syncNMState();
+            });
             this._client.connect('notify::networking-enabled', Lang.bind(this, this._syncNMState));
             this._client.connect('notify::state', Lang.bind(this, this._syncNMState));
             this._client.connect('notify::active-connections', Lang.bind(this, this._updateIcon));
@@ -2087,11 +2097,25 @@ CinnamonNetworkApplet.prototype = {
                                       _("Activation of network connection failed"),
                                      MessageTray.Urgency.HIGH);
             }));
+            wrapper._networkLostId = wrapper.connect('network-lost', Lang.bind(this, function(device, reason) {
+                if (reason == NM.DeviceStateReason.NONE ||
+                    reason == NM.DeviceStateReason.USER_REQUESTED ||
+                    reason == NM.DeviceStateReason.NEW_ACTIVATION ||
+                    reason == NM.DeviceStateReason.SLEEPING ||
+                    reason == NM.DeviceStateReason.NETWORKING_OFF)
+                    return;
+
+                this._notifyForDevice(device, 'xsi-network-offline',
+                                      _("Disconnected"),
+                                      device._lastConnectionId || "",
+                                      MessageTray.Urgency.NORMAL);
+            }));
             wrapper._deviceStateChangedId = wrapper.connect('state-changed', Lang.bind(this, function(dev) {
                 this._syncSectionTitle(dev.category);
             }));
             wrapper._destroyId = wrapper.connect('destroy', function(wrapper) {
                 wrapper.disconnect(wrapper._activationFailedId);
+                wrapper.disconnect(wrapper._networkLostId);
                 wrapper.disconnect(wrapper._deviceStateChangedId);
                 wrapper.disconnect(wrapper._destroyId);
             });
@@ -2219,11 +2243,8 @@ CinnamonNetworkApplet.prototype = {
                     a._primaryDevice = this._devices.vpn.device;
                 }
 
-                if (a.state == NM.ActiveConnectionState.ACTIVATED &&
-                    a._primaryDevice && a._primaryDevice._notification) {
-                        a._primaryDevice._notification.destroy();
-                        a._primaryDevice._notification = null;
-                }
+                if (a.state == NM.ActiveConnectionState.ACTIVATED)
+                    this._notifyConnected(a);
             }
 
             if (a._primaryDevice) {
@@ -2240,12 +2261,69 @@ CinnamonNetworkApplet.prototype = {
         this._mainConnection = activated || activating || default_ip4 || default_ip6 || null;
     },
 
-    _notifyActivated: function(activeConnection) {
-        if (activeConnection.state == NM.ActiveConnectionState.ACTIVATED &&
-            activeConnection._primaryDevice && activeConnection._primaryDevice._notification) {
-                activeConnection._primaryDevice._notification.destroy();
-                activeConnection._primaryDevice._notification = null;
+    _notifyConnected: function(activeConnection) {
+        let device = activeConnection._primaryDevice;
+        if (!device)
+            return;
+
+        activeConnection._wasActivated = true;
+
+        if (device._notification)
+            device._notification.destroy();
+
+        let elapsed = GLib.get_monotonic_time() - this._startTime;
+        if (elapsed < CONNECTED_NOTIFICATION_GRACE_SECONDS * GLib.USEC_PER_SEC)
+            return;
+
+        let iconName, title;
+        switch (activeConnection._section) {
+        case NMConnectionCategory.WIRELESS:
+            iconName = 'xsi-network-wireless';
+            title = _("Connected to the wireless network");
+            break;
+        case NMConnectionCategory.WIRED:
+            iconName = 'xsi-network-wired';
+            title = _("Connected to the wired network");
+            break;
+        case NMConnectionCategory.WWAN:
+            iconName = 'xsi-network-cellular-connected';
+            title = _("Connected to the cellular network");
+            break;
+        case NMConnectionCategory.VPN:
+            iconName = 'xsi-network-vpn';
+            title = _("Connected to the VPN");
+            break;
+        default:
+            iconName = 'xsi-network-wired';
+            title = _("Connected to the network");
         }
+
+        this._notifyForDevice(device, iconName, title, activeConnection.get_id() || "",
+                              MessageTray.Urgency.NORMAL);
+    },
+
+    _notifyVpnDeactivated: function(activeConnection) {
+        let reason = activeConnection.get_state_reason();
+        if (reason == NM.ActiveConnectionStateReason.USER_DISCONNECTED ||
+            reason == NM.ActiveConnectionStateReason.DEVICE_DISCONNECTED)
+            return;
+
+        let id = activeConnection.get_id() || "";
+        if (activeConnection._wasActivated)
+            this._notifyForDevice(activeConnection._primaryDevice, 'xsi-network-offline',
+                                  _("Disconnected"), id, MessageTray.Urgency.NORMAL);
+        else
+            this._notifyForDevice(activeConnection._primaryDevice, 'network-error',
+                                  _("Connection failed"), id, MessageTray.Urgency.HIGH);
+    },
+
+    _notifyActivated: function(activeConnection) {
+        if (activeConnection.state == NM.ActiveConnectionState.ACTIVATED)
+            this._notifyConnected(activeConnection);
+        else if (activeConnection.state == NM.ActiveConnectionState.DEACTIVATED &&
+                 activeConnection._section == NMConnectionCategory.VPN &&
+                 activeConnection._primaryDevice)
+            this._notifyVpnDeactivated(activeConnection);
 
         this._updateIcon();
     },
