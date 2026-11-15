@@ -270,10 +270,17 @@ NMWirelessSectionTitleMenuItem.prototype = {
         this._propertyHardware = property + '_hardware_enabled';
         this._setEnabledFunc = property + '_set_enabled';
 
-        this._client.connect('notify::' + property + '-enabled', Lang.bind(this, this._propertyChanged));
-        this._client.connect('notify::' + property + '-hardware-enabled', Lang.bind(this, this._propertyChanged));
+        this._client.connectObject(
+            'notify::' + property + '-enabled', () => this._propertyChanged(),
+            'notify::' + property + '-hardware-enabled', () => this._propertyChanged(),
+            this);
 
         this._propertyChanged();
+    },
+
+    destroy: function() {
+        this._client.disconnectObject(this);
+        PopupMenu.PopupSwitchMenuItem.prototype.destroy.call(this);
     },
 
     updateForDevice: function(device) {
@@ -947,11 +954,16 @@ NMDeviceBluetooth.prototype = {
 
     _init: function(client, device, connections) {
         this._autoConnectionName = this._makeConnectionName(device);
-        device.connect('notify::name', Lang.bind(this, this._updateAutoConnectionName));
+        device.connectObject('notify::name', () => this._updateAutoConnectionName(), this);
 
         this.category = NMConnectionCategory.WWAN;
 
         NMDevice.prototype._init.call(this, client, device, connections);
+    },
+
+    destroy: function() {
+        this.device.disconnectObject(this);
+        NMDevice.prototype.destroy.call(this);
     },
 
     _createAutomaticConnection: function() {
@@ -1135,7 +1147,7 @@ NMDeviceWireless.prototype = {
                 // the SSID and security details to connect
                 // nevertheless, the access point can acquire a SSID when
                 // NetworkManager connects to it (via nmcli or cinnamon-settings)
-                ap._notifySsidId = ap.connect('notify::ssid', Lang.bind(this, this._notifySsidCb));
+                ap.connectObject('notify::ssid', this._notifySsidCb.bind(this), this);
                 continue;
             }
 
@@ -1202,6 +1214,9 @@ NMDeviceWireless.prototype = {
             this._apRemovedId = 0;
         }
 
+        for (let ap of this.device.get_access_points() || [])
+            ap.disconnectObject(this);
+
         NMDevice.prototype.destroy.call(this);
     },
 
@@ -1260,8 +1275,7 @@ NMDeviceWireless.prototype = {
 
     _notifySsidCb: function(accessPoint) {
         if (accessPoint.get_ssid() != null) {
-            accessPoint.disconnect(accessPoint._notifySsidId);
-            accessPoint._notifySsidId = 0;
+            accessPoint.disconnectObject(this);
             this._accessPointAdded(this.device, accessPoint);
         }
     },
@@ -1393,7 +1407,7 @@ NMDeviceWireless.prototype = {
         if (accessPoint.get_ssid() == null) {
             // This access point is not visible yet
             // Wait for it to get a ssid
-            accessPoint._notifySsidId = accessPoint.connect('notify::ssid', Lang.bind(this, this._notifySsidCb));
+            accessPoint.connectObject('notify::ssid', this._notifySsidCb.bind(this), this);
             return;
         }
 
@@ -1486,6 +1500,8 @@ NMDeviceWireless.prototype = {
     },
 
     _accessPointRemoved: function(device, accessPoint) {
+        accessPoint.disconnectObject(this);
+
         let res = this._findExistingNetwork(accessPoint);
 
         if (res == null) {
@@ -1829,7 +1845,8 @@ CinnamonNetworkApplet.prototype = {
             this.settings.bind("keyOpen", "keyOpen", this._setKeybinding);
             this._setKeybinding();
 
-            NM.Client.new_async(null, Lang.bind(this, this._clientGot));
+            this._clientCancellable = new Gio.Cancellable();
+            NM.Client.new_async(this._clientCancellable, Lang.bind(this, this._clientGot));
         }
         catch (e) {
             global.logError(e);
@@ -1949,25 +1966,26 @@ CinnamonNetworkApplet.prototype = {
             this._readDevices();
             this._syncNMState();
 
-            this._client.connect('notify::nm-running', () => {
-                this._startTime = GLib.get_monotonic_time();
-                this._syncNMState();
-            });
-            this._client.connect('notify::networking-enabled', Lang.bind(this, this._syncNMState));
-            this._client.connect('notify::state', Lang.bind(this, this._syncNMState));
-            this._client.connect('notify::active-connections', Lang.bind(this, this._updateIcon));
-            this._client.connect('device-added', Lang.bind(this, this._deviceAdded));
-            this._client.connect('device-removed', Lang.bind(this, this._deviceRemoved));
-            this._client.connect('connection-added', Lang.bind(this, this._connectionAdded));
-            this._client.connect('connection-removed', Lang.bind(this, this._connectionRemoved));
-
-            this._inited = true;
+            this._client.connectObject(
+                'notify::nm-running', () => {
+                    this._startTime = GLib.get_monotonic_time();
+                    this._syncNMState();
+                },
+                'notify::networking-enabled', () => this._syncNMState(),
+                'notify::state', () => this._syncNMState(),
+                'notify::active-connections', () => this._updateIcon(),
+                'device-added', this._deviceAdded.bind(this),
+                'device-removed', this._deviceRemoved.bind(this),
+                'connection-added', this._connectionAdded.bind(this),
+                'connection-removed', this._connectionRemoved.bind(this),
+                this);
 
             this._periodicUpdateIcon();
 
         }
         catch (e) {
-            global.logError(e);
+            if (!e.matches?.(Gio.IOErrorEnum, Gio.IOErrorEnum.CANCELLED))
+                global.logError(e);
         }
     },
 
@@ -2089,7 +2107,7 @@ CinnamonNetworkApplet.prototype = {
         if (wrapperClass) {
             let wrapper = new wrapperClass(this._client, device, this._connections);
 
-            wrapper._activationFailedId = wrapper.connect('activation-failed', Lang.bind(this, function(device, reason) {
+            wrapper.connect('activation-failed', Lang.bind(this, function(device, reason) {
                 // XXX: nm-applet has no special text depending on reason
                 // but I'm not sure of this generic message
                 this._notifyForDevice(device, 'network-error',
@@ -2097,12 +2115,14 @@ CinnamonNetworkApplet.prototype = {
                                       _("Activation of network connection failed"),
                                      MessageTray.Urgency.HIGH);
             }));
-            wrapper._networkLostId = wrapper.connect('network-lost', Lang.bind(this, function(device, reason) {
+            wrapper.connect('network-lost', Lang.bind(this, function(device, reason) {
                 if (reason == NM.DeviceStateReason.NONE ||
                     reason == NM.DeviceStateReason.USER_REQUESTED ||
                     reason == NM.DeviceStateReason.NEW_ACTIVATION ||
                     reason == NM.DeviceStateReason.SLEEPING ||
-                    reason == NM.DeviceStateReason.NETWORKING_OFF)
+                    reason == NM.DeviceStateReason.NETWORKING_OFF ||
+                    reason == NM.DeviceStateReason.NOW_UNMANAGED ||
+                    reason == NM.DeviceStateReason.CONNECTION_REMOVED)
                     return;
 
                 this._notifyForDevice(device, 'xsi-network-offline',
@@ -2110,15 +2130,9 @@ CinnamonNetworkApplet.prototype = {
                                       device._lastConnectionId || "",
                                       MessageTray.Urgency.NORMAL);
             }));
-            wrapper._deviceStateChangedId = wrapper.connect('state-changed', Lang.bind(this, function(dev) {
+            wrapper.connect('state-changed', Lang.bind(this, function(dev) {
                 this._syncSectionTitle(dev.category);
             }));
-            wrapper._destroyId = wrapper.connect('destroy', function(wrapper) {
-                wrapper.disconnect(wrapper._activationFailedId);
-                wrapper.disconnect(wrapper._networkLostId);
-                wrapper.disconnect(wrapper._deviceStateChangedId);
-                wrapper.disconnect(wrapper._destroyId);
-            });
             let section = this._devices[wrapper.category].section;
             let devices = this._devices[wrapper.category].devices;
 
@@ -2164,10 +2178,8 @@ CinnamonNetworkApplet.prototype = {
                 active._primaryDevice = null;
             }
 
-            if (active._inited) {
-                active.disconnect(active._notifyStateId);
-                active._inited = false;
-            }
+            active.disconnectObject(this);
+            active._inited = false;
         }
 
         this._activeConnections = newActiveConnections;
@@ -2182,7 +2194,7 @@ CinnamonNetworkApplet.prototype = {
 
         for (let a of this._activeConnections) {
             if (!a._inited) {
-                a._notifyStateId = a.connect('notify::state', Lang.bind(this, this._notifyActivated));
+                a.connectObject('notify::state', this._notifyActivated.bind(this), this);
                 a._inited = true;
             }
 
@@ -2328,33 +2340,26 @@ CinnamonNetworkApplet.prototype = {
         this._updateIcon();
     },
 
-    _readConnections: function() {
-        let connections = this._client.get_connections();
-        for (let i = 0; i < connections.length; i++) {
-            let connection = connections[i];
-            if (connection._uuid) {
-                // connection was already seen (for example because NetworkManager was restarted)
-                continue;
-            }
-            connection._updatedId = connection.connect('changed', Lang.bind(this, this._updateConnection));
+    _trackConnection: function(connection) {
+        // already seen, for example because NetworkManager was restarted
+        if (connection._uuid)
+            return false;
 
-            this._updateConnection(connection);
-            this._connections.push(connection);
-        }
-    },
-
-    _connectionAdded: function(client, connection) {
-        if (connection._uuid) {
-            // connection was already seen
-            return;
-        }
-
-        connection._updatedId = connection.connect('changed', Lang.bind(this, this._updateConnection));
+        connection.connectObject('changed', this._updateConnection.bind(this), this);
 
         this._updateConnection(connection);
         this._connections.push(connection);
+        return true;
+    },
 
-        this._updateIcon();
+    _readConnections: function() {
+        for (let connection of this._client.get_connections())
+            this._trackConnection(connection);
+    },
+
+    _connectionAdded: function(client, connection) {
+        if (this._trackConnection(connection))
+            this._updateIcon();
     },
 
     _connectionRemoved: function(client, connection) {
@@ -2375,7 +2380,7 @@ CinnamonNetworkApplet.prototype = {
         }
 
         connection._uuid = null;
-        connection.disconnect(connection._updatedId);
+        connection.disconnectObject(this);
     },
 
     _updateConnection: function(connection) {
@@ -2719,11 +2724,31 @@ CinnamonNetworkApplet.prototype = {
     },
 
     on_applet_removed_from_panel: function() {
+        this._clientCancellable?.cancel();
         Main.systrayManager.unregisterTrayIconReplacement(this.metadata.uuid);
         Main.keybindingManager.removeXletHotKey(this, "network-open");
+        this.settings?.finalize();
         if (this._periodicTimeoutId){
             Mainloop.source_remove(this._periodicTimeoutId);
+            this._periodicTimeoutId = 0;
         }
+
+        for (let emitter of [this._client, ...(this._activeConnections ?? []), ...(this._connections ?? [])])
+            emitter?.disconnectObject(this);
+
+        for (let category of ['wired', 'wireless', 'wwan']) {
+            let group = this._devices?.[category];
+            if (!group)
+                continue;
+
+            for (let wrapper of group.devices)
+                wrapper.destroy();
+            group.devices = [];
+            group.item.destroy();
+        }
+
+        this._source?.destroy();
+        this.menu.destroy();
     },
 
 };
