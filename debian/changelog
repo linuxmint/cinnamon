@@ -1,3 +1,21 @@
+cinnamon (6.8.1) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * screenSaver.js: Fix screensaver proxy flags
+  * cs_keyboard.py: Don't rebuild the entry list after our own JSON writes
+  * KeybindingWidgets: Show an osd popup when teaching keybindings
+  * osdWindow: Don't disable based on show-media-keys-osd
+  * inhibitor.js: Ignore warnings for short-lived inhibitors
+  * notificationDaemon.js: Fix regression from 1cc9c4b6816c
+  * extension.js: Load require()'d modules once, natively
+  * network applet: Restore notifications for connection events
+  * network applet: Don't leave signal handlers connected.
+
+  [ Ivan The Geek ]
+  * network applet: fix a TypeError when a sixth Wi-Fi network appears (#14120)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Mon, 16 Nov 2026 15:24:16 +0000
+
 cinnamon (6.8.0) adrien; urgency=medium
 
   [ Michael Webster ]
