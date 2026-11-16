@@ -73,8 +73,22 @@ class PopupDialog extends BaseDialog.BaseDialog {
 
         Main.layoutManager.untrackChrome(this);
 
-        if (this._takesFocus)
+        if (this._takesFocus) {
             global.set_stage_input_mode(Cinnamon.StageInputMode.NORMAL);
+            this._returnFocusToWindows();
+        }
+    }
+
+    _returnFocusToWindows() {
+        let keyFocus = global.stage.key_focus;
+        if (keyFocus && !this.contains(keyFocus))
+            return;
+
+        if (global.display.focus_window)
+            return;
+
+        global.stage.set_key_focus(null);
+        global.display.focus_default_window(global.get_current_time());
     }
 
     open() {
