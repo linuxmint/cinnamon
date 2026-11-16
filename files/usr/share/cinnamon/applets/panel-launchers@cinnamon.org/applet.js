@@ -214,7 +214,7 @@ class PanelAppLauncher extends DND.LauncherDraggable {
     }
 
     _animateIcon(step) {
-        if (step >= 3) return;
+        if (step >= 10 || (this.app.state == Cinnamon.AppState.RUNNING && step >= 1)) return;
         this.icon.set_pivot_point(0.5, 0.5);
 
         this.icon.ease({
