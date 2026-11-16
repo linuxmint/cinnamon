@@ -11,5 +11,10 @@
         "type": "switch",
         "default": true,
         "description": "Allow dragging of launchers"
+    },
+    "hide-running": {
+        "type": "switch",
+        "default": false,
+        "description": "Hide launchers for running applications"
     }
 }

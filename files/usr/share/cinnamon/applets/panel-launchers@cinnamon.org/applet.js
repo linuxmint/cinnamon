@@ -169,6 +169,11 @@ class PanelAppLauncher extends DND.LauncherDraggable {
         this._updateInhibit();
         this._signals.connect(this.launchersBox, 'launcher-draggable-setting-changed', Lang.bind(this, this._updateInhibit));
         this._signals.connect(global.settings, 'changed::' + PANEL_EDIT_MODE_KEY, Lang.bind(this, this._updateInhibit));
+
+        this._updateVisibility();
+        this._signals.connect(app, "notify::state", this._updateVisibility.bind(this));
+        this._signals.connect(this.launchersBox, "launcher-hide-running-setting-changed", this._updateVisibility.bind(this));
+        this._signals.connect(global.settings, 'changed::' + PANEL_EDIT_MODE_KEY, this._updateVisibility.bind(this));
     }
 
     _onDragBegin() {
@@ -307,6 +312,16 @@ class PanelAppLauncher extends DND.LauncherDraggable {
         }
     }
 
+    _updateVisibility() {
+        const editMode = global.settings.get_boolean(PANEL_EDIT_MODE_KEY);
+        const shouldHide = !editMode && this.launchersBox.hideRunning;
+        if (this.app.state == Cinnamon.AppState.RUNNING && shouldHide) {
+            this.actor.hide();
+        } else {
+            this.actor.show();
+        }
+    }
+
     getAppInfo() {
         return (this.isCustom() ? this.appinfo : this.app.get_app_info());
     }
@@ -412,13 +427,18 @@ class LaunchersBox {
         if(!vertical && St.Widget.get_default_direction () === St.TextDirection.RTL) //in RTL the dropIndex should be reversed
             mPos = boxSize - mPos;
 
-        let dropIndex = Math.floor(mPos / boxSize * children.length);
+        const visibleChildren = children.filter((child) => child.is_visible());
+        let unmappedDropIndex = Math.floor(mPos / boxSize * visibleChildren.length);
 
         // -1 is end, 0 is start
-        if (dropIndex >= children.length)
-            dropIndex = -1;
-        else if (dropIndex < -1)
-            dropIndex = 0;
+        if (unmappedDropIndex >= visibleChildren.length)
+            unmappedDropIndex = -1;
+        else if (unmappedDropIndex < 0)
+            unmappedDropIndex = 0;
+
+        const dropIndex = visibleChildren.length === 0 
+            ? children.length 
+            : children.findIndex((child) => child === visibleChildren.at(unmappedDropIndex)); 
 
         if (this._dragTargetIndex != dropIndex) {
             if (originalIndex > -1) {
@@ -502,6 +522,7 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
         this.settings = new Settings.AppletSettings(this, metadata.uuid, instance_id);
         this.settings.bind("launcherList", "launcherList", this._reload);
         this.settings.bind("allow-dragging", "allowDragging", this._updateLauncherDrag);
+        this.settings.bind("hide-running", "hideRunning", this._updateLauncherHideRunning);
 
         this.uuid = metadata.uuid;
 
@@ -519,6 +540,10 @@ class CinnamonPanelLaunchersApplet extends Applet.Applet {
 
     _updateLauncherDrag() {
         this.emit("launcher-draggable-setting-changed");
+    }
+
+    _updateLauncherHideRunning() {
+        this.emit("launcher-hide-running-setting-changed");
     }
 
     do_gsettings_import() {
