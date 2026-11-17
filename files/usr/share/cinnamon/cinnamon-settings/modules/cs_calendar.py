@@ -104,24 +104,25 @@ class Module:
             self.gnome_settings.set_string("clock-format", "12h")
 
     def on_map_location_changed(self, *args):
-        zone = self.tz_map.get_location().props.zone
-        if zone == self.zone:
-            return
-
-        self.tz_selector.set_timezone(zone)
-        self.set_timezone(zone)
+        self.set_timezone(self.tz_map.get_location().props.zone)
 
     def on_selector_location_changed(self, *args):
-        zone = self.tz_selector.get_timezone()
+        self.set_timezone(self.tz_selector.get_timezone())
+
+    def set_timezone(self, zone):
         if zone == self.zone:
             return
 
-        self.set_timezone(zone)
-        self.tz_map.set_timezone(zone)
+        def on_done(proxy, result, data=None):
+            if isinstance(result, Exception):
+                print(result)
+            else:
+                self.zone = zone
 
-    def set_timezone(self, zone):
-        self.zone = zone
-        self.proxy_handler.set_timezone(zone)
+            self.tz_map.set_timezone(self.zone)
+            self.tz_selector.set_timezone(self.zone)
+
+        self.proxy_handler.set_timezone(zone, on_done)
 
     def on_ntp_changed(self, *args):
         active = self.ntp_switch.content_widget.get_active()
@@ -165,9 +166,10 @@ class SytemdDBusProxyHandler(object):
         using_ntp = self._proxy.get_cached_property('NTP')
         return can_use_ntp, using_ntp
 
-    def set_timezone(self, zone):
+    def set_timezone(self, zone, callback):
         if self._proxy:
-            self._proxy.SetTimezone('(sb)', zone, True)
+            # no timeout, the call waits on the authentication dialog
+            self._proxy.SetTimezone('(sb)', zone, True, result_handler=callback, timeout=GLib.MAXINT)
 
     def set_ntp(self, active):
         if self._proxy:
@@ -204,8 +206,8 @@ class CsdDBusProxyHandler(object):
     def get_ntp(self):
         return self._proxy.GetUsingNtp()
 
-    def set_timezone(self, zone):
-        self._proxy.SetTimezone('(s)', zone)
+    def set_timezone(self, zone, callback):
+        self._proxy.SetTimezone('(s)', zone, result_handler=callback, timeout=GLib.MAXINT)
 
     def set_ntp(self, active):
         # not passing a callback to the dbus function will cause it to run synchronously and freeze the ui
