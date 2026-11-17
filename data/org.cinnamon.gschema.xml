@@ -221,6 +221,15 @@
       </description>
     </key>
 
+    <key name="ignore-software-rendering-warning" type="b">
+      <default>false</default>
+      <summary>Suppress the software rendering warning</summary>
+      <description>
+        Do not display the hardware acceleration warning when
+        Cinnamon uses software rendering.
+      </description>
+    </key>
+
     <key name="desktop-effects" type="b">
       <default>true</default>
       <summary>Enable desktop effects</summary>
