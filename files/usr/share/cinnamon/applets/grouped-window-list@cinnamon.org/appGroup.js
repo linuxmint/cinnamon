@@ -407,7 +407,9 @@ var AppGroup = class AppGroup {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
-        alloc.min_size = alloc.natural_size;
+        // Without the scrolling list, buttons may shrink to fit the panel.
+        alloc.min_size = this.state.settings.enableOverflowScroll ?
+            alloc.natural_size : Math.min(iconMinSize, labelMinSize);
     }
 
     allocate(actor, box) {
