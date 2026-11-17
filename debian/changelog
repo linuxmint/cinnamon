@@ -1,3 +1,11 @@
+cinnamon (6.8.2) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * popupDialog.js: Return focus to the default window on close.
+  * cs_calendar.py: Don't keep a timezone change that wasn't applied.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Tue, 17 Nov 2026 17:54:32 +0000
+
 cinnamon (6.8.1) adrien; urgency=medium
 
   [ Michael Webster ]
