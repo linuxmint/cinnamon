@@ -757,13 +757,18 @@ var ScreenShield = GObject.registerClass({
         }
     }
 
+    _getCurrentMonitor() {
+        let monitorIndex = global.display.get_current_monitor();
+        return Main.layoutManager.monitors[monitorIndex] || Main.layoutManager.primaryMonitor;
+    }
+
     _positionUnlockDialog() {
         if (!this._dialog)
             return;
 
-        // Get current monitor geometry
-        let monitorIndex = global.display.get_current_monitor();
-        let monitor = Main.layoutManager.monitors[monitorIndex];
+        let monitor = this._getCurrentMonitor();
+        if (!monitor)
+            return;
 
         // Get dialog's preferred size
         let [, natWidth] = this._dialog.get_preferred_width(-1);
@@ -788,7 +793,7 @@ var ScreenShield = GObject.registerClass({
         this._dialog.set_position(x, y);
         this._dialog.set_size(natWidth, natHeight);
 
-        _log(`ScreenShield: Positioned unlock dialog at ${x},${y} (${natWidth}x${natHeight}) on monitor ${monitorIndex}`);
+        _log(`ScreenShield: Positioned unlock dialog at ${x},${y} (${natWidth}x${natHeight})`);
     }
 
     _toggleScreensaverKeyboard() {
@@ -821,8 +826,9 @@ var ScreenShield = GObject.registerClass({
     }
 
     _positionKeyboardBox() {
-        let monitorIndex = global.display.get_current_monitor();
-        let monitor = Main.layoutManager.monitors[monitorIndex];
+        let monitor = this._getCurrentMonitor();
+        if (!monitor)
+            return;
 
         if (this._oskVisible) {
             let size = Main.virtualKeyboardManager.getKeyboardSize();
@@ -861,6 +867,9 @@ var ScreenShield = GObject.registerClass({
         this._createBackgrounds();
 
         this._positionInfoPanel();
+
+        for (let widget of this._widgets)
+            this._positionWidgetByState(widget);
 
         if (this._keyboardBox.visible)
             this._positionKeyboardBox();
@@ -1057,10 +1066,9 @@ var ScreenShield = GObject.registerClass({
         if (!this._infoPanel)
             return;
 
-        let currentMonitor = global.display.get_current_monitor();
-        let monitor = Main.layoutManager.monitors[currentMonitor];
+        let monitor = this._getCurrentMonitor();
         if (!monitor)
-            monitor = Main.layoutManager.primaryMonitor;
+            return;
 
         // Inset the bin by the padding and let it anchor the panel to the
         // top-right corner, so the panel re-anchors itself as its content
@@ -1076,11 +1084,11 @@ var ScreenShield = GObject.registerClass({
         let pos = widget.getCurrentPosition();
         let monitor = Main.layoutManager.monitors[pos.monitor];
 
-        if (!monitor) {
+        if (!monitor)
             monitor = Main.layoutManager.primaryMonitor;
-        }
 
-        this._positionWidget(widget, monitor, pos);
+        if (monitor)
+            this._positionWidget(widget, monitor, pos);
     }
 
     _startFloatTimer() {

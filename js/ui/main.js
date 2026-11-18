@@ -1641,7 +1641,10 @@ function pushScreensaverModal(actor, timestamp, mode, callback) {
                 callback(true);
             } catch (e) {
                 global.logError(`pushScreensaverModal: error during modal setup: ${e.message}`);
-                global.end_modal(global.get_current_time());
+                if (_findModal(actor) >= 0)
+                    popModal(actor);
+                else
+                    global.end_modal(global.get_current_time());
                 callback(false);
             }
         });

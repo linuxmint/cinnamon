@@ -891,7 +891,7 @@ var Chrome = class {
             else if (global.stage_input_mode == Cinnamon.StageInputMode.FULLSCREEN) {
                 let monitor = this.findMonitorForActor(actorData.actor);
 
-                if (global.display.get_n_monitors() == 1 || !monitor.inFullscreen) {
+                if (global.display.get_n_monitors() == 1 || !monitor?.inFullscreen) {
                     visible = true;
                 } else if (Main.chromeRaiseManager.isPanelRaised(actorData.actor)) {
                     visible = true;
@@ -1152,6 +1152,9 @@ var Chrome = class {
                 // screen, then we don't create a strut for it at all.
 
                 let monitor = this.findMonitorForActor(actorData.actor);
+                if (!monitor)
+                    continue;
+
                 let side;
                 if (x1 <= monitor.x && x2 >= monitor.x + monitor.width) {
                     // Allow the keyboard box to become chrome even though it's only adjacent to a panel
