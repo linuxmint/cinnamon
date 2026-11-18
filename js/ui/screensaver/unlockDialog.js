@@ -97,7 +97,11 @@ class UnlockDialog extends St.BoxLayout {
             style_class: 'prompt-dialog-error-label',
             important: true,
             text: '',
+            opacity: 0,
             x_align: Clutter.ActorAlign.CENTER
+        });
+        this._messageLabel.connect('notify::text', label => {
+            label.opacity = label.text ? 255 : 0;
         });
         this._messageLabel.clutter_text.line_wrap = true;
         this._messageLabel.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;

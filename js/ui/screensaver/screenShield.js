@@ -11,6 +11,7 @@ const Cinnamon = imports.gi.Cinnamon;
 const LoginManager = imports.misc.loginManager;
 const Util = imports.misc.util;
 const Main = imports.ui.main;
+const Tooltips = imports.ui.tooltips;
 const UnlockDialog = imports.ui.screensaver.unlockDialog;
 const ClockWidget = imports.ui.screensaver.clockWidget;
 const AlbumArtWidget = imports.ui.screensaver.albumArtWidget;
@@ -85,6 +86,28 @@ const State = {
     LOCKED: 2,      // Locked state (dialog hidden)
     UNLOCKING: 3    // Unlock dialog visible
 };
+
+class ShieldTooltip extends Tooltips.Tooltip {
+    constructor(shield, item, text) {
+        super(item, text);
+
+        Main.uiGroup.remove_actor(this._tooltip);
+        shield.add_child(this._tooltip);
+    }
+
+    show() {
+        let [x, y] = this.item.get_transformed_position();
+        let [width] = this.item.get_transformed_size();
+        let [, natWidth] = this._tooltip.get_preferred_width(-1);
+        let [, natHeight] = this._tooltip.get_preferred_height(natWidth);
+
+        this._tooltip.set_position(Math.round(x + (width - natWidth) / 2),
+                                   Math.round(y - natHeight));
+        this._tooltip.show();
+        this._tooltip.raise_top();
+        this.visible = true;
+    }
+}
 
 var ScreenShield = GObject.registerClass({
     Signals: {
@@ -181,6 +204,7 @@ var ScreenShield = GObject.registerClass({
         this._oskButton.set_child(new St.Icon({ icon_name: 'xsi-input-keyboard-symbolic' }));
         this._oskButton.connect('clicked', this._toggleScreensaverKeyboard.bind(this));
         this._bottomButtonLayout.add_child(this._oskButton);
+        new ShieldTooltip(this, this._oskButton, _("On-Screen keyboard"));
 
         this._screensaverSettings = new Gio.Settings({ schema_id: 'org.cinnamon.desktop.screensaver' });
         if (this._screensaverSettings.get_boolean('user-switch-enabled') &&
@@ -194,6 +218,7 @@ var ScreenShield = GObject.registerClass({
             });
             this._bottomButtonLayout.add_child(this._switchUserButton);
             this._switchUserButton.connect('clicked', this._onSwitchUser.bind(this));
+            new ShieldTooltip(this, this._switchUserButton, _("Switch User"));
         }
 
         this._capturedEventId = 0;

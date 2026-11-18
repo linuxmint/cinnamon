@@ -41,6 +41,14 @@
       background-color: transparentize($fg_color, 0.8);
       border-color: transparentize($fg_color, 0.6);
     }
+
+    &-error-label {
+      @include fontsize(11pt);
+      padding: $base_padding $base_padding * 2;
+      border-radius: $base_border_radius;
+      border: 1px solid transparentize($fg_color, 0.9);
+      background-color: transparentize($fg_color, 0.85);
+    }
   }
 
   // Clock widget
