@@ -193,7 +193,7 @@ class RunDialog extends ModalDialog.ModalDialog {
         this._entryText.connect('key-release-event', (o, e) => {
             let symbol = e.get_key_symbol();
             if (symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
-                if (!this._superTapped) // Might be still held from invocation?
+                if (!this._superTapped) // Might be still held from invocation
                     return Clutter.EVENT_PROPAGATE;
                 this.close();
                 return Clutter.EVENT_STOP;
