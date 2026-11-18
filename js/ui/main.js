@@ -1762,6 +1762,21 @@ function popModal(actor, timestamp) {
 }
 
 /**
+ * closePopupMenuForLaunch:
+ *
+ * Closes the menu holding the current modal grab, if there is one. Used by
+ * keybindings that launch an app while a menu is open, so the new window isn't
+ * left behind the menu.
+ */
+function closePopupMenuForLaunch() {
+    let record = modalActorFocusStack[modalActorFocusStack.length - 1];
+
+    if (record && record.actionMode === Cinnamon.ActionMode.POPUP &&
+        typeof record.onDismiss === 'function')
+        record.onDismiss();
+}
+
+/**
  * dismissInternalModals:
  *
  * Cleanly release every Cinnamon-internal modal grab currently on the stack.

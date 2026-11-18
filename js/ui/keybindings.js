@@ -18,6 +18,8 @@ const CUSTOM_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.custom-keybinding";
 
 const MEDIA_KEYS_SCHEMA = "org.cinnamon.desktop.keybindings.media-keys";
 
+const LAUNCHER_MODES = Cinnamon.ActionMode.NORMAL | Cinnamon.ActionMode.POPUP;
+
 const MEDIA_KEYS = [
     // Volume/audio
     { key: MK.MUTE,                       mode: Cinnamon.ActionMode.ALL },
@@ -63,14 +65,14 @@ const MEDIA_KEYS = [
     { key: MK.HIBERNATE,                  mode: Cinnamon.ActionMode.NORMAL },
     { key: MK.SCREENSAVER,                mode: Cinnamon.ActionMode.NORMAL },
 
-    // App launchers
-    { key: MK.HOME,                       mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.CALCULATOR,                 mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.SEARCH,                     mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.EMAIL,                      mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.HELP,                       mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.TERMINAL,                   mode: Cinnamon.ActionMode.NORMAL },
-    { key: MK.WWW,                        mode: Cinnamon.ActionMode.NORMAL },
+    // App launchers - allowed while a menu is open, like custom keybindings
+    { key: MK.HOME,                       mode: LAUNCHER_MODES, launcher: true },
+    { key: MK.CALCULATOR,                 mode: LAUNCHER_MODES, launcher: true },
+    { key: MK.SEARCH,                     mode: LAUNCHER_MODES, launcher: true },
+    { key: MK.EMAIL,                      mode: LAUNCHER_MODES, launcher: true },
+    { key: MK.HELP,                       mode: LAUNCHER_MODES, launcher: true },
+    { key: MK.TERMINAL,                   mode: LAUNCHER_MODES, launcher: true },
+    { key: MK.WWW,                        mode: LAUNCHER_MODES, launcher: true },
 
     // Display
     { key: MK.ROTATE_VIDEO_LOCK,          mode: Cinnamon.ActionMode.ALL },
@@ -407,6 +409,7 @@ KeybindingManager.prototype = {
             let binding = schema.get_strv("binding");
             let name = list[i];
             this.addHotKeyArray(name, binding, Lang.bind(this, function() {
+                Main.closePopupMenuForLaunch();
                 Util.spawnCommandLine(command);
             }))
         }
@@ -462,6 +465,9 @@ KeybindingManager.prototype = {
             global.logWarning("KeybindingManager: csd keybinding handler not available yet, dropping media key " + action);
             return;
         }
+
+        if (MEDIA_KEYS.find(mk => mk.key === action)?.launcher)
+            Main.closePopupMenuForLaunch();
 
         this._proxy.HandleKeybindingRemote(action);
     },
