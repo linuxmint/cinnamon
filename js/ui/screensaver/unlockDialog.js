@@ -339,6 +339,10 @@ class UnlockDialog extends St.BoxLayout {
         super.hide();
     }
 
+    concealPassword() {
+        this._passwordEntry.password_visible = false;
+    }
+
     addCharacter(unichar) {
         // Add a character to the password entry (for forwarding the first keypress)
         this._passwordEntry.clutter_text.insert_unichar(unichar);

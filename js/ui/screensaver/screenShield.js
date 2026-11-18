@@ -613,6 +613,7 @@ var ScreenShield = GObject.registerClass({
         this._hideScreensaverKeyboard();
         this._keyboardBox.hide();
         this._backupLockerCall('Unlock', null);
+        this._dialog.concealPassword();
 
         if (emitUnlocked)
             this._dialog.restoreSystemLayout();
