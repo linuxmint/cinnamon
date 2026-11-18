@@ -760,6 +760,13 @@ st_entry_captured_event (ClutterActor *actor,
       return CLUTTER_EVENT_STOP;
     }
 
+  // Super is never a text modifier. ClutterText only skips keys pressed with
+  // Control, so a Super shortcut that isn't bound (or isn't allowed in the
+  // current action mode) would otherwise type its letter into the entry.
+  if ((clutter_event_get_state (event) & (CLUTTER_SUPER_MASK | CLUTTER_MOD4_MASK)) &&
+      !(clutter_event_get_flags (event) & CLUTTER_EVENT_FLAG_INPUT_METHOD))
+    return CLUTTER_EVENT_STOP;
+
   return CLUTTER_EVENT_PROPAGATE;
 }
 
