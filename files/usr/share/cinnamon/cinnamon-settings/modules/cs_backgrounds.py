@@ -241,6 +241,15 @@ class SlideshowSwitch(SettingsWidget):
         self.module.write_slideshow(widget.get_active())
 
 
+def same_picture(uri_a, uri_b):
+    if uri_a == uri_b:
+        return True
+    paths = [Gio.File.new_for_uri(uri).get_path() if uri else None for uri in (uri_a, uri_b)]
+    if None in paths:
+        return False
+    return os.path.realpath(paths[0]) == os.path.realpath(paths[1])
+
+
 def walk_widgets(widget):
     yield widget
     if isinstance(widget, Gtk.Container):
@@ -494,10 +503,13 @@ class MonitorPage(Gtk.Box):
             return source
         uri = self.item.props.picture_uri
         if uri:
-            parent = Gio.File.new_for_uri(uri).get_parent()
-            if parent is not None:
+            path = Gio.File.new_for_uri(uri).get_path()
+            if path is not None:
+                collection = self.module.xml_collection_for(path)
+                if collection is not None:
+                    return self.module.format_source(BACKGROUND_COLLECTION_TYPE_XML, collection)
                 return self.module.format_source(BACKGROUND_COLLECTION_TYPE_DIRECTORY,
-                                                 parent.get_path())
+                                                 os.path.dirname(path))
         return None
 
     def select_folder_source(self, source):
@@ -619,7 +631,7 @@ class MonitorPage(Gtk.Box):
             return
         uri = Gio.File.new_for_path(wallpaper["filename"]).get_uri()
 
-        if uri == self.current_uri():
+        if same_picture(uri, self.current_uri()):
             return
 
         if (self._browsing_source is not None and
@@ -891,30 +903,20 @@ class Module:
         # in the existing sets/folders.  This is temporary, only so the user can
         # modify options on the actual current wallpaper.
         listed_folders = set()
-        collection_files = []
 
         for row in self.collection_store:
-            if row[STORE_IS_SEPARATOR]:
-                continue
-            if row[STORE_TYPE] == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
+            if not row[STORE_IS_SEPARATOR] and row[STORE_TYPE] == BACKGROUND_COLLECTION_TYPE_DIRECTORY:
                 listed_folders.add(row[STORE_PATH])
-            else:
-                collection_files.append(row[STORE_PATH])
-
-        # A picture belonging to one of the xml collections is already reachable
-        # under that collection's name, so its folder is not wanted.
-        listed_pictures = set()
-        for xml_path in collection_files:
-            for picture in self.parse_xml_backgrounds_list(xml_path):
-                listed_pictures.add(picture["filename"])
 
         for item in self.items():
             uri = item.props.picture_uri
             if not uri:
                 continue
 
+            # A picture belonging to one of the xml collections is already reachable
+            # under that collection's name, so its folder is not wanted.
             path = Gio.File.new_for_uri(uri).get_path()
-            if path is None or path in listed_pictures:
+            if path is None or self.xml_collection_for(path) is not None:
                 continue
 
             folder = os.path.dirname(path)
@@ -927,6 +929,18 @@ class Module:
             self.collection_store.append([False, "xsi-folder-symbolic",
                                           os.path.basename(folder), folder,
                                           BACKGROUND_COLLECTION_TYPE_DIRECTORY])
+
+    def xml_collection_for(self, path):
+        # Symlinks are resolved, a distribution's default background is often
+        # one pointing at a picture in its collection.
+        real_path = os.path.realpath(path)
+        for row in self.collection_store:
+            if row[STORE_IS_SEPARATOR] or row[STORE_TYPE] != BACKGROUND_COLLECTION_TYPE_XML:
+                continue
+            for picture in self.parse_xml_backgrounds_list(row[STORE_PATH]):
+                if os.path.realpath(picture["filename"]) == real_path:
+                    return row[STORE_PATH]
+        return None
 
     def format_source(self, type, path):
         # returns 'type://path'
@@ -1237,7 +1251,7 @@ class ThreadedIconView(Gtk.IconView):
         while iter is not None:
             data = model.get_value(iter, 0)
             filename = data.get("filename") if isinstance(data, dict) else None
-            if filename and Gio.File.new_for_path(filename).get_uri() == self._pending_uri:
+            if filename and same_picture(Gio.File.new_for_path(filename).get_uri(), self._pending_uri):
                 path = model.get_path(iter)
                 self.select_path(path)
                 self.scroll_to_path(path, False, 0, 0)
