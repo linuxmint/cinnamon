@@ -187,11 +187,14 @@ class RunDialog extends ModalDialog.ModalDialog {
         content.add_child(this._descriptionLabel);
 
         this._commandError = false;
+        this._superTapped = false;
 
         this._entryText.connect('key-press-event', this._onKeyPress.bind(this));
         this._entryText.connect('key-release-event', (o, e) => {
             let symbol = e.get_key_symbol();
             if (symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
+                if (!this._superTapped) // Might be still held from invocation?
+                    return Clutter.EVENT_PROPAGATE;
                 this.close();
                 return Clutter.EVENT_STOP;
             }
@@ -209,6 +212,7 @@ class RunDialog extends ModalDialog.ModalDialog {
 
     _onKeyPress(o, e) {
         let symbol = e.get_key_symbol();
+        this._superTapped = symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R;
         if (symbol === Clutter.KEY_Return || symbol === Clutter.KEY_KP_Enter) {
             if (o.get_text().trim() == "") {
                 return false;
@@ -478,6 +482,7 @@ class RunDialog extends ModalDialog.ModalDialog {
         this._entryText.set_text('');
         this._completionBox.hide();
         this._commandError = false;
+        this._superTapped = false;
 
         if (this._lockdownSettings.get_boolean(DISABLE_COMMAND_LINE_KEY))
             return;
