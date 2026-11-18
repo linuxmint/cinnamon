@@ -137,7 +137,7 @@ class Avatar extends St.Bin {
 
 var UserWidget = GObject.registerClass(
 class UserWidget extends St.BoxLayout {
-    _init(user, orientation = Clutter.Orientation.HORIZONTAL) {
+    _init(user, orientation = Clutter.Orientation.HORIZONTAL, avatarParams = null) {
         // If user is null, that implies a username-based login authorization.
         this._user = user;
 
@@ -153,7 +153,7 @@ class UserWidget extends St.BoxLayout {
 
         this.connect('destroy', this._onDestroy.bind(this));
 
-        this._avatar = new Avatar(user);
+        this._avatar = new Avatar(user, avatarParams);
         this._avatar.x_align = Clutter.ActorAlign.CENTER;
         this.add(this._avatar, { x_fill: false });
 

@@ -57,7 +57,7 @@ class UnlockDialog extends St.BoxLayout {
         this._userManager = AccountsService.UserManager.get_default();
         this._user = this._userManager.get_user(username);
 
-        this._userWidget = new UserWidget.UserWidget(this._user, Clutter.Orientation.VERTICAL);
+        this._userWidget = new UserWidget.UserWidget(this._user, Clutter.Orientation.VERTICAL, { reactive: false });
         this._userWidget.x_align = Clutter.ActorAlign.CENTER;
         this._contentLayout.add_child(this._userWidget);
 
