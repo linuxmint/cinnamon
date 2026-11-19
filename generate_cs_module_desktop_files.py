@@ -3,6 +3,7 @@
 import os
 import gettext
 import glob
+import importlib.util
 import sys
 
 from mintcommon import additionalfiles
@@ -18,6 +19,11 @@ gettext.install(DOMAIN, PATH)
 try:
     sys.path.append('files/usr/share/cinnamon/cinnamon-settings')
     sys.path.append('files/usr/share/cinnamon/cinnamon-settings/modules')
+
+    # config.py is generated at build time, use the installed one.
+    spec = importlib.util.spec_from_file_location('config', '/usr/share/cinnamon/cinnamon-settings/config.py')
+    sys.modules['config'] = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(sys.modules['config'])
     mod_files = glob.glob('files/usr/share/cinnamon/cinnamon-settings/modules/*.py')
     mod_files.sort()
     if len(mod_files) == 0:
