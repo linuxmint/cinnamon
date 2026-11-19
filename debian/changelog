@@ -1,3 +1,17 @@
+cinnamon (6.8.3) adrien; urgency=medium
+
+  [ Clement Lefebvre ]
+  * favorite-apps: Switch from gnome-calendar to Clockenstein
+
+  [ Michael Webster ]
+  * screensaver: Fix activation with no monitors connected
+  * cs_backgrounds.py: Resolve symlinks when matching collection pictures
+  * screenShield.js: Add button tooltips, make error label more visible
+  * unlockDialog.js: Re-conceal the password entry each time
+  * unlockDialog.js: Don't make the user avatar reactive.
+
+ -- Clement Lefebvre <root@linuxmint.com>  Thu, 19 Nov 2026 10:05:18 +0000
+
 cinnamon (6.8.2) adrien; urgency=medium
 
   [ Michael Webster ]
