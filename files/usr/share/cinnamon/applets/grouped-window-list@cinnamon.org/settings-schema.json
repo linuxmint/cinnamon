@@ -112,7 +112,7 @@
     "type": "checkbox",
     "default": true,
     "description": "Scroll the app list when there are too many windows",
-    "tooltip": "When enabled, the scroll arrows appear at the ends of the list when it overflows. When disabled, app buttons shrink to fit the panel and no scrolling is used."
+    "tooltip": "When enabled, app buttons shrink to a minimum size as windows are added, and the list scrolls with arrows at both ends once that size is reached. When disabled, app buttons keep shrinking to fit the panel and no scrolling is used."
   },
   "left-click-action": {
     "type": "combobox",

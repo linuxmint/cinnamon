@@ -19,6 +19,8 @@ const {
     FLASH_INTERVAL,
     FLASH_MAX_COUNT,
     MAX_BUTTON_WIDTH,
+    MIN_BUTTON_WIDTH,
+    MIN_BUTTON_HEIGHT_RATIO,
     BUTTON_BOX_ANIMATION_TIME,
     RESERVE_KEYS,
     TitleDisplay
@@ -394,9 +396,11 @@ var AppGroup = class AppGroup {
                 const iconWidth = this.iconSize ? this.iconSize * global.ui_scale : iconNaturalSize;
                 alloc.natural_size = iconWidth + 6 * global.ui_scale;
             }
-            // Without the scrolling list, buttons may shrink to fit the panel.
+            // Buttons shrink to fit the panel. With the scroll list they stop at a minimum width
+            // (icon only buttons are already smaller than that), and the list scrolls beyond it.
+            // Without the scroll list there is no limit.
             alloc.min_size = this.state.settings.enableOverflowScroll ?
-                alloc.natural_size : 1 * global.ui_scale;
+                Math.min(alloc.natural_size, MIN_BUTTON_WIDTH * global.ui_scale) : 1 * global.ui_scale;
         } else {
             alloc.natural_size = this.state.trigger('getPanelHeight');
             alloc.min_size = 1 * global.ui_scale;
@@ -407,9 +411,10 @@ var AppGroup = class AppGroup {
         let [iconMinSize, iconNaturalSize] = this.iconBox.get_preferred_height(forWidth);
         let [labelMinSize, labelNaturalSize] = this.label.get_preferred_height(forWidth);
         alloc.natural_size = Math.max(iconNaturalSize, labelNaturalSize);
-        // Without the scrolling list, buttons may shrink to fit the panel.
+        // Buttons shrink to fit the panel. With the scroll list they stop at a fraction of their
+        // natural height, and the list scrolls beyond it. Without the scroll list there is no limit.
         alloc.min_size = this.state.settings.enableOverflowScroll ?
-            alloc.natural_size : Math.min(iconMinSize, labelMinSize);
+            Math.ceil(alloc.natural_size * MIN_BUTTON_HEIGHT_RATIO) : Math.min(iconMinSize, labelMinSize);
     }
 
     allocate(actor, box) {

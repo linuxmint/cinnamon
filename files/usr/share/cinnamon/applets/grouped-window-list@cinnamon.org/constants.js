@@ -7,6 +7,11 @@ var THUMBNAIL_ICON_SIZE = 16;
 var OPACITY_OPAQUE = 255;
 var BUTTON_BOX_ANIMATION_TIME = 150;
 var MAX_BUTTON_WIDTH = 150; // Pixels
+// Smallest width a button with a title shrinks to before the list starts scrolling.
+var MIN_BUTTON_WIDTH = 65; // Pixels
+// Smallest height of a button on a vertical panel before the list starts scrolling,
+// as a fraction of its natural height.
+var MIN_BUTTON_HEIGHT_RATIO = 2 / 3;
 var FLASH_INTERVAL = 500;
 var FLASH_MAX_COUNT = 4;
 var RESERVE_KEYS = ['willUnmount'];
