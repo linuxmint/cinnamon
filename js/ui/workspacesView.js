@@ -102,9 +102,12 @@ class WorkspacesView extends St.Widget {
             return Clutter.EVENT_PROPAGATE;
 
         switch (event.keyval) {
-            case Clutter.KEY_Escape:
             case Clutter.KEY_Super_L:
             case Clutter.KEY_Super_R:
+                if (!Main.isModifierTap(event.keyval))
+                    return Clutter.EVENT_PROPAGATE;
+                // fall through
+            case Clutter.KEY_Escape:
                 Main.overview.hide();
                 return Clutter.EVENT_STOP;
             default:

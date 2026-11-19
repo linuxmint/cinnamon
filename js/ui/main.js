@@ -1398,10 +1398,24 @@ function _shouldFilterKeybinding(entry) {
  */
 let _modifierOnlyAction = 0;
 
-// Tracks whether a keybinding shortcut has actually been invoked through this
-// handler since the most recent modifier-key press while in a modal state. Used
-// to tell a bare modifier tap apart from a modifier used as part of a shortcut.
-let _shortcutInvokedSinceModifier = false;
+// The modifier most recently pressed while modal, with no other key pressed and
+// no click, touch or scroll since. Its release completes a tap, which activates
+// _modifierOnlyAction if there is one. A modifier still held from the shortcut
+// that opened the modal is never recorded here, so its release isn't a tap.
+let _tappedModifier = 0;
+
+function _clearModifierTap() {
+    _tappedModifier = 0;
+    _modifierOnlyAction = 0;
+}
+
+const _TAP_CANCELLING_EVENTS = [
+    Clutter.EventType.BUTTON_PRESS,
+    Clutter.EventType.BUTTON_RELEASE,
+    Clutter.EventType.TOUCH_BEGIN,
+    Clutter.EventType.TOUCH_END,
+    Clutter.EventType.SCROLL
+];
 
 function _isModifierKeyval(symbol) {
     return symbol === Clutter.KEY_Super_L   || symbol === Clutter.KEY_Super_R   ||
@@ -1440,6 +1454,9 @@ function _stageEventHandler(actor, event) {
 
     if (eventType !== Clutter.EventType.KEY_PRESS &&
         eventType !== Clutter.EventType.KEY_RELEASE) {
+        if (_TAP_CANCELLING_EVENTS.includes(eventType))
+            _clearModifierTap();
+
         if (!popup_rendering_actor || eventType !== Clutter.EventType.BUTTON_RELEASE)
             return Clutter.EVENT_PROPAGATE;
         return (event.get_source() && popup_rendering_actor.contains(event.get_source()))
@@ -1456,7 +1473,8 @@ function _stageEventHandler(actor, event) {
 
     if (eventType === Clutter.EventType.KEY_PRESS) {
         if (_isModifierKeyval(event.get_key_symbol())) {
-            _shortcutInvokedSinceModifier = false;
+            _tappedModifier = event.get_key_symbol();
+            _modifierOnlyAction = 0;
             let action = global.display.get_keybinding_action(keyCode, modifierState);
             if (action > 0) {
                 let entry = keybindingManager.getBindingById(action);
@@ -1468,7 +1486,7 @@ function _stageEventHandler(actor, event) {
             return Clutter.EVENT_PROPAGATE;
         }
 
-        _modifierOnlyAction = 0;
+        _clearModifierTap();
 
         // During modal, muffin's process_iso_next_group doesn't run, handle xkb 'grp'
         // here.
@@ -1481,7 +1499,6 @@ function _stageEventHandler(actor, event) {
         if (action > 0) {
             let entry = keybindingManager.getBindingById(action);
             if (!_shouldFilterKeybinding(entry)) {
-                _shortcutInvokedSinceModifier = true;
                 _invokeKeybindingAction(action, modifierState);
                 return Clutter.EVENT_STOP;
             }
@@ -1490,24 +1507,31 @@ function _stageEventHandler(actor, event) {
         return Clutter.EVENT_PROPAGATE;
     }
 
-    // Release event
-    if (_isModifierKeyval(event.get_key_symbol())) {
-        // Activate the single-key modifier keybinding if one was stored.
-        if (_modifierOnlyAction > 0) {
-            let action = _modifierOnlyAction;
-            _modifierOnlyAction = 0;
-            _invokeKeybindingAction(action, modifierState);
-            return Clutter.EVENT_STOP;
-        }
-
-        // If the modifier was used as part of a shortcut (a keybinding was invoked
-        // here while it was held), consume its release so it isn't mistaken for a
-        // bare tap.
-        if (_shortcutInvokedSinceModifier)
-            return Clutter.EVENT_STOP;
+    // Release event - activate the single-key modifier keybinding if one was stored.
+    // Other taps propagate, for handlers to check with isModifierTap().
+    if (_modifierOnlyAction > 0 && isModifierTap(event.get_key_symbol())) {
+        let action = _modifierOnlyAction;
+        _clearModifierTap();
+        _invokeKeybindingAction(action, modifierState);
+        return Clutter.EVENT_STOP;
     }
 
     return Clutter.EVENT_PROPAGATE;
+}
+
+/**
+ * isModifierTap:
+ * @symbol (int): the keyval of a key-release event
+ *
+ * Whether a modifier key-release received during a modal state completes a
+ * bare tap - the modifier was pressed while modal and no other key was pressed
+ * before its release. This is false for a modifier that was already held when
+ * the modal began, such as one from the shortcut that opened it.
+ *
+ * Returns (boolean): whether the release completes a tap
+ */
+function isModifierTap(symbol) {
+    return _tappedModifier !== 0 && symbol === _tappedModifier;
 }
 
 function _findModal(actor) {
@@ -1519,8 +1543,7 @@ function _findModal(actor) {
 }
 
 function _completeModalSetup(actor, mode, onDismiss) {
-    _modifierOnlyAction = 0;
-    _shortcutInvokedSinceModifier = false;
+    _clearModifierTap();
 
     if (modalCount == 0)
         Meta.disable_unredirect_for_display(global.display);

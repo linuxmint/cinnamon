@@ -173,7 +173,7 @@ var Expo = GObject.registerClass({
                     }
                     return Clutter.EVENT_STOP;
                 }
-                if (symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) {
+                if ((symbol === Clutter.KEY_Super_L || symbol === Clutter.KEY_Super_R) && Main.isModifierTap(symbol)) {
                     this.hide();
                     return Clutter.EVENT_STOP;
                 }
