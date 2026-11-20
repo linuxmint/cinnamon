@@ -31,7 +31,8 @@
         "left-click-action",
         "middle-click-action",
         "show-all-workspaces",
-        "window-display-settings"
+        "window-display-settings",
+        "enable-overflow-scroll"
       ]
     },
     "hotKeysSection": {
@@ -106,6 +107,12 @@
       "Cycle windows": 3,
       "Slide app list": 4
     }
+  },
+  "enable-overflow-scroll": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Scroll the app list when there are too many windows",
+    "tooltip": "When enabled, app buttons shrink to a minimum size as windows are added, and the list scrolls with arrows at both ends once that size is reached. When disabled, app buttons keep shrinking to fit the panel and no scrolling is used."
   },
   "left-click-action": {
     "type": "combobox",

@@ -297,6 +297,7 @@ class GroupedWindowListApplet extends Applet.Applet {
         const settingsProps = [
             {key: 'group-apps', value: 'groupApps', cb: this.refreshAllWorkspaces},
             {key: 'list-scroll-behavior', value: 'scrollBehavior', cb: null},
+            {key: 'enable-overflow-scroll', value: 'enableOverflowScroll', cb: this.onOverflowScrollChange},
             {key: 'left-click-action', value: 'leftClickAction', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},
             {key: 'show-all-workspaces', value: 'showAllWorkspaces', cb: this.refreshAllWorkspaces},
@@ -553,6 +554,18 @@ class GroupedWindowListApplet extends Applet.Applet {
     refreshCurrentWorkspace() {
         const currentWorkspace = this.getCurrentWorkspace();
         if (currentWorkspace) currentWorkspace.refreshList();
+    }
+
+    onOverflowScrollChange() {
+        // A workspace builds its scrolling or non-scrolling layout in its constructor,
+        // so existing workspaces are rebuilt and the current one is recreated right away.
+        const hadWorkspaces = this.workspaces.length > 0;
+        this.workspaces.forEach( workspace => {
+            if (workspace) workspace.destroy();
+        });
+        this.workspaces = [];
+        this.actor.remove_all_children();
+        if (hadWorkspaces) this._onSwitchWorkspace();
     }
 
     refreshAllWorkspaces(options = {exceptCurrentOne: false}) {
