@@ -296,6 +296,7 @@ class GroupedWindowListApplet extends Applet.Applet {
     bindSettings() {
         const settingsProps = [
             {key: 'group-apps', value: 'groupApps', cb: this.refreshAllWorkspaces},
+            {key: 'sort-apps', value: 'sortApps', cb: this.refreshAllWorkspaces},
             {key: 'list-scroll-behavior', value: 'scrollBehavior', cb: null},
             {key: 'left-click-action', value: 'leftClickAction', cb: null},
             {key: 'middle-click-action', value: 'middleClickAction', cb: null},
