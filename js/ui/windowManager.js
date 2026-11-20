@@ -1207,6 +1207,18 @@ var WindowManager = class WindowManager {
         let from_windows = new Set();
         let to_windows = new Set();
         let kill_id = 0;
+        let done = false;
+
+        let complete = () => {
+            if (done)
+                return;
+            done = true;
+            if (kill_id > 0) {
+                this._cinnamonwm.disconnect(kill_id);
+                kill_id = 0;
+            }
+            cinnamonwm.completed_switch_workspace();
+        };
 
         let cleanup_window_effect = (window, hide=false) => {
             window.remove_all_transitions();
@@ -1219,24 +1231,21 @@ var WindowManager = class WindowManager {
             }
         }
 
+        // Called from onStopped, so it also runs when a transition is
+        // interrupted (e.g. the window is closed during the slide). Actors are
+        // removed from the sets before cleanup, so re-entry through
+        // remove_all_transitions() is a no-op.
         let finish_switch_workspace = (actor) =>
         {
-            if (to_windows.delete(actor)) {
+            if (to_windows.delete(actor))
                 cleanup_window_effect(actor);
-            }
-            else
-            if (from_windows.delete(actor)) {
+            else if (from_windows.delete(actor))
                 cleanup_window_effect(actor, true);
-            };
+            else
+                return;
 
-            if (to_windows.size === 0 && from_windows.size === 0) {
-                if (kill_id > 0) {
-                    this._cinnamonwm.disconnect(kill_id);
-                    kill_id = 0;
-
-                    cinnamonwm.completed_switch_workspace();
-                }
-            }
+            if (to_windows.size === 0 && from_windows.size === 0 && kill_id > 0)
+                complete();
         };
 
         for (let i = 0; i < windows.length; i++) {
@@ -1279,7 +1288,7 @@ var WindowManager = class WindowManager {
                     y: window.origY + yDest,
                     duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => finish_switch_workspace(window)
+                    onStopped: () => finish_switch_workspace(window)
                 });
             } else if (window.get_workspace() === to) {
                 if (window.origX == undefined) {
@@ -1294,33 +1303,25 @@ var WindowManager = class WindowManager {
                     y: window.origY,
                     duration: this.WORKSPACE_ANIMATION_TIME * this.window_effect_multiplier,
                     mode: Clutter.AnimationMode.EASE_OUT_QUAD,
-                    onComplete: () => finish_switch_workspace(window)
+                    onStopped: () => finish_switch_workspace(window)
                 });
             }
         }
 
         if (to_windows.size === 0 && from_windows.size === 0) {
-            this._cinnamonwm.completed_switch_workspace();
+            complete();
             return;
         }
 
-        kill_id = this._cinnamonwm.connect('kill-switch-workspace', cinnamonwm => {
-            let iter = to_windows.forEach((actor) => {
-                cleanup_window_effect(actor);
-            });
-            iter = from_windows.forEach((actor) => {
-                cleanup_window_effect(actor, true);
-            });
-
+        kill_id = this._cinnamonwm.connect('kill-switch-workspace', () => {
+            let to_list = [...to_windows], from_list = [...from_windows];
             to_windows.clear();
             from_windows.clear();
 
-            if (kill_id > 0) {
-                this._cinnamonwm.disconnect(kill_id);
-                kill_id = 0;
-            }
+            to_list.forEach(actor => cleanup_window_effect(actor));
+            from_list.forEach(actor => cleanup_window_effect(actor, true));
 
-            cinnamonwm.completed_switch_workspace();
+            complete();
         });
     }
 
