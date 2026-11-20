@@ -438,12 +438,15 @@ var Workspace = class Workspace {
         if (!this.state) return;
 
         if (!this.state.removingWindowFromWorkspaces) {
-            // Abort the remove if the window is just changing workspaces, window
-            // should always remain indexed on all workspaces while its mapped.
-            // if (!metaWindow.showing_on_its_workspace()) return;
-            if ((this.state.settings.showAllWorkspaces) && (metaWindow.has_focus()
-                && global.workspace_manager.get_active_workspace_index()
-                !== metaWorkspace.index())) return;
+            // Abort the remove if the window is just changing workspaces rather than
+            // closing: Meta/Muffin re-assigns the window to its new workspace before
+            // firing 'window-removed' on the old one, so a window that still has a
+            // (different) workspace is moving, not closing, and should stay indexed
+            // everywhere while showAllWorkspaces is set. A window that is actually
+            // closing has no workspace left by the time this fires.
+            if (this.state.settings.showAllWorkspaces
+                && metaWindow.get_workspace()
+                && metaWindow.get_workspace() !== metaWorkspace) return;
             this.state.removingWindowFromWorkspaces = true;
             this.state.trigger('removeWindowFromAllWorkspaces', metaWindow);
             return;
