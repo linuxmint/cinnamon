@@ -367,25 +367,185 @@ blur_pixels (guchar  *pixels_in,
   return pixels_out;
 }
 
-CoglPipeline *
-_st_create_shadow_pipeline_at_scale (StShadow    *shadow_spec,
-                                     CoglTexture *src_texture,
-                                     float        resource_scale)
+/* Largest number of taps the GPU blur shader loops over; GLSL ES requires a
+ * constant loop bound. Bigger kernels use the CPU path. */
+#define GPU_BLUR_MAX_TAPS 256
+
+static const char *gpu_blur_declarations =
+  "uniform vec2 blur_step;\n"
+  "uniform float blur_n_values;\n"
+  "uniform float blur_half;\n"
+  "uniform float blur_exp_divisor;\n";
+
+/* One-dimensional gaussian pass over blur_step. It weighs the taps exactly
+ * like calculate_gaussian_kernel() does for the CPU path, and treats
+ * everything outside the source texture as transparent. */
+static const char *gpu_blur_code =
+  "  vec4 sum = vec4 (0.0);\n"
+  "  float weights = 0.0;\n"
+  "  for (int i = 0; i < " G_STRINGIFY (GPU_BLUR_MAX_TAPS) "; i++)\n"
+  "    {\n"
+  "      if (float (i) >= blur_n_values)\n"
+  "        break;\n"
+  "      float d = float (i) - blur_half;\n"
+  "      float w = exp (-d * d / blur_exp_divisor);\n"
+  "      vec2 p = cogl_tex_coord.st + blur_step * d;\n"
+  "      weights += w;\n"
+  "      if (p.s >= 0.0 && p.s <= 1.0 && p.t >= 0.0 && p.t <= 1.0)\n"
+  "        sum += texture2D (cogl_sampler, p) * w;\n"
+  "    }\n"
+  "  cogl_texel = sum / weights;\n";
+
+static CoglTexture *
+gpu_blur_pass (CoglContext  *ctx,
+               CoglPipeline *template,
+               CoglTexture  *src,
+               int           width_out,
+               int           height_out,
+               float         s1,
+               float         t1,
+               float         s2,
+               float         t2,
+               gboolean      horizontal,
+               int           n_values,
+               double        sigma)
 {
-  ClutterBackend *backend = clutter_get_default_backend ();
-  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
-  GError *error = NULL;
-
-  static CoglPipeline *shadow_pipeline_template = NULL;
-
+  CoglTexture *dst;
+  CoglOffscreen *offscreen;
+  CoglFramebuffer *fb;
   CoglPipeline *pipeline;
+  GError *error = NULL;
+  int step_loc, n_loc, half_loc, div_loc;
+
+  dst = cogl_texture_2d_new_with_size (ctx, width_out, height_out);
+  if (dst == NULL)
+    return NULL;
+
+  offscreen = cogl_offscreen_new_with_texture (dst);
+  fb = COGL_FRAMEBUFFER (offscreen);
+
+  if (!cogl_framebuffer_allocate (fb, &error))
+    {
+      g_error_free (error);
+      cogl_object_unref (offscreen);
+      cogl_object_unref (dst);
+      return NULL;
+    }
+
+  pipeline = cogl_pipeline_copy (template);
+  cogl_pipeline_set_layer_texture (pipeline, 0, src);
+
+  step_loc = cogl_pipeline_get_uniform_location (pipeline, "blur_step");
+  n_loc = cogl_pipeline_get_uniform_location (pipeline, "blur_n_values");
+  half_loc = cogl_pipeline_get_uniform_location (pipeline, "blur_half");
+  div_loc = cogl_pipeline_get_uniform_location (pipeline, "blur_exp_divisor");
+
+  {
+    float step[2] = { 0, 0 };
+
+    if (horizontal)
+      step[0] = 1.0f / cogl_texture_get_width (src);
+    else
+      step[1] = 1.0f / cogl_texture_get_height (src);
+
+    cogl_pipeline_set_uniform_float (pipeline, step_loc, 2, 1, step);
+  }
+  cogl_pipeline_set_uniform_1f (pipeline, n_loc, n_values);
+  cogl_pipeline_set_uniform_1f (pipeline, half_loc, n_values / 2);
+  cogl_pipeline_set_uniform_1f (pipeline, div_loc, 2 * sigma * sigma);
+
+  cogl_framebuffer_orthographic (fb, 0, 0, width_out, height_out, 0, 1.0);
+  cogl_framebuffer_clear4f (fb, COGL_BUFFER_BIT_COLOR, 0, 0, 0, 0);
+  cogl_framebuffer_draw_textured_rectangle (fb, pipeline,
+                                            0, 0, width_out, height_out,
+                                            s1, t1, s2, t2);
+
+  cogl_object_unref (pipeline);
+  cogl_object_unref (offscreen);
+
+  return dst;
+}
+
+/* Blurs the alpha channel of @src_texture on the GPU, in two separable
+ * passes, without reading anything back. The result is padded on every side
+ * by the same amount as the CPU blur_pixels() pads it, so the two are
+ * interchangeable. Returns %NULL if that isn't possible, in which case the
+ * caller should use the CPU path. */
+static CoglTexture *
+create_blurred_texture_gpu (CoglContext *ctx,
+                            CoglTexture *src_texture,
+                            gdouble      blur)
+{
+  static CoglPipeline *blur_pipeline_template = NULL;
+  CoglTexture *tmp, *dst;
+  gdouble sigma;
+  int n_values, half, width_in, height_in, width_out, height_out;
+
+  sigma = blur / 2.;
+  n_values = (gint) 5 * sigma;
+  half = n_values / 2;
+
+  if (n_values < 1 || n_values > GPU_BLUR_MAX_TAPS)
+    return NULL;
+
+  width_in  = cogl_texture_get_width  (src_texture);
+  height_in = cogl_texture_get_height (src_texture);
+  width_out  = width_in  + 2 * half;
+  height_out = height_in + 2 * half;
+
+  if (G_UNLIKELY (blur_pipeline_template == NULL))
+    {
+      CoglSnippet *snippet;
+
+      blur_pipeline_template = cogl_pipeline_new (ctx);
+
+      snippet = cogl_snippet_new (COGL_SNIPPET_HOOK_TEXTURE_LOOKUP,
+                                  gpu_blur_declarations, NULL);
+      cogl_snippet_set_replace (snippet, gpu_blur_code);
+      cogl_pipeline_add_layer_snippet (blur_pipeline_template, 0, snippet);
+      cogl_object_unref (snippet);
+
+      /* The passes write their result as is */
+      cogl_pipeline_set_blend (blur_pipeline_template,
+                               "RGBA = ADD (SRC_COLOR, 0)", NULL);
+      cogl_pipeline_set_layer_filters (blur_pipeline_template, 0,
+                                       COGL_PIPELINE_FILTER_NEAREST,
+                                       COGL_PIPELINE_FILTER_NEAREST);
+      cogl_pipeline_set_layer_wrap_mode (blur_pipeline_template, 0,
+                                         COGL_PIPELINE_WRAP_MODE_CLAMP_TO_EDGE);
+    }
+
+  /* Horizontal pass: extends the width by the padding. The texture
+   * coordinates reach beyond [0, 1]; the shader treats that as transparent. */
+  tmp = gpu_blur_pass (ctx, blur_pipeline_template, src_texture,
+                       width_out, height_in,
+                       - (float) half / width_in, 0,
+                       (float) (width_in + half) / width_in, 1,
+                       TRUE, n_values, sigma);
+  if (tmp == NULL)
+    return NULL;
+
+  /* Vertical pass */
+  dst = gpu_blur_pass (ctx, blur_pipeline_template, tmp,
+                       width_out, height_out,
+                       0, - (float) half / height_in,
+                       1, (float) (height_in + half) / height_in,
+                       FALSE, n_values, sigma);
+  cogl_object_unref (tmp);
+
+  return dst;
+}
+
+static CoglTexture *
+create_blurred_texture_cpu (CoglContext *ctx,
+                            CoglTexture *src_texture,
+                            gdouble      blur)
+{
+  GError *error = NULL;
   CoglTexture *texture;
   guchar *pixels_in, *pixels_out;
   gint width_in, height_in, rowstride_in;
   gint width_out, height_out, rowstride_out;
-
-  g_return_val_if_fail (shadow_spec != NULL, NULL);
-  g_return_val_if_fail (src_texture != NULL, NULL);
 
   width_in  = cogl_texture_get_width  (src_texture);
   height_in = cogl_texture_get_height (src_texture);
@@ -397,7 +557,7 @@ _st_create_shadow_pipeline_at_scale (StShadow    *shadow_spec,
                          rowstride_in, pixels_in);
 
   pixels_out = blur_pixels (pixels_in, width_in, height_in, rowstride_in,
-                            shadow_spec->blur * resource_scale,
+                            blur,
                             &width_out, &height_out, &rowstride_out);
   g_free (pixels_in);
 
@@ -414,6 +574,42 @@ _st_create_shadow_pipeline_at_scale (StShadow    *shadow_spec,
     }
 
   g_free (pixels_out);
+
+  return texture;
+}
+
+CoglPipeline *
+_st_create_shadow_pipeline_at_scale (StShadow    *shadow_spec,
+                                     CoglTexture *src_texture,
+                                     float        resource_scale)
+{
+  ClutterBackend *backend = clutter_get_default_backend ();
+  CoglContext *ctx = clutter_backend_get_cogl_context (backend);
+
+  static CoglPipeline *shadow_pipeline_template = NULL;
+
+  CoglPipeline *pipeline;
+  CoglTexture *texture = NULL;
+  gdouble blur;
+
+  g_return_val_if_fail (shadow_spec != NULL, NULL);
+  g_return_val_if_fail (src_texture != NULL, NULL);
+
+  blur = shadow_spec->blur * resource_scale;
+
+  if ((guint) blur == 0)
+    {
+      /* Nothing to blur, and the output has the size of the input. Only the
+       * alpha channel is used by the pipeline below. */
+      texture = cogl_object_ref (src_texture);
+    }
+  else
+    {
+      texture = create_blurred_texture_gpu (ctx, src_texture, blur);
+
+      if (texture == NULL)
+        texture = create_blurred_texture_cpu (ctx, src_texture, blur);
+    }
 
   if (G_UNLIKELY (shadow_pipeline_template == NULL))
     {
