@@ -706,6 +706,10 @@ class SearchProviderResultButton extends SimpleMenuItem {
             this.addActor(this.icon);
 
         this.addLabel(result.label, 'appmenu-application-button-label');
+        if (applet.showDescription && this.description)
+            this.addDescription(this.description, 'appmenu-application-button-description');
+
+        this.updateAccessibleName();
     }
 
     activate() {
