@@ -634,7 +634,8 @@ function start() {
         a11yHandler = new Accessibility.A11yHandler();
 
         // We only warn if software_rendering is not of the user's volition.
-        if (software_rendering && !cinnamon_2d && !live) {
+        if (software_rendering && !cinnamon_2d && !live &&
+            !global.settings.get_boolean("ignore-software-rendering-warning")) {
             notifyCinnamon2d();
         }
 
@@ -718,8 +719,16 @@ function notifyCinnamon2d() {
 
     if (GLib.file_test("/usr/bin/cinnamon-driver-manager", GLib.FileTest.EXISTS)) {
         notification.addButton("driver-manager", _("Launch Driver Manager"));
-        notification.connect("action-invoked", this.launchDriverManager);
     }
+
+    notification.addButton("ignore-warning", _("Don't show again"));
+    notification.connect("action-invoked", (notification, action) => {
+        if (action === "driver-manager") {
+            launchDriverManager();
+        } else if (action === "ignore-warning") {
+            global.settings.set_boolean("ignore-software-rendering-warning", true);
+        }
+    });
 }
 
 function notifyXletStartupError() {
