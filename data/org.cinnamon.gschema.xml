@@ -629,6 +629,14 @@
         default state of that checkbox.
       </description>
     </key>
+    <key name="keyboard-layout-always-show" type="b">
+      <default>false</default>
+      <summary>Always show the keyboard layout indicator in the panel</summary>
+      <description>
+        When enabled, the keyboard layout indicator is displayed in the panel
+        even when only one keyboard layout is configured.
+      </description>
+    </key>
   </schema>
 
   <schema id="org.cinnamon.theme" path="/org/cinnamon/theme/"
