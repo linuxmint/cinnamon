@@ -26,6 +26,29 @@ const {
     UPDeviceState
 } = PowerUtils;
 
+// Some firmware stops charging the battery at a user-set limit (e.g. an 80% battery-protection
+// option in the BIOS). UPower then never reports more than that, so the panel shows a battery that
+// is never full. Rescale battery devices so the limit reads as 100%, and treat a battery parked at the
+// limit as fully charged. 100 means no limit.
+function applyChargeLimit(device, limit) {
+    if (!limit || limit >= 100 || limit <= 0)
+        return device;
+    let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = device;
+    if (device_kind != UPDeviceKind.BATTERY || !PowerUtils.reportsPreciseLevels(battery_level))
+        return device;
+    let scaled = Math.min(100, percentage * 100 / limit);
+    let level = Math.min(100, Math.round(scaled / 10) * 10);
+    if (icon) {
+        icon = icon.replace(/xsi-battery-level-\d+/g, "xsi-battery-level-" + level)
+                   .replace(/gpm-battery-\d{3}/g, "gpm-battery-" + ("00" + level).slice(-3));
+    }
+    if (scaled >= 99.5 && state == UPDeviceState.PENDING_CHARGE) {
+        state = UPDeviceState.FULLY_CHARGED;
+        icon = ". GThemedIcon xsi-battery-level-100-charged-symbolic xsi-battery-full-charged-symbolic battery-full-charged-symbolic -symbolic";
+    }
+    return [device_id, vendor, model, device_kind, icon, scaled, state, battery_level, seconds];
+}
+
 const POWER_PROFILES = {
     "power-saver": _("Power Saver"),
     "balanced": _("Balanced"),
@@ -347,6 +370,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     () => this._on_device_aliases_changed());
                 this.settings.bind("labelinfo", "labelinfo", this._devicesChanged);
                 this.settings.bind("showmulti", "showmulti", this._devicesChanged);
+                this.settings.bind("chargelimit", "chargelimit", this._devicesChanged);
 
                 this._devicesChanged();
             }));
@@ -616,6 +640,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     // Primary Device can be an array of primary devices rather than a single device, in that case, take the first one.
                     device = device[0];
                 }
+                device = applyChargeLimit(device, this.chargelimit);
                 let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = device
                 this._primaryDeviceId = device_id;
             }
@@ -635,6 +660,7 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
                     let devices = result[0];
                     let position = 0;
                     for (let i = 0; i < devices.length; i++) {
+                        devices[i] = applyChargeLimit(devices[i], this.chargelimit);
                         let [device_id, vendor, model, device_kind, icon, percentage, state, battery_level, seconds] = devices[i];
 
                         // Ignore LINE_POWER devices
@@ -737,7 +763,11 @@ class CinnamonPowerApplet extends Applet.TextIconApplet {
 
                         this.set_applet_tooltip(devices_stats.join(", "));
                         this.set_applet_label(labelText);
+                        // The daemon's icon reflects the unscaled level; prefer the first battery's icon.
                         let icon = this._proxy.Icon;
+                        let firstBattery = this._devices.find(d => d[3] == UPDeviceKind.BATTERY && d[4]);
+                        if (firstBattery)
+                            icon = firstBattery[4];
                         if (icon) {
                             if (icon != this.panel_icon_name) {
                                 this.panel_icon_name = icon;
