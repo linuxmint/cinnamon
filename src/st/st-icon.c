@@ -48,6 +48,7 @@ struct _StIconPrivate
   ClutterActor *pending_texture;
   guint         opacity_handler_id;
   guint         texture_file_changed_id;
+  guint         icon_theme_changed_id;
 
   GIcon        *gicon;
   gchar        *file_uri;
@@ -62,6 +63,9 @@ struct _StIconPrivate
   CoglPipeline  *shadow_pipeline;
 
   StShadow     *shadow_spec;
+  StIconColors *colors;
+  StIconStyle   icon_style;
+  gboolean      needs_update;
 
   gfloat        shadow_width;
   gfloat        shadow_height;
@@ -152,6 +156,12 @@ st_icon_dispose (GObject *gobject)
       priv->texture_file_changed_id = 0;
     }
 
+  if (priv->icon_theme_changed_id > 0)
+    {
+      g_signal_handler_disconnect (st_texture_cache_get_default (), priv->icon_theme_changed_id);
+      priv->icon_theme_changed_id = 0;
+    }
+
   if (priv->icon_texture)
     {
       clutter_actor_destroy (priv->icon_texture);
@@ -173,6 +183,7 @@ st_icon_dispose (GObject *gobject)
   g_clear_pointer (&priv->shadow_pipeline, cogl_object_unref);
 
   g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
+  g_clear_pointer (&priv->colors, st_icon_colors_unref);
 
   G_OBJECT_CLASS (st_icon_parent_class)->dispose (gobject);
 }
@@ -221,28 +232,88 @@ st_icon_paint (ClutterActor        *actor,
     }
 }
 
+static gboolean
+st_icon_colors_equal (StIconColors *colors,
+                      StIconColors *other)
+{
+  if (colors == other)
+    return TRUE;
+
+  if (colors == NULL || other == NULL)
+    return FALSE;
+
+  return clutter_color_equal (&colors->foreground, &other->foreground) &&
+         clutter_color_equal (&colors->warning, &other->warning) &&
+         clutter_color_equal (&colors->error, &other->error) &&
+         clutter_color_equal (&colors->success, &other->success);
+}
+
 static void
 st_icon_style_changed (StWidget *widget)
 {
   StIcon *self = ST_ICON (widget);
   StThemeNode *theme_node = st_widget_get_theme_node (widget);
   StIconPrivate *priv = self->priv;
+  gboolean should_update = FALSE;
+  StShadow *shadow_spec;
+  StIconColors *colors;
+  StIconStyle icon_style;
 
-  st_icon_clear_shadow_pipeline (self);
-  g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
+  /* Only reload the texture when something it depends on has changed.
+   * Hover and other pseudo-class changes restyle every icon below the
+   * widget, and each reload is an icon theme lookup on the main thread. */
+  shadow_spec = st_theme_node_get_shadow (theme_node, "icon-shadow");
 
-  priv->shadow_spec = st_theme_node_get_shadow (theme_node, "icon-shadow");
-
-  if (priv->shadow_spec && priv->shadow_spec->inset)
+  if (shadow_spec && shadow_spec->inset)
     {
       g_warning ("The icon-shadow property does not support inset shadows");
-      st_shadow_unref (priv->shadow_spec);
-      priv->shadow_spec = NULL;
+      st_shadow_unref (shadow_spec);
+      shadow_spec = NULL;
     }
 
+  if ((shadow_spec && priv->shadow_spec && !st_shadow_equal (shadow_spec, priv->shadow_spec)) ||
+      (shadow_spec && !priv->shadow_spec) || (!shadow_spec && priv->shadow_spec))
+    {
+      st_icon_clear_shadow_pipeline (self);
+      g_clear_pointer (&priv->shadow_spec, st_shadow_unref);
+      priv->shadow_spec = shadow_spec;
+      should_update = TRUE;
+    }
+  else if (shadow_spec)
+    {
+      st_shadow_unref (shadow_spec);
+    }
+
+  colors = st_theme_node_get_icon_colors (theme_node);
+  if (!st_icon_colors_equal (colors, priv->colors))
+    {
+      g_clear_pointer (&priv->colors, st_icon_colors_unref);
+      priv->colors = colors ? st_icon_colors_ref (colors) : NULL;
+      should_update = TRUE;
+    }
+
+  icon_style = st_theme_node_get_icon_style (theme_node);
+  if (icon_style != priv->icon_style)
+    {
+      priv->icon_style = icon_style;
+      should_update = TRUE;
+    }
+
+  if (priv->icon_scale != st_theme_context_get_scale_for_stage ())
+    should_update = TRUE;
+
   priv->theme_icon_size = (int)(0.5 + st_theme_node_get_length (theme_node, "icon-size"));
-  st_icon_update_icon_size (self);
-  st_icon_update (self);
+  should_update |= st_icon_update_icon_size (self);
+
+  if (priv->needs_update || should_update)
+    st_icon_update (self);
+}
+
+static void
+st_icon_icon_theme_changed (StTextureCache *cache,
+                            StIcon         *icon)
+{
+  st_icon_update (icon);
 }
 
 static void
@@ -386,6 +457,12 @@ st_icon_init (StIcon *self)
 
   g_signal_connect (self, "resource-scale-changed",
                     G_CALLBACK (st_icon_resource_scale_changed), NULL);
+
+  /* Style changes no longer reload the texture unconditionally, so pick up
+   * icon theme changes directly. */
+  self->priv->icon_theme_changed_id =
+    g_signal_connect (st_texture_cache_get_default (), "icon-theme-changed",
+                      G_CALLBACK (st_icon_icon_theme_changed), self);
 }
 
 static void
@@ -506,9 +583,13 @@ st_icon_update (StIcon *icon)
       priv->opacity_handler_id = 0;
     }
 
+  priv->needs_update = TRUE;
+
   theme_node = st_widget_peek_theme_node (ST_WIDGET (icon));
   if (theme_node == NULL)
     return;
+
+  priv->needs_update = FALSE;
 
   priv->icon_scale = st_theme_context_get_scale_for_stage ();
   priv->resource_scale = clutter_actor_get_resource_scale (CLUTTER_ACTOR (icon));
