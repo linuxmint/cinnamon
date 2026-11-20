@@ -1,3 +1,16 @@
+cinnamon (6.8.4) adrien; urgency=medium
+
+  [ Michael Webster ]
+  * main.js: Track modifier taps in _stageEventHandler
+  * i18n: Fix generate_cs_module_desktop_files.py
+  * i18n: Run generate_ scripts.
+  * screensaver: Only show the user image when it's not the default
+
+  [ Dániel Ruszki ]
+  * windowManager.js: Finish the workspace switch when a window closes during the slide (#14153)
+
+ -- Clement Lefebvre <root@linuxmint.com>  Fri, 20 Nov 2026 17:43:13 +0000
+
 cinnamon (6.8.3) adrien; urgency=medium
 
   [ Clement Lefebvre ]
