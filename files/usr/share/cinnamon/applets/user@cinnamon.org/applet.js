@@ -41,7 +41,10 @@ class CinnamonUserApplet extends Applet.TextApplet {
 
         let userBox = new St.BoxLayout({ style_class: 'user-box', reactive: true, vertical: false });
 
-        this._userIcon = new UserWidget.Avatar(this._user, { iconSize: DIALOG_ICON_SIZE });
+        this._userIcon = new UserWidget.Avatar(this._user, {
+            iconSize: DIALOG_ICON_SIZE,
+            hideDefaultImage: true
+        });
 
         this.settings.bind("display-name", "disp_name", this._updateLabel);
         this.settings.bind("display-image", "display_image", this._updatePanelIcon);
@@ -127,7 +130,6 @@ class CinnamonUserApplet extends Applet.TextApplet {
             this.userLabel.set_text (this._user.get_real_name());
             if (this._userIcon) {
                 this._userIcon.update();
-                this._userIcon.show();
             }
 
             this._updatePanelIcon();

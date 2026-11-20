@@ -2605,7 +2605,7 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
         });
 
         let user = AccountsService.UserManager.get_default().get_user(GLib.get_user_name());
-        this.userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL, false);
+        this.userIcon = new UserWidget.UserWidget(user, Clutter.Orientation.VERTICAL, { hideDefaultImage: true });
         this.userIcon.set_reactive(true);
         this.userIcon.track_hover = true;
         this.userIcon.set_accessible_role(Atk.Role.BUTTON);

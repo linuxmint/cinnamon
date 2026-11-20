@@ -22,6 +22,7 @@ class Avatar extends St.Bin {
             reactive: true,
             track_hover: true,
             iconSize: AVATAR_ICON_SIZE,
+            hideDefaultImage: false,
         });
 
         super._init({
@@ -35,6 +36,7 @@ class Avatar extends St.Bin {
 
         this.set_important(true);
         this._iconSize = params.iconSize;
+        this._hideDefaultImage = params.hideDefaultImage;
         this._user = user;
 
         this.bind_property('reactive', this, 'track-hover',
@@ -113,6 +115,8 @@ class Avatar extends St.Bin {
             if (iconFile && !GLib.file_test(iconFile, GLib.FileTest.EXISTS))
                 iconFile = null;
         }
+
+        this.visible = !!iconFile || !this._hideDefaultImage;
 
         let { scaleFactor } = St.ThemeContext.get_for_stage(global.stage);
         this.set_size(

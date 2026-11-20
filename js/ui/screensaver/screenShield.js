@@ -181,7 +181,9 @@ var ScreenShield = GObject.registerClass({
         this.add_child(this._backgroundLayer);
 
         this._dialog = new UnlockDialog.UnlockDialog(this);
-        this.add_child(this._dialog);
+        this._dialogBin = new St.Widget({ layout_manager: new Clutter.BinLayout() });
+        this._dialogBin.add_child(this._dialog);
+        this.add_child(this._dialogBin);
 
         this._keyboardBox = new St.Widget({
             name: 'screensaverKeyboardBox',
@@ -796,10 +798,6 @@ var ScreenShield = GObject.registerClass({
         if (!monitor)
             return;
 
-        // Get dialog's preferred size
-        let [, natWidth] = this._dialog.get_preferred_width(-1);
-        let [, natHeight] = this._dialog.get_preferred_height(natWidth);
-
         // When keyboard is visible, center dialog in the remaining space
         let availableHeight = monitor.height;
         let yOffset = monitor.y;
@@ -813,13 +811,10 @@ var ScreenShield = GObject.registerClass({
                 yOffset = monitor.y + kbHeight;
         }
 
-        let x = monitor.x + (monitor.width - natWidth) / 2;
-        let y = yOffset + (availableHeight - natHeight) / 2;
+        this._dialogBin.set_position(monitor.x, yOffset);
+        this._dialogBin.set_size(monitor.width, availableHeight);
 
-        this._dialog.set_position(x, y);
-        this._dialog.set_size(natWidth, natHeight);
-
-        _log(`ScreenShield: Positioned unlock dialog at ${x},${y} (${natWidth}x${natHeight})`);
+        _log(`ScreenShield: Centering unlock dialog in ${monitor.width}x${availableHeight} at ${monitor.x},${yOffset}`);
     }
 
     _toggleScreensaverKeyboard() {
