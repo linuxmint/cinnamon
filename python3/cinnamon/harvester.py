@@ -704,37 +704,72 @@ class Harvester:
 
         os.makedirs(self.install_folder, mode=0o755, exist_ok=True)
 
-        # Clear prior copies from every user-writable location, not just
-        # install_folder, so an upgrade across a path change doesn't leave
-        # an orphan that the first-wins scan would surface as the active copy.
-        self._remove_spice_from_all_directories(uuid)
+        # Prepare the replacement on the same filesystem before touching installed files.
+        with tempfile.TemporaryDirectory(dir=self.install_folder) as staging:
+            dest = os.path.join(staging, uuid)
+            if not self.actions:
+                shutil.copytree(folder, dest)
+            else:
+                for name in os.listdir(base_folder):
+                    installed = os.path.join(self.install_folder, name)
+                    source = os.path.join(base_folder, name)
+                    if name != uuid and os.path.isdir(installed) and os.path.isdir(source):
+                        shutil.copytree(installed, os.path.join(staging, name))
+                shutil.copytree(base_folder, staging, dirs_exist_ok=True)
 
-        dest = os.path.join(self.install_folder, uuid)
-        if not self.actions:
-            shutil.copytree(folder, dest)
-        else:
-            shutil.copytree(base_folder, self.install_folder, dirs_exist_ok=True)
+            meta_path = os.path.join(dest, 'metadata.json')
 
-        meta_path = os.path.join(dest, 'metadata.json')
+            if self.themes and not os.path.exists(meta_path):
+                md = {}
+            else:
+                with open(meta_path, "r", encoding='utf-8') as f:
+                    md = json.load(f)
 
-        if self.themes and not os.path.exists(meta_path):
-            md = {}
-        else:
-            with open(meta_path, "r", encoding='utf-8') as f:
-                md = json.load(f)
+            if from_spices and uuid in self.index_cache:
+                md['last-edited'] = self.index_cache[uuid]['last_edited']
+            else:
+                md['last-edited'] = int(datetime.datetime.utcnow().timestamp())
 
-        if from_spices and uuid in self.index_cache:
-            md['last-edited'] = self.index_cache[uuid]['last_edited']
-        else:
-            md['last-edited'] = int(datetime.datetime.utcnow().timestamp())
+            with open(meta_path, "w+", encoding='utf-8') as f:
+                json.dump(md, f, indent=4)
 
-        with open(meta_path, "w+", encoding='utf-8') as f:
-            json.dump(md, f, indent=4)
+            self._replace_spice_files(staging)
 
-    def _remove_spice_from_all_directories(self, uuid):
+        # Remove legacy copies only after the new installation is complete.
+        self._remove_spice_from_all_directories(uuid, exclude=self.install_folder)
+
+    def _replace_spice_files(self, staging):
+        backup = tempfile.mkdtemp(dir=self.install_folder)
+        saved = []
+        installed = []
+
+        try:
+            for name in sorted(os.listdir(staging)):
+                dest = os.path.join(self.install_folder, name)
+                if os.path.lexists(dest):
+                    os.rename(dest, os.path.join(backup, name))
+                    saved.append(name)
+                os.rename(os.path.join(staging, name), dest)
+                installed.append(name)
+        except Exception:
+            try:
+                for name in reversed(installed):
+                    os.rename(os.path.join(self.install_folder, name), os.path.join(staging, name))
+                for name in reversed(saved):
+                    os.rename(os.path.join(backup, name), os.path.join(self.install_folder, name))
+            except OSError as error:
+                raise RuntimeError(f"Couldn't restore the installed spice. Backup files are in {backup}") from error
+            shutil.rmtree(backup, ignore_errors=True)
+            raise
+
+        shutil.rmtree(backup, ignore_errors=True)
+
+    def _remove_spice_from_all_directories(self, uuid, exclude=None):
         # Iterates user-writable install_folders only — system spices are
         # package-managed and not ours to delete from /usr/share/.
         for directory in self.install_folders:
+            if exclude is not None and os.path.isdir(directory) and os.path.samefile(directory, exclude):
+                continue
             dest = os.path.join(directory, uuid)
             if os.path.isdir(dest):
                 shutil.rmtree(dest, ignore_errors=True)
