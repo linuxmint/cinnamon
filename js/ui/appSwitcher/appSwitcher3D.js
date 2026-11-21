@@ -294,6 +294,8 @@ AppSwitcher3D.prototype = {
 
     _destroyActors: function() {
         Main.switcherGroup.remove_actor(this._background);
+        this._background.destroy();
+        this._background = null;
         Main.uiGroup.remove_actor(this.actor);
         this.actor.destroy();
 
