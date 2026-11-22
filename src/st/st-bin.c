@@ -422,6 +422,19 @@ st_bin_set_child (StBin        *bin,
   if (priv->child == child)
     return;
 
+  if (child)
+    {
+      ClutterActor *parent = clutter_actor_get_parent (child);
+
+      if (parent)
+        {
+          g_warning ("%s: The provided 'child' actor %p already has a "
+                     "(different) parent %p and can't be made a child of %p.",
+                     G_STRFUNC, child, parent, bin);
+          return;
+        }
+    }
+
   if (priv->child)
     clutter_actor_remove_child (CLUTTER_ACTOR (bin), priv->child);
 
