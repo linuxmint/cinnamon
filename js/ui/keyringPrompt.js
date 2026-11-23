@@ -113,17 +113,35 @@ class KeyringDialog extends PopupDialog.PopupDialog {
             'label', GObject.BindingFlags.SYNC_CREATE);
         this.prompt.bind_property('continue-label', this._continueButton,
             'label', GObject.BindingFlags.SYNC_CREATE);
+
+        this._sensitive = true;
+        let syncContinueButton = this._syncContinueButton.bind(this);
+        this._passwordEntry.clutter_text.connect('text-changed', syncContinueButton);
+        this._confirmEntry.clutter_text.connect('text-changed', syncContinueButton);
+        this.prompt.connect('notify::confirm-visible', syncContinueButton);
+    }
+
+    _canContinue() {
+        return !this.prompt.confirm_visible ||
+            this._passwordEntry.text === this._confirmEntry.text;
+    }
+
+    _syncContinueButton() {
+        let enabled = this._sensitive && this._canContinue();
+        this._continueButton.can_focus = enabled;
+        this._continueButton.reactive = enabled;
     }
 
     _updateSensitivity(sensitive) {
+        this._sensitive = sensitive;
+
         if (this._passwordEntry)
             this._passwordEntry.reactive = sensitive;
 
         if (this._confirmEntry)
             this._confirmEntry.reactive = sensitive;
 
-        this._continueButton.can_focus = sensitive;
-        this._continueButton.reactive = sensitive;
+        this._syncContinueButton();
     }
 
     _ensureOpen() {
@@ -167,8 +185,10 @@ class KeyringDialog extends PopupDialog.PopupDialog {
     }
 
     _onContinueButton() {
-        this._updateSensitivity(false);
-        this.prompt.complete();
+        if (this.prompt.complete())
+            this._updateSensitivity(false);
+        else if (this.prompt.password_visible)
+            this._passwordEntry.grab_key_focus();
     }
 
     _onCancelButton() {
