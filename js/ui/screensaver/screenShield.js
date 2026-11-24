@@ -223,6 +223,8 @@ var ScreenShield = GObject.registerClass({
             new ShieldTooltip(this, this._switchUserButton, _("Switch User"));
         }
 
+        global.focus_manager.add_group(this);
+
         this._capturedEventId = 0;
         this._lastMotionX = -1;
         this._lastMotionY = -1;
