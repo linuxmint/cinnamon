@@ -663,6 +663,10 @@ var ScreenShield = GObject.registerClass({
         return this._state === State.LOCKED || this._state === State.UNLOCKING;
     }
 
+    isActive() {
+        return this._state !== State.HIDDEN;
+    }
+
     isAwake() {
         return this._state === State.UNLOCKING;
     }

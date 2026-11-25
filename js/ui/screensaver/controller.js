@@ -101,6 +101,12 @@ var ScreensaverController = class {
         return this.#locked;
     }
 
+    // Showing, whether or not it is locked. An external screensaver only
+    // reports this, so there it is the same as locked.
+    get active() {
+        return this.#screenShield ? this.#screenShield.isActive() : this.#locked;
+    }
+
     // Muffin would need ext-session-lock-v1 for wayland support.
     get #customCommand() {
         let command = this.#settings.get_string('custom-screensaver-command').trim();

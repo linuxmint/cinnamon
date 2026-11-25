@@ -316,7 +316,7 @@ var GesturesManager = class {
             this.cancel_current_gesture();
         }
 
-        if (Main.screensaverController?.locked) {
+        if (Main.screensaverController?.active) {
             debug_gesture(`Ignoring 'gesture-begin', screensaver is active`);
             return;
         }

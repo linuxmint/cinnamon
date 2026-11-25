@@ -15,19 +15,19 @@
     </key>
 
     <key name="swipe-left-2" type="s">
-      <default>'PUSH_TILE_LEFT'</default>
+      <default>'PUSH_TILE_LEFT::end'</default>
       <summary>Touchscreen only</summary>
     </key>
     <key name="swipe-right-2" type="s">
-      <default>'PUSH_TILE_RIGHT'</default>
+      <default>'PUSH_TILE_RIGHT::end'</default>
       <summary>Touchscreen only</summary>
     </key>
     <key name="swipe-up-2" type="s">
-      <default>'PUSH_TILE_UP'</default>
+      <default>'PUSH_TILE_UP::end'</default>
       <summary>Touchscreen only</summary>
     </key>
     <key name="swipe-down-2" type="s">
-      <default>'PUSH_TILE_DOWN'</default>
+      <default>'PUSH_TILE_DOWN::end'</default>
       <summary>Touchscreen only</summary>
     </key>
 
@@ -45,10 +45,10 @@
     </key>
 
     <key name="swipe-left-4" type="s">
-      <default>'WINDOW_WORKSPACE_PREVIOUS'</default>
+      <default>'WINDOW_WORKSPACE_PREVIOUS::end'</default>
     </key>
     <key name="swipe-right-4" type="s">
-      <default>'WINDOW_WORKSPACE_NEXT'</default>
+      <default>'WINDOW_WORKSPACE_NEXT::end'</default>
     </key>
     <key name="swipe-up-4" type="s">
       <default>'TOGGLE_EXPO::follow'</default>
@@ -111,7 +111,7 @@
       <summary>Touchscreen only</summary>
     </key>
     <key name="tap-3" type="s">
-      <default>'MEDIA_PLAY_PAUSE'</default>
+      <default>'MEDIA_PLAY_PAUSE::end'</default>
       <summary>Touchscreen only</summary>
     </key>
     <key name="tap-4" type="s">

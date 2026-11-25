@@ -48,7 +48,12 @@ var make_action = (settings, definition, device) => {
         threshold = settings.get_uint("pinch-percent-threshold");
     }
 
-    if (definition.phase === FOLLOW_PHASE && can_follow(definition.action)) {
+    // A tap is over at once, leaving nothing to follow.
+    const follows = definition.phase === FOLLOW_PHASE &&
+                    definition.type !== GestureType.TAP &&
+                    can_follow(definition.action);
+
+    if (follows) {
         switch (definition.action) {
         case "WORKSPACE_NEXT":
         case "WORKSPACE_PREVIOUS":
@@ -1166,7 +1171,7 @@ var MediaAction = class extends BaseAction {
     }
 
     do_action(direction, percentage, time) {
-        const player = mpris_manager.getBestPlayer();
+        const player = mpris_manager.getBestControllablePlayer();
 
         if (player == null) {
             return;

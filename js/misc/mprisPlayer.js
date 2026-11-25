@@ -618,6 +618,29 @@ var MprisPlayerManager = class MprisPlayerManager {
         return firstControllable;
     }
 
+    // The player to send a command to: one that is playing, else one that
+    // is paused, else any. Only players that accept commands count.
+    getBestControllablePlayer() {
+        let paused = null;
+        let other = null;
+
+        for (let player of Object.values(this._players)) {
+            if (!player.isReady() || !player.canControl()) continue;
+
+            if (player.isPlaying()) {
+                return player;
+            }
+
+            if (paused === null && player.isPaused()) {
+                paused = player;
+            } else if (other === null) {
+                other = player;
+            }
+        }
+
+        return paused ?? other;
+    }
+
     getPlayerCount() {
         return Object.keys(this._players).length;
     }

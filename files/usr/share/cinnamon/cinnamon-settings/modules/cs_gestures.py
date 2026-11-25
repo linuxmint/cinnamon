@@ -5,7 +5,7 @@ import os
 from functools import cmp_to_key
 import gi
 gi.require_version('Gtk', '3.0')
-from gi.repository import Gio, Gtk, GdkPixbuf
+from gi.repository import Gio, Gtk
 
 from bin import util
 from bin.SettingsWidgets import SidePage, SettingsWidget
@@ -19,8 +19,7 @@ NON_GESTURE_KEYS = [
 ]
 
 ACTIONS = [
-    # Columns: action id, label, phase selection allowed, extra widget type
-    # (entry|slider|none), default custom value, can follow the fingers
+    # Columns: action id, label, phase selection allowed, extra widget type(entry|slider|none), default custom value, can follow the fingers
     ["", _("Disabled"), False, "none", "", False],
     ["WORKSPACE_NEXT", _("Switch to right workspace"), True, "none", "", True],
     ["WORKSPACE_PREVIOUS", _("Switch to left workspace"), True, "none", "", True],
@@ -68,49 +67,25 @@ DEFAULT_PHASE = "end"
 # Icon (from the xapp theme) marking actions that follow the fingers
 FOLLOW_ICON = "xsi-boot-menu-symbolic"
 
-# Swipe illustration for each finger count. Kept beside this module
-# because these are pictures, not theme icons.
-SETTINGS_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-GRAPHICS_DIR = os.path.join(SETTINGS_DIR, "graphics")
+# Actions that can only follow the fingers, whatever phase is stored.
+ALWAYS_FOLLOW_ACTIONS = ("VOLUME_UP", "VOLUME_DOWN", "ZOOM_IN", "ZOOM_OUT")
+
+# Symbolic gesture illustrations, one for each finger count.
+GRAPHICS_DIR = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "graphics")
 
 # Size the illustrations are drawn at.
-SWIPE_ILLUSTRATION_SIZE = 180
+ILLUSTRATION_SIZE = 48
 
 
-def swipe_illustration_path(fingers):
-    return os.path.join(GRAPHICS_DIR, "%d-fingers-touchpad.svg" % fingers)
+def gesture_illustration(gesture, fingers):
+    path = os.path.join(GRAPHICS_DIR, "%s-%d-fingers-symbolic.svg" % (gesture, fingers))
+    return Gtk.Image(gicon=Gio.FileIcon.new(Gio.File.new_for_path(path)), pixel_size=ILLUSTRATION_SIZE)
 
-# How much to tint the illustration's greyscale gradient with the theme
-# accent color.
-GRADIENT_TINT_AMOUNT = 0.25
-
-
-def _tinted_hex(hex_color, accent, amount):
-    r, g, b = (int(hex_color[i:i + 2], 16) for i in (0, 2, 4))
-    r += (accent.red * 255 - r) * amount
-    g += (accent.green * 255 - g) * amount
-    b += (accent.blue * 255 - b) * amount
-    return "#%02x%02x%02x" % (round(r), round(g), round(b))
-
-
-def themed_swipe_pixbuf(widget, fingers, size):
-    with open(swipe_illustration_path(fingers), encoding="utf-8") as f:
-        svg = f.read()
-
-    found, accent = widget.get_style_context().lookup_color("theme_selected_bg_color")
-    if found:
-        for stop in ("8d8d8d", "ffffff"):
-            svg = svg.replace("stop-color:#%s" % stop,
-                               "stop-color:" + _tinted_hex(stop, accent, GRADIENT_TINT_AMOUNT))
-
-    loader = GdkPixbuf.PixbufLoader()
-    loader.set_size(size, size)
-    loader.write(svg.encode("utf-8"))
-    loader.close()
-    return loader.get_pixbuf()
 
 # Reserved in every row so the rows line up.
 FOLLOW_COLUMN_WIDTH = 42
+
+FOLLOW_MARK_WIDTH = 16
 
 # One-click binding bundles: (name, {key: "ACTION::phase"}). The FlowBox
 # wraps the buttons onto extra lines on its own.
@@ -136,17 +111,17 @@ GESTURE_TEMPLATES = [
 GESTURE_TEMPLATE_MAX_COLUMNS = 4
 
 
-# Finger counts only a touchscreen reports: touchpads treat two fingers
-# as scrolling, and none report five.
-TOUCH_ONLY_FINGERS = {2, 5}
+# Finger counts each kind of device can report. libinput delivers no
+# touchpad gesture above four fingers, and two-finger swipes scroll.
+# Keep in sync with js/ui/gestures/nativeGestureSource.js.
+TOUCHPAD_FINGERS = {"swipe": (3, 4), "pinch": (2, 3, 4)}
+TOUCHSCREEN_FINGERS = (2, 3, 4, 5)
 
 [PHASE_ID_COL, PHASE_LABEL_COL] = range(0, 2)
 
-# The kernel reports how many fingers are down with these key codes.
-FINGER_TOOL_CODES = {3: 0x14e, 4: 0x14f, 5: 0x148}
+# A touchpad reports how many fingers are down, starting with this key
+# code. A device reporting position but no finger counts is a touchscreen.
 BTN_TOOL_FINGER = 0x145
-
-# A device reporting position but no finger counts is a touchscreen.
 BTN_TOUCH = 0x14a
 ABS_MT_POSITION_X = 0x35
 
@@ -170,26 +145,6 @@ def _capability_bits(path):
     return {bit for bit in range(1024) if number >> bit & 1}
 
 
-def supported_finger_counts():
-    # Falls back to offering everything if nothing can be read.
-    counts = set()
-    found_touchpad = False
-
-    for device in glob.glob("/sys/class/input/event*/device"):
-        keys = _capability_bits(os.path.join(device, "capabilities/key"))
-
-        if BTN_TOOL_FINGER not in keys:
-            continue
-
-        found_touchpad = True
-        counts.update(count for count, code in FINGER_TOOL_CODES.items() if code in keys)
-
-    if not found_touchpad:
-        return set(FINGER_TOOL_CODES)
-
-    return counts
-
-
 def has_touchscreen():
     for device in glob.glob("/sys/class/input/event*/device"):
         keys = _capability_bits(os.path.join(device, "capabilities/key"))
@@ -203,21 +158,8 @@ def has_touchscreen():
     return False
 
 
-def offered_swipe_finger_counts():
-    if has_touchscreen():
-        return {2, 3, 4, 5}
-
-    return supported_finger_counts()
-
-
-def can_follow(action):
-    # Whether @action follows the fingers. Keep in sync with
-    # can_follow() in js/ui/gestures/actions.js.
-    for option in ACTIONS:
-        if option[ACTION_ID_COL] == action:
-            return option[ACTION_ALLOW_FOLLOW_COL]
-
-    return False
+def offered_finger_counts(gesture, touchscreen):
+    return TOUCHSCREEN_FINGERS if touchscreen else TOUCHPAD_FINGERS[gesture]
 
 
 def parse_setting(string):
@@ -254,7 +196,7 @@ class Module:
         self.sidePage = sidePage
 
         self.gesture_settings = None
-        self.disabled_box = None
+        self.finger_sections = []
 
     def on_module_selected(self):
         self.is_wayland = util.get_session_type() == "wayland"
@@ -328,10 +270,7 @@ class Module:
 
             keys = sorted([key for key in all_keys if key not in NON_GESTURE_KEYS], key=cmp_to_key(sort_by_direction))
 
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "tweaks", _("Settings"))
-
-            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+            page = self.add_scrolled_page("tweaks", _("Settings"))
 
             section = page.add_section(_("General"))
             widget = GSettingsSwitch(_("Enable gestures"), "org.cinnamon.gestures", "enabled")
@@ -346,110 +285,55 @@ class Module:
             section = page.add_section(_("Activation thresholds"),
                                        _("In percentage of the touch surface"))
 
-            widget = GSettingsRange(_("Swipe"), "org.cinnamon.gestures", "swipe-percent-threshold", 
+            widget = GSettingsRange(_("Swipe"), "org.cinnamon.gestures", "swipe-percent-threshold",
                 _("20%"), _("80%"), 20, 80, step=5, show_value=True)
             widget.add_mark(60, Gtk.PositionType.TOP, None)
             section.add_row(widget)
-            widget = GSettingsRange(_("Pinch"), "org.cinnamon.gestures", "pinch-percent-threshold", 
+            widget = GSettingsRange(_("Pinch"), "org.cinnamon.gestures", "pinch-percent-threshold",
                 _("20%"), _("80%"), 20, 80, step=5, show_value=True)
             widget.add_mark(40, Gtk.PositionType.TOP, None)
             section.add_row(widget)
 
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "swipe", _("Swipe"))
-            page.set_margin_top(5)
-            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
-            label_size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
-            section = page.add_section(_("Swipe"))
-
-            # Tighter than the page's usual section spacing.
-            top = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=10)
-            page.pack_start(top, False, False, 0)
-
-            # One-click template buttons
-            top.pack_start(self.build_gesture_templates(), False, False, 0)
-
-            box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
-            box.pack_start(Gtk.Image.new_from_icon_name(FOLLOW_ICON, Gtk.IconSize.BUTTON),
-                          False, False, 0)
-            label = Gtk.Label(
-                label=_("Gestures marked with this icon can follow your fingers as they move"),
-                wrap=True, xalign=0.0)
-            box.pack_start(label, True, True, 0)
-            top.pack_start(box, False, False, 0)
-
-            swipe_fingers = sorted(offered_swipe_finger_counts())
-            lowest_swipe_fingers = swipe_fingers[0] if swipe_fingers else None
-
-            for fingers in swipe_fingers:
-                picture = Gtk.Image.new_from_pixbuf(
-                    themed_swipe_pixbuf(page, fingers, SWIPE_ILLUSTRATION_SIZE))
-
-                subtitle = _("Touchscreen only") if fingers in TOUCH_ONLY_FINGERS else None
-                section, expander = self.add_finger_section(
-                    page, ngettext("Swipe with %d finger", "Swipe with %d fingers", fingers) % fingers,
-                    subtitle, fingers != lowest_swipe_fingers, picture=picture)
-
-                for key in keys:
-                    label = self.get_key_label(key, "swipe", fingers)
-                    if not label:
-                        continue
-
-                    widget = GestureComboBox(label, self.gesture_settings, key,
-                                             size_group=size_group,
-                                             label_size_group=label_size_group)
-                    section.add_row(widget)
-
-            page = SettingsPage()
-            self.sidePage.stack.add_titled(page, "pinch", _("Pinch"))
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
             label_size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-            for fingers in range(2, 5):
-                section, _expander = self.add_finger_section(page, ngettext("Pinch with %d finger", "Pinch with %d fingers", fingers) % fingers,
-                                                          None, fingers != 2)
-                for key in keys:
-                    label = self.get_key_label(key, "pinch", fingers)
+            page = self.add_scrolled_page("swipe", _("Swipe"), header=self.build_follow_infobar())
 
-                    if not label:
-                        continue
+            section = page.add_section()
+            section.add_row(self.build_gesture_templates())
 
-                    widget = GestureComboBox(label, self.gesture_settings, key,
-                                             size_group=size_group, label_size_group=label_size_group)
-                    section.add_row(widget)
+            touchscreen = has_touchscreen()
 
-            section, _expander = self.add_finger_section(page, ngettext("Pinch with %d finger", "Pinch with %d fingers", 5) % 5, _("Touchscreen only"), True)
+            for fingers in offered_finger_counts("swipe", touchscreen):
+                self.add_finger_section(
+                    page, "swipe", fingers,
+                    ngettext("Swipe with %d finger", "Swipe with %d fingers", fingers) % fingers,
+                    keys, size_group, label_size_group)
 
-            for key in keys:
-                label = self.get_key_label(key, "pinch", 5)
+            page = self.add_scrolled_page("pinch", _("Pinch"), header=self.build_follow_infobar())
+            size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
+            label_size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
-                if not label:
-                    continue
-
-                widget = GestureComboBox(label, self.gesture_settings, key,
-                                         size_group=size_group, label_size_group=label_size_group)
-                section.add_row(widget)
+            for fingers in offered_finger_counts("pinch", touchscreen):
+                self.add_finger_section(
+                    page, "pinch", fingers,
+                    ngettext("Pinch with %d finger", "Pinch with %d fingers", fingers) % fingers,
+                    keys, size_group, label_size_group)
 
             # Taps only work on a touchscreen.
-            if has_touchscreen():
-                page = SettingsPage()
-                self.sidePage.stack.add_titled(page, "tap", _("Tap"))
+            if touchscreen:
+                page = self.add_scrolled_page("tap", _("Tap"))
                 size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
                 label_size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
                 section = page.add_section(_("Tap"))
-                section.set_halign(Gtk.Align.START)
 
-                for fingers in range(2, 6):
-                    for key in keys:
-                        label = self.get_key_label(key, "tap", fingers)
-
-                        if not label:
-                            continue
-
-                        widget = GestureComboBox(label, self.gesture_settings, key,
-                                                 size_group=size_group, label_size_group=label_size_group)
-                        section.add_row(widget)
+                for fingers in TOUCHSCREEN_FINGERS:
+                    key = "tap-%d" % fingers
+                    widget = GestureComboBox(self.get_key_label(key, "tap", fingers),
+                                             self.gesture_settings, key,
+                                             size_group=size_group, label_size_group=label_size_group)
+                    section.add_row(widget)
 
         self.disabled_page_switch.set_visible(False)
         self.disabled_retry_button.set_visible(False)
@@ -480,87 +364,123 @@ class Module:
 
         GLib.idle_add(self.set_initial_page, page)
 
+    def build_follow_infobar(self):
+        infobar = Gtk.InfoBar(message_type=Gtk.MessageType.INFO)
+        content = infobar.get_content_area()
+        content.set_spacing(10)
+        content.add(Gtk.Image.new_from_icon_name(FOLLOW_ICON, Gtk.IconSize.BUTTON))
+        content.add(Gtk.Label(
+            label=_("Gestures marked with this icon can follow your fingers as they move"),
+            wrap=True, xalign=0.0))
+
+        return infobar
+
+    def add_scrolled_page(self, name, title, header=None):
+        """Adds a stack page that scrolls on its own, so @header stays put
+        above it instead of scrolling away with the window's content.
+
+        Every page needs this: the stack asks for the height of its
+        tallest child, and one unscrolled page would make the window
+        scroll all of them.
+        """
+        page = SettingsPage()
+
+        scroller = Gtk.ScrolledWindow(hscrollbar_policy=Gtk.PolicyType.NEVER)
+        scroller.add(page)
+        scroller.get_child().set_shadow_type(Gtk.ShadowType.NONE)
+
+        box = Gtk.Box(orientation=Gtk.Orientation.VERTICAL)
+        if header is not None:
+            box.pack_start(header, False, False, 0)
+        box.pack_start(scroller, True, True, 0)
+
+        self.sidePage.stack.add_titled(box, name, title)
+
+        return page
+
     def build_gesture_templates(self):
         """A row of buttons, one per GESTURE_TEMPLATES entry, each applying
         a whole bundle of bindings at once.
-
-        The template whose bindings are all currently in effect is
-        highlighted; changing any gesture drops the highlight.
         """
         flow = Gtk.FlowBox(selection_mode=Gtk.SelectionMode.NONE,
                            homogeneous=True,
                            row_spacing=10, column_spacing=10,
                            min_children_per_line=1,
-                           max_children_per_line=GESTURE_TEMPLATE_MAX_COLUMNS)
+                           max_children_per_line=GESTURE_TEMPLATE_MAX_COLUMNS,
+                           margin=6)
 
-        self.template_buttons = []
         for name, bindings in GESTURE_TEMPLATES:
             button = Gtk.Button(label=name)
             button.connect("clicked", self.on_template_clicked, bindings)
             flow.add(button)
-            self.template_buttons.append((button, bindings))
-
-        self.gesture_settings.connect("changed", self.refresh_template_buttons)
-        self.refresh_template_buttons()
 
         return flow
-
-    def template_matches(self, bindings):
-        return all(self.gesture_settings.get_string(key) == value
-                  for key, value in bindings.items())
-
-    def refresh_template_buttons(self, *args):
-        for button, bindings in self.template_buttons:
-            if self.template_matches(bindings):
-                button.get_style_context().add_class("suggested-action")
-            else:
-                button.get_style_context().remove_class("suggested-action")
 
     def on_template_clicked(self, button, bindings):
         for key, value in bindings.items():
             self.gesture_settings.set_string(key, value)
 
-    def add_finger_section(self, page, title, subtitle, collapsible, picture=None):
-        """Adds a section for one finger count to a vertical box.
+    def add_finger_section(self, page, gesture, fingers, title, keys,
+                           size_group, label_size_group):
+        """Adds the section for one finger count of @gesture to a vertical
+        box. Its first row holds a switch and is always shown.
 
-        Collapsed by default when @collapsible, so only the lowest count
-        is open. If given, @picture sits beside the rows.
-
-        Returns: (section, expander); @expander is None when not collapsible.
+        The switch belongs to no setting. It shows the other rows, and
+        starts on if any of them has an action; switching it off also
+        disables every action in the section.
         """
-        # halign=START so a vertical parent box cannot stretch this to
-        # full width and stretch the frame with it.
-        content = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=20,
-                          halign=Gtk.Align.START)
-        if picture is not None:
-            picture.set_valign(Gtk.Align.START)
-            content.pack_start(picture, False, False, 0)
-
-        section = SettingsSection()
-        content.pack_start(section, False, False, 0)
-
-        if not collapsible:
-            header = Gtk.Label(use_markup=True, xalign=0.0)
-            header.set_markup("<b>%s</b>" % GLib.markup_escape_text(title))
-            page.pack_start(header, False, False, 0)
-
-            if subtitle:
-                sub = Gtk.Label(label=subtitle, xalign=0.0)
-                sub.get_style_context().add_class("dim-label")
-                page.pack_start(sub, False, False, 0)
-
-            page.pack_start(content, False, False, 0)
-            return section, None
+        section_keys = [key for key in keys if self.get_key_label(key, gesture, fingers)]
+        in_use = any(self.gesture_settings.get_string(key) for key in section_keys)
 
         markup = "<b>%s</b>" % GLib.markup_escape_text(title)
-        if subtitle:
-            markup += "  <small>%s</small>" % GLib.markup_escape_text(subtitle)
+        if fingers not in TOUCHPAD_FINGERS[gesture]:
+            markup += "  <small>%s</small>" % GLib.markup_escape_text(_("Touchscreen only"))
 
-        expander = Gtk.Expander(use_markup=True, label=markup, expanded=False)
-        expander.add(content)
-        page.pack_start(expander, False, False, 0)
+        switch = Gtk.Switch(active=in_use, valign=Gtk.Align.CENTER)
 
-        return section, expander
+        # Tighter than a SettingsWidget's defaults, with the picture in
+        # line with the row labels below it.
+        header = SettingsWidget()
+        header.set_spacing(10)
+        header.set_margin_start(6)
+        header.pack_start(gesture_illustration(gesture, fingers), False, False, 0)
+        header.pack_start(switch, False, False, 0)
+        header.pack_start(Gtk.Label(use_markup=True, label=markup, xalign=0.0), False, False, 0)
+
+        section = SettingsSection()
+        section.add_row(header)
+        page.pack_start(section, False, False, 0)
+
+        # A click anywhere on the row works the switch, as on other pages.
+        list_box = header.get_parent().get_parent()
+        list_box.connect("row-activated", lambda *args: switch.set_active(not switch.get_active()))
+
+        revealers = []
+        for key in section_keys:
+            widget = GestureComboBox(self.get_key_label(key, gesture, fingers),
+                                     self.gesture_settings, key,
+                                     size_group=size_group,
+                                     label_size_group=label_size_group)
+            revealer = section.add_reveal_row(widget, revealer=SettingsRevealer())
+            revealer.set_reveal_child(in_use)
+            revealers.append(revealer)
+
+        self.finger_sections.append((switch, section_keys))
+        switch.connect("notify::active", self.on_finger_switch_toggled, revealers, section_keys)
+        self.gesture_settings.connect("changed", self.on_finger_section_changed, switch, section_keys)
+
+    def on_finger_switch_toggled(self, switch, pspec, revealers, section_keys):
+        for revealer in revealers:
+            revealer.set_reveal_child(switch.get_active())
+
+        if not switch.get_active():
+            for key in section_keys:
+                self.gesture_settings.set_string(key, "")
+
+    def on_finger_section_changed(self, settings, key, switch, section_keys):
+        # An action set from elsewhere, such as a preset, opens its section.
+        if key in section_keys and settings.get_string(key):
+            switch.set_active(True)
 
     def on_reset_clicked(self, button):
         dialog = Gtk.MessageDialog(transient_for=button.get_toplevel(),
@@ -581,6 +501,9 @@ class Module:
         for key in schema.list_keys():
             if key not in NON_GESTURE_KEYS:
                 self.gesture_settings.reset(key)
+
+        for switch, section_keys in self.finger_sections:
+            switch.set_active(any(self.gesture_settings.get_string(key) for key in section_keys))
 
     def set_initial_page(self, page):
         if page == "disabled":
@@ -693,10 +616,10 @@ class GestureComboBox(SettingsWidget):
         self.settings = settings
         self.key = key
 
-        # halign=START keeps the content left while the row's hover
-        # highlight spans the full width.
-        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10,
-                       halign=Gtk.Align.START)
+        # A tap is over at once: it has no phases, and nothing to follow.
+        self.is_tap = key.startswith("tap-")
+
+        hbox = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL, spacing=10)
         self.pack_start(hbox, True, True, 0)
         self.label = SettingsLabel(label)
         self.label.props.xalign = 0.0
@@ -705,7 +628,7 @@ class GestureComboBox(SettingsWidget):
         # Size group: equal label widths keep the controls aligned.
         label_vbox = Gtk.Box(orientation=Gtk.Orientation.VERTICAL, spacing=4)
         label_vbox.pack_start(self.label, False, False, 0)
-        hbox.pack_start(label_vbox, False, False, 6)
+        hbox.pack_start(label_vbox, True, True, 6)
 
         if label_size_group:
             label_size_group.add_widget(label_vbox)
@@ -733,6 +656,11 @@ class GestureComboBox(SettingsWidget):
 
         controls_vbox.pack_start(self.action_combo, False, False, 0)
 
+        # Themes can make a button taller than a combo.
+        height_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.VERTICAL)
+        height_group.add_widget(self.action_combo)
+        height_group.add_widget(self.follow_button)
+
         self.custom_entry = Gtk.Entry(placeholder_text=_("Enter a command"), visible=True)
         self.custom_revealer = Gtk.Revealer(child=self.custom_entry,
                                             transition_type=Gtk.RevealerTransitionType.SLIDE_DOWN,
@@ -753,8 +681,10 @@ class GestureComboBox(SettingsWidget):
 
         controls_vbox.pack_start(self.phase_revealer, False, False, 0)
 
-        self.adjust_range = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -50, 50, 2)
-        self.adjust_range.add_mark(0, Gtk.PositionType.TOP, None)
+        # Milliseconds added to the time between zoom steps. Centred on
+        # the value zoom actions are stored with by default.
+        self.adjust_range = Gtk.Scale.new_with_range(Gtk.Orientation.HORIZONTAL, -50, 150, 2)
+        self.adjust_range.add_mark(50, Gtk.PositionType.TOP, None)
         self.adjust_range.set_properties(visible=True,
                                          inverted=True,
                                          digits=0,
@@ -786,18 +716,22 @@ class GestureComboBox(SettingsWidget):
 
         self.set_options()
 
+        self.follow_toggled_id = self.follow_button.connect("toggled", self.on_follow_toggled)
+
         self.settings.connect("changed::" + key, self.on_setting_changed)
         self.on_setting_changed(settings, key)
         self.action_combo.connect("changed", self.on_my_value_changed)
 
         self.phase_combo.connect("changed", self.on_my_value_changed)
-        self.follow_button.connect("toggled", self.on_follow_toggled)
         self.custom_entry.connect("changed", self.on_custom_entry_changed)
         self.adjust_range.connect("value-changed", self.on_range_value_changed)
 
         if size_group:
             size_group.add_widget(self.action_combo)
             size_group.add_widget(self.phase_combo)
+
+    def active_action(self):
+        return self.action_model[self.action_combo.get_active_iter()]
 
     def on_my_value_changed(self, widget):
         if self.updating_from_setting:
@@ -806,11 +740,11 @@ class GestureComboBox(SettingsWidget):
         tree_iter = widget.get_active_iter()
         if tree_iter is not None:
             if widget == self.action_combo:
-                self.action_value = self.action_model[tree_iter][ACTION_ID_COL]
-                custom_type = self.action_model[self.action_combo.get_active_iter()][ACTION_EXTRA_WIDGET_TYPE_COL]
-                default_val = self.action_model[self.action_combo.get_active_iter()][ACTION_DEFAULT_CUSTOM_VALUE_COL]
+                action = self.action_model[tree_iter]
+                self.action_value = action[ACTION_ID_COL]
+                custom_type = action[ACTION_EXTRA_WIDGET_TYPE_COL]
                 if custom_type == "slider":
-                    self.adjust_range.set_value(int(default_val))
+                    self.adjust_range.set_value(int(action[ACTION_DEFAULT_CUSTOM_VALUE_COL]))
                 elif custom_type == "entry":
                     self.custom_entry.set_text("")
 
@@ -821,60 +755,42 @@ class GestureComboBox(SettingsWidget):
             self.store_action_settings()
 
     def render_follow_mark(self, layout, cell, model, tree_iter, data=None):
-        # Marked on followable actions except the chosen one (the follow
-        # button shows that), and on the volume actions.
+        # Only in the open list: the closed combo shares this renderer.
         row = model[tree_iter]
-        mark = row[ACTION_ALLOW_FOLLOW_COL] and row[ACTION_ID_COL] != self.action_value or "VOLUME" in row[ACTION_ID_COL]
+        mark = self.action_combo.props.popup_shown and not self.is_tap and \
+            (row[ACTION_ALLOW_FOLLOW_COL] or row[ACTION_ID_COL] in ALWAYS_FOLLOW_ACTIONS)
         cell.set_property("icon-name", FOLLOW_ICON if mark else None)
 
     def on_follow_toggled(self, button):
-        self.sync_follow_appearance()
-
-        if self.updating_from_setting:
-            return
-
         self.follow_value = button.get_active()
 
         self.update_control_visibilities()
         self.store_action_settings()
 
-    def sync_follow_appearance(self):
-
-        context = self.follow_button.get_style_context()
-
-        if self.follow_button.get_active():
-            context.add_class("suggested-action")
-        else:
-            context.remove_class("suggested-action")
-
     def update_control_visibilities(self):
-        if self.action_value == "":
-            self.follow_button.hide()
-            self.phase_revealer.set_reveal_child(False)
-            self.phase_revealer.hide()
-            self.custom_revealer.set_reveal_child(False)
-            self.custom_revealer.hide()
-            self.range_revealer.set_reveal_child(False)
-            self.range_revealer.hide()
-            return
+        action = self.active_action()
 
-        follow_visible = self.action_model[self.action_combo.get_active_iter()][ACTION_ALLOW_FOLLOW_COL]
-        self.follow_button.set_visible(follow_visible)
+        follow_visible = not self.is_tap and action[ACTION_ALLOW_FOLLOW_COL]
+        always_follows = not self.is_tap and self.action_value in ALWAYS_FOLLOW_ACTIONS
+        self.follow_button.set_visible(follow_visible or always_follows)
+        self.follow_button.set_sensitive(not always_follows)
+
+        # Shown on for an action that always follows, without touching
+        # the user's own choice, which a followable action gets back.
+        self.follow_button.handler_block(self.follow_toggled_id)
+        self.follow_button.set_active(always_follows or self.follow_value)
+        self.follow_button.handler_unblock(self.follow_toggled_id)
 
         # A gesture that acts the whole way through has no single phase.
         following = follow_visible and self.follow_value
-        phase_combo_visible = self.action_model[self.action_combo.get_active_iter()][ACTION_ALLOW_PHASE_SELECT_COL] \
-            and not following
-        self.phase_revealer.set_visible(phase_combo_visible)
-        self.phase_revealer.set_reveal_child(phase_combo_visible)
+        extra_widget = action[ACTION_EXTRA_WIDGET_TYPE_COL]
 
-        custom_entry_visible = self.action_value == "EXEC"
-        self.custom_revealer.set_visible(custom_entry_visible)
-        self.custom_revealer.set_reveal_child(custom_entry_visible)
-
-        range_visible = self.action_model[self.action_combo.get_active_iter()][ACTION_EXTRA_WIDGET_TYPE_COL] == "slider"
-        self.range_revealer.set_visible(range_visible)
-        self.range_revealer.set_reveal_child(range_visible)
+        for revealer, shown in (
+                (self.phase_revealer, action[ACTION_ALLOW_PHASE_SELECT_COL] and not following and not self.is_tap),
+                (self.custom_revealer, extra_widget == "entry"),
+                (self.range_revealer, extra_widget == "slider")):
+            revealer.set_visible(shown)
+            revealer.set_reveal_child(shown)
 
     def on_custom_entry_changed(self, entry):
         if self.updating_from_setting:
@@ -893,17 +809,15 @@ class GestureComboBox(SettingsWidget):
         self.store_action_settings()
 
     def store_action_settings(self):
-        self.updating_settings = True
-
         if self.action_value == "EXEC" and self.custom_value == "":
             return
 
-        follows = self.follow_value and can_follow(self.action_value)
+        follows = self.follow_value and not self.is_tap and self.active_action()[ACTION_ALLOW_FOLLOW_COL]
         val = setting_to_string(self.action_value, self.custom_value,
                                 FOLLOW_PHASE if follows else self.phase_value)
 
+        self.updating_settings = True
         self.settings.set_string(self.key, val)
-
         self.updating_settings = False
 
     def on_setting_changed(self, settings, key):
@@ -920,8 +834,7 @@ class GestureComboBox(SettingsWidget):
         if self.follow_value:
             self.phase_value = DEFAULT_PHASE
 
-        self.follow_button.set_active(self.follow_value)
-        self.sync_follow_appearance()
+        unknown_action = False
 
         if self.action_value == "EXEC":
             if self.custom_value != "":
@@ -933,6 +846,8 @@ class GestureComboBox(SettingsWidget):
             try:
                 self.action_combo.set_active_iter(self.action_map[self.action_value])
             except KeyError:
+                unknown_action = True
+                self.action_value = ""
                 self.action_combo.set_active_iter(self.action_map[""])
 
         try:
@@ -943,26 +858,30 @@ class GestureComboBox(SettingsWidget):
             self.phase_value = DEFAULT_PHASE
             self.phase_combo.set_active_iter(self.phase_map[DEFAULT_PHASE])
 
-        custom_type = self.action_model[self.action_combo.get_active_iter()][ACTION_EXTRA_WIDGET_TYPE_COL]
+        action = self.active_action()
+        custom_type = action[ACTION_EXTRA_WIDGET_TYPE_COL]
 
         if custom_type == "entry":
             self.custom_entry.set_text(self.custom_value)
         elif custom_type == "slider":
-            if self.custom_value == "":
-                default_value = self.action_model[self.action_combo.get_active_iter()][ACTION_DEFAULT_CUSTOM_VALUE_COL]
-                val = int(default_value)
-            else:
-                val = int(self.custom_value)
-
-            self.adjust_range.set_value(val)
+            self.adjust_range.set_value(int(self.custom_value or action[ACTION_DEFAULT_CUSTOM_VALUE_COL]))
 
         self.update_control_visibilities()
         self.updating_from_setting = False
+
+        # The row shows such an action as disabled, so make that true.
+        if unknown_action:
+            self.settings.set_string(self.key, "")
 
     def set_options(self):
         self.action_model = Gtk.ListStore(str, str, bool, str, str, bool)
 
         for option in ACTIONS:
+            # These act on how far the fingers have moved, and a tap
+            # reports the whole way at once.
+            if self.is_tap and option[ACTION_ID_COL] in ALWAYS_FOLLOW_ACTIONS:
+                continue
+
             self.action_map[option[0]] = self.action_model.append(option)
 
         self.action_combo.set_model(self.action_model)
@@ -972,11 +891,13 @@ class GestureComboBox(SettingsWidget):
         # under the pointer, leaving blank space above it.
         self.action_combo.set_wrap_width(1)
 
-        # Marks followable actions except the chosen one, which the
-        # follow button beside the combo already covers.
+        # Fixed width so the list reserves room for the mark even though
+        # it is measured while the mark is still hidden.
         self.follow_mark = Gtk.CellRendererPixbuf(xalign=1.0)
+        self.follow_mark.set_fixed_size(FOLLOW_MARK_WIDTH, -1)
         self.action_combo.pack_end(self.follow_mark, False)
         self.action_combo.set_cell_data_func(self.follow_mark, self.render_follow_mark)
+        self.action_combo.connect("notify::popup-shown", lambda combo, pspec: combo.queue_draw())
 
         self.phase_model = Gtk.ListStore(str, str)
 

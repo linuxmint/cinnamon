@@ -371,8 +371,14 @@ var TouchSwipeGesture = GObject.registerClass({
         return true;
     }
 
-    vfunc_gesture_end(_actor) {
-        const time = this.get_last_event(0).get_time();
+    // A cancelled gesture ends where the fingers got to, as Touchegg
+    // reports it on X11. Muffin also cancels every stage gesture once
+    // the touches are over, when there is nothing left to end.
+    _emitEnd(time) {
+        if (this._direction === GestureDirection.UNKNOWN) {
+            return;
+        }
+
         this.emit('detected-end',
             GestureType.SWIPE,
             this._direction,
@@ -380,17 +386,16 @@ var TouchSwipeGesture = GObject.registerClass({
             this._nTouchPoints,
             DeviceType.TOUCHSCREEN,
             time);
+
+        this._direction = GestureDirection.UNKNOWN;
+    }
+
+    vfunc_gesture_end(_actor) {
+        this._emitEnd(this.get_last_event(0).get_time());
     }
 
     vfunc_gesture_cancel(_actor) {
-        const time = Clutter.get_current_event_time();
-        this.emit('detected-end',
-            GestureType.SWIPE,
-            this._direction,
-            0,
-            this._nTouchPoints,
-            DeviceType.TOUCHSCREEN,
-            time);
+        this._emitEnd(Clutter.get_current_event_time());
     }
 });
 
@@ -485,12 +490,12 @@ var TouchPinchGesture = GObject.registerClass({
         return true;
     }
 
-    vfunc_gesture_end(_actor) {
+    // See TouchSwipeGesture._emitEnd().
+    _emitEnd(time) {
         if (this._direction === GestureDirection.UNKNOWN) {
             return;
         }
 
-        const time = this.get_last_event(0).get_time();
         this.emit('detected-end',
             GestureType.PINCH,
             this._direction,
@@ -498,21 +503,16 @@ var TouchPinchGesture = GObject.registerClass({
             this._nTouchPoints,
             DeviceType.TOUCHSCREEN,
             time);
+
+        this._direction = GestureDirection.UNKNOWN;
+    }
+
+    vfunc_gesture_end(_actor) {
+        this._emitEnd(this.get_last_event(0).get_time());
     }
 
     vfunc_gesture_cancel(_actor) {
-        if (this._direction === GestureDirection.UNKNOWN) {
-            return;
-        }
-
-        const time = Clutter.get_current_event_time();
-        this.emit('detected-end',
-            GestureType.PINCH,
-            this._direction,
-            0,
-            this._nTouchPoints,
-            DeviceType.TOUCHSCREEN,
-            time);
+        this._emitEnd(Clutter.get_current_event_time());
     }
 });
 
