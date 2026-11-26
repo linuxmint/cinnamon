@@ -39,6 +39,18 @@ body:
     validations:
       required: true
 
+  - type: dropdown
+    id: session-type
+    attributes:
+      label: Session type
+      description: Which session type does this occur in? You can check by opening Looking Glass (Super+L) and reading the 'Session type' label. Select 'Both' only if you have reproduced the issue in each.
+      options:
+        - X11
+        - Wayland
+        - Both
+    validations:
+      required: true
+
   - type: input
     id: graphics
     attributes:
