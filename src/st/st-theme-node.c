@@ -22,6 +22,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -163,6 +164,8 @@ st_theme_node_finalize (GObject *object)
 
   if (node->background_image)
     g_free (node->background_image);
+
+  g_free (node->background_gradient_stops);
 
   _st_theme_node_free_drawing_state (node);
 
@@ -1854,10 +1857,238 @@ get_background_color_from_term (StThemeNode  *node,
   return result;
 }
 
+static void
+clear_background_gradient_stops (StThemeNode *node)
+{
+  g_clear_pointer (&node->background_gradient_stops, g_free);
+  node->n_background_gradient_stops = 0;
+}
+
+static void
+copy_background_gradient_stops (StThemeNode *node,
+                                StThemeNode *from)
+{
+  clear_background_gradient_stops (node);
+
+  if (from == NULL)
+    return;
+
+  _st_theme_node_ensure_background (from);
+  if (from->n_background_gradient_stops == 0)
+    return;
+
+  node->background_gradient_stops =
+    g_memdup2 (from->background_gradient_stops,
+               from->n_background_gradient_stops * sizeof (StGradientStop));
+  node->n_background_gradient_stops = from->n_background_gradient_stops;
+  node->background_gradient_angle = from->background_gradient_angle;
+  node->background_gradient_corner_x = from->background_gradient_corner_x;
+  node->background_gradient_corner_y = from->background_gradient_corner_y;
+}
+
+static gboolean
+term_is_function (CRTerm     *term,
+                  const char *name)
+{
+  return (term->type == TERM_FUNCTION &&
+          term->content.str &&
+          term->content.str->stryng &&
+          term->content.str->stryng->str &&
+          strcmp (term->content.str->stryng->str, name) == 0);
+}
+
+/* The direction at the start of a linear-gradient(): an angle ("180deg"),
+ * or "to" and one or two sides ("to bottom", "to top right"). Returns the
+ * term after it, @arg itself if there's no direction, or NULL if the
+ * direction can't be read.
+ */
+static CRTerm *
+parse_linear_gradient_direction (CRTerm *arg,
+                                 double *angle,
+                                 int    *corner_x,
+                                 int    *corner_y)
+{
+  *angle = 180.;   /* to bottom */
+  *corner_x = 0;
+  *corner_y = 0;
+
+  if (arg->type == TERM_NUMBER)
+    {
+      CRNum *num = arg->content.num;
+
+      if (num->type == NUM_ANGLE_DEG)
+        *angle = num->val;
+      else if (num->type == NUM_ANGLE_RAD)
+        *angle = num->val * 180. / G_PI;
+      else if (num->type == NUM_ANGLE_GRAD)
+        *angle = num->val * 0.9;
+      else
+        return NULL;
+
+      return arg->next;
+    }
+
+  if (arg->type == TERM_IDENT &&
+      strcmp (arg->content.str->stryng->str, "to") == 0)
+    {
+      CRTerm *term;
+      int x = 0, y = 0;
+
+      for (term = arg->next; term && term->the_operator != COMMA; term = term->next)
+        {
+          const char *side;
+
+          if (term->type != TERM_IDENT)
+            return NULL;
+
+          side = term->content.str->stryng->str;
+          if (strcmp (side, "left") == 0 && x == 0)
+            x = -1;
+          else if (strcmp (side, "right") == 0 && x == 0)
+            x = 1;
+          else if (strcmp (side, "top") == 0 && y == 0)
+            y = -1;
+          else if (strcmp (side, "bottom") == 0 && y == 0)
+            y = 1;
+          else
+            return NULL;
+        }
+
+      if (x != 0 && y != 0)
+        {
+          *corner_x = x;
+          *corner_y = y;
+        }
+      else if (x != 0)
+        *angle = x > 0 ? 90. : 270.;
+      else if (y != 0)
+        *angle = y > 0 ? 180. : 0.;
+      else
+        return NULL;
+
+      return term;
+    }
+
+  return arg;
+}
+
+/* background-image: linear-gradient([<direction>,] <color> [<percentage>
+ * [<percentage>]], ...). At least two stops. Stops without a position are
+ * spread evenly between their neighbours, and a position before an earlier
+ * one is moved up to it, as in CSS: two stops at the same position draw a
+ * hard step. Returns FALSE, leaving @node as it was, if it can't be read.
+ */
+static gboolean
+parse_linear_gradient (StThemeNode *node,
+                       CRTerm      *term)
+{
+  CRTerm *first = term->ext_content.func_param;
+  CRTerm *arg;
+  GArray *array;
+  StGradientStop *stops;
+  double angle;
+  int corner_x, corner_y;
+  guint n, i, j, k;
+  double max;
+
+  if (first == NULL)
+    goto invalid;
+
+  arg = parse_linear_gradient_direction (first, &angle, &corner_x, &corner_y);
+  if (arg != first && (arg == NULL || arg->the_operator != COMMA))
+    goto invalid;   /* a direction must be followed by a comma and a color */
+
+  array = g_array_new (FALSE, FALSE, sizeof (StGradientStop));
+
+  while (arg)
+    {
+      StGradientStop stop;
+      int n_positions = 0;
+
+      if (arg != first && arg->the_operator != COMMA)
+        break;
+
+      if (get_color_from_term (node, arg, &stop.color) != VALUE_FOUND)
+        break;
+      stop.offset = -1;   /* not given yet */
+
+      for (arg = arg->next; arg && arg->the_operator != COMMA; arg = arg->next)
+        {
+          if (n_positions == 2 ||
+              arg->type != TERM_NUMBER ||
+              arg->content.num->type != NUM_PERCENTAGE)
+            break;
+
+          stop.offset = CLAMP (arg->content.num->val / 100., 0., 1.);
+          g_array_append_val (array, stop);
+          n_positions++;
+        }
+
+      if (arg && arg->the_operator != COMMA)
+        break;   /* something after the positions */
+
+      if (n_positions == 0)
+        g_array_append_val (array, stop);
+    }
+
+  if (arg != NULL || array->len < 2)
+    {
+      g_array_free (array, TRUE);
+      goto invalid;
+    }
+
+  n = array->len;
+  stops = (StGradientStop *) g_array_free (array, FALSE);
+
+  if (stops[0].offset < 0)
+    stops[0].offset = 0;
+  if (stops[n - 1].offset < 0)
+    stops[n - 1].offset = 1;
+
+  max = 0;
+  for (i = 0; i < n; i++)
+    {
+      if (stops[i].offset < 0)
+        continue;
+      if (stops[i].offset < max)
+        stops[i].offset = max;
+      max = stops[i].offset;
+    }
+
+  for (i = 1; i < n; i++)
+    {
+      if (stops[i].offset >= 0)
+        continue;
+
+      for (j = i; stops[j].offset < 0; j++)
+        ;   /* the last stop has an offset, so this ends */
+
+      for (k = i; k < j; k++)
+        stops[k].offset = stops[i - 1].offset +
+          (stops[j].offset - stops[i - 1].offset) * (k - i + 1) / (j - i + 1);
+
+      i = j;
+    }
+
+  clear_background_gradient_stops (node);
+  node->background_gradient_stops = stops;
+  node->n_background_gradient_stops = n;
+  node->background_gradient_angle = angle;
+  node->background_gradient_corner_x = corner_x;
+  node->background_gradient_corner_y = corner_y;
+
+  return TRUE;
+
+invalid:
+  g_warning ("Ignoring a linear-gradient() that St can't read: it takes an "
+             "optional direction (an angle or \"to\" and sides), then two or "
+             "more colors, each with optional percentages");
+  return FALSE;
+}
+
 void
 _st_theme_node_ensure_background (StThemeNode *node)
 {
-  gboolean has_middle_start = FALSE, has_middle_end = FALSE;
   int i;
 
   if (node->background_computed)
@@ -1867,8 +2098,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
   node->background_computed = TRUE;
   node->background_color = TRANSPARENT_COLOR;
   node->background_gradient_type = ST_GRADIENT_NONE;
-  node->background_gradient_has_middle = FALSE;
-  node->background_gradient_middle_position = 0.5;
+  clear_background_gradient_stops (node);
   node->background_position_set = FALSE;
   node->background_size = ST_BACKGROUND_SIZE_AUTO;
   node->background_blur = 0;
@@ -1898,6 +2128,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
           node->background_color = TRANSPARENT_COLOR;
           g_free (node->background_image);
           node->background_image = NULL;
+          clear_background_gradient_stops (node);
           node->background_position_set = FALSE;
           node->background_size = ST_BACKGROUND_SIZE_AUTO;
 
@@ -1915,11 +2146,16 @@ _st_theme_node_ensure_background (StThemeNode *node)
                       st_theme_node_get_background_color (node->parent_node, &node->background_color);
                       node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
                       node->background_bumpmap = g_strdup (st_theme_node_get_background_bumpmap (node->parent_node));
+                      copy_background_gradient_stops (node, node->parent_node);
                     }
                 }
               else if (term_is_none (term))
                 {
                   /* leave node->background_color as transparent */
+                }
+              else if (term_is_function (term, "linear-gradient"))
+                {
+                  parse_linear_gradient (node, term);
                 }
               else if (term->type == TERM_URI)
                 {
@@ -2043,6 +2279,8 @@ _st_theme_node_ensure_background (StThemeNode *node)
                 base_stylesheet = NULL;
 
               g_free (node->background_image);
+              node->background_image = NULL;
+              clear_background_gradient_stops (node);
               file = _st_theme_resolve_url (node->theme,
                                             base_stylesheet,
                                             decl->value->content.str->stryng->str);
@@ -2053,15 +2291,25 @@ _st_theme_node_ensure_background (StThemeNode *node)
                   g_object_unref (file);
                 }
             }
+          else if (term_is_function (decl->value, "linear-gradient"))
+            {
+              if (parse_linear_gradient (node, decl->value))
+                {
+                  g_free (node->background_image);
+                  node->background_image = NULL;
+                }
+            }
           else if (term_is_inherit (decl->value))
             {
               g_free (node->background_image);
               node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
+              copy_background_gradient_stops (node, node->parent_node);
             }
           else if (term_is_none (decl->value))
             {
               g_free (node->background_image);
               node->background_image = NULL;
+              clear_background_gradient_stops (node);
             }
         }
       else if (strcmp (property_name, "-bumpmap") == 0)
@@ -2132,47 +2380,27 @@ _st_theme_node_ensure_background (StThemeNode *node)
         {
           get_color_from_term (node, decl->value, &node->background_gradient_end);
         }
-      else if (strcmp (property_name, "-gradient-middle-start") == 0)
-        {
-          if (get_color_from_term (node, decl->value,
-                                   &node->background_gradient_middle_start) == VALUE_FOUND)
-            has_middle_start = TRUE;
-        }
-      else if (strcmp (property_name, "-gradient-middle-end") == 0)
-        {
-          if (get_color_from_term (node, decl->value,
-                                   &node->background_gradient_middle_end) == VALUE_FOUND)
-            has_middle_end = TRUE;
-        }
-      else if (strcmp (property_name, "-gradient-middle-position") == 0)
-        {
-          CRTerm *term = decl->value;
-
-          if (term->type == TERM_NUMBER &&
-              term->content.num->type == NUM_PERCENTAGE)
-            {
-              node->background_gradient_middle_position =
-                CLAMP (term->content.num->val / 100., 0., 1.);
-            }
-          else
-            {
-              g_warning ("background-gradient-middle-position must be a percentage");
-            }
-        }
       else if (strcmp (property_name, "-blur") == 0)
         {
           get_length_from_term_int (node, decl->value, FALSE, &node->background_blur);
         }
     }
 
-  /* With only one middle color, use it on both sides: a three-stop
-   * gradient with no step. */
-  if (has_middle_start && !has_middle_end)
-    node->background_gradient_middle_end = node->background_gradient_middle_start;
-  else if (has_middle_end && !has_middle_start)
-    node->background_gradient_middle_start = node->background_gradient_middle_end;
+  /* A linear-gradient() takes precedence over background-gradient-*, so a
+   * theme can give both: Cinnamon versions without linear-gradient() use the
+   * two-color gradient. The first and last stops stand in for start and end. */
+  if (node->n_background_gradient_stops > 0)
+    {
+      double angle = fmod (fabs (node->background_gradient_angle), 180.);
+      gboolean horizontal = node->background_gradient_corner_x == 0 &&
+                            angle > 45. && angle < 135.;
 
-  node->background_gradient_has_middle = has_middle_start || has_middle_end;
+      node->background_gradient_type = horizontal ? ST_GRADIENT_HORIZONTAL
+                                                  : ST_GRADIENT_VERTICAL;
+      node->background_color = node->background_gradient_stops[0].color;
+      node->background_gradient_end =
+        node->background_gradient_stops[node->n_background_gradient_stops - 1].color;
+    }
 }
 
 /**
@@ -4082,18 +4310,26 @@ st_theme_node_paint_equal (StThemeNode *node,
       !clutter_color_equal (&node->background_gradient_end, &other->background_gradient_end))
     return FALSE;
 
-  if (node->background_gradient_type != ST_GRADIENT_NONE)
+  if (node->n_background_gradient_stops != other->n_background_gradient_stops)
+    return FALSE;
+
+  if (node->n_background_gradient_stops > 0)
     {
-      if (node->background_gradient_has_middle != other->background_gradient_has_middle)
+      guint j;
+
+      if (node->background_gradient_angle != other->background_gradient_angle ||
+          node->background_gradient_corner_x != other->background_gradient_corner_x ||
+          node->background_gradient_corner_y != other->background_gradient_corner_y)
         return FALSE;
 
-      if (node->background_gradient_has_middle &&
-          (node->background_gradient_middle_position != other->background_gradient_middle_position ||
-           !clutter_color_equal (&node->background_gradient_middle_start,
-                                 &other->background_gradient_middle_start) ||
-           !clutter_color_equal (&node->background_gradient_middle_end,
-                                 &other->background_gradient_middle_end)))
-        return FALSE;
+      for (j = 0; j < node->n_background_gradient_stops; j++)
+        {
+          StGradientStop *a = &node->background_gradient_stops[j];
+          StGradientStop *b = &other->background_gradient_stops[j];
+
+          if (a->offset != b->offset || !clutter_color_equal (&a->color, &b->color))
+            return FALSE;
+        }
     }
 
   if (g_strcmp0 (node->background_image, other->background_image) != 0)

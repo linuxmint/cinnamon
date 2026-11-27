@@ -29,6 +29,12 @@
 
 G_BEGIN_DECLS
 
+/* One color stop of a background-image: linear-gradient() */
+typedef struct {
+  ClutterColor color;
+  double offset;      /* 0-1 along the gradient line */
+} StGradientStop;
+
 struct _StThemeNode {
   GObject parent;
 
@@ -42,11 +48,15 @@ struct _StThemeNode {
   /* If gradient is set, then background_color is the gradient start */
   StGradientType background_gradient_type;
   ClutterColor background_gradient_end;
-  /* Optional color stops either side of background_gradient_middle_position;
-   * the same offset twice gives a hard step. Only used if has_middle is set. */
-  ClutterColor background_gradient_middle_start;
-  ClutterColor background_gradient_middle_end;
-  double background_gradient_middle_position;
+  /* background-image: linear-gradient(), which takes precedence over the
+   * background-gradient-* properties. When set, the type, background_color
+   * and background_gradient_end above are filled in from it (first and last
+   * stops), so code that only knows two-color gradients keeps working. */
+  StGradientStop *background_gradient_stops;
+  guint n_background_gradient_stops;
+  double background_gradient_angle;   /* CSS degrees: 0 = to top, 90 = to right */
+  int background_gradient_corner_x;   /* "to <corner>": -1 left, 1 right, else 0 */
+  int background_gradient_corner_y;   /* "to <corner>": -1 top, 1 bottom, else 0 */
 
   int background_position_x;
   int background_position_y;
@@ -98,7 +108,6 @@ struct _StThemeNode {
 
   guint background_position_set : 1;
   guint background_repeat : 1;
-  guint background_gradient_has_middle : 1;
 
   guint properties_computed : 1;
   guint geometry_computed : 1;
