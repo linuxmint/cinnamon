@@ -139,6 +139,8 @@ class HotCorner extends Clutter.Actor {
     }
 
     _onDestroy() {
+        this._vleg?.destroy();
+        this._hleg?.destroy();
         this._vleg = null;
         this._hleg = null;
         Main.layoutManager.removeChrome(this);
