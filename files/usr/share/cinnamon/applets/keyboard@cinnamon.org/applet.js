@@ -13,6 +13,7 @@ const IMFramework = imports.misc.imFramework;
 const SignalManager = imports.misc.signalManager;
 
 const PANEL_EDIT_MODE_KEY = "panel-edit-mode";
+const ALWAYS_SHOW_KEY = "keyboard-layout-always-show";
 
 const POPUP_MENU_ICON_STYLE_CLASS = "popup-menu-icon";
 const APPLET_ICON_STYLE_CLASS = "applet-icon";
@@ -100,6 +101,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             });
             this._applet_context_menu.addSettingsAction(_("Manage keyboard layouts"), 'keyboard', "layouts");
 
+            this._signalManager.connect(global.settings, 'changed::' + ALWAYS_SHOW_KEY, () => this._onPanelEditModeChanged());
             this._inputSourcesManager = KeyboardManager.getInputSourceManager();
             this._signalManager.connect(this._inputSourcesManager, "sources-changed", this._onSourcesChanged.bind(this));
             this._signalManager.connect(this._inputSourcesManager, "current-source-changed", this._onCurrentSourceChanged.bind(this));
@@ -131,9 +133,17 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this._syncConfig();
     }
 
+    _shouldShowIndicator() {
+        if (this._imIsFcitx || this._inputSourcesManager.numInputSources == 0)
+            return false;
+
+        return this._inputSourcesManager.multipleSources ||
+            global.settings.get_boolean(ALWAYS_SHOW_KEY);
+    }
+
     _onPanelEditModeChanged() {
         this.actor.visible = !this._imIsFcitx &&
-            (global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._inputSourcesManager.multipleSources);
+            (global.settings.get_boolean(PANEL_EDIT_MODE_KEY) || this._shouldShowIndicator());
     }
 
     on_applet_added_to_panel() {
@@ -194,7 +204,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
             this._layoutSection.addMenuItem(menuItem);
         }
 
-        if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
+        if (!this._shouldShowIndicator()) {
             this.menu.close();
             this.actor.hide();
         } else {
@@ -225,7 +235,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
 
         this._panel_icon_box.set_child(actor);
 
-        if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
+        if (!this._shouldShowIndicator()) {
             this.actor.hide();
         }
 
