@@ -1560,6 +1560,10 @@ class CinnamonMenuApplet extends Applet.TextIconApplet {
             this._allAppsCategoryButton.actor.style_class = "appmenu-category-button-selected";
 
             Mainloop.idle_add(() => {
+                // Closed again before we got here: showing everything now would
+                // leave every button visible (and laid out) for the next open.
+                if (!this.menu.isOpen)
+                    return;
                 if(this.lastSelectedCategory !== null) //if a category is already selected
                     return;
                 for (let i = n; i < this._applicationsButtons.length; i++)
