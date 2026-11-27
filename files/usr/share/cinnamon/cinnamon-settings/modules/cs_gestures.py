@@ -302,7 +302,9 @@ class Module:
             section = page.add_section()
             section.add_row(self.build_gesture_templates())
 
-            touchscreen = has_touchscreen()
+            # Touchscreen gestures are switched off in Wayland sessions:
+            # see TOUCHSCREEN_GESTURES_ENABLED in nativeGestureSource.js.
+            touchscreen = has_touchscreen() and not self.is_wayland
 
             for fingers in offered_finger_counts("swipe", touchscreen):
                 self.add_finger_section(

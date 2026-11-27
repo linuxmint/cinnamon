@@ -14,6 +14,11 @@ const TOUCHPAD_SWIPE_FINGER_COUNTS = [3, 4];
 const TOUCHPAD_PINCH_FINGER_COUNTS = [2, 3, 4];
 const TOUCHSCREEN_FINGER_COUNTS = [2, 3, 4, 5];
 
+// Off for now: the recognizers for different finger counts all react to
+// the same touches and cancel one another. Keep in sync with
+// cs_gestures.py, which hides the touchscreen-only gestures.
+const TOUCHSCREEN_GESTURES_ENABLED = false;
+
 /**
  * NativeGestureSource - Gesture source using native Clutter touchpad events
  */
@@ -38,6 +43,10 @@ var NativeGestureSource = class {
         this._touchpadPinchGesture.connect('detected-begin', this._onGestureBegin.bind(this));
         this._touchpadPinchGesture.connect('detected-update', this._onGestureUpdate.bind(this));
         this._touchpadPinchGesture.connect('detected-end', this._onGestureEnd.bind(this));
+
+        if (!TOUCHSCREEN_GESTURES_ENABLED) {
+            return;
+        }
 
         for (let fingers of TOUCHSCREEN_FINGER_COUNTS) {
             const swipeGesture = new TouchSwipeGesture(fingers);
