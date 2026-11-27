@@ -318,6 +318,9 @@ var Workspace = class Workspace {
     }
 
     shouldWindowBeAdded(metaWindow) {
+        // A window being unmanaged has already left every workspace.
+        if (!metaWindow.get_workspace()) return false;
+
         return (this.state.settings.showAllWorkspaces
             || metaWindow.is_on_all_workspaces()
             || metaWindow.get_workspace() === this.metaWorkspace)
@@ -325,8 +328,8 @@ var Workspace = class Workspace {
         && this.state.monitorWatchList.indexOf(metaWindow.get_monitor()) > -1;
     }
 
-    windowWorkspaceChanged(display, metaWorkspace, metaWindow) {
-        this.windowAdded(metaWindow, metaWorkspace);
+    windowWorkspaceChanged(display, metaWindow, metaWorkspace) {
+        this.windowAdded(metaWorkspace, metaWindow);
     }
 
     windowAdded(metaWorkspace, metaWindow, app, isFavoriteApp) {
