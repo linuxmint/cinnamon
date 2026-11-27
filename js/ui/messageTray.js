@@ -795,6 +795,8 @@ MessageTray.prototype = {
         Main.overview.connect('hiding', updateLockState);
         Main.expo.connect('showing', updateLockState);
         Main.expo.connect('hiding', updateLockState);
+
+        Main.layoutManager.connect('monitors-changed', () => this._updateState());
     },
 
     getResourceScale: function () {
@@ -936,6 +938,11 @@ MessageTray.prototype = {
     // _updateState() figures out what (if anything) needs to be done
     // at the present time.
     _updateState: function () {
+        // With no monitor connected there is nowhere to show or hide a
+        // notification, keep everything queued until one comes back.
+        if (!Main.layoutManager.primaryMonitor)
+            return;
+
         if (this._notificationState === State.HIDDEN && this._notificationQueue.length > 0) {
             if (!this._busy || this._notificationQueue[0].urgency === Urgency.CRITICAL) {
                 this._showNotification();
