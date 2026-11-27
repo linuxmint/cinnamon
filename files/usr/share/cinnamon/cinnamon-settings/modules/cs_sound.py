@@ -11,6 +11,7 @@ from bin import util
 CINNAMON_SOUNDS = "org.cinnamon.sounds"
 CINNAMON_DESKTOP_SOUNDS = "org.cinnamon.desktop.sound"
 OVERAMPLIFICATION_KEY = "allow-amplified-volume"
+OVERAMPLIFICATION_MIC_KEY = "allow-amplified-mic"
 
 DECAY_STEP = .15
 
@@ -581,6 +582,12 @@ class Module:
         # input level
         self.inLevel = VolumeLevelBar(sizeGroup)
         devSettings.add_row(self.inLevel)
+
+        # overamplification
+        switch = GSettingsSwitch(_("Overamplification"), CINNAMON_DESKTOP_SOUNDS, OVERAMPLIFICATION_MIC_KEY)
+        switch.set_tooltip_text(_("Allow the microphone volume to exceed 100%. This also amplifies background noise."))
+        devSettings.add_row(switch)
+
         self.inputStack.add_named(inputBox, "inputBox")
 
         noInputsMessage = Gtk.Box()
@@ -632,17 +639,20 @@ class Module:
         noAppsMessage.pack_start(box, True, True, 0)
         self.appStack.add_named(noAppsMessage, "noAppsMessage")
 
-        self.sound_settings.connect(f"changed::{OVERAMPLIFICATION_KEY}", self.onOverAmplificationChanged)
-        self.onOverAmplificationChanged()
+        self.bindOverAmplification(OVERAMPLIFICATION_KEY, self.outVolume)
+        self.bindOverAmplification(OVERAMPLIFICATION_MIC_KEY, self.inVolume)
 
-    def onOverAmplificationChanged(self, settings=None, key=None):
-        overamplification = self.sound_settings.get_boolean(OVERAMPLIFICATION_KEY)
-        self.outVolume.slider.clear_marks()
-        if overamplification:
-            self.outVolume.adjustment.set_upper(150)
-            self.outVolume.setMark(100)
-        else:
-            self.outVolume.adjustment.set_upper(100)
+    def bindOverAmplification(self, key, volumeBar):
+        def onOverAmplificationChanged(settings=None, changedKey=None):
+            volumeBar.slider.clear_marks()
+            if self.sound_settings.get_boolean(key):
+                volumeBar.adjustment.set_upper(150)
+                volumeBar.setMark(100)
+            else:
+                volumeBar.adjustment.set_upper(100)
+
+        self.sound_settings.connect(f"changed::{key}", onOverAmplificationChanged)
+        onOverAmplificationChanged()
 
     def inializeController(self):
         self.controller = Cvc.MixerControl(name = "cinnamon")
