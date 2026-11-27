@@ -77,11 +77,13 @@ class MainWindow(object):
         self.popup_menu.show_all()
 
         self.cut_copy_buffer = None
+        self.item_to_cut = None
         self.file_id = None
         self.last_tree = None
         self.main_window = self.tree.get_object('mainwindow')
 
         self.tree.get_object("action_box").set_layout(Gtk.ButtonBoxStyle.EDGE)
+
 
     def run(self):
         self.loadMenus()
@@ -351,7 +353,11 @@ class MainWindow(object):
             return
         if not isinstance(item, CMenu.TreeEntry):
             return
-        (self.cut_copy_buffer, self.file_id) = self.editor.cutItem(item)
+        (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
+
+        # Update focus to menu tree view, which will activate paste button and deselect copied item
+        self.on_menu_tree_cursor_changed(self.tree.get_object('menu_tree'))
+        self.item_to_cut = item
 
     def on_edit_copy_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
@@ -362,6 +368,10 @@ class MainWindow(object):
         if not isinstance(item, CMenu.TreeEntry):
             return
         (self.cut_copy_buffer, self.file_id) = self.editor.copyItem(item)
+
+        # Update focus to menu tree view, which will activate paste button and deselect copied item
+        self.on_menu_tree_cursor_changed(self.tree.get_object('menu_tree'))
+        self.item_to_cut = None
 
     def on_edit_paste_activate(self, menu):
         item_tree = self.tree.get_object('item_tree')
@@ -376,6 +386,10 @@ class MainWindow(object):
             return
         if self.cut_copy_buffer is not None:
             success = self.editor.pasteItem(self.cut_copy_buffer, item, self.file_id)
+
+            if success and self.item_to_cut:
+                self.editor.deleteItem(self.item_to_cut)
+
             if success:
                 self.cut_copy_buffer = None
                 self.file_id = None
