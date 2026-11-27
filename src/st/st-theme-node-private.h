@@ -35,6 +35,7 @@ struct _StThemeNode {
   StThemeContext *context;
   StThemeNode *parent_node;
   StTheme *theme;
+  gulong stylesheets_changed_id;
 
   PangoFontDescription *font_desc;
 
