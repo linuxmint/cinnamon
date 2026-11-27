@@ -270,30 +270,6 @@ class Module:
 
             keys = sorted([key for key in all_keys if key not in NON_GESTURE_KEYS], key=cmp_to_key(sort_by_direction))
 
-            page = self.add_scrolled_page("tweaks", _("Settings"))
-
-            section = page.add_section(_("General"))
-            widget = GSettingsSwitch(_("Enable gestures"), "org.cinnamon.gestures", "enabled")
-            section.add_row(widget)
-
-            reset_box = Gtk.Box(orientation=Gtk.Orientation.HORIZONTAL)
-            reset_button = Gtk.Button(label=_("Reset gestures to defaults"), halign=Gtk.Align.CENTER)
-            reset_button.connect("clicked", self.on_reset_clicked)
-            reset_box.pack_start(reset_button, True, False, 0)
-            section.add_row(reset_box)
-
-            section = page.add_section(_("Activation thresholds"),
-                                       _("In percentage of the touch surface"))
-
-            widget = GSettingsRange(_("Swipe"), "org.cinnamon.gestures", "swipe-percent-threshold",
-                _("20%"), _("80%"), 20, 80, step=5, show_value=True)
-            widget.add_mark(60, Gtk.PositionType.TOP, None)
-            section.add_row(widget)
-            widget = GSettingsRange(_("Pinch"), "org.cinnamon.gestures", "pinch-percent-threshold",
-                _("20%"), _("80%"), 20, 80, step=5, show_value=True)
-            widget.add_mark(40, Gtk.PositionType.TOP, None)
-            section.add_row(widget)
-
             size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
             label_size_group = Gtk.SizeGroup.new(Gtk.SizeGroupMode.HORIZONTAL)
 
@@ -336,6 +312,30 @@ class Module:
                                              self.gesture_settings, key,
                                              size_group=size_group, label_size_group=label_size_group)
                     section.add_row(widget)
+
+            page = self.add_scrolled_page("tweaks", _("Settings"))
+
+            section = page.add_section(_("General"))
+            widget = GSettingsSwitch(_("Enable gestures"), "org.cinnamon.gestures", "enabled")
+            section.add_row(widget)
+
+            widget = SettingsWidget()
+            reset_button = Gtk.Button(label=_("Reset gestures to defaults"))
+            reset_button.connect("clicked", self.on_reset_clicked)
+            widget.pack_start(reset_button, True, True, 0)
+            section.add_row(widget)
+
+            section = page.add_section(_("Activation thresholds"),
+                                       _("In percentage of the touch surface"))
+
+            widget = GSettingsRange(_("Swipe"), "org.cinnamon.gestures", "swipe-percent-threshold",
+                _("20%"), _("80%"), 20, 80, step=5, show_value=True)
+            widget.add_mark(60, Gtk.PositionType.TOP, None)
+            section.add_row(widget)
+            widget = GSettingsRange(_("Pinch"), "org.cinnamon.gestures", "pinch-percent-threshold",
+                _("20%"), _("80%"), 20, 80, step=5, show_value=True)
+            widget.add_mark(40, Gtk.PositionType.TOP, None)
+            section.add_row(widget)
 
         self.disabled_page_switch.set_visible(False)
         self.disabled_retry_button.set_visible(False)
