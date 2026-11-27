@@ -24,6 +24,7 @@ class CinnamonSystrayApplet extends Applet.Applet {
 
         this._signalManager = new SignalManager.SignalManager(null);
         this._scaleUpdateId = 0;
+        this._watchdogId = 0;
 
         this.orientation = orientation;
         this.icon_size = this.getPanelIconSize(St.IconType.FULLCOLOR) * global.ui_scale;
@@ -71,6 +72,11 @@ class CinnamonSystrayApplet extends Applet.Applet {
             this._scaleUpdateId = 0;
         }
 
+        if (this._watchdogId > 0) {
+            Mainloop.source_remove(this._watchdogId);
+            this._watchdogId = 0;
+        }
+
         this._signalManager.disconnectAllSignals();
 
         this._clearIcons();
@@ -94,6 +100,46 @@ class CinnamonSystrayApplet extends Applet.Applet {
             global.trayReloading = false;
             Main.statusIconDispatcher.redisplay();
         }
+
+        // https://github.com/linuxmint/cinnamon/issues/13632 - legacy (XEmbed)
+        // tray icons can resize themselves at the X11 level without that change
+        // reliably propagating all the way up to a panel relayout, which can
+        // leave the tray (and anything to its right, e.g. the clock) rendered
+        // outside of the monitor until something else happens to force a full
+        // relayout. Periodically verify our own allocation is still fully
+        // on-screen and self-heal if not.
+        this._watchdogId = Mainloop.timeout_add_seconds(5, () => this._checkOnScreen());
+    }
+
+    _checkOnScreen() {
+        try {
+            if (!this.panel || !this.panel.monitor || !this.actor.visible)
+                return GLib.SOURCE_CONTINUE;
+
+            let [x, y] = this.actor.get_transformed_position();
+            let [w, h] = this.actor.get_transformed_size();
+
+            if (w <= 0)
+                return GLib.SOURCE_CONTINUE;
+
+            let monitor = this.panel.monitor;
+            let outOfBounds = x < monitor.x - 1 ||
+                               (x + w) > (monitor.x + monitor.width + 1);
+
+            if (outOfBounds) {
+                global.logWarning("systray@cinnamon.org: applet allocation (" +
+                    Math.round(x) + ", " + Math.round(w) + "px wide) is outside " +
+                    "monitor bounds (" + monitor.x + ".." + (monitor.x + monitor.width) +
+                    "); forcing a panel relayout.");
+
+                this.panel.actor.queue_relayout();
+                this.actor.queue_relayout();
+            }
+        } catch (e) {
+            global.logError(e);
+        }
+
+        return GLib.SOURCE_CONTINUE;
     }
 
     _clearIcons() {
