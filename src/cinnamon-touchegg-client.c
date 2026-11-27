@@ -98,6 +98,9 @@ handle_signal (GDBusConnection *connection,
         return;
     }
 
+    g_clear_pointer (&priv->last_signal, g_free);
+    g_clear_pointer (&priv->last_params, g_variant_unref);
+
     priv->last_params = g_variant_ref (params);
     priv->last_signal = g_strdup (our_signal);
 
