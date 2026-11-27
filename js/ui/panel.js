@@ -2533,7 +2533,7 @@ var Panel = GObject.registerClass({
     }
 
     _queueSetPanelHeight() {
-        if (this._setPanelHeightLaterId > 0)
+        if (this._destroyed || this._setPanelHeightLaterId > 0)
             return;
 
         this._setPanelHeightLaterId = Meta.later_add(Meta.LaterType.BEFORE_REDRAW, () => {
