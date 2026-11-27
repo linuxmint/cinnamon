@@ -937,9 +937,6 @@ class GroupedWindowListApplet extends Applet.Applet {
     }
 
     onWorkspaceRemoved(workspaceManager, index) {
-        if (this.workspaces.length <= index) {
-            return;
-        }
         const removedWorkspaces = [];
         for (let i = 0; i < this.workspaces.length; i++) {
             const workspaceIndex = this.workspaces[i].metaWorkspace.index();
@@ -950,7 +947,7 @@ class GroupedWindowListApplet extends Applet.Applet {
                 }
                 removedWorkspaces.push(i);
             } else {
-                this.workspaces[i].index = workspaceIndex;
+                this.workspaces[i].workspaceState.set({workspaceIndex});
             }
         }
         for (let i = removedWorkspaces.length - 1; i >= 0; i--) {
