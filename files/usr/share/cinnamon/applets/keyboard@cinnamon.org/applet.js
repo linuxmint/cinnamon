@@ -1,5 +1,6 @@
 const Applet = imports.ui.applet;
 const St = imports.gi.St;
+const Clutter = imports.gi.Clutter;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
@@ -38,16 +39,12 @@ class CinnamonKeyboardApplet extends Applet.Applet {
     constructor(metadata, orientation, panel_height, instance_id) {
         super(orientation, panel_height, instance_id);
 
-        this._panel_icon_box = new St.Bin();
-
-        this._panel_icon_box.set_fill(true, false);
-        this._panel_icon_box.set_alignment(St.Align.MIDDLE, St.Align.MIDDLE);
-
-        // Force the container to hold its width while the new flag image loads into memory
-        this._panel_icon_box.set_style("min-width: 2.5em;");
+        this._panel_icon_box = new St.Widget({ layout_manager: new Clutter.BinLayout() });
 
         this._signalManager = new SignalManager.SignalManager(null);
-        this._signalManager.connect(this.panel, "icon-size-changed", () => this._syncGroup());
+        this._indicators = new Map();
+
+        this._signalManager.connect(this.panel, "icon-size-changed", () => this._rebuildIndicators());
 
         this.actor.add(this._panel_icon_box, {
             y_align: St.Align.MIDDLE,
@@ -145,7 +142,7 @@ class CinnamonKeyboardApplet extends Applet.Applet {
     }
 
     on_orientation_changed() {
-        this._syncGroup();
+        this._rebuildIndicators();
     }
 
     _onButtonPressEvent(actor, event) {
@@ -200,6 +197,36 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         } else {
             this.actor.show();
         }
+
+        this._rebuildIndicators();
+    }
+
+    _createIndicator(source) {
+        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
+        const indicator = this._inputSourcesManager.createIndicator(
+            source, APPLET_ICON_STYLE_CLASS, "applet-label", iconSize);
+
+        this._panel_icon_box.add_child(indicator);
+        this._indicators.set(source, indicator);
+    }
+
+    // Every layout's indicator stays in the box and only the current one is
+    // shown, so that switching neither resizes the applet nor reloads a flag.
+    _rebuildIndicators() {
+        this._panel_icon_box.destroy_all_children();
+        this._indicators.clear();
+
+        for (const source of Object.values(this._inputSourcesManager.inputSources))
+            this._createIndicator(source);
+
+        this._showCurrentIndicator();
+    }
+
+    _showCurrentIndicator() {
+        const selected = this._inputSourcesManager.currentSource;
+
+        for (const [source, indicator] of this._indicators)
+            indicator.opacity = source === selected ? 255 : 0;
     }
 
     _syncGroup() {
@@ -216,14 +243,13 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         this._selectedLayout = item;
         this.set_applet_tooltip(selected.displayName);
 
-        const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
-        const actor = this._inputSourcesManager.createIndicator(selected, APPLET_ICON_STYLE_CLASS, "applet-label", iconSize);
+        // An ibus engine's indicator follows its properties.
+        if (selected.type === 'ibus') {
+            this._indicators.get(selected)?.destroy();
+            this._createIndicator(selected);
+        }
 
-        // Enforce a constant width and center the text
-        if (actor instanceof St.Label)
-            actor.set_style("min-width: 2.5em; text-align: center;");
-
-        this._panel_icon_box.set_child(actor);
+        this._showCurrentIndicator();
 
         if (this._imIsFcitx || !this._inputSourcesManager.multipleSources) {
             this.actor.hide();
