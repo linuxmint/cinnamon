@@ -601,6 +601,7 @@ NMDevice.prototype = {
 
     _clearSection: function() {
         // Clear everything
+        this._keepFocusInSection();
         this.section.removeAll();
         this._autoConnectionItem = null;
         this._activeConnectionItem = null;
@@ -608,6 +609,15 @@ NMDevice.prototype = {
         for (let i = 0; i < this._connections.length; i++) {
             this._connections[i].item = null;
         }
+    },
+
+    // If one of the rows has the key focus (it is under the pointer, or its switch was just
+    // flipped, which keeps the menu open), destroying it would take the focus out of the menu,
+    // and the menu would close. Give the focus to the section instead.
+    _keepFocusInSection: function() {
+        let focus = global.stage.get_key_focus();
+        if (focus && this.section.actor.contains(focus))
+            this.section.actor.grab_key_focus();
     },
 
     _shouldShowConnectionList: function() {
@@ -1042,8 +1052,10 @@ NMDeviceVPN.prototype = {
     },
 
     _clearSection: function() {
-        if (this.section && this.section.removeAll)
+        if (this.section && this.section.removeAll) {
+            this._keepFocusInSection();
             this.section.removeAll();
+        }
 
         this._autoConnectionItem = null;
         this._overflowItem = null;
