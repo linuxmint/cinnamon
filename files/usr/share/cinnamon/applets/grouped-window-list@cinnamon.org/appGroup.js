@@ -204,7 +204,7 @@ var AppGroup = class AppGroup {
 
         this.hoverMenu.setVerticalSetting();
         this.hoverMenu.actor.set_style_class_name('');
-        this.hoverMenu.box.set_important(true);
+        this.hoverMenu.actor.set_important(false);
         this.hoverMenu.box.set_style_class_name('grouped-window-list-thumbnail-menu');
         this.hoverMenuManager.addMenu(this.hoverMenu);
         this.signals.connect(this.hoverMenu.actor, 'enter-event',
