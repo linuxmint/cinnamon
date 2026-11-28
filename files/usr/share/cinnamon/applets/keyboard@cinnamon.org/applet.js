@@ -1,6 +1,7 @@
 const Applet = imports.ui.applet;
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
+const Pango = imports.gi.Pango;
 const Main = imports.ui.main;
 const PopupMenu = imports.ui.popupMenu;
 const Util = imports.misc.util;
@@ -205,6 +206,9 @@ class CinnamonKeyboardApplet extends Applet.Applet {
         const iconSize = this.getPanelIconSize(St.IconType.FULLCOLOR);
         const indicator = this._inputSourcesManager.createIndicator(
             source, APPLET_ICON_STYLE_CLASS, "applet-label", iconSize);
+
+        if (indicator instanceof St.Label)
+            indicator.clutter_text.ellipsize = Pango.EllipsizeMode.NONE;
 
         this._panel_icon_box.add_child(indicator);
         this._indicators.set(source, indicator);
