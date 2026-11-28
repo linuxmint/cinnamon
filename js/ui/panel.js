@@ -1567,7 +1567,7 @@ var Panel = GObject.registerClass({
         this._destroyed = false;
         this._positionChanged = false;
         this._monitorsChanged = false;
-        this._mouseEntered = null;
+        this._mouseEntered = false;
         this._signalManager = new SignalManager.SignalManager(null);
         this.heightForZones = 0;
         this._setPanelHeightLaterId = 0;
@@ -1615,6 +1615,7 @@ var Panel = GObject.registerClass({
         this._processPanelAutoHide();
 
         this.connect('queue-relayout', () => this._queueSetPanelHeight());
+        this.connect('notify::reactive', () => this._onReactiveChanged());
 
         this._signalManager.connect(global.settings, "changed::" + PANEL_AUTOHIDE_KEY, this._processPanelAutoHide, this);
         this._signalManager.connect(global.settings, "changed::" + PANEL_HEIGHT_KEY, this._moveResizePanel, this);
@@ -3031,8 +3032,6 @@ var Panel = GObject.registerClass({
      * true = autohide, false = always show, intel = Intelligent
      */
     _updatePanelVisibility() {
-        this._mouseEntered = this._mouseOnPanel();
-
         if (this._panelEditMode || this._highlighted || this._peeking ||
             this._panelHasOpenMenus() || Main.chromeRaiseManager.isPanelRaised(this))
             this._shouldShow = true;
@@ -3122,14 +3121,22 @@ var Panel = GObject.registerClass({
         }
     }
 
-    vfunc_enter_event() {
-        this._enterPanel();
+    /* Whether the pointer is on the panel follows Clutter's crossing events
+     * rather than the pointer position: the panel isn't under the pointer
+     * while it isn't drawn (a fullscreen window covers its monitor) or takes
+     * no input (the window switcher is open), and on Wayland nothing tells
+     * Clutter again that the pointer is over the panel until it moves. A
+     * position check would then show the panel with no leave-event to come. */
+    vfunc_enter_event(event) {
+        this._enterPanel(null, event);
     }
 
     _enterPanel(actor=null, event=null) {
-        if (!this._mouseEntered) {
-            this._updatePanelVisibility();
-        }
+        if (this._mouseEntered)
+            return;
+
+        this._mouseEntered = true;
+        this._updatePanelVisibility();
     }
 
     vfunc_leave_event(event) {
@@ -3137,25 +3144,24 @@ var Panel = GObject.registerClass({
     }
 
     _leavePanel(actor=null, event=null) {
-        // Panel gives false leave-event's when mouse is still on panel so we determine this._mouseEntered
-        // manually with this._mouseOnPanel() in this._updatePanelVisibility()
+        // Leaving the panel for one of its applets keeps the pointer on it
+        let related = event ? event.related : null;
+        if (related && this.contains(related))
+            return;
 
-        if (this._mouseEntered) {
-            this._updatePanelVisibility();
-            if (this.isHideable() && event !== null && this._mouseOnPanel()) {
-                // Since we get false leave-event's and reported mouse position is often still
-                // on panel even if left, we check again a short while later to make sure.
-                setTimeout(this._updatePanelVisibility.bind(this), 250);
-            }
-        }
+        if (!this._mouseEntered)
+            return;
+
+        this._mouseEntered = false;
+        this._updatePanelVisibility();
     }
 
-    _mouseOnPanel() {
-        this.sync_hover();
-        const [x, y] = global.get_pointer();
-
-        return (this.x <= x && x <= this.x + this.get_width() &&
-            this.y <= y && y <= this.y + this.get_height());
+    _onReactiveChanged() {
+        // A panel taking no input gets no leave-event; it isn't under the
+        // pointer anymore. Once it takes input again, the pointer's next
+        // move over it brings an enter-event.
+        if (!this.reactive)
+            this._leavePanel();
     }
 
     /**
