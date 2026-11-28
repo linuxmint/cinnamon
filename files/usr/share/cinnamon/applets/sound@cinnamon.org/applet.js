@@ -327,10 +327,17 @@ class Seeker extends Slider.Slider {
     }
 
     setTrack(trackid, length) {
+        // Some players (mpDris2) resend the metadata of the current track after a seek,
+        // so only reset the position when the track actually changed
+        let sameTrack = trackid !== "" && trackid === this._trackid;
         this._trackid = trackid;
         this._length = length;
-        this._currentTime = 0;
-        this._updateValue();
+        if (sameTrack) {
+            this._getPosition();
+        } else {
+            this._currentTime = 0;
+            this._updateValue();
+        }
     }
 
     _updateValue() {
