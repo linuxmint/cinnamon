@@ -539,11 +539,17 @@ get_arbitrary_border_color (StThemeNode   *node,
 static gboolean
 st_theme_node_has_visible_outline (StThemeNode *node)
 {
+  guint i;
+
   if (node->background_color.alpha > 0)
     return TRUE;
 
   if (node->background_gradient_end.alpha > 0)
     return TRUE;
+
+  for (i = 0; i < node->n_background_gradient_stops; i++)
+    if (node->background_gradient_stops[i].color.alpha > 0)
+      return TRUE;
 
   if (node->border_radius[ST_CORNER_TOPLEFT] > 0 ||
       node->border_radius[ST_CORNER_TOPRIGHT] > 0 ||
@@ -560,6 +566,65 @@ st_theme_node_has_visible_outline (StThemeNode *node)
   return FALSE;
 }
 
+/* background-image: linear-gradient(), as CSS draws it: the gradient line
+ * runs through the center at the given angle (or, for "to <corner>",
+ * perpendicular to the diagonal between the other two corners), and is just
+ * long enough for the corners to get the first and last colors.
+ */
+static cairo_pattern_t *
+create_cairo_pattern_of_linear_gradient (StThemeNode *node)
+{
+  cairo_pattern_t *pattern;
+  double width = node->alloc_width;
+  double height = node->alloc_height;
+  double dx, dy, length;
+  guint i;
+
+  if (node->background_gradient_corner_x != 0 &&
+      node->background_gradient_corner_y != 0)
+    {
+      dx = node->background_gradient_corner_x * height;
+      dy = node->background_gradient_corner_y * width;
+      length = sqrt (dx * dx + dy * dy);
+      if (length > 0)
+        {
+          dx /= length;
+          dy /= length;
+        }
+      else
+        {
+          dx = 0;
+          dy = 1;
+        }
+    }
+  else
+    {
+      double radians = node->background_gradient_angle * G_PI / 180.;
+
+      dx = sin (radians);
+      dy = -cos (radians);
+    }
+
+  length = fabs (width * dx) + fabs (height * dy);
+  pattern = cairo_pattern_create_linear (width / 2. - dx * length / 2.,
+                                         height / 2. - dy * length / 2.,
+                                         width / 2. + dx * length / 2.,
+                                         height / 2. + dy * length / 2.);
+
+  for (i = 0; i < node->n_background_gradient_stops; i++)
+    {
+      StGradientStop *stop = &node->background_gradient_stops[i];
+
+      cairo_pattern_add_color_stop_rgba (pattern, stop->offset,
+                                         stop->color.red / 255.,
+                                         stop->color.green / 255.,
+                                         stop->color.blue / 255.,
+                                         stop->color.alpha / 255.);
+    }
+
+  return pattern;
+}
+
 static cairo_pattern_t *
 create_cairo_pattern_of_background_gradient (StThemeNode *node)
 {
@@ -567,6 +632,9 @@ create_cairo_pattern_of_background_gradient (StThemeNode *node)
 
   g_return_val_if_fail (node->background_gradient_type != ST_GRADIENT_NONE,
                         NULL);
+
+  if (node->n_background_gradient_stops > 0)
+    return create_cairo_pattern_of_linear_gradient (node);
 
   if (node->background_gradient_type == ST_GRADIENT_VERTICAL)
     pattern = cairo_pattern_create_linear (0, 0, 0, node->alloc_height);
@@ -1044,11 +1112,12 @@ st_theme_node_prerender_background (StThemeNode *node,
        * what's actually under the gradient and not whatever is
        * left over from filling the border, etc.
        */
-      if (node->background_color.alpha < 255 ||
-          node->background_gradient_end.alpha < 255)
-        background_is_translucent = TRUE;
-      else
-        background_is_translucent = FALSE;
+      background_is_translucent = (node->background_color.alpha < 255 ||
+                                   node->background_gradient_end.alpha < 255);
+
+      for (i = 0; i < (int) node->n_background_gradient_stops; i++)
+        if (node->background_gradient_stops[i].color.alpha < 255)
+          background_is_translucent = TRUE;
     }
   else
     {
