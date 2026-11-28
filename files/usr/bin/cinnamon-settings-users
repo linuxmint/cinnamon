@@ -4,5 +4,39 @@
 """
 
 import os
+import shutil
+import sys
 
-os.system("pkexec /usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py")
+TARGET = "/usr/share/cinnamon/cinnamon-settings-users/cinnamon-settings-users.py"
+
+def _build_run0_argv(target):
+    # Unlike pkexec, run0 does not inherit the caller's environment, so
+    # explicitly forward the few variables a GUI tool needs. Mirrors the
+    # approach used by gparted.
+    argv = ["run0"]
+    # --setenv=VAR (no value) tells run0 to forward the value from the caller.
+    if "XAUTHORITY" in os.environ:
+        argv.append("--setenv=XAUTHORITY")
+    if "DISPLAY" in os.environ:
+        argv.append("--setenv=DISPLAY")
+    # WAYLAND_DISPLAY must be turned into an absolute path because run0
+    # changes XDG_RUNTIME_DIR to that of the target user.
+    wayland = os.environ.get("WAYLAND_DISPLAY")
+    runtime_dir = os.environ.get("XDG_RUNTIME_DIR")
+    if wayland and runtime_dir and os.path.isdir(runtime_dir):
+        socket_path = wayland if os.path.isabs(wayland) else os.path.join(runtime_dir, wayland)
+        if os.path.exists(socket_path):
+            argv.append(f"--setenv=WAYLAND_DISPLAY={socket_path}")
+    argv.append("--")
+    argv.append(target)
+    return argv
+
+# Prefer pkexec, fall back to run0.
+if shutil.which("pkexec"):
+    os.execvp("pkexec", ["pkexec", TARGET])
+elif shutil.which("run0"):
+    os.execvp("run0", _build_run0_argv(TARGET))
+
+print("cinnamon-settings-users: neither 'pkexec' nor 'run0' was found in PATH",
+      file=sys.stderr)
+sys.exit(1)
